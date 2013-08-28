@@ -369,7 +369,7 @@ SetAxisRange(AxisRange *rangePtr, double min, double max)
     rangePtr->min = min;
     rangePtr->max = max;
     rangePtr->range = max - min;
-    if (FABS(rangePtr->range) < DBL_EPSILON) {
+    if (fabs(rangePtr->range) < DBL_EPSILON) {
 	rangePtr->range = 1.0;
     }
     rangePtr->scale = 1.0 / rangePtr->range;
@@ -399,7 +399,7 @@ INLINE static int
 InRange(double x, AxisRange *rangePtr)
 {
     if (rangePtr->range < DBL_EPSILON) {
-	return (FABS(rangePtr->max - x) >= DBL_EPSILON);
+	return (fabs(rangePtr->max - x) >= DBL_EPSILON);
     } else {
 	double norm;
 
@@ -1205,7 +1205,7 @@ double
 Blt_HMap(Axis *axisPtr, double x)
 {
     if ((axisPtr->logScale) && (x != 0.0)) {
-	x = log10(FABS(x));
+	x = log10(fabs(x));
     }
     /* Map graph coordinate to normalized coordinates [0..1] */
     x = (x - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
@@ -1233,7 +1233,7 @@ double
 Blt_VMap(Axis *axisPtr, double y)
 {
     if ((axisPtr->logScale) && (y != 0.0)) {
-	y = log10(FABS(y));
+	y = log10(fabs(y));
     }
     /* Map graph coordinate to normalized coordinates [0..1] */
     y = (y - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
@@ -1366,7 +1366,7 @@ FixAxisRange(Axis *axisPtr)
 	if (min == 0.0) {
 	    min = 0.0, max = 1.0;
 	} else {
-	    max = min + (FABS(min) * 0.1);
+	    max = min + (fabs(min) * 0.1);
 	}
     }
     SetAxisRange(&axisPtr->valueRange, min, max);
@@ -1391,10 +1391,10 @@ FixAxisRange(Axis *axisPtr)
 	 * up a new min or max from the user-defined limit.
 	 */
 	if (!DEFINED(axisPtr->reqMin)) {
-	    axisPtr->min = axisPtr->max - (FABS(axisPtr->max) * 0.1);
+	    axisPtr->min = axisPtr->max - (fabs(axisPtr->max) * 0.1);
 	}
 	if (!DEFINED(axisPtr->reqMax)) {
-	    axisPtr->max = axisPtr->min + (FABS(axisPtr->max) * 0.1);
+	    axisPtr->max = axisPtr->min + (fabs(axisPtr->max) * 0.1);
 	}
     }
     /* 
@@ -1600,8 +1600,8 @@ LogScaleAxis(Axis *axisPtr, double min, double max)
     majorStep = minorStep = 0.0;
     tickMin = tickMax = Blt_NaN();
     if (min < max) {
-	min = (min != 0.0) ? log10(FABS(min)) : 0.0;
-	max = (max != 0.0) ? log10(FABS(max)) : 1.0;
+	min = (min != 0.0) ? log10(fabs(min)) : 0.0;
+	max = (max != 0.0) ? log10(fabs(max)) : 1.0;
 
 	tickMin = floor(min);
 	tickMax = ceil(max);
@@ -2202,7 +2202,7 @@ AxisOffsets(
 	    tickLabel = graphPtr->bottom +  graphPtr->plotBW + 2;
 	}
 	mark = graphPtr->bottom + offset;
-	fangle = FMOD(axisPtr->tickAngle, 90.0);
+	fangle = fmod(axisPtr->tickAngle, 90.0);
 	if (fangle == 0.0) {
 	    axisPtr->tickAnchor = TK_ANCHOR_N;
 	} else {
@@ -3733,7 +3733,7 @@ ConfigureAxis(Axis *axisPtr)
 	    axisPtr->scrollMax = Blt_NaN();
 	}
     }
-    angle = FMOD(axisPtr->tickAngle, 360.0);
+    angle = fmod(axisPtr->tickAngle, 360.0);
     if (angle < 0.0f) {
 	angle += 360.0f;
     }

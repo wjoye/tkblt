@@ -1881,7 +1881,7 @@ ConfigureBitmapProc(Marker *markerPtr)
     if (bmPtr->srcBitmap == None) {
 	return TCL_OK;
     }
-    bmPtr->angle = FMOD(bmPtr->reqAngle, 360.0);
+    bmPtr->angle = fmod(bmPtr->reqAngle, 360.0);
     if (bmPtr->angle < 0.0) {
 	bmPtr->angle += 360.0;
     }
@@ -2233,7 +2233,7 @@ DrawBitmapProc(Marker *markerPtr, Drawable drawable)
     if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
 	return;
     }
-    rangle = FMOD(bmPtr->angle, 90.0);
+    rangle = fmod(bmPtr->angle, 90.0);
     if ((bmPtr->fillColor == NULL) || (rangle != 0.0)) {
 
 	/* 
@@ -2739,7 +2739,7 @@ ConfigureTextProc(Marker *markerPtr)
     XGCValues gcValues;
     unsigned long gcMask;
 
-    tmPtr->style.angle = (float)FMOD(tmPtr->style.angle, 360.0);
+    tmPtr->style.angle = (float)fmod(tmPtr->style.angle, 360.0);
     if (tmPtr->style.angle < 0.0f) {
 	tmPtr->style.angle += 360.0f;
     }

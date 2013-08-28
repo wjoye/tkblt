@@ -337,7 +337,7 @@ Skew(Blt_Vector *vectorPtr)
     for(vp = vPtr->valueArr + vPtr->first,
 	    vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
 	diff = *vp - mean;
-	diff = FABS(diff);
+	diff = fabs(diff);
 	diffsq = diff * diff;
 	var += diffsq;
 	skew += diffsq * diff;
@@ -378,7 +378,7 @@ AvgDeviation(Blt_Vector *vectorPtr)
     for(vp = vPtr->valueArr + vPtr->first,
 	    vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
 	diff = *vp - mean;
-	avg += FABS(diff);
+	avg += fabs(diff);
 	count++;
     }
     if (count < 2) {

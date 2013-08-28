@@ -1587,8 +1587,8 @@ MapBarProc(Graph *graphPtr, Element *basePtr)
 	CLAMP(c2.y, top, bottom);
 	CLAMP(c1.x, left, right);
 	CLAMP(c2.x, left, right);
-	dx = FABS(c1.x - c2.x);
-	dy = FABS(c1.y - c2.y);
+	dx = fabs(c1.x - c2.x);
+	dy = fabs(c1.y - c2.y);
 	if ((dx == 0) || (dy == 0)) {
 	    continue;
 	}

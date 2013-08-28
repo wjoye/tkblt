@@ -546,10 +546,10 @@ Blt_PolyRectClip(
 	dx = q->x - p->x;	/* X-direction */
 	dy = q->y - p->y;	/* Y-direction */
 
-	if (FABS(dx) < EPSILON) { 
+	if (fabs(dx) < EPSILON) { 
 	    dx = (p->x > regionPtr->left) ? -EPSILON : EPSILON ;
 	}
-	if (FABS(dy) < EPSILON) { 
+	if (fabs(dy) < EPSILON) { 
 	    dy = (p->y > regionPtr->top) ? -EPSILON : EPSILON ;
 	}
 
@@ -657,9 +657,9 @@ Blt_GetProjection(
     dy = p->y - q->y;
 
     /* Test for horizontal and vertical lines */
-    if (FABS(dx) < DBL_EPSILON) {
+    if (fabs(dx) < DBL_EPSILON) {
 	t.x = p->x, t.y = (double)y;
-    } else if (FABS(dy) < DBL_EPSILON) {
+    } else if (fabs(dy) < DBL_EPSILON) {
 	t.x = (double)x, t.y = p->y;
     } else {
 	double m1, m2;		/* Slope of both lines */
@@ -777,7 +777,7 @@ Blt_HSVToXColor(HSV *hsvPtr, XColor *colorPtr)
 	SetColor(colorPtr, hsvPtr->val, hsvPtr->val, hsvPtr->val);
 	return;
     }
-    hue = FMOD(hsvPtr->hue, 360.0) / 60.0;
+    hue = fmod(hsvPtr->hue, 360.0) / 60.0;
     quadrant = (int)floor(hue);
     frac = hsvPtr->hue - quadrant;
     p = hsvPtr->val * (1 - (hsvPtr->sat));
@@ -1632,7 +1632,7 @@ Blt_Get3DBorder(Tcl_Interp *interp, Tk_Window tkwin, const char *borderName)
 	sat0 = hsv.sat;
 	count = 0;
 	for (sat = 0.1 + (diff - 0.1); sat <= 1.0; sat += 0.2) {
-	    if (FABS(sat0 - sat) >= 0.1) {
+	    if (fabs(sat0 - sat) >= 0.1) {
 		hsv.sat = sat;
 		Blt_HSVToXColor(&hsv, &color);
 		borderPtr->shadows[count] = Tk_GetColorByValue(tkwin, &color);

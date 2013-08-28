@@ -2946,7 +2946,7 @@ DistanceToXProc(
     dx = p->x - q->x;
     dy = p->y - q->y;
     t->x = (double)x;
-    if (FABS(dx) < DBL_EPSILON) {
+    if (fabs(dx) < DBL_EPSILON) {
 	double d1, d2;
 	/* 
 	 * Same X-coordinate indicates a vertical line.  Pick the closest end
@@ -2954,12 +2954,12 @@ DistanceToXProc(
 	 */
 	d1 = p->y - y;
 	d2 = q->y - y;
-	if (FABS(d1) < FABS(d2)) {
+	if (fabs(d1) < fabs(d2)) {
 	    t->y = p->y, d = d1;
 	} else {
 	    t->y = q->y, d = d2;
 	}
-    } else if (FABS(dy) < DBL_EPSILON) {
+    } else if (fabs(dy) < DBL_EPSILON) {
 	/* Horizontal line. */
 	t->y = p->y, d = p->y - y;
     } else {
@@ -2970,7 +2970,7 @@ DistanceToXProc(
 	t->y = (x * m) + b;
 	d = y - t->y;
     }
-   return FABS(d);
+   return fabs(d);
 }
 
 static double
@@ -2994,19 +2994,19 @@ DistanceToYProc(
     dx = p->x - q->x;
     dy = p->y - q->y;
     t->y = y;
-    if (FABS(dy) < DBL_EPSILON) {
+    if (fabs(dy) < DBL_EPSILON) {
 	double d1, d2;
 
 	/* Save Y-coordinate indicates an horizontal line. Pick the closest end
 	 * point. */
 	d1 = p->x - x;
 	d2 = q->x - x;
-	if (FABS(d1) < FABS(d2)) {
+	if (fabs(d1) < fabs(d2)) {
 	    t->x = p->x, d = d1;
 	} else {
 	    t->x = q->x, d = d2;
 	}
-    } else if (FABS(dx) < DBL_EPSILON) {
+    } else if (fabs(dx) < DBL_EPSILON) {
 	/* Vertical line. */
 	t->x = p->x, d = p->x - x;
     } else {
@@ -3017,7 +3017,7 @@ DistanceToYProc(
 	t->x = (y - b) / m;
 	d = x - t->x;
     }
-    return FABS(d);
+    return fabs(d);
 }
 
 /*

@@ -1499,7 +1499,7 @@ Blt_Ps_DrawText(
 	float angle;
 	double rw, rh;
 	
-	angle = FMOD(tsPtr->angle, (double)360.0);
+	angle = fmod(tsPtr->angle, (double)360.0);
 	Blt_GetBoundingBox(textPtr->width, textPtr->height, angle, &rw, &rh, 
 	(Point2d *)NULL);
 	/*

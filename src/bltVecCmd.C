@@ -1177,7 +1177,7 @@ InRange(double value, double min, double max)
 
     range = max - min;
     if (range < DBL_EPSILON) {
-	return (FABS(max - value) < DBL_EPSILON);
+	return (fabs(max - value) < DBL_EPSILON);
     } else {
 	double norm;
 

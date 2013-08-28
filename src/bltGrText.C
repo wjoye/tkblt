@@ -226,8 +226,8 @@ Blt_GetBoundingBox(
     double x, y;
     Point2d corner[4];
 
-    angle = FMOD(angle, 360.0);
-    if (FMOD(angle, (double)90.0) == 0.0) {
+    angle = fmod(angle, 360.0);
+    if (fmod(angle, (double)90.0) == 0.0) {
 	int ll, ur, ul, lr;
 	double rotWidth, rotHeight;
 	int quadrant;
@@ -1146,7 +1146,7 @@ Blt_Ts_DrawLayout(
     if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC)) {
 	Blt_Ts_ResetStyle(tkwin, stylePtr);
     }
-    angle = (float)FMOD(stylePtr->angle, 360.0);
+    angle = (float)fmod(stylePtr->angle, 360.0);
     if (angle < 0.0) {
 	angle += 360.0;
     }
@@ -1184,7 +1184,7 @@ Blt_Ts_UnderlineLayout(
     if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC)) {
 	Blt_Ts_ResetStyle(tkwin, stylePtr);
     }
-    angle = (float)FMOD(stylePtr->angle, 360.0);
+    angle = (float)fmod(stylePtr->angle, 360.0);
     if (angle < 0.0) {
 	angle += 360.0;
     }
@@ -1260,7 +1260,7 @@ Blt_DrawText2(
     }
     layoutPtr = Blt_Ts_CreateLayout(string, -1, stylePtr);
     Blt_Ts_DrawLayout(tkwin, drawable, layoutPtr, stylePtr, x, y);
-    angle = FMOD(stylePtr->angle, 360.0);
+    angle = fmod(stylePtr->angle, 360.0);
     if (angle < 0.0) {
 	angle += 360.0;
     }

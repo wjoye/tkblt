@@ -119,16 +119,16 @@ QuadChoose(
 	prod2 = slope * m2;
 
 	/* Find the absolute values of the slopes slope, m1, and m2. */
-	mref = FABS(slope);
-	mref1 = FABS(m1);
-	mref2 = FABS(m2);
+	mref = fabs(slope);
+	mref1 = fabs(m1);
+	mref2 = fabs(m2);
 
 	/*
 	 * If the relative deviation of m1 or m2 from slope is less than
 	 * epsilon, then choose case 2 or case 3.
 	 */
 	relerr = epsilon * mref;
-	if ((FABS(slope - m1) > relerr) && (FABS(slope - m2) > relerr) &&
+	if ((fabs(slope - m1) > relerr) && (fabs(slope - m2) > relerr) &&
 	    (prod1 >= 0.0) && (prod2 >= 0.0)) {
 	    double prod;
 
@@ -254,7 +254,7 @@ QuadCases(Point2d *p, Point2d *q, double m1, double m2, double param[],
 	    E2 = mbar3 * (E1 - V1) + V2;
 	} else {		/* Case 3. */
 	    k1 = (p->y - q->y + q->x * mbar2 - p->x * mbar1) / (mbar2 - mbar1);
-	    if (FABS(m1) > FABS(m2)) {
+	    if (fabs(m1) > fabs(m2)) {
 		Z1 = (k1 + p->x) / 2.0;
 	    } else {
 		Z1 = (k1 + q->x) / 2.0;
@@ -450,7 +450,7 @@ QuadSlopes(Point2d *points, double *m, int nPoints)
 	 */
 	if ((m1 == 0.0) || (m2 == 0.0) || ((m1 * m2) <= 0.0)) {
 	    m[i] = 0.0;
-	} else if (FABS(m1) > FABS(m2)) {
+	} else if (fabs(m1) > fabs(m2)) {
 	    /*
 	     * Calculate the slope by extending the line with slope m1.
 	     */
