@@ -1358,8 +1358,8 @@ DoConfig(
 		    return TCL_ERROR;
 		}
 		if (*(char ***)ptr != NULL) {
-		    free(*(char ***)ptr);
-		    *((char **) ptr) = NULL;
+		    Tcl_Free(*(char ***)ptr);
+		    *((char ***) ptr) = NULL;
 		}
 		*(const char ***)ptr = argv;
 	    }
@@ -2320,7 +2320,7 @@ Blt_FreeOptions(
 
 	case BLT_CONFIG_LIST:
 	    if (*((char ***) ptr) != NULL) {
-		free(*((char ***) ptr));
+		Tcl_Free(*((char ***) ptr));
 		*((char ***) ptr) = NULL;
 	    }
 	    break;
