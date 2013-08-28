@@ -1813,9 +1813,7 @@ Blt_Vec_GetInterpData(Tcl_Interp *interp)
 	Blt_InitHashTable(&dataPtr->indexProcTable, BLT_STRING_KEYS);
 	Blt_Vec_InstallMathFunctions(&dataPtr->mathProcTable);
 	Blt_Vec_InstallSpecialIndices(&dataPtr->indexProcTable);
-#ifdef HAVE_SRAND48
 	srand48(time((time_t *) NULL));
-#endif
     }
     return dataPtr;
 }
