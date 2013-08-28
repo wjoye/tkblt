@@ -404,7 +404,7 @@ Blt_ExpandParseValue(
     } else {
 	size += size;
     }
-    buffer = Blt_AssertMalloc((unsigned int)size);
+    buffer = malloc((unsigned int)size);
 
     /*
      * Copy from old buffer to new, free old buffer if needed, and
@@ -414,7 +414,7 @@ Blt_ExpandParseValue(
 	(size_t) (parsePtr->next - parsePtr->buffer));
     parsePtr->next = buffer + (parsePtr->next - parsePtr->buffer);
     if (parsePtr->clientData != 0) {
-	Blt_Free(parsePtr->buffer);
+	free(parsePtr->buffer);
     }
     parsePtr->buffer = buffer;
     parsePtr->end = buffer + size - 1;

@@ -282,7 +282,7 @@ Blt_DestroyCrosshairs(Graph *graphPtr)
 	if (chPtr->gc != NULL) {
 	    Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
 	}
-	Blt_Free(chPtr);
+	free(chPtr);
     }
 }
 
@@ -307,7 +307,7 @@ Blt_CreateCrosshairs(Graph *graphPtr)
 {
     Crosshairs *chPtr;
 
-    chPtr = Blt_AssertCalloc(1, sizeof(Crosshairs));
+    chPtr = calloc(1, sizeof(Crosshairs));
     chPtr->hidden = TRUE;
     chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
     graphPtr->crosshairs = chPtr;

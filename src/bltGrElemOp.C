@@ -109,7 +109,7 @@ Blt_DestroyTableClients(Graph *graphPtr)
 	if (clientPtr->table != NULL) {
 	    Blt_Table_Close(clientPtr->table);
 	}
-	Blt_Free(clientPtr);
+	free(clientPtr);
     }
     Blt_DeleteHashTable(&graphPtr->dataTables);
 }
@@ -177,9 +177,9 @@ FetchVectorValues(Tcl_Interp *interp, ElemValues *valuesPtr, Blt_Vector *vector)
     double *array;
     
     if (valuesPtr->values == NULL) {
-	array = Blt_Malloc(Blt_VecLength(vector) * sizeof(double));
+	array = malloc(Blt_VecLength(vector) * sizeof(double));
     } else {
-	array = Blt_Realloc(valuesPtr->values, 
+	array = realloc(valuesPtr->values, 
 			    Blt_VecLength(vector) * sizeof(double));
     }
     if (array == NULL) {
@@ -271,7 +271,7 @@ FetchTableValues(Tcl_Interp *interp, ElemValues *valuesPtr, Blt_TableColumn col)
     Blt_Table table;
 
     table = valuesPtr->tableSource.table;
-    array = Blt_Malloc(sizeof(double) * Blt_Table_NumRows(table));
+    array = malloc(sizeof(double) * Blt_Table_NumRows(table));
     if (array == NULL) {
 	return TCL_ERROR;
     }
@@ -287,7 +287,7 @@ FetchTableValues(Tcl_Interp *interp, ElemValues *valuesPtr, Blt_TableColumn col)
 	}
     }
     if (valuesPtr->values != NULL) {
-	Blt_Free(valuesPtr->values);
+	free(valuesPtr->values);
     }
     valuesPtr->nValues = j;
     valuesPtr->values = array;
@@ -319,7 +319,7 @@ FreeTableSource(ElemValues *valuesPtr)
 	    if (srcPtr->table != NULL) {
 		Blt_Table_Close(srcPtr->table);
 	    }
-	    Blt_Free(clientPtr);
+	    free(clientPtr);
 	    Blt_DeleteHashEntry(&graphPtr->dataTables, srcPtr->hashPtr);
 	    srcPtr->hashPtr = NULL;
 	}
@@ -423,7 +423,7 @@ GetTableData(Tcl_Interp *interp, ElemValues *valuesPtr, const char *tableName,
 	if (Blt_Table_Open(interp, tableName, &srcPtr->table) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	clientPtr = Blt_AssertMalloc(sizeof(TableClient));
+	clientPtr = malloc(sizeof(TableClient));
 	clientPtr->table = srcPtr->table;
 	clientPtr->refCount = 1;
 	Blt_SetHashValue(srcPtr->hashPtr, clientPtr);
@@ -469,14 +469,14 @@ ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
 	double *p;
 	int i;
 
-	array = Blt_Malloc(sizeof(double) * objc);
+	array = malloc(sizeof(double) * objc);
 	if (array == NULL) {
 	    Tcl_AppendResult(interp, "can't allocate new vector", (char *)NULL);
 	    return TCL_ERROR;
 	}
 	for (p = array, i = 0; i < objc; i++, p++) {
 	    if (Blt_ExprDoubleFromObj(interp, objv[i], p) != TCL_OK) {
-		Blt_Free(array);
+		free(array);
 		return TCL_ERROR;
 	    }
 	}
@@ -498,7 +498,7 @@ FreeDataValues(ElemValues *valuesPtr)
 					break;
     }
     if (valuesPtr->values != NULL) {
-	Blt_Free(valuesPtr->values);
+	free(valuesPtr->values);
     }
     valuesPtr->values = NULL;
     valuesPtr->nValues = 0;
@@ -798,7 +798,7 @@ ObjToValuePairs(
     }
     if (nValues & 1) {
 	Tcl_AppendResult(interp, "odd number of data points", (char *)NULL);
-	Blt_Free(values);
+	free(values);
 	return TCL_ERROR;
     }
     nValues /= 2;
@@ -809,14 +809,14 @@ ObjToValuePairs(
 	double *p;
 	int i;
 
-	elemPtr->x.values = Blt_AssertMalloc(newSize);
-	elemPtr->y.values = Blt_AssertMalloc(newSize);
+	elemPtr->x.values = malloc(newSize);
+	elemPtr->y.values = malloc(newSize);
 	elemPtr->x.nValues = elemPtr->y.nValues = nValues;
 	for (p = values, i = 0; i < nValues; i++) {
 	    elemPtr->x.values[i] = *p++;
 	    elemPtr->y.values[i] = *p++;
 	}
-	Blt_Free(values);
+	free(values);
 	FindRange(&elemPtr->x);
 	FindRange(&elemPtr->y);
     }
@@ -1141,7 +1141,7 @@ Blt_StyleMap(Element *elemPtr)
      * Create a style mapping array (data point index to style), 
      * initialized to the default style.
      */
-    dataToStyle = Blt_AssertMalloc(nPoints * sizeof(PenStyle *));
+    dataToStyle = malloc(nPoints * sizeof(PenStyle *));
     for (i = 0; i < nPoints; i++) {
 	dataToStyle[i] = stylePtr;
     }
@@ -1267,12 +1267,12 @@ DestroyElement(Element *elemPtr)
 	Blt_DeleteHashEntry(&graphPtr->elements.table, elemPtr->hashPtr);
     }
     if (elemPtr->obj.name != NULL) {
-	Blt_Free(elemPtr->obj.name);
+	free(elemPtr->obj.name);
     }
     if (elemPtr->label != NULL) {
-	Blt_Free(elemPtr->label);
+	free(elemPtr->label);
     }
-    Blt_Free(elemPtr);
+    free(elemPtr);
 }
 
 static void
@@ -1587,7 +1587,7 @@ ActivateOp(
 	int *activePtr;
 
 	nIndices = objc - 4;
-	activePtr = indices = Blt_AssertMalloc(sizeof(int) * nIndices);
+	activePtr = indices = malloc(sizeof(int) * nIndices);
 	for (i = 4; i < objc; i++) {
 	    if (GetIndex(interp, elemPtr, objv[i], activePtr) != TCL_OK) {
 		return TCL_ERROR;
@@ -1596,7 +1596,7 @@ ActivateOp(
 	}
     }
     if (elemPtr->activeIndices != NULL) {
-	Blt_Free(elemPtr->activeIndices);
+	free(elemPtr->activeIndices);
     }
     elemPtr->nActiveIndices = nIndices;
     elemPtr->activeIndices = indices;
@@ -1986,7 +1986,7 @@ DeactivateOp(
 	}
 	elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
 	if (elemPtr->activeIndices != NULL) {
-	    Blt_Free(elemPtr->activeIndices);
+	    free(elemPtr->activeIndices);
 	    elemPtr->activeIndices = NULL;
 	}
 	elemPtr->nActiveIndices = 0;

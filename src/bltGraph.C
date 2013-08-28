@@ -810,7 +810,7 @@ DestroyGraph(DestroyData dataPtr)
     if (graphPtr->cache != None) {
 	Tk_FreePixmap(graphPtr->display, graphPtr->cache);
     }
-    Blt_Free(graphPtr);
+    free(graphPtr);
 }
 
 /*
@@ -842,7 +842,7 @@ CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
     if (tkwin == NULL) {
 	return NULL;
     }
-    graphPtr = Blt_AssertCalloc(1, sizeof(Graph));
+    graphPtr = calloc(1, sizeof(Graph));
 
     /* Initialize the graph data structure. */
 

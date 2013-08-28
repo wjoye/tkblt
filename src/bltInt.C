@@ -308,7 +308,6 @@ Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
 	return TCL_ERROR;
     };
 #endif
-    Blt_AllocInit(NULL, NULL, NULL);
 
     /*
      * Check that the versions of TCL that have been loaded are the same ones

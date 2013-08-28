@@ -200,15 +200,15 @@ Sort(Vector *vPtr)
     int i;
 
     map = Blt_Vec_SortMap(&vPtr, 1);
-    values = Blt_AssertMalloc(sizeof(double) * vPtr->length);
+    values = malloc(sizeof(double) * vPtr->length);
     for(i = vPtr->first; i <= vPtr->last; i++) {
 	values[i] = vPtr->valueArr[map[i]];
     }
-    Blt_Free(map);
+    free(map);
     for (i = vPtr->first; i <= vPtr->last; i++) {
 	vPtr->valueArr[i] = values[i];
     }
-    Blt_Free(values);
+    free(values);
     return TCL_OK;
 }
 
@@ -445,7 +445,7 @@ Median(Blt_Vector *vectorPtr)
 	q2 = (vPtr->valueArr[map[mid]] + 
 	      vPtr->valueArr[map[mid + 1]]) * 0.5;
     }
-    Blt_Free(map);
+    free(map);
     return q2;
 }
 
@@ -481,7 +481,7 @@ Q1(Blt_Vector *vectorPtr)
 		  vPtr->valueArr[map[q + 1]]) * 0.5; 
 	}
     }
-    Blt_Free(map);
+    free(map);
     return q1;
 }
 
@@ -518,7 +518,7 @@ Q3(Blt_Vector *vectorPtr)
 		  vPtr->valueArr[map[q + 1]]) * 0.5; 
 	}
     }
-    Blt_Free(map);
+    free(map);
     return q3;
 }
 
@@ -1303,7 +1303,7 @@ NextValue(
 			double *hold;
 			int j;
 
-			hold = Blt_AssertMalloc(sizeof(double) * offset);
+			hold = malloc(sizeof(double) * offset);
 			for (i = 0; i < offset; i++) {
 			    hold[i] = opnd[i];
 			}
@@ -1314,7 +1314,7 @@ NextValue(
 			     j < vPtr->length; i++, j++) {
 			    opnd[j] = hold[i];
 			}
-			Blt_Free(hold);
+			free(hold);
 		    }
 		}
 		break;
@@ -1328,7 +1328,7 @@ NextValue(
 			double *hold;
 			int j;
 			
-			hold = Blt_AssertMalloc(sizeof(double) * offset);
+			hold = malloc(sizeof(double) * offset);
 			for (i = vPtr->length - offset, j = 0; 
 			     i < vPtr->length; i++, j++) {
 			    hold[j] = opnd[i];
@@ -1340,7 +1340,7 @@ NextValue(
 			for (i = 0; i < offset; i++) {
 			    opnd[i] = hold[i];
 			}
-			Blt_Free(hold);
+			free(hold);
 		    }
 		}
 		break;
@@ -1579,14 +1579,14 @@ NextValue(
     }
   done:
     if (value2.pv.buffer != value2.staticSpace) {
-	Blt_Free(value2.pv.buffer);
+	free(value2.pv.buffer);
     }
     Blt_Vec_Free(v2Ptr);
     return result;
 
   error:
     if (value2.pv.buffer != value2.staticSpace) {
-	Blt_Free(value2.pv.buffer);
+	free(value2.pv.buffer);
     }
     Blt_Vec_Free(v2Ptr);
     return TCL_ERROR;
@@ -1800,7 +1800,7 @@ Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr)
 
 	mathPtr = Blt_GetHashValue(hPtr);
 	if (mathPtr->name == NULL) {
-	    Blt_Free(mathPtr);
+	    free(mathPtr);
 	}
     }
 }

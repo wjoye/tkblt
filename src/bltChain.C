@@ -55,7 +55,7 @@ Blt_Chain_Create(void)
 {
     Chain *chainPtr;
 
-    chainPtr = Blt_Malloc(sizeof(Chain));
+    chainPtr = malloc(sizeof(Chain));
     if (chainPtr != NULL) {
 	Blt_Chain_Init(chainPtr);
     }
@@ -82,7 +82,7 @@ Blt_Chain_AllocLink(size_t extraSize)
     size_t linkSize;
 
     linkSize = ALIGN(sizeof(ChainLink));
-    linkPtr = Blt_AssertCalloc(1, linkSize + extraSize);
+    linkPtr = calloc(1, linkSize + extraSize);
     if (extraSize > 0) {
 	/* Point clientData at the memory beyond the normal structure. */
 	linkPtr->clientData = (ClientData)((char *)linkPtr + linkSize);
@@ -127,7 +127,7 @@ Blt_Chain_NewLink(void)
 {
     ChainLink *linkPtr;
 
-    linkPtr = Blt_AssertMalloc(sizeof(ChainLink));
+    linkPtr = malloc(sizeof(ChainLink));
     linkPtr->clientData = NULL;
     linkPtr->next = linkPtr->prev = NULL;
     return linkPtr;
@@ -157,7 +157,7 @@ Blt_Chain_Reset(Chain *chainPtr) /* Chain to clear */
 	while (linkPtr != NULL) {
 	    oldPtr = linkPtr;
 	    linkPtr = linkPtr->next;
-	    Blt_Free(oldPtr);
+	    free(oldPtr);
 	}
 	Blt_Chain_Init(chainPtr);
     }
@@ -182,7 +182,8 @@ Blt_Chain_Destroy(Chain *chainPtr)
 {
     if (chainPtr != NULL) {
 	Blt_Chain_Reset(chainPtr);
-	Blt_Free(chainPtr);
+	free(chainPtr);
+	chainPtr = NULL;
     }
 }
 
@@ -343,7 +344,8 @@ void
 Blt_Chain_DeleteLink(Blt_Chain chain, Blt_ChainLink link)
 {
     Blt_Chain_UnlinkLink(chain, link);
-    Blt_Free(link);
+    free(link);
+    link = NULL;
 }
 
 /*
@@ -465,7 +467,7 @@ Blt_Chain_Sort(Chain *chainPtr, Blt_ChainCompareProc *proc)
     if (chainPtr->nLinks < 2) {
 	return;
     }
-    linkArr = Blt_Malloc(sizeof(Blt_ChainLink) * (chainPtr->nLinks + 1));
+    linkArr = malloc(sizeof(Blt_ChainLink) * (chainPtr->nLinks + 1));
     if (linkArr == NULL) {
 	return;			/* Out of memory. */
     }
@@ -488,7 +490,7 @@ Blt_Chain_Sort(Chain *chainPtr, Blt_ChainCompareProc *proc)
     }
     chainPtr->tail = linkPtr;
     linkPtr->next = NULL;
-    Blt_Free(linkArr);
+    free(linkArr);
 }
 
 

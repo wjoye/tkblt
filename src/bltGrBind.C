@@ -133,7 +133,7 @@ DoEvent(
 	tagArray = staticTags;
 	nTags = Blt_List_GetLength(tagList);
 	if (nTags >= MAX_STATIC_TAGS) {
-	    tagArray = Blt_AssertMalloc(sizeof(ClientData) * nTags);
+	    tagArray = malloc(sizeof(ClientData) * nTags);
 	    
 	} 
 	nTags = 0;
@@ -144,7 +144,7 @@ DoEvent(
 	Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
 		tagArray);
 	if (tagArray != staticTags) {
-	    Blt_Free(tagArray);
+	    free(tagArray);
 	}
     }
     Blt_List_Destroy(tagList);
@@ -607,7 +607,7 @@ Blt_CreateBindingTable(
     unsigned int mask;
     BindTable *bindPtr;
 
-    bindPtr = Blt_AssertCalloc(1, sizeof(BindTable));
+    bindPtr = calloc(1, sizeof(BindTable));
     bindPtr->bindingTable = Tk_CreateBindingTable(interp);
     bindPtr->clientData = clientData;
     bindPtr->tkwin = tkwin;
@@ -630,7 +630,8 @@ Blt_DestroyBindingTable(BindTable *bindPtr)
 	ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 	PointerMotionMask);
     Tk_DeleteEventHandler(bindPtr->tkwin, mask, BindProc, bindPtr);
-    Blt_Free(bindPtr);
+    free(bindPtr);
+    bindPtr = NULL;
 }
 
 void

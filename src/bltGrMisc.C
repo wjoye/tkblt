@@ -1120,7 +1120,7 @@ Blt_Draw2DSegments(
     XSegment *dp, *xsegments;
     Segment2d *sp, *send;
 
-    xsegments = Blt_Malloc(nSegments * sizeof(XSegment));
+    xsegments = malloc(nSegments * sizeof(XSegment));
     if (xsegments == NULL) {
 	return;
     }
@@ -1133,7 +1133,7 @@ Blt_Draw2DSegments(
 	dp++;
     }
     XDrawSegments(display, drawable, gc, xsegments, nSegments);
-    Blt_Free(xsegments);
+    free(xsegments);
 }
 
 void
@@ -1534,7 +1534,7 @@ FreeBorder(display, borderPtr)
     if (borderPtr->bgGC != NULL) {
 	Blt_FreePrivateGC(tkwin, borderPtr->bgGC);
     }
-    Blt_Free(borderPtr);
+    free(borderPtr);
 }
 
 void
@@ -1604,7 +1604,7 @@ Blt_Get3DBorder(Tcl_Interp *interp, Tk_Window tkwin, const char *borderName)
     }
 
     /* Create a new border */
-    borderPtr = Blt_AssertCalloc(1, sizeof(Blt_3DBorder));
+    borderPtr = calloc(1, sizeof(Blt_3DBorder));
     borderPtr->screen = Tk_Screen(tkwin);
     borderPtr->visual = Tk_Visual(tkwin);
     borderPtr->depth = Tk_Depth(tkwin);
@@ -1642,13 +1642,13 @@ Blt_Get3DBorder(Tcl_Interp *interp, Tk_Window tkwin, const char *borderName)
     }
     Blt_SetHashValue(hPtr, borderPtr);
     if (argv != NULL) {
-	Blt_Free(argv);
+	free(argv);
     }
     return TCL_OK;
 
  error:
     if (argv != NULL) {
-	Blt_Free(argv);
+	free(argv);
     }
     if (bgColorPtr != NULL) {
 	Tk_FreeColor(bgColorPtr);
@@ -1768,7 +1768,7 @@ CreateArcBall (float w, float h)
 {
     ArcBall *arcPtr;
 
-    arcPtr = Blt_AssertCalloc(1, sizeof(ArcBall));
+    arcPtr = calloc(1, sizeof(ArcBall));
     SetArcBallBounds (arcPtr, w, h);
     return arcPtr;
 }
@@ -1777,7 +1777,7 @@ static void
 DestroyArcBall(ArcBall *arcPtr)
 {
     if (arcPtr != NULL) {
-        Blt_Free(arcPtr);
+        free(arcPtr);
     }
 }
 

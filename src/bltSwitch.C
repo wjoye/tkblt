@@ -268,9 +268,9 @@ DoSwitch(
 		char *value;
 		
 		value = Tcl_GetString(objPtr);
-		value =  (*value == '\0') ?  NULL : Blt_AssertStrdup(value);
+		value =  (*value == '\0') ?  NULL : Blt_Strdup(value);
 		if (*(char **)ptr != NULL) {
-		    Blt_Free(*(char **)ptr);
+		    free(*(char **)ptr);
 		}
 		*(char **)ptr = value;
 	    }
@@ -282,10 +282,10 @@ DoSwitch(
 		string = Tcl_GetString(objPtr);
 		strPtr = (char **)ptr;
 		new = ((*string == '\0') && (sp->flags & BLT_SWITCH_NULL_OK))
-		    ? NULL : Blt_AssertStrdup(string);
+		    ? NULL : Blt_Strdup(string);
 		old = *strPtr;
 		if (old != NULL) {
-		    Blt_Free(old);
+		    free(old);
 		}
 		*strPtr = new;
 	    }
@@ -454,7 +454,7 @@ Blt_FreeSwitches(
 	    case BLT_SWITCH_STRING:
 	    case BLT_SWITCH_LIST:
 		if (*((char **) ptr) != NULL) {
-		    Blt_Free(*((char **) ptr));
+		    free(*((char **) ptr));
 		    *((char **) ptr) = NULL;
 		}
 		break;

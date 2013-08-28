@@ -717,7 +717,7 @@ UnmapVariable(Vector *vPtr)
     Tcl_UnsetVar2(interp, vPtr->arrayName, (char *)NULL, vPtr->varFlags);
 
     if (vPtr->arrayName != NULL) {
-	Blt_Free(vPtr->arrayName);
+	free(vPtr->arrayName);
 	vPtr->arrayName = NULL;
     }
 }
@@ -802,7 +802,7 @@ Blt_Vec_MapVariable(
     /* Create a full-array trace on reads, writes, and unsets. */
     Tcl_TraceVar2(interp, newPath, (char *)NULL, TRACE_ALL, Blt_Vec_VarTrace,
 	vPtr);
-    vPtr->arrayName = Blt_AssertStrdup(newPath);
+    vPtr->arrayName = Blt_Strdup(newPath);
     Tcl_DStringFree(&dString);
     return TCL_OK;
 }
@@ -846,7 +846,7 @@ Blt_Vec_SetSize(
 	double *newArr;
 
 	/* Old memory was dynamically allocated, so use realloc. */
-	newArr = Blt_Realloc(vPtr->valueArr, newSize * sizeof(double));
+	newArr = realloc(vPtr->valueArr, newSize * sizeof(double));
 	if (newArr == NULL) {
 	    if (interp != NULL) {
 		Tcl_AppendResult(interp, "can't reallocate ", 
@@ -866,7 +866,7 @@ Blt_Vec_SetSize(
 	/* Old memory was created specially (static or special allocator).
 	 * Replace with dynamically allocated memory (malloc-ed). */
 
-	newArr = Blt_Calloc(newSize, sizeof(double));
+	newArr = calloc(newSize, sizeof(double));
 	if (newArr == NULL) {
 	    if (interp != NULL) {
 		Tcl_AppendResult(interp, "can't allocate ", 
@@ -901,7 +901,7 @@ Blt_Vec_SetSize(
 	 */
 	if (vPtr->freeProc != TCL_STATIC) {
 	    if (vPtr->freeProc == TCL_DYNAMIC) {
-		Blt_Free(vPtr->valueArr);
+		free(vPtr->valueArr);
 	    } else {
 		(*vPtr->freeProc) ((char *)vPtr->valueArr);
 	    }
@@ -1048,7 +1048,7 @@ Blt_Vec_Reset(
 					 * the current vector.  */
 	if ((valueArr == NULL) || (size == 0)) {
 	    /* Empty array. Set up default values */
-	    valueArr = Blt_Malloc(sizeof(double) * DEF_ARRAY_SIZE);
+	    valueArr = malloc(sizeof(double) * DEF_ARRAY_SIZE);
 	    size = DEF_ARRAY_SIZE;
 	    if (valueArr == NULL) {
 		Tcl_AppendResult(vPtr->interp, "can't allocate ", 
@@ -1061,7 +1061,7 @@ Blt_Vec_Reset(
 	} else if (freeProc == TCL_VOLATILE) {
 	    double *newArr;
 	    /* Data is volatile. Make a copy of the value array.  */
-	    newArr = Blt_Malloc(size * sizeof(double));
+	    newArr = malloc(size * sizeof(double));
 	    if (newArr == NULL) {
 		Tcl_AppendResult(vPtr->interp, "can't allocate ", 
 			Blt_Itoa(size), " elements for vector \"", 
@@ -1078,7 +1078,7 @@ Blt_Vec_Reset(
 	    /* Old data was dynamically allocated. Free it before attaching
 	     * new data.  */
 	    if (vPtr->freeProc == TCL_DYNAMIC) {
-		Blt_Free(vPtr->valueArr);
+		free(vPtr->valueArr);
 	    } else {
 		(*freeProc) ((char *)vPtr->valueArr);
 	    }
@@ -1101,10 +1101,10 @@ Blt_Vec_New(VectorInterpData *dataPtr) /* Interpreter-specific data. */
 {
     Vector *vPtr;
 
-    vPtr = Blt_AssertCalloc(1, sizeof(Vector));
-    vPtr->valueArr = Blt_Malloc(sizeof(double) * DEF_ARRAY_SIZE);
+    vPtr = calloc(1, sizeof(Vector));
+    vPtr->valueArr = malloc(sizeof(double) * DEF_ARRAY_SIZE);
     if (vPtr->valueArr == NULL) {
-	Blt_Free(vPtr);
+	free(vPtr);
 	return NULL;
     }
     vPtr->size = DEF_ARRAY_SIZE;
@@ -1169,12 +1169,12 @@ Blt_Vec_Free(Vector *vPtr)
 	VectorClient *clientPtr;
 
 	clientPtr = Blt_Chain_GetValue(link);
-	Blt_Free(clientPtr);
+	free(clientPtr);
     }
     Blt_Chain_Destroy(vPtr->chain);
     if ((vPtr->valueArr != NULL) && (vPtr->freeProc != TCL_STATIC)) {
 	if (vPtr->freeProc == TCL_DYNAMIC) {
-	    Blt_Free(vPtr->valueArr);
+	    free(vPtr->valueArr);
 	} else {
 	    (*vPtr->freeProc) ((char *)vPtr->valueArr);
 	}
@@ -1187,7 +1187,7 @@ Blt_Vec_Free(Vector *vPtr)
 	Blt_DestroyNsDeleteNotify(vPtr->interp, vPtr->nsPtr, vPtr);
     }
 #endif /* NAMESPACE_DELETE_NOTIFY */
-    Blt_Free(vPtr);
+    free(vPtr);
 }
 
 /*
@@ -1791,7 +1791,7 @@ VectorInterpDeleteProc(
 
     Blt_DeleteHashTable(&dataPtr->indexProcTable);
     Tcl_DeleteAssocData(interp, VECTOR_THREAD_KEY);
-    Blt_Free(dataPtr);
+    free(dataPtr);
 }
 
 VectorInterpData *
@@ -1803,7 +1803,7 @@ Blt_Vec_GetInterpData(Tcl_Interp *interp)
     dataPtr = (VectorInterpData *)
 	Tcl_GetAssocData(interp, VECTOR_THREAD_KEY, &proc);
     if (dataPtr == NULL) {
-	dataPtr = Blt_AssertMalloc(sizeof(VectorInterpData));
+	dataPtr = malloc(sizeof(VectorInterpData));
 	dataPtr->interp = interp;
 	dataPtr->nextId = 0;
 	Tcl_SetAssocData(interp, VECTOR_THREAD_KEY, VectorInterpDeleteProc,
@@ -1889,9 +1889,9 @@ Blt_CreateVector2(
     }
     dataPtr = Blt_Vec_GetInterpData(interp);
 
-    nameCopy = Blt_AssertStrdup(vecName);
+    nameCopy = Blt_Strdup(vecName);
     vPtr = Blt_Vec_Create(dataPtr, nameCopy, cmdName, varName, &isNew);
-    Blt_Free(nameCopy);
+    free(nameCopy);
 
     if (vPtr == NULL) {
 	return TCL_ERROR;
@@ -1980,10 +1980,10 @@ Blt_DeleteVectorByName(Tcl_Interp *interp, const char *name)
      * the string.  Therefore make a writable copy and free it when we're
      * done.
      */
-    nameCopy = Blt_AssertStrdup(name);
+    nameCopy = Blt_Strdup(name);
     dataPtr = Blt_Vec_GetInterpData(interp);
     result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
-    Blt_Free(nameCopy);
+    free(nameCopy);
 
     if (result != TCL_OK) {
 	return TCL_ERROR;
@@ -2042,9 +2042,9 @@ Blt_VectorExists(Tcl_Interp *interp, const char *vecName)
      * the string.  Therefore make a writable copy and free it when we're
      * done.
      */
-    nameCopy = Blt_AssertStrdup(vecName);
+    nameCopy = Blt_Strdup(vecName);
     result = Blt_VectorExists2(interp, nameCopy);
-    Blt_Free(nameCopy);
+    free(nameCopy);
     return result;
 }
 
@@ -2077,9 +2077,9 @@ Blt_GetVector(Tcl_Interp *interp, const char *name, Blt_Vector **vecPtrPtr)
      * the string.  Therefore make a writable copy and free it when we're
      * done.
      */
-    nameCopy = Blt_AssertStrdup(name);
+    nameCopy = Blt_Strdup(name);
     result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
-    Blt_Free(nameCopy);
+    free(nameCopy);
     if (result != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -2232,15 +2232,15 @@ Blt_AllocVectorId(Tcl_Interp *interp, const char *name)
      * the string.  Therefore make a writable copy and free it when we're
      * done.
      */
-    nameCopy = Blt_AssertStrdup(name);
+    nameCopy = Blt_Strdup(name);
     result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
-    Blt_Free(nameCopy);
+    free(nameCopy);
 
     if (result != TCL_OK) {
 	return (Blt_VectorId) 0;
     }
     /* Allocate a new client structure */
-    clientPtr = Blt_AssertCalloc(1, sizeof(VectorClient));
+    clientPtr = calloc(1, sizeof(VectorClient));
     clientPtr->magic = VECTOR_MAGIC;
 
     /* Add the new client to the server's list of clients */
@@ -2317,7 +2317,7 @@ Blt_FreeVectorId(Blt_VectorId clientId)
 	/* Remove the client from the server's list */
 	Blt_Chain_DeleteLink(clientPtr->serverPtr->chain, clientPtr->link);
     }
-    Blt_Free(clientPtr);
+    free(clientPtr);
 }
 
 /*
@@ -2562,7 +2562,7 @@ Blt_Vec_FFT(
     }
 
     /* Allocate memory zero-filled array. */
-    paddedData = Blt_Calloc(pow2len * 2, sizeof(double));
+    paddedData = calloc(pow2len * 2, sizeof(double));
     if (paddedData == NULL) {
 	Tcl_AppendResult(interp, "can't allocate memory for padded data",
 		 (char *)NULL);
@@ -2648,7 +2648,7 @@ Blt_Vec_FFT(
     }
     
     /* Memory is necessarily dynamic, because nobody touched it ! */
-    Blt_Free(paddedData);
+    free(paddedData);
     
     realPtr->offset = 0;
     return TCL_OK;
@@ -2689,7 +2689,7 @@ Blt_Vec_InverseFFT(Tcl_Interp *interp, Vector *srcImagPtr, Vector *destRealPtr,
 	return TCL_ERROR;
     }
 
-    paddedData = Blt_AssertMalloc( pow2len*2*sizeof(double) );
+    paddedData = malloc( pow2len*2*sizeof(double) );
     if( paddedData == NULL ){
 	if (interp != NULL) {
 	    Tcl_AppendResult(interp, "memory allocation failed", (char *)NULL);
@@ -2723,7 +2723,7 @@ for(i=0;i<pow2len;i++){
     }
 
 /* memory is necessarily dynamic, because nobody touched it ! */
-    Blt_Free( paddedData );
+    free( paddedData );
 
     return TCL_OK;
 }
@@ -2789,7 +2789,7 @@ Blt_SimplifyLine(Point2d *inputPts, int low, int high, double tolerance,
     int s = -1;			/* Points to top stack item. */
     int count;
 
-    stack = Blt_AssertMalloc(sizeof(int) * (high - low + 1));
+    stack = malloc(sizeof(int) * (high - low + 1));
     StackPush(high);
     count = 0;
     indices[count++] = 0;
@@ -2803,6 +2803,6 @@ Blt_SimplifyLine(Point2d *inputPts, int low, int high, double tolerance,
 	    StackPop(low);
 	}
     } 
-    Blt_Free(stack);
+    free(stack);
     return count;
 }

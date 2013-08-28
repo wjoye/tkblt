@@ -98,10 +98,10 @@ Blt_EnterNamespace(Tcl_Interp *interp, Tcl_Namespace *nsPtr)
 {
     Tcl_CallFrame *framePtr;
 
-    framePtr = Blt_AssertMalloc(sizeof(Tcl_CallFrame));
+    framePtr = malloc(sizeof(Tcl_CallFrame));
     if (Tcl_PushCallFrame(interp, framePtr, (Tcl_Namespace *)nsPtr, 0)
 	!= TCL_OK) {
-	Blt_Free(framePtr);
+	free(framePtr);
 	return NULL;
     }
     return framePtr;
@@ -111,7 +111,7 @@ void
 Blt_LeaveNamespace(Tcl_Interp *interp, Tcl_CallFrame *framePtr)
 {
     Tcl_PopCallFrame(interp);
-    Blt_Free(framePtr);
+    free(framePtr);
 }
 
 int

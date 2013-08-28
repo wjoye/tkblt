@@ -681,9 +681,9 @@ Blt_BarPen(const char *penName)
 {
     BarPen *penPtr;
 
-    penPtr = Blt_AssertCalloc(1, sizeof(BarPen));
+    penPtr = calloc(1, sizeof(BarPen));
     InitializeBarPen(penPtr);
-    penPtr->name = Blt_AssertStrdup(penName);
+    penPtr->name = Blt_Strdup(penName);
     if (strcmp(penName, "activeBar") == 0) {
 	penPtr->flags = ACTIVE_PEN;
     }
@@ -1052,8 +1052,8 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	XRectangle *bars, *bp;
 	int *ip, *barToData;
 
-	bars = Blt_AssertMalloc(elemPtr->nBars * sizeof(XRectangle));
-	barToData = Blt_AssertMalloc(elemPtr->nBars * sizeof(int));
+	bars = malloc(elemPtr->nBars * sizeof(XRectangle));
+	barToData = malloc(elemPtr->nBars * sizeof(int));
 	bp = bars, ip = barToData;
 	for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL; 
 	     link = Blt_Chain_NextLink(link)) {
@@ -1074,8 +1074,8 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	    }
 	    stylePtr->nBars = bp - stylePtr->bars;
 	}
-	Blt_Free(elemPtr->bars);
-	Blt_Free(elemPtr->barToData);
+	free(elemPtr->bars);
+	free(elemPtr->barToData);
 	elemPtr->bars = bars;
 	elemPtr->barToData = barToData;
     }
@@ -1085,8 +1085,8 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	Segment2d *bars, *sp;
 	int *map, *ip;
 
-	bars = Blt_AssertMalloc(elemPtr->xeb.length * sizeof(Segment2d));
-	map = Blt_AssertMalloc(elemPtr->xeb.length * sizeof(int));
+	bars = malloc(elemPtr->xeb.length * sizeof(Segment2d));
+	map = malloc(elemPtr->xeb.length * sizeof(int));
 	sp = bars, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	     link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -1106,9 +1106,9 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	    }
 	    stylePtr->xeb.length = sp - stylePtr->xeb.segments;
 	}
-	Blt_Free(elemPtr->xeb.segments);
+	free(elemPtr->xeb.segments);
 	elemPtr->xeb.segments = bars;
-	Blt_Free(elemPtr->xeb.map);
+	free(elemPtr->xeb.map);
 	elemPtr->xeb.map = map;
     }
     if (elemPtr->yeb.length > 0) {
@@ -1116,8 +1116,8 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	Segment2d *bars, *sp;
 	int *map, *ip;
 
-	bars = Blt_AssertMalloc(elemPtr->yeb.length * sizeof(Segment2d));
-	map = Blt_AssertMalloc(elemPtr->yeb.length * sizeof(int));
+	bars = malloc(elemPtr->yeb.length * sizeof(Segment2d));
+	map = malloc(elemPtr->yeb.length * sizeof(int));
 	sp = bars, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL; 
 	     link = Blt_Chain_NextLink(link)) {
@@ -1137,9 +1137,9 @@ MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 	    }
 	    stylePtr->yeb.length = sp - stylePtr->yeb.segments;
 	}
-	Blt_Free(elemPtr->yeb.segments);
+	free(elemPtr->yeb.segments);
 	elemPtr->yeb.segments = bars;
-	Blt_Free(elemPtr->yeb.map);
+	free(elemPtr->yeb.map);
 	elemPtr->yeb.map = map;
     }
 }
@@ -1163,11 +1163,11 @@ static void
 MapActiveBars(BarElement *elemPtr)
 {
     if (elemPtr->activeRects != NULL) {
-	Blt_Free(elemPtr->activeRects);
+	free(elemPtr->activeRects);
 	elemPtr->activeRects = NULL;
     }
     if (elemPtr->activeToData != NULL) {
-	Blt_Free(elemPtr->activeToData);
+	free(elemPtr->activeToData);
 	elemPtr->activeToData = NULL;
     }
     elemPtr->nActive = 0;
@@ -1178,9 +1178,9 @@ MapActiveBars(BarElement *elemPtr)
 	int i;
 	int count;
 
-	activeRects = Blt_AssertMalloc(sizeof(XRectangle) * 
+	activeRects = malloc(sizeof(XRectangle) * 
 				       elemPtr->nActiveIndices);
-	activeToData = Blt_AssertMalloc(sizeof(int) * 
+	activeToData = malloc(sizeof(int) * 
 					elemPtr->nActiveIndices);
 	count = 0;
 	for (i = 0; i < elemPtr->nBars; i++) {
@@ -1208,28 +1208,28 @@ ResetBar(BarElement *elemPtr)
     /* Release any storage associated with the display of the bar */
     ResetStylePalette(elemPtr->stylePalette);
     if (elemPtr->activeRects != NULL) {
-	Blt_Free(elemPtr->activeRects);
+	free(elemPtr->activeRects);
     }
     if (elemPtr->activeToData != NULL) {
-	Blt_Free(elemPtr->activeToData);
+	free(elemPtr->activeToData);
     }
     if (elemPtr->xeb.segments != NULL) {
-	Blt_Free(elemPtr->xeb.segments);
+	free(elemPtr->xeb.segments);
     }
     if (elemPtr->xeb.map != NULL) {
-	Blt_Free(elemPtr->xeb.map);
+	free(elemPtr->xeb.map);
     }
     if (elemPtr->yeb.segments != NULL) {
-	Blt_Free(elemPtr->yeb.segments);
+	free(elemPtr->yeb.segments);
     }
     if (elemPtr->yeb.map != NULL) {
-	Blt_Free(elemPtr->yeb.map);
+	free(elemPtr->yeb.map);
     }
     if (elemPtr->bars != NULL) {
-	Blt_Free(elemPtr->bars);
+	free(elemPtr->bars);
     }
     if (elemPtr->barToData != NULL) {
-	Blt_Free(elemPtr->barToData);
+	free(elemPtr->barToData);
     }
     elemPtr->activeToData = elemPtr->xeb.map = elemPtr->yeb.map = 
 	elemPtr->barToData = NULL;
@@ -1275,8 +1275,8 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 	int *indexPtr;
 	int i;
 		
-	segPtr = bars = Blt_AssertMalloc(n * 3 * sizeof(Segment2d));
-	indexPtr = map = Blt_AssertMalloc(n * 3 * sizeof(int));
+	segPtr = bars = malloc(n * 3 * sizeof(Segment2d));
+	indexPtr = map = malloc(n * 3 * sizeof(int));
 	for (i = 0; i < n; i++) {
 	    double x, y;
 	    double high, low;
@@ -1339,8 +1339,8 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 	int *indexPtr;
 	int i;
 		
-	segPtr = bars = Blt_AssertMalloc(n * 3 * sizeof(Segment2d));
-	indexPtr = map = Blt_AssertMalloc(n * 3 * sizeof(int));
+	segPtr = bars = malloc(n * 3 * sizeof(Segment2d));
+	indexPtr = map = malloc(n * 3 * sizeof(int));
 	for (i = 0; i < n; i++) {
 	    double x, y;
 	    double high, low;
@@ -1446,8 +1446,8 @@ MapBarProc(Graph *graphPtr, Element *basePtr)
      * Create an array of bars representing the screen coordinates of all the
      * segments in the bar.
      */
-    bars = Blt_AssertCalloc(nPoints, sizeof(XRectangle));
-    barToData = Blt_AssertCalloc(nPoints, sizeof(int));
+    bars = calloc(nPoints, sizeof(XRectangle));
+    barToData = calloc(nPoints, sizeof(int));
 
     x = elemPtr->x.values, y = elemPtr->y.values;
     count = 0;
@@ -1647,7 +1647,7 @@ MapBarProc(Graph *graphPtr, Element *basePtr)
 	MapErrorBars(graphPtr, elemPtr, dataToStyle);
     }
     MergePens(elemPtr, dataToStyle);
-    Blt_Free(dataToStyle);
+    free(dataToStyle);
 }
 
 /*
@@ -2225,7 +2225,7 @@ DestroyBarProc(Graph *graphPtr, Element *basePtr)
 	Blt_Chain_Destroy(elemPtr->stylePalette);
     }
     if (elemPtr->activeIndices != NULL) {
-	Blt_Free(elemPtr->activeIndices);
+	free(elemPtr->activeIndices);
     }
 }
 
@@ -2265,15 +2265,15 @@ Blt_BarElement(Graph *graphPtr, const char *name, ClassId classId)
 {
     BarElement *elemPtr;
 
-    elemPtr = Blt_AssertCalloc(1, sizeof(BarElement));
+    elemPtr = calloc(1, sizeof(BarElement));
     elemPtr->procsPtr = &barProcs;
     elemPtr->configSpecs = barElemConfigSpecs;
     elemPtr->legendRelief = TK_RELIEF_FLAT;
     Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-    elemPtr->obj.name = Blt_AssertStrdup(name);
+    elemPtr->obj.name = Blt_Strdup(name);
     elemPtr->obj.graphPtr = graphPtr;
     /* By default, an element's name and label are the same. */
-    elemPtr->label = Blt_AssertStrdup(name);
+    elemPtr->label = Blt_Strdup(name);
     elemPtr->builtinPenPtr = &elemPtr->builtinPen;
     InitializeBarPen(elemPtr->builtinPenPtr);
     elemPtr->stylePalette = Blt_Chain_Create();
@@ -2352,7 +2352,7 @@ Blt_InitBarSetTable(Graph *graphPtr)
 	    key.axes.y = NULL;
 	    hPtr = Blt_CreateHashEntry(&setTable, (char *)&key, &isNew);
 	    if (isNew) {
-		tablePtr = Blt_AssertMalloc(sizeof(Blt_HashTable));
+		tablePtr = malloc(sizeof(Blt_HashTable));
 		Blt_InitHashTable(tablePtr, BLT_STRING_KEYS);
 		Blt_SetHashValue(hPtr, tablePtr);
 	    } else {
@@ -2396,7 +2396,7 @@ Blt_InitBarSetTable(Graph *graphPtr)
 	Blt_HashEntry *hPtr;
 	Blt_HashSearch iter;
 
-	graphPtr->barGroups = Blt_AssertCalloc(sum, sizeof(BarGroup));
+	graphPtr->barGroups = calloc(sum, sizeof(BarGroup));
 	groupPtr = graphPtr->barGroups;
 	for (hPtr = Blt_FirstHashEntry(&graphPtr->setTable, &iter); 
 	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
@@ -2526,7 +2526,7 @@ Blt_DestroyBarSets(Graph *graphPtr)
     Blt_HashEntry *hPtr;
 
     if (graphPtr->barGroups != NULL) {
-	Blt_Free(graphPtr->barGroups);
+	free(graphPtr->barGroups);
 	graphPtr->barGroups = NULL;
     }
     graphPtr->nBarGroups = 0;
@@ -2536,7 +2536,7 @@ Blt_DestroyBarSets(Graph *graphPtr)
 	
 	tablePtr = Blt_GetHashValue(hPtr);
 	Blt_DeleteHashTable(tablePtr);
-	Blt_Free(tablePtr);
+	free(tablePtr);
     }
     Blt_DeleteHashTable(&graphPtr->setTable);
     Blt_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));

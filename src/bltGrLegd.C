@@ -1752,7 +1752,7 @@ Blt_DestroyLegend(Graph *graphPtr)
 	    Tk_DestroyWindow(tkwin);
 	}
     }
-    Blt_Free(legendPtr);
+    free(legendPtr);
 }
 
 /*
@@ -1773,7 +1773,7 @@ Blt_CreateLegend(Graph *graphPtr)
 {
     Legend *legendPtr;
 
-    legendPtr = Blt_AssertCalloc(1, sizeof(Legend));
+    legendPtr = calloc(1, sizeof(Legend));
     graphPtr->legend = legendPtr;
     legendPtr->graphPtr = graphPtr;
     legendPtr->tkwin = graphPtr->tkwin;

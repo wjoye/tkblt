@@ -233,7 +233,7 @@ Blt_Ps_Create(Tcl_Interp *interp, PageSetup *setupPtr)
 {
     PostScript *psPtr;
 
-    psPtr = Blt_AssertMalloc(sizeof(PostScript));
+    psPtr = malloc(sizeof(PostScript));
     psPtr->setupPtr = setupPtr;
     psPtr->interp = interp;
     Tcl_DStringInit(&psPtr->dString);
@@ -256,7 +256,7 @@ void
 Blt_Ps_Free(PostScript *psPtr)
 {
     Tcl_DStringFree(&psPtr->dString);
-    Blt_Free(psPtr);
+    free(psPtr);
 }
 
 const char *
@@ -607,7 +607,7 @@ Blt_Ps_XSetBitmapData(
 	    byteCount++;
 	}
     }				/* y */
-    Blt_Free(srcBits);
+    free(srcBits);
     Blt_Ps_Append(psPtr, ">\n");
 }
 
@@ -1357,13 +1357,13 @@ Blt_Ps_XSetFont(PostScript *psPtr, Blt_Font font)
 	    fontName = argv[0];
 	    if ((argc != 2) || 
 		(Tcl_GetInt(interp, argv[1], &newSize) != TCL_OK)) {
-		Blt_Free(argv);
+		free(argv);
 		return;
 	    }
 	    pointSize = (double)newSize;
 	    Blt_Ps_Format(psPtr, "%g /%s SetFont\n", pointSize, 
 		fontName);
-	    Blt_Free(argv);
+	    free(argv);
 	    return;
 	}
 	/*FallThru*/
@@ -1518,7 +1518,7 @@ Blt_Ps_DrawText(
 
     Blt_Ps_XSetForeground(ps, tsPtr->color);
     TextLayoutToPostScript(ps, 0, 0, textPtr);
-    Blt_Free(textPtr);
+    free(textPtr);
     Blt_Ps_Append(ps, "EndText\n");
 }
 

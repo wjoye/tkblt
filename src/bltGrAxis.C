@@ -543,7 +543,7 @@ FreeFormatProc(
     Axis *axisPtr = (Axis *)(widgRec);
 
     if (axisPtr->limitsFormats != NULL) {
-	Blt_Free(axisPtr->limitsFormats);
+	free(axisPtr->limitsFormats);
 	axisPtr->limitsFormats = NULL;
     }
     axisPtr->nFormats = 0;
@@ -584,11 +584,11 @@ ObjToFormatProc(
     if (argc > 2) {
 	Tcl_AppendResult(interp, "too many elements in limits format list \"",
 		Tcl_GetString(objPtr), "\"", (char *)NULL);
-	Blt_Free(argv);
+	free(argv);
 	return TCL_ERROR;
     }
     if (axisPtr->limitsFormats != NULL) {
-	Blt_Free(axisPtr->limitsFormats);
+	free(axisPtr->limitsFormats);
     }
     axisPtr->limitsFormats = argv;
     axisPtr->nFormats = argc;
@@ -623,11 +623,11 @@ FormatToObjProc(
     if (axisPtr->nFormats == 0) {
 	objPtr = Tcl_NewStringObj("", -1);
     } else {
-	const char *string;
+	char *string;
 
 	string = Tcl_Merge(axisPtr->nFormats, axisPtr->limitsFormats); 
 	objPtr = Tcl_NewStringObj(string, -1);
-	Blt_Free(string);
+	free(string);
     }
     return objPtr;
 }
@@ -833,7 +833,7 @@ FreeTicksProc(
 
     axisPtr->flags |= mask;
     if (*ticksPtrPtr != NULL) {
-	Blt_Free(*ticksPtrPtr);
+	free(*ticksPtrPtr);
     }
     *ticksPtrPtr = NULL;
 }
@@ -875,12 +875,12 @@ ObjToTicksProc(
     if (objc > 0) {
 	int i;
 
-	ticksPtr = Blt_AssertMalloc(sizeof(Ticks) + (objc*sizeof(double)));
+	ticksPtr = malloc(sizeof(Ticks) + (objc*sizeof(double)));
 	for (i = 0; i < objc; i++) {
 	    double value;
 
 	    if (Blt_ExprDoubleFromObj(interp, objv[i], &value) != TCL_OK) {
-		Blt_Free(ticksPtr);
+		free(ticksPtr);
 		return TCL_ERROR;
 	    }
 	    ticksPtr->values[i] = value;
@@ -1057,7 +1057,7 @@ FreeTickLabels(Blt_Chain chain)
 	TickLabel *labelPtr;
 
 	labelPtr = Blt_Chain_GetValue(link);
-	Blt_Free(labelPtr);
+	free(labelPtr);
     }
     Blt_Chain_Reset(chain);
 }
@@ -1121,7 +1121,7 @@ MakeLabel(Axis *axisPtr, double value)
 	    Tcl_ResetResult(interp); /* Clear the interpreter's result. */
 	}
     }
-    labelPtr = Blt_AssertMalloc(sizeof(TickLabel) + strlen(string));
+    labelPtr = malloc(sizeof(TickLabel) + strlen(string));
     strcpy(labelPtr->string, string);
     labelPtr->anchorPos.x = labelPtr->anchorPos.y = DBL_MAX;
     return labelPtr;
@@ -1476,7 +1476,7 @@ GenerateTicks(TickSweep *sweepPtr)
 {
     Ticks *ticksPtr;
 
-    ticksPtr = Blt_AssertMalloc(sizeof(Ticks) + 
+    ticksPtr = malloc(sizeof(Ticks) + 
 	(sweepPtr->nSteps * sizeof(double)));
     ticksPtr->nTicks = 0;
 
@@ -1798,13 +1798,13 @@ SweepTicks(Axis *axisPtr)
 {
     if (axisPtr->flags & AXIS_AUTO_MAJOR) {
 	if (axisPtr->t1Ptr != NULL) {
-	    Blt_Free(axisPtr->t1Ptr);
+	    free(axisPtr->t1Ptr);
 	}
 	axisPtr->t1Ptr = GenerateTicks(&axisPtr->majorSweep);
     }
     if (axisPtr->flags & AXIS_AUTO_MINOR) {
 	if (axisPtr->t2Ptr != NULL) {
-	    Blt_Free(axisPtr->t2Ptr);
+	    free(axisPtr->t2Ptr);
 	}
 	axisPtr->t2Ptr = GenerateTicks(&axisPtr->minorSweep);
     }
@@ -2022,7 +2022,7 @@ DestroyAxis(Axis *axisPtr)
 	Blt_Chain_DeleteLink(axisPtr->chain, axisPtr->link);
     }
     if (axisPtr->obj.name != NULL) {
-	Blt_Free(axisPtr->obj.name);
+	free(axisPtr->obj.name);
     }
     if (axisPtr->hashPtr != NULL) {
 	Blt_DeleteHashEntry(&graphPtr->axes.table, axisPtr->hashPtr);
@@ -2044,9 +2044,10 @@ DestroyAxis(Axis *axisPtr)
     FreeTickLabels(axisPtr->tickLabels);
     Blt_Chain_Destroy(axisPtr->tickLabels);
     if (axisPtr->segments != NULL) {
-	Blt_Free(axisPtr->segments);
+	free(axisPtr->segments);
     }
-    Blt_Free(axisPtr);
+    free(axisPtr);
+    axisPtr = NULL;
 }
 
 static void
@@ -2433,7 +2434,8 @@ MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     Segment2d *sp;
 
     if (axisPtr->segments != NULL) {
-	Blt_Free(axisPtr->segments);
+	free(axisPtr->segments);
+	axisPtr->segments = NULL;	
     }
     nMajorTicks = nMinorTicks = 0;
     if (axisPtr->t1Ptr != NULL) {
@@ -2443,7 +2445,7 @@ MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 	nMinorTicks = axisPtr->t2Ptr->nTicks;
     }
     arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
-    segments = Blt_AssertMalloc(arraySize * sizeof(Segment2d));
+    segments = malloc(arraySize * sizeof(Segment2d));
     sp = segments;
     if (axisPtr->lineWidth > 0) {
 	/* Axis baseline */
@@ -3015,17 +3017,19 @@ MapGridlines(Axis *axisPtr)
     needed = t1Ptr->nTicks;
     if (needed != axisPtr->major.nAllocated) {
 	if (axisPtr->major.segments != NULL) {
-	    Blt_Free(axisPtr->major.segments);
+	  free(axisPtr->major.segments);
+	  axisPtr->major.segments = NULL;
 	}
-	axisPtr->major.segments = Blt_AssertMalloc(sizeof(Segment2d) * needed);
+	axisPtr->major.segments = malloc(sizeof(Segment2d) * needed);
 	axisPtr->major.nAllocated = needed;
     }
     needed = (t1Ptr->nTicks * t2Ptr->nTicks);
     if (needed != axisPtr->minor.nAllocated) {
 	if (axisPtr->minor.segments != NULL) {
-	    Blt_Free(axisPtr->minor.segments);
+	  free(axisPtr->minor.segments);
+	  axisPtr->minor.segments = NULL;
 	}
-	axisPtr->minor.segments = Blt_AssertMalloc(sizeof(Segment2d) * needed);
+	axisPtr->minor.segments = malloc(sizeof(Segment2d) * needed);
 	axisPtr->minor.nAllocated = needed;
     }
     s1 = axisPtr->major.segments, s2 = axisPtr->minor.segments;
@@ -3053,10 +3057,10 @@ MapGridlines(Axis *axisPtr)
 	}
     }
     if (t1Ptr != axisPtr->t1Ptr) {
-	Blt_Free(t1Ptr);		/* Free generated ticks. */
+	free(t1Ptr);		/* Free generated ticks. */
     }
     if (t2Ptr != axisPtr->t2Ptr) {
-	Blt_Free(t2Ptr);		/* Free generated ticks. */
+	free(t2Ptr);		/* Free generated ticks. */
     }
     axisPtr->major.nUsed = s1 - axisPtr->major.segments;
     axisPtr->minor.nUsed = s2 - axisPtr->minor.segments;
@@ -3805,13 +3809,13 @@ NewAxis(Graph *graphPtr, const char *name, int margin)
 	}
 	axisPtr->flags &= ~DELETE_PENDING;
     } else {
-	axisPtr = Blt_Calloc(1, sizeof(Axis));
+	axisPtr = calloc(1, sizeof(Axis));
 	if (axisPtr == NULL) {
 	    Tcl_AppendResult(graphPtr->interp, 
 		"can't allocate memory for axis \"", name, "\"", (char *)NULL);
 	    return NULL;
 	}
-	axisPtr->obj.name = Blt_AssertStrdup(name);
+	axisPtr->obj.name = Blt_Strdup(name);
 	axisPtr->hashPtr = hPtr;
 	Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
 	axisPtr->obj.graphPtr = graphPtr;
@@ -5702,7 +5706,7 @@ TimeGenerateTicks(TickSweep *sweepPtr)
 {
     Ticks *ticksPtr;
 
-    ticksPtr = Blt_AssertMalloc(sizeof(Ticks) + 
+    ticksPtr = malloc(sizeof(Ticks) + 
 	(sweepPtr->nSteps * sizeof(double)));
     ticksPtr->nTicks = 0;
 

@@ -1170,7 +1170,7 @@ ParseCoordinates(
 	return TCL_ERROR;
     }
     nWorldPts = objc / 2;
-    worldPts = Blt_Malloc(nWorldPts * sizeof(Point2d));
+    worldPts = malloc(nWorldPts * sizeof(Point2d));
     if (worldPts == NULL) {
 	Tcl_AppendResult(interp, "can't allocate new coordinate array",
 	    (char *)NULL);
@@ -1186,7 +1186,7 @@ ParseCoordinates(
 	    
 	    if ((GetCoordinate(interp, objv[i], &x) != TCL_OK) ||
 		(GetCoordinate(interp, objv[i + 1], &y) != TCL_OK)) {
-		Blt_Free(worldPts);
+		free(worldPts);
 		return TCL_ERROR;
 	    }
 	    pp->x = x, pp->y = y, pp++;
@@ -1195,7 +1195,7 @@ ParseCoordinates(
     /* Don't free the old coordinate array until we've parsed the new
      * coordinates without errors.  */
     if (markerPtr->worldPts != NULL) {
-	Blt_Free(markerPtr->worldPts);
+	free(markerPtr->worldPts);
     }
     markerPtr->worldPts = worldPts;
     markerPtr->nWorldPts = nWorldPts;
@@ -1215,7 +1215,7 @@ FreeCoordsProc(
     Point2d **pointsPtr = (Point2d **)(widgRec + offset);
 
     if (*pointsPtr != NULL) {
-	Blt_Free(*pointsPtr);
+	free(*pointsPtr);
 	*pointsPtr = NULL;
     }
     markerPtr->nWorldPts = 0;
@@ -1799,7 +1799,7 @@ CreateMarker(
     markerPtr->obj.graphPtr = graphPtr;
     markerPtr->drawUnder = FALSE;
     markerPtr->flags |= MAP_ITEM;
-    markerPtr->obj.name = Blt_AssertStrdup(name);
+    markerPtr->obj.name = Blt_Strdup(name);
     Blt_GraphSetObjectClass(&markerPtr->obj, classId);
     return markerPtr;
 }
@@ -1836,9 +1836,9 @@ DestroyMarker(Marker *markerPtr)
 	Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
     }
     if (markerPtr->obj.name != NULL) {
-	Blt_Free(markerPtr->obj.name);
+	free(markerPtr->obj.name);
     }
-    Blt_Free(markerPtr);
+    free(markerPtr);
 }
 
 static void
@@ -2359,7 +2359,7 @@ CreateBitmapProc(void)
 {
     BitmapMarker *bmPtr;
 
-    bmPtr = Blt_AssertCalloc(1, sizeof(BitmapMarker));
+    bmPtr = calloc(1, sizeof(BitmapMarker));
     bmPtr->classPtr = &bitmapMarkerClass;
     return (Marker *)bmPtr;
 }
@@ -2706,7 +2706,7 @@ CreateImageProc(void)
 {
     ImageMarker *imPtr;
 
-    imPtr = Blt_AssertCalloc(1, sizeof(ImageMarker));
+    imPtr = calloc(1, sizeof(ImageMarker));
     imPtr->classPtr = &imageMarkerClass;
     return (Marker *)imPtr;
 }
@@ -3026,7 +3026,7 @@ CreateTextProc(void)
 {
     TextMarker *tmPtr;
 
-    tmPtr = Blt_AssertCalloc(1, sizeof(TextMarker));
+    tmPtr = calloc(1, sizeof(TextMarker));
     tmPtr->classPtr = &textMarkerClass;
     Blt_Ts_InitStyle(tmPtr->style);
     tmPtr->style.anchor = TK_ANCHOR_NW;
@@ -3305,7 +3305,7 @@ CreateWindowProc(void)
 {
     WindowMarker *wmPtr;
 
-    wmPtr = Blt_AssertCalloc(1, sizeof(WindowMarker));
+    wmPtr = calloc(1, sizeof(WindowMarker));
     wmPtr->classPtr = &windowMarkerClass;
     return (Marker *)wmPtr;
 }
@@ -3430,7 +3430,7 @@ MapLineProc(Marker *markerPtr)
 
     lmPtr->nSegments = 0;
     if (lmPtr->segments != NULL) {
-	Blt_Free(lmPtr->segments);
+	free(lmPtr->segments);
     }
     if (markerPtr->nWorldPts < 2) {
 	return;				/* Too few points */
@@ -3443,7 +3443,7 @@ MapLineProc(Marker *markerPtr)
      * because clipping against the plot area may chop the line into several
      * disconnected segments.
      */
-    segments = Blt_AssertMalloc(markerPtr->nWorldPts * sizeof(Segment2d));
+    segments = malloc(markerPtr->nWorldPts * sizeof(Segment2d));
     srcPtr = markerPtr->worldPts;
     p = MapPoint(srcPtr, &markerPtr->axes);
     p.x += markerPtr->xOffset;
@@ -3707,7 +3707,7 @@ FreeLineProc(Marker *markerPtr)
 	Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
     }
     if (lmPtr->segments != NULL) {
-	Blt_Free(lmPtr->segments);
+	free(lmPtr->segments);
     }
 }
 
@@ -3732,7 +3732,7 @@ CreateLineProc(void)
 {
     LineMarker *lmPtr;
 
-    lmPtr = Blt_AssertCalloc(1, sizeof(LineMarker));
+    lmPtr = calloc(1, sizeof(LineMarker));
     lmPtr->classPtr = &lineMarkerClass;
     lmPtr->xor = FALSE;
     lmPtr->capStyle = CapButt;
@@ -3763,17 +3763,17 @@ MapPolygonProc(Marker *markerPtr)
     int nScreenPts;
 
     if (pmPtr->outlinePts != NULL) {
-	Blt_Free(pmPtr->outlinePts);
+	free(pmPtr->outlinePts);
 	pmPtr->outlinePts = NULL;
 	pmPtr->nOutlinePts = 0;
     }
     if (pmPtr->fillPts != NULL) {
-	Blt_Free(pmPtr->fillPts);
+	free(pmPtr->fillPts);
 	pmPtr->fillPts = NULL;
 	pmPtr->nFillPts = 0;
     }
     if (pmPtr->screenPts != NULL) {
-	Blt_Free(pmPtr->screenPts);
+	free(pmPtr->screenPts);
 	pmPtr->screenPts = NULL;
     }
     if (markerPtr->nWorldPts < 3) {
@@ -3785,7 +3785,7 @@ MapPolygonProc(Marker *markerPtr)
      * the polygon.
      */
     nScreenPts = markerPtr->nWorldPts + 1;
-    screenPts = Blt_AssertMalloc((nScreenPts + 1) * sizeof(Point2d));
+    screenPts = malloc((nScreenPts + 1) * sizeof(Point2d));
     {
 	Point2d *sp, *dp, *send;
 
@@ -3805,10 +3805,10 @@ MapPolygonProc(Marker *markerPtr)
 	Point2d *fillPts;
 	int n;
 
-	fillPts = Blt_AssertMalloc(sizeof(Point2d) * nScreenPts * 3);
+	fillPts = malloc(sizeof(Point2d) * nScreenPts * 3);
 	n = Blt_PolyRectClip(&extents, screenPts, markerPtr->nWorldPts,fillPts);
 	if (n < 3) { 
-	    Blt_Free(fillPts);
+	    free(fillPts);
 	} else {
 	    pmPtr->nFillPts = n;
 	    pmPtr->fillPts = fillPts;
@@ -3824,7 +3824,7 @@ MapPolygonProc(Marker *markerPtr)
 	 * Generate line segments representing the polygon outline.  The
 	 * resulting outline may or may not be closed from viewport clipping.
 	 */
-	outlinePts = Blt_Malloc(nScreenPts * sizeof(Segment2d));
+	outlinePts = malloc(nScreenPts * sizeof(Segment2d));
 	if (outlinePts == NULL) {
 	    return;			/* Can't allocate point array */
 	}
@@ -3891,7 +3891,7 @@ DrawPolygonProc(Marker *markerPtr, Drawable drawable)
 	XPoint *dp, *points;
 	Point2d *sp, *send;
 	
-	points = Blt_Malloc(pmPtr->nFillPts * sizeof(XPoint));
+	points = malloc(pmPtr->nFillPts * sizeof(XPoint));
 	if (points == NULL) {
 	    return;
 	}
@@ -3905,7 +3905,7 @@ DrawPolygonProc(Marker *markerPtr, Drawable drawable)
 
 	XFillPolygon(graphPtr->display, drawable, pmPtr->fillGC, points, 
 		pmPtr->nFillPts, Complex, CoordModeOrigin);
-	Blt_Free(points);
+	free(points);
     }
     /* and then the outline */
     if ((pmPtr->nOutlinePts > 0) && (pmPtr->lineWidth > 0) && 
@@ -4122,13 +4122,13 @@ FreePolygonProc(Marker *markerPtr)
 	Blt_FreePrivateGC(graphPtr->display, pmPtr->outlineGC);
     }
     if (pmPtr->fillPts != NULL) {
-	Blt_Free(pmPtr->fillPts);
+	free(pmPtr->fillPts);
     }
     if (pmPtr->outlinePts != NULL) {
-	Blt_Free(pmPtr->outlinePts);
+	free(pmPtr->outlinePts);
     }
     if (pmPtr->screenPts != NULL) {
-	Blt_Free(pmPtr->screenPts);
+	free(pmPtr->screenPts);
     }
 }
 
@@ -4152,7 +4152,7 @@ CreatePolygonProc(void)
 {
     PolygonMarker *pmPtr;
 
-    pmPtr = Blt_AssertCalloc(1, sizeof(PolygonMarker));
+    pmPtr = calloc(1, sizeof(PolygonMarker));
     pmPtr->classPtr = &polygonMarkerClass;
     pmPtr->capStyle = CapButt;
     pmPtr->joinStyle = JoinMiter;
@@ -4194,7 +4194,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
 	    "\" already exists", (char *)NULL);
 	return TCL_ERROR;
     }
-    markerPtr->obj.name = Blt_AssertStrdup(newName);
+    markerPtr->obj.name = Blt_Strdup(newName);
     markerPtr->hashPtr = hPtr;
     Blt_SetHashValue(hPtr, (char *)markerPtr);
 
@@ -4202,7 +4202,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
     hPtr = Blt_FindHashEntry(&graphPtr->markers.table, oldName);
     Blt_DeleteHashEntry(&graphPtr->markers.table, hPtr);
     if (oldName != NULL) {
-	Blt_Free(oldName);
+	free(oldName);
     }
     return TCL_OK;
 }

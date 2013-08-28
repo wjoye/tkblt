@@ -1437,9 +1437,9 @@ Blt_LinePen(const char *penName)
 {
     LinePen *penPtr;
 
-    penPtr = Blt_AssertCalloc(1, sizeof(LinePen));
+    penPtr = calloc(1, sizeof(LinePen));
     InitLinePen(penPtr);
-    penPtr->name = Blt_AssertStrdup(penName);
+    penPtr->name = Blt_Strdup(penName);
     penPtr->classId = CID_ELEM_LINE;
     if (strcmp(penName, "activeLine") == 0) {
 	penPtr->flags = ACTIVE_PEN;
@@ -1552,8 +1552,8 @@ GetScreenPoints(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     np = NUMBEROFPOINTS(elemPtr);
     x = elemPtr->x.values;
     y = elemPtr->y.values;
-    points = Blt_AssertMalloc(sizeof(Point2d) * np);
-    map = Blt_AssertMalloc(sizeof(int) * np);
+    points = malloc(sizeof(Point2d) * np);
+    map = malloc(sizeof(int) * np);
 
     count = 0;			      /* Count the valid screen coordinates */
     if (graphPtr->inverted) {
@@ -1603,9 +1603,9 @@ ReducePoints(MapInfo *mapPtr, double tolerance)
     Point2d *screenPts;
     int *map, *simple;
 
-    simple    = Blt_AssertMalloc(mapPtr->nScreenPts * sizeof(int));
-    map	      = Blt_AssertMalloc(mapPtr->nScreenPts * sizeof(int));
-    screenPts = Blt_AssertMalloc(mapPtr->nScreenPts * sizeof(Point2d));
+    simple    = malloc(mapPtr->nScreenPts * sizeof(int));
+    map	      = malloc(mapPtr->nScreenPts * sizeof(int));
+    screenPts = malloc(mapPtr->nScreenPts * sizeof(Point2d));
     np = Blt_SimplifyLine(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
 		 tolerance, simple);
     for (i = 0; i < np; i++) {
@@ -1620,9 +1620,9 @@ ReducePoints(MapInfo *mapPtr, double tolerance)
 	fprintf(stderr, "reduced from %d to %d\n", mapPtr->nScreenPts, np);
     }
 #endif
-    Blt_Free(mapPtr->screenPts);
-    Blt_Free(mapPtr->map);
-    Blt_Free(simple);
+    free(mapPtr->screenPts);
+    free(mapPtr->map);
+    free(simple);
     mapPtr->screenPts = screenPts;
     mapPtr->map = map;
     mapPtr->nScreenPts = np;
@@ -1654,8 +1654,8 @@ GenerateSteps(MapInfo *mapPtr)
     int *map;
 
     newSize = ((mapPtr->nScreenPts - 1) * 2) + 1;
-    screenPts = Blt_AssertMalloc(newSize * sizeof(Point2d));
-    map = Blt_AssertMalloc(sizeof(int) * newSize);
+    screenPts = malloc(newSize * sizeof(Point2d));
+    map = malloc(sizeof(int) * newSize);
     screenPts[0] = mapPtr->screenPts[0];
     map[0] = 0;
 
@@ -1671,8 +1671,8 @@ GenerateSteps(MapInfo *mapPtr)
 	map[count] = map[count + 1] = mapPtr->map[i];
 	count += 2;
     }
-    Blt_Free(mapPtr->screenPts);
-    Blt_Free(mapPtr->map);
+    free(mapPtr->screenPts);
+    free(mapPtr->map);
     mapPtr->map = map;
     mapPtr->screenPts = screenPts;
     mapPtr->nScreenPts = newSize;
@@ -1733,8 +1733,8 @@ GenerateSpline(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 	return;
     }
     niPts = nOrigPts + extra + 1;
-    iPts = Blt_AssertMalloc(niPts * sizeof(Point2d));
-    map = Blt_AssertMalloc(sizeof(int) * niPts);
+    iPts = malloc(niPts * sizeof(Point2d));
+    map = malloc(sizeof(int) * niPts);
     /* Populate the x2 array with both the original X-coordinates and extra
      * X-coordinates for each horizontal pixel that the line segment
      * contains. */
@@ -1788,11 +1788,11 @@ GenerateSpline(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 	/* The spline interpolation failed.  We'll fallback to the current
 	 * coordinates and do no smoothing (standard line segments).  */
 	elemPtr->smooth = PEN_SMOOTH_LINEAR;
-	Blt_Free(iPts);
-	Blt_Free(map);
+	free(iPts);
+	free(map);
     } else {
-	Blt_Free(mapPtr->screenPts);
-	Blt_Free(mapPtr->map);
+	free(mapPtr->screenPts);
+	free(mapPtr->map);
 	mapPtr->map = map;
 	mapPtr->screenPts = iPts;
 	mapPtr->nScreenPts = niPts;
@@ -1853,8 +1853,8 @@ GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 	}
     }
     niPts = count;
-    iPts = Blt_AssertMalloc(niPts * sizeof(Point2d));
-    map = Blt_AssertMalloc(sizeof(int) * niPts);
+    iPts = malloc(niPts * sizeof(Point2d));
+    map = malloc(sizeof(int) * niPts);
 
     /* 
      * FIXME: This is just plain wrong.  The spline should be computed
@@ -1920,11 +1920,11 @@ GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
         /* The spline interpolation failed.  We will fall back to the current
          * coordinates and do no smoothing (standard line segments).  */
         elemPtr->smooth = PEN_SMOOTH_LINEAR;
-        Blt_Free(iPts);
-        Blt_Free(map);
+        free(iPts);
+        free(map);
     } else {
-        Blt_Free(mapPtr->screenPts);
-        Blt_Free(mapPtr->map);
+        free(mapPtr->screenPts);
+        free(mapPtr->map);
         mapPtr->map = map;
         mapPtr->screenPts = iPts;
         mapPtr->nScreenPts = niPts;
@@ -1956,8 +1956,8 @@ MapSymbols(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     int *map;
     int i, count;
 
-    points = Blt_AssertMalloc(sizeof(Point2d) * mapPtr->nScreenPts);
-    map    = Blt_AssertMalloc(sizeof(int)     * mapPtr->nScreenPts);
+    points = malloc(sizeof(Point2d) * mapPtr->nScreenPts);
+    map    = malloc(sizeof(int)     * mapPtr->nScreenPts);
 
     Blt_GraphExtents(graphPtr, &exts);
     count = 0;			/* Count the number of visible points */
@@ -1999,16 +1999,16 @@ MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
     int count, i, np;
 
     if (elemPtr->activePts.points != NULL) {
-	Blt_Free(elemPtr->activePts.points);
+	free(elemPtr->activePts.points);
 	elemPtr->activePts.points = NULL;
     }
     if (elemPtr->activePts.map != NULL) {
-	Blt_Free(elemPtr->activePts.map);
+	free(elemPtr->activePts.map);
 	elemPtr->activePts.map = NULL;
     }
     Blt_GraphExtents(graphPtr, &exts);
-    points = Blt_AssertMalloc(sizeof(Point2d) * elemPtr->nActiveIndices);
-    map    = Blt_AssertMalloc(sizeof(int)     * elemPtr->nActiveIndices);
+    points = malloc(sizeof(Point2d) * elemPtr->nActiveIndices);
+    map    = malloc(sizeof(int)     * elemPtr->nActiveIndices);
     np = NUMBEROFPOINTS(elemPtr);
     count = 0;				/* Count the visible active points */
     for (i = 0; i < elemPtr->nActiveIndices; i++) {
@@ -2032,8 +2032,8 @@ MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
 	elemPtr->activePts.map = map;
     } else {
 	/* No active points were visible. */
-	Blt_Free(points);
-	Blt_Free(map);	
+	free(points);
+	free(map);	
     }
     elemPtr->activePts.length = count;
     elemPtr->flags &= ~ACTIVE_PENDING;
@@ -2064,13 +2064,13 @@ MapStrip(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     Segment2d *sp;
     int count;
 
-    indices = Blt_AssertMalloc(sizeof(int) * mapPtr->nScreenPts);
+    indices = malloc(sizeof(int) * mapPtr->nScreenPts);
 
     /* 
      * Create array to hold points for line segments (not polyline
      * coordinates).  So allocate twice the number of points.
      */
-    sp = lines = Blt_AssertMalloc(mapPtr->nScreenPts * sizeof(Segment2d));
+    sp = lines = malloc(mapPtr->nScreenPts * sizeof(Segment2d));
     Blt_GraphExtents(graphPtr, &exts);
     count = 0;				/* Count the number of segments. */
     indexPtr = mapPtr->map;
@@ -2133,8 +2133,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	int *ip;
 	int *map;
 
-	segments = Blt_AssertMalloc(elemPtr->lines.length * sizeof(Segment2d));
-	map = Blt_AssertMalloc(elemPtr->lines.length * sizeof(int));
+	segments = malloc(elemPtr->lines.length * sizeof(Segment2d));
+	map = malloc(elemPtr->lines.length * sizeof(int));
 	sp = segments, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->styles); 
 	     link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -2154,9 +2154,9 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	    }
 	    stylePtr->lines.length = sp - stylePtr->lines.segments;
 	}
-	Blt_Free(elemPtr->lines.segments);
+	free(elemPtr->lines.segments);
 	elemPtr->lines.segments = segments;
-	Blt_Free(elemPtr->lines.map);
+	free(elemPtr->lines.map);
 	elemPtr->lines.map = map;
     }
     if (elemPtr->symbolPts.length > 0) {
@@ -2165,8 +2165,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	Point2d *points, *pp;
 	int *map;
 
-	points = Blt_AssertMalloc(elemPtr->symbolPts.length * sizeof(Point2d));
-	map = Blt_AssertMalloc(elemPtr->symbolPts.length * sizeof(int));
+	points = malloc(elemPtr->symbolPts.length * sizeof(Point2d));
+	map = malloc(elemPtr->symbolPts.length * sizeof(int));
 	pp = points, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->styles); 
 	     link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -2186,8 +2186,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	    }
 	    stylePtr->symbolPts.length = pp - stylePtr->symbolPts.points;
 	}
-	Blt_Free(elemPtr->symbolPts.points);
-	Blt_Free(elemPtr->symbolPts.map);
+	free(elemPtr->symbolPts.points);
+	free(elemPtr->symbolPts.map);
 	elemPtr->symbolPts.points = points;
 	elemPtr->symbolPts.map = map;
     }
@@ -2196,8 +2196,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	int *map, *ip;
 	Blt_ChainLink link;
 
-	segments = Blt_AssertMalloc(elemPtr->xeb.length * sizeof(Segment2d));
-	map = Blt_AssertMalloc(elemPtr->xeb.length * sizeof(int));
+	segments = malloc(elemPtr->xeb.length * sizeof(Segment2d));
+	map = malloc(elemPtr->xeb.length * sizeof(int));
 	sp = segments, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->styles); 
 	     link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -2217,8 +2217,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	    }
 	    stylePtr->xeb.length = sp - stylePtr->xeb.segments;
 	}
-	Blt_Free(elemPtr->xeb.segments);
-	Blt_Free(elemPtr->xeb.map);
+	free(elemPtr->xeb.segments);
+	free(elemPtr->xeb.map);
 	elemPtr->xeb.segments = segments;
 	elemPtr->xeb.map = map;
     }
@@ -2227,8 +2227,8 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	int *map, *ip;
 	Blt_ChainLink link;
 
-	segments = Blt_AssertMalloc(elemPtr->yeb.length * sizeof(Segment2d));
-	map = Blt_AssertMalloc(elemPtr->yeb.length * sizeof(int));
+	segments = malloc(elemPtr->yeb.length * sizeof(Segment2d));
+	map = malloc(elemPtr->yeb.length * sizeof(int));
 	sp = segments, ip = map;
 	for (link = Blt_Chain_FirstLink(elemPtr->styles); 
 	     link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -2248,9 +2248,9 @@ MergePens(LineElement *elemPtr, LineStyle **styleMap)
 	    }
 	    stylePtr->yeb.length = sp - stylePtr->yeb.segments;
 	}
-	Blt_Free(elemPtr->yeb.segments);
+	free(elemPtr->yeb.segments);
 	elemPtr->yeb.segments = segments;
-	Blt_Free(elemPtr->yeb.map);
+	free(elemPtr->yeb.map);
 	elemPtr->yeb.map = map;
     }
 }
@@ -2353,9 +2353,9 @@ SaveTrace(
     int *map;
     int i, j;
 
-    tracePtr  = Blt_AssertMalloc(sizeof(Trace));
-    screenPts = Blt_AssertMalloc(sizeof(Point2d) * length);
-    map       = Blt_AssertMalloc(sizeof(int) * length);
+    tracePtr  = malloc(sizeof(Trace));
+    screenPts = malloc(sizeof(Point2d) * length);
+    map       = malloc(sizeof(int) * length);
 
     /* Copy the screen coordinates of the trace into the point array */
 
@@ -2404,9 +2404,9 @@ FreeTraces(LineElement *elemPtr)
 	Trace *tracePtr;
 
 	tracePtr = Blt_Chain_GetValue(link);
-	Blt_Free(tracePtr->screenPts.map);
-	Blt_Free(tracePtr->screenPts.points);
-	Blt_Free(tracePtr);
+	free(tracePtr->screenPts.map);
+	free(tracePtr->screenPts.points);
+	free(tracePtr);
     }
     Blt_Chain_Destroy(elemPtr->traces);
     elemPtr->traces = NULL;
@@ -2516,7 +2516,7 @@ MapFillArea(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     int np;
 
     if (elemPtr->fillPts != NULL) {
-	Blt_Free(elemPtr->fillPts);
+	free(elemPtr->fillPts);
 	elemPtr->fillPts = NULL;
 	elemPtr->nFillPts = 0;
     }
@@ -2526,7 +2526,7 @@ MapFillArea(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     np = mapPtr->nScreenPts + 3;
     Blt_GraphExtents(graphPtr, &exts);
 
-    origPts = Blt_AssertMalloc(sizeof(Point2d) * np);
+    origPts = malloc(sizeof(Point2d) * np);
     if (graphPtr->inverted) {
 	double minX;
 	int i;
@@ -2571,12 +2571,12 @@ MapFillArea(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 	origPts[i] = origPts[0];
     }
 
-    clipPts = Blt_AssertMalloc(sizeof(Point2d) * np * 3);
+    clipPts = malloc(sizeof(Point2d) * np * 3);
     np = Blt_PolyRectClip(&exts, origPts, np - 1, clipPts);
 
-    Blt_Free(origPts);
+    free(origPts);
     if (np < 3) {
-	Blt_Free(clipPts);
+	free(clipPts);
     } else {
 	elemPtr->fillPts = clipPts;
 	elemPtr->nFillPts = np;
@@ -2589,34 +2589,34 @@ ResetLine(LineElement *elemPtr)
     FreeTraces(elemPtr);
     ResetStylePalette(elemPtr->styles);
     if (elemPtr->symbolPts.points != NULL) {
-	Blt_Free(elemPtr->symbolPts.points);
+	free(elemPtr->symbolPts.points);
     }
     if (elemPtr->symbolPts.map != NULL) {
-	Blt_Free(elemPtr->symbolPts.map);
+	free(elemPtr->symbolPts.map);
     }
     if (elemPtr->lines.segments != NULL) {
-	Blt_Free(elemPtr->lines.segments);
+	free(elemPtr->lines.segments);
     }
     if (elemPtr->lines.map != NULL) {
-	Blt_Free(elemPtr->lines.map);
+	free(elemPtr->lines.map);
     }
     if (elemPtr->activePts.points != NULL) {
-	Blt_Free(elemPtr->activePts.points);
+	free(elemPtr->activePts.points);
     }
     if (elemPtr->activePts.map != NULL) {
-	Blt_Free(elemPtr->activePts.map);
+	free(elemPtr->activePts.map);
     }
     if (elemPtr->xeb.segments != NULL) {
-	Blt_Free(elemPtr->xeb.segments);
+	free(elemPtr->xeb.segments);
     }
     if (elemPtr->xeb.map != NULL) {
-	Blt_Free(elemPtr->xeb.map);
+	free(elemPtr->xeb.map);
     }
     if (elemPtr->yeb.segments != NULL) {
-	Blt_Free(elemPtr->yeb.segments);
+	free(elemPtr->yeb.segments);
     }
     if (elemPtr->yeb.map != NULL) {
-	Blt_Free(elemPtr->yeb.map);
+	free(elemPtr->yeb.map);
     }
     elemPtr->xeb.segments = elemPtr->yeb.segments = elemPtr->lines.segments = NULL;
     elemPtr->symbolPts.points = elemPtr->activePts.points = NULL;
@@ -2662,8 +2662,8 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 	int *indexPtr;
 	int i;
 		
-	segPtr = errorBars = Blt_AssertMalloc(n * 3 * sizeof(Segment2d));
-	indexPtr = errorToData = Blt_AssertMalloc(n * 3 * sizeof(int));
+	segPtr = errorBars = malloc(n * 3 * sizeof(Segment2d));
+	indexPtr = errorToData = malloc(n * 3 * sizeof(int));
 	for (i = 0; i < n; i++) {
 	    double x, y;
 	    double high, low;
@@ -2726,8 +2726,8 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 	int *indexPtr;
 	int i;
 		
-	segPtr = errorBars = Blt_AssertMalloc(n * 3 * sizeof(Segment2d));
-	indexPtr = errorToData = Blt_AssertMalloc(n * 3 * sizeof(int));
+	segPtr = errorBars = malloc(n * 3 * sizeof(Segment2d));
+	indexPtr = errorToData = malloc(n * 3 * sizeof(int));
 	for (i = 0; i < n; i++) {
 	    double x, y;
 	    double high, low;
@@ -2865,8 +2865,8 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
 	    MapTraces(graphPtr, elemPtr, &mi);
 	}
     }
-    Blt_Free(mi.screenPts);
-    Blt_Free(mi.map);
+    free(mi.screenPts);
+    free(mi.map);
 
     /* Set the symbol size of all the pen styles. */
     for (link = Blt_Chain_FirstLink(elemPtr->styles); link != NULL;
@@ -2889,7 +2889,7 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
 	MapErrorBars(graphPtr, elemPtr, styleMap);
     }
     MergePens(elemPtr, styleMap);
-    Blt_Free(styleMap);
+    free(styleMap);
 }
 
 static double
@@ -3565,7 +3565,7 @@ DrawCircles(Display *display, Drawable drawable, LineElement *elemPtr,
     int count;
 
     s = radius + radius;
-    arcs = Blt_AssertMalloc(nSymbolPts * sizeof(XArc));
+    arcs = malloc(nSymbolPts * sizeof(XArc));
 
     if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *pend;
@@ -3611,7 +3611,7 @@ DrawCircles(Display *display, Drawable drawable, LineElement *elemPtr,
 	    XDrawArcs(display, drawable, penPtr->symbol.outlineGC, arcs + i, n);
 	}
     }
-    Blt_Free(arcs);
+    free(arcs);
 }
 
 #endif
@@ -3626,7 +3626,7 @@ DrawSquares(Display *display, Drawable drawable, LineElement *elemPtr,
     int s, count;
 
     s = r + r;
-    rectangles = Blt_AssertMalloc(nSymbolPts * sizeof(XRectangle));
+    rectangles = malloc(nSymbolPts * sizeof(XRectangle));
     if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *pend;
 	XRectangle *rp;
@@ -3670,7 +3670,7 @@ DrawSquares(Display *display, Drawable drawable, LineElement *elemPtr,
 	    XDrawRectangles(display, drawable, penPtr->symbol.outlineGC, rp, n);
 	}
     }
-    Blt_Free(rectangles);
+    free(rectangles);
 }
 
 /*
@@ -3711,7 +3711,7 @@ DrawSymbols(
 	    Point2d *pp, *endp;
 	    XPoint *points, *xpp;
 	    
-	    xpp = points = Blt_AssertMalloc(nSymbolPts * sizeof(XPoint));
+	    xpp = points = malloc(nSymbolPts * sizeof(XPoint));
 	    for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 		xpp->x = Round(pp->x);
 		xpp->y = Round(pp->y);
@@ -3719,7 +3719,7 @@ DrawSymbols(
 	    }
 	    XDrawPoints(graphPtr->display, drawable, penPtr->symbol.fillGC, 
 			points, nSymbolPts, CoordModeOrigin);
-	    Blt_Free(points);
+	    free(points);
 	}
 	return;
     }
@@ -3757,7 +3757,7 @@ DrawSymbols(
 		pattern[0].x = pattern[2].y = -r2;
 		pattern[1].x = pattern[3].y = r2;
 	    }
-	    segments = Blt_AssertMalloc(nSymbolPts * 2 * sizeof(XSegment));
+	    segments = malloc(nSymbolPts * 2 * sizeof(XSegment));
 	    if (elemPtr->symbolInterval > 0) {
 		Point2d *pp, *endp;
 		XSegment *sp;
@@ -3813,7 +3813,7 @@ DrawSymbols(
 		XDrawSegments(graphPtr->display, drawable, 
 			penPtr->symbol.outlineGC, segments + i, chunk);
 	    }
-	    Blt_Free(segments);
+	    free(segments);
 	}
 	break;
 
@@ -3861,7 +3861,7 @@ DrawSymbols(
 		}
 		pattern[12] = pattern[0];
 	    }
-	    polygon = Blt_AssertMalloc(nSymbolPts * 13 * sizeof(XPoint));
+	    polygon = malloc(nSymbolPts * 13 * sizeof(XPoint));
 	    if (elemPtr->symbolInterval > 0) {
 		Point2d *pp, *endp;
 		XPoint *xpp;
@@ -3920,7 +3920,7 @@ DrawSymbols(
 			penPtr->symbol.outlineGC, xpp, 13, CoordModeOrigin);
 		}
 	    }
-	    Blt_Free(polygon);
+	    free(polygon);
 	}
 	break;
 
@@ -3943,7 +3943,7 @@ DrawSymbols(
 	    pattern[3].y = pattern[2].x = r1;
 	    pattern[4] = pattern[0];
 
-	    polygon = Blt_AssertMalloc(nSymbolPts * 5 * sizeof(XPoint));
+	    polygon = malloc(nSymbolPts * 5 * sizeof(XPoint));
 	    if (elemPtr->symbolInterval > 0) {
 		Point2d *pp, *endp;
 		XPoint *xpp;
@@ -4003,7 +4003,7 @@ DrawSymbols(
 		       penPtr->symbol.outlineGC, xpp, 5, CoordModeOrigin);
 		}
 	    }
-	    Blt_Free(polygon);
+	    free(polygon);
 	}
 	break;
 
@@ -4046,7 +4046,7 @@ DrawSymbols(
 		pattern[2].y = pattern[1].y = h2;
 		pattern[2].x = -b2;
 	    }
-	    polygon = Blt_AssertMalloc(nSymbolPts * 4 * sizeof(XPoint));
+	    polygon = malloc(nSymbolPts * 4 * sizeof(XPoint));
 	    if (elemPtr->symbolInterval > 0) {
 		Point2d *pp, *endp;
 		XPoint *xpp;
@@ -4107,7 +4107,7 @@ DrawSymbols(
 			penPtr->symbol.outlineGC, xpp, 4, CoordModeOrigin);
 		}
 	    }
-	    Blt_Free(polygon);
+	    free(polygon);
 	}
 	break;
 
@@ -4301,7 +4301,7 @@ DrawTraces(
     } else {
 	np = Blt_MaxRequestSize(graphPtr->display, sizeof(POINT)) - 1;
     }
-    points = Blt_AssertMalloc((np + 1) * sizeof(POINT));
+    points = malloc((np + 1) * sizeof(POINT));
 
     dc = TkWinGetDrawableDC(graphPtr->display, drawable, &state);
 
@@ -4368,7 +4368,7 @@ DrawTraces(
 	    Polyline(dc, points, remaining + 1);
 	}
     }
-    Blt_Free(points);
+    free(points);
     DeletePen(SelectPen(dc, oldPen));
     DeleteBrush(SelectBrush(dc, oldBrush));
     TkWinReleaseDrawableDC(drawable, dc, &state);
@@ -4385,7 +4385,7 @@ DrawTraces(Graph *graphPtr, Drawable drawable, LineElement *elemPtr,
     int np;
 
     np = Blt_MaxRequestSize(graphPtr->display, sizeof(XPoint)) - 1;
-    points = Blt_AssertMalloc((np + 1) * sizeof(XPoint));
+    points = malloc((np + 1) * sizeof(XPoint));
 	    
     for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
 	link = Blt_Chain_NextLink(link)) {
@@ -4445,7 +4445,7 @@ DrawTraces(Graph *graphPtr, Drawable drawable, LineElement *elemPtr,
 		remaining + 1, CoordModeOrigin);
 	}
     }
-    Blt_Free(points);
+    free(points);
 }
 #endif /* WIN32 */
 
@@ -4587,7 +4587,7 @@ DrawNormalLineProc(Graph *graphPtr, Drawable drawable, Element *basePtr)
 	XPoint *points;
 	Point2d *endp, *pp;
 
-	points = Blt_AssertMalloc(sizeof(XPoint) * elemPtr->nFillPts);
+	points = malloc(sizeof(XPoint) * elemPtr->nFillPts);
 	count = 0;
 	for (pp = elemPtr->fillPts, endp = pp + elemPtr->nFillPts; 
 	     pp < endp; pp++) {
@@ -4600,7 +4600,7 @@ DrawNormalLineProc(Graph *graphPtr, Drawable drawable, Element *basePtr)
 	    Blt_FillBackgroundPolygon(graphPtr->tkwin, drawable, 
 		elemPtr->fillBg, points, elemPtr->nFillPts, 0, TK_RELIEF_FLAT);
 	}
-	Blt_Free(points);
+	free(points);
     }
 
     /* Lines: stripchart segments or graph traces. */
@@ -5159,10 +5159,10 @@ DestroyLineProc(Graph *graphPtr, Element *basePtr)
 	Blt_Chain_Destroy(elemPtr->styles);
     }
     if (elemPtr->activeIndices != NULL) {
-	Blt_Free(elemPtr->activeIndices);
+	free(elemPtr->activeIndices);
     }
     if (elemPtr->fillPts != NULL) {
-	Blt_Free(elemPtr->fillPts);
+	free(elemPtr->fillPts);
     }
     if (elemPtr->fillGC != NULL) {
 	Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
@@ -5208,19 +5208,19 @@ Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
 {
     LineElement *elemPtr;
 
-    elemPtr = Blt_AssertCalloc(1, sizeof(LineElement));
+    elemPtr = calloc(1, sizeof(LineElement));
     elemPtr->procsPtr = &lineProcs;
     if (classId == CID_ELEM_LINE) {
 	elemPtr->configSpecs = lineElemConfigSpecs;
     } else {
 	elemPtr->configSpecs = stripElemConfigSpecs;
     }
-    elemPtr->obj.name = Blt_AssertStrdup(name);
+    elemPtr->obj.name = Blt_Strdup(name);
     Blt_GraphSetObjectClass(&elemPtr->obj, classId);
     elemPtr->flags = SCALE_SYMBOL;
     elemPtr->obj.graphPtr = graphPtr;
     /* By default an element's name and label are the same. */
-    elemPtr->label = Blt_AssertStrdup(name);
+    elemPtr->label = Blt_Strdup(name);
     elemPtr->legendRelief = TK_RELIEF_FLAT;
     elemPtr->penDir = PEN_BOTH_DIRECTIONS;
     elemPtr->styles = Blt_Chain_Create();
@@ -5318,8 +5318,8 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
 	    MapTraces(graphPtr, elemPtr, &mi);
 	}
     }
-    Blt_Free(mi.screenPts);
-    Blt_Free(mi.map);
+    free(mi.screenPts);
+    free(mi.map);
 
     /* Set the symbol size of all the pen styles. */
     for (link = Blt_Chain_FirstLink(elemPtr->styles); link != NULL;
@@ -5342,6 +5342,6 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
 	MapErrorBars(graphPtr, elemPtr, styleMap);
     }
     MergePens(elemPtr, styleMap);
-    Blt_Free(styleMap);
+    free(styleMap);
 }
 #endif

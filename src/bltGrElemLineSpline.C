@@ -750,12 +750,12 @@ Blt_QuadraticSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
     double *work;
     int result;
 
-    work = Blt_AssertMalloc(nOrigPts * sizeof(double));
+    work = malloc(nOrigPts * sizeof(double));
     epsilon = 0.0;		/* TBA: adjust error via command-line option */
     /* allocate space for vectors used in calculation */
     QuadSlopes(origPts, work, nOrigPts);
     result = QuadEval(origPts, nOrigPts, intpPts, nIntpPts, work, epsilon);
-    Blt_Free(work);
+    free(work);
     if (result > 1) {
 	return FALSE;
     }
@@ -787,7 +787,7 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
     int isKnot;
     int i, j, n;
 
-    dx = Blt_AssertMalloc(sizeof(double) * nOrigPts);
+    dx = malloc(sizeof(double) * nOrigPts);
     /* Calculate vector of differences */
     for (i = 0, j = 1; j < nOrigPts; i++, j++) {
 	dx[i] = origPts[j].x - origPts[i].x;
@@ -796,9 +796,9 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	}
     }
     n = nOrigPts - 1;		/* Number of intervals. */
-    A = Blt_AssertMalloc(sizeof(TriDiagonalMatrix) * nOrigPts);
+    A = malloc(sizeof(TriDiagonalMatrix) * nOrigPts);
     if (A == NULL) {
-	Blt_Free(dx);
+	free(dx);
 	return 0;
     }
     /* Vectors to solve the tridiagonal matrix */
@@ -815,10 +815,10 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	A[j][2] = (alpha - dx[i] * A[i][2]) / A[j][0];
     }
 
-    eq = Blt_Malloc(sizeof(Cubic2D) * nOrigPts);
+    eq = malloc(sizeof(Cubic2D) * nOrigPts);
     if (eq == NULL) {
-	Blt_Free(A);
-	Blt_Free(dx);
+	free(A);
+	free(dx);
 	return FALSE;
     }
     eq[0].c = eq[n].c = 0.0;
@@ -828,8 +828,8 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	eq[i].b = (dy) / dx[i] - dx[i] * (eq[j].c + 2.0 * eq[i].c) / 3.0;
 	eq[i].d = (eq[j].c - eq[i].c) / (3.0 * dx[i]);
     }
-    Blt_Free(A);
-    Blt_Free(dx);
+    free(A);
+    free(dx);
 
     /* Now calculate the new values */
     for (ip = intpPts, iend = ip + nIntpPts; ip < iend; ip++) {
@@ -850,7 +850,7 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	    ip->y = origPts[i].y + x * (eq[i].b + x * (eq[i].c + x * eq[i].d));
 	}
     }
-    Blt_Free(eq);
+    free(eq);
     return TRUE;
 }
 
@@ -931,17 +931,17 @@ SplineCmd(
 	    return TCL_ERROR;
 	}
     }
-    origPts = Blt_Malloc(sizeof(Point2d) * nOrigPts);
+    origPts = malloc(sizeof(Point2d) * nOrigPts);
     if (origPts == NULL) {
 	Tcl_AppendResult(interp, "can't allocate \"", Blt_Itoa(nOrigPts), 
 		"\" points", (char *)NULL);
 	return TCL_ERROR;
     }
-    intpPts = Blt_Malloc(sizeof(Point2d) * nIntpPts);
+    intpPts = malloc(sizeof(Point2d) * nIntpPts);
     if (intpPts == NULL) {
 	Tcl_AppendResult(interp, "can't allocate \"", Blt_Itoa(nIntpPts), 
 		"\" points", (char *)NULL);
-	Blt_Free(origPts);
+	free(origPts);
 	return TCL_ERROR;
     }
     xArr = Blt_VecData(x);
@@ -959,16 +959,16 @@ SplineCmd(
     if (!(*proc) (origPts, nOrigPts, intpPts, nIntpPts)) {
 	Tcl_AppendResult(interp, "error generating spline for \"", 
 		Blt_NameOfVector(splY), "\"", (char *)NULL);
-	Blt_Free(origPts);
-	Blt_Free(intpPts);
+	free(origPts);
+	free(intpPts);
 	return TCL_ERROR;
     }
     yArr = Blt_VecData(splY);
     for (i = 0; i < nIntpPts; i++) {
 	yArr[i] = intpPts[i].y;
     }
-    Blt_Free(origPts);
-    Blt_Free(intpPts);
+    free(origPts);
+    free(intpPts);
 
     /* Finally update the vector. The size of the vector hasn't
      * changed, just the data. Reset the vector using TCL_STATIC to
@@ -1123,13 +1123,13 @@ CubicSlopes(
     double norm, dx, dy;
     TriDiagonalMatrix *A;	/* The tri-diagonal matrix is saved here. */
     
-    spline = Blt_Malloc(sizeof(CubicSpline) * nPoints);
+    spline = malloc(sizeof(CubicSpline) * nPoints);
     if (spline == NULL) {
 	return NULL;
     }
-    A = Blt_Malloc(sizeof(TriDiagonalMatrix) * nPoints);
+    A = malloc(sizeof(TriDiagonalMatrix) * nPoints);
     if (A == NULL) {
-	Blt_Free(spline);
+	free(spline);
 	return NULL;
     }
     /*
@@ -1210,8 +1210,8 @@ CubicSlopes(
     if (SolveCubic1(A, n)) {	/* Cholesky decomposition */
 	SolveCubic2(A, spline, n); /* A * dxdt2 = b_x */
     } else {			/* Should not happen, but who knows ... */
-	Blt_Free(A);
-	Blt_Free(spline);
+	free(A);
+	free(spline);
 	return NULL;
     }
     /* Shift all second derivatives one place right and update the ends. */
@@ -1230,7 +1230,7 @@ CubicSlopes(
 	spline[n + 1].x = spline[n].x;
 	spline[n + 1].y = spline[n].y;
     }
-    Blt_Free( A);
+    free( A);
     return spline;
 }
 
@@ -1333,7 +1333,7 @@ Blt_NaturalParametricSpline(Point2d *origPts, int nOrigPts, Region2d *extsPtr,
 	return 0;
     }
     result= CubicEval(origPts, nOrigPts, intpPts, nIntpPts, spline);
-    Blt_Free(spline);
+    free(spline);
     return result;
 }
 
@@ -1380,7 +1380,7 @@ Blt_CatromParametricSpline(Point2d *points, int nPoints, Point2d *intpPts,
      * that we can select the abscissas of the interpolated points from each
      * pixel horizontally across the plotting area.
      */
-    origPts = Blt_AssertMalloc((nPoints + 4) * sizeof(Point2d));
+    origPts = malloc((nPoints + 4) * sizeof(Point2d));
     memcpy(origPts + 1, points, sizeof(Point2d) * nPoints);
 
     origPts[0] = origPts[1];
@@ -1394,6 +1394,6 @@ Blt_CatromParametricSpline(Point2d *points, int nPoints, Point2d *intpPts,
 	intpPts[i].x = (d.x + t * (c.x + t * (b.x + t * a.x))) / 2.0;
 	intpPts[i].y = (d.y + t * (c.y + t * (b.y + t * a.y))) / 2.0;
     }
-    Blt_Free(origPts);
+    free(origPts);
     return 1;
 }

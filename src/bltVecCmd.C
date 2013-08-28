@@ -402,7 +402,7 @@ DeleteOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     }
 
     /* Allocate an "unset" bitmap the size of the vector. */
-    unsetArr = Blt_AssertCalloc(sizeof(unsigned char), (vPtr->length + 7) / 8);
+    unsetArr = calloc(sizeof(unsigned char), (vPtr->length + 7) / 8);
 #define SetBit(i) \
     unsetArr[(i) >> 3] |= (1 << ((i) & 0x07))
 #define GetBit(i) \
@@ -413,7 +413,7 @@ DeleteOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	if (Blt_Vec_GetIndexRange(interp, vPtr, string, 
 		(INDEX_COLON | INDEX_CHECK), (Blt_VectorIndexProc **) NULL) 
 		!= TCL_OK) {
-	    Blt_Free(unsetArr);
+	    free(unsetArr);
 	    return TCL_ERROR;
 	}
 	for (j = vPtr->first; j <= vPtr->last; j++) {
@@ -430,7 +430,7 @@ DeleteOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	}
 	count++;
     }
-    Blt_Free(unsetArr);
+    free(unsetArr);
     vPtr->length = count;
     if (vPtr->flush) {
 	Blt_Vec_FlushCache(vPtr);
@@ -764,7 +764,7 @@ MergeOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     
     /* Allocate an array of vector pointers of each vector to be
      * merged in the current vector.  */
-    vecArr = Blt_AssertMalloc(sizeof(Vector *) * objc);
+    vecArr = malloc(sizeof(Vector *) * objc);
     vPtrPtr = vecArr;
 
     refSize = -1;
@@ -775,7 +775,7 @@ MergeOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 
 	if (Blt_Vec_LookupName(vPtr->dataPtr, Tcl_GetString(objv[i]), &v2Ptr)
 		!= TCL_OK) {
-	    Blt_Free(vecArr);
+	    free(vecArr);
 	    return TCL_ERROR;
 	}
 	/* Check that all the vectors are the same length */
@@ -786,7 +786,7 @@ MergeOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	    Tcl_AppendResult(vPtr->interp, "vectors \"", vPtr->name,
 		"\" and \"", v2Ptr->name, "\" differ in length",
 		(char *)NULL);
-	    Blt_Free(vecArr);
+	    free(vecArr);
 	    return TCL_ERROR;
 	}
 	*vPtrPtr++ = v2Ptr;
@@ -794,7 +794,7 @@ MergeOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     }
     *vPtrPtr = NULL;
 
-    valueArr = Blt_Malloc(sizeof(double) * nElem);
+    valueArr = malloc(sizeof(double) * nElem);
     if (valueArr == NULL) {
 	Tcl_AppendResult(vPtr->interp, "not enough memory to allocate ", 
 		 Blt_Itoa(nElem), " vector elements", (char *)NULL);
@@ -810,7 +810,7 @@ MergeOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	    *valuePtr++ = (*vpp)->valueArr[i + (*vpp)->first];
 	}
     }
-    Blt_Free(vecArr);
+    free(vecArr);
     Blt_Vec_Reset(vPtr, valueArr, nElem, nElem, TCL_DYNAMIC);
     return TCL_OK;
 }
@@ -1469,7 +1469,7 @@ BinreadOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	arraySize = count * size;
     }
 
-    byteArr = Blt_AssertMalloc(arraySize);
+    byteArr = malloc(arraySize);
     /* FIXME: restore old channel translation later? */
     if (Tcl_SetChannelOption(interp, channel, "-translation",
 	    "binary") != TCL_OK) {
@@ -1498,7 +1498,7 @@ BinreadOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	    break;
 	}
     }
-    Blt_Free(byteArr);
+    free(byteArr);
 
     if (vPtr->flush) {
 	Blt_Vec_FlushCache(vPtr);
@@ -1783,14 +1783,14 @@ SimplifyOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 
     length = vPtr->length;
     nPoints = vPtr->length / 2;
-    simple  = Blt_AssertMalloc(nPoints * sizeof(int));
-    reduced = Blt_AssertMalloc(nPoints * sizeof(Point2d));
+    simple  = malloc(nPoints * sizeof(int));
+    reduced = malloc(nPoints * sizeof(Point2d));
     orig = (Point2d *)vPtr->valueArr;
     n = Blt_SimplifyLine(orig, 0, nPoints - 1, tolerance, simple);
     for (i = 0; i < n; i++) {
 	reduced[i] = orig[simple[i]];
     }
-    Blt_Free(simple);
+    free(simple);
     Blt_Vec_Reset(vPtr, (double *)reduced, n * 2, vPtr->length, TCL_DYNAMIC);
     /*
      * The vector has changed; so flush the array indices (they're wrong
@@ -1913,7 +1913,7 @@ Blt_Vec_SortMap(Vector **vectors, int nVectors)
     int length;
 
     length = vPtr->last - vPtr->first + 1;
-    map = Blt_AssertMalloc(sizeof(size_t) * length);
+    map = malloc(sizeof(size_t) * length);
     for (i = vPtr->first; i <= vPtr->last; i++) {
 	map[i] = i;
     }
@@ -1932,7 +1932,7 @@ SortVectors(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     size_t *map;
     int i;
 
-    vectors = Blt_AssertMalloc(sizeof(Vector *) * (objc + 1));
+    vectors = malloc(sizeof(Vector *) * (objc + 1));
     vectors[0] = vPtr;
     map = NULL;
     for (i = 0; i < objc; i++) {
@@ -1950,7 +1950,7 @@ SortVectors(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     }
     map = Blt_Vec_SortMap(vectors, objc + 1);
   error:
-    Blt_Free(vectors);
+    free(vectors);
     return map;
 }
 
@@ -2010,7 +2010,7 @@ SortOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
      * indices found in the index array.
      */
     nBytes = sizeof(double) * sortLength;
-    copy = Blt_AssertMalloc(nBytes);
+    copy = malloc(nBytes);
     memcpy((char *)copy, (char *)vPtr->valueArr, nBytes);
     if (switches.flags & SORT_UNIQUE) {
 	int count;
@@ -2061,8 +2061,8 @@ SortOp(Vector *vPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     }
     result = TCL_OK;
   error:
-    Blt_Free(copy);
-    Blt_Free(map);
+    free(copy);
+    free(map);
     return result;
 }
 
@@ -2307,7 +2307,7 @@ Blt_Vec_VarTrace(ClientData clientData, Tcl_Interp *interp, const char *part1,
 
     if (part2 == NULL) {
 	if (flags & TCL_TRACE_UNSETS) {
-	    Blt_Free(vPtr->arrayName);
+	    free(vPtr->arrayName);
 	    vPtr->arrayName = NULL;
 	    if (vPtr->freeOnUnset) {
 		Blt_Vec_Free(vPtr);

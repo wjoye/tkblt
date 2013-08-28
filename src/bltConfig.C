@@ -1216,9 +1216,10 @@ DoConfig(
 		char *value;
 		
 		value = (objIsEmpty) ? NULL : 
-		    Blt_AssertStrdup(Tcl_GetString(objPtr));
+		    Blt_Strdup(Tcl_GetString(objPtr));
 		if (*(char **)ptr != NULL) {
-		    Blt_Free(*(char **)ptr);
+		    free(*(char **)ptr);
+		    *((char **) ptr) = NULL;
 		}
 		*(char **)ptr = value;
 	    }
@@ -1357,7 +1358,8 @@ DoConfig(
 		    return TCL_ERROR;
 		}
 		if (*(char ***)ptr != NULL) {
-		    Blt_Free(*(char ***)ptr);
+		    free(*(char ***)ptr);
+		    *((char **) ptr) = NULL;
 		}
 		*(const char ***)ptr = argv;
 	    }
@@ -2261,7 +2263,7 @@ Blt_FreeOptions(
 	switch (sp->type) {
 	case BLT_CONFIG_STRING:
 	    if (*((char **) ptr) != NULL) {
-		Blt_Free(*((char **) ptr));
+		free(*((char **) ptr));
 		*((char **) ptr) = NULL;
 	    }
 	    break;
@@ -2318,7 +2320,7 @@ Blt_FreeOptions(
 
 	case BLT_CONFIG_LIST:
 	    if (*((char ***) ptr) != NULL) {
-		Blt_Free(*((char ***) ptr));
+		free(*((char ***) ptr));
 		*((char ***) ptr) = NULL;
 	    }
 	    break;
@@ -2430,7 +2432,7 @@ Blt_ConfigureComponentFromObj(
     char *tmpName;
     int isTemporary = FALSE;
 
-    tmpName = Blt_AssertStrdup(name);
+    tmpName = Blt_Strdup(name);
 
     /* Window name can't start with an upper case letter */
     tmpName[0] = tolower(name[0]);
@@ -2450,7 +2452,7 @@ Blt_ConfigureComponentFromObj(
 	return TCL_ERROR;
     }
     assert(Tk_Depth(tkwin) == Tk_Depth(parent));
-    Blt_Free(tmpName);
+    free(tmpName);
 
     Tk_SetClass(tkwin, className);
     result = Blt_ConfigureWidgetFromObj(interp, tkwin, sp, objc, objv, widgRec,

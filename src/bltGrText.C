@@ -577,7 +577,7 @@ Blt_Ts_CreateLayout(const char *text, int textLen, TextStyle *tsPtr)
     }
     size = sizeof(TextLayout) + (sizeof(TextFragment) * (nFrags - 1));
 
-    layoutPtr = Blt_AssertCalloc(1, size);
+    layoutPtr = calloc(1, size);
     layoutPtr->nFrags = nFrags;
 
     nFrags = count = 0;
@@ -1239,7 +1239,7 @@ Blt_Ts_DrawText(
 
     layoutPtr = Blt_Ts_CreateLayout(text, textLen, stylePtr);
     Blt_Ts_DrawLayout(tkwin, drawable, layoutPtr, stylePtr, x, y);
-    Blt_Free(layoutPtr);
+    free(layoutPtr);
 }
 
 void
@@ -1276,7 +1276,7 @@ Blt_DrawText2(
     }
     areaPtr->width = width;
     areaPtr->height = height;
-    Blt_Free(layoutPtr);
+    free(layoutPtr);
 }
 
 void
@@ -1294,7 +1294,7 @@ Blt_DrawText(
     }
     layoutPtr = Blt_Ts_CreateLayout(string, -1, stylePtr);
     Blt_Ts_DrawLayout(tkwin, drawable, layoutPtr, stylePtr, x, y);
-    Blt_Free(layoutPtr);
+    free(layoutPtr);
 }
 
 void
@@ -1402,7 +1402,7 @@ Blt_FreeTextLayout(Tk_TextLayout textLayout)
     TkTextLayout *layoutPtr = (TkTextLayout *) textLayout;
 
     if (layoutPtr != NULL) {
-	Blt_Free(layoutPtr);
+	free(layoutPtr);
     }
 }
 
@@ -1442,7 +1442,7 @@ NewChunk(TkTextLayout **layoutPtrPtr, int *maxPtr, const char *start,
     if (layoutPtr->numChunks == maxChunks) {
 	maxChunks *= 2;
 	s = sizeof(TkTextLayout) + ((maxChunks - 1) * sizeof(LayoutChunk));
-	layoutPtr = Blt_Realloc(layoutPtr, s);
+	layoutPtr = realloc(layoutPtr, s);
 	*layoutPtrPtr = layoutPtr;
 	*maxPtr = maxChunks;
     }
@@ -1543,7 +1543,7 @@ Blt_ComputeTextLayout(
 
     maxChunks = 1;
 
-    layoutPtr = Blt_AssertMalloc(sizeof(TkTextLayout) + (maxChunks - 1) * 
+    layoutPtr = malloc(sizeof(TkTextLayout) + (maxChunks - 1) * 
 				sizeof(LayoutChunk));
     layoutPtr->font	    = font;
     layoutPtr->string	    = string;
