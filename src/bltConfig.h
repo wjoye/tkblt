@@ -371,36 +371,4 @@ BLT_EXTERN int Blt_GetResizeFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr,
 BLT_EXTERN int Blt_GetDashesFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	Blt_Dashes *dashesPtr);
 
-#if (_TK_VERSION < _VERSION(8,1,0))
-BLT_EXTERN int Tk_GetAnchorFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	Tk_Anchor *anchorPtr);
-
-BLT_EXTERN int Tk_GetJustifyFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	Tk_Justify *justifyPtr);
-
-BLT_EXTERN int Tk_GetReliefFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	int *reliefPtr);
-
-BLT_EXTERN int Tk_GetMMFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr, double *doublePtr);
-
-BLT_EXTERN int Tk_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr, int *intPtr);
-
-BLT_EXTERN Tk_3DBorder Tk_Alloc3DBorderFromObj(Tcl_Interp *interp, 
-	Tk_Window tkwin, Tcl_Obj *objPtr);
-
-BLT_EXTERN Pixmap Tk_AllocBitmapFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr);
-
-BLT_EXTERN Tk_Font Tk_AllocFontFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr);
-
-BLT_EXTERN Tk_Cursor Tk_AllocCursorFromObj(Tcl_Interp *interp, Tk_Window tkwin,
-	Tcl_Obj *objPtr);
-
-BLT_EXTERN XColor *Tk_AllocColorFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr);
-#endif /* < 8.1 */
-
 #endif /* BLT_CONFIG_H */
