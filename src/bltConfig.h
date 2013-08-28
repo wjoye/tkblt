@@ -30,9 +30,7 @@
 #ifndef BLT_CONFIG_H
 #define BLT_CONFIG_H
 
-#ifdef HAVE_STDDEF_H
 #  include <stddef.h>
-#endif /* HAVE_STDDEF_H */
 
 #ifndef Blt_Offset
 #ifdef offsetof
