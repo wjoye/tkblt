@@ -128,15 +128,7 @@ unset var path\n\
 
 static Tcl_AppInitProc *cmdProcs[] =
 {
-#ifndef NO_BASE64
-    Blt_Base64CmdInitProc,
-#endif
-#ifndef NO_SPLINE
-    Blt_SplineCmdInitProc,
-#endif
-#ifndef NO_VECTOR
     Blt_VectorCmdInitProc,
-#endif
     (Tcl_AppInitProc *) NULL
 };
 
