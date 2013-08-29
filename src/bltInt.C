@@ -131,9 +131,6 @@ static Tcl_AppInitProc *cmdProcs[] =
 #ifndef NO_BASE64
     Blt_Base64CmdInitProc,
 #endif
-#ifndef NO_BGEXEC
-    Blt_BgexecCmdInitProc,
-#endif
 #ifndef NO_PTYEXEC
     Blt_PtyExecCmdInitProc,
 #endif
@@ -155,14 +152,8 @@ static Tcl_AppInitProc *cmdProcs[] =
 #ifndef NO_SPLINE
     Blt_SplineCmdInitProc,
 #endif
-#ifndef NO_TREE
-    Blt_TreeCmdInitProc,
-#endif
 #ifndef NO_VECTOR
     Blt_VectorCmdInitProc,
-#endif
-#ifndef NO_WATCH
-    Blt_WatchCmdInitProc,
 #endif
     (Tcl_AppInitProc *) NULL
 };
