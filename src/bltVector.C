@@ -48,17 +48,6 @@
 #include "bltSwitch.h"
 #include <bltMath.h>
 
-#ifdef TIME_WITH_SYS_TIME
-#include <sys/time.h>
-#include <time.h>
-#else
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#else
-#include <time.h>
-#endif /* HAVE_SYS_TIME_H */
-#endif /* TIME_WITH_SYS_TIME */
-
 #ifndef TCL_NAMESPACE_ONLY
 #define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY
 #endif
