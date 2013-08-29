@@ -131,21 +131,6 @@ static Tcl_AppInitProc *cmdProcs[] =
 #ifndef NO_BASE64
     Blt_Base64CmdInitProc,
 #endif
-#ifndef NO_PTYEXEC
-    Blt_PtyExecCmdInitProc,
-#endif
-#ifndef NO_CRC32
-    Blt_Crc32CmdInitProc,
-#endif
-#ifndef NO_CSV
-    Blt_CsvCmdInitProc,
-#endif
-#ifndef NO_DATATABLE
-    Blt_TableCmdInitProc,
-#endif
-#ifndef NO_DEBUG
-    Blt_DebugCmdInitProc,
-#endif
 #ifndef NO_SPLINE
     Blt_SplineCmdInitProc,
 #endif
@@ -357,6 +342,3 @@ Blt_core_SafeInit(Tcl_Interp *interp) /* Interpreter to add extra commands */
     return Blt_core_Init(interp);
 }
 
-#ifdef USE_DLL
-#  include "bltWinDll.c"
-#endif
