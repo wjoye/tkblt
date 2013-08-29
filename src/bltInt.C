@@ -143,9 +143,6 @@ static Tcl_AppInitProc *cmdProcs[] =
 #ifndef NO_DATATABLE
     Blt_TableCmdInitProc,
 #endif
-#ifndef NO_DDE
-    Blt_DdeCmdInitProc,
-#endif
 #ifndef NO_DEBUG
     Blt_DebugCmdInitProc,
 #endif
