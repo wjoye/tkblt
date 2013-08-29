@@ -52,7 +52,7 @@ typedef double (ScalarProc)(Vector *vPtr);
 /*
  * Built-in math functions:
  */
-typedef int (GenericMathProc) _ANSI_ARGS_(ANYARGS);
+typedef int (GenericMathProc) ();
 
 /*
  * MathFunction --
