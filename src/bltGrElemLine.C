@@ -1558,7 +1558,7 @@ GetScreenPoints(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
     count = 0;			      /* Count the valid screen coordinates */
     if (graphPtr->inverted) {
 	for (i = 0; i < np; i++) {
-	    if ((FINITE(x[i])) && (FINITE(y[i]))) {
+	    if ((isfinite(x[i])) && (isfinite(y[i]))) {
  		points[count].x = Blt_HMap(elemPtr->axes.y, y[i]);
 		points[count].y = Blt_VMap(elemPtr->axes.x, x[i]);
 		map[count] = i;
@@ -1567,7 +1567,7 @@ GetScreenPoints(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 	}
     } else {
 	for (i = 0; i < np; i++) {
-	    if ((FINITE(x[i])) && (FINITE(y[i]))) {
+	    if ((isfinite(x[i])) && (isfinite(y[i]))) {
 		points[count].x = Blt_HMap(elemPtr->axes.x, x[i]);
 		points[count].y = Blt_VMap(elemPtr->axes.y, y[i]);
 		map[count] = i;
@@ -2672,7 +2672,7 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 	    x = elemPtr->x.values[i];
 	    y = elemPtr->y.values[i];
 	    stylePtr = styleMap[i];
-	    if ((FINITE(x)) && (FINITE(y))) {
+	    if ((isfinite(x)) && (isfinite(y))) {
 		if (elemPtr->xError.nValues > 0) {
 		    high = x + elemPtr->xError.values[i];
 		    low = x - elemPtr->xError.values[i];
@@ -2680,7 +2680,7 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 		    high = elemPtr->xHigh.values[i];
 		    low = elemPtr->xLow.values[i];
 		}
-		if ((FINITE(high)) && (FINITE(low)))  {
+		if ((isfinite(high)) && (isfinite(low)))  {
 		    Point2d p, q;
 
 		    p = Blt_Map2D(graphPtr, high, y, &elemPtr->axes);
@@ -2736,7 +2736,7 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 	    x = elemPtr->x.values[i];
 	    y = elemPtr->y.values[i];
 	    stylePtr = styleMap[i];
-	    if ((FINITE(x)) && (FINITE(y))) {
+	    if ((isfinite(x)) && (isfinite(y))) {
 		if (elemPtr->yError.nValues > 0) {
 		    high = y + elemPtr->yError.values[i];
 		    low = y - elemPtr->yError.values[i];
@@ -2744,7 +2744,7 @@ MapErrorBars(Graph *graphPtr, LineElement *elemPtr, LineStyle **styleMap)
 		    high = elemPtr->yHigh.values[i];
 		    low = elemPtr->yLow.values[i];
 		}
-		if ((FINITE(high)) && (FINITE(low)))  {
+		if ((isfinite(high)) && (isfinite(low)))  {
 		    Point2d p, q;
 		    
 		    p = Blt_Map2D(graphPtr, x, high, &elemPtr->axes);

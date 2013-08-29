@@ -1646,7 +1646,7 @@ EvaluateExpression(
 
     /* Check for NaN's and overflows. */
     for (vp = vPtr->valueArr, vend = vp + vPtr->length; vp < vend; vp++) {
-	if (!FINITE(*vp)) {
+	if (!isfinite(*vp)) {
 	    /*
 	     * IEEE floating-point error.
 	     */
@@ -1694,7 +1694,7 @@ ComponentFunc(
 	    MathError(interp, *vp);
 	    return TCL_ERROR;
 	}
-	if (!FINITE(*vp)) {
+	if (!isfinite(*vp)) {
 	    /*
 	     * IEEE floating-point error.
 	     */

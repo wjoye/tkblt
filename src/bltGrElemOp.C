@@ -281,7 +281,7 @@ FetchTableValues(Tcl_Interp *interp, ElemValues *valuesPtr, Blt_TableColumn col)
 
 	row = Blt_Table_FindRowByIndex(table, i);
 	value = Blt_Table_GetDouble(table, row, col);
-	if (FINITE(value)) {
+	if (isfinite(value)) {
 	    array[j] = value;
 	    j++;
 	}
@@ -536,14 +536,14 @@ FindRange(ElemValues *valuesPtr)
 
     min = DBL_MAX, max = -DBL_MAX;
     for(i = 0; i < valuesPtr->nValues; i++) {
-	if (FINITE(x[i])) {
+	if (isfinite(x[i])) {
 	    min = max = x[i];
 	    break;
 	}
     }
     /*  Initialize values to track the vector range */
     for (/* empty */; i < valuesPtr->nValues; i++) {
-	if (FINITE(x[i])) {
+	if (isfinite(x[i])) {
 	    if (x[i] < min) {
 		min = x[i];
 	    } else if (x[i] > max) {

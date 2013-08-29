@@ -1285,7 +1285,7 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 	    x = elemPtr->x.values[i];
 	    y = elemPtr->y.values[i];
 	    stylePtr = dataToStyle[i];
-	    if ((FINITE(x)) && (FINITE(y))) {
+	    if ((isfinite(x)) && (isfinite(y))) {
 		if (elemPtr->xError.nValues > 0) {
 		    high = x + elemPtr->xError.values[i];
 		    low = x - elemPtr->xError.values[i];
@@ -1293,7 +1293,7 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 		    high = elemPtr->xHigh.values[i];
 		    low = elemPtr->xLow.values[i];
 		}
-		if ((FINITE(high)) && (FINITE(low)))  {
+		if ((isfinite(high)) && (isfinite(low)))  {
 		    Point2d p, q;
 
 		    p = Blt_Map2D(graphPtr, high, y, &elemPtr->axes);
@@ -1349,7 +1349,7 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 	    x = elemPtr->x.values[i];
 	    y = elemPtr->y.values[i];
 	    stylePtr = dataToStyle[i];
-	    if ((FINITE(x)) && (FINITE(y))) {
+	    if ((isfinite(x)) && (isfinite(y))) {
 		if (elemPtr->yError.nValues > 0) {
 		    high = y + elemPtr->yError.values[i];
 		    low = y - elemPtr->yError.values[i];
@@ -1357,7 +1357,7 @@ MapErrorBars(Graph *graphPtr, BarElement *elemPtr, BarStyle **dataToStyle)
 		    high = elemPtr->yHigh.values[i];
 		    low = elemPtr->yLow.values[i];
 		}
-		if ((FINITE(high)) && (FINITE(low)))  {
+		if ((isfinite(high)) && (isfinite(low)))  {
 		    Point2d p, q;
 		    
 		    p = Blt_Map2D(graphPtr, x, high, &elemPtr->axes);
