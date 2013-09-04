@@ -125,13 +125,6 @@ unset var path\n\
 \n"
 };
 
-
-static Tcl_AppInitProc *cmdProcs[] =
-{
-    Blt_VectorCmdInitProc,
-    (Tcl_AppInitProc *) NULL
-};
-
 double 
 Blt_NaN(void)
 {
@@ -297,7 +290,6 @@ Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
 	return TCL_ERROR;
     }
 
-
     nsPtr = Tcl_FindNamespace(interp, "::blt", (Tcl_Namespace *)NULL, 0);
     if (nsPtr == NULL) {
 	nsPtr = Tcl_CreateNamespace(interp, "::blt", NULL, NULL);
@@ -305,13 +297,10 @@ Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
 	    return TCL_ERROR;
 	}
     }
-    /* Initialize the BLT commands that only require Tcl. */
-    for (p = cmdProcs; *p != NULL; p++) {
-	if ((**p) (interp) != TCL_OK) {
-	    Tcl_DeleteNamespace(nsPtr);
-	    return TCL_ERROR;
-	}
-    }
+
+    if (Blt_VectorCmdInitProc(interp) != TCL_OK)
+      return TCL_ERROR;
+
     args[0] = args[1] = TCL_EITHER;
     Tcl_CreateMathFunc(interp, "min", 2, args, MinMathProc, (ClientData)0);
     Tcl_CreateMathFunc(interp, "max", 2, args, MaxMathProc, (ClientData)0);
