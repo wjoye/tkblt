@@ -303,7 +303,7 @@ DestroyPen(Pen *penPtr)
     Blt_FreeOptions(penPtr->configSpecs, (char *)penPtr, graphPtr->display, 0);
     (*penPtr->destroyProc) (graphPtr, penPtr);
     if ((penPtr->name != NULL) && (penPtr->name[0] != '\0')) {
-	free(penPtr->name);
+      free((void*)(penPtr->name));
     }
     if (penPtr->hashPtr != NULL) {
 	Blt_DeleteHashEntry(&graphPtr->penTable, penPtr->hashPtr);
