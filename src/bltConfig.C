@@ -1098,7 +1098,7 @@ DoConfig(
 		    return TCL_ERROR;
 		}
 		if (*(char ***)ptr != NULL) {
-		    Tcl_Free(*(char ***)ptr);
+		  Tcl_Free((void*)(*(char ***)ptr));
 		    *((char ***) ptr) = NULL;
 		}
 		*(const char ***)ptr = argv;
@@ -1109,7 +1109,7 @@ DoConfig(
 	    {
 		long value;
 		
-		if (Tcl_GetLongFromObj(interp, objPtr, &value) != TCL_OK) {
+	        if (Tcl_GetLongFromObj(interp, objPtr, &value) != TCL_OK) {
 		    return TCL_ERROR;
 		}
 		*(long *)ptr = value;
@@ -2060,7 +2060,7 @@ Blt_FreeOptions(
 
 	case BLT_CONFIG_LIST:
 	    if (*((char ***) ptr) != NULL) {
-		Tcl_Free(*((char ***) ptr));
+	      Tcl_Free((void*)(*((char ***) ptr)));
 		*((char ***) ptr) = NULL;
 	    }
 	    break;
