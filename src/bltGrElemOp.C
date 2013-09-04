@@ -1267,10 +1267,10 @@ DestroyElement(Element *elemPtr)
 	Blt_DeleteHashEntry(&graphPtr->elements.table, elemPtr->hashPtr);
     }
     if (elemPtr->obj.name != NULL) {
-	free(elemPtr->obj.name);
+      free((void*)(elemPtr->obj.name));
     }
     if (elemPtr->label != NULL) {
-	free(elemPtr->label);
+      free((void*)(elemPtr->label));
     }
     free(elemPtr);
 }

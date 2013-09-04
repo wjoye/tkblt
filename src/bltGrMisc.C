@@ -1991,20 +1991,6 @@ static Blt_OpSpec arcBallOps[] =
 };
 static int nArcBallOps = sizeof(arcBallOps) / sizeof(Blt_OpSpec);
 
-static int
-ArcBallCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
-	   Tcl_Obj *const *objv)
-{
-    Tcl_ObjCmdProc *proc;
-
-    proc = Blt_GetOpFromObj(interp, nArcBallOps, arcBallOps, BLT_OP_ARG1, 
-			    objc, objv, 0);
-    if (proc == NULL) {
-	return TCL_ERROR;
-    }
-    return (*proc) (clientData, interp, objc, objv);
-}
-
 #undef Tk_GetPixmap
 Pixmap 
 Blt_GetPixmap(Display *display, Drawable drawable, int w, int h, int depth,

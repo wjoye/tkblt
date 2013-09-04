@@ -1965,7 +1965,6 @@ GetElementFromObj(Graph *graphPtr, Tcl_Obj *objPtr, Element **elemPtrPtr)
     char c;
     const char *string;
     int last;
-    int index;
 
     legendPtr = graphPtr->legend;
     interp = graphPtr->interp;

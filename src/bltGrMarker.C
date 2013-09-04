@@ -1836,7 +1836,7 @@ DestroyMarker(Marker *markerPtr)
 	Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
     }
     if (markerPtr->obj.name != NULL) {
-	free(markerPtr->obj.name);
+      free((void*)(markerPtr->obj.name));
     }
     free(markerPtr);
 }
@@ -4202,7 +4202,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
     hPtr = Blt_FindHashEntry(&graphPtr->markers.table, oldName);
     Blt_DeleteHashEntry(&graphPtr->markers.table, hPtr);
     if (oldName != NULL) {
-	free(oldName);
+      free((void*)oldName);
     }
     return TCL_OK;
 }

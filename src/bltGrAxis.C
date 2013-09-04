@@ -2022,7 +2022,7 @@ DestroyAxis(Axis *axisPtr)
 	Blt_Chain_DeleteLink(axisPtr->chain, axisPtr->link);
     }
     if (axisPtr->obj.name != NULL) {
-	free(axisPtr->obj.name);
+      free((void*)(axisPtr->obj.name));
     }
     if (axisPtr->hashPtr != NULL) {
 	Blt_DeleteHashEntry(&graphPtr->axes.table, axisPtr->hashPtr);
