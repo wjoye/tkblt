@@ -1,4 +1,3 @@
-
 #include "bltInt.h"
 #include "bltOp.h"
 #include <bltVector.h>
@@ -28,8 +27,6 @@ typedef struct {
 #define Z2	param[7]
 #define Y1	param[8]
 #define Y2	param[9]
-
-static Tcl_ObjCmdProc SplineCmd;
 
 /*
  *---------------------------------------------------------------------------
@@ -854,149 +851,11 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
     return TRUE;
 }
 
-static Blt_OpSpec splineOps[] =
-{
-    {"natural", 1, Blt_NaturalSpline, 6, 6, "x y splx sply",},
-    {"quadratic", 1, Blt_QuadraticSpline, 6, 6, "x y splx sply",},
-};
-static int nSplineOps = sizeof(splineOps) / sizeof(Blt_OpSpec);
-
-/*ARGSUSED*/
-static int
-SplineCmd(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,
-    int objc,
-    Tcl_Obj *const *objv)
-{
-    SplineProc *proc;
-    Blt_Vector *x, *y, *splX, *splY;
-    double *xArr, *yArr;
-    int i;
-    Point2d *origPts, *intpPts;
-    int nOrigPts, nIntpPts;
-    
-    proc = Blt_GetOpFromObj(interp, nSplineOps, splineOps, BLT_OP_ARG1, 
-	objc, objv, 0);
-    if (proc == NULL) {
-	return TCL_ERROR;
-    }
-    if ((Blt_GetVectorFromObj(interp, objv[2], &x) != TCL_OK) ||
-	(Blt_GetVectorFromObj(interp, objv[3], &y) != TCL_OK) ||
-	(Blt_GetVectorFromObj(interp, objv[4], &splX) != TCL_OK)) {
-	return TCL_ERROR;
-    }
-    nOrigPts = Blt_VecLength(x);
-    if (nOrigPts < 3) {
-	Tcl_AppendResult(interp, "length of vector \"", Tcl_GetString(objv[2]),
-			 "\" is < 3", (char *)NULL);
-	return TCL_ERROR;
-    }
-    for (i = 1; i < nOrigPts; i++) {
-	if (Blt_VecData(x)[i] < Blt_VecData(x)[i - 1]) {
-	    Tcl_AppendResult(interp, "x vector \"", Tcl_GetString(objv[2]),
-		"\" must be monotonically increasing", (char *)NULL);
-	    return TCL_ERROR;
-	}
-    }
-    /* Check that all the data points aren't the same. */
-    if (Blt_VecData(x)[i - 1] <= Blt_VecData(x)[0]) {
-	Tcl_AppendResult(interp, "x vector \"", Tcl_GetString(objv[2]),
-	 "\" must be monotonically increasing", (char *)NULL);
-	return TCL_ERROR;
-    }
-    if (nOrigPts != Blt_VecLength(y)) {
-	Tcl_AppendResult(interp, "vectors \"", Tcl_GetString(objv[2]), 
-			 "\" and \"", Tcl_GetString(objv[3]),
-			 " have different lengths", (char *)NULL);
-	return TCL_ERROR;
-    }
-    nIntpPts = Blt_VecLength(splX);
-    if (Blt_GetVectorFromObj(interp, objv[5], &splY) != TCL_OK) {
-	/*
-	 * If the named vector to hold the ordinates of the spline
-	 * doesn't exist, create one the same size as the vector
-	 * containing the abscissas.
-	 */
-	if (Blt_CreateVector(interp, Tcl_GetString(objv[5]), nIntpPts, &splY) 
-	    != TCL_OK) {
-	    return TCL_ERROR;
-	}
-    } else if (nIntpPts != Blt_VecLength(splY)) {
-	/*
-	 * The x and y vectors differ in size. Make the number of ordinates
-	 * the same as the number of abscissas.
-	 */
-	if (Blt_ResizeVector(splY, nIntpPts) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-    }
-    origPts = malloc(sizeof(Point2d) * nOrigPts);
-    if (origPts == NULL) {
-	Tcl_AppendResult(interp, "can't allocate \"", Blt_Itoa(nOrigPts), 
-		"\" points", (char *)NULL);
-	return TCL_ERROR;
-    }
-    intpPts = malloc(sizeof(Point2d) * nIntpPts);
-    if (intpPts == NULL) {
-	Tcl_AppendResult(interp, "can't allocate \"", Blt_Itoa(nIntpPts), 
-		"\" points", (char *)NULL);
-	free(origPts);
-	return TCL_ERROR;
-    }
-    xArr = Blt_VecData(x);
-    yArr = Blt_VecData(y);
-    for (i = 0; i < nOrigPts; i++) {
-	origPts[i].x = xArr[i];
-	origPts[i].y = yArr[i];
-    }
-    xArr = Blt_VecData(splX);
-    yArr = Blt_VecData(splY);
-    for (i = 0; i < nIntpPts; i++) {
-	intpPts[i].x = xArr[i];
-	intpPts[i].y = yArr[i];
-    }
-    if (!(*proc) (origPts, nOrigPts, intpPts, nIntpPts)) {
-	Tcl_AppendResult(interp, "error generating spline for \"", 
-		Blt_NameOfVector(splY), "\"", (char *)NULL);
-	free(origPts);
-	free(intpPts);
-	return TCL_ERROR;
-    }
-    yArr = Blt_VecData(splY);
-    for (i = 0; i < nIntpPts; i++) {
-	yArr[i] = intpPts[i].y;
-    }
-    free(origPts);
-    free(intpPts);
-
-    /* Finally update the vector. The size of the vector hasn't
-     * changed, just the data. Reset the vector using TCL_STATIC to
-     * indicate this. */
-    if (Blt_ResetVector(splY, Blt_VecData(splY), Blt_VecLength(splY),
-	    Blt_VecSize(splY), TCL_STATIC) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-int
-Blt_SplineCmdInitProc(Tcl_Interp *interp)
-{
-    static Blt_InitCmdSpec cmdSpec = {"spline", SplineCmd,};
-
-    return Blt_InitCmd(interp, "::blt", &cmdSpec);
-}
-
-
-#define SQR(x)	((x)*(x))
-
 typedef struct {
     double t;			/* Arc length of interval. */
     double x;			/* 2nd derivative of X with respect to T */
     double y;			/* 2nd derivative of Y with respect to T */
 } CubicSpline;
-
 
 /*
  * The following two procedures solve the special linear system which arise

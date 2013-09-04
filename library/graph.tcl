@@ -524,9 +524,9 @@ proc blt::ZoomStack::Pop { g } {
 	set _private($g,stack) [lrange $zoomStack 1 end]
 	eval $cmd
 	TitleLast $g
-	blt::busy hold $g
+#	blt::busy hold $g
 	update
-	blt::busy release $g
+#	blt::busy release $g
 	after 2000 [list blt::ZoomStack::DestroyTitle $g]
     } else {
 	catch { $g marker delete "zoomTitle" }
@@ -593,9 +593,9 @@ proc blt::ZoomStack::Push { g } {
 	    return
 	}
     }
-    blt::busy hold $g 
+#    blt::busy hold $g 
     update;				# This "update" redraws the graph
-    blt::busy release $g
+#    blt::busy release $g
 }
 
 proc blt::ZoomStack::SetAxisRanges { g axis min max } {
