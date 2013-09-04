@@ -28,7 +28,6 @@
 #define _BLT_PARSE_H
 
 typedef struct _ParseValue ParseValue;
-
 struct _ParseValue {
     char *buffer;
     char *next;
@@ -36,9 +35,6 @@ struct _ParseValue {
     void (*expandProc)(ParseValue *pvPtr, int needed);
     ClientData clientData;
 };
-
-#define TCL_BRACKET_TERM	  1
-#define TCL_ALLOW_EXCEPTIONS	  4
 
 BLT_EXTERN int Blt_ParseBraces(Tcl_Interp *interp, const char *string, 
 	const char **termPtr, ParseValue *pvPtr);
