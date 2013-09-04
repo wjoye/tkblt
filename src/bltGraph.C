@@ -48,7 +48,6 @@
 #include "bltGrLegd.h"
 #include "bltSwitch.h"
 #include <X11/Xutil.h>
-#include "tkDisplay.h"
 #include "bltPicture.h"
 
 typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 

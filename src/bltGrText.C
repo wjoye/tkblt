@@ -30,7 +30,6 @@
 #include <bltHash.h>
 #include <X11/Xutil.h>
 #include "tkIntBorder.h"
-#include "tkDisplay.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
 #include "bltFont.h"

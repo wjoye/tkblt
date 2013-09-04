@@ -31,7 +31,6 @@
 #include "bltChain.h"
 #include <X11/Xutil.h>
 #include "bltGrElem.h"
-#include "tkDisplay.h"
 #include "bltBgStyle.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
