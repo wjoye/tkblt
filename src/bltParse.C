@@ -22,24 +22,9 @@
  * include them.  In fact, the byte-compiled versions would be slower
  * since the compiled code typically runs only one time.
  */
-#if 0
-#define TIME_WITH_SYS_TIME 0
-#define HAVE_SYS_TIME_H 1
-#define STDC_HEADERS 1
-#define HAVE_SYS_TYPES_H 1
-#define HAVE_STDLIB_H 1
-#define HAVE_INTTYPES_H 1
-#define HAVE_STDINT_H 1
-#define HAVE_UNISTD_H 1
-#include <tclPort.h>
-#include <tclInt.h>
-#endif
 
 #include <bltInt.h>
-
 #include "bltParse.h"
-
-#define TCL_BRACKET_TERM	  1
 
 /*
  * A table used to classify input characters to assist in parsing
@@ -218,8 +203,7 @@ static unsigned char tclTypeTable[] =
  *
  *---------------------------------------------------------------------------
  */
-int
-Blt_ParseNestedCmd(
+int Blt_ParseNestedCmd(
     Tcl_Interp *interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening bracket. */
@@ -230,38 +214,6 @@ Blt_ParseNestedCmd(
 				 * result of command. */
 {
   return TCL_ERROR;
-#if 0
-    int result, length, shortfall;
-    Interp *iPtr = (Interp *)interp;
-
-    iPtr->evalFlags = flags | TCL_BRACKET_TERM;
-    result = Tcl_Eval(interp, string);
-    *termPtr = (string + iPtr->unused1);
-    if (result != TCL_OK) {
-	/*
-	 * The increment below results in slightly cleaner message in
-	 * the errorInfo variable (the close-bracket will appear).
-	 */
-
-	if (**termPtr == ']') {
-	    *termPtr += 1;
-	}
-	return result;
-    }
-    (*termPtr) += 1;
-    length = (int)strlen(iPtr->result);
-    shortfall = length + 1 - (parsePtr->end - parsePtr->next);
-    if (shortfall > 0) {
-	(*parsePtr->expandProc) (parsePtr, shortfall);
-    }
-    strcpy(parsePtr->next, iPtr->result);
-    parsePtr->next += length;
-
-    Tcl_FreeResult(interp);
-    iPtr->result = iPtr->resultSpace;
-    iPtr->resultSpace[0] = '\0';
-    return TCL_OK;
-#endif
 }
 
 /*
@@ -290,8 +242,7 @@ Blt_ParseNestedCmd(
  *---------------------------------------------------------------------------
  */
 
-int
-Blt_ParseBraces(
+int Blt_ParseBraces(
     Tcl_Interp *interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening bracket. */
@@ -399,8 +350,7 @@ Blt_ParseBraces(
  *
  *---------------------------------------------------------------------------
  */
-void
-Blt_ExpandParseValue(
+void Blt_ExpandParseValue(
     ParseValue *parsePtr,	/* Information about buffer that
 				 * must be expanded.  If the clientData
 				 * in the structure is non-zero, it
@@ -468,8 +418,7 @@ Blt_ExpandParseValue(
  *
  *---------------------------------------------------------------------------
  */
-int
-Blt_ParseQuotes(
+int Blt_ParseQuotes(
     Tcl_Interp *interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening double-
