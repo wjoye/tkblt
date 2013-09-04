@@ -47,6 +47,7 @@
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
 #include <bltMath.h>
+#include <time.h>
 
 #ifndef TCL_NAMESPACE_ONLY
 #define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY
@@ -706,7 +707,7 @@ UnmapVariable(Vector *vPtr)
     Tcl_UnsetVar2(interp, vPtr->arrayName, (char *)NULL, vPtr->varFlags);
 
     if (vPtr->arrayName != NULL) {
-	free(vPtr->arrayName);
+      free((void*)(vPtr->arrayName));
 	vPtr->arrayName = NULL;
     }
 }

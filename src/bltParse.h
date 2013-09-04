@@ -36,12 +36,12 @@ struct _ParseValue {
     ClientData clientData;
 };
 
-int Blt_ParseBraces(Tcl_Interp *interp, const char *string, 
+extern int Blt_ParseBraces(Tcl_Interp *interp, const char *string, 
 	const char **termPtr, ParseValue *pvPtr);
-int Blt_ParseNestedCmd(Tcl_Interp *interp, const char *string, 
+extern int Blt_ParseNestedCmd(Tcl_Interp *interp, const char *string, 
 	int flags, const char **termPtr, ParseValue *pvPtr);
-int Blt_ParseQuotes(Tcl_Interp *interp, const char *string, 
+extern int Blt_ParseQuotes(Tcl_Interp *interp, const char *string, 
 	int termChar, int flags, const char **termPtr, ParseValue * pvPtr);
-void Blt_ExpandParseValue(ParseValue *pvPtr, int needed);
+extern void Blt_ExpandParseValue(ParseValue *pvPtr, int needed);
 
 #endif 
