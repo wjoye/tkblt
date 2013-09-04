@@ -22,6 +22,7 @@
  * include them.  In fact, the byte-compiled versions would be slower
  * since the compiled code typically runs only one time.
  */
+#if 0
 #define TIME_WITH_SYS_TIME 0
 #define HAVE_SYS_TIME_H 1
 #define STDC_HEADERS 1
@@ -32,6 +33,7 @@
 #define HAVE_UNISTD_H 1
 #include <tclPort.h>
 #include <tclInt.h>
+#endif
 
 #include <bltInt.h>
 
@@ -227,6 +229,8 @@ Blt_ParseNestedCmd(
     ParseValue *parsePtr)	/* Information about where to place
 				 * result of command. */
 {
+  return TCL_ERROR;
+#if 0
     int result, length, shortfall;
     Interp *iPtr = (Interp *)interp;
 
@@ -257,6 +261,7 @@ Blt_ParseNestedCmd(
     iPtr->result = iPtr->resultSpace;
     iPtr->resultSpace[0] = '\0';
     return TCL_OK;
+#endif
 }
 
 /*
