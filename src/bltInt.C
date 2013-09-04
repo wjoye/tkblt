@@ -268,19 +268,15 @@ Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
     const char *result;
     const int isExact = 1;
 
+  if(
 #ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(interp, TCL_VERSION_LOADED, isExact) == NULL) {
-	return TCL_ERROR;
-    };
+     Tcl_InitStubs(interp, TCL_VERSION_LOADED, isExact)
+#else
+    Tcl_PkgRequire(interp, "Tcl", TCL_VERSION_LOADED, isExact)
 #endif
-
-    /*
-     * Check that the versions of TCL that have been loaded are the same ones
-     * that BLT was compiled against.
-     */
-    if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION_LOADED, isExact) == NULL) {
-	return TCL_ERROR;
-    }
+     == NULL) {
+    return TCL_ERROR;
+  }
 
     /* Set the "blt_version", "blt_patchLevel", and "blt_libPath" Tcl
      * variables. We'll use them in the following script. */
