@@ -45,8 +45,6 @@
 #define TCL_VERSION_LOADED	TCL_VERSION
 #endif
 
-static double bltNaN;
-
 BLT_EXTERN Tcl_AppInitProc Blt_core_Init;
 BLT_EXTERN Tcl_AppInitProc Blt_core_SafeInit;
 
@@ -122,30 +120,6 @@ if { $blt_library != \"\" } { \n\
 unset var path\n\
 \n"
 };
-
-double 
-Blt_NaN(void)
-{
-    return bltNaN;
-}
-
-static double
-MakeNaN(void)
-{
-    union DoubleValue {
-	unsigned int words[2];
-	double value;
-    } result;
-
-#ifdef WORDS_BIGENDIAN
-    result.words[0] = 0x7ff80000;
-    result.words[1] = 0x00000000;
-#else
-    result.words[0] = 0x00000000;
-    result.words[1] = 0x7ff80000;
-#endif
-    return result.value;
-}
 
 static int
 SetLibraryPath(Tcl_Interp *interp)
@@ -242,7 +216,6 @@ int Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
     if (Blt_VectorCmdInitProc(interp) != TCL_OK)
       return TCL_ERROR;
 
-    bltNaN = MakeNaN();
     if (Tcl_PkgProvide(interp, "blt_core", BLT_VERSION) != TCL_OK) {
 	return TCL_ERROR;
     }

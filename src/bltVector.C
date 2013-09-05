@@ -42,12 +42,14 @@
  *		x notify reorder #1 #2
  */
 
+#include <math.h>
+#include <time.h>
+
 #include "bltVecInt.h"
 #include "bltOp.h"
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
 #include <bltMath.h>
-#include <time.h>
 
 #ifndef TCL_NAMESPACE_ONLY
 #define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY
@@ -510,7 +512,7 @@ void
 Blt_Vec_UpdateClients(Vector *vPtr)
 {
     vPtr->dirty++;
-    vPtr->max = vPtr->min = Blt_NaN();
+    vPtr->max = vPtr->min = NAN;
     if (vPtr->notifyFlags & NOTIFY_NEVER) {
 	return;
     }
@@ -634,7 +636,7 @@ Blt_Vec_Max(Vector *vecObjPtr)
     double max;
     double *vp, *vend;
 
-    max = Blt_NaN();
+    max = NAN;
     vp = vecObjPtr->valueArr + vecObjPtr->first;
     vend = vecObjPtr->valueArr + vecObjPtr->last;
     max = *vp++;
@@ -1104,7 +1106,7 @@ Blt_Vec_New(VectorInterpData *dataPtr) /* Interpreter-specific data. */
     vPtr->hashPtr = NULL;
     vPtr->chain = Blt_Chain_Create();
     vPtr->flush = FALSE;
-    vPtr->min = vPtr->max = Blt_NaN();
+    vPtr->min = vPtr->max = NAN;
     vPtr->notifyFlags = NOTIFY_WHENIDLE;
     vPtr->dataPtr = dataPtr;
     return vPtr;

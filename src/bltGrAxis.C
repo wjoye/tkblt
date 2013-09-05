@@ -26,6 +26,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <math.h>
+
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
@@ -663,7 +665,7 @@ ObjToLimitProc(
 
     string = Tcl_GetString(objPtr);
     if (string[0] == '\0') {
-	*limitPtr = Blt_NaN();
+      *limitPtr = NAN;
     } else if (Blt_ExprDoubleFromObj(interp, objPtr, limitPtr) != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -1333,14 +1335,14 @@ FixAxisRange(Axis *axisPtr)
      * than -max, or have undefined log scale limits.  */
     if (((isnormal(axisPtr->reqMin)) && (isnormal(axisPtr->reqMax))) &&
 	(axisPtr->reqMin >= axisPtr->reqMax)) {
-	axisPtr->reqMin = axisPtr->reqMax = Blt_NaN();
+      axisPtr->reqMin = axisPtr->reqMax = NAN;
     }
     if (axisPtr->logScale) {
 	if ((isnormal(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
-	    axisPtr->reqMin = Blt_NaN();
+	  axisPtr->reqMin = NAN;
 	}
 	if ((isnormal(axisPtr->reqMax)) && (axisPtr->reqMax <= 0.0)) {
-	    axisPtr->reqMax = Blt_NaN();
+	  axisPtr->reqMax = NAN;
 	}
     }
 
@@ -1598,7 +1600,7 @@ LogScaleAxis(Axis *axisPtr, double min, double max)
     nMajor = nMinor = 0;
     /* Suppress compiler warnings. */
     majorStep = minorStep = 0.0;
-    tickMin = tickMax = Blt_NaN();
+    tickMin = tickMax = NAN;
     if (min < max) {
 	min = (min != 0.0) ? log10(fabs(min)) : 0.0;
 	max = (max != 0.0) ? log10(fabs(max)) : 1.0;
@@ -1728,7 +1730,7 @@ LinearScaleAxis(Axis *axisPtr, double min, double max)
     nTicks = 0;
     step = 1.0;
     /* Suppress compiler warning. */
-    axisMin = axisMax = tickMin = tickMax = Blt_NaN();
+    axisMin = axisMax = tickMin = tickMax = NAN;
     if (min < max) {
 	double range;
 
@@ -3727,10 +3729,10 @@ ConfigureAxis(Axis *axisPtr)
 	    }
 	}
 	if ((isnormal(axisPtr->scrollMin)) && (axisPtr->scrollMin <= 0.0)) {
-	    axisPtr->scrollMin = Blt_NaN();
+	  axisPtr->scrollMin = NAN;
 	}
 	if ((isnormal(axisPtr->scrollMax)) && (axisPtr->scrollMax <= 0.0)) {
-	    axisPtr->scrollMax = Blt_NaN();
+	  axisPtr->scrollMax = NAN;
 	}
     }
     angle = fmod(axisPtr->tickAngle, 360.0);
@@ -3825,8 +3827,8 @@ NewAxis(Graph *graphPtr, const char *name, int margin)
 	axisPtr->margin = MARGIN_NONE;
 	axisPtr->tickLength = 8;
 	axisPtr->scrollUnits = 10;
-	axisPtr->reqMin = axisPtr->reqMax = Blt_NaN();
-	axisPtr->reqScrollMin = axisPtr->reqScrollMax = Blt_NaN();
+	axisPtr->reqMin = axisPtr->reqMax = NAN;
+	axisPtr->reqScrollMin = axisPtr->reqScrollMax = NAN;
 	axisPtr->flags = (AXIS_SHOWTICKS|AXIS_GRIDMINOR|AXIS_AUTO_MAJOR|
 			  AXIS_AUTO_MINOR | AXIS_EXTERIOR);
 	if (graphPtr->classId == CID_ELEM_BAR) {
@@ -5635,7 +5637,7 @@ TimeScaleAxis(Axis *axisPtr, double min, double max)
     nTicks = 0;
     step = 1.0;
     /* Suppress compiler warning. */
-    axisMin = axisMax = tickMin = tickMax = Blt_NaN();
+    axisMin = axisMax = tickMin = tickMax = NAN;
     if (min < max) {
 	double range;
 
