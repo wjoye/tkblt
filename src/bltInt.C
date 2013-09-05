@@ -29,7 +29,6 @@
 
 #include "bltInt.h"
 #include "bltNsUtil.h"
-#include "bltArrayObj.h"
 #include "bltMath.h"
 
 #ifndef BLT_LIBRARY
@@ -51,7 +50,6 @@ static double bltNaN;
 BLT_EXTERN Tcl_AppInitProc Blt_core_Init;
 BLT_EXTERN Tcl_AppInitProc Blt_core_SafeInit;
 
-static Tcl_MathProc MinMathProc, MaxMathProc;
 static char libPath[1024] =
 {
     BLT_LIBRARY
@@ -149,60 +147,6 @@ MakeNaN(void)
     return result.value;
 }
 
-/* ARGSUSED */
-static int
-MinMathProc(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Not used. */
-    Tcl_Value *argsPtr,
-    Tcl_Value *resultPtr)
-{
-    Tcl_Value *op1Ptr, *op2Ptr;
-
-    op1Ptr = argsPtr, op2Ptr = argsPtr + 1;
-    if ((op1Ptr->type == TCL_INT) && (op2Ptr->type == TCL_INT)) {
-	resultPtr->intValue = MIN(op1Ptr->intValue, op2Ptr->intValue);
-	resultPtr->type = TCL_INT;
-    } else {
-	double a, b;
-
-	a = (op1Ptr->type == TCL_INT) 
-	    ? (double)op1Ptr->intValue : op1Ptr->doubleValue;
-	b = (op2Ptr->type == TCL_INT)
-	    ? (double)op2Ptr->intValue : op2Ptr->doubleValue;
-	resultPtr->doubleValue = MIN(a, b);
-	resultPtr->type = TCL_DOUBLE;
-    }
-    return TCL_OK;
-}
-
-/*ARGSUSED*/
-static int
-MaxMathProc(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Not used. */
-    Tcl_Value *argsPtr,
-    Tcl_Value *resultPtr)
-{
-    Tcl_Value *op1Ptr, *op2Ptr;
-
-    op1Ptr = argsPtr, op2Ptr = argsPtr + 1;
-    if ((op1Ptr->type == TCL_INT) && (op2Ptr->type == TCL_INT)) {
-	resultPtr->intValue = MAX(op1Ptr->intValue, op2Ptr->intValue);
-	resultPtr->type = TCL_INT;
-    } else {
-	double a, b;
-
-	a = (op1Ptr->type == TCL_INT)
-	    ? (double)op1Ptr->intValue : op1Ptr->doubleValue;
-	b = (op2Ptr->type == TCL_INT)
-	    ? (double)op2Ptr->intValue : op2Ptr->doubleValue;
-	resultPtr->doubleValue = MAX(a, b);
-	resultPtr->type = TCL_DOUBLE;
-    }
-    return TCL_OK;
-}
-
 static int
 SetLibraryPath(Tcl_Interp *interp)
 {
@@ -252,12 +196,9 @@ SetLibraryPath(Tcl_Interp *interp)
 
 
 /*LINTLIBRARY*/
-int
-Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
+int Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
 {
-    Tcl_AppInitProc **p;
     Tcl_Namespace *nsPtr;
-    Tcl_ValueType args[2];
     const char *result;
     const int isExact = 1;
 
@@ -301,10 +242,6 @@ Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
     if (Blt_VectorCmdInitProc(interp) != TCL_OK)
       return TCL_ERROR;
 
-    args[0] = args[1] = TCL_EITHER;
-    Tcl_CreateMathFunc(interp, "min", 2, args, MinMathProc, (ClientData)0);
-    Tcl_CreateMathFunc(interp, "max", 2, args, MaxMathProc, (ClientData)0);
-    Blt_RegisterArrayObj();
     bltNaN = MakeNaN();
     if (Tcl_PkgProvide(interp, "blt_core", BLT_VERSION) != TCL_OK) {
 	return TCL_ERROR;
