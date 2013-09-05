@@ -27,11 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltGraph.h"
+#include <assert.h>
+#include <stdarg.h>
+
 #include <X11/Xutil.h>
+
+#include "bltGraph.h"
 #include <bltAlloc.h>
 #include <bltOp.h>
-#include <stdarg.h>
 
 static Blt_OptionParseProc ObjToPoint;
 static Blt_OptionPrintProc PointToObj;

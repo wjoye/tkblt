@@ -41,13 +41,15 @@
  *
  */
 
+#include <assert.h>
+#include <X11/Xutil.h>
+
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltBind.h"
 #include "bltGrElem.h"
 #include "bltGrLegd.h"
 #include "bltSwitch.h"
-#include <X11/Xutil.h>
 #include "bltPicture.h"
 
 typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 

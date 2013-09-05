@@ -26,9 +26,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <X11/Xutil.h>
+
 #include "bltGraph.h"
 #include "bltOp.h"
-#include <X11/Xutil.h>
 
 typedef int (GraphPenProc)(Tcl_Interp *interp, Graph *graphPtr, int objc, 
 	Tcl_Obj *const *objv);

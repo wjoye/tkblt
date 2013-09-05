@@ -26,10 +26,12 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <X11/Xutil.h>
+
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltChain.h"
-#include <X11/Xutil.h>
 #include <bltDataTable.h>
 
 #define GRAPH_KEY		"BLT Graph Data"

@@ -1,4 +1,3 @@
-
 /*
  * bltVecCmd.c --
  *
@@ -44,6 +43,8 @@
  *		x notify delete Display
  *		x notify reorder #1 #2
  */
+
+#include "assert.h"
 
 #include "bltVecInt.h"
 #include "bltOp.h"

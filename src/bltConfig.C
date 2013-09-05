@@ -73,9 +73,10 @@
  * 
  */
 
-#include "bltInt.h"
-
+#include <assert.h>
 #include <stdarg.h>
+
+#include "bltInt.h"
 #include "bltFont.h"
 #include "bltPicture.h"
 #include "bltBgStyle.h"

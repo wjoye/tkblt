@@ -1,6 +1,8 @@
+#include <assert.h>
+
 #include "bltInt.h"
 #include "bltOp.h"
-#include <bltVector.h>
+#include "bltVector.h"
 
 typedef int (SplineProc)(Point2d origPts[], int nOrigPts, Point2d intpPts[],
 			 int nIntpPts);

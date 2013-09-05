@@ -27,6 +27,7 @@
  */
 
 #include <math.h>
+#include <assert.h>
 
 #include "bltGraph.h"
 #include "bltOp.h"

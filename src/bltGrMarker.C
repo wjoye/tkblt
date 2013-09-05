@@ -26,6 +26,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltImage.h"

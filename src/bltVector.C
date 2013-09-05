@@ -1,4 +1,3 @@
-
 /*
  * bltVector.c --
  *
@@ -42,6 +41,7 @@
  *		x notify reorder #1 #2
  */
 
+#include <assert.h>
 #include <math.h>
 #include <time.h>
 
@@ -49,7 +49,7 @@
 #include "bltOp.h"
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
-#include <bltMath.h>
+#include "bltMath.h"
 
 #ifndef TCL_NAMESPACE_ONLY
 #define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY

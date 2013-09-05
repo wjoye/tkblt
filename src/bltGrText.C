@@ -1,4 +1,3 @@
-
 /*
  * bltText.c --
  *
@@ -26,9 +25,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltInt.h"
-#include <bltHash.h>
+#include <assert.h>
 #include <X11/Xutil.h>
+
+#include "bltInt.h"
+#include "bltHash.h"
 #include "tkIntBorder.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
@@ -437,26 +438,6 @@ Blt_AnchorPoint(
     t.x = x;
     t.y = y;
     return t;
-}
-
-static INLINE int
-SizeOfUtfChar(const char *s)	/* Buffer in which the UTF-8 representation of
-				 * the Tcl_UniChar is stored.  Buffer must be
-				 * large enough to hold the UTF-8 character
-				 * (at most TCL_UTF_MAX bytes). */
-{
-    int byte;
-    
-    byte = *((unsigned char *)s);
-    if (byte < 0xC0) {
-	return 1;
-    } else if ((byte < 0xE0) && ((s[1] & 0xC0) == 0x80)) {
-	return 2;
-    } else if ((byte < 0xF0) && 
-	       ((s[1] & 0xC0) == 0x80) && ((s[2] & 0xC0) == 0x80)) {
-	return 3;
-    }
-    return 1;
 }
 
 /*
