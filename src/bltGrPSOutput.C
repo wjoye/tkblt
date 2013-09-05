@@ -533,86 +533,6 @@ ByteToHex(unsigned char byte, char *string)
     string[1] = hexDigits[byte & 0x0F];
 }
 
-#ifdef WIN32
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Ps_XSetBitmapData --
- *
- *      Output a PostScript image string of the given bitmap image.  It is
- *      assumed the image is one bit deep and a zero value indicates an
- *      off-pixel.  To convert to PostScript, the bits need to be reversed
- *      from the X11 image order.
- *
- * Results:
- *      None.
- *
- * Side Effects:
- *      The PostScript image string is appended.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Ps_XSetBitmapData(
-    PostScript *psPtr,
-    Display *display,
-    Pixmap bitmap,
-    int width, int height)
-{
-    unsigned char byte;
-    int x, y, bitPos;
-    unsigned long pixel;
-    int byteCount;
-    char string[10];
-    unsigned char *srcBits, *srcPtr;
-    int bytesPerRow;
-
-    srcBits = Blt_GetBitmapData(display, bitmap, width, height, &bytesPerRow);
-    if (srcBits == NULL) {
-        OutputDebugString("Can't get bitmap data");
-	return;
-    }
-    Blt_Ps_Append(psPtr, "\t<");
-    byteCount = bitPos = 0;	/* Suppress compiler warning */
-    for (y = height - 1; y >= 0; y--) {
-	srcPtr = srcBits + (bytesPerRow * y);
-	byte = 0;
-	for (x = 0; x < width; x++) {
-	    bitPos = x % 8;
-	    pixel = (*srcPtr & (0x80 >> bitPos));
-	    if (pixel) {
-		byte |= (unsigned char)(1 << bitPos);
-	    }
-	    if (bitPos == 7) {
-		byte = ReverseBits(byte);
-		ByteToHex(byte, string);
-		string[2] = '\0';
-		byteCount++;
-		srcPtr++;
-		byte = 0;
-		if (byteCount >= 30) {
-		    string[2] = '\n';
-		    string[3] = '\t';
-		    string[4] = '\0';
-		    byteCount = 0;
-		}
-		Blt_Ps_Append(psPtr, string);
-	    }
-	}			/* x */
-	if (bitPos != 7) {
-	    byte = ReverseBits(byte);
-	    ByteToHex(byte, string);
-	    string[2] = '\0';
-	    Blt_Ps_Append(psPtr, string);
-	    byteCount++;
-	}
-    }				/* y */
-    free(srcBits);
-    Blt_Ps_Append(psPtr, ">\n");
-}
-
-#else
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -679,8 +599,6 @@ Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, Pixmap bitmap, int w, int h)
     Blt_Ps_Append(ps, ">\n");
     XDestroyImage(imagePtr);
 }
-
-#endif /* WIN32 */
 
 typedef struct {
     const char *alias;

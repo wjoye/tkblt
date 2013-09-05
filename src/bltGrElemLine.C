@@ -765,30 +765,6 @@ static DistanceProc DistanceToXProc;
 static DistanceProc DistanceToLineProc;
 static Blt_BackgroundChangedProc BackgroundChangedProc;
 
-#ifdef WIN32
-
-static int tkpWinRopModes[] =
-{
-    R2_BLACK,		/* GXclear */
-    R2_MASKPEN,		/* GXand */
-    R2_MASKPENNOT,	/* GXandReverse */
-    R2_COPYPEN,		/* GXcopy */
-    R2_MASKNOTPEN,	/* GXandInverted */
-    R2_NOT,		/* GXnoop */
-    R2_XORPEN,		/* GXxor */
-    R2_MERGEPEN,	/* GXor */
-    R2_NOTMERGEPEN,	/* GXnor */
-    R2_NOTXORPEN,	/* GXequiv */
-    R2_NOT,		/* GXinvert */
-    R2_MERGEPENNOT,	/* GXorReverse */
-    R2_NOTCOPYPEN,	/* GXcopyInverted */
-    R2_MERGENOTPEN,	/* GXorInverted */
-    R2_NOTMASKPEN,	/* GXnand */
-    R2_WHITE		/* GXset */
-};
-
-#endif
-
 INLINE static int
 Round(double x)
 {
@@ -3492,61 +3468,6 @@ ClosestLineProc(Graph *graphPtr, Element *basePtr, ClosestSearch *searchPtr)
 #define MAX_DRAWRECTANGLES(d)	Blt_MaxRequestSize(d, sizeof(XRectangle))
 #define MAX_DRAWARCS(d)		Blt_MaxRequestSize(d, sizeof(XArc))
 
-#ifdef WIN32
-
-static void
-DrawCircles(
-    Display *display,
-    Drawable drawable,
-    LineElement *elemPtr,
-    LinePen *penPtr,
-    int nSymbolPts,
-    Point2d *symbolPts,
-    int radius)
-{
-    HBRUSH brush, oldBrush;
-    HPEN pen, oldPen;
-    HDC dc;
-    TkWinDCState state;
-
-    if (drawable == None) {
-	return;				/* Huh? */
-    }
-    if ((penPtr->symbol.fillGC == NULL) && 
-	(penPtr->symbol.outlineWidth == 0)) {
-	return;
-    }
-    dc = TkWinGetDrawableDC(display, drawable, &state);
-    /* SetROP2(dc, tkpWinRopModes[penPtr->symbol.fillGC->function]); */
-    if (penPtr->symbol.fillGC != NULL) {
-	brush = CreateSolidBrush(penPtr->symbol.fillGC->foreground);
-    } else {
-	brush = GetStockBrush(NULL_BRUSH);
-    }
-    if (penPtr->symbol.outlineWidth > 0) {
-	pen = Blt_GCToPen(dc, penPtr->symbol.outlineGC);
-    } else {
-	pen = GetStockPen(NULL_PEN);
-    }
-    oldPen = SelectPen(dc, pen);
-    oldBrush = SelectBrush(dc, brush);
-    {
-	Point2d *pp, *pend;
-
-	for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
-	    int rndx, rndy;
-	    rndx = Round(pp->x), rndy = Round(pp->y);
-	    Ellipse(dc, rndx - radius, rndy - radius, rndx + radius + 1, 
-		rndy + radius + 1);
-	}
-    }
-    DeleteBrush(SelectBrush(dc, oldBrush));
-    DeletePen(SelectPen(dc, oldPen));
-    TkWinReleaseDrawableDC(drawable, dc, &state);
-}
-
-#else
-
 static void
 DrawCircles(Display *display, Drawable drawable, LineElement *elemPtr,
 	    LinePen *penPtr, int nSymbolPts, Point2d *symbolPts, int radius)
@@ -3606,8 +3527,6 @@ DrawCircles(Display *display, Drawable drawable, LineElement *elemPtr,
     }
     free(arcs);
 }
-
-#endif
 
 static void
 DrawSquares(Display *display, Drawable drawable, LineElement *elemPtr,
@@ -4265,110 +4184,6 @@ DrawSymbolProc(
     }
 }
 
-#ifdef WIN32
-
-static void
-DrawTraces(
-    Graph *graphPtr,
-    Drawable drawable,			/* Pixmap or window to draw into */
-    LineElement *elemPtr,
-    LinePen *penPtr)
-{
-    Blt_ChainLink link;
-    HBRUSH brush, oldBrush;
-    HDC dc;
-    HPEN pen, oldPen;
-    POINT *points;
-    TkWinDCState state;
-    int np;
-
-    /*  
-     * Depending if the line is wide (> 1 pixel), arbitrarily break the line in
-     * sections of 100 points.  This bit of weirdness has to do with wide
-     * geometric pens.  The longer the polyline, the slower it draws.  The trade
-     * off is that we lose dash and cap uniformity for unbearably slow polyline
-     * draws.
-     */
-    if (penPtr->traceGC->line_width > 1) {
-	np = 100;
-    } else {
-	np = Blt_MaxRequestSize(graphPtr->display, sizeof(POINT)) - 1;
-    }
-    points = malloc((np + 1) * sizeof(POINT));
-
-    dc = TkWinGetDrawableDC(graphPtr->display, drawable, &state);
-
-    pen = Blt_GCToPen(dc, penPtr->traceGC);
-    oldPen = SelectPen(dc, pen);
-    brush = CreateSolidBrush(penPtr->traceGC->foreground);
-    oldBrush = SelectBrush(dc, brush);
-    SetROP2(dc, tkpWinRopModes[penPtr->traceGC->function]);
-
-    for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
-	link = Blt_Chain_NextLink(link)) {
-	POINT *p;
-	Trace *tracePtr;
-	int count, remaining;
-
-	tracePtr = Blt_Chain_GetValue(link);
-
-	/*
-	 * If the trace has to be split into separate XDrawLines calls, then the
-	 * end point of the current trace is also the starting point of the new
-	 * split.
-	 */
-
-	/* Step 1. Convert and draw the first section of the trace.
-	 *	   It may contain the entire trace. */
-
-	for (p = points, count = 0; 
-	     count < MIN(np, tracePtr->screenPts.length); 
-	     count++, p++) {
-	    p->x = Round(tracePtr->screenPts.points[count].x);
-	    p->y = Round(tracePtr->screenPts.points[count].y);
-	}
-	Polyline(dc, points, count);
-
-	/* Step 2. Next handle any full-size chunks left. */
-
-	while ((count + np) < tracePtr->screenPts.length) {
-	    int j;
-
-	    /* Start with the last point of the previous trace. */
-	    points[0].x = points[np - 1].x;
-	    points[0].y = points[np - 1].y;
-
-	    for (p = points + 1, j = 0; j < np; j++, count++, p++) {
-		p->x = Round(tracePtr->screenPts.points[count].x);
-		p->y = Round(tracePtr->screenPts.points[count].y);
-	    }
-	    Polyline(dc, points, np + 1);
-	}
-	
-	/* Step 3. Convert and draw the remaining points. */
-
-	remaining = tracePtr->screenPts.length - count;
-	if (remaining > 0) {
-	    /* Start with the last point of the previous trace. */
-	    points[0].x = points[np - 1].x;
-	    points[0].y = points[np - 1].y;
-
-	    for (p = points + 1; count < tracePtr->screenPts.length; 
-		 count++, p++) {
-		p->x = Round(tracePtr->screenPts.points[count].x);
-		p->y = Round(tracePtr->screenPts.points[count].y);
-	    }	    
-	    Polyline(dc, points, remaining + 1);
-	}
-    }
-    free(points);
-    DeletePen(SelectPen(dc, oldPen));
-    DeleteBrush(SelectBrush(dc, oldBrush));
-    TkWinReleaseDrawableDC(drawable, dc, &state);
-}
-
-#else
-
 static void
 DrawTraces(Graph *graphPtr, Drawable drawable, LineElement *elemPtr, 
 	   LinePen *penPtr)
@@ -4440,7 +4255,6 @@ DrawTraces(Graph *graphPtr, Drawable drawable, LineElement *elemPtr,
     }
     free(points);
 }
-#endif /* WIN32 */
 
 static void
 DrawValues(Graph *graphPtr, Drawable drawable, LineElement *elemPtr, 

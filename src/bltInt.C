@@ -32,11 +32,7 @@
 #include "bltMath.h"
 
 #ifndef BLT_LIBRARY
-#  ifdef WIN32
-#    define BLT_LIBRARY  "c:/Program Files/Tcl/lib/blt"##BLT_VERSION
-#  else
 #    define BLT_LIBRARY "unknown"
-#  endif
 #endif
 
 #if (_TCL_VERSION >= _VERSION(8,5,0)) 
@@ -129,36 +125,6 @@ SetLibraryPath(Tcl_Interp *interp)
 
     Tcl_DStringInit(&dString);
     Tcl_DStringAppend(&dString, libPath, -1);
-#ifdef WIN32
-    {
-	HKEY key;
-	DWORD result;
-#  ifndef BLT_REGISTRY_KEY
-#    define BLT_REGISTRY_KEY "Software\\BLT\\" BLT_VERSION "\\" TCL_VERSION
-#  endif
-	result = RegOpenKeyEx(
-	      HKEY_LOCAL_MACHINE, /* Parent key. */
-	      BLT_REGISTRY_KEY,	/* Path to sub-key. */
-	      0,		/* Reserved. */
-	      KEY_READ,		/* Security access mask. */
-	      &key);		/* Resulting key.*/
-
-	if (result == ERROR_SUCCESS) {
-	    DWORD size;
-
-	    /* Query once to get the size of the string needed */
-	    result = RegQueryValueEx(key, "BLT_LIBRARY", NULL, NULL, NULL, 
-		     &size);
-	    if (result == ERROR_SUCCESS) {
-		Tcl_DStringSetLength(&dString, size);
-		/* And again to collect the string. */
-		RegQueryValueEx(key, "BLT_LIBRARY", NULL, NULL,
-				(LPBYTE)Tcl_DStringValue(&dString), &size);
-		RegCloseKey(key);
-	    }
-	}
-    }
-#endif /* WIN32 */
     value = Tcl_SetVar(interp, "blt_libPath", Tcl_DStringValue(&dString),
 	TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG);
     Tcl_DStringFree(&dString);

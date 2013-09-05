@@ -933,11 +933,7 @@ Blt_GetPrivateGCFromDrawable(
 {
     GC newGC;
 
-#ifdef WIN32
-    newGC = Blt_EmulateXCreateGC(display, drawable, gcMask, valuePtr);
-#else
     newGC = XCreateGC(display, drawable, gcMask, valuePtr);
-#endif
     return newGC;
 }
 
@@ -1000,14 +996,12 @@ Blt_FreePrivateGC(Display *display, GC gc)
     XFreeGC(display, gc);
 }
 
-#ifndef WIN32
 void
 Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 {
     XSetDashes(display, gc, dashesPtr->offset, (const char *)dashesPtr->values,
 	(int)strlen((char *)dashesPtr->values));
 }
-#endif
 
 void
 Blt_ScreenDPI(Tk_Window tkwin, unsigned int *xPtr, unsigned int *yPtr) 
@@ -1172,14 +1166,10 @@ Blt_MaxRequestSize(Display *display, size_t elemSize)
 
     if (maxSizeBytes == 0L) {
 	long size;
-#ifndef WIN32
 	size = XExtendedMaxRequestSize(display);
 	if (size == 0) {
 	    size = XMaxRequestSize(display);
 	}
-#else
-	size = XMaxRequestSize(display);
-#endif
 	size -= (4 * elemSize);
 	/*	maxSizeBytes = (size * 4); */
 	maxSizeBytes = size;

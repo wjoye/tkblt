@@ -746,72 +746,6 @@ Blt_DrawLayout(Tk_Window tkwin, Drawable drawable, GC gc, Blt_Font font,
 }
 
 
-#ifdef WIN32
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Ts_Bitmap --
- *
- *	Draw a bitmap, using the the given window coordinates as an anchor for
- *	the text bounding box.
- *
- * Results:
- *	Returns the bitmap representing the text string.
- *
- * Side Effects:
- *	Bitmap is drawn using the given font and GC in the drawable at the
- *	given coordinates, anchor, and rotation.
- *
- *---------------------------------------------------------------------------
- */
-Pixmap
-Blt_Ts_Bitmap(
-    Tk_Window tkwin,
-    TextLayout *layoutPtr,		/* Text string to draw */
-    TextStyle *stylePtr,		/* Text attributes: rotation, color,
-					 * font, linespacing, justification,
-					 * etc. */
-    int *bmWidthPtr,
-    int *bmHeightPtr)			/* Extents of rotated text string */
-{
-    Pixmap bitmap;
-    Window root;
-    GC gc;
-    HDC hDC;
-    TkWinDCState state;
-
-    /* Create a temporary bitmap to contain the text string */
-    root = Tk_RootWindow(tkwin);
-    bitmap = Tk_GetPixmap(Tk_Display(tkwin), root, layoutPtr->width, 
-	layoutPtr->height, 1);
-    assert(bitmap != None);
-    if (bitmap == None) {
-	return None;		/* Can't allocate pixmap. */
-    }
-    gc = Blt_GetBitmapGC(tkwin);
-
-    /* Clear the pixmap and draw the text string into it */
-    hDC = TkWinGetDrawableDC(Tk_Display(tkwin), bitmap, &state);
-    PatBlt(hDC, 0, 0, layoutPtr->width, layoutPtr->height, WHITENESS);
-    TkWinReleaseDrawableDC(bitmap, hDC, &state);
-
-    XSetFont(Tk_Display(tkwin), gc, Blt_FontId(stylePtr->font));
-    XSetForeground(Tk_Display(tkwin), gc, 1);
-    Blt_DrawLayout(tkwin, bitmap, gc, stylePtr->font, 1, 0.0f, 0, 0, layoutPtr, 
-	stylePtr->maxLength);
-
-    /*
-     * Under Win32, 1 is off and 0 is on. That's why we're inverting the
-     * bitmap here.
-     */
-    hDC = TkWinGetDrawableDC(Tk_Display(tkwin), bitmap, &state);
-    PatBlt(hDC, 0, 0, layoutPtr->width, layoutPtr->height, DSTINVERT);
-    TkWinReleaseDrawableDC(bitmap, hDC, &state);
-
-    *bmWidthPtr = layoutPtr->width, *bmHeightPtr = layoutPtr->height;
-    return bitmap;
-}
-#else 
 /*
  *---------------------------------------------------------------------------
  *
@@ -864,7 +798,6 @@ Blt_Ts_Bitmap(
     *bmWidthPtr = layoutPtr->width, *bmHeightPtr = layoutPtr->height;
     return bitmap;
 }
-#endif /* WIN32 */
 
 void
 Blt_Ts_SetDrawStyle(

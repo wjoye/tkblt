@@ -1281,114 +1281,13 @@ ObjToFormat(
 	*formatPtr = FORMAT_PHOTO;
     } else if ((c == 'p') && (strcmp(string, "photo") == 0)) {
 	*formatPtr = FORMAT_PHOTO;
-#ifdef WIN32
-    } else if ((c == 'e') && (strcmp(string, "emf") == 0)) {
-	*formatPtr = FORMAT_EMF;
-    } else if ((c == 'w') && (strcmp(string, "wmf") == 0)) {
-	*formatPtr = FORMAT_WMF;
-#endif /* WIN32 */
     } else {
-#ifdef WIN32
-	Tcl_AppendResult(interp, "bad format \"", string, 
-		 "\": should be picture, photo, emf, or wmf.", (char *)NULL);
-#else
 	Tcl_AppendResult(interp, "bad format \"", string, 
 		 "\": should be picture or photo.", (char *)NULL);
-#endif /* WIN32 */
 	return TCL_ERROR;
     }
     return TCL_OK;
 }
-
-#ifdef WIN32
-static int InitMetaFileHeader(
-    Tk_Window tkwin,
-    int width, int height,
-    APMHEADER *mfhPtr)
-{
-    unsigned int *p;
-    unsigned int sum;
-#define MM_INCH		25.4
-    int xdpi, ydpi;
-
-    mfhPtr->key = 0x9ac6cdd7L;
-    mfhPtr->hmf = 0;
-    mfhPtr->inch = 1440;
-
-    Blt_ScreenDPI(tkwin, &xdpi, &ydpi);
-    mfhPtr->bbox.Left = mfhPtr->bbox.Top = 0;
-    mfhPtr->bbox.Bottom = (SHORT)((width * 1440)/ (float)xdpi);
-    mfhPtr->bbox.Right = (SHORT)((height * 1440) / (float)ydpi);
-    mfhPtr->reserved = 0;
-    sum = 0;
-    for (p = (unsigned int *)mfhPtr; 
-	 p < (unsigned int *)&(mfhPtr->checksum); p++) {
-	sum ^= *p;
-    }
-    mfhPtr->checksum = sum;
-    return TCL_OK;
-}
-
-static int
-CreateAPMetaFile(Tcl_Interp *interp, HANDLE hMetaFile, HDC hDC, 
-		 APMHEADER *mfhPtr, const char *fileName)
-{
-    HANDLE hFile;
-    HANDLE hMem;
-    LPVOID buffer;
-    int result;
-    DWORD count, nBytes;
-
-    result = TCL_ERROR;
-    hMem = NULL;
-    hFile = CreateFile(
-       fileName,			/* File path */
-       GENERIC_WRITE,			/* Access mode */
-       0,				/* No sharing. */
-       NULL,				/* Security attributes */
-       CREATE_ALWAYS,			/* Overwrite any existing file */
-       FILE_ATTRIBUTE_NORMAL,
-       NULL);				/* No template file */
-    if (hFile == INVALID_HANDLE_VALUE) {
-	Tcl_AppendResult(interp, "can't create metafile \"", fileName, 
-		"\":", Blt_LastError(), (char *)NULL);
-	return TCL_ERROR;
-    }
-    if ((!WriteFile(hFile, (LPVOID)mfhPtr, sizeof(APMHEADER), &count, 
-		NULL)) || (count != sizeof(APMHEADER))) {
-	Tcl_AppendResult(interp, "can't create metafile header to \"", 
-			 fileName, "\":", Blt_LastError(), (char *)NULL);
-	goto error;
-    }
-    nBytes = GetWinMetaFileBits(hMetaFile, 0, NULL, MM_ANISOTROPIC, hDC);
-    hMem = GlobalAlloc(GHND, nBytes);
-    if (hMem == NULL) {
-	Tcl_AppendResult(interp, "can't create allocate global memory:", 
-		Blt_LastError(), (char *)NULL);
-	goto error;
-    }
-    buffer = (LPVOID)GlobalLock(hMem);
-    if (!GetWinMetaFileBits(hMetaFile, nBytes, buffer, MM_ANISOTROPIC, hDC)) {
-	Tcl_AppendResult(interp, "can't get metafile bits:", 
-		Blt_LastError(), (char *)NULL);
-	goto error;
-    }
-    if ((!WriteFile(hFile, buffer, nBytes, &count, NULL)) ||
-	(count != nBytes)) {
-	Tcl_AppendResult(interp, "can't write metafile bits:", 
-		Blt_LastError(), (char *)NULL);
-	goto error;
-    }
-    result = TCL_OK;
- error:
-    CloseHandle(hFile);
-    if (hMem != NULL) {
-	GlobalUnlock(hMem);
-	GlobalFree(hMem);
-    }
-    return result;
-}
-#endif /*WIN32*/
 
 /*
  *---------------------------------------------------------------------------
@@ -1453,9 +1352,6 @@ SnapOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     case FORMAT_PHOTO:
 	drawable = Tk_GetPixmap(graphPtr->display, drawable, graphPtr->width, 
 		graphPtr->height, Tk_Depth(graphPtr->tkwin));
-#ifdef WIN32
-	assert(drawable != None);
-#endif
 	graphPtr->flags |= RESET_WORLD;
 	Blt_DrawGraph(graphPtr, drawable);
 	if (switches.format == FORMAT_PICTURE) {
@@ -1470,78 +1366,6 @@ SnapOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	Tk_FreePixmap(graphPtr->display, drawable);
 	break;
 
-#ifdef WIN32
-    case FORMAT_WMF:
-    case FORMAT_EMF:
-	{
-	    TkWinDC drawableDC;
-	    TkWinDCState state;
-	    HDC hRefDC, hDC;
-	    HENHMETAFILE hMetaFile;
-	    Tcl_DString dString;
-	    const char *title;
-	    
-	    hRefDC = TkWinGetDrawableDC(graphPtr->display, drawable, &state);
-	    
-	    Tcl_DStringInit(&dString);
-	    Tcl_DStringAppend(&dString, "BLT Graph ", -1);
-	    Tcl_DStringAppend(&dString, BLT_VERSION, -1);
-	    Tcl_DStringAppend(&dString, "\0", -1);
-	    Tcl_DStringAppend(&dString, Tk_PathName(graphPtr->tkwin), -1);
-	    Tcl_DStringAppend(&dString, "\0", -1);
-	    title = Tcl_DStringValue(&dString);
-	    hDC = CreateEnhMetaFile(hRefDC, NULL, NULL, title);
-	    Tcl_DStringFree(&dString);
-	    
-	    if (hDC == NULL) {
-		Tcl_AppendResult(interp, "can't create metafile: ",
-				 Blt_LastError(), (char *)NULL);
-		return TCL_ERROR;
-	    }
-	    
-	    drawableDC.hdc = hDC;
-	    drawableDC.type = TWD_WINDC;
-	    
-	    graphPtr->width = switches.width;
-	    graphPtr->height = switches.height;
-	    Blt_MapGraph(graphPtr);
-	    graphPtr->flags |= RESET_WORLD;
-	    Blt_DrawGraph(graphPtr, (Drawable)&drawableDC);
-	    hMetaFile = CloseEnhMetaFile(hDC);
-	    if (strcmp(switches.name, "CLIPBOARD") == 0) {
-		HWND hWnd;
-		
-		hWnd = Tk_GetHWND(drawable);
-		OpenClipboard(hWnd);
-		EmptyClipboard();
-		SetClipboardData(CF_ENHMETAFILE, hMetaFile);
-		CloseClipboard();
-		result = TCL_OK;
-	    } else {
-		result = TCL_ERROR;
-		if (switches.format == FORMAT_WMF) {
-		    APMHEADER mfh;
-		    
-		    assert(sizeof(mfh) == 22);
-		    InitMetaFileHeader(graphPtr->tkwin, switches.width, 
-				       switches.height, &mfh);
-		    result = CreateAPMetaFile(interp, hMetaFile, hRefDC, &mfh, 
-					      switches.name);
-		} else {
-		    HENHMETAFILE hMetaFile2;
-		    
-		    hMetaFile2 = CopyEnhMetaFile(hMetaFile, switches.name);
-		    if (hMetaFile2 != NULL) {
-			result = TCL_OK;
-			DeleteEnhMetaFile(hMetaFile2); 
-		    }
-		}
-		DeleteEnhMetaFile(hMetaFile); 
-	    }
-	    TkWinReleaseDrawableDC(drawable, hRefDC, &state);
-	}
-	break;
-#endif /*WIN32*/
     default:
 	Tcl_AppendResult(interp, "bad snapshot format", (char *)NULL);
 	return TCL_ERROR;
@@ -2013,9 +1837,6 @@ DisplayGraph(ClientData clientData)
 	    graphPtr->flags |= CACHE_DIRTY;
 	}
     }
-#ifdef WIN32
-    assert(drawable != None);
-#endif
     if (graphPtr->backingStore) {
 	if (graphPtr->flags & CACHE_DIRTY) {
 	    /* The backing store is new or out-of-date. */
