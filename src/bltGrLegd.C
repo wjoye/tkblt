@@ -1005,59 +1005,6 @@ SelectEntry(Legend *legendPtr, Element *elemPtr)
     }
 }
 
-#ifdef notdef
-static Element *
-PointerToElement(Legend *legendPtr, int x, int y)
-{
-    Graph *graphPtr = legendPtr->graphPtr;
-    int w, h;
-    int n;
-
-    w = legendPtr->width;
-    h = legendPtr->height;
-
-    x -= legendPtr->x + legendPtr->borderWidth;
-    y -= legendPtr->y + legendPtr->borderWidth;
-    w -= 2 * legendPtr->borderWidth + PADDING(legendPtr->xPad);
-    h -= 2 * legendPtr->borderWidth + PADDING(legendPtr->yPad);
-
-    if ((x < 0) || (x >= w) || (y < 0) || (y >= h)) {
-	return NULL;
-    }
-
-    /* It's in the bounding box, so compute the index. */
-    {
-	int row, column;
-
-	row    = y / legendPtr->entryHeight;
-	column = x / legendPtr->entryWidth;
-	n = (column * legendPtr->nRows) + row;
-    }
-    if (n < legendPtr->nEntries) {
-	Blt_ChainLink link;
-	int count;
-
-	count = 0;
-	for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-	     link != NULL; link = Blt_Chain_NextLink(link)) {
-	    Element *elemPtr;
-	    
-	    elemPtr = Blt_Chain_GetValue(link);
-	    if (elemPtr->label == NULL) {
-		continue;
-	    }
-	    if (count > n) {
-		return NULL;
-	    } else if (count == n) {
-		return elemPtr;
-	    }
-	    count++;
-	}	      
-    }
-    return NULL;
-}
-#endif
-
 /*ARGSUSED*/
 static ClientData
 PickEntryProc(ClientData clientData, int x, int y, ClientData *contextPtr)
@@ -2068,56 +2015,6 @@ SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr)
     return TCL_OK;
 }
 
-
-#ifdef notdef
-/*
- *---------------------------------------------------------------------------
- *
- * SelectText --
- *
- *	Modify the selection by moving its un-anchored end.  This could make
- *	the selection either larger or smaller.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The selection changes.
- *
- *---------------------------------------------------------------------------
- */
-static int
-SelectText(Legend *legendPtr, Element *elemPtr)
-{
-    Element *firstPtr, *lastPtr;
-    Graph *graphPtr = legendPtr->graphPtr;
-
-    /* Grab the selection if we don't own it already. */
-    if ((legendPtr->flags&SELECT_EXPORT) && (legendPtr->selFirstPtr == NULL)) {
-	Tk_OwnSelection(legendPtr->tkwin, XA_PRIMARY, LostSelectionProc, 
-		legendPtr);
-    }
-    /* If the anchor hasn't been set, assume the beginning of the legend. */
-    if (legendPtr->selAnchorPtr == NULL) {
-	legendPtr->selAnchorPtr = GetFirstElement(graphPtr);
-    }
-    if (legendPtr->selAnchorPtr != elemPtr) {
-	firstPtr = legendPtr->selAnchorPtr;
-	lastPtr = elemPtr;
-    } else {
-	firstPtr = elemPtr;
-	lastPtr = legendPtr->selAnchorPtr;
-    }
-    if ((legendPtr->selFirstPtr != firstPtr) || 
-	(legendPtr->selLastPtr != lastPtr)) {
-	legendPtr->selFirstPtr = firstPtr;
-	legendPtr->selLastPtr = lastPtr;
-	SelectRange(legendPtr, firstPtr, lastPtr);
-	Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-    return TCL_OK;
-}
-#endif
 
 /*
  *---------------------------------------------------------------------------

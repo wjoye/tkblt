@@ -261,17 +261,6 @@ PickCurrentItem(
 	 */
 	return;
     }
-#if FULLY_SIMULATE_GRAB
-    if (((newItem != bindPtr->currentItem) || 
-	 (newContext != bindPtr->currentContext)) && 
-	(buttonDown)) {
-	bindPtr->flags |= LEFT_GRABBED_ITEM;
-#ifdef notdef
-	fprintf(stderr, "pickcurrentitem: simulate grab.\n");
-#endif
-	return;
-    }
-#endif
     /*
      * Simulate a LeaveNotify event on the previous current item and an
      * EnterNotify event on the new current item.  Remove the "current" tag
@@ -360,17 +349,6 @@ PickCurrentItem(
 	event.type = EnterNotify;
 	event.xcrossing.detail = NotifyAncestor;
 	DoEvent(bindPtr, &event, newItem, newContext);
-#ifdef notdef
-	if ((eventPtr->type == MotionNotify) ||
-	    (eventPtr->type == ButtonRelease)) {
-	    fprintf(stderr, "pickcurrentitem: DoEvent Button buttondown=%d.\n",
-		    buttonDown);
-	    event.type = eventPtr->type;
-	    event.xbutton.button = eventPtr->xbutton.button;
-	    DoEvent(bindPtr, &event, newItem, newContext);
-	    fprintf(stderr, "pickcurrentitem: done.\n");
-	}
-#endif
     }
  done:
     Tcl_Release(newItem);

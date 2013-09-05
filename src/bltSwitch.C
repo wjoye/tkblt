@@ -275,22 +275,6 @@ DoSwitch(
 		}
 		*(char **)ptr = value;
 	    }
-#ifdef notdef
-	    {
-		char *old, *new, **strPtr;
-		char *string;
-
-		string = Tcl_GetString(objPtr);
-		strPtr = (char **)ptr;
-		new = ((*string == '\0') && (sp->flags & BLT_SWITCH_NULL_OK))
-		    ? NULL : Blt_Strdup(string);
-		old = *strPtr;
-		if (old != NULL) {
-		    free(old);
-		}
-		*strPtr = new;
-	    }
-#endif
 	    break;
 
 	case BLT_SWITCH_CUSTOM:

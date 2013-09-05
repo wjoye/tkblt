@@ -762,11 +762,6 @@ typedef struct {
     int state;
 
     /* Fields specific to text markers. */
-#ifdef notdef
-    const char *textVarName;		/* Name of variable (malloc'ed) or
-					 * NULL. If non-NULL, graph displays the
-					 * contents of this variable. */
-#endif
     const char *string;			/* Text string to be display.  The
 					 * string make contain newlines. */
     Tk_Anchor anchor;			/* Indicates how to translate the given
@@ -974,30 +969,6 @@ static MarkerClass windowMarkerClass = {
 static Tk_ImageChangedProc ImageChangedProc;
 
 
-
-#ifdef notdef
-static MarkerClass rectangleMarkerClass = {
-    rectangleConfigSpecs,
-    ConfigureRectangleProc,
-    DrawRectangleProc,
-    FreeRectangleProc,
-    MapRectangleProc,
-    PointInRectangleProc,
-    RegionInRectangleProc,
-    RectangleToPostscriptProc,
-};
-
-static MarkerClass ovalMarkerClass = {
-    ovalConfigSpecs,
-    ConfigureOvalProc,
-    DrawOvalProc,
-    FreeOvalProc,
-    MapOvalProc,
-    PointInOvalProc,
-    RegionInOvalProc,
-    OvalToPostscriptProc,
-};
-#endif
 
 /*
  *---------------------------------------------------------------------------
@@ -1936,19 +1907,6 @@ ConfigureBitmapProc(Marker *markerPtr)
     Blt_EventuallyRedrawGraph(graphPtr);
     return TCL_OK;
 }
-
-#ifdef notdef
-static void
-PrintPolyPoint(char *mesg, Point2d *points, int nPoints)
-{
-    int i;
-
-    fprintf(stderr, "%s:\t\tpoint[0]=%g,%g\n", mesg, points[0].x, points[0].y);
-    for (i = 1; i < nPoints; i++) {
-	fprintf(stderr, "\t\tpoint[%d]=%g,%g\n", i, points[i].x, points[i].y);
-    }
-}	
-#endif
 
 /*
  *---------------------------------------------------------------------------
@@ -5034,165 +4992,3 @@ Blt_MakeMarkerTag(Graph *graphPtr, const char *tagName)
 }
 
 
-#ifdef notdef
-/*
- *---------------------------------------------------------------------------
- *
- * ConfigureArrows --
- *
- *	If arrowheads have been requested for a line, this procedure makes
- *	arrangements for the arrowheads.
- *
- * Results:
- *	Always returns TCL_OK.
- *
- * Side effects:
- *	Information in linePtr is set up for one or two arrowheads.  the
- *	firstArrowPtr and lastArrowPtr polygons are allocated and initialized,
- *	if need be, and the end points of the line are adjusted so that a
- *	thick line doesn't stick out past the arrowheads.
- *
- *---------------------------------------------------------------------------
- */
-
-	/* ARGSUSED */
-static int
-ConfigureArrows(canvas, linePtr)
-    Tk_Canvas canvas;			/* Canvas in which arrows will be
-					 * displayed (interp and tkwin fields
-					 * are needed). */
-    LineItem *linePtr;			/* Item to configure for arrows. */
-{
-    double *poly, *coordPtr;
-    double dx, dy, length, sinTheta, cosTheta, temp;
-    double fracHeight;			/* Line width as fraction of arrowhead
-					 * width. */
-    double backup;			/* Distance to backup end points so
-					 * the line ends in the middle of the
-					 * arrowhead. */
-    double vertX, vertY;		/* Position of arrowhead vertex. */
-    double shapeA, shapeB, shapeC;	/* Adjusted coordinates (see
-					 * explanation below). */
-    double width;
-    Tk_State state = linePtr->header.state;
-
-    if (linePtr->numPoints <2) {
-	return TCL_OK;
-    }
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-
-    width = linePtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)linePtr) {
-	if (linePtr->outline.activeWidth>width) {
-	    width = linePtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (linePtr->outline.disabledWidth>0) {
-	    width = linePtr->outline.disabledWidth;
-	}
-    }
-
-    /*
-     * The code below makes a tiny increase in the shape parameters for the
-     * line.  This is a bit of a hack, but it seems to result in displays that
-     * more closely approximate the specified parameters.  Without the
-     * adjustment, the arrows come out smaller than expected.
-     */
-
-    shapeA = linePtr->arrowShapeA + 0.001;
-    shapeB = linePtr->arrowShapeB + 0.001;
-    shapeC = linePtr->arrowShapeC + width/2.0 + 0.001;
-
-    /*
-     * If there's an arrowhead on the first point of the line, compute its
-     * polygon and adjust the first point of the line so that the line doesn't
-     * stick out past the leading edge of the arrowhead.
-     */
-
-    fracHeight = (width/2.0)/shapeC;
-    backup = fracHeight*shapeB + shapeA*(1.0 - fracHeight)/2.0;
-    if (linePtr->arrow != ARROWS_LAST) {
-	poly = linePtr->firstArrowPtr;
-	if (poly == NULL) {
-	    poly = (double *) ckalloc((unsigned)
-		    (2*PTS_IN_ARROW*sizeof(double)));
-	    poly[0] = poly[10] = linePtr->coordPtr[0];
-	    poly[1] = poly[11] = linePtr->coordPtr[1];
-	    linePtr->firstArrowPtr = poly;
-	}
-	dx = poly[0] - linePtr->coordPtr[2];
-	dy = poly[1] - linePtr->coordPtr[3];
-	length = hypot(dx, dy);
-	if (length == 0) {
-	    sinTheta = cosTheta = 0.0;
-	} else {
-	    sinTheta = dy/length;
-	    cosTheta = dx/length;
-	}
-	vertX = poly[0] - shapeA*cosTheta;
-	vertY = poly[1] - shapeA*sinTheta;
-	temp = shapeC*sinTheta;
-	poly[2] = poly[0] - shapeB*cosTheta + temp;
-	poly[8] = poly[2] - 2*temp;
-	temp = shapeC*cosTheta;
-	poly[3] = poly[1] - shapeB*sinTheta - temp;
-	poly[9] = poly[3] + 2*temp;
-	poly[4] = poly[2]*fracHeight + vertX*(1.0-fracHeight);
-	poly[5] = poly[3]*fracHeight + vertY*(1.0-fracHeight);
-	poly[6] = poly[8]*fracHeight + vertX*(1.0-fracHeight);
-	poly[7] = poly[9]*fracHeight + vertY*(1.0-fracHeight);
-
-	/*
-	 * Polygon done.  Now move the first point towards the second so that
-	 * the corners at the end of the line are inside the arrowhead.
-	 */
-
-	linePtr->coordPtr[0] = poly[0] - backup*cosTheta;
-	linePtr->coordPtr[1] = poly[1] - backup*sinTheta;
-    }
-
-    /*
-     * Similar arrowhead calculation for the last point of the line.
-     */
-
-    if (linePtr->arrow != ARROWS_FIRST) {
-	coordPtr = linePtr->coordPtr + 2*(linePtr->numPoints-2);
-	poly = linePtr->lastArrowPtr;
-	if (poly == NULL) {
-	    poly = (double *) ckalloc((unsigned)
-		    (2*PTS_IN_ARROW*sizeof(double)));
-	    poly[0] = poly[10] = coordPtr[2];
-	    poly[1] = poly[11] = coordPtr[3];
-	    linePtr->lastArrowPtr = poly;
-	}
-	dx = poly[0] - coordPtr[0];
-	dy = poly[1] - coordPtr[1];
-	length = hypot(dx, dy);
-	if (length == 0) {
-	    sinTheta = cosTheta = 0.0;
-	} else {
-	    sinTheta = dy/length;
-	    cosTheta = dx/length;
-	}
-	vertX = poly[0] - shapeA*cosTheta;
-	vertY = poly[1] - shapeA*sinTheta;
-	temp = shapeC*sinTheta;
-	poly[2] = poly[0] - shapeB*cosTheta + temp;
-	poly[8] = poly[2] - 2*temp;
-	temp = shapeC*cosTheta;
-	poly[3] = poly[1] - shapeB*sinTheta - temp;
-	poly[9] = poly[3] + 2*temp;
-	poly[4] = poly[2]*fracHeight + vertX*(1.0-fracHeight);
-	poly[5] = poly[3]*fracHeight + vertY*(1.0-fracHeight);
-	poly[6] = poly[8]*fracHeight + vertX*(1.0-fracHeight);
-	poly[7] = poly[9]*fracHeight + vertY*(1.0-fracHeight);
-	coordPtr[2] = poly[0] - backup*cosTheta;
-	coordPtr[3] = poly[1] - backup*sinTheta;
-    }
-
-    return TCL_OK;
-}
-#endif

@@ -789,15 +789,12 @@ static int tkpWinRopModes[] =
 
 #endif
 
-#ifndef notdef
 INLINE static int
 Round(double x)
 {
     return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
 }
-#else 
-#define Round Round
-#endif
+
 /*
  *---------------------------------------------------------------------------
  * 	Custom configuration option (parse and print) routines
@@ -1616,11 +1613,6 @@ ReducePoints(MapInfo *mapPtr, double tolerance)
 	screenPts[i] = mapPtr->screenPts[k];
 	map[i] = mapPtr->map[k];
     }
-#ifdef notdef
-    if (np < mapPtr->nScreenPts) {
-	fprintf(stderr, "reduced from %d to %d\n", mapPtr->nScreenPts, np);
-    }
-#endif
     free(mapPtr->screenPts);
     free(mapPtr->map);
     free(simple);
@@ -5232,117 +5224,3 @@ Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
     return (Element *)elemPtr;
 }
 
-#ifdef notdef
-/*
- *---------------------------------------------------------------------------
- *
- * MapLineProc --
- *
- *	Calculates the actual window coordinates of the line element.  The
- *	window coordinates are saved in an allocated point array.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is (re)allocated for the point array.
- *
- *---------------------------------------------------------------------------
- */
-static void
-MapLineProc(Graph *graphPtr, Element *basePtr)
-{
-    LineElement *elemPtr = (LineElement *)basePtr;
-    MapInfo mi;
-    int size, np;
-    LineStyle **styleMap;
-    Blt_ChainLink link;
-    
-    ResetLine(elemPtr);
-    np = NUMBEROFPOINTS(elemPtr);
-    if (np < 1) {
-	return;				/* No data points */
-    }
-    GetScreenPoints(graphPtr, elemPtr, &mi);
-    MapSymbols(graphPtr, elemPtr, &mi);
-
-    if ((elemPtr->flags & ACTIVE_PENDING) && (elemPtr->nActiveIndices > 0)) {
-	MapActiveSymbols(graphPtr, elemPtr);
-    }
-    /*
-     * Map connecting line segments if they are to be displayed.
-     */
-    elemPtr->smooth = elemPtr->reqSmooth;
-    if ((np > 1) && ((graphPtr->classId == CID_ELEM_STRIP) ||
-	    (elemPtr->builtinPen.traceWidth > 0))) {
-
-	/*
-	 * Do smoothing if necessary.  This can extend the coordinate array,
-	 * so both mi.points and mi.nPoints may change.
-	 */
-	switch (elemPtr->smooth) {
-	case PEN_SMOOTH_STEP:
-	    GenerateSteps(&mi);
-	    break;
-
-	case PEN_SMOOTH_NATURAL:
-	case PEN_SMOOTH_QUADRATIC:
-	    if (mi.nScreenPts < 3) {
-		/* Can't interpolate with less than three points. */
-		elemPtr->smooth = PEN_SMOOTH_LINEAR;
-	    } else {
-		GenerateSpline(graphPtr, elemPtr, &mi);
-	    }
-	    break;
-
-	case PEN_SMOOTH_CATROM:
-	    if (mi.nScreenPts < 3) {
-		/* Can't interpolate with less than three points. */
-		elemPtr->smooth = PEN_SMOOTH_LINEAR;
-	    } else {
-		GenerateParametricSpline(graphPtr, elemPtr, &mi);
-	    }
-	    break;
-
-	default:
-	    break;
-	}
-	if (elemPtr->rTolerance > 0.0) {
-	    ReducePoints(&mi, elemPtr->rTolerance);
-	}
-	if (elemPtr->fillBg != NULL) {
-	    MapFillArea(graphPtr, elemPtr, &mi);
-	}
-	if (graphPtr->classId == CID_ELEM_STRIP) {
-	    MapStrip(graphPtr, elemPtr, &mi);
-	} else {
-	    MapTraces(graphPtr, elemPtr, &mi);
-	}
-    }
-    free(mi.screenPts);
-    free(mi.map);
-
-    /* Set the symbol size of all the pen styles. */
-    for (link = Blt_Chain_FirstLink(elemPtr->styles); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
-	LineStyle *stylePtr;
-	LinePen *penPtr;
-
-	stylePtr = Blt_Chain_GetValue(link);
-	penPtr = (LinePen *)stylePtr->penPtr;
-	size = ScaleSymbol(elemPtr, penPtr->symbol.size);
-	stylePtr->symbolSize = size;
-	stylePtr->errorBarCapWidth = (penPtr->errorBarCapWidth > 0) 
-	    ? penPtr->errorBarCapWidth : Round(size * 0.6666666);
-	stylePtr->errorBarCapWidth /= 2;
-    }
-    styleMap = (LineStyle **)Blt_StyleMap((Element *)elemPtr);
-    if (((elemPtr->yHigh.nValues > 0) && (elemPtr->yLow.nValues > 0)) ||
-	((elemPtr->xHigh.nValues > 0) && (elemPtr->xLow.nValues > 0)) ||
-	(elemPtr->xError.nValues > 0) || (elemPtr->yError.nValues > 0)) {
-	MapErrorBars(graphPtr, elemPtr, styleMap);
-    }
-    MergePens(elemPtr, styleMap);
-    free(styleMap);
-}
-#endif

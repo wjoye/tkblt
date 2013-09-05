@@ -37,8 +37,6 @@
 #include "bltText.h"
 #include "bltBgStyle.h"
 
-#define WINDEBUG	0
-
 static Blt_HashTable bitmapGCTable;
 static int initialized;
 

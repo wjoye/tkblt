@@ -1170,9 +1170,6 @@ AsciiHexEncode(Blt_DBuffer dBuffer, Tcl_DString *resultPtr)
 	    }
 	}
 	*dp++ = '\0';
-#ifdef notdef
-	Tcl_DStringSetLength(resultPtr, n + oldLength);
-#endif
     }
 }
 

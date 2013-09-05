@@ -1825,50 +1825,6 @@ DrawMargins(Graph *graphPtr, Drawable drawable)
     graphPtr->flags &= ~DRAW_MARGINS;
 }
 
-#ifdef notdef
-/*
- *---------------------------------------------------------------------------
- *
- * DrawPlotRegion --
- *
- *	Draws the contents of the plotting area.  This consists of the
- *	elements, markers (draw under elements), axis limits, and possibly the
- *	legend.  Typically, the output will be cached into a backing store
- *	pixmap, so that redraws can occur quickly.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DrawPlotRegion(Graph *graphPtr, Drawable drawable)
-{
-    int site;
-
-    /* Clear the background of the plotting area. */
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
-	graphPtr->left, graphPtr->top, graphPtr->right - graphPtr->left + 1,
-	graphPtr->bottom - graphPtr->top + 1, TK_RELIEF_FLAT, 0);
-
-    /* Draw the elements, markers, legend, and axis limits. */
-
-    Blt_DrawGrids(graphPtr, drawable);
-    Blt_DrawMarkers(graphPtr, drawable, MARKER_UNDER);
-    site = Blt_Legend_Site(graphPtr);
-    if ((site & LEGEND_PLOTAREA_MASK) && 
-	(!Blt_Legend_IsRaised(graphPtr))) {
-	Blt_DrawLegend(graphPtr, drawable);
-    } else if (site == LEGEND_WINDOW) {
-	Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-    Blt_DrawAxisLimits(graphPtr, drawable);
-    DrawMargins(graphPtr, drawable);
-    Blt_DrawElements(graphPtr, drawable);
-    Blt_DrawAxes(graphPtr, drawable);
-}
-#endif
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -2019,9 +1975,6 @@ DisplayGraph(ClientData clientData)
 					 * should not get here) */
     }
     tkwin = graphPtr->tkwin;
-#ifdef notdef
-    fprintf(stderr, "Calling DisplayGraph(%s)\n", Tk_PathName(tkwin));
-#endif
     if ((Tk_Width(tkwin) <= 1) || (Tk_Height(tkwin) <= 1)) {
 	/* Don't bother computing the layout until the size of the window is
 	 * something reasonable. */

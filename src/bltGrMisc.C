@@ -720,96 +720,6 @@ typedef struct {
 			   (c)->green = (int)((g) * 65535.0), \
 			   (c)->blue = (int)((b) * 65535.0))
 
-#ifdef notdef
-void
-Blt_XColorToHSV(XColor *colorPtr, HSV *hsvPtr)
-{
-    unsigned short max, min;
-    double range;
-    unsigned short *colorValues;
-
-    /* Find the minimum and maximum RGB intensities */
-    colorValues = (unsigned short *)&colorPtr->red;
-    max = MAX3(colorValues[0], colorValues[1], colorValues[2]);
-    min = MIN3(colorValues[0], colorValues[1], colorValues[2]);
-
-    hsvPtr->val = (double)max / 65535.0;
-    hsvPtr->hue = hsvPtr->sat = 0.0;
-
-    range = (double)(max - min);
-    if (max != min) {
-	hsvPtr->sat = range / (double)max;
-    }
-    if (hsvPtr->sat > 0.0) {
-	double red, green, blue;
-
-	/* Normalize the RGB values */
-	red = (double)(max - colorPtr->red) / range;
-	green = (double)(max - colorPtr->green) / range;
-	blue = (double)(max - colorPtr->blue) / range;
-
-	if (colorPtr->red == max) {
-	    hsvPtr->hue = (blue - green);
-	} else if (colorPtr->green == max) {
-	    hsvPtr->hue = 2 + (red - blue);
-	} else if (colorPtr->blue == max) {
-	    hsvPtr->hue = 4 + (green - red);
-	}
-	hsvPtr->hue *= 60.0;
-    } else {
-	hsvPtr->sat = 0.5;
-    }
-    if (hsvPtr->hue < 0.0) {
-	hsvPtr->hue += 360.0;
-    }
-}
-
-void
-Blt_HSVToXColor(HSV *hsvPtr, XColor *colorPtr)
-{
-    double hue, p, q, t;
-    double frac;
-    int quadrant;
-
-    if (hsvPtr->val < 0.0) {
-	hsvPtr->val = 0.0;
-    } else if (hsvPtr->val > 1.0) {
-	hsvPtr->val = 1.0;
-    }
-    if (hsvPtr->sat == 0.0) {
-	SetColor(colorPtr, hsvPtr->val, hsvPtr->val, hsvPtr->val);
-	return;
-    }
-    hue = fmod(hsvPtr->hue, 360.0) / 60.0;
-    quadrant = (int)floor(hue);
-    frac = hsvPtr->hue - quadrant;
-    p = hsvPtr->val * (1 - (hsvPtr->sat));
-    q = hsvPtr->val * (1 - (hsvPtr->sat * frac));
-    t = hsvPtr->val * (1 - (hsvPtr->sat * (1 - frac)));
-
-    switch (quadrant) {
-    case 0:
-	SetColor(colorPtr, hsvPtr->val, t, p);
-	break;
-    case 1:
-	SetColor(colorPtr, q, hsvPtr->val, p);
-	break;
-    case 2:
-	SetColor(colorPtr, p, hsvPtr->val, t);
-	break;
-    case 3:
-	SetColor(colorPtr, p, q, hsvPtr->val);
-	break;
-    case 4:
-	SetColor(colorPtr, t, p, hsvPtr->val);
-	break;
-    case 5:
-	SetColor(colorPtr, hsvPtr->val, p, q);
-	break;
-    }
-}
-#endif
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -1312,7 +1222,6 @@ Blt_Fill3DRectangle(
     int relief)			/* Indicates 3D effect: TK_RELIEF_FLAT,
 				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
 {
-#ifndef notdef
     if ((borderWidth > 1) && (width > 2) && (height > 2) &&
 	((relief == TK_RELIEF_SUNKEN) || (relief == TK_RELIEF_RAISED))) {
 	GC lightGC, darkGC;
@@ -1325,15 +1234,9 @@ Blt_Fill3DRectangle(
 	if (relief == TK_RELIEF_RAISED) {
 	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
 	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-#ifdef notdef
-	    darkGC = DefaultGC(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
-#endif
 	} else {
 
 	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-#ifdef notdef
-	    lightGC = DefaultGC(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
-#endif
 	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
 	}
 	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x2, y);
@@ -1342,7 +1245,6 @@ Blt_Fill3DRectangle(
 	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x, y2);
 	x++, y++, width -= 2, height -= 2, borderWidth--;
     }
-#endif
     Tk_Fill3DRectangle(tkwin, drawable, border, x, y, width, height, 
 	borderWidth, relief);
 }
@@ -1361,7 +1263,6 @@ Blt_Draw3DRectangle(
     int relief)			/* Indicates 3D effect: TK_RELIEF_FLAT,
 				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
 {
-#ifndef notdef
     if ((borderWidth > 1) && (width > 2) && (height > 2) &&
 	((relief == TK_RELIEF_SUNKEN) || (relief == TK_RELIEF_RAISED))) {
 	GC lightGC, darkGC;
@@ -1372,14 +1273,8 @@ Blt_Draw3DRectangle(
 	if (relief == TK_RELIEF_RAISED) {
 	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
 	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-#ifdef notdef
-	    darkGC = DefaultGC(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
-#endif
 	} else {
 	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-#ifdef notdef
-	    lightGC = DefaultGC(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
-#endif
 	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
 	}
 	XDrawLine(Tk_Display(tkwin), drawable, darkGC, x2, y2, x2, y);
@@ -1388,282 +1283,10 @@ Blt_Draw3DRectangle(
 	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x, y2);
 	x++, y++, width -= 2, height -= 2, borderWidth--;
     }
-#endif
     Tk_Draw3DRectangle(tkwin, drawable, border, x, y, width, height, 
 	borderWidth, relief);
 }
 
-#ifdef notdef
-typedef struct {
-    Screen *screen;
-    Visual *visual;
-    Colormap colormap;
-    Tk_Uid nameUid;
-} BorderKey;
-
-typedef struct {
-    Screen *screen;		/* Screen on which the border will be used. */
-    Visual *visual;		/* Visual for all windows and pixmaps using
-				 * the border. */
-    int depth;			/* Number of bits per pixel of drawables where
-				 * the border will be used. */
-    Colormap colormap;		/* Colormap out of which pixels are
-				 * allocated. */
-    int refCount;		/* Number of active uses of this color (each
-				 * active use corresponds to a call to
-				 * Blt_Get3DBorder).  If this count is 0, then
-				 * this structure is no longer valid and it
-				 * isn't present in borderTable: it is being
-				 * kept around only because there are objects
-				 * referring to it.  The structure is freed
-				 * when refCount is 0. */
-
-    XColor *bgColorPtr;		/* Color of face. */
-    XColor *shadows[4];
-
-    Pixmap darkStipple;		/* Stipple pattern to use for drawing shadows
-				 * areas.  Used for displays with <= 64 colors
-				 * or where colormap has filled up. */
-    Pixmap lightStipple;	/* Stipple pattern to use for drawing shadows
-				 * areas.  Used for displays with <= 64 colors
-				 * or where colormap has filled up. */
-    GC bgGC;			/* Used (if necessary) to draw areas in the
-				 * background color. */
-    GC lightGC, darkGC;
-    Tcl_HashEntry *hashPtr;	/* Entry in borderTable (needed in order to
-				 * delete structure). */
-
-    struct _Blt_3DBorder *nextPtr;
-} Border, *Blt_3DBorder;
-    
-
-void
-Blt_Draw3DRectangle(tkwin, drawable, border, x, y, width,
-	height, borderWidth, relief)
-    Tk_Window tkwin;		/* Window for which border was allocated. */
-    Drawable drawable;		/* X window or pixmap in which to draw. */
-    Blt_3DBorder *borderPtr;	/* Border to draw. */
-    int x, y, width, height;	/* Outside area of rectangular region. */
-    int borderWidth;		/* Desired width for border, in
-				 * pixels. Border will be *inside* region. */
-    int relief;			/* Indicates 3D effect: TK_RELIEF_FLAT,
-				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
-{
-    if ((width > (2 * borderWidth)) && (height > (2 * borderWidth))) {
-	int x2, y2;
-	int i;
-
-	x2 = x + width - 1;
-	y2 = y + height - 1;
-
-	XSetForeground(borderPtr->lightGC, borderPtr->shadows[0]);
-	XSetForeground(borderPtr->darkGC, borderPtr->shadows[3]);
-	XDrawLine(Tk_Display(tkwin), drawable, borderPtr->lightGC, 
-		  x, y, x2, y);
-	XDrawLine(Tk_Display(tkwin), drawable, borderPtr->lightGC, 
-		  x, y, x, y2);
-	XDrawLine(Tk_Display(tkwin), drawable, borderPtr->darkGC, 
-		  x2, y, x2, y2);
-	XDrawLine(Tk_Display(tkwin), drawable, borderPtr->darkGC, 
-		  x2, y2, x, y2);
-	XSetForeground(borderPtr->lightGC, borderPtr->shadows[1]);
-	XSetForeground(borderPtr->darkGC, borderPtr->shadows[2]);
-	for (i = 1; i < (borderWidth - 1); i++) {
-
-	    /*
-	     *  +----------
-	     *  |+-------
-	     *  ||+-----
-	     *  |||
-	     *  |||
-	     *  ||
-	     *  |
-	     */
-	    x++, y++, x2--, y2--;
-	    XDrawLine(Tk_Display(tkwin), drawable, borderPtr->lightGC, 
-		x, y, x2, y);
-	    XDrawLine(Tk_Display(tkwin), drawable, borderPtr->lightGC, 
-		x, y, x, y2);
-	    XDrawLine(Tk_Display(tkwin), drawable, borderPtr->darkGC, 
-		x2, y, x2, y2);
-	    XDrawLine(Tk_Display(tkwin), drawable, borderPtr->darkGC, 
-		x2, y2, x, y2);
-	}
-    }
-}
-
-void
-Blt_Fill3DRectangle(tkwin, drawable, border, x, y, width, height, borderWidth, 
-	relief)
-    Tk_Window tkwin;		/* Window for which border was allocated. */
-    Drawable drawable;		/* X window or pixmap in which to draw. */
-    Tk_3DBorder border;		/* Token for border to draw. */
-    int x, y, width, height;	/* Outside area of rectangular region. */
-    int borderWidth;		/* Desired width for border, in
-				 * pixels. Border will be *inside* region. */
-    int relief;			/* Indicates 3D effect: TK_RELIEF_FLAT,
-				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
-{
-    Blt_3DBorder *borderPtr;
-
-    XFillRectangle(Tk_Display(tkwin), drawable, borderPtr->bgGC, x, y, width,
-	   height);
-    if ((borderWidth > 0) && (relief != BLT_RELIEF_FLAT)) {
-	Blt_Draw3DRectangle(tkwin, drawable, borderPtr, x, y, width, height, 
-	    borderWidth, relief);
-    }
-}
-
-
-void 
-FreeBorder(display, borderPtr)
-    Display *display;
-    Border *borderPtr;
-{
-    int i;
-
-    if (borderPtr->bgColorPtr != NULL) {
-	Tk_FreeColor(display, borderPtr->bgColorPtr);
-    }
-    for (i = 0; i < 4; i++) {
-	Tk_FreeColor(display, borderPtr->shadows[i]);
-    }
-    if (borderPtr->darkGC != NULL) {
-	Blt_FreePrivateGC(display, borderPtr->darkGC);
-    }
-    if (borderPtr->lightGC != NULL) {
-	Blt_FreePrivateGC(tkwin, borderPtr->lightGC);
-    }
-    if (borderPtr->bgGC != NULL) {
-	Blt_FreePrivateGC(tkwin, borderPtr->bgGC);
-    }
-    free(borderPtr);
-}
-
-void
-Blt_Free3DBorder(display, border)
-    Display *display;
-    Blt_3DBorder border;
-{
-    Border *borderPtr = (Border *)border;
-
-    borderPtr->refCount--;
-    if (borderPtr->refCount >= 0) {
-	/* Search for the border in the bucket. Start at the head. */
-	headPtr = Blt_GetHashValue(borderPtr->hashPtr);
-	lastPtr = NULL;
-	while ((headPtr != borderPtr) && (headPtr != NULL)) {
-	    lastPtr = headPtr;
-	    headPtr = headPtr->next;
-	}
-	if (headPtr == NULL) {
-	    return;		/* This can't happen. It means that we could
-				 * not find the border. */
-	}
-	if (lastPtr != NULL) {
-	    lastPtr->next = borderPtr->next;
-	} else {
-	    Tcl_DeleteHashEntry(borderPtr->hashPtr);
-	}
-	FreeBorder(display, borderPtr);
-    }
-}
-
-Blt_3DBorder *
-Blt_Get3DBorder(Tcl_Interp *interp, Tk_Window tkwin, const char *borderName)
-{
-    Blt_3DBorder *borderPtr, *lastBorderPtr;
-    Blt_HashEntry *hPtr;
-    XColor *bgColorPtr;
-    char **argv;
-    const char *colorName;
-    int argc;
-    int isNew;
-
-    lastBorderPtr = NULL;
-    hPtr = Tcl_CreateHashEntry(&dataPtr->borderTable, borderName, &isNew);
-    if (!isNew) {
-	borderPtr = lastBorderPtr = Blt_GetHashValue(hPtr);
-	while (borderPtr != NULL) {
-	    if ((Tk_Screen(tkwin) == borderPtr->screen) && 
-		(Tk_Colormap(tkwin) == borderPtr->colormap)) {
-		borderPtr->refCount++;
-		return borderPtr;
-	    }
-	    borderPtr = borderPtr->nextPtr;
-	}
-    }
-    /* Create a new border. */
-    argv = NULL;
-    bgColorPtr = NULL;
-
-    if (Tcl_SplitList(interp, borderName, &argc, &argv) != TCL_OK) {
-	goto error;
-    }
-    colorName = borderName;
-    bgColorPtr = Tk_GetColor(interp, tkwin, colorName);
-    if (bgColorPtr == NULL) {
-	goto error;
-    }
-
-    /* Create a new border */
-    borderPtr = calloc(1, sizeof(Blt_3DBorder));
-    borderPtr->screen = Tk_Screen(tkwin);
-    borderPtr->visual = Tk_Visual(tkwin);
-    borderPtr->depth = Tk_Depth(tkwin);
-    borderPtr->colormap = Tk_Colormap(tkwin);
-    borderPtr->refCount = 1;
-    borderPtr->bgColorPtr = bgColorPtr;
-    borderPtr->darkGC = Blt_GetPrivateGC(tkwin, 0, NULL);
-    borderPtr->lightGC = Blt_GetPrivateGC(tkwin, 0, NULL);
-    borderPtr->hashPtr = lastBorderPtr->hashPtr;
-    lastBorderPtr->nextPtr = lastBorderPtr;
-    {
-	HSV hsv;
-	XColor color;
-	double sat, sat0, diff, step, hstep;
-	int count;
-	
-	/* Convert the face (background) color to HSV */
-	Blt_XColorToHSV(borderPtr->bgColorPtr, &hsv);
-	
-	/* Using the color as the baseline intensity, pick a set of colors
-	 * around the intensity. */
-#define UFLOOR(x,u)		(floor((x)*(u))/(u))
-	diff = hsv.sat - UFLOOR(hsv.sat, 0.2);
-	sat = 0.1 + (diff - 0.1);
-	sat0 = hsv.sat;
-	count = 0;
-	for (sat = 0.1 + (diff - 0.1); sat <= 1.0; sat += 0.2) {
-	    if (fabs(sat0 - sat) >= 0.1) {
-		hsv.sat = sat;
-		Blt_HSVToXColor(&hsv, &color);
-		borderPtr->shadows[count] = Tk_GetColorByValue(tkwin, &color);
-		count++;
-	    }
-	}
-    }
-    Blt_SetHashValue(hPtr, borderPtr);
-    if (argv != NULL) {
-	free(argv);
-    }
-    return TCL_OK;
-
- error:
-    if (argv != NULL) {
-	free(argv);
-    }
-    if (bgColorPtr != NULL) {
-	Tk_FreeColor(bgColorPtr);
-    }
-    if (isNew) {
-	Blt_DeleteHashEntry(&borderTable, hPtr);
-    }
-    return NULL;
-}
-
-
-#endif
 
 typedef struct {
     float x, y, z;
