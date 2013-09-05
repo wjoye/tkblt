@@ -28,13 +28,10 @@
 
 #include "bltInt.h"
 
-Tcl_AppInitProc Blt_core_Init;
-Tcl_AppInitProc Blt_core_SafeInit;
-Tcl_AppInitProc Blt_x_Init;
-Tcl_AppInitProc Blt_x_SafeInit;
-Tcl_AppInitProc Blt_Init;
+Tcl_AppInitProc Tlt_Init;
+Tcl_AppInitProc Tlt_SafeInit;
 
-int Blt_core_Init(Tcl_Interp *interp)
+int Tlt_Init(Tcl_Interp *interp)
 {
   Tcl_Namespace *nsPtr;
 
@@ -43,44 +40,6 @@ int Blt_core_Init(Tcl_Interp *interp)
      Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0)
 #else
      Tcl_PkgRequire(interp, "Tcl", TCL_PATCH_LEVEL, 0)
-#endif
-     == NULL) {
-    return TCL_ERROR;
-  }
-
-  nsPtr = Tcl_FindNamespace(interp, "::blt", (Tcl_Namespace *)NULL, 0);
-  if (nsPtr == NULL) {
-    nsPtr = Tcl_CreateNamespace(interp, "::blt", NULL, NULL);
-    if (nsPtr == NULL) {
-      return TCL_ERROR;
-    }
-  }
-
-  if (Blt_VectorCmdInitProc(interp) != TCL_OK)
-    return TCL_ERROR;
-
-  if (Tcl_PkgProvide(interp, "blt_core", BLT_VERSION) != TCL_OK) {
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-int
-Blt_core_SafeInit(Tcl_Interp *interp)
-{
-  return Blt_core_Init(interp);
-}
-
-int
-Blt_x_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
-{
-    Tcl_Namespace *nsPtr;
-
-  if(
-#ifdef USE_TCL_STUBS
-     Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0)
-#else
-    Tcl_PkgRequire(interp, "Tcl", TCL_PATCH_LEVEL, 0)
 #endif
      == NULL) {
     return TCL_ERROR;
@@ -96,39 +55,29 @@ Blt_x_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
     return TCL_ERROR;
   }
 
-    nsPtr = Tcl_CreateNamespace(interp, "::blt::tk", NULL, NULL);
+  nsPtr = Tcl_FindNamespace(interp, "::blt", (Tcl_Namespace *)NULL, 0);
+  if (nsPtr == NULL) {
+    nsPtr = Tcl_CreateNamespace(interp, "::blt", NULL, NULL);
     if (nsPtr == NULL) {
-	return TCL_ERROR;
-    }
-    nsPtr = Tcl_FindNamespace(interp, "::blt", NULL, TCL_LEAVE_ERR_MSG);
-    if (nsPtr == NULL) {
-	return TCL_ERROR;
-    }
-
-    if (Blt_GraphCmdInitProc(interp) != TCL_OK)
       return TCL_ERROR;
-
-    if (Tcl_PkgProvide(interp, "blt_extra", BLT_VERSION) != TCL_OK) {
-	return TCL_ERROR;
     }
-    return TCL_OK;
+  }
+
+  if (Blt_VectorCmdInitProc(interp) != TCL_OK)
+    return TCL_ERROR;
+  if (Blt_GraphCmdInitProc(interp) != TCL_OK)
+    return TCL_ERROR;
+
+  if (Tcl_PkgProvide(interp, "tlt", "3.0") != TCL_OK) {
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
 }
 
-int
-Blt_x_SafeInit(Tcl_Interp *interp)
+int Tlt_SafeInit(Tcl_Interp *interp)
 {
-    return Blt_x_Init(interp);
+  return Tlt_Init(interp);
 }
 
-int
-Blt_Init(Tcl_Interp *interp) 
-{
-    if (Blt_core_Init(interp) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if (Blt_x_Init(interp) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
 
