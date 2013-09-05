@@ -35,12 +35,6 @@
 #    define BLT_LIBRARY "unknown"
 #endif
 
-#if (_TCL_VERSION >= _VERSION(8,5,0)) 
-#define TCL_VERSION_LOADED	TCL_PATCH_LEVEL
-#else 
-#define TCL_VERSION_LOADED	TCL_VERSION
-#endif
-
 BLT_EXTERN Tcl_AppInitProc Blt_core_Init;
 BLT_EXTERN Tcl_AppInitProc Blt_core_SafeInit;
 
@@ -140,13 +134,12 @@ int Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
 {
     Tcl_Namespace *nsPtr;
     const char *result;
-    const int isExact = 1;
 
   if(
 #ifdef USE_TCL_STUBS
-     Tcl_InitStubs(interp, TCL_VERSION_LOADED, isExact)
+     Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0)
 #else
-    Tcl_PkgRequire(interp, "Tcl", TCL_VERSION_LOADED, isExact)
+    Tcl_PkgRequire(interp, "Tcl", TCL_PATCH_LEVEL, 0)
 #endif
      == NULL) {
     return TCL_ERROR;
