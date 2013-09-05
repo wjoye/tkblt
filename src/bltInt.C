@@ -128,9 +128,7 @@ SetLibraryPath(Tcl_Interp *interp)
     return TCL_OK;
 }
 
-
-/*LINTLIBRARY*/
-int Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
+int Blt_core_Init(Tcl_Interp *interp)
 {
     Tcl_Namespace *nsPtr;
     const char *result;
@@ -181,9 +179,8 @@ int Blt_core_Init(Tcl_Interp *interp) /* Interpreter to add extra commands */
     return TCL_OK;
 }
 
-/*LINTLIBRARY*/
 int
-Blt_core_SafeInit(Tcl_Interp *interp) /* Interpreter to add extra commands */
+Blt_core_SafeInit(Tcl_Interp *interp)
 {
     return Blt_core_Init(interp);
 }
