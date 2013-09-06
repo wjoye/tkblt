@@ -31,12 +31,24 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#define TIME_WITH_SYS_TIME 0
+#define HAVE_SYS_TIME_H 1
+#define STDC_HEADERS 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_UNISTD_H 1
+#include <tkPort.h>
+#include <tkInt.h>
+
+#define FOOBAR
 #include "bltInt.h"
+#undef FOOBAR
 #include "tkIntBorder.h"
 #include "bltDBuffer.h"
 #include "bltPicture.h"
 #include "bltPsInt.h"
-#include "tkDisplay.h"
 
 #define PS_MAXPATH	1500		/* Maximum number of components in a
 					 * PostScript (level 1) path. */
