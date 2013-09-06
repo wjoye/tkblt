@@ -68,7 +68,7 @@ int Tlt_Init(Tcl_Interp *interp)
   if (Blt_GraphCmdInitProc(interp) != TCL_OK)
     return TCL_ERROR;
 
-  if (Tcl_PkgProvide(interp, "tlt", "3.0") != TCL_OK) {
+  if (Tcl_PkgProvide(interp, "tlt", BLT_VERSION) != TCL_OK) {
     return TCL_ERROR;
   }
 

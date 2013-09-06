@@ -45,7 +45,6 @@
 #undef FOOBAR
 
 #include "bltHash.h"
-//#include "tkIntBorder.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
 #include "bltFont.h"
