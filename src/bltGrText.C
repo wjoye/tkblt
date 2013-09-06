@@ -28,9 +28,24 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
+#define TIME_WITH_SYS_TIME 0
+#define HAVE_SYS_TIME_H 1
+#define STDC_HEADERS 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_UNISTD_H 1
+#include <tkPort.h>
+#include <tkInt.h>
+#include <tk3d.h>
+
+#define FOOBAR
 #include "bltInt.h"
+#undef FOOBAR
+
 #include "bltHash.h"
-#include "tkIntBorder.h"
+//#include "tkIntBorder.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
 #include "bltFont.h"
@@ -842,7 +857,7 @@ DrawStandardLayout(Tk_Window tkwin, Drawable drawable, TextStyle *stylePtr,
 	TkBorder *borderPtr = (TkBorder *) Blt_BackgroundBorder(stylePtr->bg);
 	XColor *color1, *color2;
 
-	color1 = borderPtr->lightColor, color2 = borderPtr->darkColor;
+	color1 = borderPtr->lightColorPtr, color2 = borderPtr->darkColorPtr;
 	if (stylePtr->state & STATE_EMPHASIS) {
 	    XColor *hold;
 	    
@@ -927,7 +942,7 @@ Blt_DrawTextWithRotatedFont(Tk_Window tkwin, Drawable drawable, float angle,
 	TkBorder *borderPtr = (TkBorder *)Blt_BackgroundBorder(stylePtr->bg);
 	XColor *color1, *color2;
 	
-	color1 = borderPtr->lightColor, color2 = borderPtr->darkColor;
+	color1 = borderPtr->lightColorPtr, color2 = borderPtr->darkColorPtr;
 	if (stylePtr->state & STATE_EMPHASIS) {
 	    XColor *hold;
 	    
@@ -992,7 +1007,7 @@ Blt_DrawTextWithRotatedBitmap(
 	TkBorder *borderPtr = (TkBorder *) Blt_BackgroundBorder(stylePtr->bg);
 	XColor *color1, *color2;
 
-	color1 = borderPtr->lightColor, color2 = borderPtr->darkColor;
+	color1 = borderPtr->lightColorPtr, color2 = borderPtr->darkColorPtr;
 	if (stylePtr->state & STATE_EMPHASIS) {
 	    XColor *hold;
 

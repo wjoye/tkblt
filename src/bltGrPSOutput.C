@@ -41,11 +41,12 @@
 #define HAVE_UNISTD_H 1
 #include <tkPort.h>
 #include <tkInt.h>
+#include <tk3d.h>
 
 #define FOOBAR
 #include "bltInt.h"
 #undef FOOBAR
-#include "tkIntBorder.h"
+
 #include "bltDBuffer.h"
 #include "bltPicture.h"
 #include "bltPsInt.h"
@@ -853,20 +854,20 @@ Blt_Ps_Draw3DRectangle(
 	return;
     }
     if ((relief == TK_RELIEF_SOLID) ||
-	(borderPtr->lightColor == NULL) || (borderPtr->darkColor == NULL)) {
+	(borderPtr->lightColorPtr == NULL) || (borderPtr->darkColorPtr == NULL)) {
 	if (relief == TK_RELIEF_SOLID) {
 	    dark.red = dark.blue = dark.green = 0x00;
 	    light.red = light.blue = light.green = 0x00;
 	    relief = TK_RELIEF_SUNKEN;
 	} else {
-	    light = *borderPtr->bgColor;
+	    light = *borderPtr->bgColorPtr;
 	    dark.red = dark.blue = dark.green = 0xFF;
 	}
 	lightPtr = &light;
 	darkPtr = &dark;
     } else {
-	lightPtr = borderPtr->lightColor;
-	darkPtr = borderPtr->darkColor;
+	lightPtr = borderPtr->lightColorPtr;
+	darkPtr = borderPtr->darkColorPtr;
     }
 
 
@@ -893,7 +894,7 @@ Blt_Ps_Draw3DRectangle(
 	topPtr = darkPtr;
 	bottomPtr = lightPtr;
     } else {
-	topPtr = bottomPtr = borderPtr->bgColor;
+	topPtr = bottomPtr = borderPtr->bgColorPtr;
     }
     Blt_Ps_XSetBackground(ps, bottomPtr);
     Blt_Ps_XFillRectangle(ps, x, y + height - borderWidth, width, borderWidth);
@@ -925,7 +926,7 @@ Blt_Ps_Fill3DRectangle(
 {
     TkBorder *borderPtr = (TkBorder *) border;
 
-    Blt_Ps_XSetBackground(ps, borderPtr->bgColor);
+    Blt_Ps_XSetBackground(ps, borderPtr->bgColorPtr);
     Blt_Ps_XFillRectangle(ps, x, y, width, height);
     Blt_Ps_Draw3DRectangle(ps, border, x, y, width, height, borderWidth,
 	relief);
