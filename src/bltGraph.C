@@ -775,8 +775,7 @@ ConfigureGraph(Graph *graphPtr)
  *
  *---------------------------------------------------------------------------
  */
-static void
-DestroyGraph(DestroyData dataPtr)
+static void DestroyGraph(char* dataPtr)
 {
     Graph *graphPtr = (Graph *)dataPtr;
 
@@ -930,7 +929,7 @@ CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
     return graphPtr;
 
  error:
-    DestroyGraph((DestroyData)graphPtr);
+    DestroyGraph((char*)graphPtr);
     return NULL;
 }
 

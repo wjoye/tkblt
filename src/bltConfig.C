@@ -81,6 +81,10 @@
 #include "bltPicture.h"
 #include "bltBgStyle.h"
 
+#define PIXELS_NNEG		0
+#define PIXELS_POS		1
+#define PIXELS_ANY		2
+
 /*
  *---------------------------------------------------------------------------
  *

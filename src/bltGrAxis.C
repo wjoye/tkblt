@@ -2053,8 +2053,7 @@ DestroyAxis(Axis *axisPtr)
     axisPtr = NULL;
 }
 
-static void
-FreeAxis(DestroyData data)
+static void FreeAxis(char* data)
 {
     Axis *axisPtr = (Axis *)data;
     DestroyAxis(axisPtr);

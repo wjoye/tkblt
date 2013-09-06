@@ -1814,8 +1814,7 @@ DestroyMarker(Marker *markerPtr)
     free(markerPtr);
 }
 
-static void
-FreeMarker(DestroyData dataPtr) 
+static void FreeMarker(char* dataPtr) 
 {
     Marker *markerPtr = (Marker *)dataPtr;
     DestroyMarker(markerPtr);

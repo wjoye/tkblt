@@ -1277,8 +1277,7 @@ DestroyElement(Element *elemPtr)
     free(elemPtr);
 }
 
-static void
-FreeElement(DestroyData data)
+static void FreeElement(char* data)
 {
     Element *elemPtr = (Element *)data;
     DestroyElement(elemPtr);
