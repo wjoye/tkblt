@@ -27,16 +27,16 @@
  *
  */
 
-#include "bltInt.h"
 #include <stdarg.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+
+#include "bltInt.h"
 #include "tkIntBorder.h"
 #include "bltDBuffer.h"
 #include "bltPicture.h"
 #include "bltPsInt.h"
 #include "tkDisplay.h"
-#include "tkFont.h"
 
 #define PS_MAXPATH	1500		/* Maximum number of components in a
 					 * PostScript (level 1) path. */
