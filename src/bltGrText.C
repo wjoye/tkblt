@@ -44,6 +44,7 @@
 #include "bltInt.h"
 #undef FOOBAR
 
+#include "bltMath.h"
 #include "bltHash.h"
 #include "bltImage.h"
 #include "bltBitmap.h"

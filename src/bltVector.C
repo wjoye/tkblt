@@ -42,6 +42,7 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <time.h>
 
@@ -49,7 +50,6 @@
 #include "bltOp.h"
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
-#include "bltMath.h"
 
 #ifndef TCL_NAMESPACE_ONLY
 #define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY

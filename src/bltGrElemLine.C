@@ -28,6 +28,8 @@
  */
 
 #include <assert.h>
+#include <math.h>
+#include <float.h>
 #include <X11/Xutil.h>
 
 #include "bltGraph.h"

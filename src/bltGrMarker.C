@@ -28,6 +28,7 @@
 
 #include <assert.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltImage.h"

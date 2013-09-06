@@ -46,6 +46,7 @@
 #include "bltInt.h"
 #undef FOOBAR
 
+#include "bltMath.h"
 #include "bltDBuffer.h"
 #include "bltPicture.h"
 #include "bltPsInt.h"

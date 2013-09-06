@@ -26,9 +26,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltGraph.h"
+#include <float.h>
+#include <math.h>
 #include <X11/Xutil.h>
 
+#include "bltGraph.h"
 #include "bltGrElem.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))

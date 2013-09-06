@@ -44,6 +44,7 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltBind.h"
@@ -542,11 +543,11 @@ Blt_GraphTags(
 	tagProc = Blt_MakeMarkerTag;
 	break;
     case CID_NONE:
-	panic("unknown object type");
+	Blt_Panic("unknown object type");
 	tagProc = NULL;
 	break;
     default:
-	panic("bogus object type");
+	Blt_Panic("bogus object type");
 	tagProc = NULL;
 	break;
     }

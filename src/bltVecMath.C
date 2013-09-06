@@ -30,6 +30,9 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <float.h>
+#include <math.h>
+
 #include "bltVecInt.h"
 #include "bltNsUtil.h"
 #include "bltParse.h"
@@ -173,8 +176,6 @@ static int precTable[] =
 
 static int NextValue(Tcl_Interp *interp, ParseInfo *piPtr, int prec, 
 	Value *valuePtr);
-
-#include <bltMath.h>
 
 /*
  *---------------------------------------------------------------------------
