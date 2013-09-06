@@ -46,39 +46,6 @@ typedef struct {
 #define BLT_NO_DEFAULT_NS	(1<<0)
 #define BLT_NO_ERROR_MSG	(1<<1)
 
-#ifndef USE_TCL_STUBS
-
-extern Tcl_Command Tcl_FindCommand(Tcl_Interp *interp, const char *name, 
-	Tcl_Namespace *nsPtr, int flags);
-/*
- * Namespace procedures not prototyped defined in Tcl.h 
- */
-extern Tcl_Namespace *Tcl_GetCurrentNamespace(Tcl_Interp *interp);
-
-extern Tcl_Namespace *Tcl_GetGlobalNamespace(Tcl_Interp *interp);
-
-extern Tcl_Namespace *Tcl_CreateNamespace(Tcl_Interp *interp, 
-	const char *name, ClientData clientData, 
-	Tcl_NamespaceDeleteProc *nsDelProc);
-
-extern void Tcl_DeleteNamespace(Tcl_Namespace *nsPtr);
-
-extern Tcl_Namespace *Tcl_FindNamespace(Tcl_Interp *interp, 
-	const char *name, Tcl_Namespace *context, int flags);
-
-extern int Tcl_Export(Tcl_Interp *interp, Tcl_Namespace *nsPtr,
-	const char *name, int resetFlag);
-
-extern Tcl_Var Tcl_FindNamespaceVar(Tcl_Interp *interp, const char *name, 
-	Tcl_Namespace *contextNsPtr, int flags);
-
-extern void Tcl_PopCallFrame(Tcl_Interp *interp);
-
-extern int Tcl_PushCallFrame(Tcl_Interp *interp, Tcl_CallFrame *framePtr, 
-	Tcl_Namespace *nsPtr, int isProcCallFrame);
-
-#endif /* USE_TCL_STUBS */
-
 /* 
  * Auxillary procedures 
  */
