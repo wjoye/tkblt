@@ -98,7 +98,7 @@ Blt_Ps_GetPicaFromObj(
     if (pica < 0.0) {
 	goto error;
     }
-    while ((*p != '\0') && isspace(UCHAR(*p))) {
+    while ((*p != '\0') && isspace((unsigned char)(*p))) {
 	p++;
     }
     switch (*p) {
@@ -109,7 +109,7 @@ Blt_Ps_GetPicaFromObj(
 	case 'p': p++;                       break;
 	default:  goto error;
     }
-    while ((*p != '\0') && isspace(UCHAR(*p))) {
+    while ((*p != '\0') && isspace((unsigned char)(*p))) {
 	p++;
     }
     if (*p == '\0') {

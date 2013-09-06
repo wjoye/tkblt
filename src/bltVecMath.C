@@ -694,7 +694,7 @@ ParseString(
     } else {
 	Vector *vPtr;
 
-	while (isspace(UCHAR(*string))) {
+	while (isspace((unsigned char)(*string))) {
 	    string++;		/* Skip spaces leading the vector name. */    
 	}
 	vPtr = Blt_Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 
@@ -762,11 +762,11 @@ ParseMathFunction(
      * record for the function.
      */
     p = (char *)start;
-    while (isspace(UCHAR(*p))) {
+    while (isspace((unsigned char)(*p))) {
 	p++;
     }
     piPtr->nextPtr = p;
-    while (isalnum(UCHAR(*p)) || (*p == '_')) {
+    while (isalnum((unsigned char)(*p)) || (*p == '_')) {
 	p++;
     }
     if (*p != '(') {
@@ -838,7 +838,7 @@ NextToken(
     int result;
 
     p = piPtr->nextPtr;
-    while (isspace(UCHAR(*p))) {
+    while (isspace((unsigned char)(*p))) {
 	p++;
     }
     if (*p == '\0') {
@@ -1034,7 +1034,7 @@ NextToken(
 	} else {
 	    Vector *vPtr;
 
-	    while (isspace(UCHAR(*p))) {
+	    while (isspace((unsigned char)(*p))) {
 		p++;		/* Skip spaces leading the vector name. */    
 	    }
 	    vPtr = Blt_Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 

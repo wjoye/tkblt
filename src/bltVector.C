@@ -59,9 +59,8 @@
 #define TRACE_ALL  (TCL_TRACE_WRITES | TCL_TRACE_READS | TCL_TRACE_UNSETS)
 
 
-#define VECTOR_CHAR(c)	((isalnum(UCHAR(c))) || \
+#define VECTOR_CHAR(c)	((isalnum((unsigned char)(c))) || \
 	(c == '_') || (c == ':') || (c == '@') || (c == '.'))
-
 
 /*
  * VectorClient --

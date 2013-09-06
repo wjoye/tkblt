@@ -37,7 +37,6 @@
  */
 
 #define STATIC_STRING_SPACE	150
-#define UCHAR(c)		((unsigned char) (c))
 #define TCL_NORMAL		0x01
 #define TCL_SPACE		0x02
 #define TCL_COMMAND_END		0x04

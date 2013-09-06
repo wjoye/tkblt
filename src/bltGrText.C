@@ -1573,7 +1573,7 @@ Blt_ComputeTextLayout(
 	 * Consume all extra spaces at end of line.  
 	 */
 
-	while ((start < end) && isspace(UCHAR(*start))) { /* INTL: ISO space */
+	while ((start < end) && isspace((unsigned char)(*start))) { /* INTL: ISO space */
 	    if (!(flags & TK_IGNORE_NEWLINES)) {
 		if ((*start == '\n') || (*start == '\r')) {
 		    break;
