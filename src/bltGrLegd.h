@@ -41,20 +41,20 @@
 	(LEGEND_RIGHT | LEGEND_LEFT | LEGEND_BOTTOM | LEGEND_TOP)
 #define LEGEND_PLOTAREA_MASK  (LEGEND_PLOT | LEGEND_XY)
 
-BLT_EXTERN int Blt_CreateLegend(Graph *graphPtr);
-BLT_EXTERN void Blt_DestroyLegend(Graph *graphPtr);
-BLT_EXTERN void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
-BLT_EXTERN void Blt_MapLegend(Graph *graphPtr, int width, int height);
-BLT_EXTERN int Blt_LegendOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_CreateLegend(Graph *graphPtr);
+extern void Blt_DestroyLegend(Graph *graphPtr);
+extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
+extern void Blt_MapLegend(Graph *graphPtr, int width, int height);
+extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
-BLT_EXTERN int Blt_Legend_Site(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_Width(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_Height(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_IsHidden(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_IsRaised(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_X(Graph *graphPtr);
-BLT_EXTERN int Blt_Legend_Y(Graph *graphPtr);
-BLT_EXTERN void Blt_Legend_RemoveElement(Graph *graphPtr, Element *elemPtr);
-BLT_EXTERN void Blt_Legend_EventuallyRedraw(Graph *graphPtr);
+extern int Blt_Legend_Site(Graph *graphPtr);
+extern int Blt_Legend_Width(Graph *graphPtr);
+extern int Blt_Legend_Height(Graph *graphPtr);
+extern int Blt_Legend_IsHidden(Graph *graphPtr);
+extern int Blt_Legend_IsRaised(Graph *graphPtr);
+extern int Blt_Legend_X(Graph *graphPtr);
+extern int Blt_Legend_Y(Graph *graphPtr);
+extern void Blt_Legend_RemoveElement(Graph *graphPtr, Element *elemPtr);
+extern void Blt_Legend_EventuallyRedraw(Graph *graphPtr);
 
 #endif /* BLT_GR_LEGEND_H */

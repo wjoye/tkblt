@@ -364,13 +364,13 @@ static Blt_CustomOption symbolOption =
     ObjToSymbolProc, SymbolToObjProc, FreeSymbolProc, (ClientData)0
 };
 
-BLT_EXTERN Blt_CustomOption bltLineStylesOption;
-BLT_EXTERN Blt_CustomOption bltColorOption;
-BLT_EXTERN Blt_CustomOption bltValuesOption;
-BLT_EXTERN Blt_CustomOption bltValuePairsOption;
-BLT_EXTERN Blt_CustomOption bltLinePenOption;
-BLT_EXTERN Blt_CustomOption bltXAxisOption;
-BLT_EXTERN Blt_CustomOption bltYAxisOption;
+extern Blt_CustomOption bltLineStylesOption;
+extern Blt_CustomOption bltColorOption;
+extern Blt_CustomOption bltValuesOption;
+extern Blt_CustomOption bltValuePairsOption;
+extern Blt_CustomOption bltLinePenOption;
+extern Blt_CustomOption bltXAxisOption;
+extern Blt_CustomOption bltYAxisOption;
 
 #define DEF_LINE_ACTIVE_PEN		"activeLine"
 #define DEF_LINE_AXIS_X			"x"

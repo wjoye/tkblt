@@ -48,33 +48,33 @@ typedef struct {
 
 #ifndef USE_TCL_STUBS
 
-BLT_EXTERN Tcl_Command Tcl_FindCommand(Tcl_Interp *interp, const char *name, 
+extern Tcl_Command Tcl_FindCommand(Tcl_Interp *interp, const char *name, 
 	Tcl_Namespace *nsPtr, int flags);
 /*
  * Namespace procedures not prototyped defined in Tcl.h 
  */
-BLT_EXTERN Tcl_Namespace *Tcl_GetCurrentNamespace(Tcl_Interp *interp);
+extern Tcl_Namespace *Tcl_GetCurrentNamespace(Tcl_Interp *interp);
 
-BLT_EXTERN Tcl_Namespace *Tcl_GetGlobalNamespace(Tcl_Interp *interp);
+extern Tcl_Namespace *Tcl_GetGlobalNamespace(Tcl_Interp *interp);
 
-BLT_EXTERN Tcl_Namespace *Tcl_CreateNamespace(Tcl_Interp *interp, 
+extern Tcl_Namespace *Tcl_CreateNamespace(Tcl_Interp *interp, 
 	const char *name, ClientData clientData, 
 	Tcl_NamespaceDeleteProc *nsDelProc);
 
-BLT_EXTERN void Tcl_DeleteNamespace(Tcl_Namespace *nsPtr);
+extern void Tcl_DeleteNamespace(Tcl_Namespace *nsPtr);
 
-BLT_EXTERN Tcl_Namespace *Tcl_FindNamespace(Tcl_Interp *interp, 
+extern Tcl_Namespace *Tcl_FindNamespace(Tcl_Interp *interp, 
 	const char *name, Tcl_Namespace *context, int flags);
 
-BLT_EXTERN int Tcl_Export(Tcl_Interp *interp, Tcl_Namespace *nsPtr,
+extern int Tcl_Export(Tcl_Interp *interp, Tcl_Namespace *nsPtr,
 	const char *name, int resetFlag);
 
-BLT_EXTERN Tcl_Var Tcl_FindNamespaceVar(Tcl_Interp *interp, const char *name, 
+extern Tcl_Var Tcl_FindNamespaceVar(Tcl_Interp *interp, const char *name, 
 	Tcl_Namespace *contextNsPtr, int flags);
 
-BLT_EXTERN void Tcl_PopCallFrame(Tcl_Interp *interp);
+extern void Tcl_PopCallFrame(Tcl_Interp *interp);
 
-BLT_EXTERN int Tcl_PushCallFrame(Tcl_Interp *interp, Tcl_CallFrame *framePtr, 
+extern int Tcl_PushCallFrame(Tcl_Interp *interp, Tcl_CallFrame *framePtr, 
 	Tcl_Namespace *nsPtr, int isProcCallFrame);
 
 #endif /* USE_TCL_STUBS */
@@ -82,20 +82,20 @@ BLT_EXTERN int Tcl_PushCallFrame(Tcl_Interp *interp, Tcl_CallFrame *framePtr,
 /* 
  * Auxillary procedures 
  */
-BLT_EXTERN Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp *interp, 
+extern Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp *interp, 
 	const char *varName);
 
-BLT_EXTERN Tcl_Namespace *Blt_GetCommandNamespace(Tcl_Command cmdToken);
+extern Tcl_Namespace *Blt_GetCommandNamespace(Tcl_Command cmdToken);
 
-BLT_EXTERN Tcl_CallFrame *Blt_EnterNamespace(Tcl_Interp *interp, 
+extern Tcl_CallFrame *Blt_EnterNamespace(Tcl_Interp *interp, 
 	Tcl_Namespace *nsPtr);
 
-BLT_EXTERN void Blt_LeaveNamespace(Tcl_Interp *interp, Tcl_CallFrame *framePtr);
+extern void Blt_LeaveNamespace(Tcl_Interp *interp, Tcl_CallFrame *framePtr);
 
-BLT_EXTERN int Blt_ParseObjectName(Tcl_Interp *interp, const char *name, 
+extern int Blt_ParseObjectName(Tcl_Interp *interp, const char *name, 
 	Blt_ObjectName *objNamePtr, unsigned int flags);
 
-BLT_EXTERN char *Blt_MakeQualifiedName(Blt_ObjectName *objNamePtr, 
+extern char *Blt_MakeQualifiedName(Blt_ObjectName *objNamePtr, 
 	Tcl_DString *resultPtr);
 
 #endif /* BLT_NS_UTIL_H */

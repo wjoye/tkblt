@@ -87,48 +87,48 @@ typedef struct  {
 
 typedef struct _Blt_Ps *Blt_Ps;
 
-BLT_EXTERN Blt_Ps Blt_Ps_Create(Tcl_Interp *interp, PageSetup *setupPtr);
+extern Blt_Ps Blt_Ps_Create(Tcl_Interp *interp, PageSetup *setupPtr);
 
-BLT_EXTERN void Blt_Ps_Free(Blt_Ps ps);
+extern void Blt_Ps_Free(Blt_Ps ps);
 
-BLT_EXTERN const char *Blt_Ps_GetValue(Blt_Ps ps, int *lengthPtr);
+extern const char *Blt_Ps_GetValue(Blt_Ps ps, int *lengthPtr);
 
-BLT_EXTERN Tcl_Interp *Blt_Ps_GetInterp(Blt_Ps ps);
+extern Tcl_Interp *Blt_Ps_GetInterp(Blt_Ps ps);
 
-BLT_EXTERN Tcl_DString *Blt_Ps_GetDString(Blt_Ps ps);
+extern Tcl_DString *Blt_Ps_GetDString(Blt_Ps ps);
 
-BLT_EXTERN char *Blt_Ps_GetScratchBuffer(Blt_Ps ps);
+extern char *Blt_Ps_GetScratchBuffer(Blt_Ps ps);
 
-BLT_EXTERN void Blt_Ps_SetInterp(Blt_Ps ps, Tcl_Interp *interp);
+extern void Blt_Ps_SetInterp(Blt_Ps ps, Tcl_Interp *interp);
 
-BLT_EXTERN void Blt_Ps_Append(Blt_Ps ps, const char *string);
+extern void Blt_Ps_Append(Blt_Ps ps, const char *string);
 
-BLT_EXTERN void Blt_Ps_AppendBytes(Blt_Ps ps, const char *string, int nBytes);
+extern void Blt_Ps_AppendBytes(Blt_Ps ps, const char *string, int nBytes);
 
-BLT_EXTERN void Blt_Ps_VarAppend TCL_VARARGS(Blt_Ps, ps);
+extern void Blt_Ps_VarAppend TCL_VARARGS(Blt_Ps, ps);
 
-BLT_EXTERN void Blt_Ps_Format TCL_VARARGS(Blt_Ps, ps);
+extern void Blt_Ps_Format TCL_VARARGS(Blt_Ps, ps);
 
-BLT_EXTERN void Blt_Ps_SetClearBackground(Blt_Ps ps);
+extern void Blt_Ps_SetClearBackground(Blt_Ps ps);
 
-BLT_EXTERN int Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, 
+extern int Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, 
 	const char *fileName);
 
-BLT_EXTERN int Blt_Ps_GetPicaFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_Ps_GetPicaFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *picaPtr);
 
-BLT_EXTERN int Blt_Ps_GetPadFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_Ps_GetPadFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	Blt_Pad *padPtr);
 
-BLT_EXTERN int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
+extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 
-BLT_EXTERN void Blt_Ps_DrawPicture(Blt_Ps ps, Blt_Picture picture, 
+extern void Blt_Ps_DrawPicture(Blt_Ps ps, Blt_Picture picture, 
 	double x, double y);
 
-BLT_EXTERN void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
+extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
 
 
-BLT_EXTERN int Blt_Ps_SaveFile(Tcl_Interp *interp, Blt_Ps ps, 
+extern int Blt_Ps_SaveFile(Tcl_Interp *interp, Blt_Ps ps, 
 	const char *fileName);
 
 #ifdef _TK
@@ -136,78 +136,78 @@ BLT_EXTERN int Blt_Ps_SaveFile(Tcl_Interp *interp, Blt_Ps ps,
 #include "bltFont.h"
 #include "bltText.h"
 
-BLT_EXTERN void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
+extern void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
 
-BLT_EXTERN void Blt_Ps_XSetBackground(Blt_Ps ps, XColor *colorPtr);
+extern void Blt_Ps_XSetBackground(Blt_Ps ps, XColor *colorPtr);
 
-BLT_EXTERN void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, 
+extern void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, 
 	Pixmap bitmap, int width, int height);
 
-BLT_EXTERN void Blt_Ps_XSetForeground(Blt_Ps ps, XColor *colorPtr);
+extern void Blt_Ps_XSetForeground(Blt_Ps ps, XColor *colorPtr);
 
-BLT_EXTERN void Blt_Ps_XSetFont(Blt_Ps ps, Blt_Font font);
+extern void Blt_Ps_XSetFont(Blt_Ps ps, Blt_Font font);
 
-BLT_EXTERN void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr);
+extern void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr);
 
-BLT_EXTERN void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor *colorPtr,
+extern void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor *colorPtr,
 	int lineWidth, Blt_Dashes *dashesPtr, int capStyle, int joinStyle);
 
-BLT_EXTERN void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
+extern void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
 
-BLT_EXTERN void Blt_Ps_Polyline(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
+extern void Blt_Ps_Polyline(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 
-BLT_EXTERN void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n);
+extern void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n);
 
-BLT_EXTERN void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments, 
+extern void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments, 
 	int nSegments);
 
-BLT_EXTERN void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int n);
+extern void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int n);
 
-BLT_EXTERN void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments,
+extern void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments,
 	int nSegments);
 
-BLT_EXTERN void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
+extern void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
 	double x, double y, int width, int height, int borderWidth, int relief);
 
-BLT_EXTERN void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x,
+extern void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x,
 	 double y, int width, int height, int borderWidth, int relief);
 
-BLT_EXTERN void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, 
+extern void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, 
 	int width, int height);
 
-BLT_EXTERN void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rects, int n);
+extern void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rects, int n);
 
-BLT_EXTERN void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, 
+extern void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, 
 	int nScreenPts);
 
-BLT_EXTERN void Blt_Ps_DrawPhoto(Blt_Ps ps, Tk_PhotoHandle photoToken,
+extern void Blt_Ps_DrawPhoto(Blt_Ps ps, Tk_PhotoHandle photoToken,
 	double x, double y);
 
-BLT_EXTERN void Blt_Ps_XDrawWindow(Blt_Ps ps, Tk_Window tkwin, 
+extern void Blt_Ps_XDrawWindow(Blt_Ps ps, Tk_Window tkwin, 
 	double x, double y);
 
-BLT_EXTERN void Blt_Ps_DrawText(Blt_Ps ps, const char *string, 
+extern void Blt_Ps_DrawText(Blt_Ps ps, const char *string, 
 	TextStyle *attrPtr, double x, double y);
 
-BLT_EXTERN void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap, 
+extern void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap, 
 	double scaleX, double scaleY);
 
-BLT_EXTERN void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle);
+extern void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle);
 
-BLT_EXTERN void Blt_Ps_XSetJoinStyle(Blt_Ps ps, int joinStyle);
+extern void Blt_Ps_XSetJoinStyle(Blt_Ps ps, int joinStyle);
 
-BLT_EXTERN void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n);
+extern void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n);
 
-BLT_EXTERN void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
+extern void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 
-BLT_EXTERN void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
-BLT_EXTERN int Blt_Ps_IsPrinting(void);
+extern void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
+extern int Blt_Ps_IsPrinting(void);
 
-BLT_EXTERN int Blt_Ps_TextWidth(Blt_Font font, const char *string, int nBytes);
+extern int Blt_Ps_TextWidth(Blt_Font font, const char *string, int nBytes);
 
-BLT_EXTERN int Blt_Ps_GetFontMetrics(Blt_Font font, Blt_FontMetrics *fmPtr);
+extern int Blt_Ps_GetFontMetrics(Blt_Font font, Blt_FontMetrics *fmPtr);
 
-BLT_EXTERN void Blt_Ps_FontName(const char *family, int flags, 
+extern void Blt_Ps_FontName(const char *family, int flags, 
 	Tcl_DString *resultPtr);
 
 #endif /* _TK */

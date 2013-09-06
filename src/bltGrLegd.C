@@ -353,7 +353,7 @@ static Tcl_TimerProc BlinkCursorProc;
 static Tk_LostSelProc LostSelectionProc;
 static Tk_SelectionProc SelectionProc;
 
-BLT_EXTERN Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+extern Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 
 /*
  *---------------------------------------------------------------------------

@@ -179,13 +179,13 @@ typedef struct {
     int errorBarCapWidth;		/* Length of cap on error bars */
 } BarElement;
 
-BLT_EXTERN Blt_CustomOption bltBarPenOption;
-BLT_EXTERN Blt_CustomOption bltValuesOption;
-BLT_EXTERN Blt_CustomOption bltValuePairsOption;
-BLT_EXTERN Blt_CustomOption bltXAxisOption;
-BLT_EXTERN Blt_CustomOption bltYAxisOption;
-BLT_EXTERN Blt_CustomOption bltColorOption;
-BLT_EXTERN Blt_CustomOption bltBarStylesOption;
+extern Blt_CustomOption bltBarPenOption;
+extern Blt_CustomOption bltValuesOption;
+extern Blt_CustomOption bltValuePairsOption;
+extern Blt_CustomOption bltXAxisOption;
+extern Blt_CustomOption bltYAxisOption;
+extern Blt_CustomOption bltColorOption;
+extern Blt_CustomOption bltBarStylesOption;
 
 static Blt_OptionParseProc ObjToBarMode;
 static Blt_OptionPrintProc BarModeToObj;

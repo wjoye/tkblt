@@ -1,4 +1,3 @@
-
 /*
  * bltVecInt.h --
  *
@@ -178,74 +177,74 @@ typedef struct {
     } \
 }
 
-BLT_EXTERN void Blt_Vec_InstallSpecialIndices(Blt_HashTable *tablePtr);
+extern void Blt_Vec_InstallSpecialIndices(Blt_HashTable *tablePtr);
 
-BLT_EXTERN void Blt_Vec_InstallMathFunctions(Blt_HashTable *tablePtr);
+extern void Blt_Vec_InstallMathFunctions(Blt_HashTable *tablePtr);
 
-BLT_EXTERN void Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr);
+extern void Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr);
 
-BLT_EXTERN VectorInterpData *Blt_Vec_GetInterpData (Tcl_Interp *interp);
+extern VectorInterpData *Blt_Vec_GetInterpData (Tcl_Interp *interp);
 
-BLT_EXTERN double Blt_Vec_Max(Vector *vecObjPtr);
-BLT_EXTERN double Blt_Vec_Min(Vector *vecObjPtr);
+extern double Blt_Vec_Max(Vector *vecObjPtr);
+extern double Blt_Vec_Min(Vector *vecObjPtr);
 
-BLT_EXTERN Vector *Blt_Vec_New(VectorInterpData *dataPtr);
+extern Vector *Blt_Vec_New(VectorInterpData *dataPtr);
 
-BLT_EXTERN int Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr);
+extern int Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr);
 
-BLT_EXTERN int Blt_Vec_SetLength(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_SetLength(Tcl_Interp *interp, Vector *vPtr, 
 	int length);
 
-BLT_EXTERN int Blt_Vec_SetSize(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_SetSize(Tcl_Interp *interp, Vector *vPtr, 
 	int size);
 
-BLT_EXTERN int Blt_Vec_ChangeLength(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_ChangeLength(Tcl_Interp *interp, Vector *vPtr, 
 	int length);
 
-BLT_EXTERN Vector *Blt_Vec_ParseElement(Tcl_Interp *interp, 
+extern Vector *Blt_Vec_ParseElement(Tcl_Interp *interp, 
 	VectorInterpData *dataPtr, const char *start, const char **endPtr, 
 	int flags);
 
-BLT_EXTERN void Blt_Vec_Free(Vector *vPtr);
+extern void Blt_Vec_Free(Vector *vPtr);
 
-BLT_EXTERN size_t *Blt_Vec_SortMap(Vector **vectors, int nVectors);
+extern size_t *Blt_Vec_SortMap(Vector **vectors, int nVectors);
 
-BLT_EXTERN int Blt_Vec_LookupName(VectorInterpData *dataPtr, 
+extern int Blt_Vec_LookupName(VectorInterpData *dataPtr, 
 	const char *vecName, Vector **vPtrPtr);
 
-BLT_EXTERN Vector *Blt_Vec_Create(VectorInterpData *dataPtr, 
+extern Vector *Blt_Vec_Create(VectorInterpData *dataPtr, 
 	const char *name, const char *cmdName, const char *varName, 
 	int *newPtr);
 
-BLT_EXTERN void Blt_Vec_UpdateRange(Vector *vPtr);
+extern void Blt_Vec_UpdateRange(Vector *vPtr);
 
-BLT_EXTERN void Blt_Vec_UpdateClients(Vector *vPtr);
+extern void Blt_Vec_UpdateClients(Vector *vPtr);
 
-BLT_EXTERN void Blt_Vec_FlushCache(Vector *vPtr);
+extern void Blt_Vec_FlushCache(Vector *vPtr);
 
-BLT_EXTERN int Blt_Vec_Reset(Vector *vPtr, double *dataArr,
+extern int Blt_Vec_Reset(Vector *vPtr, double *dataArr,
 	int nValues, int arraySize, Tcl_FreeProc *freeProc);
 
-BLT_EXTERN int  Blt_Vec_GetIndex(Tcl_Interp *interp, Vector *vPtr, 
+extern int  Blt_Vec_GetIndex(Tcl_Interp *interp, Vector *vPtr, 
 	const char *string, int *indexPtr, int flags, 
 	Blt_VectorIndexProc **procPtrPtr);
 
-BLT_EXTERN int  Blt_Vec_GetIndexRange(Tcl_Interp *interp, Vector *vPtr, 
+extern int  Blt_Vec_GetIndexRange(Tcl_Interp *interp, Vector *vPtr, 
 	const char *string, int flags, Blt_VectorIndexProc **procPtrPtr);
 
-BLT_EXTERN int Blt_Vec_MapVariable(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_MapVariable(Tcl_Interp *interp, Vector *vPtr, 
 	const char *name);
 
-BLT_EXTERN int Blt_Vec_FFT(Tcl_Interp *interp, Vector *realPtr,
+extern int Blt_Vec_FFT(Tcl_Interp *interp, Vector *realPtr,
 	Vector *phasesPtr, Vector *freqPtr, double delta, 
 	int flags, Vector *srcPtr);
 
-BLT_EXTERN int Blt_Vec_InverseFFT(Tcl_Interp *interp, Vector *iSrcPtr, 
+extern int Blt_Vec_InverseFFT(Tcl_Interp *interp, Vector *iSrcPtr, 
 	Vector *rDestPtr, Vector *iDestPtr, Vector *srcPtr);
 
-BLT_EXTERN Tcl_ObjCmdProc Blt_Vec_InstCmd;
+extern Tcl_ObjCmdProc Blt_Vec_InstCmd;
 
-BLT_EXTERN Tcl_VarTraceProc Blt_Vec_VarTrace;
+extern Tcl_VarTraceProc Blt_Vec_VarTrace;
 
-BLT_EXTERN Tcl_IdleProc Blt_Vec_NotifyClients;
+extern Tcl_IdleProc Blt_Vec_NotifyClients;
 

@@ -312,61 +312,61 @@ typedef struct {
 					 * if a pane has received any space
 					 * yet */
 
-BLT_EXTERN void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
-BLT_EXTERN Blt_Dashes *Blt_GetDashes (GC gc);
+extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
+extern Blt_Dashes *Blt_GetDashes (GC gc);
 
-BLT_EXTERN void Blt_ResetLimits(Blt_Limits *limitsPtr);
-BLT_EXTERN int Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern void Blt_ResetLimits(Blt_Limits *limitsPtr);
+extern int Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, Blt_Limits *limitsPtr);
 
-BLT_EXTERN int Blt_ConfigureInfoFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern int Blt_ConfigureInfoFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Blt_ConfigSpec *specs, char *widgRec, Tcl_Obj *objPtr, int flags);
 
-BLT_EXTERN int Blt_ConfigureValueFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern int Blt_ConfigureValueFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Blt_ConfigSpec *specs, char *widgRec, Tcl_Obj *objPtr, int flags);
 
-BLT_EXTERN int Blt_ConfigureWidgetFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern int Blt_ConfigureWidgetFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Blt_ConfigSpec *specs, int objc, Tcl_Obj *const *objv, char *widgRec, 
 	int flags);
 
-BLT_EXTERN int Blt_ConfigureComponentFromObj(Tcl_Interp *interp, 
+extern int Blt_ConfigureComponentFromObj(Tcl_Interp *interp, 
 	Tk_Window tkwin, const char *name, const char *className, 
 	Blt_ConfigSpec *specs, int objc, Tcl_Obj *const *objv, char *widgRec, 
 	int flags);
 
-BLT_EXTERN int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
+extern int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
 
-BLT_EXTERN const char *Blt_NameOfState(int state);
-BLT_EXTERN const char *Blt_NameOfSide(int side);
+extern const char *Blt_NameOfState(int state);
+extern const char *Blt_NameOfSide(int side);
 
-BLT_EXTERN void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
+extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
 
-BLT_EXTERN int Blt_ObjIsOption(Blt_ConfigSpec *specs, Tcl_Obj *objPtr, 
+extern int Blt_ObjIsOption(Blt_ConfigSpec *specs, Tcl_Obj *objPtr, 
 	int flags);
 
-BLT_EXTERN int Blt_GetSideFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetSideFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *sidePtr);
 
-BLT_EXTERN int Blt_GetPositionFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetPositionFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	long *indexPtr);
 
-BLT_EXTERN int Blt_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern int Blt_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, int flags, int *valuePtr);
 
-BLT_EXTERN int Blt_GetPadFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
+extern int Blt_GetPadFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, Blt_Pad *padPtr);
 
-BLT_EXTERN int Blt_GetStateFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetStateFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *statePtr);
 
-BLT_EXTERN int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *fillPtr);
 
-BLT_EXTERN int Blt_GetResizeFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetResizeFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *fillPtr);
 
-BLT_EXTERN int Blt_GetDashesFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_GetDashesFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	Blt_Dashes *dashesPtr);
 
 #endif /* BLT_CONFIG_H */

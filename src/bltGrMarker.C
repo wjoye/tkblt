@@ -115,9 +115,9 @@ static Blt_CustomOption pictImageOption =
     ObjToPictImageProc, PictImageToObjProc, FreePictImageProc, (ClientData)0
 };
 
-BLT_EXTERN Blt_CustomOption bltXAxisOption;
-BLT_EXTERN Blt_CustomOption bltYAxisOption;
-BLT_EXTERN Blt_CustomOption bltFilterOption;
+extern Blt_CustomOption bltXAxisOption;
+extern Blt_CustomOption bltYAxisOption;
+extern Blt_CustomOption bltFilterOption;
 
 typedef Marker *(MarkerCreateProc)(void);
 typedef void    (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);

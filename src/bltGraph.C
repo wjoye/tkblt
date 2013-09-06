@@ -82,9 +82,9 @@ static const char *objectClassNames[] = {
     "WindowMarker",
 };
 
-BLT_EXTERN Blt_CustomOption bltLinePenOption;
-BLT_EXTERN Blt_CustomOption bltBarPenOption;
-BLT_EXTERN Blt_CustomOption bltBarModeOption;
+extern Blt_CustomOption bltLinePenOption;
+extern Blt_CustomOption bltBarPenOption;
+extern Blt_CustomOption bltBarModeOption;
 
 #define DEF_GRAPH_ASPECT_RATIO		"0.0"
 #define DEF_GRAPH_BAR_BASELINE		"0.0"

@@ -255,17 +255,17 @@ struct _Element {
 };
 
 
-BLT_EXTERN double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
-BLT_EXTERN void Blt_ResizeStatusArray(Element *elemPtr, int nPoints);
-BLT_EXTERN int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
+extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
+extern void Blt_ResizeStatusArray(Element *elemPtr, int nPoints);
+extern int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
 	PenStyle *stylePtr);
-BLT_EXTERN void Blt_FreeStylePalette (Blt_Chain stylePalette);
-BLT_EXTERN PenStyle **Blt_StyleMap (Element *elemPtr);
-BLT_EXTERN void Blt_MapErrorBars(Graph *graphPtr, Element *elemPtr, 
+extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
+extern PenStyle **Blt_StyleMap (Element *elemPtr);
+extern void Blt_MapErrorBars(Graph *graphPtr, Element *elemPtr, 
 	PenStyle **dataToStyle);
-BLT_EXTERN void Blt_FreeDataValues(ElemValues *evPtr);
-BLT_EXTERN int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 
+extern void Blt_FreeDataValues(ElemValues *evPtr);
+extern int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 
 	Tcl_Obj *objPtr, Element **elemPtrPtr);
-BLT_EXTERN void Blt_DestroyTableClients(Graph *graphPtr);
+extern void Blt_DestroyTableClients(Graph *graphPtr);
 
 #endif /* _BLT_GR_ELEM_H */

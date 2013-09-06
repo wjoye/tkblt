@@ -512,188 +512,188 @@ struct _Graph {
  * ---------------------- Forward declarations ------------------------
  */
 
-BLT_EXTERN int Blt_CreatePageSetup(Graph *graphPtr);
+extern int Blt_CreatePageSetup(Graph *graphPtr);
 
-BLT_EXTERN int Blt_CreateCrosshairs(Graph *graphPtr);
+extern int Blt_CreateCrosshairs(Graph *graphPtr);
 
-BLT_EXTERN double Blt_InvHMap(Axis *axisPtr, double x);
+extern double Blt_InvHMap(Axis *axisPtr, double x);
 
-BLT_EXTERN double Blt_InvVMap(Axis *axisPtr, double x);
+extern double Blt_InvVMap(Axis *axisPtr, double x);
 
-BLT_EXTERN double Blt_HMap(Axis *axisPtr, double x);
+extern double Blt_HMap(Axis *axisPtr, double x);
 
-BLT_EXTERN double Blt_VMap(Axis *axisPtr, double y);
+extern double Blt_VMap(Axis *axisPtr, double y);
 
-BLT_EXTERN Point2d Blt_InvMap2D(Graph *graphPtr, double x, double y, 
+extern Point2d Blt_InvMap2D(Graph *graphPtr, double x, double y, 
 	Axis2d *pairPtr);
 
-BLT_EXTERN Point2d Blt_Map2D(Graph *graphPtr, double x, double y, 
+extern Point2d Blt_Map2D(Graph *graphPtr, double x, double y, 
 	Axis2d *pairPtr);
 
-BLT_EXTERN Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
+extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
 
-BLT_EXTERN void Blt_AdjustAxisPointers(Graph *graphPtr);
+extern void Blt_AdjustAxisPointers(Graph *graphPtr);
 
-BLT_EXTERN int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
+extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 	int nInputPts, Point2d *outputPts);
 
-BLT_EXTERN void Blt_ComputeBarStacks(Graph *graphPtr);
+extern void Blt_ComputeBarStacks(Graph *graphPtr);
 
-BLT_EXTERN void Blt_ConfigureCrosshairs(Graph *graphPtr);
-BLT_EXTERN void Blt_ConfigureLegend(Graph *graphPtr);
-BLT_EXTERN void Blt_ConfigureElements(Graph *graphPtr);
-BLT_EXTERN void Blt_ConfigureAxes(Graph *graphPtr);
-BLT_EXTERN void Blt_ConfigureMarkers(Graph *graphPtr);
-BLT_EXTERN void Blt_ReconfigureGraph(Graph *graphPtr);
+extern void Blt_ConfigureCrosshairs(Graph *graphPtr);
+extern void Blt_ConfigureLegend(Graph *graphPtr);
+extern void Blt_ConfigureElements(Graph *graphPtr);
+extern void Blt_ConfigureAxes(Graph *graphPtr);
+extern void Blt_ConfigureMarkers(Graph *graphPtr);
+extern void Blt_ReconfigureGraph(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyAxes(Graph *graphPtr);
+extern void Blt_DestroyAxes(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyCrosshairs(Graph *graphPtr);
+extern void Blt_DestroyCrosshairs(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyElements(Graph *graphPtr);
+extern void Blt_DestroyElements(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyMarkers(Graph *graphPtr);
+extern void Blt_DestroyMarkers(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyPageSetup(Graph *graphPtr);
+extern void Blt_DestroyPageSetup(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DrawAxes(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawAxes(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_DrawElements(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawElements(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_DrawActiveElements(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawActiveElements(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_DrawGraph(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawGraph(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_DrawMarkers(Graph *graphPtr, Drawable drawable, int under);
+extern void Blt_DrawMarkers(Graph *graphPtr, Drawable drawable, int under);
 
-BLT_EXTERN void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
+extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
 	Segment2d *segments, int nSegments);
 
-BLT_EXTERN int Blt_GetCoordinate(Tcl_Interp *interp, const char *string, 
+extern int Blt_GetCoordinate(Tcl_Interp *interp, const char *string, 
 	double *valuePtr);
 
-BLT_EXTERN void Blt_InitBarSetTable(Graph *graphPtr);
+extern void Blt_InitBarSetTable(Graph *graphPtr);
 
-BLT_EXTERN void Blt_LayoutGraph(Graph *graphPtr);
+extern void Blt_LayoutGraph(Graph *graphPtr);
 
-BLT_EXTERN void Blt_EventuallyRedrawGraph(Graph *graphPtr);
+extern void Blt_EventuallyRedrawGraph(Graph *graphPtr);
 
-BLT_EXTERN void Blt_ResetAxes(Graph *graphPtr);
+extern void Blt_ResetAxes(Graph *graphPtr);
 
-BLT_EXTERN void Blt_ResetBarGroups(Graph *graphPtr);
+extern void Blt_ResetBarGroups(Graph *graphPtr);
 
-BLT_EXTERN void Blt_GraphExtents(Graph *graphPtr, Region2d *extsPtr);
+extern void Blt_GraphExtents(Graph *graphPtr, Region2d *extsPtr);
 
-BLT_EXTERN void Blt_DisableCrosshairs(Graph *graphPtr);
+extern void Blt_DisableCrosshairs(Graph *graphPtr);
 
-BLT_EXTERN void Blt_EnableCrosshairs(Graph *graphPtr);
+extern void Blt_EnableCrosshairs(Graph *graphPtr);
 
-BLT_EXTERN void Blt_MapGraph(Graph *graphPtr);
+extern void Blt_MapGraph(Graph *graphPtr);
 
-BLT_EXTERN void Blt_MapAxes(Graph *graphPtr);
+extern void Blt_MapAxes(Graph *graphPtr);
 
-BLT_EXTERN void Blt_MapElements(Graph *graphPtr);
+extern void Blt_MapElements(Graph *graphPtr);
 
-BLT_EXTERN void Blt_MapMarkers(Graph *graphPtr);
+extern void Blt_MapMarkers(Graph *graphPtr);
 
-BLT_EXTERN void Blt_UpdateCrosshairs(Graph *graphPtr);
+extern void Blt_UpdateCrosshairs(Graph *graphPtr);
 
-BLT_EXTERN void Blt_DestroyPens(Graph *graphPtr);
+extern void Blt_DestroyPens(Graph *graphPtr);
 
-BLT_EXTERN int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, 
+extern int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, 
 	Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 
-BLT_EXTERN Pen *Blt_BarPen(const char *penName);
+extern Pen *Blt_BarPen(const char *penName);
 
-BLT_EXTERN Pen *Blt_LinePen(const char *penName);
+extern Pen *Blt_LinePen(const char *penName);
 
-BLT_EXTERN Pen *Blt_CreatePen(Graph *graphPtr, const char *penName, 
+extern Pen *Blt_CreatePen(Graph *graphPtr, const char *penName, 
 	ClassId classId, int objc, Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_InitLinePens(Graph *graphPtr);
+extern int Blt_InitLinePens(Graph *graphPtr);
 
-BLT_EXTERN int Blt_InitBarPens(Graph *graphPtr);
+extern int Blt_InitBarPens(Graph *graphPtr);
 
-BLT_EXTERN void Blt_FreePen(Pen *penPtr);
+extern void Blt_FreePen(Pen *penPtr);
 
-BLT_EXTERN int Blt_VirtualAxisOp(Graph *graphPtr, Tcl_Interp *interp, 
+extern int Blt_VirtualAxisOp(Graph *graphPtr, Tcl_Interp *interp, 
 	int objc, Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_AxisOp(Tcl_Interp *interp, Graph *graphPtr, int margin, 
+extern int Blt_AxisOp(Tcl_Interp *interp, Graph *graphPtr, int margin, 
 	int objc, Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_ElementOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_ElementOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv, ClassId classId);
 
-BLT_EXTERN int Blt_CrosshairsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_CrosshairsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_MarkerOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_MarkerOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_PenOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_PenOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
+extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 	int nScreenPts);
 
-BLT_EXTERN int Blt_RegionInPolygon(Region2d *extsPtr, Point2d *points, 
+extern int Blt_RegionInPolygon(Region2d *extsPtr, Point2d *points, 
 	int nPoints, int enclosed);
 
-BLT_EXTERN int Blt_PointInSegments(Point2d *samplePtr, Segment2d *segments, 
+extern int Blt_PointInSegments(Point2d *samplePtr, Segment2d *segments, 
 	int nSegments, double halo);
 
-BLT_EXTERN int Blt_PostScriptOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_PostScriptOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
 
-BLT_EXTERN int Blt_GraphUpdateNeeded(Graph *graphPtr);
+extern int Blt_GraphUpdateNeeded(Graph *graphPtr);
 
-BLT_EXTERN int Blt_DefaultAxes(Graph *graphPtr);
+extern int Blt_DefaultAxes(Graph *graphPtr);
 
-BLT_EXTERN Axis *Blt_GetFirstAxis(Blt_Chain chain);
+extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 
-BLT_EXTERN void Blt_UpdateAxisBackgrounds(Graph *graphPtr);
+extern void Blt_UpdateAxisBackgrounds(Graph *graphPtr);
 
-BLT_EXTERN Marker *Blt_NearestMarker(Graph *graphPtr, int x, int y, int under);
+extern Marker *Blt_NearestMarker(Graph *graphPtr, int x, int y, int under);
 
-BLT_EXTERN Axis *Blt_NearestAxis(Graph *graphPtr, int x, int y);
+extern Axis *Blt_NearestAxis(Graph *graphPtr, int x, int y);
 
 typedef ClientData (MakeTagProc)(Graph *graphPtr, const char *tagName);
 
-BLT_EXTERN MakeTagProc Blt_MakeElementTag;
-BLT_EXTERN MakeTagProc Blt_MakeMarkerTag;
-BLT_EXTERN MakeTagProc Blt_MakeAxisTag;
-BLT_EXTERN Blt_BindTagProc Blt_GraphTags;
-BLT_EXTERN Blt_BindTagProc Blt_AxisTags;
+extern MakeTagProc Blt_MakeElementTag;
+extern MakeTagProc Blt_MakeMarkerTag;
+extern MakeTagProc Blt_MakeAxisTag;
+extern Blt_BindTagProc Blt_GraphTags;
+extern Blt_BindTagProc Blt_AxisTags;
 
-BLT_EXTERN int Blt_GraphType(Graph *graphPtr);
+extern int Blt_GraphType(Graph *graphPtr);
 
-BLT_EXTERN void Blt_UpdateGraph(ClientData clientData);
+extern void Blt_UpdateGraph(ClientData clientData);
 
-BLT_EXTERN void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
+extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
 
-BLT_EXTERN void Blt_MarkersToPostScript(Graph *graphPtr, Blt_Ps ps, int under);
-BLT_EXTERN void Blt_ElementsToPostScript(Graph *graphPtr, Blt_Ps ps);
-BLT_EXTERN void Blt_ActiveElementsToPostScript(Graph *graphPtr, Blt_Ps ps);
-BLT_EXTERN void Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps);
-BLT_EXTERN void Blt_AxesToPostScript(Graph *graphPtr, Blt_Ps ps);
-BLT_EXTERN void Blt_AxisLimitsToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_MarkersToPostScript(Graph *graphPtr, Blt_Ps ps, int under);
+extern void Blt_ElementsToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_ActiveElementsToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_AxesToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_AxisLimitsToPostScript(Graph *graphPtr, Blt_Ps ps);
 
-BLT_EXTERN Element *Blt_LineElement(Graph *graphPtr, const char *name, 
+extern Element *Blt_LineElement(Graph *graphPtr, const char *name, 
 	ClassId classId);
-BLT_EXTERN Element *Blt_BarElement(Graph *graphPtr, const char *name, 
+extern Element *Blt_BarElement(Graph *graphPtr, const char *name, 
 	ClassId classId);
 
-BLT_EXTERN void Blt_DrawGrids(Graph *graphPtr, Drawable drawable);
+extern void Blt_DrawGrids(Graph *graphPtr, Drawable drawable);
 
-BLT_EXTERN void Blt_GridsToPostScript(Graph *graphPtr, Blt_Ps ps);
-BLT_EXTERN void Blt_InitBarSetTable(Graph *graphPtr);
-BLT_EXTERN void Blt_DestroyBarSets(Graph *graphPtr);
+extern void Blt_GridsToPostScript(Graph *graphPtr, Blt_Ps ps);
+extern void Blt_InitBarSetTable(Graph *graphPtr);
+extern void Blt_DestroyBarSets(Graph *graphPtr);
 
 /* ---------------------- Global declarations ------------------------ */
 
-BLT_EXTERN const char *Blt_GraphClassName(ClassId classId);
+extern const char *Blt_GraphClassName(ClassId classId);
 
 #endif /* _BLT_GRAPH_H */

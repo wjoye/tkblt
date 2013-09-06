@@ -73,7 +73,7 @@ struct _Crosshairs {
 #define DEF_HAIRS_HIDE		"yes"
 #define DEF_HAIRS_POSITION	(char *)NULL
 
-BLT_EXTERN Blt_CustomOption bltPointOption;
+extern Blt_CustomOption bltPointOption;
 
 static Blt_ConfigSpec configSpecs[] =
 {

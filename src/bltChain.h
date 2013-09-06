@@ -53,26 +53,26 @@ struct _Blt_Chain {
     long nLinks;		/* Number of elements in chain */
 };
 
-BLT_EXTERN void Blt_Chain_Init(Blt_Chain chain);
-BLT_EXTERN Blt_Chain Blt_Chain_Create(void);
-BLT_EXTERN void Blt_Chain_Destroy(Blt_Chain chain);
-BLT_EXTERN Blt_ChainLink Blt_Chain_NewLink(void);
-BLT_EXTERN Blt_ChainLink Blt_Chain_AllocLink(size_t size);
-BLT_EXTERN Blt_ChainLink Blt_Chain_Append(Blt_Chain chain, 
+extern void Blt_Chain_Init(Blt_Chain chain);
+extern Blt_Chain Blt_Chain_Create(void);
+extern void Blt_Chain_Destroy(Blt_Chain chain);
+extern Blt_ChainLink Blt_Chain_NewLink(void);
+extern Blt_ChainLink Blt_Chain_AllocLink(size_t size);
+extern Blt_ChainLink Blt_Chain_Append(Blt_Chain chain, 
 	ClientData clientData);
-BLT_EXTERN Blt_ChainLink Blt_Chain_Prepend(Blt_Chain chain, 
+extern Blt_ChainLink Blt_Chain_Prepend(Blt_Chain chain, 
 	ClientData clientData);
-BLT_EXTERN void Blt_Chain_Reset(Blt_Chain chain);
-BLT_EXTERN void Blt_Chain_InitLink(Blt_ChainLink link);
-BLT_EXTERN void Blt_Chain_LinkAfter(Blt_Chain chain, Blt_ChainLink link, 
+extern void Blt_Chain_Reset(Blt_Chain chain);
+extern void Blt_Chain_InitLink(Blt_ChainLink link);
+extern void Blt_Chain_LinkAfter(Blt_Chain chain, Blt_ChainLink link, 
 	Blt_ChainLink after);
-BLT_EXTERN void Blt_Chain_LinkBefore(Blt_Chain chain, Blt_ChainLink link, 
+extern void Blt_Chain_LinkBefore(Blt_Chain chain, Blt_ChainLink link, 
 	Blt_ChainLink before);
-BLT_EXTERN void Blt_Chain_UnlinkLink(Blt_Chain chain, Blt_ChainLink link);
-BLT_EXTERN void Blt_Chain_DeleteLink(Blt_Chain chain, Blt_ChainLink link);
-BLT_EXTERN Blt_ChainLink Blt_Chain_GetNthLink(Blt_Chain chain, long position);
-BLT_EXTERN void Blt_Chain_Sort(Blt_Chain chain, Blt_ChainCompareProc *proc);
-BLT_EXTERN int Blt_Chain_IsBefore(Blt_ChainLink first, Blt_ChainLink last);
+extern void Blt_Chain_UnlinkLink(Blt_Chain chain, Blt_ChainLink link);
+extern void Blt_Chain_DeleteLink(Blt_Chain chain, Blt_ChainLink link);
+extern Blt_ChainLink Blt_Chain_GetNthLink(Blt_Chain chain, long position);
+extern void Blt_Chain_Sort(Blt_Chain chain, Blt_ChainCompareProc *proc);
+extern int Blt_Chain_IsBefore(Blt_ChainLink first, Blt_ChainLink last);
 
 #define Blt_Chain_GetLength(c)	(((c) == NULL) ? 0 : (c)->nLinks)
 #define Blt_Chain_FirstLink(c)	(((c) == NULL) ? NULL : (c)->head)

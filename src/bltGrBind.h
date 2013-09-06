@@ -85,23 +85,23 @@ struct _Blt_BindTable {
     Blt_BindTagProc *tagProc;	/* Routine to report tags picked items. */
 };
 
-BLT_EXTERN void Blt_DestroyBindingTable(Blt_BindTable table);
+extern void Blt_DestroyBindingTable(Blt_BindTable table);
 
-BLT_EXTERN Blt_BindTable Blt_CreateBindingTable(Tcl_Interp *interp, 
+extern Blt_BindTable Blt_CreateBindingTable(Tcl_Interp *interp, 
 	Tk_Window tkwin, ClientData clientData, Blt_BindPickProc *pickProc,
 	Blt_BindTagProc *tagProc);
 
-BLT_EXTERN int Blt_ConfigureBindings(Tcl_Interp *interp, Blt_BindTable table, 
+extern int Blt_ConfigureBindings(Tcl_Interp *interp, Blt_BindTable table, 
 	ClientData item, int argc, const char **argv);
 
-BLT_EXTERN int Blt_ConfigureBindingsFromObj(Tcl_Interp *interp, 
+extern int Blt_ConfigureBindingsFromObj(Tcl_Interp *interp, 
 	Blt_BindTable table, ClientData item, int objc, Tcl_Obj *const *objv);
 
-BLT_EXTERN void Blt_PickCurrentItem(Blt_BindTable table);
+extern void Blt_PickCurrentItem(Blt_BindTable table);
 
-BLT_EXTERN void Blt_DeleteBindings(Blt_BindTable table, ClientData object);
+extern void Blt_DeleteBindings(Blt_BindTable table, ClientData object);
 
-BLT_EXTERN void Blt_MoveBindingTable(Blt_BindTable table, Tk_Window tkwin);
+extern void Blt_MoveBindingTable(Blt_BindTable table, Tk_Window tkwin);
 
 #define Blt_SetFocusItem(bindPtr, object, context) \
 	((bindPtr)->focusItem = (ClientData)(object),\

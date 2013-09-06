@@ -124,11 +124,11 @@ typedef struct {
 #define BLT_SWITCH_SPECIFIED		(1<<4)
 #define BLT_SWITCH_USER_BIT		(1<<8)
 
-BLT_EXTERN int Blt_ParseSwitches(Tcl_Interp *interp, Blt_SwitchSpec *specPtr, 
+extern int Blt_ParseSwitches(Tcl_Interp *interp, Blt_SwitchSpec *specPtr, 
 	int objc, Tcl_Obj *const *objv, void *rec, int flags);
 
-BLT_EXTERN void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *rec, int flags);
+extern void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *rec, int flags);
 
-BLT_EXTERN int Blt_SwitchChanged TCL_VARARGS(Blt_SwitchSpec *, specs);
+extern int Blt_SwitchChanged TCL_VARARGS(Blt_SwitchSpec *, specs);
  
 #endif /* BLT_SWITCH_H */
