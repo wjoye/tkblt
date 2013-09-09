@@ -723,10 +723,6 @@ Blt_GetProjection(
     return t;
 }
 
-typedef struct {
-    double hue, sat, val;
-} HSV;
-
 #define SetColor(c,r,g,b) ((c)->red = (int)((r) * 65535.0), \
 			   (c)->green = (int)((g) * 65535.0), \
 			   (c)->blue = (int)((b) * 65535.0))
@@ -1052,72 +1048,6 @@ Blt_Draw2DSegments(
     }
     XDrawSegments(display, drawable, gc, xsegments, nSegments);
     free(xsegments);
-}
-
-void
-Blt_DrawArrowOld(Display *display, Drawable drawable, GC gc, int x, int y, int w, 
-	      int h, int borderWidth, int orientation)
-{
-    XPoint arrow[4];
-    int  s2, s;
-    int ax, ay;
-
-#define ARROW_IPAD 1
-    w -= 2 * (ARROW_IPAD + borderWidth);
-    h -= 2 * (ARROW_IPAD + borderWidth);
-    x += ARROW_IPAD + borderWidth;
-    y += ARROW_IPAD + borderWidth;
-
-    w |= 0x01;
-    h |= 0x01;
-    s = MIN(w, h);
-    s2 = s / 2;
-    ax = x + w / 2;
-    ay = y + h / 2;
-
-    switch (orientation) {
-    case ARROW_UP:
-	ay -= s2/2 + 1;
-	arrow[2].x = arrow[0].x = ax;
-	arrow[2].y = arrow[0].y = ay;
-	arrow[0].x = ax + s2 + 1;
-	arrow[1].x = ax - s2;
-	arrow[0].y = arrow[1].y = ay + s2 + 1;
-	fprintf(stderr, "up arrow %d,%d %d,%d %d,%d\n",
-		arrow[0].x, arrow[0].y,
-		arrow[1].x, arrow[1].y,
-		arrow[2].x, arrow[2].y);
-	break;
-    case ARROW_DOWN:
-	ay -= s2/2;
-	arrow[3].x = arrow[0].x = ax;
-	arrow[3].y = arrow[0].y = ay + s2 + 1;
-	arrow[1].x = ax + s2 + 1;
-	arrow[2].x = ax - s2;
-	arrow[2].y = arrow[1].y = ay;
-	fprintf(stderr, "down arrow %d,%d %d,%d %d,%d\n",
-		arrow[0].x, arrow[0].y,
-		arrow[1].x, arrow[1].y,
-		arrow[2].x, arrow[2].y);
-	break;
-    case ARROW_LEFT:
-	ax -= s2 / 2;
-	arrow[3].x = arrow[0].x = ax;
-	arrow[3].y = arrow[0].y = ay;
-	arrow[1].y = ay - s2;
-	arrow[2].y = ay + s2 + 1;
-	arrow[2].x = arrow[1].x = ax + s2 + 1;
-	break;
-    case ARROW_RIGHT:
-	ax -= s2 / 2;
-	arrow[3].x = arrow[0].x = ax + s2 + 1;
-	arrow[3].y = arrow[0].y = ay;
-	arrow[1].y = ay - s2;
-	arrow[2].y = ay + s2;
-	arrow[2].x = arrow[1].x = ax;
-	break;
-    }
-    XFillPolygon(display, drawable, gc, arrow, 3, Convex, CoordModeOrigin);
 }
 
 void
@@ -1553,20 +1483,3 @@ ArcBallCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     return (*proc) (clientData, interp, objc, objv);
 }
 
-#undef Tk_GetPixmap
-Pixmap 
-Blt_GetPixmap(Display *display, Drawable drawable, int w, int h, int depth,
-	      int lineNum, const char *fileName)
-{
-    if (w <= 0) {
-	fprintf(stderr, "line %d of %s: width is %d\n", 
-		lineNum, fileName, w);
-	abort();
-    }
-    if (h <= 0) {
-	fprintf(stderr, "line %d of %s: height is %d\n", 
-		lineNum, fileName, h);
-	abort();
-    }
-    return Tk_GetPixmap(display, drawable, w, h, depth);
-}
