@@ -33,7 +33,6 @@
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltChain.h"
-#include "bltDataTable.h"
 
 #define GRAPH_KEY		"BLT Graph Data"
 
@@ -41,7 +40,6 @@
 #define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
 
 typedef struct {
-    Blt_Table table;
     int refCount;
 } TableClient;
 
@@ -109,9 +107,11 @@ Blt_DestroyTableClients(Graph *graphPtr)
 	TableClient *clientPtr;
 
 	clientPtr = Blt_GetHashValue(hPtr);
+	/*
 	if (clientPtr->table != NULL) {
 	    Blt_Table_Close(clientPtr->table);
 	}
+	*/
 	free(clientPtr);
     }
     Blt_DeleteHashTable(&graphPtr->dataTables);
@@ -267,195 +267,6 @@ GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, const char *vecName)
 }
 
 static int
-FetchTableValues(Tcl_Interp *interp, ElemValues *valuesPtr, Blt_TableColumn col)
-{
-    long i, j;
-    double *array;
-    Blt_Table table;
-
-    table = valuesPtr->tableSource.table;
-    array = malloc(sizeof(double) * Blt_Table_NumRows(table));
-    if (array == NULL) {
-	return TCL_ERROR;
-    }
-    for (j = 0, i = 1; i <= Blt_Table_NumRows(table); i++) {
-	Blt_TableRow row;
-	double value;
-
-	row = Blt_Table_FindRowByIndex(table, i);
-	value = Blt_Table_GetDouble(table, row, col);
-	if (isfinite(value)) {
-	    array[j] = value;
-	    j++;
-	}
-    }
-    if (valuesPtr->values != NULL) {
-	free(valuesPtr->values);
-    }
-    valuesPtr->nValues = j;
-    valuesPtr->values = array;
-    FindRange(valuesPtr);
-    return TCL_OK;
-}
-
-static void
-FreeTableSource(ElemValues *valuesPtr)
-{
-    TableDataSource *srcPtr;
-
-    srcPtr = &valuesPtr->tableSource;
-    if (srcPtr->trace != NULL) {
-	Blt_Table_DeleteTrace(srcPtr->trace);
-    }
-    if (srcPtr->notifier != NULL) {
-	Blt_Table_DeleteNotifier(srcPtr->notifier);
-    }
-    if (srcPtr->hashPtr != NULL) {
-	TableClient *clientPtr;
-
-	clientPtr = Blt_GetHashValue(srcPtr->hashPtr);
-	clientPtr->refCount--;
-	if (clientPtr->refCount == 0) {
-	    Graph *graphPtr;
-
-	    graphPtr = valuesPtr->elemPtr->obj.graphPtr;
-	    if (srcPtr->table != NULL) {
-		Blt_Table_Close(srcPtr->table);
-	    }
-	    free(clientPtr);
-	    Blt_DeleteHashEntry(&graphPtr->dataTables, srcPtr->hashPtr);
-	    srcPtr->hashPtr = NULL;
-	}
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * TableNotifyProc --
- *
- *
- * Results:
- *     	None.
- *
- * Side Effects:
- *	Graph is redrawn.
- *
- *---------------------------------------------------------------------------
- */
-static int
-TableNotifyProc(ClientData clientData, Blt_TableNotifyEvent *eventPtr)
-{
-    ElemValues *valuesPtr = clientData;
-    Element *elemPtr;
-    Graph *graphPtr;
-
-    elemPtr = valuesPtr->elemPtr;
-    graphPtr = elemPtr->obj.graphPtr;
-    if ((eventPtr->type == TABLE_NOTIFY_COLUMN_DELETED) || 
-	(FetchTableValues(graphPtr->interp, valuesPtr, 
-			  (Blt_TableColumn)eventPtr->header)) != TCL_OK) {
-	FreeTableSource(valuesPtr);
-	return TCL_ERROR;
-    } 
-    /* Always redraw the element. */
-    graphPtr->flags |= RESET_AXES;
-    elemPtr->flags |= MAP_ITEM;
-    if (!IGNORE_ELEMENT(elemPtr)) {
-	graphPtr->flags |= CACHE_DIRTY;
-	Blt_EventuallyRedrawGraph(graphPtr);
-    }
-    return TCL_OK;
-}
- 
-/*
- *---------------------------------------------------------------------------
- *
- * TableTraceProc --
- *
- *
- * Results:
- *     	None.
- *
- * Side Effects:
- *	Graph is redrawn.
- *
- *---------------------------------------------------------------------------
- */
-static int
-TableTraceProc(ClientData clientData, Blt_TableTraceEvent *eventPtr)
-{
-    ElemValues *valuesPtr = clientData;
-    Element *elemPtr;
-    Graph *graphPtr;
-
-    elemPtr = valuesPtr->elemPtr;
-    graphPtr = elemPtr->obj.graphPtr;
-    assert((Blt_TableColumn)eventPtr->column == valuesPtr->tableSource.column);
-
-    if (FetchTableValues(eventPtr->interp, valuesPtr, eventPtr->column) 
-	!= TCL_OK) {
-	FreeTableSource(valuesPtr);
-	return TCL_ERROR;
-    }
-    graphPtr->flags |= RESET_AXES;
-    elemPtr->flags |= MAP_ITEM;
-    if (!IGNORE_ELEMENT(elemPtr)) {
-	graphPtr->flags |= CACHE_DIRTY;
-	Blt_EventuallyRedrawGraph(graphPtr);
-    }
-    return TCL_OK;
-}
-
-static int
-GetTableData(Tcl_Interp *interp, ElemValues *valuesPtr, const char *tableName,
-	     Tcl_Obj *colObjPtr)
-{
-    TableDataSource *srcPtr;
-    TableClient *clientPtr;
-    int isNew;
-    Graph *graphPtr;
-
-    memset(&valuesPtr->tableSource, 0, sizeof(TableDataSource));
-    srcPtr = &valuesPtr->tableSource;
-    graphPtr = valuesPtr->elemPtr->obj.graphPtr;
-    /* See if the graph is already using this table. */
-    srcPtr->hashPtr = Blt_CreateHashEntry(&graphPtr->dataTables, tableName, 
-	&isNew);
-    if (isNew) {
-	if (Blt_Table_Open(interp, tableName, &srcPtr->table) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	clientPtr = malloc(sizeof(TableClient));
-	clientPtr->table = srcPtr->table;
-	clientPtr->refCount = 1;
-	Blt_SetHashValue(srcPtr->hashPtr, clientPtr);
-    } else {
-	clientPtr = Blt_GetHashValue(srcPtr->hashPtr);
-	srcPtr->table = clientPtr->table;
-	clientPtr->refCount++;
-    }
-    srcPtr->column = Blt_Table_FindColumn(interp, srcPtr->table, colObjPtr);
-    if (srcPtr->column == NULL) {
-	goto error;
-    }
-    if (FetchTableValues(interp, valuesPtr, srcPtr->column) != TCL_OK) {
-	goto error;
-    }
-    srcPtr->notifier = Blt_Table_CreateColumnNotifier(interp, srcPtr->table, 
-	srcPtr->column, TABLE_NOTIFY_COLUMN_CHANGED, TableNotifyProc, 
-	(Blt_TableNotifierDeleteProc *)NULL, valuesPtr);
-    srcPtr->trace = Blt_Table_CreateColumnTrace(srcPtr->table, srcPtr->column, 
-	(TABLE_TRACE_WRITES | TABLE_TRACE_UNSETS | TABLE_TRACE_CREATES), TableTraceProc,
-	(Blt_TableTraceDeleteProc *)NULL, valuesPtr);
-    valuesPtr->type = ELEM_SOURCE_TABLE;
-    return TCL_OK;
- error:
-    FreeTableSource(valuesPtr);
-    return TCL_ERROR;
-}
-
-static int
 ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
 	    double **arrayPtr)
 {
@@ -495,8 +306,6 @@ FreeDataValues(ElemValues *valuesPtr)
     switch (valuesPtr->type) {
     case ELEM_SOURCE_VECTOR: 
 	FreeVectorSource(valuesPtr);	break;
-    case ELEM_SOURCE_TABLE:
-	FreeTableSource(valuesPtr);	break;
     case ELEM_SOURCE_VALUES:
 					break;
     }
@@ -662,8 +471,6 @@ ObjToValues(
     string = Tcl_GetString(objv[0]);
     if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
 	result = GetVectorData(interp, valuesPtr, string);
-    } else if ((objc == 2) && (Blt_Table_TableExists(interp, string))) {
-	result = GetTableData(interp, valuesPtr, string, objv[1]);
     } else {
 	double *values;
 	int nValues;
@@ -714,21 +521,6 @@ ValuesToObj(
 	    
 	    vecName = Blt_NameOfVectorId(valuesPtr->vectorSource.vector);
 	    return Tcl_NewStringObj(vecName, -1);
-	}
-    case ELEM_SOURCE_TABLE:
-	{
-	    Tcl_Obj *listObjPtr;
-	    const char *tableName;
-	    long i;
-	    
-	    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	    tableName = Blt_Table_TableName(valuesPtr->tableSource.table);
-	    Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewStringObj(tableName, -1));
-	    
-	    i = Blt_Table_ColumnIndex(valuesPtr->tableSource.column);
-	    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewLongObj(i));
-	    return listObjPtr;
 	}
     case ELEM_SOURCE_VALUES:
 	{

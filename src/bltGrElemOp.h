@@ -28,11 +28,9 @@
 #define _BLT_GR_ELEM_H
 
 #include <bltVector.h>
-#include <bltDataTable.h>
 
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
-#define ELEM_SOURCE_TABLE	2
 
 #define SEARCH_X	0
 #define SEARCH_Y	1
@@ -175,20 +173,6 @@ typedef struct {
     Blt_VectorId vector;
 } VectorDataSource;
 
-typedef struct {
-    Blt_Table table;			/* Data table. */ 
-    Blt_TableColumn column;		/* Column of data used. */
-    Blt_TableNotifier notifier;		/* Notifier used for column destroy
-					 * event. */
-    Blt_TableTrace trace;		/* Trace used for column
-					 * (set/get/unset). */
-    Blt_HashEntry *hashPtr;		/* Pointer to the entry of the data
-					 * source in graph's hash table of
-					 * datatables. One graph may use
-					 * multiple columns from the same data
-					 * table. */
-} TableDataSource;
-
 /* 
  * The data structure below contains information pertaining to a line vector.
  * It consists of an array of floating point data values and for convenience,
@@ -200,10 +184,7 @@ typedef struct {
 				 * ELEM_SOURCE_TABLE, or ELEM_SOURCE_VALUES
 				 */
     Element *elemPtr;		/* Element associated with vector. */
-    union {
-	TableDataSource tableSource;
-	VectorDataSource vectorSource;
-    };
+    VectorDataSource vectorSource;
     double *values;
     int nValues;
     int arraySize;
