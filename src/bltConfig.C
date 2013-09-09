@@ -76,6 +76,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#include "bltMath.h"
 #include "bltInt.h"
 #include "bltFont.h"
 #include "bltPicture.h"
