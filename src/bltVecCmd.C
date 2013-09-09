@@ -2311,10 +2311,10 @@ Blt_Vec_VarTrace(ClientData clientData, Tcl_Interp *interp, const char *part1,
     if (part2 == NULL) {
 	if (flags & TCL_TRACE_UNSETS) {
 	  free((void*)(vPtr->arrayName));
-	    vPtr->arrayName = NULL;
-	    if (vPtr->freeOnUnset) {
-		Blt_Vec_Free(vPtr);
-	    }
+	  vPtr->arrayName = NULL;
+	  if (vPtr->freeOnUnset) {
+	    Blt_Vec_Free(vPtr);
+	  }
 	}
 	return NULL;
     }
