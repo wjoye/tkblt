@@ -29,10 +29,6 @@
 #ifndef BLT_NS_UTIL_H
 #define BLT_NS_UTIL_H 1
 
-#ifndef TCL_NAMESPACE_ONLY
-#define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY
-#endif
-
 #define NS_SEARCH_NONE		(0)
 #define NS_SEARCH_CURRENT	(1<<0)
 #define NS_SEARCH_GLOBAL	(1<<1)
@@ -53,11 +49,6 @@ extern Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp *interp,
 	const char *varName);
 
 extern Tcl_Namespace *Blt_GetCommandNamespace(Tcl_Command cmdToken);
-
-extern Tcl_CallFrame *Blt_EnterNamespace(Tcl_Interp *interp, 
-	Tcl_Namespace *nsPtr);
-
-extern void Blt_LeaveNamespace(Tcl_Interp *interp, Tcl_CallFrame *framePtr);
 
 extern int Blt_ParseObjectName(Tcl_Interp *interp, const char *name, 
 	Blt_ObjectName *objNamePtr, unsigned int flags);

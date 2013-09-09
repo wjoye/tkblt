@@ -26,63 +26,22 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#define TIME_WITH_SYS_TIME 0
+#define HAVE_SYS_TIME_H 1
+#define STDC_HEADERS 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_UNISTD_H 1
+#include <tclPort.h>
+#include <tclInt.h>
+
+#define FOOBAR
 #include "bltInt.h"
+#undef FOOBAR
+
 #include "bltNsUtil.h"
-
-/*
- * A Command structure exists for each command in a namespace. The Tcl_Command
- * opaque type actually refers to these structures.
- */
-
-typedef struct CompileProc CompileProc;
-typedef struct ImportRef ImportRef;
-typedef struct CommandTrace CommandTrace;
-
-typedef struct {
-    Tcl_HashEntry *hPtr;	/* Pointer to the hash table entry that refers
-				 * to this command. The hash table is either a
-				 * namespace's command table or an
-				 * interpreter's hidden command table. This
-				 * pointer is used to get a command's name
-				 * from its Tcl_Command handle. NULL means
-				 * that the hash table entry has been removed
-				 * already (this can happen if deleteProc
-				 * causes the command to be deleted or
-				 * recreated). */
-    Tcl_Namespace *nsPtr;	/* Points to the namespace containing this
-				 * command. */
-    int refCount;		/* 1 if in command hashtable plus 1 for each
-				 * reference from a CmdName TCL object
-				 * representing a command's name in a ByteCode
-				 * instruction sequence. This structure can be
-				 * freed when refCount becomes zero. */
-    int cmdEpoch;		/* Incremented to invalidate any references
-				 * that point to this command when it is
-				 * renamed, deleted, hidden, or exposed. */
-    CompileProc *compileProc;	/* Procedure called to compile command. NULL
-				 * if no compile proc exists for command. */
-    Tcl_ObjCmdProc *objProc;	/* Object-based command procedure. */
-    ClientData objClientData;	/* Arbitrary value passed to object proc. */
-    Tcl_CmdProc *proc;		/* String-based command procedure. */
-    ClientData clientData;	/* Arbitrary value passed to string proc. */
-    Tcl_CmdDeleteProc *deleteProc;
-				/* Procedure invoked when deleting command
-				 * to, e.g., free all client data. */
-    ClientData deleteData;	/* Arbitrary value passed to deleteProc. */
-    int flags;			/* Means that the command is in the process of
-				 * being deleted (its deleteProc is currently
-				 * executing). Other attempts to delete the
-				 * command should be ignored. */
-    ImportRef *importRefPtr;	/* List of each imported Command created in
-				 * another namespace when this command is
-				 * imported. These imported commands redirect
-				 * invocations back to this command. The list
-				 * is used to remove all those imported
-				 * commands when deleting this "real"
-				 * command. */
-    CommandTrace *tracePtr;	/* First in list of all traces set for this
-				 * command. */
-} Command;
 
 /*ARGSUSED*/
 Tcl_Namespace *
@@ -91,27 +50,6 @@ Blt_GetCommandNamespace(Tcl_Command cmdToken)
     Command *cmdPtr = (Command *)cmdToken;
 
     return (Tcl_Namespace *)cmdPtr->nsPtr;
-}
-
-Tcl_CallFrame *
-Blt_EnterNamespace(Tcl_Interp *interp, Tcl_Namespace *nsPtr)
-{
-    Tcl_CallFrame *framePtr;
-
-    framePtr = malloc(sizeof(Tcl_CallFrame));
-    if (Tcl_PushCallFrame(interp, framePtr, (Tcl_Namespace *)nsPtr, 0)
-	!= TCL_OK) {
-	free(framePtr);
-	return NULL;
-    }
-    return framePtr;
-}
-
-void
-Blt_LeaveNamespace(Tcl_Interp *interp, Tcl_CallFrame *framePtr)
-{
-    Tcl_PopCallFrame(interp);
-    free(framePtr);
 }
 
 int
@@ -172,3 +110,49 @@ Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
     return Tcl_DStringValue(resultPtr);
 }
 
+static INLINE Tcl_Namespace *
+NamespaceOfVariable(Var *varPtr)
+{
+    if (varPtr->flags & VAR_IN_HASHTABLE) {
+	VarInHash *vhashPtr = (VarInHash *)varPtr;
+	TclVarHashTable *vtablePtr;
+
+	vtablePtr = (TclVarHashTable *)vhashPtr->entry.tablePtr;
+	return vtablePtr->nsPtr;
+    }
+    return NULL;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * Blt_GetVariableNamespace --
+ *
+ *	Returns the namespace context of the variable.  If NULL, this
+ *	indicates that the variable is local to the call frame.
+ *
+ * Results:
+ *	Returns the context of the namespace in an opaque type.
+ *
+ *---------------------------------------------------------------------------
+ */
+
+Tcl_Namespace *
+Blt_GetVariableNamespace(Tcl_Interp *interp, const char *path)
+{
+    Blt_ObjectName objName;
+
+    if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
+	return NULL;
+    }
+    if (objName.nsPtr == NULL) {
+	Var *varPtr;
+
+	varPtr = (Var *)Tcl_FindNamespaceVar(interp, (char *)path, 
+		(Tcl_Namespace *)NULL, TCL_GLOBAL_ONLY);
+	if (varPtr != NULL) {
+	    return NamespaceOfVariable(varPtr);
+	}
+    }
+    return objName.nsPtr;    
+}

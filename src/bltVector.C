@@ -51,10 +51,6 @@
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
 
-#ifndef TCL_NAMESPACE_ONLY
-#define TCL_NAMESPACE_ONLY TCL_GLOBAL_ONLY
-#endif
-
 #define DEF_ARRAY_SIZE		64
 #define TRACE_ALL  (TCL_TRACE_WRITES | TCL_TRACE_READS | TCL_TRACE_UNSETS)
 
@@ -709,7 +705,7 @@ UnmapVariable(Vector *vPtr)
 
     if (vPtr->arrayName != NULL) {
       free((void*)(vPtr->arrayName));
-	vPtr->arrayName = NULL;
+      vPtr->arrayName = NULL;
     }
 }
 
@@ -769,7 +765,7 @@ Blt_Vec_MapVariable(
     vPtr->varFlags = 0;
     if (objName.nsPtr != NULL) {	/* Global or namespace variable. */
 	newPath = Blt_MakeQualifiedName(&objName, &dString);
-	vPtr->varFlags |= (TCL_NAMESPACE_ONLY | TCL_GLOBAL_ONLY);
+	vPtr->varFlags |= (TCL_GLOBAL_ONLY);
     } else {			/* Local variable. */
 	newPath = (char *)objName.name;
     }
