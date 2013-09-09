@@ -797,8 +797,6 @@ static void DestroyGraph(char* dataPtr)
     Blt_DestroyCrosshairs(graphPtr);
     Blt_DestroyPageSetup(graphPtr);
     Blt_DestroyBarSets(graphPtr);
-    /* Destroy table clients after elements are destroyed. */
-    Blt_DestroyTableClients(graphPtr);
     if (graphPtr->bindTable != NULL) {
 	Blt_DestroyBindingTable(graphPtr->bindTable);
     }

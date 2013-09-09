@@ -247,6 +247,5 @@ extern void Blt_MapErrorBars(Graph *graphPtr, Element *elemPtr,
 extern void Blt_FreeDataValues(ElemValues *evPtr);
 extern int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 
 	Tcl_Obj *objPtr, Element **elemPtrPtr);
-extern void Blt_DestroyTableClients(Graph *graphPtr);
 
 #endif /* _BLT_GR_ELEM_H */

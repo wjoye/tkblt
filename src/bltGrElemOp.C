@@ -39,10 +39,6 @@
 /* Ignore elements that aren't in the display list or have been deleted. */
 #define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
 
-typedef struct {
-    int refCount;
-} TableClient;
-
 static Blt_OptionParseProc ObjToAlong;
 static Blt_OptionPrintProc AlongToObj;
 static Blt_CustomOption alongOption =
@@ -87,36 +83,6 @@ static Tcl_FreeProc FreeElement;
 
 typedef int (GraphElementProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DestroyTableClients --
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED */
-void
-Blt_DestroyTableClients(Graph *graphPtr)
-{
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch iter;
-    
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->dataTables, &iter);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
-	TableClient *clientPtr;
-
-	clientPtr = Blt_GetHashValue(hPtr);
-	/*
-	if (clientPtr->table != NULL) {
-	    Blt_Table_Close(clientPtr->table);
-	}
-	*/
-	free(clientPtr);
-    }
-    Blt_DeleteHashTable(&graphPtr->dataTables);
-}
-
 
 /*
  *---------------------------------------------------------------------------
