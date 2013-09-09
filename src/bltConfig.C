@@ -89,59 +89,6 @@
 /*
  *---------------------------------------------------------------------------
  *
- * Blt_GetPositionFromObj --
- *
- *	Convert a string representing a numeric position.
- *	A position can be in one of the following forms.
- *
- * 	  number	- number of the item in the hierarchy, indexed
- *			  from zero.
- *	  "end"		- last position in the hierarchy.
- *
- * Results:
- *	A standard TCL result.  If "string" is a valid index, then
- *	*indexPtr is filled with the corresponding numeric index.
- *	If "end" was selected then *indexPtr is set to -1.
- *	Otherwise an error message is left in interp->result.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetPositionFromObj(
-    Tcl_Interp *interp,		/* Interpreter to report results back
-				 * to. */
-    Tcl_Obj *objPtr,		/* Tcl_Obj representation of the index.
-				 * Can be an integer or "end" to refer
-				 * to the last index. */
-    long *indexPtr)		/* Holds the converted index. */
-{
-    const char *string;
-
-    string = Tcl_GetString(objPtr);
-    if ((string[0] == 'e') && (strcmp(string, "end") == 0)) {
-	*indexPtr = -1;		/* Indicates last position in hierarchy. */
-    } else {
-	long position;
-
-	if (Tcl_GetLongFromObj(interp, objPtr, &position) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (position < 0) {
-	    Tcl_AppendResult(interp, "bad position \"", string, "\"",
-		(char *)NULL);
-	    return TCL_ERROR;
-	}
-	*indexPtr = position;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * Blt_GetPixelsFromObj --
  *
  *	Like Tk_GetPixelsFromObj, but checks for negative, zero.

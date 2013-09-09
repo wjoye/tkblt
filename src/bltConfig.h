@@ -348,9 +348,6 @@ extern int Blt_ObjIsOption(Blt_ConfigSpec *specs, Tcl_Obj *objPtr,
 extern int Blt_GetSideFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *sidePtr);
 
-extern int Blt_GetPositionFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	long *indexPtr);
-
 extern int Blt_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, int flags, int *valuePtr);
 
