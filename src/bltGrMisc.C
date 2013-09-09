@@ -33,7 +33,6 @@
 
 #include "bltMath.h"
 #include "bltGraph.h"
-#include "bltAlloc.h"
 #include "bltOp.h"
 
 #define ARROW_LEFT		(0)
@@ -1210,85 +1209,6 @@ Blt_GetLineExtents(size_t nPoints, Point2d *points, Region2d *r)
 	}
     }
 }
-
-#undef Blt_Fill3DRectangle
-void
-Blt_Fill3DRectangle(
-    Tk_Window tkwin,		/* Window for which border was allocated. */
-    Drawable drawable,		/* X window or pixmap in which to draw. */
-    Tk_3DBorder border,		/* Token for border to draw. */
-    int x, int y, 
-    int width, int  height,	/* Outside area of rectangular region. */
-    int borderWidth,		/* Desired width for border, in pixels. Border
-				 * will be *inside* region. */
-    int relief)			/* Indicates 3D effect: TK_RELIEF_FLAT,
-				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
-{
-    if ((borderWidth > 1) && (width > 2) && (height > 2) &&
-	((relief == TK_RELIEF_SUNKEN) || (relief == TK_RELIEF_RAISED))) {
-	GC lightGC, darkGC;
-	int x2, y2;
-
-	x2 = x + width - 1;
-	y2 = y + height - 1;
-#define TK_3D_LIGHT2_GC TK_3D_DARK_GC+1
-#define TK_3D_DARK2_GC TK_3D_DARK_GC+2
-	if (relief == TK_RELIEF_RAISED) {
-	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-	} else {
-
-	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-	}
-	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x2, y);
-	XDrawLine(Tk_Display(tkwin), drawable, darkGC, x2, y2, x2, y);
-	XDrawLine(Tk_Display(tkwin), drawable, darkGC, x2, y2, x, y2);
-	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x, y2);
-	x++, y++, width -= 2, height -= 2, borderWidth--;
-    }
-    Tk_Fill3DRectangle(tkwin, drawable, border, x, y, width, height, 
-	borderWidth, relief);
-}
-
-
-#undef Blt_Draw3DRectangle
-void
-Blt_Draw3DRectangle(
-    Tk_Window tkwin,		/* Window for which border was allocated. */
-    Drawable drawable,		/* X window or pixmap in which to draw. */
-    Tk_3DBorder border,		/* Token for border to draw. */
-    int x, int y, 
-    int width, int height,	/* Outside area of rectangular region. */
-    int borderWidth,		/* Desired width for border, in pixels. Border
-				 * will be *inside* region. */
-    int relief)			/* Indicates 3D effect: TK_RELIEF_FLAT,
-				 * TK_RELIEF_RAISED, or TK_RELIEF_SUNKEN. */
-{
-    if ((borderWidth > 1) && (width > 2) && (height > 2) &&
-	((relief == TK_RELIEF_SUNKEN) || (relief == TK_RELIEF_RAISED))) {
-	GC lightGC, darkGC;
-	int x2, y2;
-
-	x2 = x + width - 1;
-	y2 = y + height - 1;
-	if (relief == TK_RELIEF_RAISED) {
-	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-	} else {
-	    lightGC = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-	    darkGC = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-	}
-	XDrawLine(Tk_Display(tkwin), drawable, darkGC, x2, y2, x2, y);
-	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x2, y);
-	XDrawLine(Tk_Display(tkwin), drawable, darkGC, x2, y2, x, y2);
-	XDrawLine(Tk_Display(tkwin), drawable, lightGC, x, y, x, y2);
-	x++, y++, width -= 2, height -= 2, borderWidth--;
-    }
-    Tk_Draw3DRectangle(tkwin, drawable, border, x, y, width, height, 
-	borderWidth, relief);
-}
-
 
 typedef struct {
     float x, y, z;
