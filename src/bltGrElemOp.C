@@ -27,14 +27,13 @@
  */
 
 #include <assert.h>
-#include <float.h>
-#include <math.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltChain.h"
-#include <bltDataTable.h>
+#include "bltDataTable.h"
 
 #define GRAPH_KEY		"BLT Graph Data"
 

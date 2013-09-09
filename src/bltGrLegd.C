@@ -26,12 +26,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
 #include "bltPicture.h"
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 
 /*
  *  Selection related flags:

@@ -28,10 +28,9 @@
  */
 
 #include <assert.h>
-#include <math.h>
-#include <float.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltChain.h"
 #include "bltGrElem.h"

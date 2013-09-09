@@ -26,10 +26,9 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <float.h>
-#include <math.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltGrElem.h"
 

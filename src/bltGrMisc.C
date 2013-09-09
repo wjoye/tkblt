@@ -29,13 +29,12 @@
 
 #include <assert.h>
 #include <stdarg.h>
-#include <float.h>
-#include <math.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
 #include "bltGraph.h"
-#include <bltAlloc.h>
-#include <bltOp.h>
+#include "bltAlloc.h"
+#include "bltOp.h"
 
 #define ARROW_LEFT		(0)
 #define ARROW_UP		(1)
