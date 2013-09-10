@@ -133,7 +133,7 @@ TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-#CLEANFILES="$CLEANFILES pkgIndex.tcl"
+CLEANFILES="$CLEANFILES pkgIndex.tcl config.status config.log Makefile"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
