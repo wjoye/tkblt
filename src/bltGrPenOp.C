@@ -352,10 +352,6 @@ Blt_CreatePen(Graph *graphPtr, const char *penName, ClassId classId,
 		classId = CID_ELEM_BAR;
 	    } else if (strcmp(arg, "line") == 0) {
 		classId = CID_ELEM_LINE;
-	    } else if (strcmp(arg, "strip") == 0) {
-		classId = CID_ELEM_LINE;
-	    } else if (strcmp(arg, "contour") == 0) {
-		classId = CID_ELEM_CONTOUR;
 	    } else {
 		Tcl_AppendResult(graphPtr->interp, "unknown pen type \"",
 		    arg, "\" specified", (char *)NULL);
@@ -363,9 +359,7 @@ Blt_CreatePen(Graph *graphPtr, const char *penName, ClassId classId,
 	    }
 	}
     }
-    if (classId == CID_ELEM_STRIP) {
-	classId = CID_ELEM_LINE;
-    }
+    classId = CID_ELEM_LINE;
     hPtr = Blt_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
     if (!isNew) {
 	penPtr = Blt_GetHashValue(hPtr);
@@ -431,9 +425,7 @@ Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 	}
 	return TCL_ERROR;
     }
-    if (classId == CID_ELEM_STRIP) {
-	classId = CID_ELEM_LINE;
-    }
+    classId = CID_ELEM_LINE;
     if (penPtr->classId != classId) {
 	if (interp != NULL) {
 	    Tcl_AppendResult(interp, "pen \"", name, 

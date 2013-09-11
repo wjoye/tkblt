@@ -32,10 +32,7 @@
 
 #include "bltMath.h"
 #include "bltGraph.h"
-#include "bltChain.h"
 #include "bltGrElem.h"
-#include "bltBgStyle.h"
-#include "bltImage.h"
 #include "bltBitmap.h"
 
 #define COLOR_DEFAULT	(XColor *)1
@@ -2790,8 +2787,7 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
      * Map connecting line segments if they are to be displayed.
      */
     elemPtr->smooth = elemPtr->reqSmooth;
-    if ((np > 1) && ((graphPtr->classId == CID_ELEM_STRIP) ||
-		     (elemPtr->builtinPen.traceWidth > 0))) {
+    if ((np > 1) && (elemPtr->builtinPen.traceWidth > 0)) {
 	/*
 	 * Do smoothing if necessary.  This can extend the coordinate array,
 	 * so both mi.points and mi.nPoints may change.
@@ -2829,11 +2825,7 @@ MapLineProc(Graph *graphPtr, Element *basePtr)
 	if (elemPtr->fillBg != NULL) {
 	    MapFillArea(graphPtr, elemPtr, &mi);
 	}
-	if (graphPtr->classId == CID_ELEM_STRIP) {
-	    MapStrip(graphPtr, elemPtr, &mi);
-	} else {
-	    MapTraces(graphPtr, elemPtr, &mi);
-	}
+	MapTraces(graphPtr, elemPtr, &mi);
     }
     free(mi.screenPts);
     free(mi.map);
@@ -3443,11 +3435,7 @@ ClosestLineProc(Graph *graphPtr, Element *basePtr, ClosestSearch *searchPtr)
 	} else {
 	    distProc = DistanceToLineProc;
 	}
-	if (elemPtr->obj.classId == CID_ELEM_STRIP) {
-	    found = ClosestStrip(graphPtr, elemPtr, searchPtr, distProc);
-	} else {
-	    found = ClosestTrace(graphPtr, elemPtr, searchPtr, distProc);
-	}
+	found = ClosestTrace(graphPtr, elemPtr, searchPtr, distProc);
 	if ((!found) && (searchPtr->along != SEARCH_BOTH)) {
 	    ClosestPoint(elemPtr, searchPtr);
 	}
@@ -5018,11 +5006,7 @@ Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
 
     elemPtr = calloc(1, sizeof(LineElement));
     elemPtr->procsPtr = &lineProcs;
-    if (classId == CID_ELEM_LINE) {
-	elemPtr->configSpecs = lineElemConfigSpecs;
-    } else {
-	elemPtr->configSpecs = stripElemConfigSpecs;
-    }
+    elemPtr->configSpecs = lineElemConfigSpecs;
     elemPtr->obj.name = Blt_Strdup(name);
     Blt_GraphSetObjectClass(&elemPtr->obj, classId);
     elemPtr->flags = SCALE_SYMBOL;

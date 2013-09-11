@@ -270,7 +270,6 @@ static Tk_EventProc GraphEventProc;
 Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 
 static Blt_BindPickProc PickEntry;
-static Tcl_ObjCmdProc StripchartCmd;
 static Tcl_ObjCmdProc BarchartCmd;
 static Tcl_ObjCmdProc GraphCmd;
 static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
@@ -525,9 +524,7 @@ Blt_GraphTags(
 
     switch (graphObjPtr->classId) {
     case CID_ELEM_BAR:		
-    case CID_ELEM_CONTOUR:
     case CID_ELEM_LINE: 
-    case CID_ELEM_STRIP: 
 	tagProc = Blt_MakeElementTag;
 	break;
     case CID_AXIS_X:
@@ -885,8 +882,6 @@ CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
     case CID_ELEM_BAR:
 	Tk_SetClass(tkwin, "Barchart");
 	break;
-    case CID_ELEM_STRIP:
-	Tk_SetClass(tkwin, "Stripchart");
     default:
 	Tk_SetClass(tkwin, "???");
 	break;
@@ -1519,30 +1514,6 @@ BarchartCmd(ClientData clientData, Tcl_Interp *interp, int objc,
 /*
  *---------------------------------------------------------------------------
  *
- * StripchartCmd --
- *
- *	Creates a new window and TCL command representing an instance of a
- *	barchart widget.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-StripchartCmd(ClientData clientData, Tcl_Interp *interp, int objc,
-	      Tcl_Obj *const *objv)
-{
-    return NewGraph(interp, objc, objv, CID_ELEM_STRIP);
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * DrawMargins --
  *
  * 	Draws the exterior region of the graph (axes, ticks, titles, etc) 
@@ -1895,7 +1866,6 @@ Blt_GraphCmdInitProc(Tcl_Interp *interp)
     static Blt_InitCmdSpec cmdSpecs[] = {
 	{"graph", GraphCmd,},
 	{"barchart", BarchartCmd,},
-	{"stripchart", StripchartCmd,},
     };
     return Blt_InitCmds(interp, "::blt", cmdSpecs, 3);
 }
@@ -1923,8 +1893,6 @@ Blt_GraphType(Graph *graphPtr)
 	return GRAPH;
     case CID_ELEM_BAR:
 	return BARCHART;
-    case CID_ELEM_STRIP:
-	return STRIPCHART;
     default:
 	return 0;
     }

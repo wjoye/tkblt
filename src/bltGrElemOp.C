@@ -1857,7 +1857,7 @@ GetOp(
 	/* Report only on elements. */
 	if ((elemPtr != NULL) && ((elemPtr->flags & DELETE_PENDING) == 0) &&
 	    (elemPtr->obj.classId >= CID_ELEM_BAR) &&
-	    (elemPtr->obj.classId <= CID_ELEM_STRIP)) {
+	    (elemPtr->obj.classId <= CID_ELEM_LINE)) {
 	    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name,-1);
 	}
     }
@@ -2137,9 +2137,7 @@ TypeOp(
     }
     switch (elemPtr->obj.classId) {
     case CID_ELEM_BAR:		string = "bar";		break;
-    case CID_ELEM_CONTOUR:	string = "contour";	break;
     case CID_ELEM_LINE:		string = "line";	break;
-    case CID_ELEM_STRIP:	string = "strip";	break;
     default:			string = "???";		break;
     }
     Tcl_SetStringObj(Tcl_GetObjResult(interp), string, -1);
