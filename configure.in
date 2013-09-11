@@ -115,7 +115,7 @@ TEA_ADD_SOURCES([
 	bltWindow.c
 	])
 TEA_ADD_HEADERS([generic/bltVector.h])
-TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}/generic`\" -I/usr/X11/include/freetype2])
+TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}/generic`\"])
 TEA_ADD_LIBS([])
 TEA_ADD_CFLAGS([-Wunused])
 TEA_ADD_STUB_SOURCES([])
@@ -277,14 +277,10 @@ SC_PATH_X
 	fi
     fi
     if test $enable_xft = "yes" ; then
-	UNIX_FONT_OBJS=tkUnixRFont.o
 	AC_DEFINE(HAVE_XFT, 1, [Have we turned on XFT (antialiased fonts)?])
-    else
-	UNIX_FONT_OBJS=tkUnixFont.o
     fi
     AC_SUBST(XFT_CFLAGS)
     AC_SUBST(XFT_LIBS)
-    AC_SUBST(UNIX_FONT_OBJS)
 #fi
 
 #--------------------------------------------------------------------

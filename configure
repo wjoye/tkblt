@@ -5621,7 +5621,7 @@ done
 
 
 
-    vars="-I. -I\"`${CYGPATH} ${srcdir}/generic`\" -I/usr/X11/include/freetype2"
+    vars="-I. -I\"`${CYGPATH} ${srcdir}/generic`\""
     for i in $vars; do
 	PKG_INCLUDES="$PKG_INCLUDES $i"
     done
@@ -9399,6 +9399,7 @@ $as_echo "$enable_xft" >&6; }
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $found_xft" >&5
 $as_echo "$found_xft" >&6; }
 		if test "$found_xft" = "yes" ; then
+	echo "$XFT_CFLAGS"
 	    tk_oldCFlags=$CFLAGS
 	    CFLAGS="$XINCLUDES $XFT_CFLAGS"
 	    tk_oldLibs=$LIBS
