@@ -1089,38 +1089,6 @@ Blt_Ts_DrawLayout(
 		x, y);
 }
 
-void
-Blt_Ts_UnderlineLayout(
-    Tk_Window tkwin,
-    Drawable drawable,
-    TextLayout *layoutPtr,
-    TextStyle *stylePtr,		/* Text attribute information */
-    int x, int y)			/* Window coordinates to draw text */
-{
-    float angle;
-
-    if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC)) {
-	Blt_Ts_ResetStyle(tkwin, stylePtr);
-    }
-    angle = (float)fmod(stylePtr->angle, 360.0);
-    if (angle < 0.0) {
-	angle += 360.0;
-    }
-    if (angle == 0.0) {
-	TextFragment *fp, *fend;
-
-	for (fp = layoutPtr->fragments, fend = fp + layoutPtr->nFrags; 
-	     fp < fend; fp++) {
-	    int sx, sy;
-
-	    sx = x + fp->sx, sy = y + fp->sy;
-	    Blt_UnderlineChars(Tk_Display(tkwin), drawable, stylePtr->gc, 
-		stylePtr->font, fp->text, fp->count, sx, sy, 0, fp->count, 
-		stylePtr->maxLength);
-	}
-    }
-}
-
 /*
  *---------------------------------------------------------------------------
  *
