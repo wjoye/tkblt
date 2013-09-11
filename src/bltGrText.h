@@ -165,14 +165,6 @@ extern void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *tsPtr);
 
 extern void Blt_Ts_FreeStyle(Display *display, TextStyle *tsPtr);
 
-extern void Blt_Ts_SetDrawStyle (TextStyle *tsPtr, Blt_Font font, GC gc, 
-	XColor *fgColor, float angle, Tk_Anchor anchor, Tk_Justify justify, 
-	int leader);
-
-extern void Blt_Ts_SetPrintStyle(TextStyle *tsPtr, Blt_Font font, 
-	XColor *fgColor, XColor *bgColor, float angle, Tk_Anchor anchor, 
-	Tk_Justify justify, int leader);
-
 extern void Blt_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *string, TextStyle *tsPtr, int x, int y);
 
@@ -195,24 +187,11 @@ extern void Blt_GetTextExtents(Blt_Font font, int leader, const char *text,
 extern void Blt_RotateStartingTextPositions(TextLayout *textPtr,
 	float angle);
 
-extern Tk_TextLayout Blt_ComputeTextLayout(Blt_Font font, 
-	const char *string, int numChars, int wrapLength, Tk_Justify justify, 
-	int flags, int *widthPtr, int *heightPtr);
-
-extern void Blt_DrawTextLayout(Display *display, Drawable drawable, GC gc, 
-	Tk_TextLayout layout, int x, int y, int firstChar, int lastChar);
-
 extern int Blt_CharBbox(Tk_TextLayout layout, int index, int *xPtr, 
 	int *yPtr, int *widthPtr, int *heightPtr);
 
-extern void Blt_UnderlineTextLayout(Display *display, Drawable drawable,
-	GC gc, Tk_TextLayout layout, int x, int y, int underline);
-
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *text, int textLen, TextStyle *tsPtr, int x, int y);
-
-extern int Blt_MeasureText(Blt_Font font, const char *text, int textLen,
-	int maxLength, int *nBytesPtr);
 
 extern void Blt_FreeTextLayout(Tk_TextLayout layout);
 

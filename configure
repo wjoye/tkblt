@@ -5639,7 +5639,7 @@ done
 
 
 
-    PKG_CFLAGS="$PKG_CFLAGS "
+    PKG_CFLAGS="$PKG_CFLAGS -Wunused"
 
 
 
