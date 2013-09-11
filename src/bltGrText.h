@@ -208,9 +208,6 @@ extern int Blt_CharBbox(Tk_TextLayout layout, int index, int *xPtr,
 extern void Blt_UnderlineTextLayout(Display *display, Drawable drawable,
 	GC gc, Tk_TextLayout layout, int x, int y, int underline);
 
-extern void Blt_Ts_UnderlineLayout(Tk_Window tkwin, Drawable drawable,
-	TextLayout *layoutPtr, TextStyle *tsPtr, int x, int y);
-
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *text, int textLen, TextStyle *tsPtr, int x, int y);
 
