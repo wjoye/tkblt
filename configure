@@ -621,7 +621,6 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 TCLSH_PROG
-UNIX_FONT_OBJS
 XFT_LIBS
 XFT_CFLAGS
 XMKMF
@@ -9372,7 +9371,7 @@ $as_echo "could not find any!  Using -lX11." >&6; }
 #	Check for freetype / fontconfig / Xft support.
 #--------------------------------------------------------------------
 
-#if test $tk_aqua = no; then
+if test "${TEA_WINDOWINGSYSTEM}" = "x11"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use xft" >&5
 $as_echo_n "checking whether to use xft... " >&6; }
     # Check whether --enable-xft was given.
@@ -9399,7 +9398,6 @@ $as_echo "$enable_xft" >&6; }
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $found_xft" >&5
 $as_echo "$found_xft" >&6; }
 		if test "$found_xft" = "yes" ; then
-	echo "$XFT_CFLAGS"
 	    tk_oldCFlags=$CFLAGS
 	    CFLAGS="$XINCLUDES $XFT_CFLAGS"
 	    tk_oldLibs=$LIBS
@@ -9488,17 +9486,13 @@ $as_echo "$as_me: WARNING: Can't find xft configuration, or xft is unusable" >&2
 	fi
     fi
     if test $enable_xft = "yes" ; then
-	UNIX_FONT_OBJS=tkUnixRFont.o
 
 $as_echo "#define HAVE_XFT 1" >>confdefs.h
 
-    else
-	UNIX_FONT_OBJS=tkUnixFont.o
     fi
 
 
-
-#fi
+fi
 
 #--------------------------------------------------------------------
 # Determine the name of the tclsh and/or wish executables in the
