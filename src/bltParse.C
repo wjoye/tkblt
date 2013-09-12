@@ -22,7 +22,7 @@
  * since the compiled code typically runs only one time.
  */
 
-#include <bltInt.h>
+#include "bltInt.h"
 #include "bltParse.h"
 
 /*

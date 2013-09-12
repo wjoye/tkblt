@@ -1,4 +1,3 @@
-
 /*
  * bltNsUtil.c --
  *
@@ -36,80 +35,79 @@
 Tcl_Namespace *
 Blt_GetCommandNamespace(Tcl_Command cmdToken)
 {
-    Command *cmdPtr = (Command *)cmdToken;
+  Command *cmdPtr = (Command *)cmdToken;
 
-    return (Tcl_Namespace *)cmdPtr->nsPtr;
+  return (Tcl_Namespace *)cmdPtr->nsPtr;
 }
 
 int
 Blt_ParseObjectName(Tcl_Interp *interp, const char *path, 
 		    Blt_ObjectName *namePtr, unsigned int flags)
 {
-    char *last, *colon;
+  char *last, *colon;
 
-    namePtr->nsPtr = NULL;
-    namePtr->name = NULL;
-    colon = NULL;
+  namePtr->nsPtr = NULL;
+  namePtr->name = NULL;
+  colon = NULL;
 
-    /* Find the last namespace separator in the qualified name. */
-    last = (char *)(path + strlen(path));
-    while (--last > path) {
-	if ((*last == ':') && (*(last - 1) == ':')) {
-	    last++;		/* just after the last "::" */
-	    colon = last - 2;
-	    break;
-	}
+  /* Find the last namespace separator in the qualified name. */
+  last = (char *)(path + strlen(path));
+  while (--last > path) {
+    if ((*last == ':') && (*(last - 1) == ':')) {
+      last++;		/* just after the last "::" */
+      colon = last - 2;
+      break;
     }
-    if (colon == NULL) {
-	namePtr->name = path;
-	if ((flags & BLT_NO_DEFAULT_NS) == 0) {
-	    namePtr->nsPtr = Tcl_GetCurrentNamespace(interp);
-	}
-	return TRUE;		/* No namespace designated in name. */
+  }
+  if (colon == NULL) {
+    namePtr->name = path;
+    if ((flags & BLT_NO_DEFAULT_NS) == 0) {
+      namePtr->nsPtr = Tcl_GetCurrentNamespace(interp);
     }
+    return TRUE;		/* No namespace designated in name. */
+  }
 
-    /* Separate the namespace and the object name. */
-    *colon = '\0';
-    if (path[0] == '\0') {
-	namePtr->nsPtr = Tcl_GetGlobalNamespace(interp);
-    } else {
-	namePtr->nsPtr = Tcl_FindNamespace(interp, (char *)path, NULL, 
-		(flags & BLT_NO_ERROR_MSG) ? 0 : TCL_LEAVE_ERR_MSG);
-    }
-    /* Repair the string. */    *colon = ':';
+  /* Separate the namespace and the object name. */
+  *colon = '\0';
+  if (path[0] == '\0') {
+    namePtr->nsPtr = Tcl_GetGlobalNamespace(interp);
+  } else {
+    namePtr->nsPtr = Tcl_FindNamespace(interp, (char *)path, NULL, 
+				       (flags & BLT_NO_ERROR_MSG) ? 0 : TCL_LEAVE_ERR_MSG);
+  }
+  /* Repair the string. */    *colon = ':';
 
-    if (namePtr->nsPtr == NULL) {
-	return FALSE;		/* Namespace doesn't exist. */
-    }
-    namePtr->name =last;
-    return TRUE;
+  if (namePtr->nsPtr == NULL) {
+    return FALSE;		/* Namespace doesn't exist. */
+  }
+  namePtr->name =last;
+  return TRUE;
 }
 
 char *
 Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
 {
-    Tcl_DStringInit(resultPtr);
-    if ((namePtr->nsPtr->fullName[0] != ':') || 
-	(namePtr->nsPtr->fullName[1] != ':') ||
-	(namePtr->nsPtr->fullName[2] != '\0')) {
-	Tcl_DStringAppend(resultPtr, namePtr->nsPtr->fullName, -1);
-    }
-    Tcl_DStringAppend(resultPtr, "::", -1);
-    Tcl_DStringAppend(resultPtr, (char *)namePtr->name, -1);
-    return Tcl_DStringValue(resultPtr);
+  Tcl_DStringInit(resultPtr);
+  if ((namePtr->nsPtr->fullName[0] != ':') || 
+      (namePtr->nsPtr->fullName[1] != ':') ||
+      (namePtr->nsPtr->fullName[2] != '\0')) {
+    Tcl_DStringAppend(resultPtr, namePtr->nsPtr->fullName, -1);
+  }
+  Tcl_DStringAppend(resultPtr, "::", -1);
+  Tcl_DStringAppend(resultPtr, (char *)namePtr->name, -1);
+  return Tcl_DStringValue(resultPtr);
 }
 
-static INLINE Tcl_Namespace *
-NamespaceOfVariable(Var *varPtr)
+static Tcl_Namespace* NamespaceOfVariable(Var *varPtr)
 {
-    if (varPtr->flags & VAR_IN_HASHTABLE) {
-	VarInHash *vhashPtr = (VarInHash *)varPtr;
-	TclVarHashTable *vtablePtr;
+  if (varPtr->flags & VAR_IN_HASHTABLE) {
+    VarInHash *vhashPtr = (VarInHash *)varPtr;
+    TclVarHashTable *vtablePtr;
 
-	vtablePtr = (TclVarHashTable *)vhashPtr->entry.tablePtr;
-	return vtablePtr->nsPtr;
-    }
-    return NULL;
+    vtablePtr = (TclVarHashTable *)vhashPtr->entry.tablePtr;
+    return (Tcl_Namespace*)(vtablePtr->nsPtr);
+  }
+  return NULL;
 }
 
 /*
@@ -129,19 +127,20 @@ NamespaceOfVariable(Var *varPtr)
 Tcl_Namespace *
 Blt_GetVariableNamespace(Tcl_Interp *interp, const char *path)
 {
-    Blt_ObjectName objName;
+  Blt_ObjectName objName;
 
-    if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
-	return NULL;
-    }
-    if (objName.nsPtr == NULL) {
-	Var *varPtr;
+  if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
+    return NULL;
+  }
+  if (objName.nsPtr == NULL) {
+    Var *varPtr;
 
-	varPtr = (Var *)Tcl_FindNamespaceVar(interp, (char *)path, 
-		(Tcl_Namespace *)NULL, TCL_GLOBAL_ONLY);
-	if (varPtr != NULL) {
-	    return NamespaceOfVariable(varPtr);
-	}
+    varPtr = (Var *)Tcl_FindNamespaceVar(interp, (char *)path, 
+					 (Tcl_Namespace *)NULL, 
+					 TCL_GLOBAL_ONLY);
+    if (varPtr != NULL) {
+      return NamespaceOfVariable(varPtr);
     }
-    return objName.nsPtr;    
+  }
+  return objName.nsPtr;    
 }

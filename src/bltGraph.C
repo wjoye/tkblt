@@ -48,11 +48,8 @@
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltBind.h"
 #include "bltGrElem.h"
-#include "bltGrLegd.h"
 #include "bltSwitch.h"
-#include "bltPicture.h"
 
 typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
