@@ -71,22 +71,13 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
-	bltChain.c 
 	bltBase64.c 
+	bltBgStyle.c
+	bltBind.c
+	bltBitmap.c
+	bltChain.c 
+	bltConfig.c
 	bltDBuffer.c 
-	bltHash.c 
-	bltInt.c 
-	bltInit.c 
-	bltList.c
-	bltNsUtil.c
-	bltParse.c
-	bltPool.c
-	bltSpline.c
-	bltSwitch.c
-	bltUtil.c
-	bltVecCmd.c
-	bltVecMath.c
-	bltVector.c
 	bltGrAxis.c
 	bltGrBar.c
 	bltGrElem.c
@@ -98,20 +89,29 @@ TEA_ADD_SOURCES([
 	bltGrPen.c
 	bltGrPs.c
 	bltGraph.c
+	bltHash.c 
+	bltImage.c
+	bltInt.c 
+	bltInit.c 
+	bltList.c
+	bltNsUtil.c
+	bltParse.c
 	bltPicture.c
 	bltPictCmd.c
 	bltPictDraw.c
-	bltBgStyle.c
-	bltBind.c
-	bltConfig.c
-	bltImage.c
+	bltPool.c
 	bltPs.c
 	bltPsAfm.c
+	bltSpline.c
+	bltSwitch.c
 	bltText.c
-	bltUnixBitmap.c
 	bltUnixFont.c
 	bltUnixPainter.c
 	bltUnixWindow.c
+	bltUtil.c
+	bltVecCmd.c
+	bltVecMath.c
+	bltVector.c
 	bltWindow.c
 	])
 TEA_ADD_HEADERS([generic/bltVector.h])
