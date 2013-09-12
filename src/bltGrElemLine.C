@@ -160,7 +160,7 @@ typedef struct {
     GraphPoints screenPts;		/* Array of screen coordinates
 					 * (malloc-ed) representing the
 					 * trace. */
-} Trace;
+} bltTrace;
 
 typedef struct {
     const char *name;			/* Pen style identifier.  If NULL pen
@@ -2140,12 +2140,12 @@ SaveTrace(
     int length,			/* Number of points forming the trace */
     MapInfo *mapPtr)
 {
-    Trace *tracePtr;
+    bltTrace *tracePtr;
     Point2d *screenPts;
     int *map;
     int i, j;
 
-    tracePtr  = malloc(sizeof(Trace));
+    tracePtr  = malloc(sizeof(bltTrace));
     screenPts = malloc(sizeof(Point2d) * length);
     map       = malloc(sizeof(int) * length);
 
@@ -2193,7 +2193,7 @@ FreeTraces(LineElement *elemPtr)
 
     for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
 	link = Blt_Chain_NextLink(link)) {
-	Trace *tracePtr;
+	bltTrace *tracePtr;
 
 	tracePtr = Blt_Chain_GetValue(link);
 	free(tracePtr->screenPts.map);
@@ -2839,7 +2839,7 @@ ClosestTrace(
     closest.x = closest.y = 0;		/* Suppress compiler warning. */
     for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
 	link = Blt_Chain_NextLink(link)) {
-	Trace *tracePtr;
+	bltTrace *tracePtr;
 	Point2d *p, *pend;
 
 	tracePtr = Blt_Chain_GetValue(link);
@@ -3958,7 +3958,7 @@ DrawTraces(Graph *graphPtr, Drawable drawable, LineElement *elemPtr,
     for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
 	link = Blt_Chain_NextLink(link)) {
 	XPoint *xpp;
-	Trace *tracePtr;
+	bltTrace *tracePtr;
 	int remaining, count;
 	int n;
 
@@ -4475,7 +4475,7 @@ TracesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr)
     SetLineAttributes(ps, penPtr);
     for (link = Blt_Chain_FirstLink(elemPtr->traces); link != NULL;
 	link = Blt_Chain_NextLink(link)) {
-	Trace *tracePtr;
+	bltTrace *tracePtr;
 
 	tracePtr = Blt_Chain_GetValue(link);
 	if (tracePtr->screenPts.length > 0) {

@@ -48,7 +48,7 @@
  *
  *	SELECT_TOGGLE		Toggle selection flag of entry.
  *
- *	SELECT_MASK		Mask of selection set/clear/toggle flags.
+ *	SELECT_BLTMASK		Mask of selection set/clear/toggle flags.
  *
  *	SELECT_SORTED		Indicates if the entries in the selection 
  *				should be sorted or displayed in the order 
@@ -61,7 +61,7 @@
 #define SELECT_PENDING		(1<<18)
 #define SELECT_SET		(1<<19)
 #define SELECT_TOGGLE		(SELECT_SET | SELECT_CLEAR)
-#define SELECT_MASK		(SELECT_SET | SELECT_CLEAR)
+#define SELECT_BLTMASK		(SELECT_SET | SELECT_CLEAR)
 #define SELECT_SORTED		(1<<20)
 
 #define RAISED			(1<<21)
@@ -987,7 +987,7 @@ SelectEntry(Legend *legendPtr, Element *elemPtr)
 {
     Blt_HashEntry *hPtr;
 
-    switch (legendPtr->flags & SELECT_MASK) {
+    switch (legendPtr->flags & SELECT_BLTMASK) {
     case SELECT_CLEAR:
 	DeselectElement(legendPtr, elemPtr);
 	break;
@@ -2571,7 +2571,7 @@ SelectionMarkOp(Graph *graphPtr, Tcl_Interp *interp, int objc,
 	    }
 	    DeselectElement(legendPtr, selectPtr);
 	}
-	legendPtr->flags &= ~SELECT_MASK;
+	legendPtr->flags &= ~SELECT_BLTMASK;
 	legendPtr->flags |= SELECT_SET;
 	SelectRange(legendPtr, legendPtr->selAnchorPtr, elemPtr);
 	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name, -1);
@@ -2639,7 +2639,7 @@ SelectionSetOp(Graph *graphPtr, Tcl_Interp *interp, int objc,
     Element *firstPtr, *lastPtr;
     const char *string;
 
-    legendPtr->flags &= ~SELECT_MASK;
+    legendPtr->flags &= ~SELECT_BLTMASK;
     string = Tcl_GetString(objv[3]);
     switch (string[0]) {
     case 's':
