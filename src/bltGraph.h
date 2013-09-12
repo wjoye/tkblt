@@ -28,6 +28,7 @@
 #define _BLT_GRAPH_H
 
 #include "bltInt.h"
+#include "bltWindow.h"
 #include "bltHash.h"
 #include "bltBind.h"
 #include "bltChain.h"

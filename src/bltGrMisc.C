@@ -31,6 +31,7 @@
 #include <stdarg.h>
 #include <X11/Xutil.h>
 
+#include "bltWindow.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"

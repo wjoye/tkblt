@@ -29,6 +29,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include "bltWindow.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
