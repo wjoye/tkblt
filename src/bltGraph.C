@@ -237,31 +237,6 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
-static Blt_SwitchParseProc ObjToFormat;
-static Blt_SwitchCustom formatSwitch =
-{
-    ObjToFormat, NULL, (ClientData)0,
-};
-
-typedef struct {
-    const char *name;
-    int width, height;
-    int format;
-} SnapSwitches;
-
-enum SnapFormats { FORMAT_PICTURE, FORMAT_PHOTO, FORMAT_EMF, FORMAT_WMF };
-
-static Blt_SwitchSpec snapSwitches[] = 
-{
-    {BLT_SWITCH_INT_POS, "-width",  "width",
-	Blt_Offset(SnapSwitches, width),  0},
-    {BLT_SWITCH_INT_POS, "-height", "height",
-	Blt_Offset(SnapSwitches, height), 0},
-    {BLT_SWITCH_CUSTOM,  "-format", "format",
-	Blt_Offset(SnapSwitches, format), 0, 0, &formatSwitch},
-    {BLT_SWITCH_END}
-};
-
 static Tcl_IdleProc DisplayGraph;
 static Tcl_FreeProc DestroyGraph;
 static Tk_EventProc GraphEventProc;
@@ -1240,133 +1215,6 @@ TransformOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 /*
  *---------------------------------------------------------------------------
  *
- * ObjToFormat --
- *
- *	Convert a string represent a node number into its integer value.
- *
- * Results:
- *	The return value is a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToFormat(
-    ClientData clientData,		/* Not used.*/
-    Tcl_Interp *interp,			/* Interpreter to send results back to */
-    const char *switchName,		/* Not used. */
-    Tcl_Obj *objPtr,			/* String representation */
-    char *record,			/* Structure record */
-    int offset,				/* Offset to field in structure */
-    int flags)				/* Not used. */
-{
-    int *formatPtr = (int *)(record + offset);
-    char c;
-    const char *string;
-
-    string = Tcl_GetString(objPtr);
-    c = string[0];
-    if ((c == 'p') && (strcmp(string, "picture") == 0)) {
-	*formatPtr = FORMAT_PHOTO;
-    } else if ((c == 'p') && (strcmp(string, "photo") == 0)) {
-	*formatPtr = FORMAT_PHOTO;
-    } else {
-	Tcl_AppendResult(interp, "bad format \"", string, 
-		 "\": should be picture or photo.", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * SnapOp --
- *
- *	Snaps a picture of the graph and stores it in the specified image.
- *
- * Results:
- *	Returns a standard TCL result.  interp->result contains
- *	the list of the graph coordinates. If an error occurred
- *	while parsing the window positions, TCL_ERROR is returned,
- *	then interp->result will contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-static int
-SnapOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
-{
-    int result;
-    Pixmap drawable;
-    int i;
-    SnapSwitches switches;
-
-    /* .g snap ?switches? name */
-    switches.height = Tk_Height(graphPtr->tkwin);
-    if ((switches.height < 2) && (graphPtr->reqHeight > 0)) {
-	switches.height = graphPtr->reqHeight;
-    }
-    switches.width = Tk_Width(graphPtr->tkwin);
-    if ((switches.width < 2) && (graphPtr->reqWidth > 0)) {
-	switches.width = graphPtr->reqWidth;
-    }
-    switches.format = FORMAT_PICTURE;
-    /* Process switches  */
-    i = Blt_ParseSwitches(interp, snapSwitches, objc - 2, objv + 2, &switches, 
-	BLT_SWITCH_OBJV_PARTIAL);
-    if (i < 0) {
-	return TCL_ERROR;
-    }
-    i += 2;
-    if (i >= objc) {
-	Tcl_AppendResult(interp, "missing name argument: should be \"",
-		Tcl_GetString(objv[0]), "snap ?switches? name\"", (char *)NULL);
-	return TCL_ERROR;
-    }
-    switches.name = Tcl_GetString(objv[i]);
-    if (switches.width < 2) {
-	switches.width = Tk_ReqWidth(graphPtr->tkwin);
-    }
-    if (switches.height < 2) {
-	switches.width = Tk_ReqHeight(graphPtr->tkwin);
-    }
-    /* Always re-compute the layout of the graph before snapping the picture. */
-    graphPtr->width = switches.width;
-    graphPtr->height = switches.height;
-    Blt_MapGraph(graphPtr);
-
-    drawable = Tk_WindowId(graphPtr->tkwin);
-    switch (switches.format) {
-    case FORMAT_PICTURE:
-    case FORMAT_PHOTO:
-	drawable = Tk_GetPixmap(graphPtr->display, drawable, graphPtr->width, 
-		graphPtr->height, Tk_Depth(graphPtr->tkwin));
-	graphPtr->flags |= RESET_WORLD;
-	Blt_DrawGraph(graphPtr, drawable);
-	if (switches.format == FORMAT_PICTURE) {
-	    result = Blt_SnapPicture(interp, graphPtr->tkwin, drawable, 0, 0, 
-		switches.width, switches.height, switches.width, 
-		switches.height, switches.name, 1.0);
-	} else {
-	    result = Blt_SnapPhoto(interp, graphPtr->tkwin, drawable, 0, 0, 
-		switches.width, switches.height, switches.width, 
-		switches.height, switches.name, 1.0);
-	}
-	Tk_FreePixmap(graphPtr->display, drawable);
-	break;
-
-    default:
-	Tcl_AppendResult(interp, "bad snapshot format", (char *)NULL);
-	return TCL_ERROR;
-    }
-    graphPtr->flags |= MAP_WORLD;
-    Blt_EventuallyRedrawGraph(graphPtr);
-    return result;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * GraphWidgetCmd --
  *
  *	This procedure is invoked to process the TCL command that
@@ -1397,7 +1245,6 @@ static Blt_OpSpec graphOps[] =
     {"marker",       2, Blt_MarkerOp,      2, 0, "oper ?args?",},
     {"pen",          2, Blt_PenOp,         2, 0, "oper ?args?",},
     {"postscript",   2, Blt_PostScriptOp,  2, 0, "oper ?args?",},
-    {"snap",         1, SnapOp,            3, 0, "?switches? name",},
     {"transform",    1, TransformOp,       4, 4, "x y",},
     {"x2axis",       2, X2AxisOp,          2, 0, "oper ?args?",},
     {"xaxis",        2, XAxisOp,           2, 0, "oper ?args?",},
