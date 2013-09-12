@@ -46,7 +46,7 @@ int Tlt_Init(Tcl_Interp *interp)
   }
 
   if(
-#ifdef USE_TCL_STUBS
+#ifdef USE_TK_STUBS
      Tk_InitStubs(interp, TK_PATCH_LEVEL, 0)
 #else
      Tcl_PkgRequire(interp, "Tk", TK_PATCH_LEVEL, 0)

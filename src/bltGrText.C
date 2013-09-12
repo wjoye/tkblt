@@ -32,10 +32,7 @@
 #include <tkInt.h>
 #include <tk3d.h>
 
-#define FOOBAR
 #include "bltInt.h"
-#undef FOOBAR
-
 #include "bltMath.h"
 #include "bltHash.h"
 #include "bltImage.h"

@@ -29,10 +29,7 @@
 #include <tclPort.h>
 #include <tclInt.h>
 
-#define FOOBAR
 #include "bltInt.h"
-#undef FOOBAR
-
 #include "bltNsUtil.h"
 
 /*ARGSUSED*/

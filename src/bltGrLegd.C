@@ -2416,7 +2416,7 @@ IconOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     if (isPicture) {
 	Blt_ResetPicture(interp, imageName, picture);
     } else {
-	Blt_PictureToPhoto(picture, photo);
+      Blt_PictureToPhoto(interp, picture, photo);
 	Blt_FreePicture(picture);
     }
     return TCL_OK;
