@@ -1867,7 +1867,7 @@ Blt_GraphCmdInitProc(Tcl_Interp *interp)
 	{"graph", GraphCmd,},
 	{"barchart", BarchartCmd,},
     };
-    return Blt_InitCmds(interp, "::blt", cmdSpecs, 3);
+    return Blt_InitCmds(interp, "::blt", cmdSpecs, 2);
 }
 
 Graph *
