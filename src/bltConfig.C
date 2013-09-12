@@ -444,27 +444,6 @@ Blt_GetSideFromObj(
     return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ResetLimits --
- *
- *	Resets the limits to their default values.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_ResetLimits(Blt_Limits *limitsPtr) /* Limits to be imposed on the value */
-{
-    limitsPtr->flags = 0;
-    limitsPtr->min = LIMITS_MIN;
-    limitsPtr->max = LIMITS_MAX;
-    limitsPtr->nom = LIMITS_NOM;
-}
-
 int 
 Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, Tcl_Obj *objPtr, 
 		     Blt_Limits *limitsPtr)
@@ -2053,35 +2032,4 @@ Blt_ConfigureComponentFromObj(
 	Tk_DestroyWindow(tkwin);
     }
     return result;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ObjIsOption --
- *
- *	Indicates whether objPtr is a valid configuration option 
- *	such as -background.
- *
- * Results:
- *	Returns 1 is a matching option is found and 0 otherwise.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_ObjIsOption(
-    Blt_ConfigSpec *specs,	/* Describes legal options. */
-    Tcl_Obj *objPtr,		/* Command-line option name. */
-    int flags)			/* Used to specify additional flags
-				 * that must be present in config specs
-				 * for them to be considered.  Also,
-				 * may have BLT_CONFIG_OBJV_ONLY set. */
-{
-    Blt_ConfigSpec *sp;
-    int needFlags;		/* Specs must contain this set of flags
-				 * or else they are not considered. */
-
-    needFlags = flags & ~(BLT_CONFIG_USER_BIT - 1);
-    sp = FindConfigSpec((Tcl_Interp *)NULL, specs, objPtr, needFlags, 0);
-    return (sp != NULL);
 }

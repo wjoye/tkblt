@@ -1,4 +1,3 @@
-
 /* 
  * bltConfig.h --
  *
@@ -281,7 +280,6 @@ typedef struct {
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 extern Blt_Dashes *Blt_GetDashes (GC gc);
 
-extern void Blt_ResetLimits(Blt_Limits *limitsPtr);
 extern int Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, Blt_Limits *limitsPtr);
 
@@ -307,9 +305,6 @@ extern const char *Blt_NameOfSide(int side);
 
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_ObjIsOption(Blt_ConfigSpec *specs, Tcl_Obj *objPtr, 
-	int flags);
 
 extern int Blt_GetSideFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *sidePtr);
