@@ -382,7 +382,6 @@ GraphEventProc(ClientData clientData, XEvent *eventPtr)
 	}
     } else if (eventPtr->type == DestroyNotify) {
 	if (graphPtr->tkwin != NULL) {
-	    Blt_DeleteWindowInstanceData(graphPtr->tkwin);
 	    graphPtr->tkwin = NULL;
 	    Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
 	}
@@ -424,7 +423,6 @@ GraphInstCmdDeleteProc(ClientData clientData) /* Pointer to widget record. */
 
 	tkwin = graphPtr->tkwin;
 	graphPtr->tkwin = NULL;
-	Blt_DeleteWindowInstanceData(tkwin);
 	Tk_DestroyWindow(tkwin);
     }
 }

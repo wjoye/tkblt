@@ -538,7 +538,6 @@ LegendEventProc(ClientData clientData, XEvent *eventPtr)
 	Graph *graphPtr = legendPtr->graphPtr;
 
 	if (legendPtr->site == LEGEND_WINDOW) {
-	    Blt_DeleteWindowInstanceData(legendPtr->tkwin);
 	    if (legendPtr->cmdToken != NULL) {
 		Tcl_DeleteCommandFromToken(graphPtr->interp, 
 					   legendPtr->cmdToken);
@@ -1697,7 +1696,6 @@ Blt_DestroyLegend(Graph *graphPtr)
 	if (tkwin != NULL) {
 	    Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
 		LegendEventProc, graphPtr);
-	    Blt_DeleteWindowInstanceData(tkwin);
 	    Tk_DestroyWindow(tkwin);
 	}
     }
