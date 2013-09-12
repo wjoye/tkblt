@@ -1118,24 +1118,3 @@ Blt_MaxRequestSize(Display *display, size_t elemSize)
     return (maxSizeBytes / elemSize);
 }
 
-void
-Blt_GetLineExtents(size_t nPoints, Point2d *points, Region2d *r)
-{
-    Point2d *p, *pend;
-    r->top = r->left = DBL_MAX;
-    r->bottom = r->right = -DBL_MAX;
-    for (p = points, pend = p + nPoints; p < pend; p++) {
-	if (r->top > p->y) {
-	    r->top = p->y;
-	}
-	if (r->bottom < p->y) {
-	    r->bottom = p->y;
-	}
-	if (r->left > p->x) {
-	    r->left = p->x;
-	}
-	if (r->right < p->x) {
-	    r->right = p->x;
-	}
-    }
-}

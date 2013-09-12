@@ -150,7 +150,6 @@ typedef enum {
     BLT_CONFIG_PIXELS_POS,	/* 1.1c 2m 3.2i excluding negative
 				 * values and zero. */
     BLT_CONFIG_PIXELS,		/* 1.1c 2m 3.2i. */
-    BLT_CONFIG_RESIZE,
     BLT_CONFIG_SIDE,
     BLT_CONFIG_STATE, 
     BLT_CONFIG_BACKGROUND,
@@ -243,35 +242,6 @@ typedef struct {
 #define FILL_BOTH	3
 
 /*
- * Resize --
- *
- *	These flags indicate in what ways each partition in a table can be
- *	resized from its default dimensions.  The normal size of a row/column
- *	is the minimum amount of space needed to hold the widgets that span
- *	it.  The table may then be stretched or shrunk depending if the
- *	container is larger or smaller than the table. This can occur if 1)
- *	the user resizes the toplevel widget, or 2) the container is in turn
- *	packed into a larger widget and the "fill" option is set.
- *
- * 	  RESIZE_NONE 	  - No resizing from normal size.
- *	  RESIZE_EXPAND   - Do not allow the size to decrease.
- *			    The size may increase however.
- *        RESIZE_SHRINK   - Do not allow the size to increase.
- *			    The size may decrease however.
- *	  RESIZE_BOTH     - Allow the size to increase or
- *			    decrease from the normal size.
- *	  RESIZE_VIRGIN   - Special case of the resize flag.  Used to
- *			    indicate the initial state of the flag.
- *			    Empty rows/columns are treated differently
- *			    if this row/column is set.
- */
-
-#define RESIZE_NONE	0
-#define RESIZE_EXPAND	(1<<0)
-#define RESIZE_SHRINK	(1<<1)
-#define RESIZE_BOTH	(RESIZE_EXPAND | RESIZE_SHRINK)
-
-/*
  *---------------------------------------------------------------------------
  *
  * Blt_Dashes --
@@ -357,9 +327,6 @@ extern int Blt_GetStateFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr,
 	int *statePtr);
 
 extern int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	int *fillPtr);
-
-extern int Blt_GetResizeFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *fillPtr);
 
 extern int Blt_GetDashesFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 

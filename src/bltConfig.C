@@ -289,78 +289,6 @@ Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, int *fillPtr)
 /*
  *---------------------------------------------------------------------------
  *
- * Blt_NameOfResize --
- *
- *	Converts the resize value into its string representation.
- *
- * Results:
- *	Returns a pointer to the static name string.
- *
- *---------------------------------------------------------------------------
- */
-const char *
-Blt_NameOfResize(int resize)
-{
-    switch (resize & RESIZE_BOTH) {
-    case RESIZE_NONE:
-	return "none";
-    case RESIZE_EXPAND:
-	return "expand";
-    case RESIZE_SHRINK:
-	return "shrink";
-    case RESIZE_BOTH:
-	return "both";
-    default:
-	return "unknown resize value";
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetResizeFromObj --
- *
- *	Converts the resize string into its numeric representation.
- *
- *	Valid style strings are:
- *
- *	  "none"   
- * 	  "expand" 
- *	  "shrink" 
- *	  "both"   
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-int
-Blt_GetResizeFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, int *resizePtr)
-{
-    char c;
-    const char *string;
-    int length;
-
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    c = string[0];
-    if ((c == 'n') && (strncmp(string, "none", length) == 0)) {
-	*resizePtr = RESIZE_NONE;
-    } else if ((c == 'b') && (strncmp(string, "both", length) == 0)) {
-	*resizePtr = RESIZE_BOTH;
-    } else if ((c == 'e') && (strncmp(string, "expand", length) == 0)) {
-	*resizePtr = RESIZE_EXPAND;
-    } else if ((c == 's') && (strncmp(string, "shrink", length) == 0)) {
-	*resizePtr = RESIZE_SHRINK;
-    } else {
-	Tcl_AppendResult(interp, "bad resize argument \"", string,
-	    "\": should be \"none\", \"expand\", \"shrink\", or \"both\"",
-	    (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * Blt_GetDashesFromObj --
  *
  *	Converts a TCL list of dash values into a dash list ready for
@@ -987,12 +915,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_RESIZE:
-	    if (Blt_GetResizeFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
 	case BLT_CONFIG_FLOAT: 
 	    {
 		double value;
@@ -1339,10 +1261,6 @@ FormatConfigValue(
 
     case BLT_CONFIG_FILL: 
 	string = Blt_NameOfFill(*(int *)ptr);
-	break;
-
-    case BLT_CONFIG_RESIZE: 
-	string = Blt_NameOfResize(*(int *)ptr);
 	break;
 
     case BLT_CONFIG_FLOAT: 
