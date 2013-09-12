@@ -918,17 +918,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_UID: 
-	    if (*(Blt_Uid *)ptr != NULL) {
-		Blt_FreeUid(*(Blt_Uid *)ptr);
-	    }
-	    if (objIsEmpty) {
-		*(Blt_Uid *)ptr = NULL;
-	    } else {
-		*(Blt_Uid *)ptr = Blt_GetUid(Tcl_GetString(objPtr));
-	    }
-	    break;
-
 	case BLT_CONFIG_WINDOW: 
 	    {
 		Tk_Window tkwin2;
@@ -1310,7 +1299,6 @@ FormatConfigValue(
 	break;
 
     case BLT_CONFIG_STRING: 
-    case BLT_CONFIG_UID:
 	if (*(char **)ptr != NULL) {
 	    string = *(char **)ptr;
 	}
@@ -2015,13 +2003,6 @@ Blt_FreeOptions(
 	    if (*((char ***) ptr) != NULL) {
 	      Tcl_Free((void*)(*((char ***) ptr)));
 		*((char ***) ptr) = NULL;
-	    }
-	    break;
-
-	case BLT_CONFIG_UID:
-	    if (*(Blt_Uid *)ptr != NULL) {
-		Blt_FreeUid(*(Blt_Uid *)ptr);
-		*(Blt_Uid *)ptr = NULL;
 	    }
 	    break;
 
