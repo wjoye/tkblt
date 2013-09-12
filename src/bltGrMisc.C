@@ -1050,56 +1050,6 @@ Blt_Draw2DSegments(
     free(xsegments);
 }
 
-void
-Blt_DrawArrow(Display *display, Drawable drawable, XColor *color, int x, int y, 
-	      int w, int h, int borderWidth, int orientation)
-{
-    int s;
-    int s2;
-    int ax, ay;
-    int dx, dy;
-    GC gc;
-
-#define ARROW_IPAD 1
-    w -= 2 * (ARROW_IPAD + borderWidth);
-    h -= 2 * (ARROW_IPAD + borderWidth);
-    x += ARROW_IPAD + borderWidth;
-    y += ARROW_IPAD + borderWidth;
-
-    s = MIN(w, h);
-    s2 = (s / 2) + 1;
-    ax = x + w / 2;
-    ay = y + h / 2;
-
-    gc = Tk_GCForColor(color, drawable);
-    switch (orientation) {
-    case ARROW_UP:
-	ay -= s2 / 2;
-	for (dx = 0; dx < s2; dx++, ay++) {
-	    XDrawLine(display, drawable, gc, ax - dx, ay, ax + dx, ay);
-	}
-	break;
-    case ARROW_DOWN:
-	ay += s2 / 2;
-	for (dx = 0; dx < s2; dx++, ay--) {
-	    XDrawLine(display, drawable, gc, ax - dx, ay, ax + dx, ay);
-	}
-	break;
-    case ARROW_LEFT:
-	ax -= s2 / 2;
-	for (dy = 0; dy < s2; dy++, ax++) {
-	    XDrawLine(display, drawable, gc, ax, ay - dy, ax, ay + dy);
-	}
-	break;
-    case ARROW_RIGHT:
-	ax += s2 / 2;
-	for (dy = 0; dy < s2; dy++, ax--) {
-	    XDrawLine(display, drawable, gc, ax, ay - dy, ax, ay + dy);
-	}
-	break;
-    }
-}
-
 long 
 Blt_MaxRequestSize(Display *display, size_t elemSize) 
 {
