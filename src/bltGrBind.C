@@ -28,7 +28,6 @@
 
 #include "bltInt.h"
 #include "bltBind.h"
-#include <bltList.h>
 
 static Tk_EventProc BindProc;
 

@@ -30,6 +30,8 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
+#include "bltInt.h"
+#include "bltSpline.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltGrElem.h"

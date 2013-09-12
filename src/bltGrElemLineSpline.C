@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "bltInt.h"
+#include "bltSpline.h"
 #include "bltOp.h"
 #include "bltVector.h"
 
