@@ -33,6 +33,7 @@
 #include <float.h>
 #include <math.h>
 
+#include "bltInt.h"
 #include "bltVecInt.h"
 #include "bltNsUtil.h"
 #include "bltParse.h"

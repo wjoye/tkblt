@@ -46,6 +46,7 @@
 #include <math.h>
 #include <time.h>
 
+#include "bltInt.h"
 #include "bltVecInt.h"
 #include "bltOp.h"
 #include "bltNsUtil.h"

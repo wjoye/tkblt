@@ -29,12 +29,10 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-#include "bltWindow.h"
-#include "bltMath.h"
+#include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
-#include "bltPicture.h"
 
 /*
  *  Selection related flags:

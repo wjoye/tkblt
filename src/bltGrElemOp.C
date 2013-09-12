@@ -29,10 +29,9 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
-#include "bltMath.h"
+#include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltChain.h"
 
 #define GRAPH_KEY		"BLT Graph Data"
 

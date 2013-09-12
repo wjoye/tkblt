@@ -1,4 +1,3 @@
-
 /*
  * bltSwitch.c --
  *

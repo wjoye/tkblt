@@ -28,13 +28,12 @@
 
 #include <assert.h>
 
+#include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltImage.h"
-#include "bltPicture.h"
 #include "bltPainter.h"
-#include "bltChain.h"
 #include "bltGrElem.h"
 #include "bltBitmap.h"
 

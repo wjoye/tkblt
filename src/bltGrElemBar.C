@@ -28,6 +28,7 @@
 
 #include <X11/Xutil.h>
 
+#include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltGrElem.h"

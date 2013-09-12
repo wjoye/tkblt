@@ -29,6 +29,7 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 
