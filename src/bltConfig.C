@@ -1068,12 +1068,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_PIX32: 
-	    if (Blt_GetPixelFromObj(interp, objPtr, (Blt_Pixel *)ptr)!=TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
 	default: 
 	    Tcl_AppendResult(interp, "bad config table: unknown type ", 
 			     Blt_Itoa(sp->type), (char *)NULL);
@@ -1299,10 +1293,6 @@ FormatConfigValue(
 	if (*(Blt_Background *)ptr != NULL) {
 	    string = Blt_NameOfBackground(*(Blt_Background *)ptr);
 	}
-	break;
-
-    case BLT_CONFIG_PIX32: 
-	string = Blt_NameOfPixel((Blt_Pixel *)ptr);
 	break;
 
     default: 
