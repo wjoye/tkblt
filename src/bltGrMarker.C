@@ -2608,7 +2608,7 @@ ImageToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 
     picture = (imPtr->scaled != NULL) ? imPtr->scaled : imPtr->picture;
     if (picture != NULL) {
-	Blt_Ps_DrawPicture(ps, picture, imPtr->anchorPt.x, imPtr->anchorPt.y);
+      //	Blt_Ps_DrawPicture(ps, picture, imPtr->anchorPt.x, imPtr->anchorPt.y);
     }
 }
 
@@ -3210,8 +3210,7 @@ WindowToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 	return;
     }
     if (Tk_IsMapped(wmPtr->child)) {
-	Blt_Ps_XDrawWindow(ps, wmPtr->child, wmPtr->anchorPt.x, 
-			   wmPtr->anchorPt.y);
+      //	Blt_Ps_XDrawWindow(ps, wmPtr->child, wmPtr->anchorPt.x, wmPtr->anchorPt.y);
     }
 }
 
