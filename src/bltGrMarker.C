@@ -376,11 +376,13 @@ typedef struct {
     Point2d anchorPt;			/* Translated anchor point. */
     int width, height;			/* Dimensions of the possibly scaled
 					 * image. */
-    Blt_Painter painter;
-    Blt_Picture picture;
-    Blt_ResampleFilter filter;
+#if 0
+  Blt_Painter painter;
+  Blt_Picture picture;
+  Blt_ResampleFilter filter;
     int pictX, pictY;			/*  */
-    Blt_Picture scaled;			/* Pixmap containing the scaled image */
+  Blt_Picture scaled;			/* Pixmap containing the scaled image */
+#endif
     GC gc;
 
 } ImageMarker;
@@ -398,17 +400,21 @@ static Blt_ConfigSpec imageConfigSpecs[] =
     {BLT_CONFIG_BITMASK, "-hide", "hide", "Hide", DEF_MARKER_HIDE,	
 	Blt_Offset(ImageMarker, flags), BLT_CONFIG_DONT_SET_DEFAULT,
         (Blt_CustomOption *)HIDE},
+#if 0
     {BLT_CONFIG_CUSTOM, "-image", "image", "Image", (char *)NULL, 
 	Blt_Offset(ImageMarker, picture), BLT_CONFIG_NULL_OK, &pictImageOption},
+#endif
     {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", DEF_MARKER_MAP_X, 
 	Blt_Offset(ImageMarker, axes.x), 0, &bltXAxisOption},
     {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
 	Blt_Offset(ImageMarker, axes.y), 0, &bltYAxisOption},
     {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
 	Blt_Offset(ImageMarker, obj.name), BLT_CONFIG_NULL_OK},
+#if 0
     {BLT_CONFIG_CUSTOM, "-resamplefilter", "resampleFilter", "ResampleFilter", 
         DEF_MARKER_FILTER, Blt_Offset(ImageMarker, filter), 
 	BLT_CONFIG_NULL_OK | BLT_CONFIG_DONT_SET_DEFAULT, &bltFilterOption},
+#endif
     {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
 	Blt_Offset(ImageMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
@@ -1482,6 +1488,7 @@ ImageChangedProc(
     int x, int y, int w, int h,		/* Not used. */
     int imageWidth, int imageHeight)	/* Not used. */
 {
+#if 0
     Graph *graphPtr;
     ImageMarker *imPtr = clientData;
     int isPhoto;
@@ -1505,6 +1512,7 @@ ImageChangedProc(
     graphPtr->flags |= CACHE_DIRTY;
     imPtr->flags |= MAP_ITEM;
     Blt_EventuallyRedrawGraph(graphPtr);
+#endif
 }
 
 /*ARGSUSED*/
@@ -1515,6 +1523,7 @@ FreePictImageProc(
     char *widgRec,
     int offset)
 {
+#if 0
     ImageMarker *imPtr = (ImageMarker *)widgRec;
 
     if ((imPtr->picture != NULL) && (imPtr->flags & IMAGE_PHOTO)) {
@@ -1526,6 +1535,7 @@ FreePictImageProc(
     }
     imPtr->tkImage = NULL;
     imPtr->flags &= ~IMAGE_PHOTO;
+#endif
 }
 
 /*
@@ -1551,6 +1561,7 @@ ObjToPictImageProc(
     int offset,				/* Offset to field in structure */
     int flags)	
 {
+#if 0
     Blt_Picture *picturePtr = (Blt_Picture *)(widgRec + offset);
     Graph *graphPtr;
     ImageMarker *imPtr = (ImageMarker *)widgRec;
@@ -1577,6 +1588,7 @@ ObjToPictImageProc(
     if (isPhoto) {
 	imPtr->flags |= IMAGE_PHOTO;
     }
+#endif
     return TCL_OK;
 }
 
@@ -2347,6 +2359,7 @@ CreateBitmapProc(void)
 static int
 ConfigureImageProc(Marker *markerPtr)
 {
+#if 0
     ImageMarker *imPtr = (ImageMarker *)markerPtr;
     Graph *graphPtr = markerPtr->obj.graphPtr;
     Blt_Painter painter;
@@ -2368,6 +2381,7 @@ ConfigureImageProc(Marker *markerPtr)
 	graphPtr->flags |= CACHE_DIRTY;
     }
     Blt_EventuallyRedrawGraph(graphPtr);
+#endif
     return TCL_OK;
 }
 
@@ -2396,6 +2410,7 @@ ConfigureImageProc(Marker *markerPtr)
 static void
 MapImageProc(Marker *markerPtr)
 {
+#if 0
     Region2d extents;
     Graph *graphPtr;
     ImageMarker *imPtr;
@@ -2499,6 +2514,7 @@ MapImageProc(Marker *markerPtr)
     imPtr->width = newWidth;
     imPtr->height = newHeight;
     imPtr->anchorPt = anchorPt;
+#endif
 }
 
 /*
@@ -2577,6 +2593,7 @@ RegionInImageProc(Marker *markerPtr, Region2d *regPtr, int enclosed)
 static void
 DrawImageProc(Marker *markerPtr, Drawable drawable)
 {
+#if 0
     ImageMarker *imPtr = (ImageMarker *)markerPtr;
     Blt_Picture picture;
 
@@ -2586,6 +2603,7 @@ DrawImageProc(Marker *markerPtr, Drawable drawable)
 		imPtr->pictX, imPtr->pictY, imPtr->width, imPtr->height, 
 		(int)imPtr->anchorPt.x, (int)imPtr->anchorPt.y, 0, 0.4);
     }
+#endif
 }
 
 /*
@@ -2603,13 +2621,15 @@ DrawImageProc(Marker *markerPtr, Drawable drawable)
 static void
 ImageToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
+#if 0
     ImageMarker *imPtr = (ImageMarker *)markerPtr;
     Blt_Picture picture;
 
     picture = (imPtr->scaled != NULL) ? imPtr->scaled : imPtr->picture;
     if (picture != NULL) {
-      //	Blt_Ps_DrawPicture(ps, picture, imPtr->anchorPt.x, imPtr->anchorPt.y);
+      Blt_Ps_DrawPicture(ps, picture, imPtr->anchorPt.x, imPtr->anchorPt.y);
     }
+#endif
 }
 
 /*
@@ -2631,6 +2651,7 @@ ImageToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 static void
 FreeImageProc(Marker *markerPtr)
 {
+#if 0
     ImageMarker *imPtr = (ImageMarker *)markerPtr;
     Graph *graphPtr = markerPtr->obj.graphPtr;
 
@@ -2643,6 +2664,7 @@ FreeImageProc(Marker *markerPtr)
     if (imPtr->gc != NULL) {
 	Tk_FreeGC(graphPtr->display, imPtr->gc);
     }
+#endif
 }
 
 /*
