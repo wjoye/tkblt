@@ -98,7 +98,6 @@ TEA_ADD_SOURCES([
 	bltParse.c
 	bltPicture.c
 	bltPictCmd.c
-	bltPictDraw.c
 	bltPool.c
 	bltPs.c
 	bltPsAfm.c
