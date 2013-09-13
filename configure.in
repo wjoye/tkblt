@@ -114,12 +114,12 @@ TEA_ADD_SOURCES([
 	bltVector.c
 	bltWindow.c
 	])
-TEA_ADD_HEADERS([generic/bltVector.h])
-TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}/generic`\"])
+TEA_ADD_HEADERS([bltVector.h])
+TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}`\"])
 TEA_ADD_LIBS([])
 TEA_ADD_CFLAGS([-Wunused])
 TEA_ADD_STUB_SOURCES([])
-TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
+TEA_ADD_TCL_SOURCES([../library/graph.tcl ../library/bltGraph.pro])
 
 #--------------------------------------------------------------------
 # __CHANGE__
@@ -133,7 +133,7 @@ TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-CLEANFILES="$CLEANFILES pkgIndex.tcl config.status config.log Makefile"
+CLEANFILES="$CLEANFILES config.status config.log Makefile"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
@@ -300,4 +300,4 @@ TEA_PROG_TCLSH
 # which require substituting th AC variables in.  Include these here.
 #--------------------------------------------------------------------
 
-AC_OUTPUT([Makefile pkgIndex.tcl])
+AC_OUTPUT([Makefile])

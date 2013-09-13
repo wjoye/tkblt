@@ -5609,7 +5609,7 @@ done
 
 
 
-    vars="generic/bltVector.h"
+    vars="bltVector.h"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
@@ -5620,7 +5620,7 @@ done
 
 
 
-    vars="-I. -I\"`${CYGPATH} ${srcdir}/generic`\""
+    vars="-I. -I\"`${CYGPATH} ${srcdir}`\""
     for i in $vars; do
 	PKG_INCLUDES="$PKG_INCLUDES $i"
     done
@@ -5666,7 +5666,7 @@ done
 
 
 
-    vars="library/graph.tcl library/bltGraph.pro"
+    vars="../library/graph.tcl ../library/bltGraph.pro"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
@@ -5689,7 +5689,7 @@ done
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-CLEANFILES="$CLEANFILES pkgIndex.tcl config.status config.log Makefile"
+CLEANFILES="$CLEANFILES config.status config.log Makefile"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
@@ -9542,7 +9542,7 @@ $as_echo "${TCLSH_PROG}" >&6; }
 # which require substituting th AC variables in.  Include these here.
 #--------------------------------------------------------------------
 
-ac_config_files="$ac_config_files Makefile pkgIndex.tcl"
+ac_config_files="$ac_config_files Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -10252,7 +10252,6 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "pkgIndex.tcl") CONFIG_FILES="$CONFIG_FILES pkgIndex.tcl" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
