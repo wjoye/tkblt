@@ -37,7 +37,6 @@
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltDBuffer.h"
-#include "bltPicture.h"
 #include "bltPsInt.h"
 
 #define PS_MAXPATH	1500		/* Maximum number of components in a

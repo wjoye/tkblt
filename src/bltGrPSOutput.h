@@ -27,8 +27,6 @@
 #ifndef _BLT_PS_H
 #define _BLT_PS_H
 
-#include "bltPicture.h"
-
 /*
  * PageSetup --
  *

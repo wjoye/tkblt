@@ -5557,7 +5557,6 @@ done
 	bltList.c
 	bltNsUtil.c
 	bltParse.c
-	bltPictCmd.c
 	bltPool.c
 	bltPs.c
 	bltPsAfm.c
