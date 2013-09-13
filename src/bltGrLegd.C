@@ -2315,6 +2315,7 @@ GetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     return TCL_OK;
 }
 
+#if 0
 /*
  *----------------------------------------------------------------------
  *
@@ -2418,7 +2419,7 @@ IconOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     }
     return TCL_OK;
 }
-
+#endif
 /*
  *---------------------------------------------------------------------------
  *
@@ -2760,7 +2761,7 @@ static Blt_OpSpec legendOps[] =
     {"deactivate",   1, ActivateOp,      3, 0, "?pattern?...",},
     {"focus",        1, FocusOp,         4, 4, "elem",},
     {"get",          1, GetOp,           4, 4, "elem",},
-    {"icon",         1, IconOp,          5, 5, "elem image",},
+    //    {"icon",         1, IconOp,          5, 5, "elem image",},
     {"selection",    1, SelectionOp,     3, 0, "args"},
 };
 static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
