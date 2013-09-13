@@ -122,9 +122,6 @@ extern int Blt_Ps_GetPadFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr,
 
 extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 
-extern void Blt_Ps_DrawPicture(Blt_Ps ps, Blt_Picture picture, 
-	double x, double y);
-
 extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
 
 
