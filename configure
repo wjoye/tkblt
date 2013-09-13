@@ -5557,7 +5557,6 @@ done
 	bltList.c
 	bltNsUtil.c
 	bltParse.c
-	bltPicture.c
 	bltPictCmd.c
 	bltPool.c
 	bltPs.c
@@ -5566,7 +5565,6 @@ done
 	bltSwitch.c
 	bltText.c
 	bltUnixFont.c
-	bltUnixPainter.c
 	bltUnixWindow.c
 	bltUtil.c
 	bltVecCmd.c

@@ -96,7 +96,6 @@ TEA_ADD_SOURCES([
 	bltList.c
 	bltNsUtil.c
 	bltParse.c
-	bltPicture.c
 	bltPictCmd.c
 	bltPool.c
 	bltPs.c
@@ -105,7 +104,6 @@ TEA_ADD_SOURCES([
 	bltSwitch.c
 	bltText.c
 	bltUnixFont.c
-	bltUnixPainter.c
 	bltUnixWindow.c
 	bltUtil.c
 	bltVecCmd.c
