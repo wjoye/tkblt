@@ -115,7 +115,7 @@ TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}`\"])
 TEA_ADD_LIBS([])
 TEA_ADD_CFLAGS([-Wunused])
 TEA_ADD_STUB_SOURCES([])
-TEA_ADD_TCL_SOURCES([../library/graph.tcl ../library/bltGraph.pro])
+TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
 
 #--------------------------------------------------------------------
 # __CHANGE__

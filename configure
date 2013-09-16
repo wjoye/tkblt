@@ -5662,7 +5662,7 @@ done
 
 
 
-    vars="../library/graph.tcl ../library/bltGraph.pro"
+    vars="library/graph.tcl library/bltGraph.pro"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
