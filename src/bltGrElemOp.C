@@ -27,6 +27,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <X11/Xutil.h>
 
 #include "bltInt.h"
