@@ -1,4 +1,10 @@
 /*
+ * Smithsonian Astrophysical Observatory, Cambridge, MA, USA
+ * This code has been modified under the terms listed below and is made
+ * available under the same terms.
+ */
+
+/*
  * bltSwitch.c --
  *
  * This module implements command/argument switch parsing procedures for the

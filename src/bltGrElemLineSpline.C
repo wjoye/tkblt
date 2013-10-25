@@ -1,4 +1,10 @@
 /*
+ * Smithsonian Astrophysical Observatory, Cambridge, MA, USA
+ * This code has been modified under the terms listed below and is made
+ * available under the same terms.
+ */
+
+/*
  *	Copyright 2009 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining
