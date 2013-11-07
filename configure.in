@@ -111,9 +111,9 @@ TEA_ADD_SOURCES([
 	bltWindow.c
 	])
 TEA_ADD_HEADERS([bltVector.h])
-TEA_ADD_INCLUDES([-I. -I\"`${CYGPATH} ${srcdir}`\"])
+TEA_ADD_INCLUDES([-I.])
 TEA_ADD_LIBS([])
-TEA_ADD_CFLAGS([-Wunused])
+TEA_ADD_CFLAGS([-Wall])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
 
@@ -156,7 +156,9 @@ TEA_PRIVATE_TCL_HEADERS
 
 TEA_PUBLIC_TK_HEADERS
 TEA_PRIVATE_TK_HEADERS
-#TEA_PATH_X
+TEA_PATH_X
+
+TEA_ADD_INCLUDES([${XINCLUDES}])
 
 #--------------------------------------------------------------------
 # Check whether --enable-threads or --disable-threads was given.
@@ -203,12 +205,6 @@ AC_DEFINE(USE_TK_STUBS, 1, [Use Tk stubs])
 #--------------------------------------------------------------------
 
 TEA_MAKE_LIB
-
-#--------------------------------------------------------------------
-#	Locate the X11 header files and the X11 library archive.
-#--------------------------------------------------------------------
-
-SC_PATH_X
 
 #--------------------------------------------------------------------
 #	Check for freetype / fontconfig / Xft support.
