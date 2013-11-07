@@ -9377,6 +9377,8 @@ rm -f conftest*
 #	Check for freetype / fontconfig / Xft support.
 #--------------------------------------------------------------------
 
+
+
 if test "${TEA_WINDOWINGSYSTEM}" = "x11"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use xft" >&5
 $as_echo_n "checking whether to use xft... " >&6; }
@@ -9499,6 +9501,8 @@ $as_echo "#define HAVE_XFT 1" >>confdefs.h
 
 
 fi
+
+
 
 #--------------------------------------------------------------------
 # Determine the name of the tclsh and/or wish executables in the
