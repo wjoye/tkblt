@@ -5564,7 +5564,6 @@ done
 	bltSwitch.c
 	bltText.c
 	bltUnixFont.c
-	bltUnixWindow.c
 	bltUtil.c
 	bltVecCmd.c
 	bltVecMath.c
