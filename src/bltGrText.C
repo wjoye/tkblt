@@ -45,7 +45,6 @@
 #include "bltHash.h"
 #include "bltImage.h"
 #include "bltBitmap.h"
-#include "bltFont.h"
 #include "bltText.h"
 #include "bltBgStyle.h"
 
@@ -507,7 +506,7 @@ Blt_Ts_DrawText(
     //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
     //    XSetFont(display, gc, Tk_FontId(font));
     Tk_Font font = stylePtr->font;
-    //    GC gc = stylePtr->gc;
+    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
     Tk_TextLayout layout = Tk_ComputeTextLayout(font, text, textLen, -1, 
@@ -515,8 +514,8 @@ Blt_Ts_DrawText(
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
     //    printf("x=%d y=%d, xx=%d yy=%d\n",x,y,xx,yy);
-    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    //			   stylePtr->angle, 0, textLen);
+    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    			   stylePtr->angle, 0, textLen);
 
     //    if (gc)
     //      XFreeGC(display, gc);

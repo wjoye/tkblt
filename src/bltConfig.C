@@ -83,7 +83,6 @@
 
 #include "bltInt.h"
 #include "bltWindow.h"
-#include "bltFont.h"
 #include "bltBgStyle.h"
 
 #define PIXELS_NNEG		0

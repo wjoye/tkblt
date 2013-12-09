@@ -133,7 +133,6 @@ extern int Blt_Ps_SaveFile(Tcl_Interp *interp, Blt_Ps ps,
 
 #ifdef _TK
 
-#include "bltFont.h"
 #include "bltText.h"
 
 extern void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
