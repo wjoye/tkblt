@@ -39,90 +39,6 @@
 #define UPDATE_GC	1
 
 /*
- * TextFragment --
- */
-typedef struct {
-    const char *text;			/* Text string to be displayed */
-
-    size_t count;			/* Number of bytes in text. The actual
-					 * character count may differ because of
-					 * multi-byte UTF encodings. */
-
-    short x, y;				/* X-Y offset of the baseline from the
-					 * upper-left corner of the bbox. */
-
-    short sx, sy;			/* Starting offset of text using rotated
-					 * font. */
-
-    int width;				/* Width of segment in pixels. This
-					 * information is used to draw
-					 * PostScript strings the same width
-					 * as X. */
-} TextFragment;
-
-
-/*
- * TextItem --
- * 
- *	Parsed form for markup string.  Each item is a scrap of text
- *	describes the font, position, and characters to be displayed.
- *	
- *	subscript x_y  very small subset of latex markup.
- *	superscript x^y
- *	grouping a^{x+y} a_{i,j}
- *	supersuper a^{10^8}
- *	\hat{a} \bar{b} \vec{c}
- *	\overline{} \underline{}
- *	\frac \tfrac
- *	\Alpha \Beta ...
- *	\mathbf{} \mathit{} \mathrm{}  \boldsymbol{}
- *	\angstrom \degree 
- *
- *	-mathtext instead of -text 
- *
- *	Can use TextItem where you don't directly edit the text:
- *	  label, treeview, graph, barchart...
- *
- *	Font selector (bold, italic, size adjust) from base font.
- *	Global font table reference counted. 
- *
- */
-typedef struct {
-    const char *text;			/* Text string to be displayed */
-
-    size_t count;			/* Number of bytes in text. The actual
-					 * character count may differ because of
-					 * multi-byte UTF encodings. */
-
-    short int x, y;			/* X-Y offset of the baseline from the
-					 * upper-left corner of the bbox. */
-
-    short int sx, sy;			/* Starting offset of text using rotated
-					 * font. */
-
-    Blt_Font font;			/* Allocated font for this chunk. 
-					 * If NULL, use the global font. */
-
-    int underline;			/* Text is underlined */
-
-    int width;				/* Width of segment in pixels. This
-					 * information is used to draw
-					 * PostScript strings the same width
-					 * as X. (deprecated) */
-} TextItem;
-
-/*
- * TextLayout --
- */
-typedef struct {
-    TextFragment *underlinePtr;
-    int underline;
-    size_t width, height;	/* Dimensions of text bounding box */
-    size_t nFrags;		/* # fragments of text */
-    TextFragment fragments[1];	/* Information about each fragment of text */
-} TextLayout;
-
-/*
  * TextStyle --
  *
  * 	A somewhat convenient structure to hold text attributes that determine
@@ -158,6 +74,9 @@ typedef struct {
     GC gc;			/* GC used to draw the text */
 } TextStyle;
 
+extern void Blt_GetTextExtents(Blt_Font font, int leader, const char *text, 
+	int textLen, unsigned int *widthPtr, unsigned int *heightPtr);
+
 extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
 	unsigned int *widthPtr, unsigned int *heightPtr);
 
@@ -170,19 +89,6 @@ extern void Blt_DrawText(Tk_Window tkwin, Drawable drawable,
 
 extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, 
 	const char *string, TextStyle *tsPtr, int x, int y, Dim2D * dimPtr);
-
-extern Pixmap Blt_Ts_Bitmap(Tk_Window tkwin, TextLayout *textPtr, 
-	TextStyle *tsPtr, int *widthPtr, int *heightPtr);
-
-extern void Blt_DrawLayout(Tk_Window tkwin, Drawable drawable, GC gc, 
-	Blt_Font font, int depth, float angle, int x, int y, 
-	TextLayout *layoutPtr, int maxLength);
-
-extern void Blt_GetTextExtents(Blt_Font font, int leader, const char *text, 
-	int textLen, unsigned int *widthPtr, unsigned int *heightPtr);
-
-extern void Blt_RotateStartingTextPositions(TextLayout *textPtr,
-	float angle);
 
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *text, int textLen, TextStyle *tsPtr, int x, int y);

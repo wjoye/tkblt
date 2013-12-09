@@ -1025,7 +1025,7 @@ Blt_Ps_XSetFont(PostScript *psPtr, Blt_Font font)
     }
     Blt_Ps_Append(psPtr, "12.0 /Helvetica-Bold SetFont\n");
 }
-
+#if 0
 static void
 TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
 {
@@ -1098,6 +1098,7 @@ TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
 	    fragPtr->width, x + fragPtr->x, y + fragPtr->y);
     }
 }
+#endif
 
 /*
  *---------------------------------------------------------------------------

@@ -462,68 +462,6 @@ Blt_AnchorPoint(
     return t;
 }
 
-void
-Blt_DrawLayout(Tk_Window tkwin, Drawable drawable, GC gc, Blt_Font font,
-	       int depth, float angle, int x, int y, TextLayout *layoutPtr,
-	       int maxLength)
-{
-    TextFragment *fp, *fend;
-    Blt_FontMetrics fm;
-
-    Blt_GetFontMetrics(font, &fm);
-    for (fp = layoutPtr->fragments, fend = fp + layoutPtr->nFrags; 
-	 fp < fend; fp++) {
-	int sx, sy;
-
-	sx = x + fp->sx, sy = y + fp->sy;
-	Blt_DrawChars(Tk_Display(tkwin), drawable, gc, font, depth, angle, 
-		      fp->text, fp->count, sx, sy);
-    }
-    if (layoutPtr->underlinePtr != NULL) {
-	fp = layoutPtr->underlinePtr;
-	Blt_UnderlineChars(Tk_Display(tkwin), drawable, gc, font, fp->text, 
-		fp->count, x + fp->sx, y + fp->sy, layoutPtr->underline, 
-		layoutPtr->underline + 1, maxLength);
-    }
-}
-
-static void
-RotateStartingTextPositions(TextLayout *lPtr, int w, int h, float angle)
-{
-    Point2d off1, off2;
-    TextFragment *fp, *fend;
-    double radians;
-    double rw, rh;
-    double sinTheta, cosTheta;
-    
-    Blt_GetBoundingBox(w, h, angle, &rw, &rh, (Point2d *)NULL);
-    off1.x = (double)w * 0.5;
-    off1.y = (double)h * 0.5;
-    off2.x = rw * 0.5;
-    off2.y = rh * 0.5;
-    radians = (-angle / 180.0) * M_PI;
-    
-    sinTheta = sin(radians), cosTheta = cos(radians);
-    for (fp = lPtr->fragments, fend = fp + lPtr->nFrags; fp < fend; fp++) {
-	Point2d p, q;
-	
-	p.x = fp->x - off1.x;
-	p.y = fp->y - off1.y;
-	q.x = (p.x * cosTheta) - (p.y * sinTheta);
-	q.y = (p.x * sinTheta) + (p.y * cosTheta);
-	q.x += off2.x;
-	q.y += off2.y;
-	fp->sx = ROUND(q.x);
-	fp->sy = ROUND(q.y);
-    }
-}
-
-void
-Blt_RotateStartingTextPositions(TextLayout *lPtr, float angle)
-{
-    RotateStartingTextPositions(lPtr, lPtr->width, lPtr->height, angle);
-}
-
 /*
  *---------------------------------------------------------------------------
  *
