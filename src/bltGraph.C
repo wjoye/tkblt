@@ -164,7 +164,7 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_STRING, "-datacommand", "dataCommand", "DataCommand", 
         (char *)NULL, Blt_Offset(Graph, dataCmd), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
-    {BLT_CONFIG_FONT, "-font", "font", "Font",
+    {BLT_CONFIG_TK_FONT, "-font", "font", "Font",
 	DEF_GRAPH_FONT, Blt_Offset(Graph, titleTextStyle.font), 0},
     {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_GRAPH_TITLE_COLOR, Blt_Offset(Graph, titleTextStyle.color), 0},

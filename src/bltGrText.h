@@ -51,7 +51,7 @@ typedef struct {
     unsigned int state;			/* If non-zero, indicates to draw text
 					 * in the active color */
     XColor *color;			/* Color to draw the text. */
-    Blt_Font font;			/* Font to use to draw text */
+    Tk_Font font;			/* Font to use to draw text */
     Blt_Background bg;			/* Background color of text.  This is
 					 * also used for drawing disabled
 					 * text. */
@@ -74,7 +74,7 @@ typedef struct {
     GC gc;			/* GC used to draw the text */
 } TextStyle;
 
-extern void Blt_GetTextExtents(Blt_Font font, int leader, const char *text, 
+extern void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, 
 	int textLen, unsigned int *widthPtr, unsigned int *heightPtr);
 
 extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 

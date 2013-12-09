@@ -102,7 +102,6 @@ TEA_ADD_SOURCES([
 	bltSpline.c
 	bltSwitch.c
 	bltText.c
-	bltUnixFont.c
 	bltUtil.c
 	bltVecCmd.c
 	bltVecMath.c

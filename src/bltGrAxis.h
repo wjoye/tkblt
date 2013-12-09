@@ -286,7 +286,7 @@ typedef struct {
     int activeRelief;
 
     float tickAngle;	
-    Blt_Font tickFont;
+    Tk_Font tickFont;
     Tk_Anchor tickAnchor;
     Tk_Anchor reqTickAnchor;
     XColor *tickColor;
@@ -295,7 +295,7 @@ typedef struct {
     GC activeTickGC;
 
     double titleAngle;	
-    Blt_Font titleFont;
+    Tk_Font titleFont;
     Tk_Anchor titleAnchor;
     Tk_Justify titleJustify;
     XColor *titleColor;

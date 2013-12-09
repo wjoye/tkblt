@@ -145,7 +145,7 @@ extern void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display,
 
 extern void Blt_Ps_XSetForeground(Blt_Ps ps, XColor *colorPtr);
 
-extern void Blt_Ps_XSetFont(Blt_Ps ps, Blt_Font font);
+extern void Blt_Ps_XSetFont(Blt_Ps ps, Tk_Font font);
 
 extern void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr);
 
@@ -203,9 +203,9 @@ extern void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 extern void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
 extern int Blt_Ps_IsPrinting(void);
 
-extern int Blt_Ps_TextWidth(Blt_Font font, const char *string, int nBytes);
+extern int Blt_Ps_TextWidth(Tk_Font font, const char *string, int nBytes);
 
-extern int Blt_Ps_GetFontMetrics(Blt_Font font, Blt_FontMetrics *fmPtr);
+extern int Blt_Ps_GetFontMetrics(Tk_Font font, Tk_FontMetrics *fmPtr);
 
 extern void Blt_Ps_FontName(const char *family, int flags, 
 	Tcl_DString *resultPtr);

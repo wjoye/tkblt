@@ -287,7 +287,7 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
 	DEF_LEGEND_FOCUS_FG_MONO, Blt_Offset(Legend, focusColor),
 	BLT_CONFIG_MONO_ONLY},
-    {BLT_CONFIG_FONT, "-font", "font", "Font", DEF_LEGEND_FONT, 
+    {BLT_CONFIG_TK_FONT, "-font", "font", "Font", DEF_LEGEND_FONT, 
 	Blt_Offset(Legend, style.font), 0},
     {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
     {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
@@ -347,7 +347,7 @@ static Blt_ConfigSpec configSpecs[] =
 	Blt_Offset(Legend, title), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_COLOR, "-titlecolor", "titleColor", "Foreground",
 	DEF_LEGEND_TITLECOLOR, Blt_Offset(Legend, titleStyle.color), 0},
-    {BLT_CONFIG_FONT, "-titlefont", "titleFont", "Font",
+    {BLT_CONFIG_TK_FONT, "-titlefont", "titleFont", "Font",
 	DEF_LEGEND_TITLEFONT, Blt_Offset(Legend, titleStyle.font), 0},
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
@@ -1108,7 +1108,7 @@ Blt_MapLegend(
     int lw, lh;
     int maxWidth, maxHeight;
     int symbolWidth;
-    Blt_FontMetrics fontMetrics;
+    Tk_FontMetrics fontMetrics;
 
     /* Initialize legend values to default (no legend displayed) */
     legendPtr->entryWidth = legendPtr->entryHeight = 0;
@@ -1155,7 +1155,7 @@ Blt_MapLegend(
     }
 
 
-    Blt_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+    Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
     symbolWidth = 2 * fontMetrics.ascent;
 
     maxWidth += 2 * legendPtr->entryBW + PADDING(legendPtr->ixPad) +
@@ -1269,7 +1269,7 @@ Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
 {
     Blt_Background bg;
     Blt_ChainLink link;
-    Blt_FontMetrics fontMetrics;
+    Tk_FontMetrics fontMetrics;
     Legend *legendPtr = graphPtr->legend;
     Pixmap pixmap;
     Tk_Window tkwin;
@@ -1325,7 +1325,7 @@ Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
 		w, h, 0, TK_RELIEF_FLAT);
 	Blt_SetBackgroundOrigin(tkwin, graphPtr->normalBg, xOrigin, yOrigin);
     }
-    Blt_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+    Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
 
     symbolSize = fontMetrics.ascent;
     xMid = symbolSize + 1 + legendPtr->entryBW;
@@ -1462,7 +1462,7 @@ Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps)
     Blt_ChainLink link;
     int symbolSize, xMid, yMid;
     int width, height;
-    Blt_FontMetrics fontMetrics;
+    Tk_FontMetrics fontMetrics;
 
     if ((legendPtr->flags & HIDE) || (legendPtr->nEntries == 0)) {
 	return;
@@ -1493,7 +1493,7 @@ Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps)
 	Blt_Ps_SetClearBackground(ps);
 	Blt_Ps_XFillRectangle(ps, x, y, width, height);
     }
-    Blt_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+    Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
     symbolSize = fontMetrics.ascent;
     xMid = symbolSize + 1 + legendPtr->entryBW;
     yMid = (symbolSize / 2) + 1 + legendPtr->entryBW;

@@ -45,6 +45,9 @@
 #include "bltDBuffer.h"
 #include "bltPsInt.h"
 
+#define FONT_ITALIC	(1<<0)
+#define FONT_BOLD	(1<<1)
+
 #define PS_MAXPATH	1500		/* Maximum number of components in a
 					 * PostScript (level 1) path. */
 
@@ -970,8 +973,9 @@ Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap)
  */
 
 void
-Blt_Ps_XSetFont(PostScript *psPtr, Blt_Font font) 
+Blt_Ps_XSetFont(PostScript *psPtr, Tk_Font font) 
 {
+#if 0
     Tcl_Interp *interp = psPtr->interp;
     const char *family;
 
@@ -980,7 +984,7 @@ Blt_Ps_XSetFont(PostScript *psPtr, Blt_Font font)
 	char *value;
 
 	value = (char *)Tcl_GetVar2(interp, psPtr->setupPtr->fontVarName, 
-		Blt_NameOfFont(font), 0);
+		Tk_NameOfFont(font), 0);
 	if (value != NULL) {
 	    const char **argv = NULL;
 	    int argc;
@@ -1024,7 +1028,9 @@ Blt_Ps_XSetFont(PostScript *psPtr, Blt_Font font)
 	return;
     }
     Blt_Ps_Append(psPtr, "12.0 /Helvetica-Bold SetFont\n");
+#endif
 }
+
 #if 0
 static void
 TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)

@@ -112,7 +112,7 @@ Blt_GetBitmapGC(Tk_Window tkwin)
  */
 void
 Blt_GetTextExtents(
-    Blt_Font font, 
+    Tk_Font font, 
     int leader,
     const char *text,		/* Text string to be measured. */
     int textLen,		/* Length of the text. If -1, indicates that
@@ -127,9 +127,9 @@ Blt_GetTextExtents(
 	return;			/* NULL string? */
     }
     {
-	Blt_FontMetrics fm;
+	Tk_FontMetrics fm;
 
-	Blt_GetFontMetrics(font, &fm);
+	Tk_GetFontMetrics(font, &fm);
 	lineHeight = fm.linespace;
     }
     if (textLen < 0) {
@@ -148,7 +148,7 @@ Blt_GetTextExtents(
 		if (lineLen > 0) {
 		    unsigned int lineWidth;
 		    
-		    lineWidth = Blt_TextWidth(font, line, lineLen);
+		    lineWidth = Tk_TextWidth(font, line, lineLen);
 		    if (lineWidth > maxWidth) {
 			maxWidth = lineWidth;
 		    }
@@ -165,7 +165,7 @@ Blt_GetTextExtents(
 	    unsigned int lineWidth;
 	    
 	    maxHeight += lineHeight;
-	    lineWidth = Blt_TextWidth(font, line, lineLen);
+	    lineWidth = Tk_TextWidth(font, line, lineLen);
 	    if (lineWidth > maxWidth) {
 		maxWidth = lineWidth;
 	    }
@@ -503,10 +503,10 @@ Blt_Ts_DrawText(
 
     Display* display = Tk_Display(tkwin);
 
-    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    XSetFont(display, gc, Tk_FontId(font));
-    //    Tk_Font font = stylePtr->font;
+    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
+    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
+    //    XSetFont(display, gc, Tk_FontId(font));
+    Tk_Font font = stylePtr->font;
     //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
@@ -515,14 +515,14 @@ Blt_Ts_DrawText(
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
     //    printf("x=%d y=%d, xx=%d yy=%d\n",x,y,xx,yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-			   stylePtr->angle, 0, textLen);
+    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    //			   stylePtr->angle, 0, textLen);
 
-    if (gc)
-      XFreeGC(display, gc);
+    //    if (gc)
+    //      XFreeGC(display, gc);
 
-    if (font)
-      Tk_FreeFont(font);
+    //    if (font)
+    //      Tk_FreeFont(font);
 }
 
 void
@@ -543,10 +543,10 @@ Blt_DrawText2(
 
     Display* display = Tk_Display(tkwin);
 
-    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    XSetFont(display, gc, Tk_FontId(font));
-    //    Tk_Font font = stylePtr->font;
+    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
+    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
+    //    XSetFont(display, gc, Tk_FontId(font));
+    Tk_Font font = stylePtr->font;
     //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
@@ -554,14 +554,14 @@ Blt_DrawText2(
 						stylePtr->justify, 0,
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-			   stylePtr->angle, 0, -1);
+    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    //			   stylePtr->angle, 0, -1);
 
-    if (gc)
-      XFreeGC(display, gc);
+    //    if (gc)
+    //      XFreeGC(display, gc);
 
-    if (font)
-      Tk_FreeFont(font);
+    //    if (font)
+    //      Tk_FreeFont(font);
 
     float angle = fmod(stylePtr->angle, 360.0);
     if (angle < 0.0) {
@@ -599,10 +599,10 @@ Blt_DrawText(
 
     Display* display = Tk_Display(tkwin);
 
-    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    XSetFont(display, gc, Tk_FontId(font));
-    //    Tk_Font font = stylePtr->font;
+    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
+    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
+    //    XSetFont(display, gc, Tk_FontId(font));
+    Tk_Font font = stylePtr->font;
     //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
@@ -610,14 +610,14 @@ Blt_DrawText(
 						stylePtr->justify, 0,
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-			   stylePtr->angle, 0, -1);
+    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    //			   stylePtr->angle, 0, -1);
 
-    if (gc)
-      XFreeGC(display, gc);
+    //    if (gc)
+    //      XFreeGC(display, gc);
 
-    if (font)
-      Tk_FreeFont(font);
+    //    if (font)
+    //      Tk_FreeFont(font);
 }
 
 void
@@ -628,7 +628,7 @@ Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
     unsigned long gcMask;
 
     gcMask = GCFont;
-    gcValues.font = Blt_FontId(stylePtr->font);
+    gcValues.font = Tk_FontId(stylePtr->font);
     if (stylePtr->color != NULL) {
 	gcMask |= GCForeground;
 	gcValues.foreground = stylePtr->color->pixel;

@@ -719,25 +719,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_FONT: 
-	    {
-		Blt_Font font;
-		
-		if (objIsEmpty) {
-		    font = NULL;
-		} else {
-		    font = Blt_AllocFontFromObj(interp, tkwin, objPtr);
-		    if (font == NULL) {
-			return TCL_ERROR;
-		    }
-		}
-		if (*(Blt_Font *)ptr != NULL) {
-		    Blt_FreeFont(*(Blt_Font *)ptr);
-		}
-		*(Blt_Font *)ptr = font;
-	    }
-	    break;
-
 	case BLT_CONFIG_TK_FONT: 
 	    {
 		Tk_Font font;
@@ -1161,12 +1142,6 @@ FormatConfigValue(
 
     case BLT_CONFIG_DOUBLE: 
 	return Tcl_NewDoubleObj(*(double *)ptr);
-
-    case BLT_CONFIG_FONT: 
-	if (*(Blt_Font *)ptr != NULL) {
-	    string = Blt_NameOfFont(*(Blt_Font *)ptr);
-	}
-	break;
 
     case BLT_CONFIG_TK_FONT: 
 	if (*(Tk_Font *)ptr != NULL) {
@@ -1845,13 +1820,6 @@ Blt_FreeOptions(
 		Tk_FreeColor(*((XColor **) ptr));
 		*((XColor **) ptr) = NULL;
 	    }
-	    break;
-
-	case BLT_CONFIG_FONT:
-	    if (*((Blt_Font *) ptr) != None) {
-	        Blt_FreeFont(*((Blt_Font *) ptr));
-  	        *((Blt_Font *) ptr) = NULL;
-            }
 	    break;
 
 	case BLT_CONFIG_TK_FONT:

@@ -677,7 +677,7 @@ static Blt_ConfigSpec textConfigSpecs[] =
     {BLT_CONFIG_SYNONYM, "-fg", "foreground", "Foreground", (char *)NULL, 0, 0},
     {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL, (char *)NULL, 
 	0, 0},
-    {BLT_CONFIG_FONT, "-font", "font", "Font", 	DEF_MARKER_FONT, 
+    {BLT_CONFIG_TK_FONT, "-font", "font", "Font", 	DEF_MARKER_FONT, 
 	Blt_Offset(TextMarker, style.font), 0},
     {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_MARKER_FOREGROUND, Blt_Offset(TextMarker, style.color), 0},
