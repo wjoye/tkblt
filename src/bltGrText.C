@@ -502,11 +502,10 @@ Blt_Ts_DrawText(
 
     Display* display = Tk_Display(tkwin);
 
-    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    //    XSetFont(display, gc, Tk_FontId(font));
+    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
     Tk_Font font = stylePtr->font;
-    GC gc = stylePtr->gc;
+    XSetFont(display, gc, Tk_FontId(font));
+    //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
     Tk_TextLayout layout = Tk_ComputeTextLayout(font, text, textLen, -1, 
@@ -517,11 +516,8 @@ Blt_Ts_DrawText(
     TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
     			   stylePtr->angle, 0, textLen);
 
-    //    if (gc)
-    //      XFreeGC(display, gc);
-
-    //    if (font)
-    //      Tk_FreeFont(font);
+    if (gc)
+      XFreeGC(display, gc);
 }
 
 void
@@ -542,10 +538,9 @@ Blt_DrawText2(
 
     Display* display = Tk_Display(tkwin);
 
-    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    //    XSetFont(display, gc, Tk_FontId(font));
+    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
     Tk_Font font = stylePtr->font;
+    XSetFont(display, gc, Tk_FontId(font));
     //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
@@ -553,21 +548,16 @@ Blt_DrawText2(
 						stylePtr->justify, 0,
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    //			   stylePtr->angle, 0, -1);
+    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    			   stylePtr->angle, 0, -1);
 
-    //    if (gc)
-    //      XFreeGC(display, gc);
-
-    //    if (font)
-    //      Tk_FreeFont(font);
+    if (gc)
+      XFreeGC(display, gc);
 
     float angle = fmod(stylePtr->angle, 360.0);
     if (angle < 0.0) {
 	angle += 360.0;
     }
-    //    width = layoutPtr->width;
-    //    height = layoutPtr->height;
     if (angle != 0.0) {
 	double rotWidth, rotHeight;
 
@@ -578,7 +568,6 @@ Blt_DrawText2(
     }
     areaPtr->width = width;
     areaPtr->height = height;
-    //    free(layoutPtr);
 }
 
 void
@@ -598,10 +587,9 @@ Blt_DrawText(
 
     Display* display = Tk_Display(tkwin);
 
-    //    Tk_Font font = Tk_GetFont(stylePtr->font->interp,tkwin,"Helvetica 10 normal roman");
-    //    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    //    XSetFont(display, gc, Tk_FontId(font));
+    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
     Tk_Font font = stylePtr->font;
+    XSetFont(display, gc, Tk_FontId(font));
     //    GC gc = stylePtr->gc;
 
     int width,height, xx, yy;
@@ -609,14 +597,11 @@ Blt_DrawText(
 						stylePtr->justify, 0,
 						&width, &height);
     Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    //    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    //			   stylePtr->angle, 0, -1);
+    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
+    			   stylePtr->angle, 0, -1);
 
-    //    if (gc)
-    //      XFreeGC(display, gc);
-
-    //    if (font)
-    //      Tk_FreeFont(font);
+    if (gc)
+      XFreeGC(display, gc);
 }
 
 void
