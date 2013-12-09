@@ -158,12 +158,6 @@ typedef struct {
     GC gc;			/* GC used to draw the text */
 } TextStyle;
 
-extern TextLayout *Blt_Ts_CreateLayout(const char *string, int length, 
-	TextStyle *tsPtr);
-
-extern void Blt_Ts_DrawLayout(Tk_Window tkwin, Drawable drawable, 
-	TextLayout *textPtr, TextStyle *tsPtr, int x, int y);
-
 extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
 	unsigned int *widthPtr, unsigned int *heightPtr);
 
@@ -180,9 +174,6 @@ extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable,
 extern Pixmap Blt_Ts_Bitmap(Tk_Window tkwin, TextLayout *textPtr, 
 	TextStyle *tsPtr, int *widthPtr, int *heightPtr);
 
-extern int Blt_DrawTextWithRotatedFont(Tk_Window tkwin, Drawable drawable, 
-	float angle, TextStyle *tsPtr, TextLayout *textPtr, int x, int y);
-
 extern void Blt_DrawLayout(Tk_Window tkwin, Drawable drawable, GC gc, 
 	Blt_Font font, int depth, float angle, int x, int y, 
 	TextLayout *layoutPtr, int maxLength);
@@ -193,13 +184,8 @@ extern void Blt_GetTextExtents(Blt_Font font, int leader, const char *text,
 extern void Blt_RotateStartingTextPositions(TextLayout *textPtr,
 	float angle);
 
-extern int Blt_CharBbox(Tk_TextLayout layout, int index, int *xPtr, 
-	int *yPtr, int *widthPtr, int *heightPtr);
-
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *text, int textLen, TextStyle *tsPtr, int x, int y);
-
-extern void Blt_FreeTextLayout(Tk_TextLayout layout);
 
 #define Blt_Ts_GetAnchor(ts)		((ts).anchor)
 #define Blt_Ts_GetAngle(ts)		((ts).angle)

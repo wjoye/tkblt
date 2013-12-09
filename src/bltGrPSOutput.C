@@ -1125,6 +1125,7 @@ Blt_Ps_DrawText(
     TextStyle *tsPtr,		/* Text attribute information */
     double x, double y)		/* Window coordinates where to print text */
 {
+#if 0
     TextLayout *textPtr;
     Point2d t;
 
@@ -1149,7 +1150,7 @@ Blt_Ps_DrawText(
 
     /* Initialize text (sets translation and rotation) */
     Blt_Ps_Format(ps, "%d %d %g %g %g BeginText\n", textPtr->width, 
-	textPtr->height, tsPtr->angle, t.x, t.y);
+    textPtr->height, tsPtr->angle, t.x, t.y);
 
     Blt_Ps_XSetFont(ps, tsPtr->font);
 
@@ -1157,6 +1158,7 @@ Blt_Ps_DrawText(
     TextLayoutToPostScript(ps, 0, 0, textPtr);
     free(textPtr);
     Blt_Ps_Append(ps, "EndText\n");
+#endif
 }
 
 void
