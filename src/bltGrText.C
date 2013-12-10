@@ -66,34 +66,34 @@ void dump_Ts(TextStyle* ts)
 GC
 Blt_GetBitmapGC(Tk_Window tkwin)
 {
-    int isNew;
-    GC gc;
-    Display *display;
-    Blt_HashEntry *hPtr;
+  int isNew;
+  GC gc;
+  Display *display;
+  Blt_HashEntry *hPtr;
 
-    if (!initialized) {
-	Blt_InitHashTable(&bitmapGCTable, BLT_ONE_WORD_KEYS);
-	initialized = TRUE;
-    }
-    display = Tk_Display(tkwin);
-    hPtr = Blt_CreateHashEntry(&bitmapGCTable, (char *)display, &isNew);
-    if (isNew) {
-	Pixmap bitmap;
-	XGCValues gcValues;
-	unsigned long gcMask;
-	Window root;
+  if (!initialized) {
+    Blt_InitHashTable(&bitmapGCTable, BLT_ONE_WORD_KEYS);
+    initialized = TRUE;
+  }
+  display = Tk_Display(tkwin);
+  hPtr = Blt_CreateHashEntry(&bitmapGCTable, (char *)display, &isNew);
+  if (isNew) {
+    Pixmap bitmap;
+    XGCValues gcValues;
+    unsigned long gcMask;
+    Window root;
 
-	root = Tk_RootWindow(tkwin);
-	bitmap = Tk_GetPixmap(display, root, 1, 1, 1);
-	gcValues.foreground = gcValues.background = 0;
-	gcMask = (GCForeground | GCBackground);
-	gc = Blt_GetPrivateGCFromDrawable(display, bitmap, gcMask, &gcValues);
-	Tk_FreePixmap(display, bitmap);
-	Blt_SetHashValue(hPtr, gc);
-    } else {
-	gc = (GC)Blt_GetHashValue(hPtr);
-    }
-    return gc;
+    root = Tk_RootWindow(tkwin);
+    bitmap = Tk_GetPixmap(display, root, 1, 1, 1);
+    gcValues.foreground = gcValues.background = 0;
+    gcMask = (GCForeground | GCBackground);
+    gc = Blt_GetPrivateGCFromDrawable(display, bitmap, gcMask, &gcValues);
+    Tk_FreePixmap(display, bitmap);
+    Blt_SetHashValue(hPtr, gc);
+  } else {
+    gc = (GC)Blt_GetHashValue(hPtr);
+  }
+  return gc;
 }
 
 /*
@@ -111,67 +111,67 @@ Blt_GetBitmapGC(Tk_Window tkwin)
  */
 void
 Blt_GetTextExtents(
-    Tk_Font font, 
-    int leader,
-    const char *text,		/* Text string to be measured. */
-    int textLen,		/* Length of the text. If -1, indicates that
-				 * text is an ASCIZ string that the length
-				 * should be computed with strlen. */
-    unsigned int *widthPtr, 
-    unsigned int *heightPtr)
+		   Tk_Font font, 
+		   int leader,
+		   const char *text,		/* Text string to be measured. */
+		   int textLen,		/* Length of the text. If -1, indicates that
+					 * text is an ASCIZ string that the length
+					 * should be computed with strlen. */
+		   unsigned int *widthPtr, 
+		   unsigned int *heightPtr)
 {
-    unsigned int lineHeight;
+  unsigned int lineHeight;
 
-    if (text == NULL) {
-	return;			/* NULL string? */
-    }
-    {
-	Tk_FontMetrics fm;
+  if (text == NULL) {
+    return;			/* NULL string? */
+  }
+  {
+    Tk_FontMetrics fm;
 
-	Tk_GetFontMetrics(font, &fm);
-	lineHeight = fm.linespace;
-    }
-    if (textLen < 0) {
-	textLen = strlen(text);
-    }
-    { 
-	unsigned int lineLen;		/* # of characters on each line */
-	const char *p, *pend;
-	const char *line;
-	unsigned int maxWidth, maxHeight;
+    Tk_GetFontMetrics(font, &fm);
+    lineHeight = fm.linespace;
+  }
+  if (textLen < 0) {
+    textLen = strlen(text);
+  }
+  { 
+    unsigned int lineLen;		/* # of characters on each line */
+    const char *p, *pend;
+    const char *line;
+    unsigned int maxWidth, maxHeight;
 
-	maxWidth = maxHeight = 0;
-	lineLen = 0;
-	for (p = line = text, pend = text + textLen; p < pend; p++) {
-	    if (*p == '\n') {
-		if (lineLen > 0) {
-		    unsigned int lineWidth;
+    maxWidth = maxHeight = 0;
+    lineLen = 0;
+    for (p = line = text, pend = text + textLen; p < pend; p++) {
+      if (*p == '\n') {
+	if (lineLen > 0) {
+	  unsigned int lineWidth;
 		    
-		    lineWidth = Tk_TextWidth(font, line, lineLen);
-		    if (lineWidth > maxWidth) {
-			maxWidth = lineWidth;
-		    }
-		}
-		maxHeight += lineHeight;
-		line = p + 1;	/* Point to the start of the next line. */
-		lineLen = 0;	/* Reset counter to indicate the start of a
-				 * new line. */
-		continue;
-	    }
-	    lineLen++;
+	  lineWidth = Tk_TextWidth(font, line, lineLen);
+	  if (lineWidth > maxWidth) {
+	    maxWidth = lineWidth;
+	  }
 	}
-	if ((lineLen > 0) && (*(p - 1) != '\n')) {
-	    unsigned int lineWidth;
-	    
-	    maxHeight += lineHeight;
-	    lineWidth = Tk_TextWidth(font, line, lineLen);
-	    if (lineWidth > maxWidth) {
-		maxWidth = lineWidth;
-	    }
-	}
-	*widthPtr = maxWidth;
-	*heightPtr = maxHeight;
+	maxHeight += lineHeight;
+	line = p + 1;	/* Point to the start of the next line. */
+	lineLen = 0;	/* Reset counter to indicate the start of a
+			 * new line. */
+	continue;
+      }
+      lineLen++;
     }
+    if ((lineLen > 0) && (*(p - 1) != '\n')) {
+      unsigned int lineWidth;
+	    
+      maxHeight += lineHeight;
+      lineWidth = Tk_TextWidth(font, line, lineLen);
+      if (lineWidth > maxWidth) {
+	maxWidth = lineWidth;
+      }
+    }
+    *widthPtr = maxWidth;
+    *heightPtr = maxHeight;
+  }
 }
 
 /*
@@ -192,15 +192,15 @@ Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, unsigned int *widthPtr,
 		  unsigned int *heightPtr)
 {
 
-    if (text == NULL) {
-	*widthPtr = *heightPtr = 0;
-    } else {
-	unsigned int w, h;
+  if (text == NULL) {
+    *widthPtr = *heightPtr = 0;
+  } else {
+    unsigned int w, h;
 
-	Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
-	*widthPtr = w + PADDING(tsPtr->xPad);
-	*heightPtr = h + PADDING(tsPtr->yPad);
-    } 
+    Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
+    *widthPtr = w + PADDING(tsPtr->xPad);
+    *heightPtr = h + PADDING(tsPtr->yPad);
+  } 
 }
 
 /*
@@ -234,96 +234,96 @@ Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, unsigned int *widthPtr,
  */
 void
 Blt_GetBoundingBox(
-    int width, int height,	/* Unrotated region */
-    float angle,		/* Rotation of box */
-    double *rotWidthPtr, 
-    double *rotHeightPtr,	/* (out) Bounding box region */
-    Point2d *bbox)		/* (out) Points of the rotated box */
+		   int width, int height,	/* Unrotated region */
+		   float angle,		/* Rotation of box */
+		   double *rotWidthPtr, 
+		   double *rotHeightPtr,	/* (out) Bounding box region */
+		   Point2d *bbox)		/* (out) Points of the rotated box */
 {
-    int i;
-    double sinTheta, cosTheta;
-    double radians;
-    double xMax, yMax;
-    double x, y;
-    Point2d corner[4];
+  int i;
+  double sinTheta, cosTheta;
+  double radians;
+  double xMax, yMax;
+  double x, y;
+  Point2d corner[4];
 
-    angle = fmod(angle, 360.0);
-    if (fmod(angle, (double)90.0) == 0.0) {
-	int ll, ur, ul, lr;
-	double rotWidth, rotHeight;
-	int quadrant;
+  angle = fmod(angle, 360.0);
+  if (fmod(angle, (double)90.0) == 0.0) {
+    int ll, ur, ul, lr;
+    double rotWidth, rotHeight;
+    int quadrant;
 
-	/* Handle right-angle rotations specially. */
+    /* Handle right-angle rotations specially. */
 
-	quadrant = (int)(angle / 90.0);
-	switch (quadrant) {
-	case ROTATE_270:	/* 270 degrees */
-	    ul = 3, ur = 0, lr = 1, ll = 2;
-	    rotWidth = (double)height;
-	    rotHeight = (double)width;
-	    break;
-	case ROTATE_90:		/* 90 degrees */
-	    ul = 1, ur = 2, lr = 3, ll = 0;
-	    rotWidth = (double)height;
-	    rotHeight = (double)width;
-	    break;
-	case ROTATE_180:	/* 180 degrees */
-	    ul = 2, ur = 3, lr = 0, ll = 1;
-	    rotWidth = (double)width;
-	    rotHeight = (double)height;
-	    break;
-	default:
-	case ROTATE_0:		/* 0 degrees */
-	    ul = 0, ur = 1, lr = 2, ll = 3;
-	    rotWidth = (double)width;
-	    rotHeight = (double)height;
-	    break;
-	}
-	if (bbox != NULL) {
-	    x = rotWidth * 0.5;
-	    y = rotHeight * 0.5;
-	    bbox[ll].x = bbox[ul].x = -x;
-	    bbox[ur].y = bbox[ul].y = -y;
-	    bbox[lr].x = bbox[ur].x = x;
-	    bbox[ll].y = bbox[lr].y = y;
-	}
-	*rotWidthPtr = rotWidth;
-	*rotHeightPtr = rotHeight;
-	return;
+    quadrant = (int)(angle / 90.0);
+    switch (quadrant) {
+    case ROTATE_270:	/* 270 degrees */
+      ul = 3, ur = 0, lr = 1, ll = 2;
+      rotWidth = (double)height;
+      rotHeight = (double)width;
+      break;
+    case ROTATE_90:		/* 90 degrees */
+      ul = 1, ur = 2, lr = 3, ll = 0;
+      rotWidth = (double)height;
+      rotHeight = (double)width;
+      break;
+    case ROTATE_180:	/* 180 degrees */
+      ul = 2, ur = 3, lr = 0, ll = 1;
+      rotWidth = (double)width;
+      rotHeight = (double)height;
+      break;
+    default:
+    case ROTATE_0:		/* 0 degrees */
+      ul = 0, ur = 1, lr = 2, ll = 3;
+      rotWidth = (double)width;
+      rotHeight = (double)height;
+      break;
     }
-    /* Set the four corners of the rectangle whose center is the origin. */
-    corner[1].x = corner[2].x = (double)width * 0.5;
-    corner[0].x = corner[3].x = -corner[1].x;
-    corner[2].y = corner[3].y = (double)height * 0.5;
-    corner[0].y = corner[1].y = -corner[2].y;
-
-    radians = (-angle / 180.0) * M_PI;
-    sinTheta = sin(radians), cosTheta = cos(radians);
-    xMax = yMax = 0.0;
-
-    /* Rotate the four corners and find the maximum X and Y coordinates */
-
-    for (i = 0; i < 4; i++) {
-	x = (corner[i].x * cosTheta) - (corner[i].y * sinTheta);
-	y = (corner[i].x * sinTheta) + (corner[i].y * cosTheta);
-	if (x > xMax) {
-	    xMax = x;
-	}
-	if (y > yMax) {
-	    yMax = y;
-	}
-	if (bbox != NULL) {
-	    bbox[i].x = x;
-	    bbox[i].y = y;
-	}
+    if (bbox != NULL) {
+      x = rotWidth * 0.5;
+      y = rotHeight * 0.5;
+      bbox[ll].x = bbox[ul].x = -x;
+      bbox[ur].y = bbox[ul].y = -y;
+      bbox[lr].x = bbox[ur].x = x;
+      bbox[ll].y = bbox[lr].y = y;
     }
+    *rotWidthPtr = rotWidth;
+    *rotHeightPtr = rotHeight;
+    return;
+  }
+  /* Set the four corners of the rectangle whose center is the origin. */
+  corner[1].x = corner[2].x = (double)width * 0.5;
+  corner[0].x = corner[3].x = -corner[1].x;
+  corner[2].y = corner[3].y = (double)height * 0.5;
+  corner[0].y = corner[1].y = -corner[2].y;
 
-    /*
-     * By symmetry, the width and height of the bounding box are twice the
-     * maximum x and y coordinates.
-     */
-    *rotWidthPtr = xMax + xMax;
-    *rotHeightPtr = yMax + yMax;
+  radians = (-angle / 180.0) * M_PI;
+  sinTheta = sin(radians), cosTheta = cos(radians);
+  xMax = yMax = 0.0;
+
+  /* Rotate the four corners and find the maximum X and Y coordinates */
+
+  for (i = 0; i < 4; i++) {
+    x = (corner[i].x * cosTheta) - (corner[i].y * sinTheta);
+    y = (corner[i].x * sinTheta) + (corner[i].y * cosTheta);
+    if (x > xMax) {
+      xMax = x;
+    }
+    if (y > yMax) {
+      yMax = y;
+    }
+    if (bbox != NULL) {
+      bbox[i].x = x;
+      bbox[i].y = y;
+    }
+  }
+
+  /*
+   * By symmetry, the width and height of the bounding box are twice the
+   * maximum x and y coordinates.
+   */
+  *rotWidthPtr = xMax + xMax;
+  *rotHeightPtr = yMax + yMax;
 }
 
 /*
@@ -351,45 +351,45 @@ Blt_GetBoundingBox(
  */
 void
 Blt_TranslateAnchor(
-    int x, int y,		/* Window coordinates of anchor */
-    int w, int h,		/* Extents of the bounding box */
-    Tk_Anchor anchor,		/* Direction of the anchor */
-    int *xPtr, int *yPtr)
+		    int x, int y,		/* Window coordinates of anchor */
+		    int w, int h,		/* Extents of the bounding box */
+		    Tk_Anchor anchor,		/* Direction of the anchor */
+		    int *xPtr, int *yPtr)
 {
-    switch (anchor) {
-    case TK_ANCHOR_NW:		/* 7 Upper left corner */
-	break;
-    case TK_ANCHOR_W:		/* 6 Left center */
-	y -= (h / 2);
-	break;
-    case TK_ANCHOR_SW:		/* 5 Lower left corner */
-	y -= h;
-	break;
-    case TK_ANCHOR_N:		/* 0 Top center */
-	x -= (w / 2);
-	break;
-    case TK_ANCHOR_CENTER:	/* 8 Center */
-	x -= (w / 2);
-	y -= (h / 2);
-	break;
-    case TK_ANCHOR_S:		/* 4 Bottom center */
-	x -= (w / 2);
-	y -= h;
-	break;
-    case TK_ANCHOR_NE:		/* 1 Upper right corner */
-	x -= w;
-	break;
-    case TK_ANCHOR_E:		/* 2 Right center */
-	x -= w;
-	y -= (h / 2);
-	break;
-    case TK_ANCHOR_SE:		/* 3 Lower right corner */
-	x -= w;
-	y -= h;
-	break;
-    }
-    *xPtr = x;
-    *yPtr = y;
+  switch (anchor) {
+  case TK_ANCHOR_NW:		/* 7 Upper left corner */
+    break;
+  case TK_ANCHOR_W:		/* 6 Left center */
+    y -= (h / 2);
+    break;
+  case TK_ANCHOR_SW:		/* 5 Lower left corner */
+    y -= h;
+    break;
+  case TK_ANCHOR_N:		/* 0 Top center */
+    x -= (w / 2);
+    break;
+  case TK_ANCHOR_CENTER:	/* 8 Center */
+    x -= (w / 2);
+    y -= (h / 2);
+    break;
+  case TK_ANCHOR_S:		/* 4 Bottom center */
+    x -= (w / 2);
+    y -= h;
+    break;
+  case TK_ANCHOR_NE:		/* 1 Upper right corner */
+    x -= w;
+    break;
+  case TK_ANCHOR_E:		/* 2 Right center */
+    x -= w;
+    y -= (h / 2);
+    break;
+  case TK_ANCHOR_SE:		/* 3 Lower right corner */
+    x -= w;
+    y -= h;
+    break;
+  }
+  *xPtr = x;
+  *yPtr = y;
 }
 
 /*
@@ -418,47 +418,47 @@ Blt_TranslateAnchor(
  */
 Point2d
 Blt_AnchorPoint(
-    double x, double y,		/* Coordinates of anchor. */
-    double w, double h,		/* Extents of the bounding box */
-    Tk_Anchor anchor)		/* Direction of the anchor */
+		double x, double y,		/* Coordinates of anchor. */
+		double w, double h,		/* Extents of the bounding box */
+		Tk_Anchor anchor)		/* Direction of the anchor */
 {
-    Point2d t;
+  Point2d t;
 
-    switch (anchor) {
-    case TK_ANCHOR_NW:		/* 7 Upper left corner */
-	break;
-    case TK_ANCHOR_W:		/* 6 Left center */
-	y -= (h * 0.5);
-	break;
-    case TK_ANCHOR_SW:		/* 5 Lower left corner */
-	y -= h;
-	break;
-    case TK_ANCHOR_N:		/* 0 Top center */
-	x -= (w * 0.5);
-	break;
-    case TK_ANCHOR_CENTER:	/* 8 Center */
-	x -= (w * 0.5);
-	y -= (h * 0.5);
-	break;
-    case TK_ANCHOR_S:		/* 4 Bottom center */
-	x -= (w * 0.5);
-	y -= h;
-	break;
-    case TK_ANCHOR_NE:		/* 1 Upper right corner */
-	x -= w;
-	break;
-    case TK_ANCHOR_E:		/* 2 Right center */
-	x -= w;
-	y -= (h * 0.5);
-	break;
-    case TK_ANCHOR_SE:		/* 3 Lower right corner */
-	x -= w;
-	y -= h;
-	break;
-    }
-    t.x = x;
-    t.y = y;
-    return t;
+  switch (anchor) {
+  case TK_ANCHOR_NW:		/* 7 Upper left corner */
+    break;
+  case TK_ANCHOR_W:		/* 6 Left center */
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_SW:		/* 5 Lower left corner */
+    y -= h;
+    break;
+  case TK_ANCHOR_N:		/* 0 Top center */
+    x -= (w * 0.5);
+    break;
+  case TK_ANCHOR_CENTER:	/* 8 Center */
+    x -= (w * 0.5);
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_S:		/* 4 Bottom center */
+    x -= (w * 0.5);
+    y -= h;
+    break;
+  case TK_ANCHOR_NE:		/* 1 Upper right corner */
+    x -= w;
+    break;
+  case TK_ANCHOR_E:		/* 2 Right center */
+    x -= w;
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_SE:		/* 3 Lower right corner */
+    x -= w;
+    y -= h;
+    break;
+  }
+  t.x = x;
+  t.y = y;
+  return t;
 }
 
 /*
@@ -486,149 +486,119 @@ Blt_AnchorPoint(
  */
 void
 Blt_Ts_DrawText(
-    Tk_Window tkwin,
-    Drawable drawable,
-    const char *text,
-    int textLen,
-    TextStyle *stylePtr,		/* Text attribute information */
-    int x, int y)			/* Window coordinates to draw text */
+		Tk_Window tkwin,
+		Drawable drawable,
+		const char *text,
+		int textLen,
+		TextStyle *stylePtr,		/* Text attribute information */
+		int x, int y)			/* Window coordinates to draw text */
 {
-    printf("Blt_Ts_DrawText: %s\n",text);
-    dump_Ts(stylePtr);
+  printf("Blt_Ts_DrawText: %s\n",text);
+  //    dump_Ts(stylePtr);
 
-    if ((text == NULL) || (*text == '\0')) {
-	return;			/* Empty string, do nothing */
-    }
+  if ((text == NULL) || (*text == '\0')) {
+    return;			/* Empty string, do nothing */
+  }
 
-    Display* display = Tk_Display(tkwin);
-
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    Tk_Font font = stylePtr->font;
-    XSetFont(display, gc, Tk_FontId(font));
-    //    GC gc = stylePtr->gc;
-
-    int width,height, xx, yy;
-    Tk_TextLayout layout = Tk_ComputeTextLayout(font, text, textLen, -1, 
-						stylePtr->justify, 0,
-						&width, &height);
-    Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    //    printf("x=%d y=%d, xx=%d yy=%d\n",x,y,xx,yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    			   stylePtr->angle, 0, textLen);
-
-    if (gc)
-      XFreeGC(display, gc);
+  int width,height, xx, yy;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
+					      stylePtr->justify, 0,
+					      &width, &height);
+  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
+  //    printf("x=%d y=%d, xx=%d yy=%d\n",x,y,xx,yy);
+  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  //			   xx, yy, stylePtr->angle, 0, textLen);
 }
 
 void
 Blt_DrawText2(
-    Tk_Window tkwin,
-    Drawable drawable,
-    const char *text,
-    TextStyle *stylePtr,		/* Text attribute information */
-    int x, int y,		/* Window coordinates to draw text */
-    Dim2D *areaPtr)
+	      Tk_Window tkwin,
+	      Drawable drawable,
+	      const char *text,
+	      TextStyle *stylePtr,		/* Text attribute information */
+	      int x, int y,		/* Window coordinates to draw text */
+	      Dim2D *areaPtr)
 {
-    printf("Blt_DrawText2: %s\n",text);
-    dump_Ts(stylePtr);
+  printf("Blt_DrawText2: %s\n",text);
+  //    dump_Ts(stylePtr);
 
-    if ((text == NULL) || (*text == '\0')) {
-	return;			/* Empty string, do nothing */
-    }
+  if ((text == NULL) || (*text == '\0')) {
+    return;			/* Empty string, do nothing */
+  }
 
-    Display* display = Tk_Display(tkwin);
+  int width,height, xx, yy;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+					      stylePtr->justify, 0,
+					      &width, &height);
+  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
+  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  //			   xx, yy, stylePtr->angle, 0, -1);
 
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    Tk_Font font = stylePtr->font;
-    XSetFont(display, gc, Tk_FontId(font));
-    //    GC gc = stylePtr->gc;
+  float angle = fmod(stylePtr->angle, 360.0);
+  if (angle < 0.0) {
+    angle += 360.0;
+  }
+  if (angle != 0.0) {
+    double rotWidth, rotHeight;
 
-    int width,height, xx, yy;
-    Tk_TextLayout layout = Tk_ComputeTextLayout(font, text, -1, -1, 
-						stylePtr->justify, 0,
-						&width, &height);
-    Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    			   stylePtr->angle, 0, -1);
-
-    if (gc)
-      XFreeGC(display, gc);
-
-    float angle = fmod(stylePtr->angle, 360.0);
-    if (angle < 0.0) {
-	angle += 360.0;
-    }
-    if (angle != 0.0) {
-	double rotWidth, rotHeight;
-
-	Blt_GetBoundingBox(width, height, angle, &rotWidth, &rotHeight, 
-	   (Point2d *)NULL);
-	width = ROUND(rotWidth);
-	height = ROUND(rotHeight);
-    }
-    areaPtr->width = width;
-    areaPtr->height = height;
+    Blt_GetBoundingBox(width, height, angle, &rotWidth, &rotHeight, 
+		       (Point2d *)NULL);
+    width = ROUND(rotWidth);
+    height = ROUND(rotHeight);
+  }
+  areaPtr->width = width;
+  areaPtr->height = height;
 }
 
 void
 Blt_DrawText(
-    Tk_Window tkwin,
-    Drawable drawable,
-    const char *text,
-    TextStyle *stylePtr,		/* Text attribute information */
-    int x, int y)		/* Window coordinates to draw text */
+	     Tk_Window tkwin,
+	     Drawable drawable,
+	     const char *text,
+	     TextStyle *stylePtr,		/* Text attribute information */
+	     int x, int y)		/* Window coordinates to draw text */
 {
-    printf("Blt_DrawText: %s\n",text);
-    dump_Ts(stylePtr);
+  printf("Blt_DrawText: %s\n",text);
+  //    dump_Ts(stylePtr);
 
-    if ((text == NULL) || (*text == '\0')) {
-	return;			/* Empty string, do nothing */
-    }
+  if ((text == NULL) || (*text == '\0')) {
+    return;			/* Empty string, do nothing */
+  }
 
-    Display* display = Tk_Display(tkwin);
-
-    GC gc = XCreateGC(display, Tk_WindowId(tkwin), 0, NULL);
-    Tk_Font font = stylePtr->font;
-    XSetFont(display, gc, Tk_FontId(font));
-    //    GC gc = stylePtr->gc;
-
-    int width,height, xx, yy;
-    Tk_TextLayout layout = Tk_ComputeTextLayout(font, text, -1, -1, 
-						stylePtr->justify, 0,
-						&width, &height);
-    Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-    TkDrawAngledTextLayout(display, drawable, gc, layout, xx, yy, 
-    			   stylePtr->angle, 0, -1);
-
-    if (gc)
-      XFreeGC(display, gc);
+  int width,height, xx, yy;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+					      stylePtr->justify, 0,
+					      &width, &height);
+  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
+  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout, 
+  //			   xx, yy, stylePtr->angle, 0, -1);
 }
 
 void
 Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
 {
-    GC newGC;
-    XGCValues gcValues;
-    unsigned long gcMask;
-
-    gcMask = GCFont;
-    gcValues.font = Tk_FontId(stylePtr->font);
-    if (stylePtr->color != NULL) {
-	gcMask |= GCForeground;
-	gcValues.foreground = stylePtr->color->pixel;
-    }
-    newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
-    if (stylePtr->gc != NULL) {
-	Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
-    }
-    stylePtr->gc = newGC;
-    stylePtr->flags &= ~UPDATE_GC;
+  GC newGC;
+  XGCValues gcValues;
+  unsigned long gcMask;
+ 
+  gcMask = GCFont;
+  gcValues.font = Tk_FontId(stylePtr->font);
+  if (stylePtr->color != NULL) {
+    gcMask |= GCForeground;
+    gcValues.foreground = stylePtr->color->pixel;
+  }
+  newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
+  if (stylePtr->gc != NULL) {
+    Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
+  }
+  stylePtr->gc = newGC;
+  stylePtr->flags &= ~UPDATE_GC;
 }
 
 void
 Blt_Ts_FreeStyle(Display *display, TextStyle *stylePtr)
 {
-    if (stylePtr->gc != NULL) {
-	Tk_FreeGC(display, stylePtr->gc);
-    }
+  if (stylePtr->gc != NULL) {
+    Tk_FreeGC(display, stylePtr->gc);
+  }
 }
