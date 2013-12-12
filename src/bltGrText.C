@@ -461,6 +461,37 @@ Blt_AnchorPoint(
   return t;
 }
 
+static void
+RotateStartingTextPositions(TextLayout *lPtr, int w, int h, float angle)
+{
+    Point2d off1, off2;
+    TextFragment *fp, *fend;
+    double radians;
+    double rw, rh;
+    double sinTheta, cosTheta;
+    
+    Blt_GetBoundingBox(w, h, angle, &rw, &rh, (Point2d *)NULL);
+    off1.x = (double)w * 0.5;
+    off1.y = (double)h * 0.5;
+    off2.x = rw * 0.5;
+    off2.y = rh * 0.5;
+    radians = (-angle / 180.0) * M_PI;
+    
+    sinTheta = sin(radians), cosTheta = cos(radians);
+    for (fp = lPtr->fragments, fend = fp + lPtr->nFrags; fp < fend; fp++) {
+	Point2d p, q;
+	
+	p.x = fp->x - off1.x;
+	p.y = fp->y - off1.y;
+	q.x = (p.x * cosTheta) - (p.y * sinTheta);
+	q.y = (p.x * sinTheta) + (p.y * cosTheta);
+	q.x += off2.x;
+	q.y += off2.y;
+	fp->sx = ROUND(q.x);
+	fp->sy = ROUND(q.y);
+    }
+}
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -494,20 +525,22 @@ Blt_Ts_DrawText(
 		int x, int y)			/* Window coordinates to draw text */
 {
   printf("Blt_Ts_DrawText: %s\n",text);
-  //    dump_Ts(stylePtr);
+  dump_Ts(stylePtr);
 
-  if ((text == NULL) || (*text == '\0')) {
-    return;			/* Empty string, do nothing */
-  }
+  if ((text == NULL) || (*text == '\0'))
+    return;
+
+  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+    Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int width,height, xx, yy;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
 					      stylePtr->justify, 0,
 					      &width, &height);
   Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-  //    printf("x=%d y=%d, xx=%d yy=%d\n",x,y,xx,yy);
-  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-  //			   xx, yy, stylePtr->angle, 0, textLen);
+  printf("x=%d y=%d, width=%d height=%d, xx=%d yy=%d\n",x,y,width,height,xx,yy);
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+			 xx, yy, stylePtr->angle, 0, textLen);
 }
 
 void
@@ -519,20 +552,22 @@ Blt_DrawText2(
 	      int x, int y,		/* Window coordinates to draw text */
 	      Dim2D *areaPtr)
 {
-  printf("Blt_DrawText2: %s\n",text);
+  //  printf("Blt_DrawText2: %s\n",text);
   //    dump_Ts(stylePtr);
 
-  if ((text == NULL) || (*text == '\0')) {
-    return;			/* Empty string, do nothing */
-  }
+  if ((text == NULL) || (*text == '\0'))
+    return;
+
+  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+    Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int width,height, xx, yy;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 					      stylePtr->justify, 0,
 					      &width, &height);
   Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-  //			   xx, yy, stylePtr->angle, 0, -1);
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+			 xx, yy, stylePtr->angle, 0, -1);
 
   float angle = fmod(stylePtr->angle, 360.0);
   if (angle < 0.0) {
@@ -558,20 +593,22 @@ Blt_DrawText(
 	     TextStyle *stylePtr,		/* Text attribute information */
 	     int x, int y)		/* Window coordinates to draw text */
 {
-  printf("Blt_DrawText: %s\n",text);
+  //  printf("Blt_DrawText: %s\n",text);
   //    dump_Ts(stylePtr);
 
-  if ((text == NULL) || (*text == '\0')) {
-    return;			/* Empty string, do nothing */
-  }
+  if ((text == NULL) || (*text == '\0'))
+    return;
+
+  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+    Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int width,height, xx, yy;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 					      stylePtr->justify, 0,
 					      &width, &height);
   Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-  //    TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout, 
-  //			   xx, yy, stylePtr->angle, 0, -1);
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout, 
+			 xx, yy, stylePtr->angle, 0, -1);
 }
 
 void
