@@ -9368,12 +9368,6 @@ rm -f conftest*
 
 
 #--------------------------------------------------------------------
-#	Check for freetype / fontconfig / Xft support.
-#--------------------------------------------------------------------
-
-XFT
-
-#--------------------------------------------------------------------
 # Determine the name of the tclsh and/or wish executables in the
 # Tcl and Tk build directories or the location they were installed
 # into. These paths are used to support running test cases only,

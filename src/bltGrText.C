@@ -329,72 +329,6 @@ Blt_GetBoundingBox(
 /*
  *---------------------------------------------------------------------------
  *
- * Blt_TranslateAnchor --
- *
- * 	Translate the coordinates of a given bounding box based upon the
- * 	anchor specified.  The anchor indicates where the given x-y position
- * 	is in relation to the bounding box.
- *
- *  		7 nw --- 0 n --- 1 ne
- *  		 |                |
- *  		6 w    8 center  2 e
- *  		 |                |
- *  		5 sw --- 4 s --- 3 se
- *
- * 	The coordinates returned are translated to the origin of the bounding
- * 	box (suitable for giving to XCopyArea, XCopyPlane, etc.)
- *
- * Results:
- *	The translated coordinates of the bounding box are returned.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_TranslateAnchor(
-		    int x, int y,		/* Window coordinates of anchor */
-		    int w, int h,		/* Extents of the bounding box */
-		    Tk_Anchor anchor,		/* Direction of the anchor */
-		    int *xPtr, int *yPtr)
-{
-  switch (anchor) {
-  case TK_ANCHOR_NW:		/* 7 Upper left corner */
-    break;
-  case TK_ANCHOR_W:		/* 6 Left center */
-    y -= (h / 2);
-    break;
-  case TK_ANCHOR_SW:		/* 5 Lower left corner */
-    y -= h;
-    break;
-  case TK_ANCHOR_N:		/* 0 Top center */
-    x -= (w / 2);
-    break;
-  case TK_ANCHOR_CENTER:	/* 8 Center */
-    x -= (w / 2);
-    y -= (h / 2);
-    break;
-  case TK_ANCHOR_S:		/* 4 Bottom center */
-    x -= (w / 2);
-    y -= h;
-    break;
-  case TK_ANCHOR_NE:		/* 1 Upper right corner */
-    x -= w;
-    break;
-  case TK_ANCHOR_E:		/* 2 Right center */
-    x -= w;
-    y -= (h / 2);
-    break;
-  case TK_ANCHOR_SE:		/* 3 Lower right corner */
-    x -= w;
-    y -= h;
-    break;
-  }
-  *xPtr = x;
-  *yPtr = y;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * Blt_AnchorPoint --
  *
  * 	Translates a position, using both the dimensions of the bounding box,
@@ -461,37 +395,6 @@ Blt_AnchorPoint(
   return t;
 }
 
-static void
-RotateStartingTextPositions(TextLayout *lPtr, int w, int h, float angle)
-{
-    Point2d off1, off2;
-    TextFragment *fp, *fend;
-    double radians;
-    double rw, rh;
-    double sinTheta, cosTheta;
-    
-    Blt_GetBoundingBox(w, h, angle, &rw, &rh, (Point2d *)NULL);
-    off1.x = (double)w * 0.5;
-    off1.y = (double)h * 0.5;
-    off2.x = rw * 0.5;
-    off2.y = rh * 0.5;
-    radians = (-angle / 180.0) * M_PI;
-    
-    sinTheta = sin(radians), cosTheta = cos(radians);
-    for (fp = lPtr->fragments, fend = fp + lPtr->nFrags; fp < fend; fp++) {
-	Point2d p, q;
-	
-	p.x = fp->x - off1.x;
-	p.y = fp->y - off1.y;
-	q.x = (p.x * cosTheta) - (p.y * sinTheta);
-	q.y = (p.x * sinTheta) + (p.y * cosTheta);
-	q.x += off2.x;
-	q.y += off2.y;
-	fp->sx = ROUND(q.x);
-	fp->sy = ROUND(q.y);
-    }
-}
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -533,14 +436,36 @@ Blt_Ts_DrawText(
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  int width,height, xx, yy;
+  int w1, h1;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
 					      stylePtr->justify, 0,
-					      &width, &height);
-  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
-  printf("x=%d y=%d, width=%d height=%d, xx=%d yy=%d\n",x,y,width,height,xx,yy);
+					      &w1, &h1);
+
+  //  Matrix t0 = Translate(-x,-y);
+  //  Matrix t1 = Translate(-w1/2,-h1/2);
+  //  Matrix rr = Rotate(angle);
+  //  Matrix t2 = Translate(w2/2,h2/2);
+  //  Matrix t3 = Translate(x,y);
+
+  float angle = stylePtr->angle;
+  float ccos = cos(M_PI*angle/180.);
+  float ssin = sin(M_PI*angle/180.);
+
+  double w2,h2;
+  Blt_GetBoundingBox(w1, h1, angle, &w2, &h2, (Point2d *)NULL);
+
+  float x1 = x+w1/2.;
+  float y1 = y+h1/2.;
+  float x2 = w2/2.+x;
+  float y2 = h2/2.+y;
+
+  int rx =  x*ccos + y*ssin + (-x1*ccos -y1*ssin +x2);
+  int ry = -x*ssin + y*ccos + ( x1*ssin -y1*ccos +y2);
+
+  Point2d rr = Blt_AnchorPoint(rx, ry, w2, h2, stylePtr->anchor);
+
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-			 xx, yy, stylePtr->angle, 0, textLen);
+  			 rr.x, rr.y, angle, 0, textLen);
 }
 
 void
@@ -561,13 +486,13 @@ Blt_DrawText2(
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  int width,height, xx, yy;
+  int width, height;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 					      stylePtr->justify, 0,
 					      &width, &height);
-  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
+  Point2d vv = Blt_AnchorPoint(x, y, width, height, stylePtr->anchor);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-			 xx, yy, stylePtr->angle, 0, -1);
+			 vv.x, vv.y, stylePtr->angle, 0, -1);
 
   float angle = fmod(stylePtr->angle, 360.0);
   if (angle < 0.0) {
@@ -602,13 +527,13 @@ Blt_DrawText(
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  int width,height, xx, yy;
+  int width, height;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 					      stylePtr->justify, 0,
 					      &width, &height);
-  Blt_TranslateAnchor(x, y, width, height, stylePtr->anchor, &xx, &yy);
+  Point2d vv = Blt_AnchorPoint(x, y, width, height, stylePtr->anchor);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout, 
-			 xx, yy, stylePtr->angle, 0, -1);
+			 vv.x, vv.y, stylePtr->angle, 0, -1);
 }
 
 void
