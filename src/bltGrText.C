@@ -4,8 +4,6 @@
  * available under the same terms.
  */
 
-#include <tk.h>
-
 /*
  * bltText.c --
  *
@@ -36,26 +34,23 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
+#include <tk.h>
 #include <tkPort.h>
 #include <tkInt.h>
-#include <tk3d.h>
 
 #include "bltInt.h"
 #include "bltMath.h"
-#include "bltHash.h"
 #include "bltImage.h"
-#include "bltBitmap.h"
 #include "bltText.h"
-#include "bltBgStyle.h"
 
 void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, int textLen,
 			unsigned int *widthPtr, unsigned int *heightPtr)
 {
   unsigned int lineHeight;
 
-  if (text == NULL) {
-    return;			/* NULL string? */
-  }
+  if (text == NULL)
+    return;
+
   {
     Tk_FontMetrics fm;
 
@@ -109,9 +104,9 @@ void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text,
 		       unsigned int *widthPtr, unsigned int *heightPtr)
 {
 
-  if (text == NULL) {
+  if (text == NULL)
     *widthPtr = *heightPtr = 0;
-  } else {
+  else {
     unsigned int w, h;
 
     Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
@@ -300,6 +295,7 @@ Blt_AnchorPoint(double x, double y, double w, double h,	Tk_Anchor anchor)
     y -= h;
     break;
   }
+
   t.x = x;
   t.y = y;
   return t;
@@ -385,6 +381,7 @@ void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
     w1 = ROUND(rotWidth);
     h1 = ROUND(rotHeight);
   }
+
   areaPtr->width = w1;
   areaPtr->height = h1;
 }
@@ -425,6 +422,7 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
   if (stylePtr->gc != NULL) {
     Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
   }
+
   stylePtr->gc = newGC;
   stylePtr->flags &= ~UPDATE_GC;
 }
