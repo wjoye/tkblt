@@ -51,20 +51,7 @@
 static Blt_HashTable bitmapGCTable;
 static int initialized;
 
-void dump_Ts(TextStyle* ts)
-{
-  printf("  state: %d\n",ts->state);
-  printf("  angle: %f\n",ts->angle);
-  printf("  anchor: %d\n",ts->anchor);
-  printf("  justify: %d\n",ts->justify);
-  printf("  leader: %d\n",ts->leader);
-  printf("  underline: %d\n",ts->underline);
-  printf("  maxLength: %d\n",ts->maxLength);
-  printf("  flags: %d\n",ts->flags);
-}
-
-GC
-Blt_GetBitmapGC(Tk_Window tkwin)
+GC Blt_GetBitmapGC(Tk_Window tkwin)
 {
   int isNew;
   GC gc;
@@ -96,29 +83,8 @@ Blt_GetBitmapGC(Tk_Window tkwin)
   return gc;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetTextExtents --
- *
- *	Get the extents of a possibly multiple-lined text string.
- *
- * Results:
- *	Returns via *widthPtr* and *heightPtr* the dimensions of the text
- *	string.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_GetTextExtents(
-		   Tk_Font font, 
-		   int leader,
-		   const char *text,		/* Text string to be measured. */
-		   int textLen,		/* Length of the text. If -1, indicates that
-					 * text is an ASCIZ string that the length
-					 * should be computed with strlen. */
-		   unsigned int *widthPtr, 
-		   unsigned int *heightPtr)
+void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, int textLen,
+			unsigned int *widthPtr, unsigned int *heightPtr)
 {
   unsigned int lineHeight;
 
@@ -174,22 +140,8 @@ Blt_GetTextExtents(
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Ts_GetExtents --
- *
- *	Get the extents of a possibly multiple-lined text string.
- *
- * Results:
- *	Returns via *widthPtr* and *heightPtr* the dimensions of
- *	the text string.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, unsigned int *widthPtr, 
-		  unsigned int *heightPtr)
+void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
+		       unsigned int *widthPtr, unsigned int *heightPtr)
 {
 
   if (text == NULL) {
@@ -232,13 +184,9 @@ Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, unsigned int *widthPtr,
  *
  *---------------------------------------------------------------------------
  */
-void
-Blt_GetBoundingBox(
-		   int width, int height,	/* Unrotated region */
-		   float angle,		/* Rotation of box */
-		   double *rotWidthPtr, 
-		   double *rotHeightPtr,	/* (out) Bounding box region */
-		   Point2d *bbox)		/* (out) Points of the rotated box */
+void Blt_GetBoundingBox(int width, int height, float angle,
+			double *rotWidthPtr, double *rotHeightPtr,
+			Point2d *bbox)
 {
   int i;
   double sinTheta, cosTheta;
@@ -351,10 +299,7 @@ Blt_GetBoundingBox(
  *---------------------------------------------------------------------------
  */
 Point2d
-Blt_AnchorPoint(
-		double x, double y,		/* Coordinates of anchor. */
-		double w, double h,		/* Extents of the bounding box */
-		Tk_Anchor anchor)		/* Direction of the anchor */
+Blt_AnchorPoint(double x, double y, double w, double h,	Tk_Anchor anchor)
 {
   Point2d t;
 
@@ -395,90 +340,41 @@ Blt_AnchorPoint(
   return t;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Ts_DrawText --
- *
- *	Draw a text string, possibly rotated, using the the given window
- *	coordinates as an anchor for the text bounding box.  If the text is
- *	not rotated, simply use the X text drawing routines. Otherwise,
- *	generate a bitmap of the rotated text.
- *
- * Results:
- *	Returns the x-coordinate to the right of the text.
- *
- * Side Effects:
- *	Text string is drawn using the given font and GC at the the given
- *	window coordinates.
- *
- *      The Stipple, FillStyle, and TSOrigin fields of the GC are modified for
- *      rotated text.  This assumes the GC is private, *not* shared (via
- *      Tk_GetGC)
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Ts_DrawText(
-		Tk_Window tkwin,
-		Drawable drawable,
-		const char *text,
-		int textLen,
-		TextStyle *stylePtr,		/* Text attribute information */
-		int x, int y)			/* Window coordinates to draw text */
+static Point2d Rotate_Text(int x, int y, int w1, int h1, TextStyle* stylePtr)
 {
-  printf("Blt_Ts_DrawText: %s\n",text);
-  dump_Ts(stylePtr);
-
-  if ((text == NULL) || (*text == '\0'))
-    return;
-
-  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
-    Blt_Ts_ResetStyle(tkwin, stylePtr);
-
-  int w1, h1;
-  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
-					      stylePtr->justify, 0,
-					      &w1, &h1);
-
   //  Matrix t0 = Translate(-x,-y);
   //  Matrix t1 = Translate(-w1/2,-h1/2);
   //  Matrix rr = Rotate(angle);
   //  Matrix t2 = Translate(w2/2,h2/2);
   //  Matrix t3 = Translate(x,y);
 
-  float angle = stylePtr->angle;
-  float ccos = cos(M_PI*angle/180.);
-  float ssin = sin(M_PI*angle/180.);
+  double angle, ccos, ssin;
+  double w2, h2;
+  double x1, y1, x2, y2;
+  double rx, ry;
 
-  double w2,h2;
+  angle = stylePtr->angle;
+  ccos = cos(M_PI*angle/180.);
+  ssin = sin(M_PI*angle/180.);
   Blt_GetBoundingBox(w1, h1, angle, &w2, &h2, (Point2d *)NULL);
 
-  float x1 = x+w1/2.;
-  float y1 = y+h1/2.;
-  float x2 = w2/2.+x;
-  float y2 = h2/2.+y;
+  x1 = x+w1/2.;
+  y1 = y+h1/2.;
+  x2 = w2/2.+x;
+  y2 = h2/2.+y;
 
-  int rx =  x*ccos + y*ssin + (-x1*ccos -y1*ssin +x2);
-  int ry = -x*ssin + y*ccos + ( x1*ssin -y1*ccos +y2);
+  rx =  x*ccos + y*ssin + (-x1*ccos -y1*ssin +x2);
+  ry = -x*ssin + y*ccos + ( x1*ssin -y1*ccos +y2);
 
-  Point2d rr = Blt_AnchorPoint(rx, ry, w2, h2, stylePtr->anchor);
-
-  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-  			 rr.x, rr.y, angle, 0, textLen);
+  return Blt_AnchorPoint(rx, ry, w2, h2, stylePtr->anchor);
 }
 
-void
-Blt_DrawText2(
-	      Tk_Window tkwin,
-	      Drawable drawable,
-	      const char *text,
-	      TextStyle *stylePtr,		/* Text attribute information */
-	      int x, int y,		/* Window coordinates to draw text */
-	      Dim2D *areaPtr)
+void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
+		     int textLen, TextStyle *stylePtr,int x, int y)
 {
-  //  printf("Blt_DrawText2: %s\n",text);
-  //    dump_Ts(stylePtr);
+  Tk_TextLayout layout;
+  int w1, h1;
+  Point2d rr;
 
   if ((text == NULL) || (*text == '\0'))
     return;
@@ -486,40 +382,54 @@ Blt_DrawText2(
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  int width, height;
-  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
-					      stylePtr->justify, 0,
-					      &width, &height);
-  Point2d vv = Blt_AnchorPoint(x, y, width, height, stylePtr->anchor);
+  layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
+				stylePtr->justify, 0, &w1, &h1);
+  rr = Rotate_Text(x, y, w1, h1, stylePtr);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
-			 vv.x, vv.y, stylePtr->angle, 0, -1);
+  			 rr.x, rr.y, stylePtr->angle, 0, textLen);
+}
+
+void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
+		   TextStyle *stylePtr, int x, int y, Dim2D *areaPtr)
+{
+  Tk_TextLayout layout;
+  int w1, h1;
+  Point2d rr;
+
+  if ((text == NULL) || (*text == '\0'))
+    return;
+
+  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+    Blt_Ts_ResetStyle(tkwin, stylePtr);
+
+  layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+				stylePtr->justify, 0, &w1, &h1);
+  rr = Rotate_Text(x, y, w1, h1, stylePtr);
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  			 rr.x, rr.y, stylePtr->angle, 0, -1);
 
   float angle = fmod(stylePtr->angle, 360.0);
-  if (angle < 0.0) {
+  if (angle < 0.0)
     angle += 360.0;
-  }
+
   if (angle != 0.0) {
     double rotWidth, rotHeight;
 
-    Blt_GetBoundingBox(width, height, angle, &rotWidth, &rotHeight, 
+    Blt_GetBoundingBox(w1, h1, angle, &rotWidth, &rotHeight, 
 		       (Point2d *)NULL);
-    width = ROUND(rotWidth);
-    height = ROUND(rotHeight);
+    w1 = ROUND(rotWidth);
+    h1 = ROUND(rotHeight);
   }
-  areaPtr->width = width;
-  areaPtr->height = height;
+  areaPtr->width = w1;
+  areaPtr->height = h1;
 }
 
-void
-Blt_DrawText(
-	     Tk_Window tkwin,
-	     Drawable drawable,
-	     const char *text,
-	     TextStyle *stylePtr,		/* Text attribute information */
-	     int x, int y)		/* Window coordinates to draw text */
+void Blt_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
+		  TextStyle *stylePtr, int x, int y)
 {
-  //  printf("Blt_DrawText: %s\n",text);
-  //    dump_Ts(stylePtr);
+  Tk_TextLayout layout;
+  int w1, h1;
+  Point2d rr;
 
   if ((text == NULL) || (*text == '\0'))
     return;
@@ -527,17 +437,14 @@ Blt_DrawText(
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  int width, height;
-  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
-					      stylePtr->justify, 0,
-					      &width, &height);
-  Point2d vv = Blt_AnchorPoint(x, y, width, height, stylePtr->anchor);
-  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout, 
-			 vv.x, vv.y, stylePtr->angle, 0, -1);
+  layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+				stylePtr->justify, 0, &w1, &h1);
+  rr = Rotate_Text(x, y, w1, h1, stylePtr);
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  			 rr.x, rr.y, stylePtr->angle, 0, -1);
 }
 
-void
-Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
+void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
 {
   GC newGC;
   XGCValues gcValues;
@@ -557,10 +464,8 @@ Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
   stylePtr->flags &= ~UPDATE_GC;
 }
 
-void
-Blt_Ts_FreeStyle(Display *display, TextStyle *stylePtr)
+void Blt_Ts_FreeStyle(Display *display, TextStyle *stylePtr)
 {
-  if (stylePtr->gc != NULL) {
+  if (stylePtr->gc != NULL)
     Tk_FreeGC(display, stylePtr->gc);
-  }
 }
