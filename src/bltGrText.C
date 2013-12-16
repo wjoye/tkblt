@@ -48,41 +48,6 @@
 #include "bltText.h"
 #include "bltBgStyle.h"
 
-static Blt_HashTable bitmapGCTable;
-static int initialized;
-
-GC Blt_GetBitmapGC(Tk_Window tkwin)
-{
-  int isNew;
-  GC gc;
-  Display *display;
-  Blt_HashEntry *hPtr;
-
-  if (!initialized) {
-    Blt_InitHashTable(&bitmapGCTable, BLT_ONE_WORD_KEYS);
-    initialized = TRUE;
-  }
-  display = Tk_Display(tkwin);
-  hPtr = Blt_CreateHashEntry(&bitmapGCTable, (char *)display, &isNew);
-  if (isNew) {
-    Pixmap bitmap;
-    XGCValues gcValues;
-    unsigned long gcMask;
-    Window root;
-
-    root = Tk_RootWindow(tkwin);
-    bitmap = Tk_GetPixmap(display, root, 1, 1, 1);
-    gcValues.foreground = gcValues.background = 0;
-    gcMask = (GCForeground | GCBackground);
-    gc = Blt_GetPrivateGCFromDrawable(display, bitmap, gcMask, &gcValues);
-    Tk_FreePixmap(display, bitmap);
-    Blt_SetHashValue(hPtr, gc);
-  } else {
-    gc = (GC)Blt_GetHashValue(hPtr);
-  }
-  return gc;
-}
-
 void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, int textLen,
 			unsigned int *widthPtr, unsigned int *heightPtr)
 {
