@@ -654,35 +654,6 @@ Blt_UpdateScrollbar(
 
 }
 
-/* -------------------------------------------------------------------------- */
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetPrivateGCFromDrawable --
- *
- *      Like Tk_GetGC, but doesn't share the GC with any other widget.  This
- *      is needed because the certain GC parameters (like dashes) can not be
- *      set via XCreateGC, therefore there is no way for Tk's hashing
- *      mechanism to recognize that two such GCs differ.
- *
- * Results:
- *      A new GC is returned.
- *
- *---------------------------------------------------------------------------
- */
-GC
-Blt_GetPrivateGCFromDrawable(
-    Display *display,
-    Drawable drawable,
-    unsigned long gcMask,
-    XGCValues *valuePtr)
-{
-    GC newGC;
-
-    newGC = XCreateGC(display, drawable, gcMask, valuePtr);
-    return newGC;
-}
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -728,7 +699,7 @@ Blt_GetPrivateGC(
 		Tk_Colormap(tkwin), Tk_Visual(tkwin));
 	}
     }
-    gc = Blt_GetPrivateGCFromDrawable(display, drawable, gcMask, valuePtr);
+    gc = XCreateGC(display, drawable, gcMask, valuePtr);
     if (pixmap != None) {
 	Tk_FreePixmap(display, pixmap);
     }

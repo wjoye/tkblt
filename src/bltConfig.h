@@ -283,7 +283,6 @@ typedef struct {
 					 * yet */
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
-extern Blt_Dashes *Blt_GetDashes (GC gc);
 
 extern int Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, Blt_Limits *limitsPtr);
