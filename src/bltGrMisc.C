@@ -669,48 +669,44 @@ Blt_UpdateScrollbar(
  *
  *---------------------------------------------------------------------------
  */
-GC
-Blt_GetPrivateGC(
-    Tk_Window tkwin,
-    unsigned long gcMask,
-    XGCValues *valuePtr)
+
+GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
 {
-    GC gc;
-    Pixmap pixmap;
-    Drawable drawable;
-    Display *display;
+  GC gc;
+  Pixmap pixmap;
+  Drawable drawable;
+  Display *display;
 
-    pixmap = None;
-    drawable = Tk_WindowId(tkwin);
-    display = Tk_Display(tkwin);
-    if (drawable == None) {
-	Drawable root;
-	int depth;
+  pixmap = None;
+  drawable = Tk_WindowId(tkwin);
+  display = Tk_Display(tkwin);
+  if (drawable == None) {
+    Drawable root;
+    int depth;
 
-	root = Tk_RootWindow(tkwin);
-	depth = Tk_Depth(tkwin);
+    root = Tk_RootWindow(tkwin);
+    depth = Tk_Depth(tkwin);
 
-	if (depth == DefaultDepth(display, Tk_ScreenNumber(tkwin))) {
-	    drawable = root;
-	} else {
-	    pixmap = Tk_GetPixmap(display, root, 1, 1, depth);
-	    drawable = pixmap;
-	    Blt_SetDrawableAttribs(display, drawable, 1, 1, depth, 
-		Tk_Colormap(tkwin), Tk_Visual(tkwin));
-	}
+    if (depth == DefaultDepth(display, Tk_ScreenNumber(tkwin))) {
+      drawable = root;
+    } else {
+      pixmap = Tk_GetPixmap(display, root, 1, 1, depth);
+      drawable = pixmap;
+      Blt_SetDrawableAttribs(display, drawable, 1, 1, depth, 
+			     Tk_Colormap(tkwin), Tk_Visual(tkwin));
     }
-    gc = XCreateGC(display, drawable, gcMask, valuePtr);
-    if (pixmap != None) {
-	Tk_FreePixmap(display, pixmap);
-    }
-    return gc;
+  }
+  gc = XCreateGC(display, drawable, gcMask, valuePtr);
+  if (pixmap != None) {
+    Tk_FreePixmap(display, pixmap);
+  }
+  return gc;
 }
 
-void
-Blt_FreePrivateGC(Display *display, GC gc)
+void Blt_FreePrivateGC(Display *display, GC gc)
 {
-    Tk_FreeXId(display, (XID) XGContextFromGC(gc));
-    XFreeGC(display, gc);
+  Tk_FreeXId(display, (XID) XGContextFromGC(gc));
+  XFreeGC(display, gc);
 }
 
 void

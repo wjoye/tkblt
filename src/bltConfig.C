@@ -1989,8 +1989,10 @@ Blt_ConfigureComponentFromObj(
     Tk_SetClass(tkwin, className);
     result = Blt_ConfigureWidgetFromObj(interp, tkwin, sp, objc, objv, widgRec,
 	flags);
+
     if (isTemporary) {
-	Tk_DestroyWindow(tkwin);
+      Tk_DestroyWindow(tkwin);
     }
+
     return result;
 }
