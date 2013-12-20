@@ -38,18 +38,6 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 
-#define ARROW_LEFT		(0)
-#define ARROW_UP		(1)
-#define ARROW_RIGHT		(2)
-#define ARROW_DOWN		(3)
-#define ARROW_OFFSET		4
-#define STD_ARROW_HEIGHT	3
-#define STD_ARROW_WIDTH		((2 * (ARROW_OFFSET - 1)) + 1)
-
-#define BLT_SCROLL_MODE_CANVAS	(1<<0)
-#define BLT_SCROLL_MODE_LISTBOX	(1<<1)
-#define BLT_SCROLL_MODE_HIERBOX	(1<<2)
-
 static Blt_OptionParseProc ObjToPoint;
 static Blt_OptionPrintProc PointToObj;
 Blt_CustomOption bltPointOption =
