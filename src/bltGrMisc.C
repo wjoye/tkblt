@@ -57,14 +57,6 @@ Blt_CustomOption bltPointOption =
     ObjToPoint, PointToObj, NULL, (ClientData)0
 };
 
-static Blt_OptionParseProc ObjToLimitsProc;
-static Blt_OptionPrintProc LimitsToObjProc;
-Blt_CustomOption bltLimitsOption =
-{
-    ObjToLimitsProc, LimitsToObjProc, NULL, (ClientData)0
-};
-
-
 /*
  *---------------------------------------------------------------------------
  * Custom option parse and print procedures
@@ -193,102 +185,6 @@ PointToObj(
 	objPtr = Tcl_NewStringObj("", -1);
     }
     return objPtr;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToLimitsProc --
- *
- *	Converts the list of elements into zero or more pixel values which
- *	determine the range of pixel values possible.  An element can be in any
- *	form accepted by Tk_GetPixels. The list has a different meaning based
- *	upon the number of elements.
- *
- *	    # of elements:
- *
- *	    0 - the limits are reset to the defaults.
- *	    1 - the minimum and maximum values are set to this
- *		value, freezing the range at a single value.
- *	    2 - first element is the minimum, the second is the
- *		maximum.
- *	    3 - first element is the minimum, the second is the
- *		maximum, and the third is the nominal value.
- *
- *	Any element may be the empty string which indicates the default.
- *
- * Results:
- *	The return value is a standard TCL result.  The min and max fields
- *	of the range are set.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToLimitsProc(
-    ClientData clientData,		/* Not used. */
-    Tcl_Interp *interp,		        /* Interpreter to send results back
-					 * to */
-    Tk_Window tkwin,			/* Widget of paneset */
-    Tcl_Obj *objPtr,			/* New width list */
-    char *widgRec,			/* Widget record */
-    int offset,				/* Offset to field in structure */
-    int flags)	
-{
-    Blt_Limits *limitsPtr = (Blt_Limits *)(widgRec + offset);
-
-    if (Blt_GetLimitsFromObj(interp, tkwin, objPtr, limitsPtr) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-
-/*
- *---------------------------------------------------------------------------
- *
- * LimitsToObjProc --
- *
- *	Convert the limits of the pixel values allowed into a list.
- *
- * Results:
- *	The string representation of the limits is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-LimitsToObjProc(
-    ClientData clientData,		/* Not used. */
-    Tcl_Interp *interp,			/* Not used. */
-    Tk_Window tkwin,			/* Not used. */
-    char *widgRec,			/* Row/column structure record */
-    int offset,				/* Offset to field in structure */
-    int flags)	
-{
-    Blt_Limits *limitsPtr = (Blt_Limits *)(widgRec + offset);
-    Tcl_Obj *listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    if (limitsPtr->flags & LIMITS_MIN_SET) {
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewIntObj(limitsPtr->min));
-    } else {
-	Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("", -1));
-    }
-    if (limitsPtr->flags & LIMITS_MAX_SET) {
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewIntObj(limitsPtr->max));
-    } else {
-	Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("", -1));
-    }
-    if (limitsPtr->flags & LIMITS_NOM_SET) {
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewIntObj(limitsPtr->nom));
-    } else {
-	Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("", -1));
-    }
-    return listObjPtr;
 }
 
 int
@@ -726,90 +622,6 @@ Blt_GetProjection(
     return t;
 }
 
-#define SetColor(c,r,g,b) ((c)->red = (int)((r) * 65535.0), \
-			   (c)->green = (int)((g) * 65535.0), \
-			   (c)->blue = (int)((b) * 65535.0))
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_AdjustViewport --
- *
- *	Adjusts the offsets of the viewport according to the scroll mode.
- *	This is to accommodate both "listbox" and "canvas" style scrolling.
- *
- *	"canvas"	The viewport scrolls within the range of world
- *			coordinates.  This way the viewport always displays
- *			a full page of the world.  If the world is smaller
- *			than the viewport, then (bizarrely) the world and
- *			viewport are inverted so that the world moves up
- *			and down within the viewport.
- *
- *	"listbox"	The viewport can scroll beyond the range of world
- *			coordinates.  Every entry can be displayed at the
- *			top of the viewport.  This also means that the
- *			scrollbar thumb weirdly shrinks as the last entry
- *			is scrolled upward.
- *
- * Results:
- *	The corrected offset is returned.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_AdjustViewport(int offset, int worldSize, int windowSize, int scrollUnits, 
-		   int scrollMode)
-{
-    switch (scrollMode) {
-    case BLT_SCROLL_MODE_CANVAS:
-
-	/*
-	 * Canvas-style scrolling allows the world to be scrolled within the
-	 * window.
-	 */
-	if (worldSize < windowSize) {
-	    if ((worldSize - offset) > windowSize) {
-		offset = worldSize - windowSize;
-	    }
-	    if (offset > 0) {
-		offset = 0;
-	    }
-	} else {
-	    if ((offset + windowSize) > worldSize) {
-		offset = worldSize - windowSize;
-	    }
-	    if (offset < 0) {
-		offset = 0;
-	    }
-	}
-	break;
-
-    case BLT_SCROLL_MODE_LISTBOX:
-	if (offset < 0) {
-	    offset = 0;
-	}
-	if (offset >= worldSize) {
-	    offset = worldSize - scrollUnits;
-	}
-	break;
-
-    case BLT_SCROLL_MODE_HIERBOX:
-
-	/*
-	 * Hierbox-style scrolling allows the world to be scrolled within the
-	 * window.
-	 */
-	if ((offset + windowSize) > worldSize) {
-	    offset = worldSize - windowSize;
-	}
-	if (offset < 0) {
-	    offset = 0;
-	}
-	break;
-    }
-    return offset;
-}
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -947,19 +759,6 @@ Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 {
     XSetDashes(display, gc, dashesPtr->offset, (const char *)dashesPtr->values,
 	(int)strlen((char *)dashesPtr->values));
-}
-
-void
-Blt_ScreenDPI(Tk_Window tkwin, unsigned int *xPtr, unsigned int *yPtr) 
-{
-    Screen *screen;
-
-#define MM_INCH		25.4
-    screen = Tk_Screen(tkwin);
-    *xPtr = (unsigned int)((WidthOfScreen(screen) * MM_INCH) / 
-			   WidthMMOfScreen(screen));
-    *yPtr = (unsigned int)((HeightOfScreen(screen) * MM_INCH) / 
-			   HeightMMOfScreen(screen));
 }
 
 void
