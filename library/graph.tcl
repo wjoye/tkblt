@@ -1,3 +1,4 @@
+package provide Tlt 3.0
 
 namespace eval ::blt::legend {
     variable _private 
