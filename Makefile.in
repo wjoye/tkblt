@@ -181,7 +181,7 @@ COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(C
 # for the BINARIES that you specified above have already been done.
 #========================================================================
 
-all: binaries libraries doc
+all: binaries libraries #doc
 
 #========================================================================
 # The binaries target builds executable programs, Windows .dll's, unix
@@ -201,12 +201,12 @@ libraries:
 #========================================================================
 
 doc:
-#	@echo "If you have documentation to create, place the commands to"
-#	@echo "build the docs in the 'doc:' target.  For example:"
-#	@echo "        xml2nroff sample.xml > sample.n"
-#	@echo "        xml2html sample.xml > sample.html"
+	@echo "If you have documentation to create, place the commands to"
+	@echo "build the docs in the 'doc:' target.  For example:"
+	@echo "        xml2nroff sample.xml > sample.n"
+	@echo "        xml2html sample.xml > sample.html"
 
-install: all install-binaries install-libraries install-doc
+install: all install-binaries install-libraries #install-doc
 
 install-binaries: binaries install-lib-binaries install-bin-binaries
 

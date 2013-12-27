@@ -620,6 +620,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+WISH_PROG
 TCLSH_PROG
 VC_MANIFEST_EMBED_EXE
 VC_MANIFEST_EMBED_DLL
@@ -5676,7 +5677,7 @@ done
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-CLEANFILES="$CLEANFILES config.status config.log Makefile"
+#CLEANFILES="$CLEANFILES pkgIndex.tcl"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
@@ -6337,14 +6338,6 @@ $as_echo "could not find any!  Using -lX11." >&6; }
     fi
 
     fi
-
-
-
-    vars="${XINCLUDES}"
-    for i in $vars; do
-	PKG_INCLUDES="$PKG_INCLUDES $i"
-    done
-
 
 
 #--------------------------------------------------------------------
@@ -9373,7 +9366,38 @@ $as_echo_n "checking for tclsh... " >&6; }
 $as_echo "${TCLSH_PROG}" >&6; }
 
 
-#TEA_PROG_WISH
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wish" >&5
+$as_echo_n "checking for wish... " >&6; }
+    if test -f "${TK_BIN_DIR}/Makefile" ; then
+        # tkConfig.sh is in Tk build directory
+        if test "${TEA_PLATFORM}" = "windows"; then
+            WISH_PROG="${TK_BIN_DIR}/wish${TK_MAJOR_VERSION}${TK_MINOR_VERSION}${TK_DBGX}${EXEEXT}"
+        else
+            WISH_PROG="${TK_BIN_DIR}/wish"
+        fi
+    else
+        # tkConfig.sh is in install location
+        if test "${TEA_PLATFORM}" = "windows"; then
+            WISH_PROG="wish${TK_MAJOR_VERSION}${TK_MINOR_VERSION}${TK_DBGX}${EXEEXT}"
+        else
+            WISH_PROG="wish${TK_MAJOR_VERSION}.${TK_MINOR_VERSION}${TK_DBGX}"
+        fi
+        list="`ls -d ${TK_BIN_DIR}/../bin 2>/dev/null` \
+              `ls -d ${TK_BIN_DIR}/..     2>/dev/null` \
+              `ls -d ${TK_PREFIX}/bin     2>/dev/null`"
+        for i in $list ; do
+            if test -f "$i/${WISH_PROG}" ; then
+                REAL_TK_BIN_DIR="`cd "$i"; pwd`/"
+                break
+            fi
+        done
+        WISH_PROG="${REAL_TK_BIN_DIR}${WISH_PROG}"
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${WISH_PROG}" >&5
+$as_echo "${WISH_PROG}" >&6; }
+
+
 
 #--------------------------------------------------------------------
 # Finally, substitute all of the various values into the Makefile.

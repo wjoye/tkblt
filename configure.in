@@ -127,7 +127,7 @@ TEA_ADD_TCL_SOURCES([library/graph.tcl library/bltGraph.pro])
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-CLEANFILES="$CLEANFILES config.status config.log Makefile"
+#CLEANFILES="$CLEANFILES pkgIndex.tcl"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
@@ -155,8 +155,6 @@ TEA_PRIVATE_TCL_HEADERS
 TEA_PUBLIC_TK_HEADERS
 TEA_PRIVATE_TK_HEADERS
 TEA_PATH_X
-
-TEA_ADD_INCLUDES([${XINCLUDES}])
 
 #--------------------------------------------------------------------
 # Check whether --enable-threads or --disable-threads was given.
@@ -213,7 +211,7 @@ TEA_MAKE_LIB
 #--------------------------------------------------------------------
 
 TEA_PROG_TCLSH
-#TEA_PROG_WISH
+TEA_PROG_WISH
 
 #--------------------------------------------------------------------
 # Finally, substitute all of the various values into the Makefile.
