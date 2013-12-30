@@ -34,10 +34,10 @@
 
 #include "bltInt.h"
 
-Tcl_AppInitProc Tlt_Init;
-Tcl_AppInitProc Tlt_SafeInit;
+Tcl_AppInitProc Tkblt_Init;
+Tcl_AppInitProc Tkblt_SafeInit;
 
-int Tlt_Init(Tcl_Interp *interp)
+int Tkblt_Init(Tcl_Interp *interp)
 {
   Tcl_Namespace *nsPtr;
 
@@ -81,9 +81,9 @@ int Tlt_Init(Tcl_Interp *interp)
   return TCL_OK;
 }
 
-int Tlt_SafeInit(Tcl_Interp *interp)
+int Tkblt_SafeInit(Tcl_Interp *interp)
 {
-  return Tlt_Init(interp);
+  return Tkblt_Init(interp);
 }
 
 

@@ -388,10 +388,10 @@ Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, const char *fileName)
      * PostScript output stored in the Tcl_DString in psPtr.
      */
 
-    libDir = (char *)Tcl_GetVar(interp, "tlt_library", TCL_GLOBAL_ONLY);
+    libDir = (char *)Tcl_GetVar(interp, "tkblt_library", TCL_GLOBAL_ONLY);
     if (libDir == NULL) {
-	Tcl_AppendResult(interp, "couldn't find TLT script library:",
-	    "global variable \"tlt_library\" doesn't exist", (char *)NULL);
+	Tcl_AppendResult(interp, "couldn't find TKBLT script library:",
+	    "global variable \"tkblt_library\" doesn't exist", (char *)NULL);
 	return TCL_ERROR;
     }
     Tcl_DStringInit(&dString);
