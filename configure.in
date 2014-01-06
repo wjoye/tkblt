@@ -77,7 +77,6 @@ TEA_ADD_SOURCES([
 	bltBitmap.c
 	bltChain.c 
 	bltConfig.c
-	bltDBuffer.c 
 	bltGrAxis.c
 	bltGrBar.c
 	bltGrElem.c

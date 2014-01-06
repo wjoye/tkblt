@@ -5532,7 +5532,6 @@ done
 	bltBitmap.c
 	bltChain.c
 	bltConfig.c
-	bltDBuffer.c
 	bltGrAxis.c
 	bltGrBar.c
 	bltGrElem.c
