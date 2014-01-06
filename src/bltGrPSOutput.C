@@ -44,7 +44,6 @@
 
 #include "bltInt.h"
 #include "bltMath.h"
-#include "bltDBuffer.h"
 #include "bltPsInt.h"
 
 #define FONT_ITALIC	(1<<0)
