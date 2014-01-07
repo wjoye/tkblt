@@ -173,11 +173,6 @@ typedef enum {
 #define BLT_CONFIG_USER_BIT		(1<<8)
 
 
-#define SIDE_LEFT		(1<<0)
-#define SIDE_TOP		(1<<1)
-#define SIDE_RIGHT		(1<<2)
-#define SIDE_BOTTOM		(1<<3)
-
 #define STATE_NORMAL		(0)
 #define STATE_ACTIVE		(1<<0)
 #define STATE_DISABLED		(1<<1)
@@ -257,20 +252,7 @@ typedef struct {
     int nom;				/* Nominal starting value. */
 } Blt_Limits;
 
-#define LIMITS_MIN_SET	(1<<0)
-#define LIMITS_MAX_SET	(1<<1)
-#define LIMITS_NOM_SET	(1<<2)
-
-#define LIMITS_MIN	0		/* Default minimum limit  */
-#define LIMITS_MAX	SHRT_MAX	/* Default maximum limit */
-#define LIMITS_NOM	-1000		/* Default nomimal value.  Indicates
-					 * if a pane has received any space
-					 * yet */
-
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
-
-extern int Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr, Blt_Limits *limitsPtr);
 
 extern int Blt_ConfigureInfoFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Blt_ConfigSpec *specs, char *widgRec, Tcl_Obj *objPtr, int flags);
