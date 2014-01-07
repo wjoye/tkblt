@@ -134,6 +134,4 @@ extern int Blt_ParseSwitches(Tcl_Interp *interp, Blt_SwitchSpec *specPtr,
 
 extern void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *rec, int flags);
 
-extern int Blt_SwitchChanged TCL_VARARGS(Blt_SwitchSpec *, specs);
- 
 #endif /* BLT_SWITCH_H */

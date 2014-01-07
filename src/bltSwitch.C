@@ -472,42 +472,6 @@ Blt_FreeSwitches(
     }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_SwitchModified --
- *
- *      Given the configuration specifications and one or more switch patterns
- *      (terminated by a NULL), indicate if any of the matching switches has
- *      been reset.
- *
- * Results:
- *      Returns 1 if one of the switches have changed, 0 otherwise.
- *
- *---------------------------------------------------------------------------
- */
-int 
-Blt_SwitchChanged TCL_VARARGS_DEF(Blt_SwitchSpec *, arg1)
-{
-    va_list argList;
-    Blt_SwitchSpec *specs;
-    Blt_SwitchSpec *sp;
-    char *switchName;
-
-    specs = TCL_VARARGS_START(Blt_SwitchSpec *, arg1, argList);
-    while ((switchName = va_arg(argList, char *)) != NULL) {
-	for (sp = specs; sp->type != BLT_SWITCH_END; sp++) {
-	    if ((Tcl_StringMatch(sp->switchName, switchName)) &&
-		(sp->flags & BLT_SWITCH_SPECIFIED)) {
-		va_end(argList);
-		return 1;
-	    }
-	}
-    }
-    va_end(argList);
-    return 0;
-}
-
 int 
 Blt_ExprDoubleFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, double *valuePtr)
 {
