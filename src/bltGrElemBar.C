@@ -159,7 +159,7 @@ typedef struct {
 
     /* Fields specific to the barchart element */
 
-    float barWidth;
+    double barWidth;
     const char *groupName;
 
     int *barToData;
@@ -295,7 +295,7 @@ static Blt_ConfigSpec barPenConfigSpecs[] =
     {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
 	DEF_PEN_VALUE_FORMAT, Tk_Offset(BarPen, valueFormat),
 	ALL_PENS | BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_FLOAT, "-valuerotate", "valueRotate", "ValueRotate",
+    {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
 	(char *)NULL, Tk_Offset(BarPen, valueStyle.angle), ALL_PENS},
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
@@ -308,7 +308,7 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
     {BLT_CONFIG_BACKGROUND, "-background", "background", "Background",
 	DEF_BAR_BACKGROUND, Tk_Offset(BarElement, builtinPen.fill),
 	BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_FLOAT, "-barwidth", "barWidth", "BarWidth",
+    {BLT_CONFIG_DOUBLE, "-barwidth", "barWidth", "BarWidth",
 	DEF_BAR_WIDTH, Tk_Offset(BarElement, barWidth),
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
@@ -386,7 +386,7 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
     {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
 	DEF_PEN_VALUE_FORMAT, Tk_Offset(BarElement, builtinPen.valueFormat),
         BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_FLOAT, "-valuerotate", "valueRotate", "ValueRotate",
+    {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
 	(char *)NULL, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0},
     {BLT_CONFIG_CUSTOM, "-weights", "weights", "Weights", (char *)NULL, 
 	Tk_Offset(BarElement, w), 0, &bltValuesOption},

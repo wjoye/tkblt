@@ -55,7 +55,7 @@ typedef struct {
     Blt_Background bg;			/* Background color of text.  This is
 					 * also used for drawing disabled
 					 * text. */
-    float angle;			/* Rotation of text in degrees. */
+    double angle;			/* Rotation of text in degrees. */
     Tk_Justify justify;			/* Justification of the text
 					 * string. This only matters if the
 					 * text is composed of multiple
@@ -102,7 +102,7 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
 #define Blt_Ts_GetLeader(ts)		((ts).leader)
 
 #define Blt_Ts_SetAnchor(ts, a)	((ts).anchor = (a))
-#define Blt_Ts_SetAngle(ts, r)		((ts).angle = (float)(r))
+#define Blt_Ts_SetAngle(ts, r)		((ts).angle = (double)(r))
 #define Blt_Ts_SetBackground(ts, b)	((ts).bg = (b))
 #define Blt_Ts_SetFont(ts, f)		\
 	(((ts).font != (f)) ? ((ts).font = (f), (ts).flags |= UPDATE_GC) : 0)

@@ -363,7 +363,7 @@ struct _Graph {
     Blt_Background plotBg;		/* Color of plotting surface */
 
     /* If non-zero, force plot to conform to aspect ratio W/H */
-    float aspect;
+    double aspect;
 
     short int left, right;		/* Coordinates of plot bbox */
     short int top, bottom;	
@@ -400,8 +400,8 @@ struct _Graph {
     /*
      * barchart specific information
      */
-    float baseline;			/* Baseline from bar chart.  */
-    float barWidth;			/* Default width of each bar in graph
+    double baseline;			/* Baseline from bar chart.  */
+    double barWidth;			/* Default width of each bar in graph
 					 * units.  The default width is 1.0
 					 * units. */
     BarMode mode;			/* Mode describing how to display bars

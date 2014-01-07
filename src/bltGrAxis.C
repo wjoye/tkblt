@@ -296,7 +296,7 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_AXIS_RELIEF, Tk_Offset(Axis, relief), 
         ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_FLOAT, "-rotate", "rotate", "Rotate", DEF_AXIS_ANGLE, 
+    {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_AXIS_ANGLE, 
 	Tk_Offset(Axis, tickAngle), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_OBJ, "-scrollcommand", "scrollCommand", "ScrollCommand",
 	(char *)NULL, Tk_Offset(Axis, scrollCmdObjPtr),

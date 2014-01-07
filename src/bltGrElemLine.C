@@ -301,7 +301,7 @@ typedef struct {
     Smoothing reqSmooth;		/* Requested smoothing function to use
 					 * for connecting the data points */
     Smoothing smooth;			/* Smoothing function used. */
-    float rTolerance;			/* Tolerance to reduce the number of
+    double rTolerance;			/* Tolerance to reduce the number of
 					 * points displayed. */
 
     /* Drawing-related data structures. */
@@ -500,7 +500,7 @@ static Blt_ConfigSpec lineElemConfigSpecs[] =
 	&bltLinePenOption},
     {BLT_CONFIG_PIXELS_NNEG, "-pixels", "pixels", "Pixels", DEF_LINE_PIXELS, 
 	Tk_Offset(LineElement, builtinPen.symbol.size), GRAPH | STRIPCHART}, 
-    {BLT_CONFIG_FLOAT, "-reduce", "reduce", "Reduce",
+    {BLT_CONFIG_DOUBLE, "-reduce", "reduce", "Reduce",
 	DEF_LINE_REDUCE, Tk_Offset(LineElement, rTolerance),
 	GRAPH | STRIPCHART | BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
@@ -538,7 +538,7 @@ static Blt_ConfigSpec lineElemConfigSpecs[] =
     {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
 	DEF_PEN_VALUE_FORMAT, Tk_Offset(LineElement, builtinPen.valueFormat),
 	BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_FLOAT, "-valuerotate", "valueRotate", "ValueRotate",
+    {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
 	DEF_PEN_VALUE_ANGLE, 
 	Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0},
     {BLT_CONFIG_CUSTOM, "-weights", "weights", "Weights", (char *)NULL, 
@@ -620,7 +620,7 @@ static Blt_ConfigSpec linePenConfigSpecs[] =
     {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
 	DEF_PEN_VALUE_FORMAT, Tk_Offset(LinePen, valueFormat),
 	ALL_PENS | BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_FLOAT, "-valuerotate", "valueRotate", "ValueRotate",
+    {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
 	DEF_PEN_VALUE_ANGLE, Tk_Offset(LinePen, valueStyle.angle), ALL_PENS},
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };

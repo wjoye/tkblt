@@ -285,7 +285,7 @@ typedef struct {
     int borderWidth;
     int activeRelief;
 
-    float tickAngle;	
+    double tickAngle;	
     Tk_Font tickFont;
     Tk_Anchor tickAnchor;
     Tk_Anchor reqTickAnchor;

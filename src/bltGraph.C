@@ -130,16 +130,16 @@ extern Blt_CustomOption bltBarModeOption;
 
 static Blt_ConfigSpec configSpecs[] =
 {
-    {BLT_CONFIG_FLOAT, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
+    {BLT_CONFIG_DOUBLE, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
 	Tk_Offset(Graph, aspect), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_BACKGROUND, "-background", "background", "Background",
 	DEF_GRAPH_BACKGROUND, Tk_Offset(Graph, normalBg), 0},
     {BLT_CONFIG_CUSTOM, "-barmode", "barMode", "BarMode", DEF_GRAPH_BAR_MODE, 
 	Tk_Offset(Graph, mode), BLT_CONFIG_DONT_SET_DEFAULT, 
 	&bltBarModeOption},
-    {BLT_CONFIG_FLOAT, "-barwidth", "barWidth", "BarWidth", 
+    {BLT_CONFIG_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
 	DEF_GRAPH_BAR_WIDTH, Tk_Offset(Graph, barWidth), 0},
-    {BLT_CONFIG_FLOAT, "-baseline", "baseline", "Baseline",
+    {BLT_CONFIG_DOUBLE, "-baseline", "baseline", "Baseline",
 	DEF_GRAPH_BAR_BASELINE, Tk_Offset(Graph, baseline), 0},
     {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL, (char *)NULL,0, 0},
     {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL, (char *)NULL, 0, 0},

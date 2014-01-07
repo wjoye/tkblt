@@ -802,17 +802,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_FLOAT: 
-	    {
-		double value;
-		
-		if (Tcl_GetDoubleFromObj(interp, objPtr, &value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(float *)ptr = (float)value;
-	    }
-	    break;
-
 	case BLT_CONFIG_INT_NNEG: 
 	    {
 		long value;
@@ -1087,12 +1076,6 @@ FormatConfigValue(
     case BLT_CONFIG_FILL: 
 	string = Blt_NameOfFill(*(int *)ptr);
 	break;
-
-    case BLT_CONFIG_FLOAT: 
-	{
-	    double x = *(float *)ptr;
-	    return Tcl_NewDoubleObj(x);
-	}
 
     case BLT_CONFIG_LIST: 
 	{

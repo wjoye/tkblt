@@ -233,7 +233,7 @@ typedef struct {
 
     Pixmap srcBitmap;			/* Original bitmap. May be further
 					 * scaled or rotated. */
-    float reqAngle;			/* Requested rotation of the bitmap */
+    double reqAngle;			/* Requested rotation of the bitmap */
     float angle;			/* Normalized rotation (0..360
 					 * degrees) */
     Tk_Anchor anchor;			/* If only one X-Y coordinate is given,
@@ -290,7 +290,7 @@ static Blt_ConfigSpec bitmapConfigSpecs[] =
 	Tk_Offset(BitmapMarker, obj.name), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL, (char *)NULL, 
 	0, 0},
-    {BLT_CONFIG_FLOAT, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
+    {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
 	Tk_Offset(BitmapMarker, reqAngle), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
 	Tk_Offset(BitmapMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
@@ -699,7 +699,7 @@ static Blt_ConfigSpec textConfigSpecs[] =
 	Tk_Offset(TextMarker, style.xPad), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PAD, "-pady", "padY", "PadY", DEF_MARKER_PAD, 
 	Tk_Offset(TextMarker, style.yPad), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_FLOAT, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
+    {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
 	Tk_Offset(TextMarker, style.angle), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
 	Tk_Offset(TextMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
