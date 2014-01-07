@@ -89,61 +89,6 @@
 #define PIXELS_POS		1
 #define PIXELS_ANY		2
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetPixelsFromObj --
- *
- *	Like Tk_GetPixelsFromObj, but checks for negative, zero.
- *
- * Results:
- *	A standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetPixelsFromObj(
-    Tcl_Interp *interp,
-    Tk_Window tkwin,
-    Tcl_Obj *objPtr,
-    int check,			/* Can be PIXELS_POS, PIXELS_NNEG,
-				 * or PIXELS_ANY, */
-    int *valuePtr)
-{
-    int length;
-
-    if (Tk_GetPixelsFromObj(interp, tkwin, objPtr, &length) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if (length >= SHRT_MAX) {
-	Tcl_AppendResult(interp, "bad distance \"", Tcl_GetString(objPtr), 
-		 "\": too big to represent", (char *)NULL);
-	return TCL_ERROR;
-    }
-    switch (check) {
-    case PIXELS_NNEG:
-	if (length < 0) {
-	    Tcl_AppendResult(interp, "bad distance \"", Tcl_GetString(objPtr), 
-		     "\": can't be negative", (char *)NULL);
-	    return TCL_ERROR;
-	}
-	break;
-
-    case PIXELS_POS:
-	if (length <= 0) {
-	    Tcl_AppendResult(interp, "bad distance \"", Tcl_GetString(objPtr), 
-		     "\": must be positive", (char *)NULL);
-	    return TCL_ERROR;
-	}
-	break;
-
-    case PIXELS_ANY:
-	break;
-    }
-    *valuePtr = length;
-    return TCL_OK;
-}
-
 int
 Blt_GetPadFromObj(
     Tcl_Interp *interp,		/* Interpreter to send results back to */
@@ -163,14 +108,12 @@ Blt_GetPadFromObj(
 	    (char *)NULL);
 	return TCL_ERROR;
     }
-    if (Blt_GetPixelsFromObj(interp, tkwin, objv[0], PIXELS_NNEG, 
-	     &side1) != TCL_OK) {
+    if (Tk_GetPixelsFromObj(interp, tkwin, objv[0], &side1) != TCL_OK) {
 	return TCL_ERROR;
     }
     side2 = side1;
     if ((objc > 1) && 
-	(Blt_GetPixelsFromObj(interp, tkwin, objv[1], PIXELS_NNEG, 
-	      &side2) != TCL_OK)) {
+	(Tk_GetPixelsFromObj(interp, tkwin, objv[1], &side2) != TCL_OK)) {
 	return TCL_ERROR;
     }
     /* Don't update the pad structure until we know both values are okay. */
@@ -749,36 +692,12 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_PIXELS_NNEG: 
-	    {
-		int value;
-		
-		if (Blt_GetPixelsFromObj(interp, tkwin, objPtr, 
-			PIXELS_NNEG, &value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(int *)ptr = value;
-	    }
-	    break;
-
 	case BLT_CONFIG_PIXELS: 
 	    {
 		int value;
 		
-		if (Blt_GetPixelsFromObj(interp, tkwin, objPtr, PIXELS_ANY, 
-			&value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(int *)ptr = value;
-	    }
-	    break;
-
-	case BLT_CONFIG_PIXELS_POS: 
-	    {
-		int value;
-		
-		if (Blt_GetPixelsFromObj(interp, tkwin, objPtr, PIXELS_POS,
-			&value) != TCL_OK) {
+		if (Tk_GetPixelsFromObj(interp, tkwin, objPtr, &value)
+		    != TCL_OK) {
 		    return TCL_ERROR;
 		}
 		*(int *)ptr = value;
@@ -921,8 +840,6 @@ FormatConfigValue(
 	return Tcl_NewDoubleObj(*(double *)ptr);
 
     case BLT_CONFIG_PIXELS: 
-    case BLT_CONFIG_PIXELS_POS: 
-    case BLT_CONFIG_PIXELS_NNEG: 
 	return Tcl_NewIntObj(*(int *)ptr);
 
     case BLT_CONFIG_RELIEF: 

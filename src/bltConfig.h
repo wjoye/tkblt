@@ -135,10 +135,6 @@ typedef enum {
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
     BLT_CONFIG_PAD,
-    BLT_CONFIG_PIXELS_NNEG,	/* 1.1c 2m 3.2i excluding negative
-				   values. */
-    BLT_CONFIG_PIXELS_POS,	/* 1.1c 2m 3.2i excluding negative
-				 * values and zero. */
     BLT_CONFIG_STATE, 
     BLT_CONFIG_BACKGROUND
 } Blt_ConfigTypes;
@@ -271,9 +267,6 @@ extern const char *Blt_NameOfState(int state);
 
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr, int flags, int *valuePtr);
 
 extern int Blt_GetPadFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, Blt_Pad *padPtr);

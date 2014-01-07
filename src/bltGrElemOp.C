@@ -1500,7 +1500,7 @@ CgetOp(
  */
 
 static Blt_ConfigSpec closestSpecs[] = {
-    {BLT_CONFIG_PIXELS_NNEG, "-halo", (char *)NULL, (char *)NULL,
+    {BLT_CONFIG_PIXELS, "-halo", (char *)NULL, (char *)NULL,
 	(char *)NULL, Tk_Offset(ClosestSearch, halo), 0},
     {BLT_CONFIG_BOOLEAN, "-interpolate", (char *)NULL, (char *)NULL,
 	(char *)NULL, Tk_Offset(ClosestSearch, mode), 0 }, 

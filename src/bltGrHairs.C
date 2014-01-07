@@ -89,7 +89,7 @@ static Blt_ConfigSpec configSpecs[] =
 	Tk_Offset(Crosshairs, dashes), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", DEF_HAIRS_HIDE, 
 	Tk_Offset(Crosshairs, hidden), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_PIXELS_NNEG, "-linewidth", "lineWidth", "Linewidth",
+    {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "Linewidth",
 	DEF_HAIRS_LINE_WIDTH, Tk_Offset(Crosshairs, lineWidth),
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-position", "position", "Position", 
