@@ -660,7 +660,7 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_TK_FONT: 
+	case BLT_CONFIG_FONT: 
 	    {
 		Tk_Font font;
 		
@@ -1024,7 +1024,7 @@ FormatConfigValue(
     case BLT_CONFIG_DOUBLE: 
 	return Tcl_NewDoubleObj(*(double *)ptr);
 
-    case BLT_CONFIG_TK_FONT: 
+    case BLT_CONFIG_FONT: 
 	if (*(Tk_Font *)ptr != NULL) {
 	    string = Tk_NameOfFont(*(Tk_Font *)ptr);
 	}
@@ -1684,7 +1684,7 @@ Blt_FreeOptions(
 	    }
 	    break;
 
-	case BLT_CONFIG_TK_FONT:
+	case BLT_CONFIG_FONT:
 	    if (*((Tk_Font *) ptr) != None) {
 	        Tk_FreeFont(*((Tk_Font *) ptr));
   	        *((Tk_Font *) ptr) = NULL;

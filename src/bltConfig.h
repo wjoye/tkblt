@@ -151,9 +151,7 @@ typedef enum {
     BLT_CONFIG_PIXELS_POS,	/* 1.1c 2m 3.2i excluding negative
 				 * values and zero. */
     BLT_CONFIG_STATE, 
-    BLT_CONFIG_BACKGROUND,
-
-    BLT_CONFIG_TK_FONT
+    BLT_CONFIG_BACKGROUND
 } Blt_ConfigTypes;
 
 /*

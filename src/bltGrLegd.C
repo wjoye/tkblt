@@ -288,7 +288,7 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
 	DEF_LEGEND_FOCUS_FG_MONO, Blt_Offset(Legend, focusColor),
 	BLT_CONFIG_MONO_ONLY},
-    {BLT_CONFIG_TK_FONT, "-font", "font", "Font", DEF_LEGEND_FONT, 
+    {BLT_CONFIG_FONT, "-font", "font", "Font", DEF_LEGEND_FONT, 
 	Blt_Offset(Legend, style.font), 0},
     {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
     {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
@@ -348,7 +348,7 @@ static Blt_ConfigSpec configSpecs[] =
 	Blt_Offset(Legend, title), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_COLOR, "-titlecolor", "titleColor", "Foreground",
 	DEF_LEGEND_TITLECOLOR, Blt_Offset(Legend, titleStyle.color), 0},
-    {BLT_CONFIG_TK_FONT, "-titlefont", "titleFont", "Font",
+    {BLT_CONFIG_FONT, "-titlefont", "titleFont", "Font",
 	DEF_LEGEND_TITLEFONT, Blt_Offset(Legend, titleStyle.font), 0},
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
