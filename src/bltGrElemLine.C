@@ -480,7 +480,7 @@ static Blt_ConfigSpec lineElemConfigSpecs[] =
         DEF_LINE_AXIS_X, Tk_Offset(LineElement, axes.x), 0, &bltXAxisOption},
     {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY",
 	DEF_LINE_AXIS_Y, Tk_Offset(LineElement, axes.y), 0, &bltYAxisOption},
-    {BLT_CONFIG_INT_NNEG, "-maxsymbols", "maxSymbols", "MaxSymbols",
+    {BLT_CONFIG_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
 	DEF_LINE_MAX_SYMBOLS, Tk_Offset(LineElement, reqMaxSymbols),
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-offdash", "offDash", "OffDash", 

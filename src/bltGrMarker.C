@@ -113,7 +113,6 @@ static Blt_CustomOption colorPairOption =
 
 extern Blt_CustomOption bltXAxisOption;
 extern Blt_CustomOption bltYAxisOption;
-extern Blt_CustomOption bltFilterOption;
 
 typedef Marker *(MarkerCreateProc)(void);
 typedef void    (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);

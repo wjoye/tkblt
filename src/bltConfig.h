@@ -132,8 +132,6 @@ typedef enum {
     BLT_CONFIG_BITMASK,
     BLT_CONFIG_DASHES,
     BLT_CONFIG_FILL,
-    BLT_CONFIG_INT_NNEG,	/* 0..N */
-    BLT_CONFIG_INT_POS,		/* 1..N */
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
     BLT_CONFIG_PAD,
@@ -172,11 +170,9 @@ typedef enum {
 #define BLT_CONFIG_OPTION_SPECIFIED	(1<<5)
 #define BLT_CONFIG_USER_BIT		(1<<8)
 
-
 #define STATE_NORMAL		(0)
 #define STATE_ACTIVE		(1<<0)
 #define STATE_DISABLED		(1<<1)
-#define STATE_EMPHASIS		(1<<2)
 
 /*
  *---------------------------------------------------------------------------

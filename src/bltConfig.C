@@ -715,32 +715,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_INT_NNEG: 
-	    {
-		long value;
-		
-		if (Blt_GetCountFromObj(interp, objPtr, COUNT_NNEG, 
-			&value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(int *)ptr = (int)value;
-	    }
-	    break;
-
-
-	case BLT_CONFIG_INT_POS: 
-	    {
-		long value;
-		
-		if (Blt_GetCountFromObj(interp, objPtr, COUNT_POS, &value) 
-		    != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(int *)ptr = (int)value;
-	    }
-	    break;
-
-
 	case BLT_CONFIG_LIST: 
 	    {
 		const char **argv;
@@ -981,10 +955,6 @@ FormatConfigValue(
 	    }
 	    return listObjPtr;
 	}
-
-    case BLT_CONFIG_INT_NNEG:
-    case BLT_CONFIG_INT_POS:
-	return Tcl_NewIntObj(*(int *)ptr);
 
     case BLT_CONFIG_FILL: 
 	string = Blt_NameOfFill(*(int *)ptr);
