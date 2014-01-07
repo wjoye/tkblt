@@ -37,14 +37,6 @@
 
 #  include <stddef.h>
 
-#ifndef Blt_Offset
-#ifdef offsetof
-#define Blt_Offset(type, field) ((int) offsetof(type, field))
-#else
-#define Blt_Offset(type, field) ((int) ((char *) &((type *) 0)->field))
-#endif
-#endif /* Blt_Offset */
-
 typedef int (Blt_SwitchParseProc)(ClientData clientData, Tcl_Interp *interp, 
 	const char *switchName, Tcl_Obj *valueObjPtr, char *record, int offset,
 	int flags);

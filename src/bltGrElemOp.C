@@ -1501,11 +1501,11 @@ CgetOp(
 
 static Blt_ConfigSpec closestSpecs[] = {
     {BLT_CONFIG_PIXELS_NNEG, "-halo", (char *)NULL, (char *)NULL,
-	(char *)NULL, Blt_Offset(ClosestSearch, halo), 0},
+	(char *)NULL, Tk_Offset(ClosestSearch, halo), 0},
     {BLT_CONFIG_BOOLEAN, "-interpolate", (char *)NULL, (char *)NULL,
-	(char *)NULL, Blt_Offset(ClosestSearch, mode), 0 }, 
+	(char *)NULL, Tk_Offset(ClosestSearch, mode), 0 }, 
     {BLT_CONFIG_CUSTOM, "-along", (char *)NULL, (char *)NULL,
-	(char *)NULL, Blt_Offset(ClosestSearch, along), 0, &alongOption},
+	(char *)NULL, Tk_Offset(ClosestSearch, along), 0, &alongOption},
     {BLT_CONFIG_END, (char *)NULL, (char *)NULL, (char *)NULL,
 	(char *)NULL, 0, 0}
 };

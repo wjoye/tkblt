@@ -81,11 +81,11 @@ typedef struct {
 static Blt_SwitchSpec printSwitches[] = 
 {
     {BLT_SWITCH_OBJ,    "-format", "string",
-	Blt_Offset(PrintSwitches, formatObjPtr), 0},
+	Tk_Offset(PrintSwitches, formatObjPtr), 0},
     {BLT_SWITCH_CUSTOM, "-from",   "index",
-	Blt_Offset(PrintSwitches, from),         0, 0, &indexSwitch},
+	Tk_Offset(PrintSwitches, from),         0, 0, &indexSwitch},
     {BLT_SWITCH_CUSTOM, "-to",     "index",
-	Blt_Offset(PrintSwitches, to),           0, 0, &indexSwitch},
+	Tk_Offset(PrintSwitches, to),           0, 0, &indexSwitch},
     {BLT_SWITCH_END}
 };
 
@@ -100,11 +100,11 @@ typedef struct {
 static Blt_SwitchSpec sortSwitches[] = 
 {
     {BLT_SWITCH_BITMASK, "-decreasing", "",
-	Blt_Offset(SortSwitches, flags),   0, SORT_DECREASING},
+	Tk_Offset(SortSwitches, flags),   0, SORT_DECREASING},
     {BLT_SWITCH_BITMASK, "-reverse",   "",
-	Blt_Offset(SortSwitches, flags),   0, SORT_DECREASING},
+	Tk_Offset(SortSwitches, flags),   0, SORT_DECREASING},
     {BLT_SWITCH_BITMASK, "-uniq",     "", 
-	Blt_Offset(SortSwitches, flags),   0, SORT_UNIQUE},
+	Tk_Offset(SortSwitches, flags),   0, SORT_UNIQUE},
     {BLT_SWITCH_END}
 };
 
@@ -119,17 +119,17 @@ typedef struct {
 
 static Blt_SwitchSpec fftSwitches[] = {
     {BLT_SWITCH_CUSTOM, "-imagpart",    "vector",
-	Blt_Offset(FFTData, imagPtr), 0, 0, &fftVectorSwitch},
+	Tk_Offset(FFTData, imagPtr), 0, 0, &fftVectorSwitch},
     {BLT_SWITCH_BITMASK, "-noconstant", "",
-	Blt_Offset(FFTData, mask), 0, FFT_NO_CONSTANT},
+	Tk_Offset(FFTData, mask), 0, FFT_NO_CONSTANT},
     {BLT_SWITCH_BITMASK, "-spectrum", "",
-	  Blt_Offset(FFTData, mask), 0, FFT_SPECTRUM},
+	  Tk_Offset(FFTData, mask), 0, FFT_SPECTRUM},
     {BLT_SWITCH_BITMASK, "-bartlett",  "",
-	 Blt_Offset(FFTData, mask), 0, FFT_BARTLETT},
+	 Tk_Offset(FFTData, mask), 0, FFT_BARTLETT},
     {BLT_SWITCH_DOUBLE, "-delta",   "float",
-	Blt_Offset(FFTData, mask), 0, 0, },
+	Tk_Offset(FFTData, mask), 0, 0, },
     {BLT_SWITCH_CUSTOM, "-frequencies", "vector",
-	Blt_Offset(FFTData, freqPtr), 0, 0, &fftVectorSwitch},
+	Tk_Offset(FFTData, freqPtr), 0, 0, &fftVectorSwitch},
     {BLT_SWITCH_END}
 };
 

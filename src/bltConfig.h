@@ -35,14 +35,6 @@
 #ifndef BLT_CONFIG_H
 #define BLT_CONFIG_H
 
-#ifndef Blt_Offset
-#ifdef offsetof
-#define Blt_Offset(type, field) ((int) offsetof(type, field))
-#else
-#define Blt_Offset(type, field) ((int) ((char *) &((type *) 0)->field))
-#endif
-#endif /* Blt_Offset */
-
 typedef int (Blt_OptionParseProc)(ClientData clientData, Tcl_Interp *interp, 
 	Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec, int offset, int flags);
 typedef Tcl_Obj *(Blt_OptionPrintProc)(ClientData clientData, 

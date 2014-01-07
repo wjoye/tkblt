@@ -84,16 +84,16 @@ extern Blt_CustomOption bltPointOption;
 static Blt_ConfigSpec configSpecs[] =
 {
     {BLT_CONFIG_COLOR, "-color", "color", "Color", DEF_HAIRS_FOREGROUND, 
-	Blt_Offset(Crosshairs, colorPtr), 0},
+	Tk_Offset(Crosshairs, colorPtr), 0},
     {BLT_CONFIG_DASHES, "-dashes", "dashes", "Dashes", DEF_HAIRS_DASHES, 
-	Blt_Offset(Crosshairs, dashes), BLT_CONFIG_NULL_OK},
+	Tk_Offset(Crosshairs, dashes), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", DEF_HAIRS_HIDE, 
-	Blt_Offset(Crosshairs, hidden), BLT_CONFIG_DONT_SET_DEFAULT},
+	Tk_Offset(Crosshairs, hidden), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PIXELS_NNEG, "-linewidth", "lineWidth", "Linewidth",
-	DEF_HAIRS_LINE_WIDTH, Blt_Offset(Crosshairs, lineWidth),
+	DEF_HAIRS_LINE_WIDTH, Tk_Offset(Crosshairs, lineWidth),
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-position", "position", "Position", 
-	DEF_HAIRS_POSITION, Blt_Offset(Crosshairs, hotSpot), 0, &bltPointOption},
+	DEF_HAIRS_POSITION, Tk_Offset(Crosshairs, hotSpot), 0, &bltPointOption},
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
