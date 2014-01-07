@@ -114,50 +114,46 @@ typedef struct {
  * documentation for details.
  */
 typedef enum {
-    BLT_CONFIG_ACTIVE_CURSOR, 
-    BLT_CONFIG_ANCHOR, 
-    BLT_CONFIG_BITMAP,
     BLT_CONFIG_BOOLEAN, 
-    BLT_CONFIG_BORDER, 
-    BLT_CONFIG_CAP_STYLE, 
-    BLT_CONFIG_COLOR, 
-    BLT_CONFIG_CURSOR, 
-    BLT_CONFIG_CUSTOM, 
-    BLT_CONFIG_DOUBLE, 
-    BLT_CONFIG_FONT, 
     BLT_CONFIG_INT, 
-    BLT_CONFIG_JOIN_STYLE,
-    BLT_CONFIG_JUSTIFY, 
-    BLT_CONFIG_MM, 
-    BLT_CONFIG_RELIEF, 
+    BLT_CONFIG_DOUBLE, 
     BLT_CONFIG_STRING,
+    BLT_CONFIG_UID,
+    BLT_CONFIG_COLOR, 
+    BLT_CONFIG_FONT, 
+    BLT_CONFIG_BITMAP,
+    BLT_CONFIG_BORDER, 
+    BLT_CONFIG_RELIEF, 
+    BLT_CONFIG_CURSOR, 
+    BLT_CONFIG_ACTIVE_CURSOR, 
+    BLT_CONFIG_JUSTIFY, 
+    BLT_CONFIG_ANCHOR, 
     BLT_CONFIG_SYNONYM, 
+    BLT_CONFIG_CAP_STYLE, 
+    BLT_CONFIG_JOIN_STYLE,
+    BLT_CONFIG_PIXELS,		/* 1.1c 2m 3.2i. */
+    BLT_CONFIG_MM, 
     BLT_CONFIG_WINDOW, 
+    BLT_CONFIG_CUSTOM, 
+    BLT_CONFIG_END,
 
     BLT_CONFIG_BITMASK,
-    BLT_CONFIG_BITMASK_INVERT,
     BLT_CONFIG_DASHES,
     BLT_CONFIG_FILL,
     BLT_CONFIG_FLOAT, 
     BLT_CONFIG_INT_NNEG,	/* 0..N */
     BLT_CONFIG_INT_POS,		/* 1..N */
     BLT_CONFIG_LIST,
-    BLT_CONFIG_LONG, 
-    BLT_CONFIG_LONG_NNEG,	/* 0..N */
-    BLT_CONFIG_LONG_POS,	/* 1..N */
     BLT_CONFIG_OBJ,
     BLT_CONFIG_PAD,
     BLT_CONFIG_PIXELS_NNEG,	/* 1.1c 2m 3.2i excluding negative
 				   values. */
     BLT_CONFIG_PIXELS_POS,	/* 1.1c 2m 3.2i excluding negative
 				 * values and zero. */
-    BLT_CONFIG_PIXELS,		/* 1.1c 2m 3.2i. */
-    BLT_CONFIG_SIDE,
     BLT_CONFIG_STATE, 
     BLT_CONFIG_BACKGROUND,
 
-    BLT_CONFIG_TK_FONT, 
-    BLT_CONFIG_END
+    BLT_CONFIG_TK_FONT
 } Blt_ConfigTypes;
 
 /*
@@ -305,13 +301,9 @@ extern int Blt_ConfigureComponentFromObj(Tcl_Interp *interp,
 extern int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
 
 extern const char *Blt_NameOfState(int state);
-extern const char *Blt_NameOfSide(int side);
 
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_GetSideFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	int *sidePtr);
 
 extern int Blt_GetPixelsFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
 	Tcl_Obj *objPtr, int flags, int *valuePtr);

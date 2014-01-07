@@ -389,64 +389,6 @@ Blt_GetDashesFromObj(
     return TCL_OK;
 }
 
-const char *
-Blt_NameOfSide(int side)
-{
-    switch (side) {
-    case SIDE_LEFT:
-	return "left";
-    case SIDE_RIGHT:
-	return "right";
-    case SIDE_BOTTOM:
-	return "bottom";
-    case SIDE_TOP:
-	return "top";
-    }
-    return "unknown side value";
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetSideFromObj --
- *
- *	Converts the fill style string into its numeric representation.
- *
- *	Valid style strings are "left", "right", "top", or  "bottom".
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED */
-int
-Blt_GetSideFromObj(
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tcl_Obj *objPtr,		/* Value string */
-    int *sidePtr)		/* (out) Token representing side:
-				 * either SIDE_LEFT, SIDE_RIGHT,
-				 * SIDE_TOP, or SIDE_BOTTOM. */
-{
-    char c;
-    const char *string;
-    int length;
-
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    c = string[0];
-    if ((c == 'l') && (strncmp(string, "left", length) == 0)) {
-	*sidePtr = SIDE_LEFT;
-    } else if ((c == 'r') && (strncmp(string, "right", length) == 0)) {
-	*sidePtr = SIDE_RIGHT;
-    } else if ((c == 't') && (strncmp(string, "top", length) == 0)) {
-	*sidePtr = SIDE_TOP;
-    } else if ((c == 'b') && (strncmp(string, "bottom", length) == 0)) {
-	*sidePtr = SIDE_BOTTOM;
-    } else {
-	Tcl_AppendResult(interp, "bad side \"", string,
-	    "\": should be left, right, top, or bottom", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
 int 
 Blt_GetLimitsFromObj(Tcl_Interp *interp, Tk_Window tkwin, Tcl_Obj *objPtr, 
 		     Blt_Limits *limitsPtr)
@@ -846,24 +788,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_BITMASK_INVERT: 
-	    {
-		int bool;
-		unsigned long mask, flags;
-
-		if (Tcl_GetBooleanFromObj(interp, objPtr, &bool) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		mask = (unsigned long)sp->customPtr;
-		flags = *(int *)ptr;
-		flags &= ~mask;
-		if (!bool) {
-		    flags |= mask;
-		}
-		*(int *)ptr = flags;
-	    }
-	    break;
-
 	case BLT_CONFIG_DASHES:
 	    if (Blt_GetDashesFromObj(interp, objPtr, (Blt_Dashes *)ptr) 
 		!= TCL_OK) {
@@ -932,42 +856,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_LONG: 
-	    {
-		long value;
-		
-	        if (Tcl_GetLongFromObj(interp, objPtr, &value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(long *)ptr = value;
-	    }
-	    break;
-
-	case BLT_CONFIG_LONG_NNEG: 
-	    {
-		long value;
-		
-		if (Blt_GetCountFromObj(interp, objPtr, COUNT_NNEG, 
-			&value) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(long *)ptr = value;
-	    }
-	    break;
-
-
-	case BLT_CONFIG_LONG_POS: 
-	    {
-		long value;
-		
-		if (Blt_GetCountFromObj(interp, objPtr, COUNT_POS, &value) 
-		    != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		*(long *)ptr = value;
-	    }
-	    break;
-
 	case BLT_CONFIG_OBJ: 
 	    {
 		Tcl_IncrRefCount(objPtr);
@@ -1023,12 +911,6 @@ DoConfig(
 
 	case BLT_CONFIG_STATE: 
 	    if (Blt_GetStateFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
-	case BLT_CONFIG_SIDE:
-	    if (Blt_GetSideFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	    break;
@@ -1185,14 +1067,6 @@ FormatConfigValue(
 	    return Tcl_NewBooleanObj((flag != 0));
 	}
 
-    case BLT_CONFIG_BITMASK_INVERT:
-	{
-	    unsigned long flag;
-
-	    flag = (*(unsigned long *)ptr) & (unsigned long)sp->customPtr;
-	    return Tcl_NewBooleanObj((flag == 0));
-	}
-
     case BLT_CONFIG_DASHES: 
 	{
 	    unsigned char *p;
@@ -1233,13 +1107,6 @@ FormatConfigValue(
 	    return listObjPtr;
 	}
 
-    case BLT_CONFIG_LONG: 
-	return Tcl_NewLongObj(*(long *)ptr);
-
-    case BLT_CONFIG_LONG_NNEG:
-    case BLT_CONFIG_LONG_POS:
-	return Tcl_NewLongObj(*(long *)ptr);
-
     case BLT_CONFIG_OBJ:
 	if (*(Tcl_Obj **)ptr != NULL) {
 	    return *(Tcl_Obj **)ptr;
@@ -1261,10 +1128,6 @@ FormatConfigValue(
 
     case BLT_CONFIG_STATE: 
 	string = Blt_NameOfState(*(int *)ptr);
-	break;
-
-    case BLT_CONFIG_SIDE: 
-	string = Blt_NameOfSide(*(int *)ptr);
 	break;
 
     case BLT_CONFIG_BACKGROUND: 
