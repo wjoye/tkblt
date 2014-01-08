@@ -39,6 +39,7 @@
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
+#include "bltConfig.h"
 
 /*
  *  Selection related flags:
@@ -276,7 +277,7 @@ static Blt_ConfigSpec configSpecs[] =
 	(Blt_CustomOption *)SELECT_EXPORT},
     {BLT_CONFIG_DASHES, "-focusdashes", "focusDashes", "FocusDashes",
 	DEF_LEGEND_FOCUSDASHES, Tk_Offset(Legend, focusDashes), 
-	BLT_CONFIG_NULL_OK},
+     BLT_CONFIG_NULL_OK, &dashesOption},
     {BLT_CONFIG_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
 	DEF_LEGEND_FOCUSFOREGROUND, Tk_Offset(Legend, focusColor),
 	BLT_CONFIG_COLOR_ONLY},

@@ -104,7 +104,9 @@ static int ObjToStateProc(ClientData clientData, Tcl_Interp *interp,
 {
   const char* string;
   int length;
-  int* statePtr = (int*)(widgRec + offset);
+  int* statePtr;
+
+  statePtr = (int*)(widgRec + offset);
 
   string = Tcl_GetStringFromObj(objPtr, &length);
   if (!strncmp(string, "normal", length)) {
@@ -125,7 +127,9 @@ static Tcl_Obj* StateToObjProc(ClientData clientData, Tcl_Interp *interp,
 			       Tk_Window tkwin, char *widgRec, 
 			       int offset, int flags)
 {
-  int* statePtr = (int*)(widgRec + offset);
+  int* statePtr;
+
+  statePtr = (int*)(widgRec + offset);
   switch (*statePtr) {
   case BLT_STATE_ACTIVE:
     return Tcl_NewStringObj("active", -1);
@@ -136,6 +140,110 @@ static Tcl_Obj* StateToObjProc(ClientData clientData, Tcl_Interp *interp,
   }
   return Tcl_NewStringObj("unknown", -1);
 }
+
+static Blt_OptionParseProc ObjToDashesProc;
+static Blt_OptionPrintProc DashesToObjProc;
+Blt_CustomOption dashesOption =
+{
+    ObjToDashesProc, DashesToObjProc, NULL, (ClientData)0
+};
+
+static int ObjToDashesProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
+{
+  const char* string;
+  int length;
+  Blt_Dashes* dashesPtr;
+
+  dashesPtr = (Blt_Dashes*)(widgRec + offset);
+
+  string = Tcl_GetStringFromObj(objPtr, &length);
+  if (string == NULL) {
+    dashesPtr->values[0] = 0;
+    return TCL_OK;
+  }
+
+  if (!string[0]) {
+    dashesPtr->values[0] = 0;
+  } else if (!strncmp(string, "dot", length)) {	
+    /* 1 */
+    dashesPtr->values[0] = 1;
+    dashesPtr->values[1] = 0;
+  } else if (!strncmp(string, "dash", length)) {	
+    /* 5 2 */
+    dashesPtr->values[0] = 5;
+    dashesPtr->values[1] = 2;
+    dashesPtr->values[2] = 0;
+  } else if (!strncmp(string, "dashdot", length)) { 
+    /* 2 4 2 */
+    dashesPtr->values[0] = 2;
+    dashesPtr->values[1] = 4;
+    dashesPtr->values[2] = 2;
+    dashesPtr->values[3] = 0;
+  } else if (!strncmp(string, "dashdotdot", length)) { 
+    /* 2 4 2 2 */
+    dashesPtr->values[0] = 2;
+    dashesPtr->values[1] = 4;
+    dashesPtr->values[2] = 2;
+    dashesPtr->values[3] = 2;
+    dashesPtr->values[4] = 0;
+  } else {
+    int objc;
+    Tcl_Obj **objv;
+    int i;
+
+    if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
+      return TCL_ERROR;
+    }
+    if (objc > 11) {	/* This is the postscript limit */
+      Tcl_AppendResult(interp, "too many values in dash list \"", 
+		       string, "\"", (char *)NULL);
+      return TCL_ERROR;
+    }
+    for (i = 0; i < objc; i++) {
+      int value;
+
+      if (Tcl_GetIntFromObj(interp, objv[i], &value) != TCL_OK) {
+	return TCL_ERROR;
+      }
+      /*
+       * Backward compatibility:
+       * Allow list of 0 to turn off dashes
+       */
+      if ((value == 0) && (objc == 1)) {
+	break;
+      }
+      if ((value < 1) || (value > 255)) {
+	Tcl_AppendResult(interp, "dash value \"", 
+			 Tcl_GetString(objv[i]), "\" is out of range", 
+			 (char *)NULL);
+	return TCL_ERROR;
+      }
+      dashesPtr->values[i] = (unsigned char)value;
+    }
+    /* Make sure the array ends with a NUL byte  */
+    dashesPtr->values[i] = 0;
+  }
+  return TCL_OK;
+}
+
+static Tcl_Obj* DashesToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec, 
+			       int offset, int flags)
+{
+  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
+
+  unsigned char *p;
+  Tcl_Obj *listObjPtr;
+	    
+  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  for(p = dashesPtr->values; *p != 0; p++) {
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(*p));
+  }
+  return listObjPtr;
+}
+
 /*
  *---------------------------------------------------------------------------
  *

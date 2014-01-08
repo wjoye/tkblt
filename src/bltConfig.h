@@ -201,6 +201,7 @@ typedef struct {
 #define LineIsDashed(d) ((d).values[0] != 0)
 
 extern Blt_CustomOption stateOption;
+extern Blt_CustomOption dashesOption;
 
 /*
  * Blt_Limits --
