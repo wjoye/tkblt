@@ -35,7 +35,6 @@
 #include "bltInt.h"
 #include "bltSpline.h"
 #include "bltOp.h"
-#include "bltVector.h"
 
 typedef int (SplineProc)(Point2d origPts[], int nOrigPts, Point2d intpPts[],
 			 int nIntpPts);
