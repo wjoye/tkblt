@@ -134,7 +134,6 @@ typedef enum {
     BLT_CONFIG_FILL,
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
-    BLT_CONFIG_PAD,
     BLT_CONFIG_STATE, 
     BLT_CONFIG_BACKGROUND
 } Blt_ConfigTypes;
@@ -169,34 +168,6 @@ typedef enum {
 #define STATE_NORMAL		(0)
 #define STATE_ACTIVE		(1<<0)
 #define STATE_DISABLED		(1<<1)
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Pad --
- *
- * 	Specifies vertical and horizontal padding.
- *
- *	Padding can be specified on a per side basis.  The fields
- *	side1 and side2 refer to the opposite sides, either
- *	horizontally or vertically.
- *
- *		side1	side2
- *              -----   -----
- *          x | left    right
- *	    y | top     bottom
- *
- *---------------------------------------------------------------------------
- */
-typedef struct {
-    unsigned short int side1, side2;
-} Blt_Pad;
-
-#define padLeft  	xPad.side1
-#define padRight  	xPad.side2
-#define padTop		yPad.side1
-#define padBottom	yPad.side2
-#define PADDING(x)	((x).side1 + (x).side2)
 
 /*
  *---------------------------------------------------------------------------
@@ -267,9 +238,6 @@ extern const char *Blt_NameOfState(int state);
 
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_GetPadFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Tcl_Obj *objPtr, Blt_Pad *padPtr);
 
 extern int Blt_GetStateFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *statePtr);
