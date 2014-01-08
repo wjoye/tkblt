@@ -130,7 +130,6 @@ typedef enum {
     BLT_CONFIG_END,
 
     BLT_CONFIG_BITMASK,
-    BLT_CONFIG_FILL,
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
     BLT_CONFIG_BACKGROUND
@@ -167,31 +166,11 @@ typedef enum {
 #define BLT_STATE_ACTIVE		(1<<0)
 #define BLT_STATE_DISABLED		(1<<1)
 
-/*
- *---------------------------------------------------------------------------
- *
- * The following enumerated values are used as bit flags.
- *	FILL_NONE		Neither coordinate plane is specified 
- *	FILL_X			Horizontal plane.
- *	FILL_Y			Vertical plane.
- *	FILL_BOTH		Both vertical and horizontal planes.
- *
- *---------------------------------------------------------------------------
- */
-#define FILL_NONE	0
-#define FILL_X		1
-#define FILL_Y		2
-#define FILL_BOTH	3
+#define BLT_FILL_NONE	0
+#define BLT_FILL_X	1
+#define BLT_FILL_Y	2
+#define BLT_FILL_BOTH	3
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Dashes --
- *
- * 	List of dash values (maximum 11 based upon PostScript limit).
- *
- *---------------------------------------------------------------------------
- */
 typedef struct {
     unsigned char values[12];
     int offset;
@@ -201,6 +180,7 @@ typedef struct {
 
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
+extern Blt_CustomOption fillOption;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
@@ -223,8 +203,5 @@ extern int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
 
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	int *fillPtr);
 
 #endif /* BLT_CONFIG_H */

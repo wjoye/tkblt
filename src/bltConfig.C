@@ -141,6 +141,8 @@ static Tcl_Obj* StateToObjProc(ClientData clientData, Tcl_Interp *interp,
   return Tcl_NewStringObj("unknown", -1);
 }
 
+/* DASHES */
+
 static Blt_OptionParseProc ObjToDashesProc;
 static Blt_OptionPrintProc DashesToObjProc;
 Blt_CustomOption dashesOption =
@@ -244,72 +246,60 @@ static Tcl_Obj* DashesToObjProc(ClientData clientData, Tcl_Interp *interp,
   return listObjPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_NameOfFill --
- *
- *	Converts the integer representing the fill style into a string.
- *
- *---------------------------------------------------------------------------
- */
-const char *
-Blt_NameOfFill(int fill)
+/* FILL */
+
+static Blt_OptionParseProc ObjToFillProc;
+static Blt_OptionPrintProc FillToObjProc;
+Blt_CustomOption fillOption =
 {
-    switch (fill) {
-    case FILL_X:
-	return "x";
-    case FILL_Y:
-	return "y";
-    case FILL_NONE:
-	return "none";
-    case FILL_BOTH:
-	return "both";
-    default:
-	return "unknown value";
-    }
+    ObjToFillProc, FillToObjProc, NULL, (ClientData)0
+};
+
+static int ObjToFillProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
+{
+  const char* string;
+  int length;
+  int* fillPtr;
+
+  fillPtr = (int*)(widgRec + offset);
+
+  string = Tcl_GetStringFromObj(objPtr, &length);
+  if (!strncmp(string, "none", length)) {
+    *fillPtr = BLT_FILL_NONE;
+  } else if (!strncmp(string, "x", length)) {
+    *fillPtr = BLT_FILL_X;
+  } else if (!strncmp(string, "y", length)) {
+    *fillPtr = BLT_FILL_Y;
+  } else if (!strncmp(string, "both", length)) {
+    *fillPtr = BLT_FILL_BOTH;
+  } else {
+    Tcl_AppendResult(interp, "bad argument \"", string,
+		     "\": should be \"none\", \"x\", \"y\", or \"both\"", (char *)NULL);
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetFillFromObj --
- *
- *	Converts the fill style string into its numeric representation.
- *
- *	Valid style strings are:
- *
- *	  "none"   Use neither plane.
- * 	  "x"	   X-coordinate plane.
- *	  "y"	   Y-coordinate plane.
- *	  "both"   Use both coordinate planes.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-int
-Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, int *fillPtr)
+    
+static Tcl_Obj* FillToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec, 
+			       int offset, int flags)
 {
-    char c;
-    const char *string;
-    int length;
+  int* fillPtr;
 
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    c = string[0];
-    if ((c == 'n') && (strncmp(string, "none", length) == 0)) {
-	*fillPtr = FILL_NONE;
-    } else if ((c == 'x') && (strncmp(string, "x", length) == 0)) {
-	*fillPtr = FILL_X;
-    } else if ((c == 'y') && (strncmp(string, "y", length) == 0)) {
-	*fillPtr = FILL_Y;
-    } else if ((c == 'b') && (strncmp(string, "both", length) == 0)) {
-	*fillPtr = FILL_BOTH;
-    } else {
-	Tcl_AppendResult(interp, "bad argument \"", string,
-	    "\": should be \"none\", \"x\", \"y\", or \"both\"", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+  fillPtr = (int*)(widgRec + offset);
+  switch (*fillPtr) {
+  case BLT_FILL_X:
+    return Tcl_NewStringObj("x", -1);
+  case BLT_FILL_Y:
+    return Tcl_NewStringObj("y", -1);
+  case BLT_FILL_NONE:
+    return Tcl_NewStringObj("none", -1);
+  case BLT_FILL_BOTH:
+    return Tcl_NewStringObj("both", -1);
+  }
+  return Tcl_NewStringObj("unknown", -1);
 }
 
 /* Configuration option helper routines */
@@ -624,12 +614,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_FILL:
-	    if (Blt_GetFillFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
 	case BLT_CONFIG_LIST: 
 	    {
 		const char **argv;
@@ -818,10 +802,6 @@ FormatConfigValue(
 	    flag = (*(unsigned long *)ptr) & (unsigned long)sp->customPtr;
 	    return Tcl_NewBooleanObj((flag != 0));
 	}
-
-    case BLT_CONFIG_FILL: 
-	string = Blt_NameOfFill(*(int *)ptr);
-	break;
 
     case BLT_CONFIG_LIST: 
 	{
