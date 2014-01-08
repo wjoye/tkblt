@@ -311,12 +311,12 @@ Blt_RegionInPolygon(
 void
 Blt_GraphExtents(Graph *graphPtr, Region2d *regionPtr)
 {
-    regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad.side1);
-    regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad.side1);
+    regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
+    regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);
     regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
-	graphPtr->xPad.side2);
+	graphPtr->xPad);
     regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
-	graphPtr->yPad.side2);
+	graphPtr->yPad);
 }
 
 static int 

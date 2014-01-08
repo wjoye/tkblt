@@ -203,9 +203,9 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_PIXELS, "-plotborderwidth", "plotBorderWidth", 
         "PlotBorderWidth", DEF_GRAPH_PLOT_BORDERWIDTH, 
 	Tk_Offset(Graph, plotBW), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_PAD, "-plotpadx", "plotPadX", "PlotPad", DEF_GRAPH_PLOT_PADX, 
+    {BLT_CONFIG_PIXELS, "-plotpadx", "plotPadX", "PlotPad", DEF_GRAPH_PLOT_PADX, 
 	Tk_Offset(Graph, xPad), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_PAD, "-plotpady", "plotPadY", "PlotPad", DEF_GRAPH_PLOT_PADY, 
+    {BLT_CONFIG_PIXELS, "-plotpady", "plotPadY", "PlotPad", DEF_GRAPH_PLOT_PADY, 
 	Tk_Offset(Graph, yPad), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_RELIEF, "-plotrelief", "plotRelief", "Relief", 
 	DEF_GRAPH_PLOT_RELIEF, Tk_Offset(Graph, plotRelief),
@@ -833,8 +833,8 @@ CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
     graphPtr->relief = TK_RELIEF_FLAT;
     graphPtr->flags = RESET_WORLD;
     graphPtr->nextMarkerId = 1;
-    graphPtr->padLeft = graphPtr->padRight = 0;
-    graphPtr->padTop = graphPtr->padBottom = 0;
+    graphPtr->xPad = 0;
+    graphPtr->yPad = 0;
     graphPtr->bottomMargin.site = MARGIN_BOTTOM;
     graphPtr->leftMargin.site = MARGIN_LEFT;
     graphPtr->topMargin.site = MARGIN_TOP;

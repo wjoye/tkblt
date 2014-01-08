@@ -3659,10 +3659,10 @@ Blt_LayoutGraph(Graph *graphPtr)
     graphPtr->topMargin.height    = top    + graphPtr->inset;
     graphPtr->bottomMargin.height = bottom + graphPtr->inset;
 	    
-    graphPtr->vOffset = graphPtr->top + graphPtr->padTop;
-    graphPtr->vRange  = plotHeight - PADDING(graphPtr->yPad);
-    graphPtr->hOffset = graphPtr->left + graphPtr->padLeft;
-    graphPtr->hRange  = plotWidth  - PADDING(graphPtr->xPad);
+    graphPtr->vOffset = graphPtr->top + graphPtr->yPad;
+    graphPtr->vRange  = plotHeight - 2*graphPtr->yPad;
+    graphPtr->hOffset = graphPtr->left + graphPtr->xPad;
+    graphPtr->hRange  = plotWidth  - 2*graphPtr->xPad;
 
     if (graphPtr->vRange < 1) {
 	graphPtr->vRange = 1;
@@ -5268,8 +5268,8 @@ Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
     int vMin, hMin, vMax, hMax;
 
 #define SPACING 8
-    vMin = vMax = graphPtr->left + graphPtr->padLeft + 2;
-    hMin = hMax = graphPtr->bottom - graphPtr->padBottom - 2;	/* Offsets */
+    vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
+    hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
 
     for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
 	hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
@@ -5346,8 +5346,8 @@ Blt_AxisLimitsToPostScript(Graph *graphPtr, Blt_Ps ps)
     char string[200];
 
 #define SPACING 8
-    vMin = vMax = graphPtr->left + graphPtr->padLeft + 2;
-    hMin = hMax = graphPtr->bottom - graphPtr->padBottom - 2;	/* Offsets */
+    vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
+    hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
     for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
 	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
 	Axis *axisPtr;

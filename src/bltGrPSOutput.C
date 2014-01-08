@@ -120,39 +120,6 @@ Blt_Ps_GetPicaFromObj(
     return TCL_ERROR;
 }
 
-int
-Blt_Ps_GetPadFromObj(
-    Tcl_Interp *interp,			/* Interpreter to send results back
-					 * to */
-    Tcl_Obj *objPtr,			/* Pixel value string */
-    Blt_Pad *padPtr)
-{
-    int side1, side2;
-    int objc;
-    Tcl_Obj **objv;
-
-    if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if ((objc < 1) || (objc > 2)) {
-	Tcl_AppendResult(interp, "wrong # elements in padding list",
-	    (char *)NULL);
-	return TCL_ERROR;
-    }
-    if (Blt_Ps_GetPicaFromObj(interp, objv[0], &side1) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    side2 = side1;
-    if ((objc > 1) && 
-	(Blt_Ps_GetPicaFromObj(interp, objv[1], &side2) != TCL_OK)) {
-	return TCL_ERROR;
-    }
-    /* Don't update the pad structure until we know both values are okay. */
-    padPtr->side1 = side1;
-    padPtr->side2 = side2;
-    return TCL_OK;
-}
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -183,11 +150,11 @@ Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
     int x, y, hSize, vSize, hBorder, vBorder;
     float hScale, vScale, scale;
 
-    x = setupPtr->padLeft;
-    y = setupPtr->padTop;
+    x = setupPtr->xPad;
+    y = setupPtr->yPad;
 
-    hBorder = PADDING(setupPtr->xPad);
-    vBorder = PADDING(setupPtr->yPad);
+    hBorder = 2*setupPtr->xPad;
+    vBorder = 2*setupPtr->yPad;
 
     if (setupPtr->flags & PS_LANDSCAPE) {
 	hSize = height;

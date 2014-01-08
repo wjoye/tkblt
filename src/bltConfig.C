@@ -90,39 +90,6 @@
 #define PIXELS_ANY		2
 
 int
-Blt_GetPadFromObj(
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tk_Window tkwin,		/* Window */
-    Tcl_Obj *objPtr,		/* Pixel value string */
-    Blt_Pad *padPtr)
-{
-    int side1, side2;
-    int objc;
-    Tcl_Obj **objv;
-
-    if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if ((objc < 1) || (objc > 2)) {
-	Tcl_AppendResult(interp, "wrong # elements in padding list",
-	    (char *)NULL);
-	return TCL_ERROR;
-    }
-    if (Tk_GetPixelsFromObj(interp, tkwin, objv[0], &side1) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    side2 = side1;
-    if ((objc > 1) && 
-	(Tk_GetPixelsFromObj(interp, tkwin, objv[1], &side2) != TCL_OK)) {
-	return TCL_ERROR;
-    }
-    /* Don't update the pad structure until we know both values are okay. */
-    padPtr->side1 = side1;
-    padPtr->side2 = side2;
-    return TCL_OK;
-}
-
-int
 Blt_GetStateFromObj(
     Tcl_Interp *interp,		/* Interpreter to send results back to */
     Tcl_Obj *objPtr,		/* Pixel value string */
@@ -685,13 +652,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_PAD:
-	    if (Blt_GetPadFromObj(interp, tkwin, objPtr, (Blt_Pad *)ptr) 
-		!= TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
 	case BLT_CONFIG_PIXELS: 
 	    {
 		int value;
@@ -895,19 +855,6 @@ FormatConfigValue(
 	    return *(Tcl_Obj **)ptr;
 	}
 	break;
-
-    case BLT_CONFIG_PAD: 
-	{
-	    Blt_Pad *padPtr = (Blt_Pad *)ptr;
-	    Tcl_Obj *objPtr, *listObjPtr;
-	    
-	    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	    objPtr = Tcl_NewIntObj(padPtr->side1);
-	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-	    objPtr = Tcl_NewIntObj(padPtr->side2);
-	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-	    return listObjPtr;
-	}
 
     case BLT_CONFIG_STATE: 
 	string = Blt_NameOfState(*(int *)ptr);

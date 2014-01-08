@@ -49,7 +49,7 @@ typedef struct  {
 				 * page. Can constrain the size of the graph
 				 * if the graph (plus padding) is larger than
 				 * the size of the page. */
-    Blt_Pad xPad, yPad;		/* Requested padding on the exterior of the
+    int xPad, yPad;		/* Requested padding on the exterior of the
 				 * graph. This forms the bounding box for
 				 * the page. */
     const char *colorVarName;	/* If non-NULL, is the name of a TCL array
@@ -119,9 +119,6 @@ extern int Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps,
 
 extern int Blt_Ps_GetPicaFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *picaPtr);
-
-extern int Blt_Ps_GetPadFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	Blt_Pad *padPtr);
 
 extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 

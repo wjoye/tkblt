@@ -368,12 +368,12 @@ struct _Graph {
     short int left, right;		/* Coordinates of plot bbox */
     short int top, bottom;	
 
-    Blt_Pad xPad;			/* Vertical padding for plotarea */
+    int xPad;			/* Vertical padding for plotarea */
     int vRange, vOffset;		/* Vertical axis range and offset from
 					 * the left side of the graph
 					 * window. Used to transform coordinates
 					 * to vertical axes. */
-    Blt_Pad yPad;			/* Horizontal padding for plotarea */
+    int yPad;			/* Horizontal padding for plotarea */
     int hRange, hOffset;		/* Horizontal axis range and offset from
 					 * the top of the graph window. Used to
 					 * transform horizontal axes */
