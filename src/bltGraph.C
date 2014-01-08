@@ -597,7 +597,7 @@ PickEntry(ClientData clientData, int x, int y, ClientData *contextPtr)
 	    if (elemPtr->flags & (HIDE|MAP_ITEM)) {
 		continue;
 	    }
-	    if (elemPtr->state == STATE_NORMAL) {
+	    if (elemPtr->state == BLT_STATE_NORMAL) {
 		(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
 	    }
 	}

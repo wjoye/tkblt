@@ -89,48 +89,53 @@
 #define PIXELS_POS		1
 #define PIXELS_ANY		2
 
-int
-Blt_GetStateFromObj(
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tcl_Obj *objPtr,		/* Pixel value string */
-    int *statePtr)
+/* STATE */
+
+static Blt_OptionParseProc ObjToStateProc;
+static Blt_OptionPrintProc StateToObjProc;
+Blt_CustomOption stateOption =
 {
-    char c;
-    const char *string;
-    int length;
+    ObjToStateProc, StateToObjProc, NULL, (ClientData)0
+};
 
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    c = string[0];
-    if ((c == 'n') && (strncmp(string, "normal", length) == 0)) {
-	*statePtr = STATE_NORMAL;
-    } else if ((c == 'd') && (strncmp(string, "disabled", length) == 0)) {
-	*statePtr = STATE_DISABLED;
-    } else if ((c == 'a') && (strncmp(string, "active", length) == 0)) {
-	*statePtr = STATE_ACTIVE;
-    } else {
-	Tcl_AppendResult(interp, "bad state \"", string,
-	    "\": should be normal, active, or disabled", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-const char *
-Blt_NameOfState(int state)
+static int ObjToStateProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
 {
-    switch (state) {
-    case STATE_ACTIVE:
-	return "active";
-    case STATE_DISABLED:
-	return "disabled";
-    case STATE_NORMAL:
-	return "normal";
-    default:
-	return "???";
-    }
+  const char* string;
+  int length;
+  int* statePtr = (int*)(widgRec + offset);
+
+  string = Tcl_GetStringFromObj(objPtr, &length);
+  if (!strncmp(string, "normal", length)) {
+    *statePtr = BLT_STATE_NORMAL;
+  } else if (!strncmp(string, "disabled", length)) {
+    *statePtr = BLT_STATE_DISABLED;
+  } else if (!strncmp(string, "active", length)) {
+    *statePtr = BLT_STATE_ACTIVE;
+  } else {
+    Tcl_AppendResult(interp, "bad state \"", string,
+		     "\": should be normal, active, or disabled", (char *)NULL);
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
-
-
+    
+static Tcl_Obj* StateToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec, 
+			       int offset, int flags)
+{
+  int* statePtr = (int*)(widgRec + offset);
+  switch (*statePtr) {
+  case BLT_STATE_ACTIVE:
+    return Tcl_NewStringObj("active", -1);
+  case BLT_STATE_DISABLED:
+    return Tcl_NewStringObj("disabled", -1);
+  case BLT_STATE_NORMAL:
+    return Tcl_NewStringObj("normal", -1);
+  }
+  return Tcl_NewStringObj("unknown", -1);
+}
 /*
  *---------------------------------------------------------------------------
  *
@@ -664,12 +669,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_STATE: 
-	    if (Blt_GetStateFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
 	case BLT_CONFIG_BACKGROUND: 
 	    {
 		Blt_Background style;
@@ -854,10 +853,6 @@ FormatConfigValue(
 	if (*(Tcl_Obj **)ptr != NULL) {
 	    return *(Tcl_Obj **)ptr;
 	}
-	break;
-
-    case BLT_CONFIG_STATE: 
-	string = Blt_NameOfState(*(int *)ptr);
 	break;
 
     case BLT_CONFIG_BACKGROUND: 

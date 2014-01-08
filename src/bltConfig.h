@@ -134,7 +134,6 @@ typedef enum {
     BLT_CONFIG_FILL,
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
-    BLT_CONFIG_STATE, 
     BLT_CONFIG_BACKGROUND
 } Blt_ConfigTypes;
 
@@ -165,9 +164,9 @@ typedef enum {
 #define BLT_CONFIG_OPTION_SPECIFIED	(1<<5)
 #define BLT_CONFIG_USER_BIT		(1<<8)
 
-#define STATE_NORMAL		(0)
-#define STATE_ACTIVE		(1<<0)
-#define STATE_DISABLED		(1<<1)
+#define BLT_STATE_NORMAL		(0)
+#define BLT_STATE_ACTIVE		(1<<0)
+#define BLT_STATE_DISABLED		(1<<1)
 
 /*
  *---------------------------------------------------------------------------
@@ -200,6 +199,8 @@ typedef struct {
 } Blt_Dashes;
 
 #define LineIsDashed(d) ((d).values[0] != 0)
+
+extern Blt_CustomOption stateOption;
 
 /*
  * Blt_Limits --
@@ -234,13 +235,8 @@ extern int Blt_ConfigureComponentFromObj(Tcl_Interp *interp,
 
 extern int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
 
-extern const char *Blt_NameOfState(int state);
-
 extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
 	Display *display, int needFlags);
-
-extern int Blt_GetStateFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	int *statePtr);
 
 extern int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *fillPtr);

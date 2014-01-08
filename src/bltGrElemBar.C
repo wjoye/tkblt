@@ -38,6 +38,7 @@
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltGrElem.h"
+#include "bltConfig.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 
@@ -367,8 +368,8 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_STRING, "-stack", "stack", "Stack", DEF_BAR_STACK, 
 	Tk_Offset(BarElement, groupName), BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_BAR_STATE, 
-	Tk_Offset(BarElement, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_BAR_STATE, 
+     Tk_Offset(BarElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple",
 	DEF_BAR_NORMAL_STIPPLE, Tk_Offset(BarElement, builtinPen.stipple),
 	BLT_CONFIG_NULL_OK},
@@ -549,7 +550,6 @@ BarModeToObj(
 
     return Tcl_NewStringObj(NameOfBarMode(mode), -1);
 }
-
 
 /* 
  * Zero out the style's number of bars and errorbars. 

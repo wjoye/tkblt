@@ -40,6 +40,7 @@
 #include "bltImage.h"
 #include "bltGrElem.h"
 #include "bltBitmap.h"
+#include "bltConfig.h"
 
 typedef int (GraphMarkerProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
@@ -291,8 +292,8 @@ static Blt_ConfigSpec bitmapConfigSpecs[] =
 	0, 0},
     {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
 	Tk_Offset(BitmapMarker, reqAngle), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
-	Tk_Offset(BitmapMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
+     Tk_Offset(BitmapMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
 	Tk_Offset(BitmapMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", DEF_MARKER_X_OFFSET, 
@@ -421,8 +422,8 @@ static Blt_ConfigSpec lineConfigSpecs[] =
     {BLT_CONFIG_COLOR, "-outline", "outline", "Outline",
 	DEF_MARKER_OUTLINE_COLOR, Tk_Offset(LineMarker, outlineColor),
 	BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
-	Tk_Offset(LineMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
+     Tk_Offset(LineMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
 	Tk_Offset(LineMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", DEF_MARKER_X_OFFSET, 
@@ -573,8 +574,8 @@ static Blt_ConfigSpec polygonConfigSpecs[] =
     {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", 
 	DEF_MARKER_OUTLINE_COLOR, Tk_Offset(PolygonMarker, outline),
 	BLT_CONFIG_NULL_OK, &colorPairOption},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
-	Tk_Offset(PolygonMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
+     Tk_Offset(PolygonMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", DEF_MARKER_STIPPLE, 
 	Tk_Offset(PolygonMarker, stipple), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
@@ -700,8 +701,8 @@ static Blt_ConfigSpec textConfigSpecs[] =
 	Tk_Offset(TextMarker, style.yPad), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
 	Tk_Offset(TextMarker, style.angle), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
-	Tk_Offset(TextMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
+     Tk_Offset(TextMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_STRING, "-text", "text", "Text", DEF_MARKER_TEXT, 
 	Tk_Offset(TextMarker, string), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
@@ -813,8 +814,8 @@ static Blt_ConfigSpec windowConfigSpecs[] =
 	Tk_Offset(WindowMarker, axes.y), 0, &bltYAxisOption},
     {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
 	Tk_Offset(WindowMarker, obj.name), BLT_CONFIG_NULL_OK},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_MARKER_STATE, 
-	Tk_Offset(WindowMarker, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
+     Tk_Offset(WindowMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", DEF_MARKER_UNDER, 
 	Tk_Offset(WindowMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PIXELS, "-width", "width", "Width", DEF_MARKER_WIDTH, 
@@ -4354,7 +4355,7 @@ Blt_NearestMarker(
 	    continue;
 	}
 	if ((markerPtr->drawUnder == under) && 
-	    (markerPtr->state == STATE_NORMAL)) {
+	    (markerPtr->state == BLT_STATE_NORMAL)) {
 	    if ((*markerPtr->classPtr->pointProc) (markerPtr, &point)) {
 		return markerPtr;
 	    }

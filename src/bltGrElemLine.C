@@ -43,6 +43,7 @@
 #include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltBitmap.h"
+#include "bltConfig.h"
 
 #define COLOR_DEFAULT	(XColor *)1
 #define PATTERN_SOLID	((Pixmap)1)
@@ -516,8 +517,8 @@ static Blt_ConfigSpec lineElemConfigSpecs[] =
     {BLT_CONFIG_CUSTOM, "-smooth", "smooth", "Smooth", DEF_LINE_SMOOTH, 
 	Tk_Offset(LineElement, reqSmooth), BLT_CONFIG_DONT_SET_DEFAULT, 
 	&smoothOption},
-    {BLT_CONFIG_STATE, "-state", "state", "State", DEF_LINE_STATE, 
-	Tk_Offset(LineElement, state), BLT_CONFIG_DONT_SET_DEFAULT},
+    {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_LINE_STATE, 
+     Tk_Offset(LineElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
     {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", DEF_LINE_STYLES, 
 	Tk_Offset(LineElement, styles), 0, &bltLineStylesOption},
     {BLT_CONFIG_CUSTOM, "-symbol", "symbol", "Symbol", DEF_LINE_SYMBOL, 
