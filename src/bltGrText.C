@@ -112,8 +112,8 @@ void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text,
     unsigned int w, h;
 
     Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
-    *widthPtr = w + PADDING(tsPtr->xPad);
-    *heightPtr = h + PADDING(tsPtr->yPad);
+    *widthPtr = w + 2*tsPtr->xPad;
+    *heightPtr = h + 2*tsPtr->yPad;
   } 
 }
 

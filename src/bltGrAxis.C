@@ -2768,7 +2768,7 @@ DrawAxis(Axis *axisPtr, Drawable drawable)
 	Blt_Ts_InitStyle(ts);
 	Blt_Ts_SetAngle(ts, axisPtr->titleAngle);
 	Blt_Ts_SetFont(ts, axisPtr->titleFont);
-	Blt_Ts_SetPadding(ts, 1, 2, 0, 0);
+	Blt_Ts_SetPadding(ts, 1, 0);
 	Blt_Ts_SetAnchor(ts, axisPtr->titleAnchor);
 	Blt_Ts_SetJustify(ts, axisPtr->titleJustify);
 	if (axisPtr->flags & ACTIVE) {
@@ -2855,7 +2855,7 @@ DrawAxis(Axis *axisPtr, Drawable drawable)
 	Blt_Ts_InitStyle(ts);
 	Blt_Ts_SetAngle(ts, axisPtr->tickAngle);
 	Blt_Ts_SetFont(ts, axisPtr->tickFont);
-	Blt_Ts_SetPadding(ts, 2, 0, 0, 0);
+	Blt_Ts_SetPadding(ts, 2, 0);
 	Blt_Ts_SetAnchor(ts, axisPtr->tickAnchor);
 	if (axisPtr->flags & ACTIVE) {
 	    Blt_Ts_SetForeground(ts, axisPtr->activeFgColor);
@@ -2924,7 +2924,7 @@ AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 	Blt_Ts_InitStyle(ts);
 	Blt_Ts_SetAngle(ts, axisPtr->titleAngle);
 	Blt_Ts_SetFont(ts, axisPtr->titleFont);
-	Blt_Ts_SetPadding(ts, 1, 2, 0, 0);
+	Blt_Ts_SetPadding(ts, 1, 0);
 	Blt_Ts_SetAnchor(ts, axisPtr->titleAnchor);
 	Blt_Ts_SetJustify(ts, axisPtr->titleJustify);
 	Blt_Ts_SetForeground(ts, axisPtr->titleColor);
@@ -2938,7 +2938,7 @@ AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 	Blt_Ts_InitStyle(ts);
 	Blt_Ts_SetAngle(ts, axisPtr->tickAngle);
 	Blt_Ts_SetFont(ts, axisPtr->tickFont);
-	Blt_Ts_SetPadding(ts, 2, 0, 0, 0);
+	Blt_Ts_SetPadding(ts, 2, 0);
 	Blt_Ts_SetAnchor(ts, axisPtr->tickAnchor);
 	Blt_Ts_SetForeground(ts, axisPtr->tickColor);
 

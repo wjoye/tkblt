@@ -694,9 +694,9 @@ static Blt_ConfigSpec textConfigSpecs[] =
 	Tk_Offset(TextMarker, obj.name), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL, (char *)NULL, 
 	0, 0},
-    {BLT_CONFIG_PAD, "-padx", "padX", "PadX", DEF_MARKER_PAD, 
+    {BLT_CONFIG_PIXELS, "-padx", "padX", "PadX", DEF_MARKER_PAD, 
 	Tk_Offset(TextMarker, style.xPad), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_PAD, "-pady", "padY", "PadY", DEF_MARKER_PAD, 
+    {BLT_CONFIG_PIXELS, "-pady", "padY", "PadY", DEF_MARKER_PAD, 
 	Tk_Offset(TextMarker, style.yPad), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
 	Tk_Offset(TextMarker, style.angle), BLT_CONFIG_DONT_SET_DEFAULT},
@@ -2374,8 +2374,8 @@ CreateTextProc(void)
     tmPtr->classPtr = &textMarkerClass;
     Blt_Ts_InitStyle(tmPtr->style);
     tmPtr->style.anchor = TK_ANCHOR_NW;
-    tmPtr->style.padLeft = tmPtr->style.padRight = 4;
-    tmPtr->style.padTop = tmPtr->style.padBottom = 4;
+    tmPtr->style.xPad = 4;
+    tmPtr->style.yPad = 4;
     return (Marker *)tmPtr;
 }
 

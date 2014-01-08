@@ -62,7 +62,7 @@ typedef struct {
 					 * lines. */
     Tk_Anchor anchor;			/* Indicates how the text is anchored
 					 * around its x,y coordinates. */
-    Blt_Pad xPad, yPad;			/* # pixels padding of around text
+    int xPad, yPad;			/* # pixels padding of around text
 					 * region. */
     unsigned short int leader;		/* # pixels spacing between lines of
 					 * text. */
@@ -112,11 +112,7 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
 #define Blt_Ts_SetJustify(ts, j)	((ts).justify = (j))
 #define Blt_Ts_SetLeader(ts, l)	((ts).leader = (l))
 #define Blt_Ts_SetMaxLength(ts, l)	((ts).maxLength = (l))
-#define Blt_Ts_SetPadding(ts, l, r, t, b)    \
-	((ts).xPad.side1 = (l), \
-	(ts).xPad.side2 = (r),  \
-	(ts).yPad.side1 = (t),  \
-	(ts).yPad.side2 = (b))
+#define Blt_Ts_SetPadding(ts, x, y)     ((ts).xPad = (x), (ts).yPad = (y))
 #define Blt_Ts_SetState(ts, s)		((ts).state = (s))
 #define Blt_Ts_SetUnderline(ts, ul)	((ts).underline = (ul))
 
@@ -127,8 +123,8 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
      (ts).justify = TK_JUSTIFY_LEFT,	\
      (ts).leader = 0,			\
      (ts).underline = -1,		       \
-     (ts).xPad.side1 = (ts).xPad.side2 = 0,    \
-     (ts).yPad.side1 = (ts).yPad.side2 = 0,    \
+     (ts).xPad = 0,    \
+     (ts).yPad = 0,    \
      (ts).state = 0,			       \
      (ts).flags = 0,			       \
      (ts).gc = NULL,			       \
