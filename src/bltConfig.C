@@ -312,106 +312,6 @@ Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, int *fillPtr)
     return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetDashesFromObj --
- *
- *	Converts a TCL list of dash values into a dash list ready for
- *	use with XSetDashes.
- *
- * 	A valid list dash values can have zero through 11 elements
- *	(PostScript limit).  Values must be between 1 and 255. Although
- *	a list of 0 (like the empty string) means no dashes.
- *
- * Results:
- *	A standard TCL result. If the list represented a valid dash
- *	list TCL_OK is returned and *dashesPtr* will contain the
- *	valid dash list. Otherwise, TCL_ERROR is returned and
- *	interp->result will contain an error message.
- *
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetDashesFromObj(
-    Tcl_Interp *interp,
-    Tcl_Obj *objPtr,
-    Blt_Dashes *dashesPtr)
-{
-    const char *string;
-    char c;
-
-    string = Tcl_GetString(objPtr);
-    if (string == NULL) {
-	dashesPtr->values[0] = 0;
-	return TCL_OK;
-    }
-    c = string[0];
-    if (c == '\0') {
-	dashesPtr->values[0] = 0;
-    } else if ((c == 'd') && (strcmp(string, "dot") == 0)) {	
-	/* 1 */
-	dashesPtr->values[0] = 1;
-	dashesPtr->values[1] = 0;
-    } else if ((c == 'd') && (strcmp(string, "dash") == 0)) {	
-	/* 5 2 */
-	dashesPtr->values[0] = 5;
-	dashesPtr->values[1] = 2;
-	dashesPtr->values[2] = 0;
-    } else if ((c == 'd') && (strcmp(string, "dashdot") == 0)) { 
-	/* 2 4 2 */
- 	dashesPtr->values[0] = 2;
-	dashesPtr->values[1] = 4;
-	dashesPtr->values[2] = 2;
-	dashesPtr->values[3] = 0;
-    } else if ((c == 'd') && (strcmp(string, "dashdotdot") == 0)) { 
-	/* 2 4 2 2 */
-	dashesPtr->values[0] = 2;
-	dashesPtr->values[1] = 4;
-	dashesPtr->values[2] = 2;
-	dashesPtr->values[3] = 2;
-	dashesPtr->values[4] = 0;
-    } else {
-	int objc;
-	Tcl_Obj **objv;
-	int i;
-
-	if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (objc > 11) {	/* This is the postscript limit */
-	    Tcl_AppendResult(interp, "too many values in dash list \"", 
-			     string, "\"", (char *)NULL);
-	    return TCL_ERROR;
-	}
-	for (i = 0; i < objc; i++) {
-	    int value;
-
-	    if (Tcl_GetIntFromObj(interp, objv[i], &value) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    /*
-	     * Backward compatibility:
-	     * Allow list of 0 to turn off dashes
-	     */
-	    if ((value == 0) && (objc == 1)) {
-		break;
-	    }
-	    if ((value < 1) || (value > 255)) {
-		Tcl_AppendResult(interp, "dash value \"", 
-			 Tcl_GetString(objv[i]), "\" is out of range", 
-			 (char *)NULL);
-		return TCL_ERROR;
-	    }
-	    dashesPtr->values[i] = (unsigned char)value;
-	}
-	/* Make sure the array ends with a NUL byte  */
-	dashesPtr->values[i] = 0;
-    }
-    return TCL_OK;
-}
-
 /* Configuration option helper routines */
 
 /*
@@ -724,14 +624,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_DASHES:
-	    if (Blt_GetDashesFromObj(interp, objPtr, (Blt_Dashes *)ptr) 
-		!= TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    break;
-
-
 	case BLT_CONFIG_FILL:
 	    if (Blt_GetFillFromObj(interp, objPtr, (int *)ptr) != TCL_OK) {
 		return TCL_ERROR;
@@ -925,19 +817,6 @@ FormatConfigValue(
 
 	    flag = (*(unsigned long *)ptr) & (unsigned long)sp->customPtr;
 	    return Tcl_NewBooleanObj((flag != 0));
-	}
-
-    case BLT_CONFIG_DASHES: 
-	{
-	    unsigned char *p;
-	    Tcl_Obj *listObjPtr;
-	    Blt_Dashes *dashesPtr = (Blt_Dashes *)ptr;
-	    
-	    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	    for(p = dashesPtr->values; *p != 0; p++) {
-		Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(*p));
-	    }
-	    return listObjPtr;
 	}
 
     case BLT_CONFIG_FILL: 

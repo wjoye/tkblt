@@ -41,6 +41,7 @@
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
+#include "bltConfig.h"
 
 #define MAXTICKS	10001
 
@@ -239,9 +240,9 @@ static Blt_ConfigSpec configSpecs[] =
 	(Blt_CustomOption *)AXIS_GRID},
     {BLT_CONFIG_COLOR, "-gridcolor", "gridColor", "GridColor", 
 	DEF_AXIS_GRIDCOLOR, Tk_Offset(Axis, major.color), ALL_GRAPHS},
-    {BLT_CONFIG_DASHES, "-griddashes", "gridDashes", "GridDashes", 
+    {BLT_CONFIG_CUSTOM, "-griddashes", "gridDashes", "GridDashes", 
 	DEF_AXIS_GRIDDASHES, Tk_Offset(Axis, major.dashes), 
-	BLT_CONFIG_NULL_OK | ALL_GRAPHS},
+     BLT_CONFIG_NULL_OK | ALL_GRAPHS, &dashesOption},
     {BLT_CONFIG_PIXELS, "-gridlinewidth", "gridLineWidth", 
 	"GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
 	Tk_Offset(Axis, major.lineWidth), 
@@ -252,9 +253,9 @@ static Blt_ConfigSpec configSpecs[] =
 	(Blt_CustomOption *)AXIS_GRIDMINOR},
     {BLT_CONFIG_COLOR, "-gridminorcolor", "gridMinorColor", "GridColor", 
 	DEF_AXIS_GRIDMINOR_COLOR, Tk_Offset(Axis, minor.color), ALL_GRAPHS},
-    {BLT_CONFIG_DASHES, "-gridminordashes", "gridMinorDashes", "GridDashes", 
+    {BLT_CONFIG_CUSTOM, "-gridminordashes", "gridMinorDashes", "GridDashes", 
 	DEF_AXIS_GRIDDASHES, Tk_Offset(Axis, minor.dashes), 
-	BLT_CONFIG_NULL_OK | ALL_GRAPHS},
+     BLT_CONFIG_NULL_OK | ALL_GRAPHS, &dashesOption},
     {BLT_CONFIG_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
 	"GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
 	Tk_Offset(Axis, minor.lineWidth), 

@@ -130,7 +130,6 @@ typedef enum {
     BLT_CONFIG_END,
 
     BLT_CONFIG_BITMASK,
-    BLT_CONFIG_DASHES,
     BLT_CONFIG_FILL,
     BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
@@ -203,20 +202,6 @@ typedef struct {
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
 
-/*
- * Blt_Limits --
- *
- * 	Defines the bounding of a size (width or height) in the paneset.  It may
- * 	be related to the widget, pane or paneset size.
- */
-typedef struct {
-    int flags;				/* Flags indicate whether using default
-					 * values for limits or not. See flags
-					 * below. */
-    int max, min;			/* Values for respective limits. */
-    int nom;				/* Nominal starting value. */
-} Blt_Limits;
-
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
 extern int Blt_ConfigureInfoFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
@@ -241,8 +226,5 @@ extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec,
 
 extern int Blt_GetFillFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
 	int *fillPtr);
-
-extern int Blt_GetDashesFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
-	Blt_Dashes *dashesPtr);
 
 #endif /* BLT_CONFIG_H */

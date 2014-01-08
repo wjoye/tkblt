@@ -275,7 +275,7 @@ static Blt_ConfigSpec configSpecs[] =
 	"ExportSelection", DEF_LEGEND_EXPORTSELECTION, 
 	Tk_Offset(Legend, flags), BLT_CONFIG_DONT_SET_DEFAULT, 
 	(Blt_CustomOption *)SELECT_EXPORT},
-    {BLT_CONFIG_DASHES, "-focusdashes", "focusDashes", "FocusDashes",
+    {BLT_CONFIG_CUSTOM, "-focusdashes", "focusDashes", "FocusDashes",
 	DEF_LEGEND_FOCUSDASHES, Tk_Offset(Legend, focusDashes), 
      BLT_CONFIG_NULL_OK, &dashesOption},
     {BLT_CONFIG_COLOR, "-focusforeground", "focusForeground", "FocusForeground",

@@ -37,6 +37,7 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
+#include "bltConfig.h"
 
 typedef int (GraphCrosshairProc)(Graph *graphPtr, Tcl_Interp *interp, 
 	int objc, Tcl_Obj *const *objv);
@@ -85,8 +86,8 @@ static Blt_ConfigSpec configSpecs[] =
 {
     {BLT_CONFIG_COLOR, "-color", "color", "Color", DEF_HAIRS_FOREGROUND, 
 	Tk_Offset(Crosshairs, colorPtr), 0},
-    {BLT_CONFIG_DASHES, "-dashes", "dashes", "Dashes", DEF_HAIRS_DASHES, 
-	Tk_Offset(Crosshairs, dashes), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", DEF_HAIRS_DASHES, 
+     Tk_Offset(Crosshairs, dashes), BLT_CONFIG_NULL_OK, &dashesOption},
     {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", DEF_HAIRS_HIDE, 
 	Tk_Offset(Crosshairs, hidden), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "Linewidth",
