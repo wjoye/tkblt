@@ -189,6 +189,36 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_X_STEP_BARCHART	"1.0"
 #define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
 
+Blt_CustomOption bitmaskgraxischecklimitsOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_CHECK_LIMITS
+};
+
+Blt_CustomOption bitmaskgraxisexteriorOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_EXTERIOR
+};
+
+Blt_CustomOption bitmaskgraxisgridOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_GRID
+};
+
+Blt_CustomOption bitmaskgraxisgridminorOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_GRIDMINOR
+};
+
+Blt_CustomOption bitmaskgraxishideOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
+};
+
+Blt_CustomOption bitmaskgraxisshowticksOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_SHOWTICKS
+};
+
 static Blt_ConfigSpec configSpecs[] =
 {
     {BLT_CONFIG_BACKGROUND, "-activebackground", "activeBackground", 
@@ -214,10 +244,10 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
 	DEF_AXIS_BORDERWIDTH, Tk_Offset(Axis, borderWidth),
 	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_BITMASK, "-checklimits", "checkLimits", "CheckLimits", 
-	DEF_AXIS_CHECKLIMITS, Tk_Offset(Axis, flags), 
-	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT,
-	(Blt_CustomOption *)AXIS_CHECK_LIMITS},
+    {BLT_CONFIG_CUSTOM, "-checklimits", "checkLimits", "CheckLimits", 
+     DEF_AXIS_CHECKLIMITS, Tk_Offset(Axis, flags), 
+     ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
+     &bitmaskgraxischecklimitsOption},
     {BLT_CONFIG_COLOR, "-color", "color", "Color",
 	DEF_AXIS_FOREGROUND, Tk_Offset(Axis, tickColor), ALL_GRAPHS},
     {BLT_CONFIG_STRING, "-command", "command", "Command",
@@ -226,18 +256,19 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_BOOLEAN, "-descending", "descending", "Descending",
 	DEF_AXIS_DESCENDING, Tk_Offset(Axis, descending),
 	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_BITMASK, "-exterior", "exterior", "exterior", DEF_AXIS_EXTERIOR,
-	Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
- 	(Blt_CustomOption *)AXIS_EXTERIOR},
+    {BLT_CONFIG_CUSTOM, "-exterior", "exterior", "exterior", DEF_AXIS_EXTERIOR,
+     Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
+     &bitmaskgraxisexteriorOption},
     {BLT_CONFIG_SYNONYM, "-fg", "color", (char *)NULL, 
         (char *)NULL, 0, ALL_GRAPHS},
     {BLT_CONFIG_SYNONYM, "-foreground", "color", (char *)NULL, 
         (char *)NULL, 0, ALL_GRAPHS},
-    {BLT_CONFIG_BITMASK, "-grid", "grid", "Grid", DEF_AXIS_GRID_BARCHART, 
-	Tk_Offset(Axis, flags), BARCHART, (Blt_CustomOption *)AXIS_GRID},
-    {BLT_CONFIG_BITMASK, "-grid", "grid", "Grid", DEF_AXIS_GRID_GRAPH, 
-	Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
-	(Blt_CustomOption *)AXIS_GRID},
+    {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID_BARCHART, 
+     Tk_Offset(Axis, flags), BARCHART, 
+     &bitmaskgraxisgridOption},
+    {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID_GRAPH, 
+     Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
+     &bitmaskgraxisgridOption},
     {BLT_CONFIG_COLOR, "-gridcolor", "gridColor", "GridColor", 
 	DEF_AXIS_GRIDCOLOR, Tk_Offset(Axis, major.color), ALL_GRAPHS},
     {BLT_CONFIG_CUSTOM, "-griddashes", "gridDashes", "GridDashes", 
@@ -247,10 +278,10 @@ static Blt_ConfigSpec configSpecs[] =
 	"GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
 	Tk_Offset(Axis, major.lineWidth), 
         BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS},
-    {BLT_CONFIG_BITMASK, "-gridminor", "gridMinor", "GridMinor", 
-	DEF_AXIS_GRIDMINOR, Tk_Offset(Axis, flags), 
-	BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS, 
-	(Blt_CustomOption *)AXIS_GRIDMINOR},
+    {BLT_CONFIG_CUSTOM, "-gridminor", "gridMinor", "GridMinor", 
+     DEF_AXIS_GRIDMINOR, Tk_Offset(Axis, flags), 
+     BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS, 
+     &bitmaskgraxisgridminorOption},
     {BLT_CONFIG_COLOR, "-gridminorcolor", "gridMinorColor", "GridColor", 
 	DEF_AXIS_GRIDMINOR_COLOR, Tk_Offset(Axis, minor.color), ALL_GRAPHS},
     {BLT_CONFIG_CUSTOM, "-gridminordashes", "gridMinorDashes", "GridDashes", 
@@ -260,9 +291,9 @@ static Blt_ConfigSpec configSpecs[] =
 	"GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
 	Tk_Offset(Axis, minor.lineWidth), 
         BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS},
-    {BLT_CONFIG_BITMASK, "-hide", "hide", "Hide", DEF_AXIS_HIDE, 
-	Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
-        (Blt_CustomOption *)HIDE},
+    {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_AXIS_HIDE, 
+     Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
+     &bitmaskgraxishideOption},
     {BLT_CONFIG_JUSTIFY, "-justify", "justify", "Justify",
 	DEF_AXIS_JUSTIFY, Tk_Offset(Axis, titleJustify),
 	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
@@ -312,10 +343,10 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
 	DEF_AXIS_SHIFTBY, Tk_Offset(Axis, shiftBy),
 	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_BITMASK, "-showticks", "showTicks", "ShowTicks",
-	DEF_AXIS_SHOWTICKS, Tk_Offset(Axis, flags), 
-	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT,
-	(Blt_CustomOption *)AXIS_SHOWTICKS},
+    {BLT_CONFIG_CUSTOM, "-showticks", "showTicks", "ShowTicks",
+     DEF_AXIS_SHOWTICKS, Tk_Offset(Axis, flags), 
+     ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT,
+     &bitmaskgraxisshowticksOption},
     {BLT_CONFIG_DOUBLE, "-stepsize", "stepSize", "StepSize",
 	DEF_AXIS_STEP, Tk_Offset(Axis, reqStep),
 	ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},

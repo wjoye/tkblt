@@ -302,6 +302,44 @@ static Tcl_Obj* FillToObjProc(ClientData clientData, Tcl_Interp *interp,
   return Tcl_NewStringObj("unknown", -1);
 }
 
+/* BITMASK */
+
+int ObjToBitmaskProc(ClientData clientData, Tcl_Interp *interp,
+		     Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+		     int offset, int flags)
+{
+  unsigned int* bitmaskPtr;
+  int bool;
+  unsigned int mask, flag;
+
+  bitmaskPtr = (unsigned int*)(widgRec + offset);
+
+  if (Tcl_GetBooleanFromObj(interp, objPtr, &bool) != TCL_OK) {
+    return TCL_ERROR;
+  }
+  mask = (unsigned int)clientData;
+  flag = *bitmaskPtr;
+  flag &= ~mask;
+  if (bool) {
+    flag |= mask;
+  }
+  *bitmaskPtr = flag;
+
+  return TCL_OK;
+}
+    
+Tcl_Obj* BitmaskToObjProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, char *widgRec, 
+			  int offset, int flags)
+{
+  unsigned int* bitmaskPtr;
+  unsigned long flag;
+
+  bitmaskPtr = (unsigned int*)(widgRec + offset);
+  flag = (*bitmaskPtr) & (unsigned int)clientData;
+  return Tcl_NewBooleanObj((flag != 0));
+}
+
 /* Configuration option helper routines */
 
 /*

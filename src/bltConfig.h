@@ -181,6 +181,8 @@ typedef struct {
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
 extern Blt_CustomOption fillOption;
+extern Blt_OptionParseProc ObjToBitmaskProc;
+extern Blt_OptionPrintProc BitmaskToObjProc;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
