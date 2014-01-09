@@ -128,6 +128,11 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_DATA_COMMAND		(char *)NULL
 #define DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS	"0"
 
+Blt_CustomOption bitmaskgraphunmapOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)UNMAP_HIDDEN
+};
+
 static Blt_ConfigSpec configSpecs[] =
 {
     {BLT_CONFIG_DOUBLE, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
@@ -182,10 +187,10 @@ static Blt_ConfigSpec configSpecs[] =
     {BLT_CONFIG_PIXELS, "-highlightthickness", "highlightThickness",
 	"HighlightThickness", DEF_GRAPH_HIGHLIGHT_WIDTH, 
 	Tk_Offset(Graph, highlightWidth), BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_BITMASK, "-unmaphiddenelements", "unmapHiddenElements", 
-	"UnmapHiddenElements", DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS, 
-	Tk_Offset(Graph, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
-	(Blt_CustomOption *)UNMAP_HIDDEN},
+    {BLT_CONFIG_CUSTOM, "-unmaphiddenelements", "unmapHiddenElements", 
+     "UnmapHiddenElements", DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS, 
+     Tk_Offset(Graph, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
+     &bitmaskgraphunmapOption},
     {BLT_CONFIG_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
 	DEF_GRAPH_INVERT_XY, Tk_Offset(Graph, inverted),
 	BLT_CONFIG_DONT_SET_DEFAULT},

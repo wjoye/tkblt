@@ -302,6 +302,11 @@ static Blt_ConfigSpec barPenConfigSpecs[] =
 };
 
 
+Blt_CustomOption bitmaskbarelemhideOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
+};
+
 static Blt_ConfigSpec barElemConfigSpecs[] = {
     {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
 	DEF_BAR_ACTIVE_PEN, Tk_Offset(BarElement, activePenPtr), 
@@ -346,9 +351,9 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
     {BLT_CONFIG_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
 	DEF_BAR_LABEL_RELIEF, Tk_Offset(BarElement, legendRelief),
 	BLT_CONFIG_DONT_SET_DEFAULT},
-    {BLT_CONFIG_BITMASK, "-hide", "hide", "Hide", DEF_BAR_HIDE, 
-         Tk_Offset(BarElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
-        (Blt_CustomOption *)HIDE},
+    {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_BAR_HIDE, 
+     Tk_Offset(BarElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
+     &bitmaskbarelemhideOption},
     {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", DEF_BAR_AXIS_X, 
 	Tk_Offset(BarElement, axes.x), 0, &bltXAxisOption},
     {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_BAR_AXIS_Y, 

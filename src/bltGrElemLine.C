@@ -433,6 +433,11 @@ extern Blt_CustomOption bltYAxisOption;
 #define	DEF_PEN_VALUE_ANGLE		(char *)NULL
 #define DEF_PEN_SHOW_VALUES		"no"
 
+Blt_CustomOption bitmasklineelemhideOption =
+{
+  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
+};
+
 static Blt_ConfigSpec lineElemConfigSpecs[] =
 {
     {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -467,9 +472,9 @@ static Blt_ConfigSpec lineElemConfigSpecs[] =
     {BLT_CONFIG_CUSTOM, "-fill", "fill", "Fill", DEF_LINE_FILL_COLOR, 
 	Tk_Offset(LineElement, builtinPen.symbol.fillColor), 
 	BLT_CONFIG_NULL_OK, &bltColorOption},
-    {BLT_CONFIG_BITMASK, "-hide", "hide", "Hide", DEF_LINE_HIDE, 
-        Tk_Offset(LineElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
-        (Blt_CustomOption *)HIDE},
+    {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_LINE_HIDE, 
+     Tk_Offset(LineElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
+     &bitmasklineelemhideOption},
     {BLT_CONFIG_STRING, "-label", "label", "Label", (char *)NULL, 
 	Tk_Offset(LineElement, label), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
