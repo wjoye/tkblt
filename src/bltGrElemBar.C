@@ -301,8 +301,7 @@ static Blt_ConfigSpec barPenConfigSpecs[] =
     {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
-
-Blt_CustomOption bitmaskbarelemhideOption =
+Blt_CustomOption bitmaskBarElemHideOption =
 {
   ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
 };
@@ -353,7 +352,7 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
 	BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_BAR_HIDE, 
      Tk_Offset(BarElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
-     &bitmaskbarelemhideOption},
+     &bitmaskBarElemHideOption},
     {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", DEF_BAR_AXIS_X, 
 	Tk_Offset(BarElement, axes.x), 0, &bltXAxisOption},
     {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_BAR_AXIS_Y, 
