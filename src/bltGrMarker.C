@@ -269,8 +269,9 @@ static Blt_ConfigSpec bitmapConfigSpecs[] =
      DEF_MARKER_BACKGROUND, Tk_Offset(BitmapMarker, fillColor),
      BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL, (char *)NULL, 0, 0},
-    {BLT_CONFIG_LIST, "-bindtags", "bindTags", "BindTags", DEF_BITMAP_TAGS, 
-     Tk_Offset(BitmapMarker, obj.tags), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_BITMAP_TAGS, 
+     Tk_Offset(BitmapMarker, obj.tags), BLT_CONFIG_NULL_OK,
+     &listOption},
     {BLT_CONFIG_BITMAP, "-bitmap", "bitmap", "Bitmap", DEF_MARKER_BITMAP, 
      Tk_Offset(BitmapMarker, srcBitmap), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", DEF_MARKER_COORDS, 
@@ -400,8 +401,9 @@ Blt_CustomOption bitmaskGrMarkerLineHideOption =
 
 static Blt_ConfigSpec lineConfigSpecs[] =
   {
-    {BLT_CONFIG_LIST, "-bindtags", "bindTags", "BindTags", DEF_LINE_TAGS, 
-     Tk_Offset(LineMarker, obj.tags), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_LINE_TAGS, 
+     Tk_Offset(LineMarker, obj.tags), BLT_CONFIG_NULL_OK,
+     &listOption},
     {BLT_CONFIG_CAP_STYLE, "-cap", "cap", "Cap", DEF_MARKER_CAP_STYLE, 
      Tk_Offset(LineMarker, capStyle), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", DEF_MARKER_COORDS, 
@@ -561,8 +563,9 @@ Blt_CustomOption bitmaskGrMarkerPolygonHideOption =
 
 static Blt_ConfigSpec polygonConfigSpecs[] =
   {
-    {BLT_CONFIG_LIST, "-bindtags", "bindTags", "BindTags", DEF_POLYGON_TAGS, 
-     Tk_Offset(PolygonMarker, obj.tags), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_POLYGON_TAGS, 
+     Tk_Offset(PolygonMarker, obj.tags), BLT_CONFIG_NULL_OK,
+     &listOption},
     {BLT_CONFIG_CAP_STYLE, "-cap", "cap", "Cap", DEF_MARKER_CAP_STYLE, 
      Tk_Offset(PolygonMarker, capStyle), BLT_CONFIG_DONT_SET_DEFAULT},
     {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", DEF_MARKER_COORDS, 
@@ -686,8 +689,9 @@ static Blt_ConfigSpec textConfigSpecs[] =
     {BLT_CONFIG_COLOR, "-background", "background", "MarkerBackground",
      (char *)NULL, Tk_Offset(TextMarker, fillColor), BLT_CONFIG_NULL_OK},
     {BLT_CONFIG_SYNONYM, "-bg", "background", "Background", (char *)NULL, 0, 0},
-    {BLT_CONFIG_LIST, "-bindtags", "bindTags", "BindTags", DEF_TEXT_TAGS,
-     Tk_Offset(TextMarker, obj.tags), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_TEXT_TAGS,
+     Tk_Offset(TextMarker, obj.tags), BLT_CONFIG_NULL_OK,
+     &listOption},
     {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", DEF_MARKER_COORDS, 
      Tk_Offset(TextMarker, worldPts), BLT_CONFIG_NULL_OK, 
      &coordsOption},
@@ -821,8 +825,9 @@ static Blt_ConfigSpec windowConfigSpecs[] =
   {
     {BLT_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor", DEF_MARKER_ANCHOR, 
      Tk_Offset(WindowMarker, anchor), 0},
-    {BLT_CONFIG_LIST, "-bindtags", "bindTags", "BindTags", DEF_WINDOW_TAGS, 
-     Tk_Offset(WindowMarker, obj.tags), BLT_CONFIG_NULL_OK},
+    {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_WINDOW_TAGS, 
+     Tk_Offset(WindowMarker, obj.tags), BLT_CONFIG_NULL_OK,
+     &listOption},
     {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", DEF_MARKER_COORDS, 
      Tk_Offset(WindowMarker, worldPts), BLT_CONFIG_NULL_OK, 
      &coordsOption},

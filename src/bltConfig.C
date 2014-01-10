@@ -85,10 +85,6 @@
 #include "bltWindow.h"
 #include "bltBgStyle.h"
 
-#define PIXELS_NNEG		0
-#define PIXELS_POS		1
-#define PIXELS_ANY		2
-
 /* STATE */
 
 static Blt_OptionParseProc ObjToStateProc;
@@ -338,6 +334,68 @@ Tcl_Obj* BitmaskToObjProc(ClientData clientData, Tcl_Interp *interp,
   bitmaskPtr = (unsigned int*)(widgRec + offset);
   flag = (*bitmaskPtr) & (unsigned int)clientData;
   return Tcl_NewBooleanObj((flag != 0));
+}
+
+/* LIST */
+
+static Blt_OptionParseProc ObjToListProc;
+static Blt_OptionPrintProc ListToObjProc;
+static Blt_OptionFreeProc ListFreeProc;
+Blt_CustomOption listOption =
+{
+    ObjToListProc, ListToObjProc, ListFreeProc, (ClientData)0
+};
+
+int ObjToListProc(ClientData clientData, Tcl_Interp *interp,
+		     Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+		     int offset, int flags)
+{
+  const char*** listPtr;
+  const char** argv;
+  int argc;
+
+  listPtr = (const char***)(widgRec + offset);
+  if (Tcl_SplitList(interp, Tcl_GetString(objPtr), &argc, &argv) 
+      != TCL_OK) {
+    return TCL_ERROR;
+  }
+  if (*listPtr != NULL) {
+    Tcl_Free((void*)(*listPtr));
+    *listPtr = NULL;
+  }
+  *listPtr = argv;
+
+  return TCL_OK;
+}
+    
+Tcl_Obj* ListToObjProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, char *widgRec, 
+			  int offset, int flags)
+{
+  const char*** listPtr;
+  Tcl_Obj *objPtr, *listObjPtr;
+  const char** p;
+
+  listPtr = (const char***)(widgRec + offset);
+	    
+  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  for (p = *listPtr; *p != NULL; p++) {
+    objPtr = Tcl_NewStringObj(*p, -1);
+    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
+  }
+  return listObjPtr;
+}
+
+void ListFreeProc(ClientData clientData, Display* display,
+		 char *widgRec, int offset)
+{
+  const char*** listPtr;
+
+  listPtr = (const char***)(widgRec + offset);
+  if (*listPtr != NULL) {
+    Tcl_Free((void*)(*listPtr));
+    *listPtr = NULL;
+  }
 }
 
 /* Configuration option helper routines */
@@ -634,41 +692,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_BITMASK: 
-	    {
-		int bool;
-		unsigned long mask, flags;
-
-		if (Tcl_GetBooleanFromObj(interp, objPtr, &bool) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		mask = (unsigned long)sp->customPtr;
-		flags = *(int *)ptr;
-		flags &= ~mask;
-		if (bool) {
-		    flags |= mask;
-		}
-		*(int *)ptr = flags;
-	    }
-	    break;
-
-	case BLT_CONFIG_LIST: 
-	    {
-		const char **argv;
-		int argc;
-		
-		if (Tcl_SplitList(interp, Tcl_GetString(objPtr), &argc, &argv) 
-		    != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		if (*(char ***)ptr != NULL) {
-		  Tcl_Free((void*)(*(char ***)ptr));
-		    *((char ***) ptr) = NULL;
-		}
-		*(const char ***)ptr = argv;
-	    }
-	    break;
-
 	case BLT_CONFIG_OBJ: 
 	    {
 		Tcl_IncrRefCount(objPtr);
@@ -832,27 +855,6 @@ FormatConfigValue(
 	    string = *(char **)ptr;
 	}
 	break;
-
-    case BLT_CONFIG_BITMASK:
-	{
-	    unsigned long flag;
-
-	    flag = (*(unsigned long *)ptr) & (unsigned long)sp->customPtr;
-	    return Tcl_NewBooleanObj((flag != 0));
-	}
-
-    case BLT_CONFIG_LIST: 
-	{
-	    Tcl_Obj *objPtr, *listObjPtr;
-	    char *const *p;
-	    
-	    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	    for (p = *(char ***)ptr; *p != NULL; p++) {
-		objPtr = Tcl_NewStringObj(*p, -1);
-		Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-	    }
-	    return listObjPtr;
-	}
 
     case BLT_CONFIG_OBJ:
 	if (*(Tcl_Obj **)ptr != NULL) {
@@ -1447,13 +1449,6 @@ Blt_FreeOptions(
 	    if (*(Tcl_Obj **)ptr != NULL) {
 		Tcl_DecrRefCount(*(Tcl_Obj **)ptr);
 		*(Tcl_Obj **)ptr = NULL;
-	    }
-	    break;
-
-	case BLT_CONFIG_LIST:
-	    if (*((char ***) ptr) != NULL) {
-	      Tcl_Free((void*)(*((char ***) ptr)));
-		*((char ***) ptr) = NULL;
 	    }
 	    break;
 

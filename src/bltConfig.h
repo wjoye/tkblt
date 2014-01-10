@@ -129,8 +129,6 @@ typedef enum {
     BLT_CONFIG_CUSTOM, 
     BLT_CONFIG_END,
 
-    BLT_CONFIG_BITMASK,
-    BLT_CONFIG_LIST,
     BLT_CONFIG_OBJ,
     BLT_CONFIG_BACKGROUND
 } Blt_ConfigTypes;
@@ -183,6 +181,7 @@ extern Blt_CustomOption dashesOption;
 extern Blt_CustomOption fillOption;
 extern Blt_OptionParseProc ObjToBitmaskProc;
 extern Blt_OptionPrintProc BitmaskToObjProc;
+extern Blt_CustomOption listOption;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
