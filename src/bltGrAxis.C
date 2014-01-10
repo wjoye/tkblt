@@ -739,7 +739,7 @@ LimitToObjProc(
     double limit = *(double *)(widgRec + offset);
     Tcl_Obj *objPtr;
 
-    if (isnormal(limit)) {
+    if (!isnan(limit)) {
 	objPtr = Tcl_NewDoubleObj(limit);
     } else {
 	objPtr = Tcl_NewStringObj("", -1);
@@ -1375,28 +1375,28 @@ FixAxisRange(Axis *axisPtr)
 
     /* Check the requested axis limits. Can't allow -min to be greater
      * than -max, or have undefined log scale limits.  */
-    if (((isnormal(axisPtr->reqMin)) && (isnormal(axisPtr->reqMax))) &&
+    if (((!isnan(axisPtr->reqMin)) && (!isnan(axisPtr->reqMax))) &&
 	(axisPtr->reqMin >= axisPtr->reqMax)) {
       axisPtr->reqMin = axisPtr->reqMax = NAN;
     }
     if (axisPtr->logScale) {
-	if ((isnormal(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
+	if ((!isnan(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
 	  axisPtr->reqMin = NAN;
 	}
-	if ((isnormal(axisPtr->reqMax)) && (axisPtr->reqMax <= 0.0)) {
+	if ((!isnan(axisPtr->reqMax)) && (axisPtr->reqMax <= 0.0)) {
 	  axisPtr->reqMax = NAN;
 	}
     }
 
     if (min == DBL_MAX) {
-	if (isnormal(axisPtr->reqMin)) {
+	if (!isnan(axisPtr->reqMin)) {
 	    min = axisPtr->reqMin;
 	} else {
 	    min = (axisPtr->logScale) ? 0.001 : 0.0;
 	}
     }
     if (max == -DBL_MAX) {
-	if (isnormal(axisPtr->reqMax)) {
+	if (!isnan(axisPtr->reqMax)) {
 	    max = axisPtr->reqMax;
 	} else {
 	    max = 1.0;
@@ -1421,10 +1421,10 @@ FixAxisRange(Axis *axisPtr)
      */
     axisPtr->min = min;
     axisPtr->max = max;
-    if (isnormal(axisPtr->reqMin)) {
+    if (!isnan(axisPtr->reqMin)) {
 	axisPtr->min = axisPtr->reqMin;
     }
-    if (isnormal(axisPtr->reqMax)) { 
+    if (!isnan(axisPtr->reqMax)) { 
 	axisPtr->max = axisPtr->reqMax;
     }
     if (axisPtr->max < axisPtr->min) {
@@ -1434,10 +1434,10 @@ FixAxisRange(Axis *axisPtr)
 	 * (based upon the data) is too small or large.  Remedy this by making
 	 * up a new min or max from the user-defined limit.
 	 */
-	if (!isnormal(axisPtr->reqMin)) {
+	if (isnan(axisPtr->reqMin)) {
 	    axisPtr->min = axisPtr->max - (fabs(axisPtr->max) * 0.1);
 	}
-	if (!isnormal(axisPtr->reqMax)) {
+	if (isnan(axisPtr->reqMax)) {
 	    axisPtr->max = axisPtr->min + (fabs(axisPtr->max) * 0.1);
 	}
     }
@@ -1446,7 +1446,7 @@ FixAxisRange(Axis *axisPtr)
      * limits.
      */
     if ((axisPtr->windowSize > 0.0) && 
-	(!isnormal(axisPtr->reqMin)) && (!isnormal(axisPtr->reqMax))) {
+	(isnan(axisPtr->reqMin)) && (isnan(axisPtr->reqMax))) {
 	if (axisPtr->shiftBy < 0.0) {
 	    axisPtr->shiftBy = 0.0;
 	}
@@ -1681,13 +1681,13 @@ LogScaleAxis(Axis *axisPtr, double min, double max)
 	}
 	if ((axisPtr->looseMin == AXIS_TIGHT) || 
 	    ((axisPtr->looseMin == AXIS_LOOSE) && 
-	     (isnormal(axisPtr->reqMin)))) {
+	     (!isnan(axisPtr->reqMin)))) {
 	    tickMin = min;
 	    nMajor++;
 	}
 	if ((axisPtr->looseMax == AXIS_TIGHT) || 
 	    ((axisPtr->looseMax == AXIS_LOOSE) &&
-	     (isnormal(axisPtr->reqMax)))) {
+	     (!isnan(axisPtr->reqMax)))) {
 	    tickMax = max;
 	}
     }
@@ -1810,12 +1810,12 @@ LinearScaleAxis(Axis *axisPtr, double min, double max)
      */
     if ((axisPtr->looseMin == AXIS_TIGHT) || 
 	((axisPtr->looseMin == AXIS_LOOSE) &&
-	 (isnormal(axisPtr->reqMin)))) {
+	 (!isnan(axisPtr->reqMin)))) {
 	axisMin = min;
     }
     if ((axisPtr->looseMax == AXIS_TIGHT) || 
 	((axisPtr->looseMax == AXIS_LOOSE) &&
-	 (isnormal(axisPtr->reqMax)))) {
+	 (!isnan(axisPtr->reqMax)))) {
 	axisMax = max;
     }
     SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
@@ -1927,10 +1927,10 @@ Blt_ResetAxes(Graph *graphPtr)
 	/* Calculate min/max tick (major/minor) layouts */
 	min = axisPtr->min;
 	max = axisPtr->max;
-	if ((isnormal(axisPtr->scrollMin)) && (min < axisPtr->scrollMin)) {
+	if ((!isnan(axisPtr->scrollMin)) && (min < axisPtr->scrollMin)) {
 	    min = axisPtr->scrollMin;
 	}
-	if ((isnormal(axisPtr->scrollMax)) && (max > axisPtr->scrollMax)) {
+	if ((!isnan(axisPtr->scrollMax)) && (max > axisPtr->scrollMax)) {
 	    max = axisPtr->scrollMax;
 	}
 	if (axisPtr->logScale) {
@@ -2826,10 +2826,10 @@ DrawAxis(Axis *axisPtr, Drawable drawable)
 
 	worldMin = axisPtr->valueRange.min;
 	worldMax = axisPtr->valueRange.max;
-	if (isnormal(axisPtr->scrollMin)) {
+	if (!isnan(axisPtr->scrollMin)) {
 	    worldMin = axisPtr->scrollMin;
 	}
-	if (isnormal(axisPtr->scrollMax)) {
+	if (!isnan(axisPtr->scrollMax)) {
 	    worldMax = axisPtr->scrollMax;
 	}
 	viewMin = axisPtr->min;
@@ -3741,7 +3741,7 @@ ConfigureAxis(Axis *axisPtr)
     /* Check the requested axis limits. Can't allow -min to be greater than
      * -max.  Do this regardless of -checklimits option. We want to always 
      * detect when the user has zoomed in beyond the precision of the data.*/
-    if (((isnormal(axisPtr->reqMin)) && (isnormal(axisPtr->reqMax))) &&
+    if (((!isnan(axisPtr->reqMin)) && (!isnan(axisPtr->reqMax))) &&
 	(axisPtr->reqMin >= axisPtr->reqMax)) {
 	char msg[200];
 	sprintf_s(msg, 200, 
@@ -3755,7 +3755,7 @@ ConfigureAxis(Axis *axisPtr)
     if (axisPtr->logScale) {
 	if (axisPtr->flags & AXIS_CHECK_LIMITS) {
 	    /* Check that the logscale limits are positive.  */
-	    if ((isnormal(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
+	    if ((!isnan(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
 		Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
 			Blt_Dtoa(graphPtr->interp, axisPtr->reqMin), 
 			"\" for axis \"", axisPtr->obj.name, "\"", 
@@ -3763,10 +3763,10 @@ ConfigureAxis(Axis *axisPtr)
 		return TCL_ERROR;
 	    }
 	}
-	if ((isnormal(axisPtr->scrollMin)) && (axisPtr->scrollMin <= 0.0)) {
+	if ((!isnan(axisPtr->scrollMin)) && (axisPtr->scrollMin <= 0.0)) {
 	  axisPtr->scrollMin = NAN;
 	}
-	if ((isnormal(axisPtr->scrollMax)) && (axisPtr->scrollMax <= 0.0)) {
+	if ((!isnan(axisPtr->scrollMax)) && (axisPtr->scrollMax <= 0.0)) {
 	  axisPtr->scrollMax = NAN;
 	}
     }
@@ -4442,10 +4442,10 @@ ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
     worldMin = axisPtr->valueRange.min;
     worldMax = axisPtr->valueRange.max;
     /* Override data dimensions with user-selected limits. */
-    if (isnormal(axisPtr->scrollMin)) {
+    if (!isnan(axisPtr->scrollMin)) {
 	worldMin = axisPtr->scrollMin;
     }
-    if (isnormal(axisPtr->scrollMax)) {
+    if (!isnan(axisPtr->scrollMax)) {
 	worldMax = axisPtr->scrollMax;
     }
     viewMin = axisPtr->min;
