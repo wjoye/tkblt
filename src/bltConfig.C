@@ -458,6 +458,55 @@ static void BackgroundFreeProc(ClientData clientData, Display* display,
   *backgroundPtr = NULL;
 }
 
+/* OBJECT */
+
+static Blt_OptionParseProc ObjToObjectProc;
+static Blt_OptionPrintProc ObjectToObjProc;
+static Blt_OptionFreeProc ObjectFreeProc;
+Blt_CustomOption objectOption =
+{
+    ObjToObjectProc, ObjectToObjProc, ObjectFreeProc, (ClientData)0
+};
+
+static int ObjToObjectProc(ClientData clientData, Tcl_Interp *interp,
+			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			   int offset, int flags)
+{
+  Tcl_Obj** objectPtr;
+
+  objectPtr = (Tcl_Obj**)(widgRec + offset);
+
+  Tcl_IncrRefCount(objPtr);
+  if (*objectPtr != NULL)
+    Tcl_DecrRefCount(*objectPtr);
+  *objectPtr = objPtr;
+
+  return TCL_OK;
+}
+    
+static Tcl_Obj* ObjectToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec, 
+			       int offset, int flags)
+{
+  Tcl_Obj** objectPtr;
+
+  objectPtr = (Tcl_Obj**)(widgRec + offset);
+
+  return *objectPtr;
+}
+
+static void ObjectFreeProc(ClientData clientData, Display* display,
+			 char *widgRec, int offset)
+{
+  Tcl_Obj** objectPtr;
+
+  objectPtr = (Tcl_Obj**)(widgRec + offset);
+  if (*objectPtr != NULL) {
+    Tcl_DecrRefCount(*objectPtr);
+    *objectPtr = NULL;
+  }
+}
+
 /* Configuration option helper routines */
 
 /*
@@ -752,16 +801,6 @@ DoConfig(
 	    }
 	    break;
 
-	case BLT_CONFIG_OBJ: 
-	    {
-		Tcl_IncrRefCount(objPtr);
-		if (*(Tcl_Obj **)ptr != NULL) {
-		    Tcl_DecrRefCount(*(Tcl_Obj **)ptr);
-		}
-		*(Tcl_Obj **)ptr = objPtr;
-	    }
-	    break;
-
 	case BLT_CONFIG_PIXELS: 
 	    {
 		int value;
@@ -771,25 +810,6 @@ DoConfig(
 		    return TCL_ERROR;
 		}
 		*(int *)ptr = value;
-	    }
-	    break;
-
-	case BLT_CONFIG_BACKGROUND: 
-	    {
-		Blt_Background style;
-		
-		if (objIsEmpty) {
-		    style = NULL;
-		} else {
-		    style = Blt_GetBackgroundFromObj(interp, tkwin, objPtr);
-		    if (style == NULL) {
-			return TCL_ERROR;
-		    }
-		}
-		if (*(Blt_Background *)ptr != NULL) {
-		    Blt_FreeBackground(*(Blt_Background *)ptr);
-		}
-		*(Blt_Background *)ptr = style;
 	    }
 	    break;
 
@@ -913,18 +933,6 @@ FormatConfigValue(
     case BLT_CONFIG_STRING: 
 	if (*(char **)ptr != NULL) {
 	    string = *(char **)ptr;
-	}
-	break;
-
-    case BLT_CONFIG_OBJ:
-	if (*(Tcl_Obj **)ptr != NULL) {
-	    return *(Tcl_Obj **)ptr;
-	}
-	break;
-
-    case BLT_CONFIG_BACKGROUND: 
-	if (*(Blt_Background *)ptr != NULL) {
-	    string = Blt_NameOfBackground(*(Blt_Background *)ptr);
 	}
 	break;
 
@@ -1502,20 +1510,6 @@ Blt_FreeOptions(
 	    if (*((Tk_Cursor *) ptr) != None) {
 		Tk_FreeCursor(display, *((Tk_Cursor *) ptr));
 		*((Tk_Cursor *) ptr) = None;
-	    }
-	    break;
-
-	case BLT_CONFIG_OBJ:
-	    if (*(Tcl_Obj **)ptr != NULL) {
-		Tcl_DecrRefCount(*(Tcl_Obj **)ptr);
-		*(Tcl_Obj **)ptr = NULL;
-	    }
-	    break;
-
-	case BLT_CONFIG_BACKGROUND:
-	    if (*((Blt_Background *)ptr) != NULL) {
-		Blt_FreeBackground(*((Blt_Background *)ptr));
-		*((Blt_Background *)ptr) = NULL;
 	    }
 	    break;
 
