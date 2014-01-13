@@ -86,23 +86,6 @@ typedef struct {
 
 } MathFunction;
 
-
-/*
- * Macros for testing floating-point values for certain special cases:
- *
- *	IS_NAN	Test for not-a-number by comparing a value against itself
- *	IF_INF	Test for infinity by comparing against the largest floating
- *		point value.
- */
-
-#define IS_NAN(v) ((v) != (v))
-
-#ifdef DBL_MAX
-#   define IS_INF(v) (((v) > DBL_MAX) || ((v) < -DBL_MAX))
-#else
-#   define IS_INF(v) 0
-#endif
-
 /* The data structure below is used to describe an expression value,
  * which can be either a double-precision floating-point value, or a
  * string.  A given number has only one value at a time.  */
@@ -622,7 +605,7 @@ MathError(
 	    (char *)NULL);
 	Tcl_SetErrorCode(interp, "ARITH", "DOMAIN", 
 			 Tcl_GetStringResult(interp), (char *)NULL);
-    } else if ((errno == ERANGE) || IS_INF(value)) {
+    } else if ((errno == ERANGE) || isinf(value)) {
 	if (value == 0.0) {
 	    Tcl_AppendResult(interp, 
 			     "floating-point value too small to represent",

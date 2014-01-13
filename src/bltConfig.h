@@ -182,6 +182,7 @@ extern Blt_CustomOption fillOption;
 extern Blt_OptionParseProc ObjToBitmaskProc;
 extern Blt_OptionPrintProc BitmaskToObjProc;
 extern Blt_CustomOption listOption;
+extern Blt_CustomOption backgroundOption;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 

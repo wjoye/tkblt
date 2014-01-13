@@ -346,9 +346,9 @@ Blt_CustomOption listOption =
     ObjToListProc, ListToObjProc, ListFreeProc, (ClientData)0
 };
 
-int ObjToListProc(ClientData clientData, Tcl_Interp *interp,
-		     Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-		     int offset, int flags)
+static int ObjToListProc(ClientData clientData, Tcl_Interp *interp,
+			 Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			 int offset, int flags)
 {
   const char*** listPtr;
   const char** argv;
@@ -368,9 +368,9 @@ int ObjToListProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
     
-Tcl_Obj* ListToObjProc(ClientData clientData, Tcl_Interp *interp,
-			  Tk_Window tkwin, char *widgRec, 
-			  int offset, int flags)
+static Tcl_Obj* ListToObjProc(ClientData clientData, Tcl_Interp *interp,
+			      Tk_Window tkwin, char *widgRec, 
+			      int offset, int flags)
 {
   const char*** listPtr;
   Tcl_Obj *objPtr, *listObjPtr;
@@ -386,8 +386,8 @@ Tcl_Obj* ListToObjProc(ClientData clientData, Tcl_Interp *interp,
   return listObjPtr;
 }
 
-void ListFreeProc(ClientData clientData, Display* display,
-		 char *widgRec, int offset)
+static void ListFreeProc(ClientData clientData, Display* display,
+			 char *widgRec, int offset)
 {
   const char*** listPtr;
 
@@ -396,6 +396,66 @@ void ListFreeProc(ClientData clientData, Display* display,
     Tcl_Free((void*)(*listPtr));
     *listPtr = NULL;
   }
+}
+
+/* BACKGROUND */
+
+static Blt_OptionParseProc ObjToBackgroundProc;
+static Blt_OptionPrintProc BackgroundToObjProc;
+static Blt_OptionFreeProc BackgroundFreeProc;
+Blt_CustomOption backgroundOption =
+{
+    ObjToBackgroundProc, BackgroundToObjProc, BackgroundFreeProc, (ClientData)0
+};
+
+static int ObjToBackgroundProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
+{
+  const char* string;
+  int length;
+  Blt_Background* backgroundPtr;
+
+  backgroundPtr = (Blt_Background*)(widgRec + offset);
+
+  if (*backgroundPtr)
+    Blt_FreeBackground(*backgroundPtr);
+  *backgroundPtr = NULL;
+
+  string = Tcl_GetStringFromObj(objPtr, &length);
+  if (string)
+    *backgroundPtr = Blt_GetBackground(interp, tkwin, string);
+  else
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+    
+static Tcl_Obj* BackgroundToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec, 
+			       int offset, int flags)
+{
+  const char* string;
+  Blt_Background* backgroundPtr;
+
+  backgroundPtr = (Blt_Background*)(widgRec + offset);
+  if (*backgroundPtr) {
+    string = Blt_NameOfBackground(*backgroundPtr);
+    return Tcl_NewStringObj(string, -1);
+  }
+  else
+    return Tcl_NewStringObj("", -1);
+}
+
+static void BackgroundFreeProc(ClientData clientData, Display* display,
+			 char *widgRec, int offset)
+{
+  Blt_Background* backgroundPtr;
+
+  backgroundPtr = (Blt_Background*)(widgRec + offset);
+  if (*backgroundPtr)
+    Blt_FreeBackground(*backgroundPtr);
+  *backgroundPtr = NULL;
 }
 
 /* Configuration option helper routines */
