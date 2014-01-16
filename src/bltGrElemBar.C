@@ -47,12 +47,6 @@ typedef struct {
 } BarRegion;
 
 typedef struct {
-    Point2f ul, lr;
-    Segment2d segments[4];  
-    int nSegments;
-} Bar;
-
-typedef struct {
     const char *name;			/* Pen style identifier.  If NULL, pen
 					 * was statically allocated. */
     ClassId classId;			/* Type of pen */
