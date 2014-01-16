@@ -5545,7 +5545,6 @@ done
 	bltHash.c
 	bltImage.c
 	bltInt.c
-	bltInit.c
 	bltList.c
 	bltNsUtil.c
 	bltParse.c

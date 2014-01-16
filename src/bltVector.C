@@ -1838,8 +1838,6 @@ Blt_VectorCmdInitProc(Tcl_Interp *interp)
     return Blt_InitCmd(interp, "::blt", &cmdSpec);
 }
 
-
-
 /* C Application interface to vectors */
 
 /*

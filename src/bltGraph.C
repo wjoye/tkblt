@@ -1716,14 +1716,17 @@ DisplayGraph(ClientData clientData)
 }
 
 /*LINTLIBRARY*/
-int
-Blt_GraphCmdInitProc(Tcl_Interp *interp)
+int Blt_GraphCmdInitProc(Tcl_Interp *interp)
 {
-    static Blt_InitCmdSpec cmdSpecs[] = {
-	{"graph", GraphCmd,},
-	{"barchart", BarchartCmd,},
-    };
-    return Blt_InitCmds(interp, "::blt", cmdSpecs, 2);
+  static Blt_InitCmdSpec graphSpec = {"graph", GraphCmd, };
+  static Blt_InitCmdSpec barchartSpec = {"barchart", BarchartCmd, };
+
+  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
+    return TCL_ERROR;
+  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
 }
 
 Graph *

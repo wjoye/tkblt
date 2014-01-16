@@ -86,27 +86,6 @@ int Tkblt_SafeInit(Tcl_Interp *interp)
   return Tkblt_Init(interp);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_InitCmd --
- *
- *      Given the name of a command, return a pointer to the clientData field
- *      of the command.
- *
- * Results:
- *      A standard TCL result. If the command is found, TCL_OK is returned
- *      and clientDataPtr points to the clientData field of the command (if
- *      the clientDataPtr in not NULL).
- *
- * Side effects:
- *      If the command is found, clientDataPtr is set to the address of the
- *      clientData of the command.  If not found, an error message is left
- *      in interp->result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
 int Blt_InitCmd(Tcl_Interp *interp, const char *nsName, 
 		Blt_InitCmdSpec *specPtr)
 {

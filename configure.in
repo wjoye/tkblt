@@ -90,7 +90,6 @@ TEA_ADD_SOURCES([
 	bltHash.c 
 	bltImage.c
 	bltInt.c 
-	bltInit.c 
 	bltList.c
 	bltNsUtil.c
 	bltParse.c
