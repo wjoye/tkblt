@@ -5542,13 +5542,11 @@ done
 	bltGrPen.c
 	bltGrPs.c
 	bltGraph.c
-	bltHash.c
 	bltImage.c
 	bltInt.c
 	bltList.c
 	bltNsUtil.c
 	bltParse.c
-	bltPool.c
 	bltPs.c
 	bltPsAfm.c
 	bltSpline.c

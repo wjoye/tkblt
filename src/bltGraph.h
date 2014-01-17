@@ -34,7 +34,6 @@
 
 #include "bltInt.h"
 #include "bltWindow.h"
-#include "bltHash.h"
 #include "bltBind.h"
 #include "bltChain.h"
 #include "bltPs.h"

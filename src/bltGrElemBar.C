@@ -2416,7 +2416,7 @@ Blt_InitBarSetTable(Graph *graphPtr)
 		 hPtr2 = Tcl_NextHashEntry(&iter2)) {
 		size_t count;
 
-		count = (size_t)Blt_GetHashValue(hPtr2);
+		count = (size_t)Tcl_GetHashValue(hPtr2);
 		groupPtr->nSegments = count;
 		groupPtr->axes = keyPtr->axes;
 		Tcl_SetHashValue(hPtr2, groupPtr);

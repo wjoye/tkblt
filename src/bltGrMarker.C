@@ -1375,11 +1375,11 @@ IsElementHidden(Marker *markerPtr)
     Graph *graphPtr = markerPtr->obj.graphPtr;
 
     /* Look up the named element and see if it's hidden */
-    hPtr = Blt_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
+    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
     if (hPtr != NULL) {
 	Element *elemPtr;
 	
-	elemPtr = Blt_GetHashValue(hPtr);
+	elemPtr = Tcl_GetHashValue(hPtr);
 	if ((elemPtr->link == NULL) || (elemPtr->flags & HIDE)) {
 	    return TRUE;
 	}
@@ -3535,9 +3535,9 @@ GetMarkerFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
     const char *string;
 
     string = Tcl_GetString(objPtr);
-    hPtr = Blt_FindHashEntry(&graphPtr->markers.table, string);
+    hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, string);
     if (hPtr != NULL) {
-	*markerPtrPtr = Blt_GetHashValue(hPtr);
+	*markerPtrPtr = Tcl_GetHashValue(hPtr);
 	return TCL_OK;
     }
     if (interp != NULL) {
@@ -3556,7 +3556,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
     Tcl_HashEntry *hPtr;
 
     /* Rename the marker only if no marker already exists by that name */
-    hPtr = Blt_CreateHashEntry(&graphPtr->markers.table, newName, &isNew);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->markers.table, newName, &isNew);
     if (!isNew) {
 	Tcl_AppendResult(graphPtr->interp, "can't rename marker: \"", newName,
 	    "\" already exists", (char *)NULL);
@@ -3564,10 +3564,10 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
     }
     markerPtr->obj.name = Blt_Strdup(newName);
     markerPtr->hashPtr = hPtr;
-    Blt_SetHashValue(hPtr, (char *)markerPtr);
+    Tcl_SetHashValue(hPtr, (char *)markerPtr);
 
     /* Delete the old hash entry */
-    hPtr = Blt_FindHashEntry(&graphPtr->markers.table, oldName);
+    hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, oldName);
     Tcl_DeleteHashEntry(hPtr);
     if (oldName != NULL) {
       free((void*)oldName);
@@ -3850,18 +3850,18 @@ CreateOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 	DestroyMarker(markerPtr);
 	return TCL_ERROR;
     }
-    hPtr = Blt_CreateHashEntry(&graphPtr->markers.table, name, &isNew);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->markers.table, name, &isNew);
     if (!isNew) {
 	Marker *oldPtr;
 	/*
 	 * Marker by the same name already exists.  Delete the old marker and
 	 * it's list entry.  But save the hash entry.
 	 */
-	oldPtr = Blt_GetHashValue(hPtr);
+	oldPtr = Tcl_GetHashValue(hPtr);
 	oldPtr->hashPtr = NULL;
 	DestroyMarker(oldPtr);
     }
-    Blt_SetHashValue(hPtr, markerPtr);
+    Tcl_SetHashValue(hPtr, markerPtr);
     markerPtr->hashPtr = hPtr;
     /* Unlike elements, new markers are drawn on top of old markers. */
     markerPtr->link = Blt_Chain_Prepend(graphPtr->markers.displayList,markerPtr);
@@ -4103,7 +4103,7 @@ ExistsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
     Tcl_HashEntry *hPtr;
 
-    hPtr = Blt_FindHashEntry(&graphPtr->markers.table, Tcl_GetString(objv[3]));
+    hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, Tcl_GetString(objv[3]));
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
     return TCL_OK;
 }
@@ -4336,7 +4336,7 @@ Blt_DestroyMarkers(Graph *graphPtr)
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	Marker *markerPtr;
 
-	markerPtr = Blt_GetHashValue(hPtr);
+	markerPtr = Tcl_GetHashValue(hPtr);
 	/*
 	 * Dereferencing the pointer to the hash table prevents the hash table
 	 * entry from being automatically deleted.

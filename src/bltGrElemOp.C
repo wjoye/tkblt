@@ -983,7 +983,7 @@ Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
     char *name;
 
     name = Tcl_GetString(objPtr);
-    hPtr = Blt_FindHashEntry(&graphPtr->elements.table, name);
+    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, name);
     if (hPtr == NULL) {
 	if (interp != NULL) {
  	    Tcl_AppendResult(interp, "can't find element \"", name,
@@ -991,7 +991,7 @@ Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 	}
 	return TCL_ERROR;
     }
-    *elemPtrPtr = Blt_GetHashValue(hPtr);
+    *elemPtrPtr = Tcl_GetHashValue(hPtr);
     return TCL_OK;
 }
 
@@ -1076,7 +1076,7 @@ CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
 			 "\" can't start with a '-'", (char *)NULL);
 	return TCL_ERROR;
     }
-    hPtr = Blt_CreateHashEntry(&graphPtr->elements.table, string, &isNew);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->elements.table, string, &isNew);
     if (!isNew) {
 	Tcl_AppendResult(interp, "element \"", string, 
 			 "\" already exists in \"", Tcl_GetString(objv[0]), 
@@ -1091,7 +1091,7 @@ CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
     }
     assert(elemPtr->configSpecs != NULL);
     elemPtr->hashPtr = hPtr;
-    Blt_SetHashValue(hPtr, elemPtr);
+    Tcl_SetHashValue(hPtr, elemPtr);
 
     if (Blt_ConfigureComponentFromObj(interp, graphPtr->tkwin, 
 	elemPtr->obj.name, "Element", elemPtr->configSpecs, objc - 4, objv + 4,
@@ -1826,7 +1826,7 @@ ExistsOp(
 {
     Tcl_HashEntry *hPtr;
 
-    hPtr = Blt_FindHashEntry(&graphPtr->elements.table, Tcl_GetString(objv[3]));
+    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, Tcl_GetString(objv[3]));
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
     return TCL_OK;
 }

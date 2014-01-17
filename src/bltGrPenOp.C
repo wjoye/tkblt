@@ -289,7 +289,7 @@ GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
     name = Tcl_GetString(objPtr);
     hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
     if (hPtr != NULL) {
-	penPtr = Blt_GetHashValue(hPtr);
+	penPtr = Tcl_GetHashValue(hPtr);
 	if (penPtr->flags & DELETE_PENDING) {
 	    penPtr = NULL;
 	}
@@ -370,7 +370,7 @@ Blt_CreatePen(Graph *graphPtr, const char *penName, ClassId classId,
     classId = CID_ELEM_LINE;
     hPtr = Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
     if (!isNew) {
-	penPtr = Blt_GetHashValue(hPtr);
+	penPtr = Tcl_GetHashValue(hPtr);
 	if ((penPtr->flags & DELETE_PENDING) == 0) {
 	    Tcl_AppendResult(graphPtr->interp, "pen \"", penName,
 		"\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
@@ -394,7 +394,7 @@ Blt_CreatePen(Graph *graphPtr, const char *penName, ClassId classId,
 	penPtr->classId = classId;
 	penPtr->hashPtr = hPtr;
 	penPtr->graphPtr = graphPtr;
-	Blt_SetHashValue(hPtr, penPtr);
+	Tcl_SetHashValue(hPtr, penPtr);
     }
     configFlags = (penPtr->flags & (ACTIVE_PEN | NORMAL_PEN));
     if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
@@ -421,7 +421,7 @@ Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
     name = Tcl_GetString(objPtr);
     hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
     if (hPtr != NULL) {
-	penPtr = Blt_GetHashValue(hPtr);
+	penPtr = Tcl_GetHashValue(hPtr);
 	if (penPtr->flags & DELETE_PENDING) {
 	    penPtr = NULL;
 	}
@@ -694,7 +694,7 @@ NamesOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
 	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	    Pen *penPtr;
 
-	    penPtr = Blt_GetHashValue(hPtr);
+	    penPtr = Tcl_GetHashValue(hPtr);
 	    if ((penPtr->flags & DELETE_PENDING) == 0) {
 		int i;
 

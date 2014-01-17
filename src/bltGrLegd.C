@@ -981,7 +981,7 @@ SelectElement(Legend *legendPtr, Element *elemPtr)
 	Blt_ChainLink link;
 
 	link = Blt_Chain_Append(legendPtr->selected, elemPtr);
-	Blt_SetHashValue(hPtr, link);
+	Tcl_SetHashValue(hPtr, link);
     }
 }
 
@@ -994,7 +994,7 @@ DeselectElement(Legend *legendPtr, Element *elemPtr)
     if (hPtr != NULL) {
 	Blt_ChainLink link;
 
-	link = Blt_GetHashValue(hPtr);
+	link = Tcl_GetHashValue(hPtr);
 	Blt_Chain_DeleteLink(legendPtr->selected, link);
 	Tcl_DeleteHashEntry(hPtr);
     }
