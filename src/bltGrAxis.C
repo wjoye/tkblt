@@ -1870,8 +1870,8 @@ void
 Blt_ResetAxes(Graph *graphPtr)
 {
     Blt_ChainLink link;
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
 
     /* FIXME: This should be called whenever the display list of
      *	      elements change. Maybe yet another flag INIT_STACKS to
@@ -1886,11 +1886,11 @@ Blt_ResetAxes(Graph *graphPtr)
      * Step 1:  Reset all axes. Initialize the data limits of the axis to
      *		impossible values.
      */
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	axisPtr->min = axisPtr->valueRange.min = DBL_MAX;
 	axisPtr->max = axisPtr->valueRange.max = -DBL_MAX;
     }
@@ -1918,12 +1918,12 @@ Blt_ResetAxes(Graph *graphPtr)
      * Step 3:  Now that we know the range of data values for each axis,
      *		set axis limits and compute a sweep to generate tick values.
      */
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 	double min, max;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	FixAxisRange(axisPtr);
 
 	/* Calculate min/max tick (major/minor) layouts */
@@ -2071,7 +2071,7 @@ DestroyAxis(Axis *axisPtr)
       free((void*)(axisPtr->obj.name));
     }
     if (axisPtr->hashPtr != NULL) {
-	Blt_DeleteHashEntry(&graphPtr->axes.table, axisPtr->hashPtr);
+	Tcl_DeleteHashEntry(axisPtr->hashPtr);
     }
     Blt_Ts_FreeStyle(graphPtr->display, &axisPtr->limitsTextStyle);
 
@@ -3829,7 +3829,7 @@ static Axis *
 NewAxis(Graph *graphPtr, const char *name, int margin)
 {
     Axis *axisPtr;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
 
     if (name[0] == '-') {
@@ -3837,9 +3837,9 @@ NewAxis(Graph *graphPtr, const char *name, int margin)
 			 "\" can't start with a '-'", (char *)NULL);
 	return NULL;
     }
-    hPtr = Blt_CreateHashEntry(&graphPtr->axes.table, name, &isNew);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->axes.table, name, &isNew);
     if (!isNew) {
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	if ((axisPtr->flags & DELETE_PENDING) == 0) {
 	    Tcl_AppendResult(graphPtr->interp, "axis \"", name,
 		"\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
@@ -3882,7 +3882,7 @@ NewAxis(Graph *graphPtr, const char *name, int margin)
 	Blt_Ts_InitStyle(axisPtr->limitsTextStyle);
 	axisPtr->tickLabels = Blt_Chain_Create();
 	axisPtr->lineWidth = 1;
-	Blt_SetHashValue(hPtr, axisPtr);
+	Tcl_SetHashValue(hPtr, axisPtr);
     }
     return axisPtr;
 }
@@ -3891,16 +3891,16 @@ static int
 GetAxisFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr, 
 	       Axis **axisPtrPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     const char *name;
 
     *axisPtrPtr = NULL;
     name = Tcl_GetString(objPtr);
-    hPtr = Blt_FindHashEntry(&graphPtr->axes.table, name);
+    hPtr = Tcl_FindHashEntry(&graphPtr->axes.table, name);
     if (hPtr != NULL) {
 	Axis *axisPtr;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	if ((axisPtr->flags & DELETE_PENDING) == 0) {
 	    *axisPtrPtr = axisPtr;
 	    return TCL_OK;
@@ -3945,19 +3945,19 @@ void
 Blt_DestroyAxes(Graph *graphPtr)
 {
     {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    Axis *axisPtr;
 	    
-	    axisPtr = Blt_GetHashValue(hPtr);
+	    axisPtr = Tcl_GetHashValue(hPtr);
 	    axisPtr->hashPtr = NULL;
 	    DestroyAxis(axisPtr);
 	}
     }
-    Blt_DeleteHashTable(&graphPtr->axes.table);
+    Tcl_DeleteHashTable(&graphPtr->axes.table);
     {
 	int i;
 	
@@ -3965,21 +3965,21 @@ Blt_DestroyAxes(Graph *graphPtr)
 	    Blt_Chain_Destroy(graphPtr->axisChain[i]);
 	}
     }
-    Blt_DeleteHashTable(&graphPtr->axes.tagTable);
+    Tcl_DeleteHashTable(&graphPtr->axes.tagTable);
     Blt_Chain_Destroy(graphPtr->axes.displayList);
 }
 
 void
 Blt_ConfigureAxes(Graph *graphPtr)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
     
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 	
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	ConfigureAxis(axisPtr);
     }
 }
@@ -4589,17 +4589,17 @@ AxisBindOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
 	      Tcl_Obj *const *objv)
 {
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 	Tcl_Obj *listObjPtr;
 
 	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.tagTable, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.tagTable, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    const char *tagName;
 	    Tcl_Obj *objPtr;
 
-	    tagName = Blt_GetHashKey(&graphPtr->axes.tagTable, hPtr);
+	    tagName = Tcl_GetHashKey(&graphPtr->axes.tagTable, hPtr);
 	    objPtr = Tcl_NewStringObj(tagName, -1);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	}
@@ -4916,14 +4916,14 @@ AxisNamesOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    Axis *axisPtr;
 
-	    axisPtr = Blt_GetHashValue(hPtr);
+	    axisPtr = Tcl_GetHashValue(hPtr);
 	    if (axisPtr->flags & DELETE_PENDING) {
 		continue;
 	    }
@@ -4931,15 +4931,15 @@ AxisNamesOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
 		     Tcl_NewStringObj(axisPtr->obj.name, -1));
 	}
     } else {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    Axis *axisPtr;
 	    int i;
 
-	    axisPtr = Blt_GetHashValue(hPtr);
+	    axisPtr = Tcl_GetHashValue(hPtr);
 	    for (i = 3; i < objc; i++) {
 		const char *pattern;
 
@@ -5297,8 +5297,8 @@ Blt_AxesToPostScript(Graph *graphPtr, Blt_Ps ps)
 void
 Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
     char minString[200], maxString[200];
     int vMin, hMin, vMax, hMax;
 
@@ -5306,15 +5306,15 @@ Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
     vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
     hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
 
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 	Dim2D textDim;
 	const char *minFmt, *maxFmt;
 	char *minPtr, *maxPtr;
 	int isHoriz;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	if (axisPtr->flags & DELETE_PENDING) {
 	    continue;
 	} 
@@ -5375,21 +5375,21 @@ Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
 void
 Blt_AxisLimitsToPostScript(Graph *graphPtr, Blt_Ps ps)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
     double vMin, hMin, vMax, hMax;
     char string[200];
 
 #define SPACING 8
     vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
     hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 	const char *minFmt, *maxFmt;
 	unsigned int textWidth, textHeight;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	if (axisPtr->flags & DELETE_PENDING) {
 	    continue;
 	} 
@@ -5457,14 +5457,14 @@ Blt_GetFirstAxis(Blt_Chain chain)
 Axis *
 Blt_NearestAxis(Graph *graphPtr, int x, int y)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
     
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->axes.table, &cursor); 
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); 
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Axis *axisPtr;
 
-	axisPtr = Blt_GetHashValue(hPtr);
+	axisPtr = Tcl_GetHashValue(hPtr);
 	if ((axisPtr->flags & (DELETE_PENDING|HIDE|AXIS_USE)) != AXIS_USE) {
 	    continue;
 	}
@@ -5528,11 +5528,11 @@ Blt_NearestAxis(Graph *graphPtr, int x, int y)
 ClientData
 Blt_MakeAxisTag(Graph *graphPtr, const char *tagName)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
 
-    hPtr = Blt_CreateHashEntry(&graphPtr->axes.tagTable, tagName, &isNew);
-    return Blt_GetHashKey(&graphPtr->axes.tagTable, hPtr);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->axes.tagTable, tagName, &isNew);
+    return Tcl_GetHashKey(&graphPtr->axes.tagTable, hPtr);
 }
 
 

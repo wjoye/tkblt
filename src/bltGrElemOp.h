@@ -200,7 +200,7 @@ typedef struct {
 struct _Element {
     GraphObj obj;			/* Must be first field in element. */
     unsigned int flags;		
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     /* Fields specific to elements. */
     const char *label;			/* Label displayed in legend */

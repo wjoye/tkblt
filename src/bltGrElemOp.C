@@ -979,7 +979,7 @@ int
 Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr, 
 	       Element **elemPtrPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     char *name;
 
     name = Tcl_GetString(objPtr);
@@ -1032,7 +1032,7 @@ DestroyElement(Element *elemPtr)
     }
     /* Remove the element for the graph's hash table of elements */
     if (elemPtr->hashPtr != NULL) {
-	Blt_DeleteHashEntry(&graphPtr->elements.table, elemPtr->hashPtr);
+	Tcl_DeleteHashEntry(elemPtr->hashPtr);
     }
     if (elemPtr->obj.name != NULL) {
       free((void*)(elemPtr->obj.name));
@@ -1066,7 +1066,7 @@ CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
 	      Tcl_Obj *const *objv, ClassId classId)
 {
     Element *elemPtr;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
     char *string;
 
@@ -1128,18 +1128,18 @@ CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
 void
 Blt_DestroyElements(Graph *graphPtr)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch iter;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch iter;
     Element *elemPtr;
 
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.table, &iter);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
-	elemPtr = Blt_GetHashValue(hPtr);
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+	elemPtr = Tcl_GetHashValue(hPtr);
 	elemPtr->hashPtr = NULL;
 	DestroyElement(elemPtr);
     }
-    Blt_DeleteHashTable(&graphPtr->elements.table);
-    Blt_DeleteHashTable(&graphPtr->elements.tagTable);
+    Tcl_DeleteHashTable(&graphPtr->elements.table);
+    Tcl_DeleteHashTable(&graphPtr->elements.tagTable);
     Blt_Chain_Destroy(graphPtr->elements.displayList);
 }
 
@@ -1326,15 +1326,15 @@ ActivateOp(
     int nIndices;
 
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 	Tcl_Obj *listObjPtr;
 
 	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
 	/* List all the currently active elements */
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.table, &iter);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
-	    elemPtr = Blt_GetHashValue(hPtr);
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+	    elemPtr = Tcl_GetHashValue(hPtr);
 	    if (elemPtr->flags & ACTIVE) {
 		Tcl_ListObjAppendElement(interp, listObjPtr, 
 			Tcl_NewStringObj(elemPtr->obj.name, -1));
@@ -1374,11 +1374,11 @@ ActivateOp(
 ClientData
 Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
 
-    hPtr = Blt_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
-    return Blt_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
+    return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 }
 
 /*
@@ -1399,15 +1399,15 @@ BindOp(
     Tcl_Obj *const *objv)
 {
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 	char *tagName;
 	Tcl_Obj *listObjPtr;
 
 	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
-	    tagName = Blt_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+	    tagName = Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, 
 				     Tcl_NewStringObj(tagName, -1));
 	}
@@ -1824,7 +1824,7 @@ ExistsOp(
     int objc,			/* Not used. */
     Tcl_Obj *const *objv)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
     hPtr = Blt_FindHashEntry(&graphPtr->elements.table, Tcl_GetString(objv[3]));
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
@@ -1963,28 +1963,28 @@ NamesOp(
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.table, &iter);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	    Element *elemPtr;
 	    Tcl_Obj *objPtr;
 
-	    elemPtr = Blt_GetHashValue(hPtr);
+	    elemPtr = Tcl_GetHashValue(hPtr);
 	    objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	}
     } else {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.table, &iter);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	    Element *elemPtr;
 	    int i;
 
-	    elemPtr = Blt_GetHashValue(hPtr);
+	    elemPtr = Tcl_GetHashValue(hPtr);
 	    for (i = 3; i < objc; i++) {
 		if (Tcl_StringMatch(elemPtr->obj.name,Tcl_GetString(objv[i]))) {
 		    Tcl_Obj *objPtr;

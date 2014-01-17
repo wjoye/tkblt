@@ -56,7 +56,7 @@ typedef struct {
 					 * active or normal */
     int refCount;			/* Reference count for elements using
 					 * this pen. */
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
     Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
     PenConfigureProc *configProc;
     PenDestroyProc *destroyProc;
@@ -114,7 +114,7 @@ typedef struct {
 typedef struct {
     GraphObj obj;			/* Must be first field in element. */
     unsigned int flags;		
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     /* Fields specific to elements. */
     const char *label;			/* Label displayed in legend */
@@ -1478,26 +1478,26 @@ MapBarProc(Graph *graphPtr, Element *basePtr)
 
 	if ((graphPtr->nBarGroups > 0) && (graphPtr->mode != BARS_INFRONT) && 
 	    (!graphPtr->stackAxes)) {
-	    Blt_HashEntry *hPtr;
+	    Tcl_HashEntry *hPtr;
 	    BarSetKey key;
 
 	    key.value = (float)x[i];
 	    key.axes = elemPtr->axes;
 	    key.axes.y = NULL;
-	    hPtr = Blt_FindHashEntry(&graphPtr->setTable, (char *)&key);
+	    hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
 	    if (hPtr != NULL) {
-		Blt_HashTable *tablePtr;
+		Tcl_HashTable *tablePtr;
 		const char *name;
 
-		tablePtr = Blt_GetHashValue(hPtr);
+		tablePtr = Tcl_GetHashValue(hPtr);
 		name = (elemPtr->groupName != NULL) ? elemPtr->groupName : 
 		    elemPtr->axes.y->obj.name;
- 		hPtr = Blt_FindHashEntry(tablePtr, name);
+ 		hPtr = Tcl_FindHashEntry(tablePtr, name);
 		if (hPtr != NULL) {
 		    BarGroup *groupPtr;
 		    double slice, width, offset;
 		    
-		    groupPtr = Blt_GetHashValue(hPtr);
+		    groupPtr = Tcl_GetHashValue(hPtr);
 		    slice = barWidth / (double)graphPtr->maxBarSetSize;
 		    offset = (slice * groupPtr->index);
 		    if (graphPtr->maxBarSetSize > 1) {
@@ -2307,10 +2307,10 @@ Blt_InitBarSetTable(Graph *graphPtr)
 {
     Blt_ChainLink link;
     int nStacks, nSegs;
-    Blt_HashTable setTable;
+    Tcl_HashTable setTable;
     int sum, max;
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch iter;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch iter;
 
     /*
      * Free resources associated with a previous frequency table. This includes
@@ -2321,14 +2321,14 @@ Blt_InitBarSetTable(Graph *graphPtr)
 	return;				/* No set table is needed for
 					 * "infront" mode */
     }
-    Blt_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
+    Tcl_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
 
     /*
      * Initialize a hash table and fill it with unique abscissas.  Keep track
      * of the frequency of each x-coordinate and how many abscissas have
      * duplicate mappings.
      */
-    Blt_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
+    Tcl_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
     nSegs = nStacks = 0;
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	link != NULL; link = Blt_Chain_NextLink(link)) {
@@ -2343,8 +2343,8 @@ Blt_InitBarSetTable(Graph *graphPtr)
 	nSegs++;
 	nPoints = NUMBEROFPOINTS(elemPtr);
 	for (x = elemPtr->x.values, xend = x + nPoints; x < xend; x++) {
-	    Blt_HashEntry *hPtr;
-	    Blt_HashTable *tablePtr;
+	    Tcl_HashEntry *hPtr;
+	    Tcl_HashTable *tablePtr;
 	    BarSetKey key;
 	    int isNew;
 	    size_t count;
@@ -2353,73 +2353,73 @@ Blt_InitBarSetTable(Graph *graphPtr)
 	    key.value = *x;
 	    key.axes = elemPtr->axes;
 	    key.axes.y = NULL;
-	    hPtr = Blt_CreateHashEntry(&setTable, (char *)&key, &isNew);
+	    hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
 	    if (isNew) {
-		tablePtr = malloc(sizeof(Blt_HashTable));
-		Blt_InitHashTable(tablePtr, BLT_STRING_KEYS);
-		Blt_SetHashValue(hPtr, tablePtr);
+		tablePtr = malloc(sizeof(Tcl_HashTable));
+		Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
+		Tcl_SetHashValue(hPtr, tablePtr);
 	    } else {
-		tablePtr = Blt_GetHashValue(hPtr);
+		tablePtr = Tcl_GetHashValue(hPtr);
 	    }
 	    name = (elemPtr->groupName != NULL) ? elemPtr->groupName : 
 		elemPtr->axes.y->obj.name;
-	    hPtr = Blt_CreateHashEntry(tablePtr, name, &isNew);
+	    hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	    if (isNew) {
 		count = 1;
 	    } else {
-		count = (size_t)Blt_GetHashValue(hPtr);
+		count = (size_t)Tcl_GetHashValue(hPtr);
  		count++;
 	    }		
-	    Blt_SetHashValue(hPtr, (ClientData)count);
+	    Tcl_SetHashValue(hPtr, (ClientData)count);
 	}
     }
     if (setTable.numEntries == 0) {
 	return;				/* No bar elements to be displayed */
     }
     sum = max = 0;
-    for (hPtr = Blt_FirstHashEntry(&setTable, &iter); hPtr != NULL;
-	 hPtr = Blt_NextHashEntry(&iter)) {
-	Blt_HashTable *tablePtr;
-	Blt_HashEntry *hPtr2;
+    for (hPtr = Tcl_FirstHashEntry(&setTable, &iter); hPtr != NULL;
+	 hPtr = Tcl_NextHashEntry(&iter)) {
+	Tcl_HashTable *tablePtr;
+	Tcl_HashEntry *hPtr2;
 	BarSetKey *keyPtr;
 	int isNew;
 
-	keyPtr = (BarSetKey *)Blt_GetHashKey(&setTable, hPtr);
-	hPtr2 = Blt_CreateHashEntry(&graphPtr->setTable, (char *)keyPtr,&isNew);
-	tablePtr = Blt_GetHashValue(hPtr);
-	Blt_SetHashValue(hPtr2, tablePtr);
+	keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
+	hPtr2 = Tcl_CreateHashEntry(&graphPtr->setTable, (char *)keyPtr,&isNew);
+	tablePtr = Tcl_GetHashValue(hPtr);
+	Tcl_SetHashValue(hPtr2, tablePtr);
 	if (max < tablePtr->numEntries) {
 	    max = tablePtr->numEntries;	/* # of stacks in group. */
 	}
 	sum += tablePtr->numEntries;
     }
-    Blt_DeleteHashTable(&setTable);
+    Tcl_DeleteHashTable(&setTable);
     if (sum > 0) {
 	BarGroup *groupPtr;
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 
 	graphPtr->barGroups = calloc(sum, sizeof(BarGroup));
 	groupPtr = graphPtr->barGroups;
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->setTable, &iter); 
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->setTable, &iter); 
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	    BarSetKey *keyPtr;
-	    Blt_HashTable *tablePtr;
-	    Blt_HashEntry *hPtr2;
-	    Blt_HashSearch iter2;
+	    Tcl_HashTable *tablePtr;
+	    Tcl_HashEntry *hPtr2;
+	    Tcl_HashSearch iter2;
 	    size_t xcount;
 
-	    tablePtr = Blt_GetHashValue(hPtr);
-	    keyPtr = (BarSetKey *)Blt_GetHashKey(&setTable, hPtr);
+	    tablePtr = Tcl_GetHashValue(hPtr);
+	    keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
 	    xcount = 0;
-	    for (hPtr2 = Blt_FirstHashEntry(tablePtr, &iter2); hPtr2!=NULL;
-		 hPtr2 = Blt_NextHashEntry(&iter2)) {
+	    for (hPtr2 = Tcl_FirstHashEntry(tablePtr, &iter2); hPtr2!=NULL;
+		 hPtr2 = Tcl_NextHashEntry(&iter2)) {
 		size_t count;
 
 		count = (size_t)Blt_GetHashValue(hPtr2);
 		groupPtr->nSegments = count;
 		groupPtr->axes = keyPtr->axes;
-		Blt_SetHashValue(hPtr2, groupPtr);
+		Tcl_SetHashValue(hPtr2, groupPtr);
 		groupPtr->index = xcount++;
 		groupPtr++;
 	    }
@@ -2486,25 +2486,25 @@ Blt_ComputeBarStacks(Graph *graphPtr)
 		 xend = x + NUMBEROFPOINTS(elemPtr); x < xend; x++, y++) {
 	    BarSetKey key;
 	    BarGroup *groupPtr;
-	    Blt_HashEntry *hPtr;
-	    Blt_HashTable *tablePtr;
+	    Tcl_HashEntry *hPtr;
+	    Tcl_HashTable *tablePtr;
 	    const char *name;
 
 	    key.value = *x;
 	    key.axes = elemPtr->axes;
 	    key.axes.y = NULL;
-	    hPtr = Blt_FindHashEntry(&graphPtr->setTable, (char *)&key);
+	    hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
 	    if (hPtr == NULL) {
 		continue;
 	    }
-	    tablePtr = Blt_GetHashValue(hPtr);
+	    tablePtr = Tcl_GetHashValue(hPtr);
 	    name = (elemPtr->groupName != NULL) ? elemPtr->groupName : 
 		elemPtr->axes.y->obj.name;
-	    hPtr = Blt_FindHashEntry(tablePtr, name);
+	    hPtr = Tcl_FindHashEntry(tablePtr, name);
 	    if (hPtr == NULL) {
 		continue;
 	    }
-	    groupPtr = Blt_GetHashValue(hPtr);
+	    groupPtr = Tcl_GetHashValue(hPtr);
 	    groupPtr->sum += *y;
 	}
     }
@@ -2525,22 +2525,22 @@ Blt_ResetBarGroups(Graph *graphPtr)
 void
 Blt_DestroyBarSets(Graph *graphPtr)
 {
-    Blt_HashSearch iter;
-    Blt_HashEntry *hPtr;
+    Tcl_HashSearch iter;
+    Tcl_HashEntry *hPtr;
 
     if (graphPtr->barGroups != NULL) {
 	free(graphPtr->barGroups);
 	graphPtr->barGroups = NULL;
     }
     graphPtr->nBarGroups = 0;
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->setTable, &iter); 
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
-	Blt_HashTable *tablePtr;
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->setTable, &iter); 
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+	Tcl_HashTable *tablePtr;
 	
-	tablePtr = Blt_GetHashValue(hPtr);
-	Blt_DeleteHashTable(tablePtr);
+	tablePtr = Tcl_GetHashValue(hPtr);
+	Tcl_DeleteHashTable(tablePtr);
 	free(tablePtr);
     }
-    Blt_DeleteHashTable(&graphPtr->setTable);
-    Blt_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
+    Tcl_DeleteHashTable(&graphPtr->setTable);
+    Tcl_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
 }

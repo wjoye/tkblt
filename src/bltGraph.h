@@ -204,23 +204,22 @@ typedef int (PenConfigureProc)(Graph *graphPtr, Pen *penPtr);
 typedef void (PenDestroyProc)(Graph *graphPtr, Pen *penPtr);
 
 struct _Pen {
-    const char *name;			/* Pen style identifier.  If NULL pen
+  const char *name;			/* Pen style identifier.  If NULL pen
 					 * was statically allocated. */
-    ClassId classId;			/* Type element using this pen. */
-    const char *typeId;			/* String token identifying the type of
+  ClassId classId;			/* Type element using this pen. */
+  const char *typeId;			/* String token identifying the type of
 					 * pen. */
-    unsigned int flags;			/* Indicates if the pen element is
+  unsigned int flags;			/* Indicates if the pen element is
 					 * active or normal. */
-    int refCount;			/* Reference count for elements using
-					 * this pen. */
-    Blt_HashEntry *hashPtr;
+  int refCount;			/* Reference count for elements using
+				 * this pen. */
+  Tcl_HashEntry *hashPtr;
 
-    Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
+  Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
 
-    PenConfigureProc *configProc;
-    PenDestroyProc *destroyProc;
-    Graph *graphPtr;			/* Graph that the pen is associated
-					 * with. */
+  PenConfigureProc *configProc;
+  PenDestroyProc *destroyProc;
+  Graph *graphPtr;			/* Graph that the pen is associated*/
 };
 
 /*
@@ -325,14 +324,14 @@ struct _Graph {
 					 * left in the window. */
     int width, height;			/* Actual size (in pixels) of graph
 					 * window or PostScript page. */
-    Blt_HashTable penTable;		/* Table of pens */
+    Tcl_HashTable penTable;		/* Table of pens */
     struct Component {
-	Blt_HashTable table;		/* Hash table of ids. */
+	Tcl_HashTable table;		/* Hash table of ids. */
 	Blt_Chain displayList;		/* Display list. */
-	Blt_HashTable tagTable;		/* Table of bind tags. */
+	Tcl_HashTable tagTable;		/* Table of bind tags. */
     } elements, markers, axes;
 
-    Blt_HashTable dataTables;		/* Hash table of datatable clients. */
+    Tcl_HashTable dataTables;		/* Hash table of datatable clients. */
     ClassId classId;			/* Default element type */
     Blt_BindTable bindTable;
     int nextMarkerId;			/* Tracks next marker identifier
@@ -416,7 +415,7 @@ struct _Graph {
 					 * zero, indicates nothing special
 					 * needs to be * done for "stack" or
 					 * "align" modes */
-    Blt_HashTable setTable;		/* Table managing sets of bars with
+    Tcl_HashTable setTable;		/* Table managing sets of bars with
 					 * the same abscissas. The bars in a
 					 * set may be displayed is various
 					 * ways: aligned, overlap, infront, or

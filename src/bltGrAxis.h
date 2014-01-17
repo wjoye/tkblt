@@ -136,7 +136,7 @@ typedef struct {
 
     unsigned int flags;		
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     /* Fields specific to axes. */
 

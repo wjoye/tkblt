@@ -184,7 +184,7 @@ struct _Legend {
 					 * the selection changes. */
     int selectMode;			/* Mode of selection: single or
 					 * multiple. */
-    Blt_HashTable selectTable;		/* Table of selected elements. Used to
+    Tcl_HashTable selectTable;		/* Table of selected elements. Used to
 					 * quickly determine whether an element
 					 * is selected. */
     Blt_Chain selected;			/* List of selected elements. */
@@ -467,8 +467,8 @@ EventuallyInvokeSelectCmd(Legend *legendPtr)
 static void
 ClearSelection(Legend *legendPtr)
 {
-    Blt_DeleteHashTable(&legendPtr->selectTable);
-    Blt_InitHashTable(&legendPtr->selectTable, BLT_ONE_WORD_KEYS);
+    Tcl_DeleteHashTable(&legendPtr->selectTable);
+    Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
     Blt_Chain_Reset(legendPtr->selected);
     Blt_Legend_EventuallyRedraw(legendPtr->graphPtr);
     if (legendPtr->selectCmd != NULL) {
@@ -964,9 +964,9 @@ SetLegendOrigin(Legend *legendPtr)
 static int
 EntryIsSelected(Legend *legendPtr, Element *elemPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
-    hPtr = Blt_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+    hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
     return (hPtr != NULL);
 }
 
@@ -974,9 +974,9 @@ static void
 SelectElement(Legend *legendPtr, Element *elemPtr)
 {
     int isNew;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
-    hPtr = Blt_CreateHashEntry(&legendPtr->selectTable, (char *)elemPtr,&isNew);
+    hPtr = Tcl_CreateHashEntry(&legendPtr->selectTable, (char *)elemPtr,&isNew);
     if (isNew) {
 	Blt_ChainLink link;
 
@@ -988,22 +988,22 @@ SelectElement(Legend *legendPtr, Element *elemPtr)
 static void
 DeselectElement(Legend *legendPtr, Element *elemPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
-    hPtr = Blt_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+    hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
     if (hPtr != NULL) {
 	Blt_ChainLink link;
 
 	link = Blt_GetHashValue(hPtr);
 	Blt_Chain_DeleteLink(legendPtr->selected, link);
-	Blt_DeleteHashEntry(&legendPtr->selectTable, hPtr);
+	Tcl_DeleteHashEntry(hPtr);
     }
 }
 
 static void
 SelectEntry(Legend *legendPtr, Element *elemPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
     switch (legendPtr->flags & SELECT_BLTMASK) {
     case SELECT_CLEAR:
@@ -1015,7 +1015,7 @@ SelectEntry(Legend *legendPtr, Element *elemPtr)
 	break;
 
     case SELECT_TOGGLE:
-	hPtr = Blt_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+	hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
 	if (hPtr != NULL) {
 	    DeselectElement(legendPtr, elemPtr);
 	} else {
@@ -1764,7 +1764,7 @@ Blt_CreateLegend(Graph *graphPtr)
     legendPtr->bindTable = Blt_CreateBindingTable(graphPtr->interp,
 	graphPtr->tkwin, graphPtr, PickEntryProc, Blt_GraphTags);
 
-    Blt_InitHashTable(&legendPtr->selectTable, BLT_ONE_WORD_KEYS);
+    Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
     legendPtr->selected = Blt_Chain_Create();
     Tk_CreateSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING, 
 	SelectionProc, legendPtr, XA_STRING);
@@ -2144,17 +2144,17 @@ static int
 BindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
     if (objc == 3) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch iter;
 	Tcl_Obj *listObjPtr;
 
 	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
-	    hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
+	for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
+	    hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	    const char *tagName;
 	    Tcl_Obj *objPtr;
 
-	    tagName = Blt_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+	    tagName = Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 	    objPtr = Tcl_NewStringObj(tagName, -1);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	}

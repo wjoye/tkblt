@@ -159,7 +159,7 @@ struct _Marker {
 
     MarkerClass *classPtr;
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ChainLink link;
 
@@ -199,7 +199,7 @@ typedef struct {
 
     MarkerClass *classPtr;
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ChainLink link;
 
@@ -340,7 +340,7 @@ typedef struct {
 
     MarkerClass *classPtr;
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ChainLink link;
 
@@ -477,7 +477,7 @@ typedef struct {
 
     MarkerClass *classPtr;
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ChainLink link;
 
@@ -637,7 +637,7 @@ static MarkerClass polygonMarkerClass = {
 typedef struct {
     GraphObj obj;			/* Must be first field in marker. */
     MarkerClass *classPtr;
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
     Blt_ChainLink link;
     const char *elemName;		/* Element associated with marker. Let's
 					 * you link a marker to an element. The
@@ -766,7 +766,7 @@ typedef struct {
 
     MarkerClass *classPtr;
 
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ChainLink link;
 
@@ -1371,7 +1371,7 @@ ColorPairToObjProc(
 static INLINE int
 IsElementHidden(Marker *markerPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     Graph *graphPtr = markerPtr->obj.graphPtr;
 
     /* Look up the named element and see if it's hidden */
@@ -1560,8 +1560,7 @@ DestroyMarker(Marker *markerPtr)
 	graphPtr->display, 0);
 
     if (markerPtr->hashPtr != NULL) {
-	Blt_DeleteHashEntry(&graphPtr->markers.table, 
-			    markerPtr->hashPtr);
+	Tcl_DeleteHashEntry(markerPtr->hashPtr);
     }
     if (markerPtr->link != NULL) {
 	Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
@@ -3532,7 +3531,7 @@ static int
 GetMarkerFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 		 Marker **markerPtrPtr)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     const char *string;
 
     string = Tcl_GetString(objPtr);
@@ -3554,7 +3553,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
 	     const char *newName)
 {
     int isNew;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
     /* Rename the marker only if no marker already exists by that name */
     hPtr = Blt_CreateHashEntry(&graphPtr->markers.table, newName, &isNew);
@@ -3569,7 +3568,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
 
     /* Delete the old hash entry */
     hPtr = Blt_FindHashEntry(&graphPtr->markers.table, oldName);
-    Blt_DeleteHashEntry(&graphPtr->markers.table, hPtr);
+    Tcl_DeleteHashEntry(hPtr);
     if (oldName != NULL) {
       free((void*)oldName);
     }
@@ -3644,17 +3643,17 @@ static int
 BindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
     if (objc == 3) {
-	Blt_HashEntry *hp;
-	Blt_HashSearch iter;
+	Tcl_HashEntry *hp;
+	Tcl_HashSearch iter;
 	Tcl_Obj *listObjPtr;
 
 	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	for (hp = Blt_FirstHashEntry(&graphPtr->markers.tagTable, &iter);
-	    hp != NULL; hp = Blt_NextHashEntry(&iter)) {
+	for (hp = Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter);
+	    hp != NULL; hp = Tcl_NextHashEntry(&iter)) {
 	    const char *tag;
 	    Tcl_Obj *objPtr;
 
-	    tag = Blt_GetHashKey(&graphPtr->markers.tagTable, hp);
+	    tag = Tcl_GetHashKey(&graphPtr->markers.tagTable, hp);
 	    objPtr = Tcl_NewStringObj(tag, -1);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	}
@@ -3790,7 +3789,7 @@ static int
 CreateOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
     Marker *markerPtr;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
     ClassId classId;
     int i;
@@ -4102,7 +4101,7 @@ FindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 static int
 ExistsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
     hPtr = Blt_FindHashEntry(&graphPtr->markers.table, Tcl_GetString(objv[3]));
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
@@ -4330,11 +4329,11 @@ Blt_MapMarkers(Graph *graphPtr)
 void
 Blt_DestroyMarkers(Graph *graphPtr)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch iter;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch iter;
 
-    for (hPtr = Blt_FirstHashEntry(&graphPtr->markers.table, &iter); 
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&iter)) {
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->markers.table, &iter); 
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
 	Marker *markerPtr;
 
 	markerPtr = Blt_GetHashValue(hPtr);
@@ -4345,8 +4344,8 @@ Blt_DestroyMarkers(Graph *graphPtr)
 	markerPtr->hashPtr = NULL;
 	DestroyMarker(markerPtr);
     }
-    Blt_DeleteHashTable(&graphPtr->markers.table);
-    Blt_DeleteHashTable(&graphPtr->markers.tagTable);
+    Tcl_DeleteHashTable(&graphPtr->markers.table);
+    Tcl_DeleteHashTable(&graphPtr->markers.tagTable);
     Blt_Chain_Destroy(graphPtr->markers.displayList);
 }
 
@@ -4392,12 +4391,12 @@ Blt_NearestMarker(
 ClientData
 Blt_MakeMarkerTag(Graph *graphPtr, const char *tagName)
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
 
     assert(tagName != NULL);
-    hPtr = Blt_CreateHashEntry(&graphPtr->markers.tagTable, tagName, &isNew);
-    return Blt_GetHashKey(&graphPtr->markers.tagTable, hPtr);
+    hPtr = Tcl_CreateHashEntry(&graphPtr->markers.tagTable, tagName, &isNew);
+    return Tcl_GetHashKey(&graphPtr->markers.tagTable, hPtr);
 }
 
 

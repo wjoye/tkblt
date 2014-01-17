@@ -182,7 +182,7 @@ typedef struct {
 					 * active or normal */
     int refCount;			/* Reference count for elements using
 					 * this pen. */
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
 
@@ -248,7 +248,7 @@ typedef struct {
 typedef struct {
     GraphObj obj;			/* Must be first field in element. */
     unsigned int flags;		
-    Blt_HashEntry *hashPtr;
+    Tcl_HashEntry *hashPtr;
 
     /* Fields specific to elements. */
     const char *label;			/* Label displayed in legend */
