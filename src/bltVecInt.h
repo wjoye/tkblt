@@ -55,9 +55,9 @@
 #define FFT_SPECTRUM		(1<<2)
 
 typedef struct {
-    Blt_HashTable vectorTable;	/* Table of vectors */
-    Blt_HashTable mathProcTable; /* Table of vector math functions */
-    Blt_HashTable indexProcTable;
+    Tcl_HashTable vectorTable;	/* Table of vectors */
+    Tcl_HashTable mathProcTable; /* Table of vector math functions */
+    Tcl_HashTable indexProcTable;
     Tcl_Interp *interp;
     unsigned int nextId;
 } VectorInterpData;
@@ -109,7 +109,7 @@ typedef struct {
     Tcl_Interp *interp;		/* Interpreter associated with the
 				 * vector */
 
-    Blt_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
+    Tcl_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
 				 * track the vectors in use. */
 
     Tcl_FreeProc *freeProc;	/* Address of procedure to call to release
@@ -183,11 +183,11 @@ typedef struct {
     } \
 }
 
-extern void Blt_Vec_InstallSpecialIndices(Blt_HashTable *tablePtr);
+extern void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr);
 
-extern void Blt_Vec_InstallMathFunctions(Blt_HashTable *tablePtr);
+extern void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr);
 
-extern void Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr);
+extern void Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr);
 
 extern VectorInterpData *Blt_Vec_GetInterpData (Tcl_Interp *interp);
 

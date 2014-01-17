@@ -127,13 +127,13 @@ FindVectorInNamespace(
 {
     Tcl_DString dString;
     const char *name;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
 
     name = Blt_MakeQualifiedName(objNamePtr, &dString);
-    hPtr = Blt_FindHashEntry(&dataPtr->vectorTable, name);
+    hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, name);
     Tcl_DStringFree(&dString);
     if (hPtr != NULL) {
-	return Blt_GetHashValue(hPtr);
+	return Tcl_GetHashValue(hPtr);
     }
     return NULL;
 }
@@ -250,12 +250,12 @@ Blt_Vec_GetIndex(
 	return TCL_OK;
     }
     if (procPtrPtr != NULL) {
-	Blt_HashEntry *hPtr;
+	Tcl_HashEntry *hPtr;
 
-	hPtr = Blt_FindHashEntry(&vPtr->dataPtr->indexProcTable, string);
+	hPtr = Tcl_FindHashEntry(&vPtr->dataPtr->indexProcTable, string);
 	if (hPtr != NULL) {
 	    *indexPtr = SPECIAL_INDEX;
-	    *procPtrPtr = Blt_GetHashValue(hPtr);
+	    *procPtrPtr = Tcl_GetHashValue(hPtr);
 	    return TCL_OK;
 	}
     }
@@ -1174,7 +1174,7 @@ Blt_Vec_Free(Vector *vPtr)
 	}
     }
     if (vPtr->hashPtr != NULL) {
-	Blt_DeleteHashEntry(&vPtr->dataPtr->vectorTable, vPtr->hashPtr);
+	Tcl_DeleteHashEntry(vPtr->hashPtr);
     }
 #ifdef NAMESPACE_DELETE_NOTIFY
     if (vPtr->nsPtr != NULL) {
@@ -1241,7 +1241,7 @@ Blt_Vec_Create(
     int isNew;
     Blt_ObjectName objName;
     char *qualName;
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     Tcl_Interp *interp = dataPtr->interp;
 
     isNew = 0;
@@ -1259,7 +1259,7 @@ Blt_Vec_Create(
 	    sprintf_s(string, 200, "vector%d", dataPtr->nextId++);
 	    objName.name = string;
 	    qualName = Blt_MakeQualifiedName(&objName, &dString);
-	    hPtr = Blt_FindHashEntry(&dataPtr->vectorTable, qualName);
+	    hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, qualName);
 	} while (hPtr != NULL);
     } else {
 	const char *p;
@@ -1277,17 +1277,17 @@ Blt_Vec_Create(
 		NULL, NS_SEARCH_CURRENT);
     }
     if (vPtr == NULL) {
-	hPtr = Blt_CreateHashEntry(&dataPtr->vectorTable, qualName, &isNew);
+	hPtr = Tcl_CreateHashEntry(&dataPtr->vectorTable, qualName, &isNew);
 	vPtr = Blt_Vec_New(dataPtr);
 	vPtr->hashPtr = hPtr;
 	vPtr->nsPtr = objName.nsPtr;
 
-	vPtr->name = Blt_GetHashKey(&dataPtr->vectorTable, hPtr);
+	vPtr->name = Tcl_GetHashKey(&dataPtr->vectorTable, hPtr);
 #ifdef NAMESPACE_DELETE_NOTIFY
 	Blt_CreateNsDeleteNotify(interp, objName.nsPtr, vPtr, 
 		VectorInstDeleteProc);
 #endif /* NAMESPACE_DELETE_NOTIFY */
-	Blt_SetHashValue(hPtr, vPtr);
+	Tcl_SetHashValue(hPtr, vPtr);
     }
     if (cmdName != NULL) {
 	Tcl_CmdInfo cmdInfo;
@@ -1392,27 +1392,27 @@ VectorNamesOp(
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **) NULL);
     if (objc == 2) {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 
-	for (hPtr = Blt_FirstHashEntry(&dataPtr->vectorTable, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&dataPtr->vectorTable, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    char *name;
 
-	    name = Blt_GetHashKey(&dataPtr->vectorTable, hPtr);
+	    name = Tcl_GetHashKey(&dataPtr->vectorTable, hPtr);
 	    Tcl_ListObjAppendElement(interp, listObjPtr, 
 		Tcl_NewStringObj(name, -1));
 	}
     } else {
-	Blt_HashEntry *hPtr;
-	Blt_HashSearch cursor;
+	Tcl_HashEntry *hPtr;
+	Tcl_HashSearch cursor;
 
-	for (hPtr = Blt_FirstHashEntry(&dataPtr->vectorTable, &cursor);
-	     hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+	for (hPtr = Tcl_FirstHashEntry(&dataPtr->vectorTable, &cursor);
+	     hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	    char *name;
 	    int i;
 
-	    name = Blt_GetHashKey(&dataPtr->vectorTable, hPtr);
+	    name = Tcl_GetHashKey(&dataPtr->vectorTable, hPtr);
 	    for (i = 2; i < objc; i++) {
 		char *pattern;
 
@@ -1766,24 +1766,24 @@ VectorInterpDeleteProc(
     Tcl_Interp *interp)
 {
     VectorInterpData *dataPtr = clientData;
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
     
-    for (hPtr = Blt_FirstHashEntry(&dataPtr->vectorTable, &cursor);
-	 hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(&dataPtr->vectorTable, &cursor);
+	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
 	Vector *vPtr;
 
-	vPtr = Blt_GetHashValue(hPtr);
+	vPtr = Tcl_GetHashValue(hPtr);
 	vPtr->hashPtr = NULL;
 	Blt_Vec_Free(vPtr);
     }
-    Blt_DeleteHashTable(&dataPtr->vectorTable);
+    Tcl_DeleteHashTable(&dataPtr->vectorTable);
 
     /* If any user-defined math functions were installed, remove them.  */
     Blt_Vec_UninstallMathFunctions(&dataPtr->mathProcTable);
-    Blt_DeleteHashTable(&dataPtr->mathProcTable);
+    Tcl_DeleteHashTable(&dataPtr->mathProcTable);
 
-    Blt_DeleteHashTable(&dataPtr->indexProcTable);
+    Tcl_DeleteHashTable(&dataPtr->indexProcTable);
     Tcl_DeleteAssocData(interp, VECTOR_THREAD_KEY);
     free(dataPtr);
 }
@@ -1802,9 +1802,9 @@ Blt_Vec_GetInterpData(Tcl_Interp *interp)
 	dataPtr->nextId = 0;
 	Tcl_SetAssocData(interp, VECTOR_THREAD_KEY, VectorInterpDeleteProc,
 		 dataPtr);
-	Blt_InitHashTable(&dataPtr->vectorTable, BLT_STRING_KEYS);
-	Blt_InitHashTable(&dataPtr->mathProcTable, BLT_STRING_KEYS);
-	Blt_InitHashTable(&dataPtr->indexProcTable, BLT_STRING_KEYS);
+	Tcl_InitHashTable(&dataPtr->vectorTable, TCL_STRING_KEYS);
+	Tcl_InitHashTable(&dataPtr->mathProcTable, TCL_STRING_KEYS);
+	Tcl_InitHashTable(&dataPtr->indexProcTable, TCL_STRING_KEYS);
 	Blt_Vec_InstallMathFunctions(&dataPtr->mathProcTable);
 	Blt_Vec_InstallSpecialIndices(&dataPtr->indexProcTable);
 	srand48(time((time_t *) NULL));
@@ -2406,15 +2406,15 @@ Blt_InstallIndexProc(Tcl_Interp *interp, const char *string,
 		     Blt_VectorIndexProc *procPtr) 
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int isNew;
 
     dataPtr = Blt_Vec_GetInterpData(interp);
-    hPtr = Blt_CreateHashEntry(&dataPtr->indexProcTable, string, &isNew);
+    hPtr = Tcl_CreateHashEntry(&dataPtr->indexProcTable, string, &isNew);
     if (procPtr == NULL) {
-	Blt_DeleteHashEntry(&dataPtr->indexProcTable, hPtr);
+	Tcl_DeleteHashEntry(hPtr);
     } else {
-	Blt_SetHashValue(hPtr, procPtr);
+	Tcl_SetHashValue(hPtr, procPtr);
     }
 }
 

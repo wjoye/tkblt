@@ -848,13 +848,13 @@ CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
     Blt_Ts_InitStyle(graphPtr->titleTextStyle);
     Blt_Ts_SetAnchor(graphPtr->titleTextStyle, TK_ANCHOR_N);
 
-    Tcl_InitHashTable(&graphPtr->axes.table, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->axes.tagTable, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->elements.table, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->elements.tagTable, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->markers.table, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->markers.tagTable, BLT_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->dataTables, BLT_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->elements.table, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->elements.tagTable, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->markers.table, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->markers.tagTable, TCL_STRING_KEYS);
+    Tcl_InitHashTable(&graphPtr->dataTables, TCL_STRING_KEYS);
     graphPtr->elements.displayList = Blt_Chain_Create();
     graphPtr->markers.displayList = Blt_Chain_Create();
     graphPtr->axes.displayList = Blt_Chain_Create();

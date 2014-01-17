@@ -740,7 +740,7 @@ ParseMathFunction(
 				 * must have initialized pv field
 				 * correctly. */
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     MathFunction *mathPtr;	/* Info about math function. */
     char *p;
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
@@ -763,7 +763,7 @@ ParseMathFunction(
     }
     dataPtr = valuePtr->vPtr->dataPtr;
     *p = '\0';
-    hPtr = Blt_FindHashEntry(&dataPtr->mathProcTable, piPtr->nextPtr);
+    hPtr = Tcl_FindHashEntry(&dataPtr->mathProcTable, piPtr->nextPtr);
     *p = '(';
     if (hPtr == NULL) {
 	return TCL_RETURN;	/* Name doesn't match any known function */
@@ -780,7 +780,7 @@ ParseMathFunction(
 	    piPtr->expr, "\"", (char *)NULL);
 	return TCL_ERROR;	/* Missing right parenthesis */
     }
-    mathPtr = Blt_GetHashValue(hPtr);
+    mathPtr = Tcl_GetHashValue(hPtr);
     proc = mathPtr->proc;
     if ((*proc) (mathPtr->clientData, interp, valuePtr->vPtr) != TCL_OK) {
 	return TCL_ERROR;	/* Function invocation error */
@@ -1765,30 +1765,30 @@ static MathFunction mathFunctions[] =
 };
 
 void
-Blt_Vec_InstallMathFunctions(Blt_HashTable *tablePtr)
+Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
 {
     MathFunction *mathPtr;
 
     for (mathPtr = mathFunctions; mathPtr->name != NULL; mathPtr++) {
-	Blt_HashEntry *hPtr;
+	Tcl_HashEntry *hPtr;
 	int isNew;
 
-	hPtr = Blt_CreateHashEntry(tablePtr, mathPtr->name, &isNew);
-	Blt_SetHashValue(hPtr, (ClientData)mathPtr);
+	hPtr = Tcl_CreateHashEntry(tablePtr, mathPtr->name, &isNew);
+	Tcl_SetHashValue(hPtr, (ClientData)mathPtr);
     }
 }
 
 void
-Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr)
+Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
 {
-    Blt_HashEntry *hPtr;
-    Blt_HashSearch cursor;
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch cursor;
 
-    for (hPtr = Blt_FirstHashEntry(tablePtr, &cursor); hPtr != NULL; 
-	hPtr = Blt_NextHashEntry(&cursor)) {
+    for (hPtr = Tcl_FirstHashEntry(tablePtr, &cursor); hPtr != NULL; 
+	hPtr = Tcl_NextHashEntry(&cursor)) {
 	MathFunction *mathPtr;
 
-	mathPtr = Blt_GetHashValue(hPtr);
+	mathPtr = Tcl_GetHashValue(hPtr);
 	if (mathPtr->name == NULL) {
 	    free(mathPtr);
 	}
@@ -1798,7 +1798,7 @@ Blt_Vec_UninstallMathFunctions(Blt_HashTable *tablePtr)
 
 static void
 InstallIndexProc(
-    Blt_HashTable *tablePtr,
+    Tcl_HashTable *tablePtr,
     const char *string,
     Blt_VectorIndexProc *procPtr) /* Pointer to function to be called
 				   * when the vector finds the named index.
@@ -1806,19 +1806,19 @@ InstallIndexProc(
 				   * the index from the table.
 				   */
 {
-    Blt_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr;
     int dummy;
 
-    hPtr = Blt_CreateHashEntry(tablePtr, string, &dummy);
+    hPtr = Tcl_CreateHashEntry(tablePtr, string, &dummy);
     if (procPtr == NULL) {
-	Blt_DeleteHashEntry(tablePtr, hPtr);
+	Tcl_DeleteHashEntry(hPtr);
     } else {
-	Blt_SetHashValue(hPtr, (ClientData)procPtr);
+	Tcl_SetHashValue(hPtr, (ClientData)procPtr);
     }
 }
 
 void
-Blt_Vec_InstallSpecialIndices(Blt_HashTable *tablePtr)
+Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
 {
     InstallIndexProc(tablePtr, "min",  Blt_VecMin);
     InstallIndexProc(tablePtr, "max",  Blt_VecMax);
