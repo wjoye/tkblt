@@ -42,6 +42,10 @@
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 
+#define PointInRectangle(r,x0,y0) \
+	(((x0) <= (int)((r)->x + (r)->width - 1)) && ((x0) >= (int)(r)->x) && \
+	 ((y0) <= (int)((r)->y + (r)->height - 1)) && ((y0) >= (int)(r)->y))
+
 typedef struct {
     float x1, y1, x2, y2;
 } BarRegion;
@@ -201,7 +205,7 @@ Blt_CustomOption bltBarModeOption =
 #define DEF_BAR_AXIS_X			"x"
 #define DEF_BAR_AXIS_Y			"y"
 #define DEF_BAR_BACKGROUND		"navyblue"
-#define DEF_BAR_BORDERWIDTH		"2"
+#define DEF_BAR_BORDERWIDTH		STD_BORDERWIDTH
 #define DEF_BAR_ERRORBAR_COLOR		"defcolor"
 #define DEF_BAR_ERRORBAR_LINE_WIDTH	"1"
 #define DEF_BAR_ERRORBAR_CAP_WIDTH	"1"
@@ -219,7 +223,7 @@ Blt_CustomOption bltBarModeOption =
 
 #define DEF_PEN_ACTIVE_BACKGROUND	rred
 #define DEF_PEN_ACTIVE_FOREGROUND     	pink
-#define DEF_PEN_BORDERWIDTH		"2"
+#define DEF_PEN_BORDERWIDTH		STD_BORDERWIDTH
 #define DEF_PEN_NORMAL_BACKGROUND	navyblue
 #define DEF_PEN_NORMAL_FOREGROUND	bblue
 #define DEF_PEN_RELIEF			"raised"

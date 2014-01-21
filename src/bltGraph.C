@@ -61,6 +61,10 @@
 typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 	Tcl_Obj *const *objv);
 
+#define PointInRegion(e,x,y) \
+	(((x) <= (e)->right) && ((x) >= (e)->left) && \
+	 ((y) <= (e)->bottom) && ((y) >= (e)->top))
+
 /* 
  * Objects in the graph have their own class names.  These class names are
  * used for the resource database and bindings.  Example.

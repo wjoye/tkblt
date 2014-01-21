@@ -45,6 +45,10 @@
 #include "bltBitmap.h"
 #include "bltConfig.h"
 
+#define PointInRegion(e,x,y) \
+	(((x) <= (e)->right) && ((x) >= (e)->left) && \
+	 ((y) <= (e)->bottom) && ((y) >= (e)->top))
+
 #define COLOR_DEFAULT	(XColor *)1
 #define PATTERN_SOLID	((Pixmap)1)
 
