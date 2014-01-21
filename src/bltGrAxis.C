@@ -185,7 +185,7 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_DIVISIONS		"10"
 #define DEF_AXIS_TITLE_ALTERNATE	"0"
 #define DEF_AXIS_TITLE_FG		RGB_BLACK
-#define DEF_AXIS_TITLE_FONT		"{Sans Serif} 10"
+#define DEF_AXIS_TITLE_FONT		STD_FONT_NORMAL
 #define DEF_AXIS_X_STEP_BARCHART	"1.0"
 #define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
 

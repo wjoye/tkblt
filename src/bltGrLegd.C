@@ -205,7 +205,7 @@ struct _Legend {
 #define DEF_LEGEND_BORDERWIDTH		STD_BORDERWIDTH
 #define DEF_LEGEND_COLUMNS		"0"
 #define DEF_LEGEND_EXPORTSELECTION	"no"
-#define DEF_LEGEND_FONT			"{Sans Serif} 8"
+#define DEF_LEGEND_FONT			"hevetica 8 normal roman"
 #define DEF_LEGEND_FOREGROUND		STD_NORMAL_FOREGROUND
 #define DEF_LEGEND_HIDE			"no"
 #define DEF_LEGEND_IPADX		"1"
@@ -230,7 +230,7 @@ struct _Legend {
 #define DEF_LEGEND_TAKEFOCUS		"1"
 #define DEF_LEGEND_TITLE		(char *)NULL
 #define	DEF_LEGEND_TITLECOLOR		STD_NORMAL_FOREGROUND
-#define DEF_LEGEND_TITLEFONT		"{Sans Serif} 8 bold"
+#define DEF_LEGEND_TITLEFONT		"helvetica 8 bold roman"
 
 static Blt_OptionParseProc ObjToPosition;
 static Blt_OptionPrintProc PositionToObj;

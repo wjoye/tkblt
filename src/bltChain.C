@@ -404,52 +404,6 @@ Blt_Chain_Prepend(Blt_Chain chain, ClientData clientData)
 /*
  *---------------------------------------------------------------------------
  *
- * Blt_Chain_GetNthLink --
- *
- *	Find the link at the given position in the chain.  The position
- *	is number from 0.  If position is negative is returns the nth
- *	link from the back of the chain.
- *
- * Results:
- *	Returns the pointer to the link, if that numbered link
- *	exists. Otherwise NULL.
- *
- *---------------------------------------------------------------------------
- */
-Blt_ChainLink
-Blt_Chain_GetNthLink(Chain *chainPtr, long position)
-{
-    if (chainPtr != NULL) {
-	if (position < 0) {
-	    ChainLink *linkPtr;
-	    int i;
-
-	    position = -position;
-	    for (i = 0, linkPtr = chainPtr->tail; linkPtr != NULL; 
-		 linkPtr = linkPtr->prev, i++) {
-		if (i == position) {
-		    return linkPtr;
-		}
-	    }
-	} else {
-	    ChainLink *linkPtr;
-	    int i;
-
-	    linkPtr = chainPtr->head;
-	    for (i = 0, linkPtr = chainPtr->head; linkPtr != NULL; 
-		 linkPtr = linkPtr->next, i++) {
-		if (i == position) {
-		    return linkPtr;
-		}
-	    }
-	}
-    }
-    return NULL;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * Blt_Chain_Sort --
  *
  *	Sorts the chain according to the given comparison routine.  

@@ -65,7 +65,7 @@ typedef int (GraphMarkerProc)(Graph *graphPtr, Tcl_Interp *interp, int objc,
 #define DEF_MARKER_ELEMENT	(char *)NULL
 #define DEF_MARKER_FOREGROUND	RGB_BLACK
 #define DEF_MARKER_FILL_COLOR	RGB_RED
-#define DEF_MARKER_FONT		STD_FONT
+#define DEF_MARKER_FONT		STD_FONT_NORMAL
 #define DEF_MARKER_GAP_COLOR	RGB_PINK
 #define DEF_MARKER_HEIGHT	"0"
 #define DEF_MARKER_HIDE		"no"
