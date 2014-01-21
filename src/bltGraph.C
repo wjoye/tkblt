@@ -105,7 +105,7 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_BUFFER_ELEMENTS	"yes"
 #define DEF_GRAPH_BUFFER_GRAPH		"1"
 #define DEF_GRAPH_CURSOR		"crosshair"
-#define DEF_GRAPH_FONT			"helvetica 12 normal roman"
+#define DEF_GRAPH_FONT			STD_FONT_MEDIUM
 #define DEF_GRAPH_HALO			"2m"
 #define DEF_GRAPH_HALO_BAR		"0.1i"
 #define DEF_GRAPH_HEIGHT		"4i"
