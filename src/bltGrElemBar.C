@@ -205,7 +205,7 @@ Blt_CustomOption bltBarModeOption =
 #define DEF_BAR_ERRORBAR_COLOR		"defcolor"
 #define DEF_BAR_ERRORBAR_LINE_WIDTH	"1"
 #define DEF_BAR_ERRORBAR_CAP_WIDTH	"1"
-#define DEF_BAR_FOREGROUND		"blue"
+#define DEF_BAR_FOREGROUND		bblue
 #define DEF_BAR_HIDE			"no"
 #define DEF_BAR_LABEL_RELIEF		"flat"
 #define DEF_BAR_NORMAL_STIPPLE		""
@@ -217,16 +217,16 @@ Blt_CustomOption bltBarModeOption =
 #define DEF_BAR_TAGS			"all"
 #define DEF_BAR_WIDTH			"0.0"
 
-#define DEF_PEN_ACTIVE_BACKGROUND	"red"
-#define DEF_PEN_ACTIVE_FOREGROUND     	"pink"
+#define DEF_PEN_ACTIVE_BACKGROUND	rred
+#define DEF_PEN_ACTIVE_FOREGROUND     	pink
 #define DEF_PEN_BORDERWIDTH		"2"
-#define DEF_PEN_NORMAL_BACKGROUND	"navyblue"
-#define DEF_PEN_NORMAL_FOREGROUND	"blue"
+#define DEF_PEN_NORMAL_BACKGROUND	navyblue
+#define DEF_PEN_NORMAL_FOREGROUND	bblue
 #define DEF_PEN_RELIEF			"raised"
 #define DEF_PEN_STIPPLE			""
 #define DEF_PEN_TYPE			"bar"
 #define	DEF_PEN_VALUE_ANCHOR		"s"
-#define	DEF_PEN_VALUE_COLOR		RGB_BLACK
+#define	DEF_PEN_VALUE_COLOR		black
 #define	DEF_PEN_VALUE_FONT		STD_FONT_SMALL
 #define	DEF_PEN_VALUE_FORMAT		"%g"
 #define DEF_PEN_SHOW_VALUES		"no"

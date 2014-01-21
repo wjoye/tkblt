@@ -394,8 +394,8 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_LINE_OUTLINE_COLOR		"defcolor"
 #define DEF_LINE_OUTLINE_WIDTH 		"1"
 #define DEF_LINE_PATTERN_BG		(char *)NULL
-#define DEF_LINE_PATTERN_FG		"black"
-#define DEF_LINE_PEN_COLOR		RGB_NAVYBLUE
+#define DEF_LINE_PATTERN_FG		black
+#define DEF_LINE_PEN_COLOR		navyblue
 #define DEF_LINE_PEN_DIRECTION		"both"
 #define DEF_LINE_PEN_WIDTH		"1"
 #define DEF_LINE_PIXELS			"0.1i"
@@ -415,11 +415,11 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_LINE_ERRORBAR_CAP_WIDTH	"2"
 #define DEF_LINE_SHOW_ERRORBARS		"both"
 
-#define DEF_PEN_ACTIVE_COLOR		RGB_BLUE
+#define DEF_PEN_ACTIVE_COLOR		bblue
 #define DEF_PEN_DASHES			(char *)NULL
 #define DEF_PEN_FILL_COLOR    		"defcolor"
 #define DEF_PEN_LINE_WIDTH		"1"
-#define DEF_PEN_NORMAL_COLOR		RGB_NAVYBLUE
+#define DEF_PEN_NORMAL_COLOR		navyblue
 #define DEF_PEN_OFFDASH_COLOR    	(char *)NULL
 #define DEF_PEN_OUTLINE_COLOR		"defcolor"
 #define DEF_PEN_OUTLINE_WIDTH 		"1"
@@ -427,7 +427,7 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_PEN_SYMBOL			"circle"
 #define DEF_PEN_TYPE			"line"
 #define	DEF_PEN_VALUE_ANCHOR		"s"
-#define	DEF_PEN_VALUE_COLOR		RGB_BLACK
+#define	DEF_PEN_VALUE_COLOR		black
 #define	DEF_PEN_VALUE_FONT		STD_FONT_NUMBERS
 #define	DEF_PEN_VALUE_FORMAT		"%g"
 #define	DEF_PEN_VALUE_ANGLE		(char *)NULL

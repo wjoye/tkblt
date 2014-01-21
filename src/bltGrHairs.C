@@ -75,7 +75,7 @@ struct _Crosshairs {
 };
 
 #define DEF_HAIRS_DASHES	(char *)NULL
-#define DEF_HAIRS_FOREGROUND	RGB_BLACK
+#define DEF_HAIRS_FOREGROUND	black
 #define DEF_HAIRS_LINE_WIDTH	"0"
 #define DEF_HAIRS_HIDE		"yes"
 #define DEF_HAIRS_POSITION	(char *)NULL

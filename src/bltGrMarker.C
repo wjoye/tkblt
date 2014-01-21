@@ -56,17 +56,17 @@ typedef int (GraphMarkerProc)(Graph *graphPtr, Tcl_Interp *interp, int objc,
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 
 #define DEF_MARKER_ANCHOR	"center"
-#define DEF_MARKER_BACKGROUND	RGB_WHITE
+#define DEF_MARKER_BACKGROUND	white
 #define DEF_MARKER_BITMAP	(char *)NULL
 #define DEF_MARKER_CAP_STYLE	"butt"
 #define DEF_MARKER_COORDS	(char *)NULL
 #define DEF_MARKER_DASHES	(char *)NULL
 #define DEF_MARKER_DASH_OFFSET	"0"
 #define DEF_MARKER_ELEMENT	(char *)NULL
-#define DEF_MARKER_FOREGROUND	RGB_BLACK
-#define DEF_MARKER_FILL_COLOR	RGB_RED
+#define DEF_MARKER_FOREGROUND	black
+#define DEF_MARKER_FILL_COLOR	rred
 #define DEF_MARKER_FONT		STD_FONT_NORMAL
-#define DEF_MARKER_GAP_COLOR	RGB_PINK
+#define DEF_MARKER_GAP_COLOR	pink
 #define DEF_MARKER_HEIGHT	"0"
 #define DEF_MARKER_HIDE		"no"
 #define DEF_MARKER_JOIN_STYLE	"miter"
@@ -75,7 +75,7 @@ typedef int (GraphMarkerProc)(Graph *graphPtr, Tcl_Interp *interp, int objc,
 #define DEF_MARKER_MAP_X	"x"
 #define DEF_MARKER_MAP_Y	"y"
 #define DEF_MARKER_NAME		(char *)NULL
-#define DEF_MARKER_OUTLINE_COLOR RGB_BLACK
+#define DEF_MARKER_OUTLINE_COLOR black
 #define DEF_MARKER_PAD		"4"
 #define DEF_MARKER_ANGLE	"0.0"
 #define DEF_MARKER_SCALE	"1.0"
