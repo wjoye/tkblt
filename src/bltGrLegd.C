@@ -230,7 +230,7 @@ struct _Legend {
 #define DEF_LEGEND_TAKEFOCUS		"1"
 #define DEF_LEGEND_TITLE		(char *)NULL
 #define	DEF_LEGEND_TITLECOLOR		STD_NORMAL_FOREGROUND
-#define DEF_LEGEND_TITLEFONT		"helvetica 8 bold roman"
+#define DEF_LEGEND_TITLEFONT		STD_FONT_SMALL
 
 static Blt_OptionParseProc ObjToPosition;
 static Blt_OptionPrintProc PositionToObj;
