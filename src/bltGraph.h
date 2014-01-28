@@ -37,7 +37,6 @@
 #include "bltBind.h"
 #include "bltChain.h"
 #include "bltPs.h"
-#include "bltBgStyle.h"
 
 typedef struct _Graph Graph;
 typedef struct _Element Element;
