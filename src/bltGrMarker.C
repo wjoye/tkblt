@@ -37,7 +37,6 @@
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltImage.h"
 #include "bltGrElem.h"
 #include "bltBitmap.h"
 #include "bltConfig.h"

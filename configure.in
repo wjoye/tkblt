@@ -87,7 +87,6 @@ TEA_ADD_SOURCES([
 	bltGrPen.c
 	bltGrPs.c
 	bltGraph.c
-	bltImage.c
 	bltInt.c 
 	bltList.c
 	bltNsUtil.c

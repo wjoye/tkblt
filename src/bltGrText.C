@@ -42,8 +42,12 @@
 
 #include "bltInt.h"
 #include "bltMath.h"
-#include "bltImage.h"
 #include "bltText.h"
+
+#define ROTATE_0	0
+#define ROTATE_90	1
+#define ROTATE_180	2
+#define ROTATE_270	3
 
 void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, int textLen,
 			unsigned int *widthPtr, unsigned int *heightPtr)
