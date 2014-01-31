@@ -589,7 +589,8 @@ CreateLegendWindow(Tcl_Interp *interp, Legend *legendPtr, const char *pathName)
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }
-    Blt_SetWindowInstanceData(tkwin, legendPtr);
+
+    ((TkWindow*)tkwin)->instanceData = legendPtr;
     Tk_CreateEventHandler(tkwin, ExposureMask | StructureNotifyMask,
 	  LegendEventProc, graphPtr);
     /* Move the legend's binding table to the new window. */

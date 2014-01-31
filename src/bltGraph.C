@@ -857,7 +857,8 @@ static Graph* CreateGraph(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
     Tk_SetClass(tkwin, "???");
     break;
   }
-  Blt_SetWindowInstanceData(tkwin, graphPtr);
+
+  ((TkWindow*)tkwin)->instanceData = graphPtr;
 
   if (InitPens(graphPtr) != TCL_OK)
     goto error;
@@ -1542,13 +1543,14 @@ int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
 {
   while (tkwin) {
-    Graph *graphPtr = (Graph*)Blt_GetWindowInstanceData(tkwin);
-    if (graphPtr) {
-      return graphPtr;
+    TkWindow* winPtr = (TkWindow*)tkwin;
+    if (winPtr->instanceData != NULL) {
+      Graph* graphPtr = (ClientData)winPtr->instanceData;
+      if (graphPtr)
+	return graphPtr;
     }
     tkwin = Tk_Parent(tkwin);
   }
-
   return NULL;
 }
 
