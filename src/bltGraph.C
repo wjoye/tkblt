@@ -122,23 +122,23 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_WIDTH			"5i"
 
 static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
+  {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
+   DEF_GRAPH_ASPECT_RATIO, 
    -1, Tk_Offset(Graph, aspect), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", DEF_GRAPH_BAR_WIDTH,
+  {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
+   DEF_GRAPH_BAR_WIDTH,
    -1, Tk_Offset(Graph, barWidth), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-baseline", "baseline", "Baseline", 
    DEF_GRAPH_BAR_BASELINE, 
    -1, Tk_Offset(Graph, baseline), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bd", "borderWidth", NULL, NULL, 
-   -1, 0, 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bg", "background", NULL, NULL,
-   -1, 0, 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bm", "bottomMargin", NULL, NULL, 
-   -1, 0, 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
+   -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_GRAPH_BORDERWIDTH, 
    -1, Tk_Offset(Graph, borderWidth), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "Margin",
+  {TK_OPTION_SYNONYM, "-bm", NULL, NULL, NULL, 
+   -1, 0, 0, "-bottommargin", 0},
+  {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "BottomMargin",
    DEF_GRAPH_MARGIN, 
    -1, Tk_Offset(Graph, bottomMargin.reqSize), 0, NULL, 0},
   {TK_OPTION_STRING, "-bottomvariable", "bottomVariable", "BottomVariable",
@@ -152,12 +152,6 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 0},
   {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", DEF_GRAPH_CURSOR, 
    -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING, "-data", "data", "Data", NULL, 
-   -1, Tk_Offset(Graph, data), 0, NULL, 0},
-  {TK_OPTION_STRING, "-datacommand", "dataCommand", "DataCommand", NULL,
-   -1, Tk_Offset(Graph, dataCmd), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", "foreground", NULL, NULL, 
-   -1, 0, 0, NULL, 0},
   {TK_OPTION_FONT, "-font", "font", "Font", DEF_GRAPH_FONT,
    -1, Tk_Offset(Graph, titleTextStyle.font), 0, NULL, 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
@@ -185,8 +179,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
    DEF_GRAPH_MARGIN_VAR,
    -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-lm", "leftMargin", NULL, NULL, 
-   -1, 0, 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, 
+   -1, 0, 0, "-leftmargin", 0},
   {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
    DEF_GRAPH_PLOT_BORDERWIDTH, 
    -1, Tk_Offset(Graph, plotBW), 0, NULL, 0},
@@ -204,8 +198,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
    DEF_GRAPH_MARGIN_VAR,
    -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-rm", "rightMargin", NULL, NULL,
-   -1, 0, 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL,
+   -1, 0, 0, "-rightmargin", 0},
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
    DEF_GRAPH_STACK_AXES, 
    -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
@@ -214,9 +208,9 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", DEF_GRAPH_TITLE, 
    -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-tm", "topMargin", NULL, NULL,
-   -1, 0, 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "Margin", DEF_GRAPH_MARGIN,
+  {TK_OPTION_SYNONYM, "-tm", NULL, NULL, NULL,
+   -1, 0, 0, "-topmargin", 0},
+  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, topMargin.reqSize), 0, NULL, 0},
   {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
    DEF_GRAPH_MARGIN_VAR, 
@@ -270,10 +264,6 @@ static Blt_ConfigSpec configSpecs[] = {
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
    DEF_GRAPH_CURSOR, Tk_Offset(Graph, cursor), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_STRING, "-data", "data", "Data", 
-   (char*)NULL, Tk_Offset(Graph, data), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_STRING, "-datacommand", "dataCommand", "DataCommand", 
-   (char*)NULL, Tk_Offset(Graph, dataCmd), BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char*)NULL, (char*)NULL, 0, 0},
   {BLT_CONFIG_FONT, "-font", "font", "Font",
    DEF_GRAPH_FONT, Tk_Offset(Graph, titleTextStyle.font), 0},
@@ -359,10 +349,13 @@ static Tcl_FreeProc DestroyGraph;
 static Tk_EventProc GraphEventProc;
 Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 
-static Blt_BindPickProc PickEntry;
-static Tcl_ObjCmdProc BarchartCmd;
-static Tcl_ObjCmdProc GraphCmd;
+static Tcl_ObjCmdProc BarchartObjCmd;
+static Tcl_CmdDeleteProc BarchartObjDelete;
+static Tcl_ObjCmdProc GraphObjCmd;
+static Tcl_CmdDeleteProc GraphObjDelete;
 static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
+
+static Blt_BindPickProc PickEntry;
 
 /*
  *---------------------------------------------------------------------------
@@ -439,13 +432,8 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
       Blt_EventuallyRedrawGraph(graphPtr);
     }
   } else if (eventPtr->type == DestroyNotify) {
-    if (graphPtr->tkwin)
-      printf("GraphEventProc: %s\n", Tk_PathName(graphPtr->tkwin));
-    else
-      printf("GraphEventProc: none\n");
-
     if (graphPtr->tkwin != NULL) {
-      //      Tk_FreeConfigOptions(graphPtr, graphPtr->optionTable, graphPtr->tkwin);
+      //Tk_FreeConfigOptions(graphPtr, graphPtr->optionTable, graphPtr->tkwin);
       graphPtr->tkwin = NULL;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
     }
@@ -462,10 +450,6 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
   Graph* graphPtr = clientData;
-  if (graphPtr->tkwin)
-    printf("GraphInstCmdDeleteProc: %s\n", Tk_PathName(graphPtr->tkwin));
-  else
-    printf("GraphInstCmdDeleteProc: none\n");
 
   // NULL indicates window has already been destroyed.
   if (graphPtr->tkwin != NULL) {
@@ -762,10 +746,6 @@ static void ConfigureGraph(Graph* graphPtr)
 static void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
-  if (graphPtr->tkwin)
-    printf("DestroyGraph: %s\n", Tk_PathName(graphPtr->tkwin)); 
-  else
-    printf("DestroyGraph: none\n"); 
 
   Blt_FreeOptions(configSpecs, (char*)graphPtr, graphPtr->display, 0);
   /*
@@ -799,10 +779,19 @@ static void DestroyGraph(char* dataPtr)
   free(graphPtr);
 }
 
-static Graph* CreateGraph(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
-			  ClassId classId)
+static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp, 
+			  int objc, Tcl_Obj* const objv[], ClassId classId)
 {
-  printf("CreateGraph: %s\n",Tcl_GetString(objv[1]));
+  Tk_OptionTable optionTable = (Tk_OptionTable)clientData;
+  if (!optionTable) {
+    optionTable = Tk_CreateOptionTable(interp, optionSpecs);
+    char* name = Tcl_GetString(objv[0]);
+    Tcl_CmdInfo info;
+    Tcl_GetCommandInfo(interp, name, &info);
+    info.objClientData = (ClientData)optionTable;
+    Tcl_SetCommandInfo(interp, name, &info);
+  }
+
   Tk_Window tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
 					    Tcl_GetString(objv[1]), 
 					    (char*)NULL);
@@ -813,9 +802,11 @@ static Graph* CreateGraph(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
 
   /* Initialize the graph data structure. */
 
+  graphPtr->interp = interp;
   graphPtr->tkwin = tkwin;
   graphPtr->display = Tk_Display(tkwin);
-  graphPtr->interp = interp;
+  graphPtr->cmdToken = NULL;
+  graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
   graphPtr->backingStore = TRUE;
   graphPtr->doubleBuffer = TRUE;
@@ -867,10 +858,6 @@ static Graph* CreateGraph(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
 				 objv + 2, (char*)graphPtr, 0) != TCL_OK)
     goto error;
 
-
-  //  if (Tk_InitOptions(interp, graphPtr, graphPtr->optionsTable, tkwin))
-  //    goto error;
-
   if (Blt_DefaultAxes(graphPtr) != TCL_OK)
     goto error;
 
@@ -892,6 +879,10 @@ static Graph* CreateGraph(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
   graphPtr->cmdToken = Tcl_CreateObjCommand(interp, Tcl_GetString(objv[1]), 
 					    Blt_GraphInstCmdProc, graphPtr, 
 					    GraphInstCmdDeleteProc);
+
+  //  if (Tk_InitOptions(interp, graphPtr, graphPtr->optionTable, tkwin))
+  //    goto error;
+
   ConfigureGraph(graphPtr);
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
@@ -1188,8 +1179,8 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
   return result;
 }
 
-static int NewGraph(Tcl_Interp*interp, int objc, Tcl_Obj* const objv[], 
-		    ClassId classId)
+static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
+		    int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   if (objc < 2) {
     Tcl_AppendResult(interp, "wrong # args: should be \"", 
@@ -1198,22 +1189,39 @@ static int NewGraph(Tcl_Interp*interp, int objc, Tcl_Obj* const objv[],
     return TCL_ERROR;
   }
 
-  if (!CreateGraph(interp, objc, objv, classId))
+  if (!CreateGraph(clientData, interp, objc, objv, classId))
     return TCL_ERROR;
 
   return TCL_OK;
 }
 
-static int GraphCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-	 Tcl_Obj* const objv[])
+static void DeleteGraph(ClientData clientData)
 {
-  return NewGraph(interp, objc, objv, CID_ELEM_LINE);
+  Tk_OptionTable optionTable = (Tk_OptionTable)clientData;
+  if (clientData)
+    Tk_DeleteOptionTable(optionTable);
 }
 
-static int BarchartCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-	    Tcl_Obj* const objv[])
+static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+		       Tcl_Obj* const objv[])
 {
-  return NewGraph(interp, objc, objv, CID_ELEM_BAR);
+  return NewGraph(clientData, interp, objc, objv, CID_ELEM_LINE);
+}
+
+static void GraphObjDelete(ClientData clientData)
+{
+  DeleteGraph(clientData);
+}
+
+static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+			  Tcl_Obj* const objv[])
+{
+  return NewGraph(clientData, interp, objc, objv, CID_ELEM_BAR);
+}
+
+static void BarchartObjDelete(ClientData clientData)
+{
+  DeleteGraph(clientData);
 }
 
 /*
@@ -1528,9 +1536,10 @@ static void DisplayGraph(ClientData clientData)
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
-  printf("Blt_GraphCmdInitProc\n");
-  static Blt_InitCmdSpec graphSpec = {"graph", GraphCmd, };
-  static Blt_InitCmdSpec barchartSpec = {"barchart", BarchartCmd, };
+  static Blt_InitCmdSpec graphSpec = 
+    {"graph", GraphObjCmd, GraphObjDelete, NULL};
+  static Blt_InitCmdSpec barchartSpec = 
+    {"barchart", BarchartObjCmd, BarchartObjDelete, NULL};
 
   if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
     return TCL_ERROR;

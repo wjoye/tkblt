@@ -5555,7 +5555,6 @@ done
 	bltVecCmd.c
 	bltVecMath.c
 	bltVector.c
-	bltWindow.c
 	"
     for i in $vars; do
 	case $i in

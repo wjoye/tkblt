@@ -682,22 +682,9 @@ GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
   pixmap = None;
   drawable = Tk_WindowId(tkwin);
   display = Tk_Display(tkwin);
-  if (drawable == None) {
-    Drawable root;
-    int depth;
+  if (drawable == None)
+    drawable = Tk_RootWindow(tkwin);
 
-    root = Tk_RootWindow(tkwin);
-    depth = Tk_Depth(tkwin);
-
-    if (depth == DefaultDepth(display, Tk_ScreenNumber(tkwin))) {
-      drawable = root;
-    } else {
-      pixmap = Tk_GetPixmap(display, root, 1, 1, depth);
-      drawable = pixmap;
-      Blt_SetDrawableAttribs(display, drawable, 1, 1, depth, 
-			     Tk_Colormap(tkwin), Tk_Visual(tkwin));
-    }
-  }
   gc = XCreateGC(display, drawable, gcMask, valuePtr);
   if (pixmap != None) {
     Tk_FreePixmap(display, pixmap);

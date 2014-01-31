@@ -100,7 +100,6 @@ TEA_ADD_SOURCES([
 	bltVecCmd.c
 	bltVecMath.c
 	bltVector.c
-	bltWindow.c
 	])
 TEA_ADD_HEADERS([bltVector.h])
 TEA_ADD_INCLUDES([-I.])

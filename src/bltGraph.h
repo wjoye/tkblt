@@ -33,7 +33,6 @@
 #define _BLT_GRAPH_H
 
 #include "bltInt.h"
-#include "bltWindow.h"
 #include "bltBind.h"
 #include "bltChain.h"
 #include "bltPs.h"
@@ -268,7 +267,6 @@ typedef struct {
  *---------------------------------------------------------------------------
  */
 struct _Graph {
-  unsigned int flags;			/* Flags;  see below for definitions. */
   Tcl_Interp *interp;			/* Interpreter associated with graph */
   Tk_Window tkwin;			/* Window that embodies the graph.
 					 * NULL means that the window has been
@@ -278,9 +276,8 @@ struct _Graph {
 					 * release resources after tkwin has
 					 * already gone away. */
   Tcl_Command cmdToken;		/* Token for graph's widget command. */
-  const char *data;			/* This value isn't used in C code.
-					 * It may be used in TCL bindings to
-					 * associate extra data. */
+  Tk_OptionTable optionTable;
+  ClassId classId;			/* Default element type */
   Tk_Cursor cursor;
   int inset;				/* Sum of focus highlight and 3-D
 					 * border.  Indicates how far to
@@ -288,6 +285,7 @@ struct _Graph {
 					 * of the window. */
   int borderWidth;			/* Width of the exterior border */
   int relief;				/* Relief of the exterior border. */
+  unsigned int flags;			/* Flags;  see below for definitions. */
   Blt_Background normalBg;		/* 3-D border used to delineate the
 					 * plot surface and outer edge of
 					 * window. */
@@ -326,7 +324,6 @@ struct _Graph {
   } elements, markers, axes;
 
   Tcl_HashTable dataTables;		/* Hash table of datatable clients. */
-  ClassId classId;			/* Default element type */
   Blt_BindTable bindTable;
   int nextMarkerId;			/* Tracks next marker identifier
 					 * available */
@@ -415,8 +412,6 @@ struct _Graph {
 					 * ways: aligned, overlap, infront, or
 					 * stacked. */
   int maxBarSetSize;
-  const char *dataCmd;		/* New data callback? */
-  Tk_OptionTable optionTable;
 };
 
 /*

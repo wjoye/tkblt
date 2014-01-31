@@ -82,7 +82,6 @@
 #include <stdarg.h>
 
 #include "bltInt.h"
-#include "bltWindow.h"
 #include "bltBgStyle.h"
 
 /* STATE */
@@ -1615,7 +1614,19 @@ Blt_ConfigureComponentFromObj(
      * Create component if a child window by the component's name
      * doesn't already exist.
      */
-    tkwin = Blt_FindChild(parent, tmpName);
+    {
+      TkWindow *winPtr;
+      TkWindow *parentPtr = (TkWindow *)parent;
+
+      for (winPtr = parentPtr->childList; winPtr != NULL; 
+	   winPtr = winPtr->nextPtr) {
+	if (strcmp(tmpName, winPtr->nameUid) == 0) {
+	  tkwin = (Tk_Window)winPtr;
+	}
+      }
+      tkwin = NULL;
+    }
+
     if (tkwin == NULL) {
 	tkwin = Tk_CreateWindow(interp, parent, tmpName, (char *)NULL);
 	isTemporary = TRUE;
