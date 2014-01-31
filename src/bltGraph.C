@@ -33,19 +33,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/*
- * To do:
- *
- * 2) Update manual pages.
- *
- * 3) Update comments.
- *
- * 5) Surface, contour, and flow graphs
- *
- * 7) Arrows for line markers
- *
- */
-
 #include <assert.h>
 
 #include <X11/Xlib.h>
@@ -59,11 +46,11 @@
 #include "bltSwitch.h"
 
 typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
-	Tcl_Obj *const *objv);
+			   Tcl_Obj *const *objv);
 
-#define PointInRegion(e,x,y) \
-	(((x) <= (e)->right) && ((x) >= (e)->left) && \
-	 ((y) <= (e)->bottom) && ((y) >= (e)->top))
+#define PointInRegion(e,x,y)			\
+  (((x) <= (e)->right) && ((x) >= (e)->left) && \
+   ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 /* 
  * Objects in the graph have their own class names.  These class names are
@@ -77,19 +64,19 @@ typedef int (GraphCmdProc)(Graph *graphPtr, Tcl_Interp *interp, int objc,
  * will be from the list below.
  */
 static const char *objectClassNames[] = {
-    "unknown",
-    "XAxis", 
-    "YAxis",
-    "BarElement", 
-    "ContourElement",
-    "LineElement", 
-    "StripElement", 
-    "BitmapMarker", 
-    "ImageMarker", 
-    "LineMarker", 
-    "PolygonMarker",
-    "TextMarker", 
-    "WindowMarker",
+  "unknown",
+  "XAxis", 
+  "YAxis",
+  "BarElement", 
+  "ContourElement",
+  "LineElement", 
+  "StripElement", 
+  "BitmapMarker", 
+  "ImageMarker", 
+  "LineMarker", 
+  "PolygonMarker",
+  "TextMarker", 
+  "WindowMarker",
 };
 
 extern Blt_CustomOption bltLinePenOption;
@@ -105,6 +92,8 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_BUFFER_ELEMENTS	"yes"
 #define DEF_GRAPH_BUFFER_GRAPH		"1"
 #define DEF_GRAPH_CURSOR		"crosshair"
+#define DEF_GRAPH_DATA			(char *)NULL
+#define DEF_GRAPH_DATA_COMMAND		(char *)NULL
 #define DEF_GRAPH_FONT			STD_FONT_MEDIUM
 #define DEF_GRAPH_HALO			"2m"
 #define DEF_GRAPH_HALO_BAR		"0.1i"
@@ -118,24 +107,135 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_MARGIN_VAR		(char *)NULL
 #define DEF_GRAPH_PLOT_BACKGROUND	white
 #define DEF_GRAPH_PLOT_BORDERWIDTH	"1"
+#define DEF_GRAPH_PLOT_HEIGHT           "0"
 #define DEF_GRAPH_PLOT_PADX		"0"
 #define DEF_GRAPH_PLOT_PADY		"0"
 #define DEF_GRAPH_PLOT_RELIEF		"solid"
+#define DEF_GRAPH_PLOT_WIDTH            "0"
 #define DEF_GRAPH_RELIEF		"flat"
 #define DEF_GRAPH_SHOW_VALUES		"no"
 #define DEF_GRAPH_STACK_AXES		"no"
 #define DEF_GRAPH_TAKE_FOCUS		""
 #define DEF_GRAPH_TITLE			(char *)NULL
 #define DEF_GRAPH_TITLE_COLOR		STD_NORMAL_FOREGROUND
-#define DEF_GRAPH_WIDTH			"5i"
-#define DEF_GRAPH_DATA			(char *)NULL
-#define DEF_GRAPH_DATA_COMMAND		(char *)NULL
 #define DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS	"0"
+#define DEF_GRAPH_WIDTH			"5i"
+
+static Tk_OptionSpec optionSpecs[] = {
+  {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
+   -1, Tk_Offset(Graph, aspect), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", DEF_GRAPH_BAR_WIDTH,
+   -1, Tk_Offset(Graph, barWidth), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-baseline", "baseline", "Baseline", 
+   DEF_GRAPH_BAR_BASELINE, 
+   -1, Tk_Offset(Graph, baseline), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bd", "borderWidth", NULL, NULL, 
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bg", "background", NULL, NULL,
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bm", "bottomMargin", NULL, NULL, 
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
+   DEF_GRAPH_BORDERWIDTH, 
+   -1, Tk_Offset(Graph, borderWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "Margin",
+   DEF_GRAPH_MARGIN, 
+   -1, Tk_Offset(Graph, bottomMargin.reqSize), 0, NULL, 0},
+  {TK_OPTION_STRING, "-bottomvariable", "bottomVariable", "BottomVariable",
+   DEF_GRAPH_MARGIN_VAR, 
+   -1, Tk_Offset(Graph, bottomMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-bufferelements", "bufferElements", "BufferElements",
+   DEF_GRAPH_BUFFER_ELEMENTS, 
+   -1, Tk_Offset(Graph, backingStore), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
+   DEF_GRAPH_BUFFER_GRAPH, 
+   -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 0},
+  {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", DEF_GRAPH_CURSOR, 
+   -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_STRING, "-data", "data", "Data", NULL, 
+   -1, Tk_Offset(Graph, data), 0, NULL, 0},
+  {TK_OPTION_STRING, "-datacommand", "dataCommand", "DataCommand", NULL,
+   -1, Tk_Offset(Graph, dataCmd), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", "foreground", NULL, NULL, 
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_FONT, "-font", "font", "Font", DEF_GRAPH_FONT,
+   -1, Tk_Offset(Graph, titleTextStyle.font), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+   DEF_GRAPH_TITLE_COLOR, 
+   -1, Tk_Offset(Graph, titleTextStyle.color), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-halo", "halo", "Halo", DEF_GRAPH_HALO, 
+   -1, Tk_Offset(Graph, halo), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-height", "height", "Height", DEF_GRAPH_HEIGHT, 
+   -1, Tk_Offset(Graph, reqHeight), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
+   "HighlightBackground", DEF_GRAPH_HIGHLIGHT_BACKGROUND, 
+   -1, Tk_Offset(Graph, highlightBgColor), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
+   DEF_GRAPH_HIGHLIGHT_COLOR, 
+   -1, Tk_Offset(Graph, highlightColor), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
+   "HighlightThickness", DEF_GRAPH_HIGHLIGHT_WIDTH, 
+   -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", DEF_GRAPH_INVERT_XY,
+   -1, Tk_Offset(Graph, inverted), 0, NULL, 0},
+  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", DEF_GRAPH_JUSTIFY, 
+   -1, Tk_Offset(Graph, titleTextStyle.justify), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", DEF_GRAPH_MARGIN,
+   -1, Tk_Offset(Graph, leftMargin.reqSize), 0, NULL, 0},
+  {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
+   DEF_GRAPH_MARGIN_VAR,
+   -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-lm", "leftMargin", NULL, NULL, 
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
+   DEF_GRAPH_PLOT_BORDERWIDTH, 
+   -1, Tk_Offset(Graph, plotBW), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", DEF_GRAPH_PLOT_PADX, 
+   -1, Tk_Offset(Graph, xPad), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", DEF_GRAPH_PLOT_PADY, 
+   -1, Tk_Offset(Graph, yPad), 0, NULL, 0},
+  {TK_OPTION_RELIEF, "-plotrelief", "plotRelief", "Relief", 
+   DEF_GRAPH_PLOT_RELIEF, 
+   -1, Tk_Offset(Graph, plotRelief), 0, NULL, 0},
+  {TK_OPTION_RELIEF, "-relief", "relief", "Relief", DEF_GRAPH_RELIEF, 
+   -1, Tk_Offset(Graph, relief), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", DEF_GRAPH_MARGIN,
+   -1, Tk_Offset(Graph, rightMargin.reqSize), 0, NULL, 0},
+  {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
+   DEF_GRAPH_MARGIN_VAR,
+   -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-rm", "rightMargin", NULL, NULL,
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
+   DEF_GRAPH_STACK_AXES, 
+   -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
+  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
+   DEF_GRAPH_TAKE_FOCUS, 
+   -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_STRING, "-title", "title", "Title", DEF_GRAPH_TITLE, 
+   -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-tm", "topMargin", NULL, NULL,
+   -1, 0, 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "Margin", DEF_GRAPH_MARGIN,
+   -1, Tk_Offset(Graph, topMargin.reqSize), 0, NULL, 0},
+  {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
+   DEF_GRAPH_MARGIN_VAR, 
+   -1, Tk_Offset(Graph, topMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_PIXELS, "-width", "width", "Width", DEF_GRAPH_WIDTH, 
+   -1, Tk_Offset(Graph, reqWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-plotwidth", "plotWidth", "PlotWidth", 
+   DEF_GRAPH_PLOT_WIDTH,
+   -1, Tk_Offset(Graph, reqPlotWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-plotheight", "plotHeight", "PlotHeight", 
+   DEF_GRAPH_PLOT_HEIGHT,
+   -1, Tk_Offset(Graph, reqPlotHeight), 0, NULL, 0},
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
 
 Blt_CustomOption bitmaskGraphUnmapOption =
-{
-  ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)UNMAP_HIDDEN
-};
+  {
+    ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)UNMAP_HIDDEN
+  };
 
 static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_DOUBLE, "-aspect", "aspect", "Aspect", DEF_GRAPH_ASPECT_RATIO, 
@@ -273,23 +373,17 @@ static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
  *	idle point.  This request is made only if the window is displayed and
  *	no other redraw request is pending.
  *
- * Results: None.
- *
- * Side effects:
- *	The window is eventually redisplayed.
- *
  *---------------------------------------------------------------------------
  */
-void
-Blt_UpdateGraph(ClientData clientData)
+void Blt_UpdateGraph(ClientData clientData)
 {
-    Graph *graphPtr = clientData;
+  Graph *graphPtr = clientData;
 
-    graphPtr->flags |= REDRAW_WORLD;
-    if ((graphPtr->tkwin != NULL) && !(graphPtr->flags & REDRAW_PENDING)) {
-	Tcl_DoWhenIdle(DisplayGraph, graphPtr);
-	graphPtr->flags |= REDRAW_PENDING;
-    }
+  graphPtr->flags |= REDRAW_WORLD;
+  if ((graphPtr->tkwin != NULL) && !(graphPtr->flags & REDRAW_PENDING)) {
+    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
+    graphPtr->flags |= REDRAW_PENDING;
+  }
 }
 
 /*
@@ -301,162 +395,111 @@ Blt_UpdateGraph(ClientData clientData)
  *	idle point.  This request is made only if the window is displayed and
  *	no other redraw request is pending.
  *
- * Results: None.
- *
- * Side effects:
- *	The window is eventually redisplayed.
- *
  *---------------------------------------------------------------------------
  */
-void
-Blt_EventuallyRedrawGraph(Graph *graphPtr) 
+void Blt_EventuallyRedrawGraph(Graph *graphPtr) 
 {
-    if ((graphPtr->tkwin != NULL) && !(graphPtr->flags & REDRAW_PENDING)) {
-	Tcl_DoWhenIdle(DisplayGraph, graphPtr);
-	graphPtr->flags |= REDRAW_PENDING;
-    }
+  if ((graphPtr->tkwin != NULL) && !(graphPtr->flags & REDRAW_PENDING)) {
+    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
+    graphPtr->flags |= REDRAW_PENDING;
+  }
 }
 
-const char *
-Blt_GraphClassName(ClassId classId) 
+const char* Blt_GraphClassName(ClassId classId) 
 {
-    if ((classId >= CID_NONE) && (classId <= CID_MARKER_WINDOW)) {
-	return objectClassNames[classId];
-    }
-    return NULL;
+  if ((classId >= CID_NONE) && (classId <= CID_MARKER_WINDOW)) {
+    return objectClassNames[classId];
+  }
+  return NULL;
 }
 
-void
-Blt_GraphSetObjectClass(GraphObj *graphObjPtr, ClassId classId)
+void Blt_GraphSetObjectClass(GraphObj *graphObjPtr, ClassId classId)
 {
-    graphObjPtr->classId = classId;
-    graphObjPtr->className = Blt_GraphClassName(classId);
+  graphObjPtr->classId = classId;
+  graphObjPtr->className = Blt_GraphClassName(classId);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GraphEventProc --
- *
- *	This procedure is invoked by the Tk dispatcher for various events on
- *	graphs.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	When the window gets deleted, internal structures get cleaned up.
- *	When it gets exposed, the graph is eventually redisplayed.
- *
- *---------------------------------------------------------------------------
- */
-static void
-GraphEventProc(ClientData clientData, XEvent *eventPtr)
+static void GraphEventProc(ClientData clientData, XEvent *eventPtr)
 {
-    Graph *graphPtr = clientData;
+  Graph *graphPtr = clientData;
 
-    if (eventPtr->type == Expose) {
-	if (eventPtr->xexpose.count == 0) {
-	    graphPtr->flags |= REDRAW_WORLD;
-	    Blt_EventuallyRedrawGraph(graphPtr);
-	}
-    } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
-	if (eventPtr->xfocus.detail != NotifyInferior) {
-	    if (eventPtr->type == FocusIn) {
-		graphPtr->flags |= FOCUS;
-	    } else {
-		graphPtr->flags &= ~FOCUS;
-	    }
-	    graphPtr->flags |= REDRAW_WORLD;
-	    Blt_EventuallyRedrawGraph(graphPtr);
-	}
-    } else if (eventPtr->type == DestroyNotify) {
-	if (graphPtr->tkwin != NULL) {
-	    graphPtr->tkwin = NULL;
-	    Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
-	}
-	if (graphPtr->flags & REDRAW_PENDING) {
-	    Tcl_CancelIdleCall(DisplayGraph, graphPtr);
-	}
-	Tcl_EventuallyFree(graphPtr, DestroyGraph);
-    } else if (eventPtr->type == ConfigureNotify) {
-	graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-	Blt_EventuallyRedrawGraph(graphPtr);
+  if (eventPtr->type == Expose) {
+    if (eventPtr->xexpose.count == 0) {
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
     }
+  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+    if (eventPtr->xfocus.detail != NotifyInferior) {
+      if (eventPtr->type == FocusIn) {
+	graphPtr->flags |= FOCUS;
+      } else {
+	graphPtr->flags &= ~FOCUS;
+      }
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
+    }
+  } else if (eventPtr->type == DestroyNotify) {
+    if (graphPtr->tkwin)
+      printf("GraphEventProc: %s\n", Tk_PathName(graphPtr->tkwin));
+    else
+      printf("GraphEventProc: none\n");
+
+    if (graphPtr->tkwin != NULL) {
+      //      Tk_FreeConfigOptions(graphPtr, graphPtr->optionTable, graphPtr->tkwin);
+      graphPtr->tkwin = NULL;
+      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
+    }
+    if (graphPtr->flags & REDRAW_PENDING) {
+      Tcl_CancelIdleCall(DisplayGraph, graphPtr);
+    }
+    Tcl_EventuallyFree(graphPtr, DestroyGraph);
+  } else if (eventPtr->type == ConfigureNotify) {
+    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    Blt_EventuallyRedrawGraph(graphPtr);
+  }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GraphInstCmdDeleteProc --
- *
- *	This procedure is invoked when a widget command is deleted.  If the
- *	widget isn't already in the process of being destroyed, this command
- *	destroys it.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The widget is destroyed.
- *
- *---------------------------------------------------------------------------
- */
-static void
-GraphInstCmdDeleteProc(ClientData clientData) /* Pointer to widget record. */
+static void GraphInstCmdDeleteProc(ClientData clientData)
 {
-    Graph *graphPtr = clientData;
+  Graph *graphPtr = clientData;
+  if (graphPtr->tkwin)
+    printf("GraphInstCmdDeleteProc: %s\n", Tk_PathName(graphPtr->tkwin));
+  else
+    printf("GraphInstCmdDeleteProc: none\n");
 
-    if (graphPtr->tkwin != NULL) {	/* NULL indicates window has already
-					 * been destroyed. */
-	Tk_Window tkwin;
-
-	tkwin = graphPtr->tkwin;
-	graphPtr->tkwin = NULL;
-	Tk_DestroyWindow(tkwin);
-    }
+  // NULL indicates window has already been destroyed.
+  if (graphPtr->tkwin != NULL) {
+    Tk_Window tkwin = graphPtr->tkwin;
+    graphPtr->tkwin = NULL;
+    Tk_DestroyWindow(tkwin);
+  }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AdjustAxisPointers --
- *
- *	Sets the axis pointers according to whether the axis is inverted on
- *	not.  The axis sites are also reset.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-AdjustAxisPointers(Graph *graphPtr) 
+static void AdjustAxisPointers(Graph *graphPtr) 
 {
-    if (graphPtr->inverted) {
-	graphPtr->leftMargin.axes   = graphPtr->axisChain[0];
-	graphPtr->bottomMargin.axes = graphPtr->axisChain[1];
-	graphPtr->rightMargin.axes  = graphPtr->axisChain[2];
-	graphPtr->topMargin.axes    = graphPtr->axisChain[3];
-    } else {
-	graphPtr->leftMargin.axes   = graphPtr->axisChain[1];
-	graphPtr->bottomMargin.axes = graphPtr->axisChain[0];
-	graphPtr->rightMargin.axes  = graphPtr->axisChain[3];
-	graphPtr->topMargin.axes    = graphPtr->axisChain[2];
-    }
+  if (graphPtr->inverted) {
+    graphPtr->leftMargin.axes   = graphPtr->axisChain[0];
+    graphPtr->bottomMargin.axes = graphPtr->axisChain[1];
+    graphPtr->rightMargin.axes  = graphPtr->axisChain[2];
+    graphPtr->topMargin.axes    = graphPtr->axisChain[3];
+  } else {
+    graphPtr->leftMargin.axes   = graphPtr->axisChain[1];
+    graphPtr->bottomMargin.axes = graphPtr->axisChain[0];
+    graphPtr->rightMargin.axes  = graphPtr->axisChain[3];
+    graphPtr->topMargin.axes    = graphPtr->axisChain[2];
+  }
 }
 
-static int
-InitPens(Graph *graphPtr)
+static int InitPens(Graph *graphPtr)
 {
-    Tcl_InitHashTable(&graphPtr->penTable, TCL_STRING_KEYS);
-    if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL) {
-  	return TCL_ERROR;
-    }
-    if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL) {
-  	return TCL_ERROR;
-    }
-    return TCL_OK;
+  Tcl_InitHashTable(&graphPtr->penTable, TCL_STRING_KEYS);
+  if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL) {
+    return TCL_ERROR;
+  }
+  if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL) {
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
 /*
@@ -479,75 +522,63 @@ InitPens(Graph *graphPtr)
  *	tag address for both an elements and marker, even if they have the
  *	same name.
  *
- * Results:
- *	None.
- *
- * Side effects:
- *	This information will be used by the binding code in bltUtil.c to
- *	determine what graph objects match the current event.  The tags are
- *	placed in tagArr and *nTagsPtr is set with the number of tags found.
- *
  *---------------------------------------------------------------------------
  */
-/*ARGSUSED*/
-void
-Blt_GraphTags(
-    Blt_BindTable table,
-    ClientData object,
-    ClientData context,		/* Not used. */
-    Blt_List list)
+
+void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
+		   Blt_List list)
 {
-    GraphObj *graphObjPtr;
-    MakeTagProc *tagProc;
-    Graph *graphPtr;
+  GraphObj *graphObjPtr;
+  MakeTagProc *tagProc;
+  Graph *graphPtr;
 
-    graphPtr = (Graph *)Blt_GetBindingData(table);
+  graphPtr = (Graph *)Blt_GetBindingData(table);
 
-    /* 
-     * All graph objects (markers, elements, axes, etc) have the same starting
-     * fields in their structures, such as "classId", "name", "className", and
-     * "tags".
-     */
-    graphObjPtr = (GraphObj *)object;
+  /* 
+   * All graph objects (markers, elements, axes, etc) have the same starting
+   * fields in their structures, such as "classId", "name", "className", and
+   * "tags".
+   */
+  graphObjPtr = (GraphObj *)object;
 
-    switch (graphObjPtr->classId) {
-    case CID_ELEM_BAR:		
-    case CID_ELEM_LINE: 
-	tagProc = Blt_MakeElementTag;
-	break;
-    case CID_AXIS_X:
-    case CID_AXIS_Y:
-	tagProc = Blt_MakeAxisTag;
-	break;
-    case CID_MARKER_BITMAP:
-    case CID_MARKER_IMAGE:
-    case CID_MARKER_LINE:
-    case CID_MARKER_POLYGON:
-    case CID_MARKER_TEXT:
-    case CID_MARKER_WINDOW:
-	tagProc = Blt_MakeMarkerTag;
-	break;
-    case CID_NONE:
-	Blt_Panic("unknown object type");
-	tagProc = NULL;
-	break;
-    default:
-	Blt_Panic("bogus object type");
-	tagProc = NULL;
-	break;
+  switch (graphObjPtr->classId) {
+  case CID_ELEM_BAR:		
+  case CID_ELEM_LINE: 
+    tagProc = Blt_MakeElementTag;
+    break;
+  case CID_AXIS_X:
+  case CID_AXIS_Y:
+    tagProc = Blt_MakeAxisTag;
+    break;
+  case CID_MARKER_BITMAP:
+  case CID_MARKER_IMAGE:
+  case CID_MARKER_LINE:
+  case CID_MARKER_POLYGON:
+  case CID_MARKER_TEXT:
+  case CID_MARKER_WINDOW:
+    tagProc = Blt_MakeMarkerTag;
+    break;
+  case CID_NONE:
+    Blt_Panic("unknown object type");
+    tagProc = NULL;
+    break;
+  default:
+    Blt_Panic("bogus object type");
+    tagProc = NULL;
+    break;
+  }
+  assert(graphObjPtr->name != NULL);
+
+  /* Always add the name of the object to the tag array. */
+  Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->name), 0);
+  Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->className), 0);
+  if (graphObjPtr->tags != NULL) {
+    const char **p;
+
+    for (p = graphObjPtr->tags; *p != NULL; p++) {
+      Blt_List_Append(list, (*tagProc) (graphPtr, *p), 0);
     }
-    assert(graphObjPtr->name != NULL);
-
-    /* Always add the name of the object to the tag array. */
-    Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->name), 0);
-    Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->className), 0);
-    if (graphObjPtr->tags != NULL) {
-	const char **p;
-
-	for (p = graphObjPtr->tags; *p != NULL; p++) {
-	    Blt_List_Append(list, (*tagProc) (graphPtr, *p), 0);
-	}
-    }
+  }
 }
 
 /*
@@ -556,192 +587,174 @@ Blt_GraphTags(
  *	two different elements overlay each other exactly, the one that's on
  *	top (visible) is picked.
  */
-/*ARGSUSED*/
-static ClientData
-PickEntry(ClientData clientData, int x, int y, ClientData *contextPtr)
+
+static ClientData PickEntry(ClientData clientData, int x, int y, 
+			    ClientData *contextPtr)
 {
-    Graph *graphPtr = clientData;
-    Blt_ChainLink link;
-    Element *elemPtr;
-    Marker *markerPtr;
-    Region2d exts;
+  Graph *graphPtr = clientData;
+  Blt_ChainLink link;
+  Element *elemPtr;
+  Marker *markerPtr;
+  Region2d exts;
 
-    if (graphPtr->flags & MAP_ALL) {
-	return NULL;			/* Don't pick anything until the next
+  if (graphPtr->flags & MAP_ALL) {
+    return NULL;			/* Don't pick anything until the next
 					 * redraw occurs. */
-    }
-    Blt_GraphExtents(graphPtr, &exts);
+  }
+  Blt_GraphExtents(graphPtr, &exts);
 
-    if ((x >= exts.right) || (x < exts.left) || 
-	(y >= exts.bottom) || (y < exts.top)) {
-	/* 
-	 * Sample coordinate is in one of the graph margins.  Can only pick an
-	 * axis.
-	 */
-	return Blt_NearestAxis(graphPtr, x, y);
-    }
+  if ((x >= exts.right) || (x < exts.left) || 
+      (y >= exts.bottom) || (y < exts.top)) {
     /* 
-     * From top-to-bottom check:
-     *	1. markers drawn on top (-under false).
-     *	2. elements using its display list back to front.
-     *  3. markers drawn under element (-under true).
+     * Sample coordinate is in one of the graph margins.  Can only pick an
+     * axis.
      */
-    markerPtr = Blt_NearestMarker(graphPtr, x, y, FALSE);
-    if (markerPtr != NULL) {
-	return markerPtr;		/* Found a marker (-under false). */
-    }
-    {
-	ClosestSearch search;
+    return Blt_NearestAxis(graphPtr, x, y);
+  }
+  /* 
+   * From top-to-bottom check:
+   *	1. markers drawn on top (-under false).
+   *	2. elements using its display list back to front.
+   *  3. markers drawn under element (-under true).
+   */
+  markerPtr = Blt_NearestMarker(graphPtr, x, y, FALSE);
+  if (markerPtr != NULL) {
+    return markerPtr;		/* Found a marker (-under false). */
+  }
+  {
+    ClosestSearch search;
 
-	search.along = SEARCH_BOTH;
-	search.halo = graphPtr->halo;
-	search.index = -1;
-	search.x = x;
-	search.y = y;
-	search.dist = (double)(search.halo + 1);
-	search.mode = SEARCH_AUTO;
+    search.along = SEARCH_BOTH;
+    search.halo = graphPtr->halo;
+    search.index = -1;
+    search.x = x;
+    search.y = y;
+    search.dist = (double)(search.halo + 1);
+    search.mode = SEARCH_AUTO;
 	
-	for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
-	     link != NULL; link = Blt_Chain_PrevLink(link)) {
-	    elemPtr = Blt_Chain_GetValue(link);
-	    if (elemPtr->flags & (HIDE|MAP_ITEM)) {
-		continue;
-	    }
-	    if (elemPtr->state == BLT_STATE_NORMAL) {
-		(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
-	    }
-	}
-	if (search.dist <= (double)search.halo) {
-	    return search.elemPtr;	/* Found an element within the minimum
-					 * halo distance. */
-	}
+    for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
+	 link != NULL; link = Blt_Chain_PrevLink(link)) {
+      elemPtr = Blt_Chain_GetValue(link);
+      if (elemPtr->flags & (HIDE|MAP_ITEM)) {
+	continue;
+      }
+      if (elemPtr->state == BLT_STATE_NORMAL) {
+	(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
+      }
     }
-    markerPtr = Blt_NearestMarker(graphPtr, x, y, TRUE);
-    if (markerPtr != NULL) {
-	return markerPtr;		/* Found a marker (-under true) */
+    if (search.dist <= (double)search.halo) {
+      return search.elemPtr;	/* Found an element within the minimum
+				 * halo distance. */
     }
-    return NULL;			/* Nothing found. */
+  }
+  markerPtr = Blt_NearestMarker(graphPtr, x, y, TRUE);
+  if (markerPtr != NULL) {
+    return markerPtr;		/* Found a marker (-under true) */
+  }
+  return NULL;			/* Nothing found. */
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ConfigureGraph --
- *
- *	Allocates resources for the graph.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Configuration information, such as text string, colors, font, etc. get
- *	set for graphPtr; old resources get freed, if there were any.  The
- *	graph is redisplayed.
- *
- *---------------------------------------------------------------------------
- */
-static void
-ConfigureGraph(Graph *graphPtr)	
+static void ConfigureGraph(Graph *graphPtr)	
 {
-    XColor *colorPtr;
-    GC newGC;
-    XGCValues gcValues;
-    unsigned long gcMask;
+  XColor *colorPtr;
+  GC newGC;
+  XGCValues gcValues;
+  unsigned long gcMask;
 
-    /* Don't allow negative bar widths. Reset to an arbitrary value (0.1) */
-    if (graphPtr->barWidth <= 0.0f) {
-	graphPtr->barWidth = 0.8f;
-    }
-    graphPtr->inset = graphPtr->borderWidth + graphPtr->highlightWidth;
-    if ((graphPtr->reqHeight != Tk_ReqHeight(graphPtr->tkwin)) ||
-	(graphPtr->reqWidth != Tk_ReqWidth(graphPtr->tkwin))) {
-	Tk_GeometryRequest(graphPtr->tkwin, graphPtr->reqWidth,
-	    graphPtr->reqHeight);
-    }
-    Tk_SetInternalBorder(graphPtr->tkwin, graphPtr->borderWidth);
-    colorPtr = Blt_BackgroundBorderColor(graphPtr->normalBg);
+  /* Don't allow negative bar widths. Reset to an arbitrary value (0.1) */
+  if (graphPtr->barWidth <= 0.0f) {
+    graphPtr->barWidth = 0.8f;
+  }
+  graphPtr->inset = graphPtr->borderWidth + graphPtr->highlightWidth;
+  if ((graphPtr->reqHeight != Tk_ReqHeight(graphPtr->tkwin)) ||
+      (graphPtr->reqWidth != Tk_ReqWidth(graphPtr->tkwin))) {
+    Tk_GeometryRequest(graphPtr->tkwin, graphPtr->reqWidth,
+		       graphPtr->reqHeight);
+  }
+  Tk_SetInternalBorder(graphPtr->tkwin, graphPtr->borderWidth);
+  colorPtr = Blt_BackgroundBorderColor(graphPtr->normalBg);
 
-    graphPtr->titleWidth = graphPtr->titleHeight = 0;
-    if (graphPtr->title != NULL) {
-	unsigned int w, h;
+  graphPtr->titleWidth = graphPtr->titleHeight = 0;
+  if (graphPtr->title != NULL) {
+    unsigned int w, h;
 
-	Blt_Ts_GetExtents(&graphPtr->titleTextStyle, graphPtr->title, &w, &h);
-	graphPtr->titleHeight = h;
-    }
+    Blt_Ts_GetExtents(&graphPtr->titleTextStyle, graphPtr->title, &w, &h);
+    graphPtr->titleHeight = h;
+  }
 
-    /*
-     * Create GCs for interior and exterior regions, and a background GC for
-     * clearing the margins with XFillRectangle
-     */
+  /*
+   * Create GCs for interior and exterior regions, and a background GC for
+   * clearing the margins with XFillRectangle
+   */
 
-    /* Margin GC */
+  /* Margin GC */
 
-    gcValues.foreground = 
-	Blt_Ts_GetForeground(graphPtr->titleTextStyle)->pixel;
-    gcValues.background = colorPtr->pixel;
-    gcMask = (GCForeground | GCBackground);
-    newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (graphPtr->drawGC != NULL) {
-	Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
-    }
-    graphPtr->drawGC = newGC;
+  gcValues.foreground = 
+    Blt_Ts_GetForeground(graphPtr->titleTextStyle)->pixel;
+  gcValues.background = colorPtr->pixel;
+  gcMask = (GCForeground | GCBackground);
+  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (graphPtr->drawGC != NULL) {
+    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
+  }
+  graphPtr->drawGC = newGC;
 
-    if (graphPtr->plotBg != NULL) {
-	Blt_SetBackgroundChangedProc(graphPtr->plotBg, Blt_UpdateGraph, 
-		graphPtr);
-    }
-    if (graphPtr->normalBg != NULL) {
-	Blt_SetBackgroundChangedProc(graphPtr->normalBg, Blt_UpdateGraph, 
-		graphPtr);
-    }
-    if (Blt_ConfigModified(configSpecs, "-invertxy", (char *)NULL)) {
-
-	/*
-	 * If the -inverted option changed, we need to readjust the pointers
-	 * to the axes and recompute the their scales.
-	 */
-
-	AdjustAxisPointers(graphPtr);
-	graphPtr->flags |= RESET_AXES;
-    }
-    if ((!graphPtr->backingStore) && (graphPtr->cache != None)) {
-	/*
-	 * Free the pixmap if we're not buffering the display of elements
-	 * anymore.
-	 */
-	Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-	graphPtr->cache = None;
-    }
-    /*
-     * Reconfigure the crosshairs, just in case the background color of the
-     * plotarea has been changed.
-     */
-    Blt_ConfigureCrosshairs(graphPtr);
+  if (graphPtr->plotBg != NULL) {
+    Blt_SetBackgroundChangedProc(graphPtr->plotBg, Blt_UpdateGraph, 
+				 graphPtr);
+  }
+  if (graphPtr->normalBg != NULL) {
+    Blt_SetBackgroundChangedProc(graphPtr->normalBg, Blt_UpdateGraph, 
+				 graphPtr);
+  }
+  if (Blt_ConfigModified(configSpecs, "-invertxy", (char *)NULL)) {
 
     /*
-     *  Update the layout of the graph (and redraw the elements) if any of the
-     *  following graph options which affect the size of * the plotting area
-     *  has changed.
-     *
-     *	    -aspect
-     *      -borderwidth, -plotborderwidth
-     *	    -font, -title
-     *	    -width, -height
-     *	    -invertxy
-     *	    -bottommargin, -leftmargin, -rightmargin, -topmargin,
-     *	    -barmode, -barwidth
+     * If the -inverted option changed, we need to readjust the pointers
+     * to the axes and recompute the their scales.
      */
-    if (Blt_ConfigModified(configSpecs, "-invertxy", "-title", "-font",
-		"-*margin", "-*width", "-height", "-barmode", "-*pad*", 
-		"-aspect", "-*borderwidth", "-plot*", "-*width", "-*height",
-		"-unmaphiddenelements", (char *)NULL)) {
-	graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
-    }
-    if (Blt_ConfigModified(configSpecs, "-plot*", "-*background",
-			   (char *)NULL)) {
-	graphPtr->flags |= CACHE_DIRTY;
-    }
-    graphPtr->flags |= REDRAW_WORLD;
+
+    AdjustAxisPointers(graphPtr);
+    graphPtr->flags |= RESET_AXES;
+  }
+  if ((!graphPtr->backingStore) && (graphPtr->cache != None)) {
+    /*
+     * Free the pixmap if we're not buffering the display of elements
+     * anymore.
+     */
+    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
+    graphPtr->cache = None;
+  }
+  /*
+   * Reconfigure the crosshairs, just in case the background color of the
+   * plotarea has been changed.
+   */
+  Blt_ConfigureCrosshairs(graphPtr);
+
+  /*
+   *  Update the layout of the graph (and redraw the elements) if any of the
+   *  following graph options which affect the size of * the plotting area
+   *  has changed.
+   *
+   *	    -aspect
+   *      -borderwidth, -plotborderwidth
+   *	    -font, -title
+   *	    -width, -height
+   *	    -invertxy
+   *	    -bottommargin, -leftmargin, -rightmargin, -topmargin,
+   *	    -barmode, -barwidth
+   */
+  if (Blt_ConfigModified(configSpecs, "-invertxy", "-title", "-font",
+			 "-*margin", "-*width", "-height", "-barmode", "-*pad*", 
+			 "-aspect", "-*borderwidth", "-plot*", "-*width", "-*height",
+			 "-unmaphiddenelements", (char *)NULL)) {
+    graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
+  }
+  if (Blt_ConfigModified(configSpecs, "-plot*", "-*background",
+			 (char *)NULL)) {
+    graphPtr->flags |= CACHE_DIRTY;
+  }
+  graphPtr->flags |= REDRAW_WORLD;
 }
 
 /*
@@ -753,255 +766,237 @@ ConfigureGraph(Graph *graphPtr)
  *	clean up the internal structure of a graph at a safe time (when no-one
  *	is using it anymore).
  *
- * Results:
- *	None.
- *
- * Side effects:
- *	Everything associated with the widget is freed up.
- *
  *---------------------------------------------------------------------------
  */
 static void DestroyGraph(char* dataPtr)
 {
-    Graph *graphPtr = (Graph *)dataPtr;
+  Graph *graphPtr = (Graph *)dataPtr;
+  if (graphPtr->tkwin)
+    printf("DestroyGraph: %s\n", Tk_PathName(graphPtr->tkwin)); 
+  else
+    printf("DestroyGraph: none\n"); 
 
-    Blt_FreeOptions(configSpecs, (char *)graphPtr, graphPtr->display, 0);
-    /*
-     * Destroy the individual components of the graph: elements, markers,
-     * axes, legend, display lists etc.  Be careful to remove them in
-     * order. For example, axes are used by elements and markers, so they have
-     * to be removed after the markers and elements. Same it true with the
-     * legend and pens (they use elements), so can't be removed until the
-     * elements are destroyed.
-     */
-    Blt_DestroyMarkers(graphPtr);
-    Blt_DestroyElements(graphPtr);
-    Blt_DestroyLegend(graphPtr);
-    Blt_DestroyAxes(graphPtr);
-    Blt_DestroyPens(graphPtr);
-    Blt_DestroyCrosshairs(graphPtr);
-    Blt_DestroyPageSetup(graphPtr);
-    Blt_DestroyBarSets(graphPtr);
-    if (graphPtr->bindTable != NULL) {
-	Blt_DestroyBindingTable(graphPtr->bindTable);
-    }
+  Blt_FreeOptions(configSpecs, (char *)graphPtr, graphPtr->display, 0);
+  /*
+   * Destroy the individual components of the graph: elements, markers,
+   * axes, legend, display lists etc.  Be careful to remove them in
+   * order. For example, axes are used by elements and markers, so they have
+   * to be removed after the markers and elements. Same it true with the
+   * legend and pens (they use elements), so can't be removed until the
+   * elements are destroyed.
+   */
+  Blt_DestroyMarkers(graphPtr);
+  Blt_DestroyElements(graphPtr);
+  Blt_DestroyLegend(graphPtr);
+  Blt_DestroyAxes(graphPtr);
+  Blt_DestroyPens(graphPtr);
+  Blt_DestroyCrosshairs(graphPtr);
+  Blt_DestroyPageSetup(graphPtr);
+  Blt_DestroyBarSets(graphPtr);
+  if (graphPtr->bindTable != NULL) {
+    Blt_DestroyBindingTable(graphPtr->bindTable);
+  }
 
-    /* Release allocated X resources and memory. */
-    if (graphPtr->drawGC != NULL) {
-	Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
-    }
-    Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);
-    if (graphPtr->cache != None) {
-	Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-    }
-    free(graphPtr);
+  /* Release allocated X resources and memory. */
+  if (graphPtr->drawGC != NULL) {
+    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
+  }
+  Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);
+  if (graphPtr->cache != None) {
+    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
+  }
+  free(graphPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * CreateGraph --
- *
- *	This procedure creates and initializes a new widget.
- *
- * Results:
- *	The return value is a pointer to a structure describing the new
- *	widget.  If an error occurred, then the return value is NULL and an
- *	error message is left in interp->result.
- *
- * Side effects:
- *	Memory is allocated, a Tk_Window is created, etc.
- *
- *---------------------------------------------------------------------------
- */
-
-static Graph *
-CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
+static Graph* CreateGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv,
+			  ClassId classId)
 {
-    Graph *graphPtr;
-    Tk_Window tkwin;
+  printf("CreateGraph: %s\n",Tcl_GetString(objv[1]));
+  Graph *graphPtr;
+  Tk_Window tkwin;
 
-    tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
-	Tcl_GetString(objv[1]), (char *)NULL);
-    if (tkwin == NULL) {
-	return NULL;
-    }
-    graphPtr = calloc(1, sizeof(Graph));
+  tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
+				  Tcl_GetString(objv[1]), (char *)NULL);
+  if (tkwin == NULL) {
+    return NULL;
+  }
+  graphPtr = calloc(1, sizeof(Graph));
 
-    /* Initialize the graph data structure. */
+  /* Initialize the graph data structure. */
 
-    graphPtr->tkwin = tkwin;
-    graphPtr->display = Tk_Display(tkwin);
-    graphPtr->interp = interp;
-    graphPtr->classId = classId;
-    graphPtr->backingStore = TRUE;
-    graphPtr->doubleBuffer = TRUE;
-    graphPtr->borderWidth = 2;
-    graphPtr->plotBW = 1;
-    graphPtr->highlightWidth = 2;
-    graphPtr->plotRelief = TK_RELIEF_SOLID;
-    graphPtr->relief = TK_RELIEF_FLAT;
-    graphPtr->flags = RESET_WORLD;
-    graphPtr->nextMarkerId = 1;
-    graphPtr->xPad = 0;
-    graphPtr->yPad = 0;
-    graphPtr->bottomMargin.site = MARGIN_BOTTOM;
-    graphPtr->leftMargin.site = MARGIN_LEFT;
-    graphPtr->topMargin.site = MARGIN_TOP;
-    graphPtr->rightMargin.site = MARGIN_RIGHT;
-    Blt_Ts_InitStyle(graphPtr->titleTextStyle);
-    Blt_Ts_SetAnchor(graphPtr->titleTextStyle, TK_ANCHOR_N);
+  graphPtr->tkwin = tkwin;
+  graphPtr->display = Tk_Display(tkwin);
+  graphPtr->interp = interp;
+  graphPtr->classId = classId;
+  graphPtr->backingStore = TRUE;
+  graphPtr->doubleBuffer = TRUE;
+  graphPtr->borderWidth = 2;
+  graphPtr->plotBW = 1;
+  graphPtr->highlightWidth = 2;
+  graphPtr->plotRelief = TK_RELIEF_SOLID;
+  graphPtr->relief = TK_RELIEF_FLAT;
+  graphPtr->flags = RESET_WORLD;
+  graphPtr->nextMarkerId = 1;
+  graphPtr->xPad = 0;
+  graphPtr->yPad = 0;
+  graphPtr->bottomMargin.site = MARGIN_BOTTOM;
+  graphPtr->leftMargin.site = MARGIN_LEFT;
+  graphPtr->topMargin.site = MARGIN_TOP;
+  graphPtr->rightMargin.site = MARGIN_RIGHT;
+  Blt_Ts_InitStyle(graphPtr->titleTextStyle);
+  Blt_Ts_SetAnchor(graphPtr->titleTextStyle, TK_ANCHOR_N);
 
-    Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->elements.table, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->elements.tagTable, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->markers.table, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->markers.tagTable, TCL_STRING_KEYS);
-    Tcl_InitHashTable(&graphPtr->dataTables, TCL_STRING_KEYS);
-    graphPtr->elements.displayList = Blt_Chain_Create();
-    graphPtr->markers.displayList = Blt_Chain_Create();
-    graphPtr->axes.displayList = Blt_Chain_Create();
+  Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->elements.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->elements.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->markers.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->markers.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->dataTables, TCL_STRING_KEYS);
+  graphPtr->elements.displayList = Blt_Chain_Create();
+  graphPtr->markers.displayList = Blt_Chain_Create();
+  graphPtr->axes.displayList = Blt_Chain_Create();
 
-    switch (classId) {
-    case CID_ELEM_LINE:
-	Tk_SetClass(tkwin, "Graph");
-	break;
-    case CID_ELEM_BAR:
-	Tk_SetClass(tkwin, "Barchart");
-	break;
-    default:
-	Tk_SetClass(tkwin, "???");
-	break;
-    }
-    Blt_SetWindowInstanceData(tkwin, graphPtr);
+  switch (classId) {
+  case CID_ELEM_LINE:
+    Tk_SetClass(tkwin, "Graph");
+    break;
+  case CID_ELEM_BAR:
+    Tk_SetClass(tkwin, "Barchart");
+    break;
+  default:
+    Tk_SetClass(tkwin, "???");
+    break;
+  }
+  Blt_SetWindowInstanceData(tkwin, graphPtr);
 
-    if (InitPens(graphPtr) != TCL_OK) {
-	goto error;
-    }
-    if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, 
-		objv + 2, (char *)graphPtr, 0) != TCL_OK) {
-	goto error;
-    }
-    if (Blt_DefaultAxes(graphPtr) != TCL_OK) {
-	goto error;
-    }
-    AdjustAxisPointers(graphPtr);
+  if (InitPens(graphPtr) != TCL_OK) {
+    goto error;
+  }
+  if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, 
+				 objv + 2, (char *)graphPtr, 0) != TCL_OK) {
+    goto error;
+  }
 
-    if (Blt_CreatePageSetup(graphPtr) != TCL_OK) {
-	goto error;
-    }
-    if (Blt_CreateCrosshairs(graphPtr) != TCL_OK) {
-	goto error;
-    }
-    if (Blt_CreateLegend(graphPtr) != TCL_OK) {
-	goto error;
-    }
-    Tk_CreateEventHandler(graphPtr->tkwin, 
-	ExposureMask | StructureNotifyMask | FocusChangeMask, GraphEventProc, 
-	graphPtr);
+  //  if (Tk_InitOptions(interp, graphPtr, graphPtr->optionsTable, tkwin))
+  //    goto error;
 
-    graphPtr->cmdToken = Tcl_CreateObjCommand(interp, Tcl_GetString(objv[1]), 
-	Blt_GraphInstCmdProc, graphPtr, GraphInstCmdDeleteProc);
-    ConfigureGraph(graphPtr);
-    graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
-	PickEntry, Blt_GraphTags);
+  if (Blt_DefaultAxes(graphPtr) != TCL_OK) {
+    goto error;
+  }
+  AdjustAxisPointers(graphPtr);
 
-    Tcl_SetObjResult(interp, objv[1]);
-    return graphPtr;
+  if (Blt_CreatePageSetup(graphPtr) != TCL_OK) {
+    goto error;
+  }
+  if (Blt_CreateCrosshairs(graphPtr) != TCL_OK) {
+    goto error;
+  }
+  if (Blt_CreateLegend(graphPtr) != TCL_OK) {
+    goto error;
+  }
+  Tk_CreateEventHandler(graphPtr->tkwin, 
+			ExposureMask | StructureNotifyMask | FocusChangeMask, GraphEventProc, 
+			graphPtr);
+
+  graphPtr->cmdToken = Tcl_CreateObjCommand(interp, Tcl_GetString(objv[1]), 
+					    Blt_GraphInstCmdProc, graphPtr, GraphInstCmdDeleteProc);
+  ConfigureGraph(graphPtr);
+  graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
+					       PickEntry, Blt_GraphTags);
+
+  Tcl_SetObjResult(interp, objv[1]);
+  return graphPtr;
 
  error:
-    DestroyGraph((char*)graphPtr);
-    return NULL;
+  DestroyGraph((char*)graphPtr);
+  return NULL;
 }
 
 /* Widget sub-commands */
 
-/*ARGSUSED*/
-static int
-XAxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int XAxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		   Tcl_Obj *const *objv)
 {
-    int margin;
+  int margin;
 
-    margin = (graphPtr->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
-    return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  margin = (graphPtr->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int
-X2AxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int X2AxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		    Tcl_Obj *const *objv)
 {
-    int margin;
+  int margin;
 
-    margin = (graphPtr->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
-    return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  margin = (graphPtr->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
+  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int
-YAxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int YAxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		   Tcl_Obj *const *objv)
 {
-    int margin;
+  int margin;
 
-    margin = (graphPtr->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
-    return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  margin = (graphPtr->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
+  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int
-Y2AxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int Y2AxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		    Tcl_Obj *const *objv)
 {
-    int margin;
+  int margin;
 
-    margin = (graphPtr->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
-    return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  margin = (graphPtr->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
+  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int
-BarOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int BarOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		 Tcl_Obj *const *objv)
 {
-    return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_BAR);
+  return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_BAR);
 }
 
-/*ARGSUSED*/
-static int
-LineOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int LineOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		  Tcl_Obj *const *objv)
 {
-    return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_LINE);
+  return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_LINE);
 }
 
-static int
-ElementOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int ElementOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		     Tcl_Obj *const *objv)
 {
-    return Blt_ElementOp(graphPtr, interp, objc, objv, graphPtr->classId);
+  return Blt_ElementOp(graphPtr, interp, objc, objv, graphPtr->classId);
 }
 
-static int
-ConfigureOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int ConfigureOp(Graph *graphPtr, Tcl_Interp *interp, int objc,
+		       Tcl_Obj *const *objv)
 {
-    int flags;
+  int flags;
 
-    flags = BLT_CONFIG_OBJV_ONLY;
-    if (objc == 2) {
-	return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
-	    (char *)graphPtr, (Tcl_Obj *)NULL, flags);
-    } else if (objc == 3) {
-	return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
-	    (char *)graphPtr, objv[2], flags);
-    } else {
-	if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, configSpecs, 
-		objc - 2, objv + 2, (char *)graphPtr, flags) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	ConfigureGraph(graphPtr);
-	Blt_EventuallyRedrawGraph(graphPtr);
-	return TCL_OK;
+  flags = BLT_CONFIG_OBJV_ONLY;
+  if (objc == 2) {
+    return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
+				    (char *)graphPtr, (Tcl_Obj *)NULL, flags);
+  } else if (objc == 3) {
+    return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
+				    (char *)graphPtr, objv[2], flags);
+  } else {
+    if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, configSpecs, 
+				   objc - 2, objv + 2, (char *)graphPtr, flags) != TCL_OK) {
+      return TCL_ERROR;
     }
+    ConfigureGraph(graphPtr);
+    Blt_EventuallyRedrawGraph(graphPtr);
+    return TCL_OK;
+  }
 }
 
-/* ARGSUSED*/
-static int
-CgetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int CgetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		  Tcl_Obj *const *objv)
 {
-    return Blt_ConfigureValueFromObj(interp, graphPtr->tkwin, configSpecs,
-	(char *)graphPtr, objv[2], 0);
+  return Blt_ConfigureValueFromObj(interp, graphPtr->tkwin, configSpecs,
+				   (char *)graphPtr, objv[2], 0);
 }
 
 /*
@@ -1026,228 +1021,161 @@ CgetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  *
  *---------------------------------------------------------------------------
  */
-/* ARGSUSED*/
-static int
-ExtentsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+
+static int ExtentsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		     Tcl_Obj *const *objv)
 {
-    const char *string;
-    char c;
-    int length;
+  const char *string;
+  char c;
+  int length;
 
-    string = Tcl_GetStringFromObj(objv[2], &length);
-    c = string[0];
-    if ((c == 'p') && (length > 4) && 
-	(strncmp("plotheight", string, length) == 0)) {
-	int height;
+  string = Tcl_GetStringFromObj(objv[2], &length);
+  c = string[0];
+  if ((c == 'p') && (length > 4) && 
+      (strncmp("plotheight", string, length) == 0)) {
+    int height;
 
-	height = graphPtr->bottom - graphPtr->top + 1;
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
-    } else if ((c == 'p') && (length > 4) &&
-	(strncmp("plotwidth", string, length) == 0)) {
-	int width;
+    height = graphPtr->bottom - graphPtr->top + 1;
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
+  } else if ((c == 'p') && (length > 4) &&
+	     (strncmp("plotwidth", string, length) == 0)) {
+    int width;
 
-	width = graphPtr->right - graphPtr->left + 1;
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
-    } else if ((c == 'p') && (length > 4) &&
-	(strncmp("plotarea", string, length) == 0)) {
-	Tcl_Obj *listObjPtr;
+    width = graphPtr->right - graphPtr->left + 1;
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
+  } else if ((c == 'p') && (length > 4) &&
+	     (strncmp("plotarea", string, length) == 0)) {
+    Tcl_Obj *listObjPtr;
 
-	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(graphPtr->left));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(graphPtr->top));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(graphPtr->right - graphPtr->left + 1));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(graphPtr->bottom - graphPtr->top + 1));
-	Tcl_SetObjResult(interp, listObjPtr);
-    } else if ((c == 'l') && (length > 2) &&
-	(strncmp("legend", string, length) == 0)) {
-	Tcl_Obj *listObjPtr;
+    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(graphPtr->left));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(graphPtr->top));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(graphPtr->right - graphPtr->left + 1));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(graphPtr->bottom - graphPtr->top + 1));
+    Tcl_SetObjResult(interp, listObjPtr);
+  } else if ((c == 'l') && (length > 2) &&
+	     (strncmp("legend", string, length) == 0)) {
+    Tcl_Obj *listObjPtr;
 
-	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(Blt_Legend_X(graphPtr)));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(Blt_Legend_Y(graphPtr)));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(Blt_Legend_Width(graphPtr)));
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-		Tcl_NewIntObj(Blt_Legend_Height(graphPtr)));
-	Tcl_SetObjResult(interp, listObjPtr);
-    } else if ((c == 'l') && (length > 2) &&
-	(strncmp("leftmargin", string, length) == 0)) {
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->leftMargin.width);
-    } else if ((c == 'r') && (length > 1) &&
-	(strncmp("rightmargin", string, length) == 0)) {
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->rightMargin.width);
-    } else if ((c == 't') && (length > 1) &&
-	(strncmp("topmargin", string, length) == 0)) {
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->topMargin.height);
-    } else if ((c == 'b') && (length > 1) &&
-	(strncmp("bottommargin", string, length) == 0)) {
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->bottomMargin.height);
-    } else {
-	Tcl_AppendResult(interp, "bad extent item \"", objv[2],
-	    "\": should be plotheight, plotwidth, leftmargin, rightmargin, \
+    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(Blt_Legend_X(graphPtr)));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(Blt_Legend_Y(graphPtr)));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(Blt_Legend_Width(graphPtr)));
+    Tcl_ListObjAppendElement(interp, listObjPtr, 
+			     Tcl_NewIntObj(Blt_Legend_Height(graphPtr)));
+    Tcl_SetObjResult(interp, listObjPtr);
+  } else if ((c == 'l') && (length > 2) &&
+	     (strncmp("leftmargin", string, length) == 0)) {
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->leftMargin.width);
+  } else if ((c == 'r') && (length > 1) &&
+	     (strncmp("rightmargin", string, length) == 0)) {
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->rightMargin.width);
+  } else if ((c == 't') && (length > 1) &&
+	     (strncmp("topmargin", string, length) == 0)) {
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->topMargin.height);
+  } else if ((c == 'b') && (length > 1) &&
+	     (strncmp("bottommargin", string, length) == 0)) {
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->bottomMargin.height);
+  } else {
+    Tcl_AppendResult(interp, "bad extent item \"", objv[2],
+		     "\": should be plotheight, plotwidth, leftmargin, rightmargin, \
 topmargin, bottommargin, plotarea, or legend", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * InsideOp --
- *
- *	Returns true of false whether the given point is inside the plotting
- *	area (defined by left,bottom right, top).
- *
- * Results:
- *	Always returns TCL_OK.  interp->result will contain the boolean string
- *	representation.
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED*/
-static int
-InsideOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int InsideOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		    Tcl_Obj *const *objv)
 {
-    int x, y;
-    Region2d exts;
-    int result;
+  int x, y;
+  Region2d exts;
+  int result;
 
-    if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if (Tcl_GetIntFromObj(interp, objv[3], &y) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    Blt_GraphExtents(graphPtr, &exts);
-    result = PointInRegion(&exts, x, y);
-    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), result);
-    return TCL_OK;
+  if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK) {
+    return TCL_ERROR;
+  }
+  if (Tcl_GetIntFromObj(interp, objv[3], &y) != TCL_OK) {
+    return TCL_ERROR;
+  }
+  Blt_GraphExtents(graphPtr, &exts);
+  result = PointInRegion(&exts, x, y);
+  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), result);
+  return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * InvtransformOp --
- *
- *	This procedure returns a list of the graph coordinate values
- *	corresponding with the given window X and Y coordinate positions.
- *
- * Results:
- *	Returns a standard TCL result.  If an error occurred while parsing the
- *	window positions, TCL_ERROR is returned, and interp->result will
- *	contain the error message.  Otherwise interp->result will contain a
- *	Tcl list of the x and y coordinates.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-InvtransformOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
-	       Tcl_Obj *const *objv)
+static int InvtransformOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+			  Tcl_Obj *const *objv)
 {
-    double x, y;
-    Point2d point;
-    Axis2d axes;
-    Tcl_Obj *listObjPtr;
+  double x, y;
+  Point2d point;
+  Axis2d axes;
+  Tcl_Obj *listObjPtr;
 
-    if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-	(Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
-	return TCL_ERROR;
-    }
-    if (graphPtr->flags & RESET_AXES) {
-	Blt_ResetAxes(graphPtr);
-    }
-    /* Perform the reverse transformation, converting from window coordinates
-     * to graph data coordinates.  Note that the point is always mapped to the
-     * bottom and left axes (which may not be what the user wants).  */
+  if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
+      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
+    return TCL_ERROR;
+  }
+  if (graphPtr->flags & RESET_AXES) {
+    Blt_ResetAxes(graphPtr);
+  }
+  /* Perform the reverse transformation, converting from window coordinates
+   * to graph data coordinates.  Note that the point is always mapped to the
+   * bottom and left axes (which may not be what the user wants).  */
 
-    /*  Pick the first pair of axes */
-    axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
-    axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
-    point = Blt_InvMap2D(graphPtr, x, y, &axes);
+  /*  Pick the first pair of axes */
+  axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
+  axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
+  point = Blt_InvMap2D(graphPtr, x, y, &axes);
 
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.x));
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.y));
-    Tcl_SetObjResult(interp, listObjPtr);
-    return TCL_OK;
+  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.x));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.y));
+  Tcl_SetObjResult(interp, listObjPtr);
+  return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * TransformOp --
- *
- *	This procedure returns a list of the window coordinates corresponding
- *	with the given graph x and y coordinates.
- *
- * Results:
- *	Returns a standard TCL result.  interp->result contains the list of
- *	the graph coordinates. If an error occurred while parsing the window
- *	positions, TCL_ERROR is returned, then interp->result will contain an
- *	error message.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-TransformOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+static int TransformOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+		       Tcl_Obj *const *objv)
 {
-    double x, y;
-    Point2d point;
-    Axis2d axes;
-    Tcl_Obj *listObjPtr;
+  double x, y;
+  Point2d point;
+  Axis2d axes;
+  Tcl_Obj *listObjPtr;
 
-    if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-	(Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
-	return TCL_ERROR;
-    }
-    if (graphPtr->flags & RESET_AXES) {
-	Blt_ResetAxes(graphPtr);
-    }
-    /*
-     * Perform the transformation from window to graph coordinates.  Note that
-     * the points are always mapped onto the bottom and left axes (which may
-     * not be the what the user wants).
-     */
-    axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
-    axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
+  if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
+      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
+    return TCL_ERROR;
+  }
+  if (graphPtr->flags & RESET_AXES) {
+    Blt_ResetAxes(graphPtr);
+  }
+  /*
+   * Perform the transformation from window to graph coordinates.  Note that
+   * the points are always mapped onto the bottom and left axes (which may
+   * not be the what the user wants).
+   */
+  axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
+  axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
 
-    point = Blt_Map2D(graphPtr, x, y, &axes);
+  point = Blt_Map2D(graphPtr, x, y, &axes);
 
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.x)));
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.y)));
-    Tcl_SetObjResult(interp, listObjPtr);
-    return TCL_OK;
+  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.x)));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.y)));
+  Tcl_SetObjResult(interp, listObjPtr);
+  return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GraphWidgetCmd --
- *
- *	This procedure is invoked to process the TCL command that
- *	corresponds to a widget managed by this module.  See the user
- *	documentation for details on what it does.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
 static Blt_OpSpec graphOps[] =
-{
+  {
     {"axis",         1, Blt_VirtualAxisOp, 2, 0, "oper ?args?",},
     {"bar",          2, BarOp,             2, 0, "oper ?args?",},
     {"cget",         2, CgetOp,            3, 3, "option",},
@@ -1267,108 +1195,55 @@ static Blt_OpSpec graphOps[] =
     {"xaxis",        2, XAxisOp,           2, 0, "oper ?args?",},
     {"y2axis",       2, Y2AxisOp,          2, 0, "oper ?args?",},
     {"yaxis",        2, YAxisOp,           2, 0, "oper ?args?",},
-};
+  };
 static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
 
-int
-Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp *interp, int objc,
+int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp *interp, int objc,
 		     Tcl_Obj *const *objv)
 {
-    GraphCmdProc *proc;
-    int result;
-    Graph *graphPtr = clientData;
+  GraphCmdProc *proc;
+  int result;
+  Graph *graphPtr = clientData;
 
-    proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, BLT_OP_ARG1, 
-	objc, objv, 0);
-    if (proc == NULL) {
-	return TCL_ERROR;
-    }
-    Tcl_Preserve(graphPtr);
-    result = (*proc) (graphPtr, interp, objc, objv);
-    Tcl_Release(graphPtr);
-    return result;
+  proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, BLT_OP_ARG1, 
+			  objc, objv, 0);
+  if (proc == NULL) {
+    return TCL_ERROR;
+  }
+  Tcl_Preserve(graphPtr);
+  result = (*proc) (graphPtr, interp, objc, objv);
+  Tcl_Release(graphPtr);
+  return result;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NewGraph --
- *
- *	Creates a new window and TCL command representing an instance of a
- *	graph widget.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-static int
-NewGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, ClassId classId)
+static int NewGraph(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv, 
+		    ClassId classId)
 {
-    Graph *graphPtr;
+  Graph *graphPtr;
 
-    if (objc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", 
-		Tcl_GetString(objv[0]), " pathName ?option value?...\"", 
-		(char *)NULL);
-	return TCL_ERROR;
-    }
-    graphPtr = CreateGraph(interp, objc, objv, classId);
-    if (graphPtr == NULL) {
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+  if (objc < 2) {
+    Tcl_AppendResult(interp, "wrong # args: should be \"", 
+		     Tcl_GetString(objv[0]), " pathName ?option value?...\"", 
+		     (char *)NULL);
+    return TCL_ERROR;
+  }
+  graphPtr = CreateGraph(interp, objc, objv, classId);
+  if (graphPtr == NULL) {
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GraphCmd --
- *
- *	Creates a new window and TCL command representing an instance of a
- *	graph widget.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-GraphCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
+static int GraphCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
 	 Tcl_Obj *const *objv)
 {
-    return NewGraph(interp, objc, objv, CID_ELEM_LINE);
+  return NewGraph(interp, objc, objv, CID_ELEM_LINE);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * BarchartCmd --
- *
- *	Creates a new window and TCL command representing an instance of a
- *	barchart widget.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-BarchartCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
+static int BarchartCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
 	    Tcl_Obj *const *objv)
 {
-    return NewGraph(interp, objc, objv, CID_ELEM_BAR);
+  return NewGraph(interp, objc, objv, CID_ELEM_BAR);
 }
 
 /*
@@ -1416,312 +1291,276 @@ BarchartCmd(ClientData clientData, Tcl_Interp *interp, int objc,
  *
  *---------------------------------------------------------------------------
  */
-static void
-DrawMargins(Graph *graphPtr, Drawable drawable)
+static void DrawMargins(Graph *graphPtr, Drawable drawable)
 {
-    XRectangle rects[4];
-    int site;
+  XRectangle rects[4];
+  int site;
 
-    /*
-     * Draw the four outer rectangles which encompass the plotting
-     * surface. This clears the surrounding area and clips the plot.
-     */
-    rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-    rects[0].width = rects[3].width = (short int)graphPtr->width;
-    rects[0].height = (short int)graphPtr->top;
-    rects[3].y = graphPtr->bottom;
-    rects[3].height = graphPtr->height - graphPtr->bottom;
-    rects[2].y = rects[1].y = graphPtr->top;
-    rects[1].width = graphPtr->left;
-    rects[2].height = rects[1].height = graphPtr->bottom - graphPtr->top;
-    rects[2].x = graphPtr->right;
-    rects[2].width = graphPtr->width - graphPtr->right;
+  /*
+   * Draw the four outer rectangles which encompass the plotting
+   * surface. This clears the surrounding area and clips the plot.
+   */
+  rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
+  rects[0].width = rects[3].width = (short int)graphPtr->width;
+  rects[0].height = (short int)graphPtr->top;
+  rects[3].y = graphPtr->bottom;
+  rects[3].height = graphPtr->height - graphPtr->bottom;
+  rects[2].y = rects[1].y = graphPtr->top;
+  rects[1].width = graphPtr->left;
+  rects[2].height = rects[1].height = graphPtr->bottom - graphPtr->top;
+  rects[2].x = graphPtr->right;
+  rects[2].width = graphPtr->width - graphPtr->right;
 
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-	rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
-	0, TK_RELIEF_FLAT);
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-	rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
-	0, TK_RELIEF_FLAT);
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-	rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
-	0, TK_RELIEF_FLAT);
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-	rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
-	0, TK_RELIEF_FLAT);
+  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+			      rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
+			      0, TK_RELIEF_FLAT);
+  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+			      rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
+			      0, TK_RELIEF_FLAT);
+  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+			      rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
+			      0, TK_RELIEF_FLAT);
+  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+			      rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
+			      0, TK_RELIEF_FLAT);
 
-    /* Draw 3D border around the plotting area */
+  /* Draw 3D border around the plotting area */
 
-    if (graphPtr->plotBW > 0) {
-	int x, y, w, h;
+  if (graphPtr->plotBW > 0) {
+    int x, y, w, h;
 
-	x = graphPtr->left - graphPtr->plotBW;
-	y = graphPtr->top - graphPtr->plotBW;
-	w = (graphPtr->right - graphPtr->left) + (2*graphPtr->plotBW);
-	h = (graphPtr->bottom - graphPtr->top) + (2*graphPtr->plotBW);
-	Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-		graphPtr->normalBg, x, y, w, h, graphPtr->plotBW, 
-		graphPtr->plotRelief);
-    }
-    site = Blt_Legend_Site(graphPtr);
-    if (site & LEGEND_MARGIN_MASK) {
-	/* Legend is drawn on one of the graph margins */
-	Blt_DrawLegend(graphPtr, drawable);
-    } else if (site == LEGEND_WINDOW) {
-	Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-    if (graphPtr->title != NULL) {
-	Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
-	    &graphPtr->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
-    }
-    Blt_DrawAxes(graphPtr, drawable);
-    graphPtr->flags &= ~DRAW_MARGINS;
+    x = graphPtr->left - graphPtr->plotBW;
+    y = graphPtr->top - graphPtr->plotBW;
+    w = (graphPtr->right - graphPtr->left) + (2*graphPtr->plotBW);
+    h = (graphPtr->bottom - graphPtr->top) + (2*graphPtr->plotBW);
+    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
+				graphPtr->normalBg, x, y, w, h, graphPtr->plotBW, 
+				graphPtr->plotRelief);
+  }
+  site = Blt_Legend_Site(graphPtr);
+  if (site & LEGEND_MARGIN_MASK) {
+    /* Legend is drawn on one of the graph margins */
+    Blt_DrawLegend(graphPtr, drawable);
+  } else if (site == LEGEND_WINDOW) {
+    Blt_Legend_EventuallyRedraw(graphPtr);
+  }
+  if (graphPtr->title != NULL) {
+    Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
+		 &graphPtr->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
+  }
+  Blt_DrawAxes(graphPtr, drawable);
+  graphPtr->flags &= ~DRAW_MARGINS;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawPlot --
- *
- *	Draws the contents of the plotting area.  This consists of the
- *	elements, markers (draw under elements), axis limits, and possibly the
- *	legend.  Typically, the output will be cached into a backing store
- *	pixmap, so that redraws can occur quickly.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DrawPlot(Graph *graphPtr, Drawable drawable)
+static void DrawPlot(Graph *graphPtr, Drawable drawable)
 {
-    int site;
+  int site;
 
-    DrawMargins(graphPtr, drawable);
+  DrawMargins(graphPtr, drawable);
 
-    /* Draw the background of the plotting area with 3D border. */
-    Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
-	graphPtr->left   - graphPtr->plotBW, 
-	graphPtr->top    - graphPtr->plotBW, 
-	graphPtr->right  - graphPtr->left + 1 + 2 * graphPtr->plotBW,
-	graphPtr->bottom - graphPtr->top  + 1 + 2 * graphPtr->plotBW, 
-	graphPtr->plotBW, graphPtr->plotRelief);
+  /* Draw the background of the plotting area with 3D border. */
+  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
+			      graphPtr->left   - graphPtr->plotBW, 
+			      graphPtr->top    - graphPtr->plotBW, 
+			      graphPtr->right  - graphPtr->left + 1 + 2 * graphPtr->plotBW,
+			      graphPtr->bottom - graphPtr->top  + 1 + 2 * graphPtr->plotBW, 
+			      graphPtr->plotBW, graphPtr->plotRelief);
 
-    /* Draw the elements, markers, legend, and axis limits. */
-    Blt_DrawAxes(graphPtr, drawable);
-    Blt_DrawGrids(graphPtr, drawable);
-    Blt_DrawMarkers(graphPtr, drawable, MARKER_UNDER);
+  /* Draw the elements, markers, legend, and axis limits. */
+  Blt_DrawAxes(graphPtr, drawable);
+  Blt_DrawGrids(graphPtr, drawable);
+  Blt_DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
-    site = Blt_Legend_Site(graphPtr);
-    if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr))) {
-	Blt_DrawLegend(graphPtr, drawable);
-    } else if (site == LEGEND_WINDOW) {
-	Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-    Blt_DrawAxisLimits(graphPtr, drawable);
-    Blt_DrawElements(graphPtr, drawable);
-    /* Blt_DrawAxes(graphPtr, drawable); */
+  site = Blt_Legend_Site(graphPtr);
+  if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr))) {
+    Blt_DrawLegend(graphPtr, drawable);
+  } else if (site == LEGEND_WINDOW) {
+    Blt_Legend_EventuallyRedraw(graphPtr);
+  }
+  Blt_DrawAxisLimits(graphPtr, drawable);
+  Blt_DrawElements(graphPtr, drawable);
+  /* Blt_DrawAxes(graphPtr, drawable); */
 }
 
-void
-Blt_MapGraph(Graph *graphPtr)
+void Blt_MapGraph(Graph *graphPtr)
 {
-    if (graphPtr->flags & RESET_AXES) {
-	Blt_ResetAxes(graphPtr);
+  if (graphPtr->flags & RESET_AXES) {
+    Blt_ResetAxes(graphPtr);
+  }
+  if (graphPtr->flags & LAYOUT_NEEDED) {
+    Blt_LayoutGraph(graphPtr);
+    graphPtr->flags &= ~LAYOUT_NEEDED;
+  }
+  /* Compute coordinate transformations for graph components */
+  if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
+    if (graphPtr->flags & MAP_WORLD) {
+      Blt_MapAxes(graphPtr);
     }
-    if (graphPtr->flags & LAYOUT_NEEDED) {
-	Blt_LayoutGraph(graphPtr);
-	graphPtr->flags &= ~LAYOUT_NEEDED;
-    }
-    /* Compute coordinate transformations for graph components */
-    if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
-	if (graphPtr->flags & MAP_WORLD) {
-	    Blt_MapAxes(graphPtr);
-	}
-	Blt_MapElements(graphPtr);
-	Blt_MapMarkers(graphPtr);
-	graphPtr->flags &= ~(MAP_ALL);
-    }
+    Blt_MapElements(graphPtr);
+    Blt_MapMarkers(graphPtr);
+    graphPtr->flags &= ~(MAP_ALL);
+  }
 }
 
-void
-Blt_DrawGraph(Graph *graphPtr, Drawable drawable)
+void Blt_DrawGraph(Graph *graphPtr, Drawable drawable)
 {
-    DrawPlot(graphPtr, drawable);
-    /* Draw markers above elements */
-    Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
-    Blt_DrawActiveElements(graphPtr, drawable);
+  DrawPlot(graphPtr, drawable);
+  /* Draw markers above elements */
+  Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
+  Blt_DrawActiveElements(graphPtr, drawable);
 
-    /* Don't draw legend in the plot area. */
-    if ((Blt_Legend_Site(graphPtr) & LEGEND_PLOTAREA_MASK) && 
-	(Blt_Legend_IsRaised(graphPtr))) {
-	Blt_DrawLegend(graphPtr, drawable);
-    }
-    /* Draw 3D border just inside of the focus highlight ring. */
-    if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-	Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-		graphPtr->normalBg, graphPtr->highlightWidth, 
-		graphPtr->highlightWidth, 
-	 	graphPtr->width  - 2 * graphPtr->highlightWidth, 
-		graphPtr->height - 2 * graphPtr->highlightWidth, 
-		graphPtr->borderWidth, graphPtr->relief);
-    }
-    /* Draw focus highlight ring. */
-    if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
-	GC gc;
+  /* Don't draw legend in the plot area. */
+  if ((Blt_Legend_Site(graphPtr) & LEGEND_PLOTAREA_MASK) && 
+      (Blt_Legend_IsRaised(graphPtr))) {
+    Blt_DrawLegend(graphPtr, drawable);
+  }
+  /* Draw 3D border just inside of the focus highlight ring. */
+  if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
+    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
+				graphPtr->normalBg, graphPtr->highlightWidth, 
+				graphPtr->highlightWidth, 
+				graphPtr->width  - 2 * graphPtr->highlightWidth, 
+				graphPtr->height - 2 * graphPtr->highlightWidth, 
+				graphPtr->borderWidth, graphPtr->relief);
+  }
+  /* Draw focus highlight ring. */
+  if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
+    GC gc;
 
-	gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
-	Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
-	    drawable);
-    }
+    gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
+    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
+			  drawable);
+  }
 }
 
-static void
-UpdateMarginTraces(Graph *graphPtr)
+static void UpdateMarginTraces(Graph *graphPtr)
 {
-    Margin *marginPtr, *endPtr;
+  Margin *marginPtr, *endPtr;
 
-    for (marginPtr = graphPtr->margins, endPtr = marginPtr + 4; 
-	 marginPtr < endPtr; marginPtr++) {
-	if (marginPtr->varName != NULL) { /* Trigger variable traces */
-	    int size;
+  for (marginPtr = graphPtr->margins, endPtr = marginPtr + 4; 
+       marginPtr < endPtr; marginPtr++) {
+    if (marginPtr->varName != NULL) { /* Trigger variable traces */
+      int size;
 
-	    if ((marginPtr->site == MARGIN_LEFT) || 
-		(marginPtr->site == MARGIN_RIGHT)) {
-		size = marginPtr->width;
-	    } else {
-		size = marginPtr->height;
-	    }
-	    Tcl_SetVar(graphPtr->interp, marginPtr->varName, Blt_Itoa(size), 
-		TCL_GLOBAL_ONLY);
-	}
+      if ((marginPtr->site == MARGIN_LEFT) || 
+	  (marginPtr->site == MARGIN_RIGHT)) {
+	size = marginPtr->width;
+      } else {
+	size = marginPtr->height;
+      }
+      Tcl_SetVar(graphPtr->interp, marginPtr->varName, Blt_Itoa(size), 
+		 TCL_GLOBAL_ONLY);
     }
+  }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DisplayGraph --
- *
- *	This procedure is invoked to display a graph widget.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Commands are output to X to display the graph in its current mode.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DisplayGraph(ClientData clientData)
+static void DisplayGraph(ClientData clientData)
 {
-    Graph *graphPtr = clientData;
-    Pixmap drawable;
-    Tk_Window tkwin;
-    int site;
+  Graph *graphPtr = clientData;
+  Pixmap drawable;
+  Tk_Window tkwin;
+  int site;
 
-    graphPtr->flags &= ~REDRAW_PENDING;
-    if (graphPtr->tkwin == NULL) {
-	return;				/* Window has been destroyed (we
+  graphPtr->flags &= ~REDRAW_PENDING;
+  if (graphPtr->tkwin == NULL) {
+    return;				/* Window has been destroyed (we
 					 * should not get here) */
-    }
-    tkwin = graphPtr->tkwin;
-    if ((Tk_Width(tkwin) <= 1) || (Tk_Height(tkwin) <= 1)) {
-	/* Don't bother computing the layout until the size of the window is
-	 * something reasonable. */
-	return;
-    }
-    graphPtr->width = Tk_Width(tkwin);
-    graphPtr->height = Tk_Height(tkwin);
-    Blt_MapGraph(graphPtr);
-    if (!Tk_IsMapped(tkwin)) {
-	/* The graph's window isn't displayed, so don't bother drawing
-	 * anything.  By getting this far, we've at least computed the
-	 * coordinates of the graph's new layout.  */
-	return;
-    }
-    /* Create a pixmap the size of the window for double buffering. */
-    if (graphPtr->doubleBuffer) {
-	drawable = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), 
-		graphPtr->width, graphPtr->height, Tk_Depth(tkwin));
-    } else {
-	drawable = Tk_WindowId(tkwin);
-    }
-    if (graphPtr->backingStore) {
-	if ((graphPtr->cache == None) || 
-	    (graphPtr->cacheWidth != graphPtr->width) ||
-	    (graphPtr->cacheHeight != graphPtr->height)) {
-	    if (graphPtr->cache != None) {
-		Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-	    }
+  }
+  tkwin = graphPtr->tkwin;
+  if ((Tk_Width(tkwin) <= 1) || (Tk_Height(tkwin) <= 1)) {
+    /* Don't bother computing the layout until the size of the window is
+     * something reasonable. */
+    return;
+  }
+  graphPtr->width = Tk_Width(tkwin);
+  graphPtr->height = Tk_Height(tkwin);
+  Blt_MapGraph(graphPtr);
+  if (!Tk_IsMapped(tkwin)) {
+    /* The graph's window isn't displayed, so don't bother drawing
+     * anything.  By getting this far, we've at least computed the
+     * coordinates of the graph's new layout.  */
+    return;
+  }
+  /* Create a pixmap the size of the window for double buffering. */
+  if (graphPtr->doubleBuffer) {
+    drawable = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), 
+			    graphPtr->width, graphPtr->height, Tk_Depth(tkwin));
+  } else {
+    drawable = Tk_WindowId(tkwin);
+  }
+  if (graphPtr->backingStore) {
+    if ((graphPtr->cache == None) || 
+	(graphPtr->cacheWidth != graphPtr->width) ||
+	(graphPtr->cacheHeight != graphPtr->height)) {
+      if (graphPtr->cache != None) {
+	Tk_FreePixmap(graphPtr->display, graphPtr->cache);
+      }
 
 
-	    graphPtr->cache = Tk_GetPixmap(graphPtr->display, 
-		Tk_WindowId(tkwin), graphPtr->width, graphPtr->height, 
-		Tk_Depth(tkwin));
-	    graphPtr->cacheWidth  = graphPtr->width;
-	    graphPtr->cacheHeight = graphPtr->height;
-	    graphPtr->flags |= CACHE_DIRTY;
-	}
+      graphPtr->cache = Tk_GetPixmap(graphPtr->display, 
+				     Tk_WindowId(tkwin), graphPtr->width, graphPtr->height, 
+				     Tk_Depth(tkwin));
+      graphPtr->cacheWidth  = graphPtr->width;
+      graphPtr->cacheHeight = graphPtr->height;
+      graphPtr->flags |= CACHE_DIRTY;
     }
-    if (graphPtr->backingStore) {
-	if (graphPtr->flags & CACHE_DIRTY) {
-	    /* The backing store is new or out-of-date. */
-	    DrawPlot(graphPtr, graphPtr->cache);
-	    graphPtr->flags &= ~CACHE_DIRTY;
-	}
-	/* Copy the pixmap to the one used for drawing the entire graph. */
-	XCopyArea(graphPtr->display, graphPtr->cache, drawable,
-		graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin),
-		Tk_Height(graphPtr->tkwin), 0, 0);
-    } else {
-	DrawPlot(graphPtr, drawable);
+  }
+  if (graphPtr->backingStore) {
+    if (graphPtr->flags & CACHE_DIRTY) {
+      /* The backing store is new or out-of-date. */
+      DrawPlot(graphPtr, graphPtr->cache);
+      graphPtr->flags &= ~CACHE_DIRTY;
     }
-    /* Draw markers above elements */
-    Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
-    Blt_DrawActiveElements(graphPtr, drawable);
-    /* Don't draw legend in the plot area. */
-    site = Blt_Legend_Site(graphPtr);
-    if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr))) {
-	Blt_DrawLegend(graphPtr, drawable);
-    }
-    if (site == LEGEND_WINDOW) {
-	Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-    /* Draw 3D border just inside of the focus highlight ring. */
-    if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-	Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-		graphPtr->normalBg, graphPtr->highlightWidth, 
-		graphPtr->highlightWidth, 
-	 	graphPtr->width - 2 * graphPtr->highlightWidth, 
-		graphPtr->height - 2 * graphPtr->highlightWidth, 
-		graphPtr->borderWidth, graphPtr->relief);
-    }
-    /* Draw focus highlight ring. */
-    if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
-	GC gc;
+    /* Copy the pixmap to the one used for drawing the entire graph. */
+    XCopyArea(graphPtr->display, graphPtr->cache, drawable,
+	      graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin),
+	      Tk_Height(graphPtr->tkwin), 0, 0);
+  } else {
+    DrawPlot(graphPtr, drawable);
+  }
+  /* Draw markers above elements */
+  Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
+  Blt_DrawActiveElements(graphPtr, drawable);
+  /* Don't draw legend in the plot area. */
+  site = Blt_Legend_Site(graphPtr);
+  if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr))) {
+    Blt_DrawLegend(graphPtr, drawable);
+  }
+  if (site == LEGEND_WINDOW) {
+    Blt_Legend_EventuallyRedraw(graphPtr);
+  }
+  /* Draw 3D border just inside of the focus highlight ring. */
+  if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
+    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
+				graphPtr->normalBg, graphPtr->highlightWidth, 
+				graphPtr->highlightWidth, 
+				graphPtr->width - 2 * graphPtr->highlightWidth, 
+				graphPtr->height - 2 * graphPtr->highlightWidth, 
+				graphPtr->borderWidth, graphPtr->relief);
+  }
+  /* Draw focus highlight ring. */
+  if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
+    GC gc;
 
-	gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
-	Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
-	    drawable);
-    }
-    /* Disable crosshairs before redisplaying to the screen */
-    Blt_DisableCrosshairs(graphPtr);
-    XCopyArea(graphPtr->display, drawable, Tk_WindowId(tkwin),
-	graphPtr->drawGC, 0, 0, graphPtr->width, graphPtr->height, 0, 0);
-    Blt_EnableCrosshairs(graphPtr);
-    if (graphPtr->doubleBuffer) {
-	Tk_FreePixmap(graphPtr->display, drawable);
-    }
-    graphPtr->flags &= ~RESET_WORLD;
-    UpdateMarginTraces(graphPtr);
+    gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
+    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
+			  drawable);
+  }
+  /* Disable crosshairs before redisplaying to the screen */
+  Blt_DisableCrosshairs(graphPtr);
+  XCopyArea(graphPtr->display, drawable, Tk_WindowId(tkwin),
+	    graphPtr->drawGC, 0, 0, graphPtr->width, graphPtr->height, 0, 0);
+  Blt_EnableCrosshairs(graphPtr);
+  if (graphPtr->doubleBuffer) {
+    Tk_FreePixmap(graphPtr->display, drawable);
+  }
+  graphPtr->flags &= ~RESET_WORLD;
+  UpdateMarginTraces(graphPtr);
 }
 
-/*LINTLIBRARY*/
 int Blt_GraphCmdInitProc(Tcl_Interp *interp)
 {
+  printf("Blt_GraphCmdInitProc\n");
   static Blt_InitCmdSpec graphSpec = {"graph", GraphCmd, };
   static Blt_InitCmdSpec barchartSpec = {"barchart", BarchartCmd, };
 
@@ -1733,50 +1572,38 @@ int Blt_GraphCmdInitProc(Tcl_Interp *interp)
   return TCL_OK;
 }
 
-Graph *
-Blt_GetGraphFromWindowData(Tk_Window tkwin)
+Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
 {
-    Graph *graphPtr;
+  Graph *graphPtr;
 
-    while (tkwin != NULL) {
-	graphPtr = (Graph *)Blt_GetWindowInstanceData(tkwin);
-	if (graphPtr != NULL) {
-	    return graphPtr;
-	}
-	tkwin = Tk_Parent(tkwin);
+  while (tkwin != NULL) {
+    graphPtr = (Graph *)Blt_GetWindowInstanceData(tkwin);
+    if (graphPtr != NULL) {
+      return graphPtr;
     }
-    return NULL;
+    tkwin = Tk_Parent(tkwin);
+  }
+  return NULL;
 }
 
-int
-Blt_GraphType(Graph *graphPtr)
+int Blt_GraphType(Graph *graphPtr)
 {
-    switch (graphPtr->classId) {
-    case CID_ELEM_LINE:
-	return GRAPH;
-    case CID_ELEM_BAR:
-	return BARCHART;
-    default:
-	return 0;
-    }
+  switch (graphPtr->classId) {
+  case CID_ELEM_LINE:
+    return GRAPH;
+  case CID_ELEM_BAR:
+    return BARCHART;
+  default:
     return 0;
+  }
+  return 0;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ReconfigureGraph --
- *
- *	Allocates resources for the graph.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_ReconfigureGraph(Graph *graphPtr)	
+void Blt_ReconfigureGraph(Graph *graphPtr)	
 {
-    ConfigureGraph(graphPtr);
-    Blt_ConfigureLegend(graphPtr);
-    Blt_ConfigureElements(graphPtr);
-    Blt_ConfigureAxes(graphPtr);
-    Blt_ConfigureMarkers(graphPtr);
+  ConfigureGraph(graphPtr);
+  Blt_ConfigureLegend(graphPtr);
+  Blt_ConfigureElements(graphPtr);
+  Blt_ConfigureAxes(graphPtr);
+  Blt_ConfigureMarkers(graphPtr);
 }
