@@ -779,6 +779,42 @@ static void DestroyGraph(char* dataPtr)
   free(graphPtr);
 }
 
+static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+			     int objc, Tcl_Obj* objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask, error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)graphPtr, graphPtr->optionTable, 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    ConfigureGraph(graphPtr);
+
+    break; // All ok
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
+
 static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[], ClassId classId)
 {
@@ -857,6 +893,10 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, 
 				 objv + 2, (char*)graphPtr, 0) != TCL_OK)
     goto error;
+  //  if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
+  //    goto error;
+  //  if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2, 0) != TCL_OK)
+  //    goto error;
 
   if (Blt_DefaultAxes(graphPtr) != TCL_OK)
     goto error;
@@ -874,16 +914,15 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
-			GraphEventProc, graphPtr);
+			GraphEventProc, (ClientData)graphPtr);
 
   graphPtr->cmdToken = Tcl_CreateObjCommand(interp, Tcl_GetString(objv[1]), 
-					    Blt_GraphInstCmdProc, graphPtr, 
+					    Blt_GraphInstCmdProc, 
+					    (ClientData)graphPtr, 
 					    GraphInstCmdDeleteProc);
 
-  //  if (Tk_InitOptions(interp, graphPtr, graphPtr->optionTable, tkwin))
-  //    goto error;
-
   ConfigureGraph(graphPtr);
+
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
 
