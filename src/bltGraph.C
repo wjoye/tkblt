@@ -92,8 +92,6 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_BUFFER_ELEMENTS	"yes"
 #define DEF_GRAPH_BUFFER_GRAPH		"1"
 #define DEF_GRAPH_CURSOR		"crosshair"
-#define DEF_GRAPH_DATA			(char*)NULL
-#define DEF_GRAPH_DATA_COMMAND		(char*)NULL
 #define DEF_GRAPH_FONT			STD_FONT_MEDIUM
 #define DEF_GRAPH_HALO			"2m"
 #define DEF_GRAPH_HALO_BAR		"0.1i"
@@ -104,7 +102,7 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_INVERT_XY		"0"
 #define DEF_GRAPH_JUSTIFY		"center"
 #define DEF_GRAPH_MARGIN		"0"
-#define DEF_GRAPH_MARGIN_VAR		(char*)NULL
+#define DEF_GRAPH_MARGIN_VAR		NULL
 #define DEF_GRAPH_PLOT_BACKGROUND	white
 #define DEF_GRAPH_PLOT_BORDERWIDTH	"1"
 #define DEF_GRAPH_PLOT_HEIGHT           "0"
@@ -116,15 +114,67 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_SHOW_VALUES		"no"
 #define DEF_GRAPH_STACK_AXES		"no"
 #define DEF_GRAPH_TAKE_FOCUS		""
-#define DEF_GRAPH_TITLE			(char*)NULL
+#define DEF_GRAPH_TITLE			NULL
 #define DEF_GRAPH_TITLE_COLOR		STD_NORMAL_FOREGROUND
 #define DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS	"0"
 #define DEF_GRAPH_WIDTH			"5i"
+
+// Background
+
+static Tk_CustomOptionSetProc BackgroundSetProc;
+static Tk_CustomOptionGetProc BackgroundGetProc;
+static Tk_ObjCustomOption backgroundObjOption =
+  {
+    "background", BackgroundSetProc, BackgroundGetProc, NULL, NULL, NULL
+  };
+
+
+static int BackgroundSetProc(ClientData clientData, Tcl_Interp *interp,
+			     Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			     int offset, char* save, int flags)
+{
+  Blt_Background* backgroundPtr = (Blt_Background*)(widgRec + offset);
+
+  if (*backgroundPtr)
+    Blt_FreeBackground(*backgroundPtr);
+  *backgroundPtr = NULL;
+
+  int length;
+  const char* string = Tcl_GetStringFromObj(*objPtr, &length);
+  if (string)
+    *backgroundPtr = Blt_GetBackground(interp, tkwin, string);
+  else
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* BackgroundGetProc(ClientData clientData, Tk_Window tkwin, 
+				  char *widgRec, int offset)
+{
+  Blt_Background* backgroundPtr = (Blt_Background*)(widgRec + offset);
+  if (*backgroundPtr) {
+    const char* string = Blt_NameOfBackground(*backgroundPtr);
+    return Tcl_NewStringObj(string, -1);
+  }
+  else
+    return Tcl_NewStringObj("", -1);
+}
+
+// BarMode
+
+static char* barmodeObjOption[] = {"normal", "stacked", "aligned", "overlap"};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
    DEF_GRAPH_ASPECT_RATIO, 
    -1, Tk_Offset(Graph, aspect), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-background", "background", "Background",
+   DEF_GRAPH_BACKGROUND, 
+   -1, Tk_Offset(Graph, normalBg), 0, &backgroundObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-barmode", "barMode", "BarMode", 
+   DEF_GRAPH_BAR_MODE, 
+   -1, Tk_Offset(Graph, mode), 0, &barmodeObjOption, 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
    DEF_GRAPH_BAR_WIDTH,
    -1, Tk_Offset(Graph, barWidth), 0, NULL, 0},
@@ -133,11 +183,13 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Graph, baseline), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
    -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
+   -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bm", NULL, NULL, NULL, 
+   -1, 0, 0, "-bottommargin", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_GRAPH_BORDERWIDTH, 
    -1, Tk_Offset(Graph, borderWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bm", NULL, NULL, NULL, 
-   -1, 0, 0, "-bottommargin", 0},
   {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "BottomMargin",
    DEF_GRAPH_MARGIN, 
    -1, Tk_Offset(Graph, bottomMargin.reqSize), 0, NULL, 0},
@@ -150,16 +202,22 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
    DEF_GRAPH_BUFFER_GRAPH, 
    -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 0},
-  {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", DEF_GRAPH_CURSOR, 
+  {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", 
+   DEF_GRAPH_CURSOR, 
    -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_FONT, "-font", "font", "Font", DEF_GRAPH_FONT,
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 
+   -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_FONT, "-font", "font", "Font", 
+   DEF_GRAPH_FONT,
    -1, Tk_Offset(Graph, titleTextStyle.font), 0, NULL, 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    DEF_GRAPH_TITLE_COLOR, 
    -1, Tk_Offset(Graph, titleTextStyle.color), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-halo", "halo", "Halo", DEF_GRAPH_HALO, 
+  {TK_OPTION_PIXELS, "-halo", "halo", "Halo", 
+   DEF_GRAPH_HALO, 
    -1, Tk_Offset(Graph, halo), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-height", "height", "Height", DEF_GRAPH_HEIGHT, 
+  {TK_OPTION_PIXELS, "-height", "height", "Height", 
+   DEF_GRAPH_HEIGHT, 
    -1, Tk_Offset(Graph, reqHeight), 0, NULL, 0},
   {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
    "HighlightBackground", DEF_GRAPH_HIGHLIGHT_BACKGROUND, 
@@ -170,30 +228,40 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
    "HighlightThickness", DEF_GRAPH_HIGHLIGHT_WIDTH, 
    -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", DEF_GRAPH_INVERT_XY,
+  {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
+   DEF_GRAPH_INVERT_XY,
    -1, Tk_Offset(Graph, inverted), 0, NULL, 0},
-  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", DEF_GRAPH_JUSTIFY, 
+  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", 
+   DEF_GRAPH_JUSTIFY, 
    -1, Tk_Offset(Graph, titleTextStyle.justify), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", DEF_GRAPH_MARGIN,
+  {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", 
+   DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, leftMargin.reqSize), 0, NULL, 0},
   {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
    DEF_GRAPH_MARGIN_VAR,
    -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, 
    -1, 0, 0, "-leftmargin", 0},
+  {TK_OPTION_CUSTOM, "-plotbackground", "plotbackground", "PlotBackground",
+   DEF_GRAPH_PLOT_BACKGROUND, 
+   -1, Tk_Offset(Graph, plotBg), 0, &backgroundObjOption, 0},
   {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
    DEF_GRAPH_PLOT_BORDERWIDTH, 
    -1, Tk_Offset(Graph, plotBW), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", DEF_GRAPH_PLOT_PADX, 
+  {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", 
+   DEF_GRAPH_PLOT_PADX, 
    -1, Tk_Offset(Graph, xPad), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", DEF_GRAPH_PLOT_PADY, 
+  {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", 
+   DEF_GRAPH_PLOT_PADY, 
    -1, Tk_Offset(Graph, yPad), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-plotrelief", "plotRelief", "Relief", 
    DEF_GRAPH_PLOT_RELIEF, 
    -1, Tk_Offset(Graph, plotRelief), 0, NULL, 0},
-  {TK_OPTION_RELIEF, "-relief", "relief", "Relief", DEF_GRAPH_RELIEF, 
+  {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
+   DEF_GRAPH_RELIEF, 
    -1, Tk_Offset(Graph, relief), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", DEF_GRAPH_MARGIN,
+  {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", 
+   DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, rightMargin.reqSize), 0, NULL, 0},
   {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
    DEF_GRAPH_MARGIN_VAR,
@@ -206,16 +274,19 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
    DEF_GRAPH_TAKE_FOCUS, 
    -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING, "-title", "title", "Title", DEF_GRAPH_TITLE, 
+  {TK_OPTION_STRING, "-title", "title", "Title", 
+   DEF_GRAPH_TITLE, 
    -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-tm", NULL, NULL, NULL,
    -1, 0, 0, "-topmargin", 0},
-  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", DEF_GRAPH_MARGIN,
+  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", 
+   DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, topMargin.reqSize), 0, NULL, 0},
   {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
    DEF_GRAPH_MARGIN_VAR, 
    -1, Tk_Offset(Graph, topMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_PIXELS, "-width", "width", "Width", DEF_GRAPH_WIDTH, 
+  {TK_OPTION_PIXELS, "-width", "width", "Width", 
+   DEF_GRAPH_WIDTH, 
    -1, Tk_Offset(Graph, reqWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-plotwidth", "plotWidth", "PlotWidth", 
    DEF_GRAPH_PLOT_WIDTH,
@@ -433,7 +504,8 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   } else if (eventPtr->type == DestroyNotify) {
     if (graphPtr->tkwin != NULL) {
-      //Tk_FreeConfigOptions(graphPtr, graphPtr->optionTable, graphPtr->tkwin);
+      Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
+			   graphPtr->tkwin);
       graphPtr->tkwin = NULL;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
     }
@@ -780,7 +852,7 @@ static void DestroyGraph(char* dataPtr)
 }
 
 static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			     int objc, Tcl_Obj* objv[])
+			     int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
   int mask, error;
@@ -799,7 +871,7 @@ static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    ConfigureGraph(graphPtr);
+    //    ConfigureGraph(graphPtr);
 
     break; // All ok
   }
@@ -841,7 +913,6 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   graphPtr->interp = interp;
   graphPtr->tkwin = tkwin;
   graphPtr->display = Tk_Display(tkwin);
-  graphPtr->cmdToken = NULL;
   graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
   graphPtr->backingStore = TRUE;
@@ -853,12 +924,11 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   graphPtr->relief = TK_RELIEF_FLAT;
   graphPtr->flags = RESET_WORLD;
   graphPtr->nextMarkerId = 1;
-  graphPtr->xPad = 0;
-  graphPtr->yPad = 0;
   graphPtr->bottomMargin.site = MARGIN_BOTTOM;
   graphPtr->leftMargin.site = MARGIN_LEFT;
   graphPtr->topMargin.site = MARGIN_TOP;
   graphPtr->rightMargin.site = MARGIN_RIGHT;
+
   Blt_Ts_InitStyle(graphPtr->titleTextStyle);
   Blt_Ts_SetAnchor(graphPtr->titleTextStyle, TK_ANCHOR_N);
 
@@ -890,13 +960,15 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   if (InitPens(graphPtr) != TCL_OK)
     goto error;
 
+  /*
   if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, 
 				 objv + 2, (char*)graphPtr, 0) != TCL_OK)
     goto error;
-  //  if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
-  //    goto error;
-  //  if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2, 0) != TCL_OK)
-  //    goto error;
+  */
+  if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
+    goto error;
+  if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
+    goto error;
 
   if (Blt_DefaultAxes(graphPtr) != TCL_OK)
     goto error;
