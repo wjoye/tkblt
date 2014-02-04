@@ -1067,10 +1067,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
     return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
 				    (char*)graphPtr, objv[2], flags);
   } else {
-    if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, configSpecs, 
-				   objc - 2, objv + 2, (char*)graphPtr, flags) != TCL_OK) {
+    //    if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, configSpecs, objc - 2, objv + 2, (char*)graphPtr, flags) != TCL_OK)
+    if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
       return TCL_ERROR;
-    }
+
     ConfigureGraph(graphPtr);
     Blt_EventuallyRedrawGraph(graphPtr);
     return TCL_OK;
