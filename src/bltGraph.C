@@ -103,7 +103,7 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_JUSTIFY		"center"
 #define DEF_GRAPH_MARGIN		"0"
 #define DEF_GRAPH_MARGIN_VAR		NULL
-#define DEF_GRAPH_PLOT_BACKGROUND	white
+#define DEF_GRAPH_PLOT_BACKGROUND	"white"
 #define DEF_GRAPH_PLOT_BORDERWIDTH	"1"
 #define DEF_GRAPH_PLOT_HEIGHT           "0"
 #define DEF_GRAPH_PLOT_PADX		"0"
@@ -220,13 +220,15 @@ static Tk_OptionSpec optionSpecs[] = {
    DEF_GRAPH_HEIGHT, 
    -1, Tk_Offset(Graph, reqHeight), 0, NULL, 0},
   {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
-   "HighlightBackground", DEF_GRAPH_HIGHLIGHT_BACKGROUND, 
+   "HighlightBackground", 
+   DEF_GRAPH_HIGHLIGHT_BACKGROUND, 
    -1, Tk_Offset(Graph, highlightBgColor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
    DEF_GRAPH_HIGHLIGHT_COLOR, 
    -1, Tk_Offset(Graph, highlightColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
-   "HighlightThickness", DEF_GRAPH_HIGHLIGHT_WIDTH, 
+   "HighlightThickness", 
+   DEF_GRAPH_HIGHLIGHT_WIDTH, 
    -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
    DEF_GRAPH_INVERT_XY,
