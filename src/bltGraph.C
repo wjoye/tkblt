@@ -282,8 +282,6 @@ static Blt_BindPickProc PickEntry;
 static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
 		    int objc, Tcl_Obj* const objv[], ClassId classId);
 static void DeleteGraph(ClientData clientData);
-static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj* const objv[], ClassId classId);
 static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			     int objc, Tcl_Obj* const objv[]);
 static void AdjustAxisPointers(Graph* graphPtr);
@@ -324,21 +322,10 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 		    int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   if (objc < 2) {
-    Tcl_AppendResult(interp, "wrong # args: should be \"", 
-		     Tcl_GetString(objv[0]), " pathName ?option value?...\"", 
-		     (char*)NULL);
+    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
     return TCL_ERROR;
   }
 
-  if (!CreateGraph(clientData, interp, objc, objv, classId))
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj* const objv[], ClassId classId)
-{
   Tk_OptionTable optionTable = (Tk_OptionTable)clientData;
   if (!optionTable) {
     optionTable = Tk_CreateOptionTable(interp, optionSpecs);
@@ -353,11 +340,21 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
 					    Tcl_GetString(objv[1]), 
 					    (char*)NULL);
   if (tkwin == NULL)
-    return NULL;
+    return TCL_ERROR;
+
+  switch (classId) {
+  case CID_ELEM_LINE:
+    Tk_SetClass(tkwin, "Graph");
+    break;
+  case CID_ELEM_BAR:
+    Tk_SetClass(tkwin, "Barchart");
+    break;
+  default:
+    break;
+  }
 
   Graph* graphPtr = calloc(1, sizeof(Graph));
-
-  /* Initialize the graph data structure. */
+  ((TkWindow*)tkwin)->instanceData = graphPtr;
 
   graphPtr->interp = interp;
   graphPtr->tkwin = tkwin;
@@ -388,52 +385,23 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   Tcl_InitHashTable(&graphPtr->markers.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&graphPtr->markers.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&graphPtr->dataTables, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&graphPtr->penTable, TCL_STRING_KEYS);
   graphPtr->elements.displayList = Blt_Chain_Create();
   graphPtr->markers.displayList = Blt_Chain_Create();
   graphPtr->axes.displayList = Blt_Chain_Create();
-
+  graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
+					       PickEntry, Blt_GraphTags);
   if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
   if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
     goto error;
   if (Blt_CreateLegend(graphPtr) != TCL_OK)
     goto error;
-
-  Tcl_InitHashTable(&graphPtr->penTable, TCL_STRING_KEYS);
   if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL)
     goto error;
   if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL)
     goto error;
 
-  switch (classId) {
-  case CID_ELEM_LINE:
-    Tk_SetClass(tkwin, "Graph");
-    break;
-  case CID_ELEM_BAR:
-    Tk_SetClass(tkwin, "Barchart");
-    break;
-  default:
-    Tk_SetClass(tkwin, "???");
-    break;
-  }
-
-  ((TkWindow*)tkwin)->instanceData = graphPtr;
-
-  if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
-    goto error;
-  if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
-    goto error;
-
-  if (Blt_DefaultAxes(graphPtr) != TCL_OK)
-    goto error;
-
-  AdjustAxisPointers(graphPtr);
-
-  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
-    goto error;
-  if (Blt_ConfigureObjCrosshairs(graphPtr) != TCL_OK)
-    goto error;
-  Blt_ConfigureLegend(graphPtr);
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -444,15 +412,27 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
 					    (ClientData)graphPtr, 
 					    GraphInstCmdDeleteProc);
 
-  graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
-					       PickEntry, Blt_GraphTags);
+  if ((Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK) ||
+      (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
+    goto error;
 
-  Tcl_SetObjResult(interp, objv[1]);
-  return graphPtr;
+  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
+    goto error;
+  if (Blt_ConfigureObjCrosshairs(graphPtr) != TCL_OK)
+    goto error;
+  Blt_ConfigureLegend(graphPtr);
+
+  if (Blt_DefaultAxes(graphPtr) != TCL_OK)
+    goto error;
+  AdjustAxisPointers(graphPtr);
+
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), 
+		   Tk_PathName(graphPtr->tkwin), -1);
+  return TCL_OK;
 
  error:
   DestroyGraph((char*)graphPtr);
-  return NULL;
+  return TCL_ERROR;
 }
 
 static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
