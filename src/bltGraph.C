@@ -779,7 +779,6 @@ static void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
 
-  Blt_FreeOptions(configSpecs, (char*)graphPtr, graphPtr->display, 0);
   /*
    * Destroy the individual components of the graph: elements, markers,
    * axes, legend, display lists etc.  Be careful to remove them in
@@ -927,7 +926,6 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   if (InitPens(graphPtr) != TCL_OK)
     goto error;
 
-  //  if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, objv + 2, (char*)graphPtr, 0) != TCL_OK)
   if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
     goto error;
   if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
