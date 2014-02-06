@@ -265,21 +265,7 @@ Blt_UpdateCrosshairs(Graph *graphPtr)
     chPtr->segArr[1].x2 = graphPtr->right;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DestroyCrosshairs --
- *
- * Results:
- *	None
- *
- * Side Effects:
- *	Crosshair GC is allocated.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_DestroyCrosshairs(Graph *graphPtr)
+void Blt_DestroyCrosshairs(Graph *graphPtr)
 {
     if (graphPtr->crosshairs != NULL) {
 	Crosshairs *chPtr = graphPtr->crosshairs;
@@ -292,38 +278,24 @@ Blt_DestroyCrosshairs(Graph *graphPtr)
     }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_CreateCrosshairs --
- *
- *	Creates and initializes a new crosshair structure.
- *
- * Results:
- *	Returns TCL_ERROR if the crosshair structure can't be created,
- *	otherwise TCL_OK.
- *
- * Side Effects:
- *	Crosshair GC is allocated.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_CreateCrosshairs(Graph *graphPtr)
+int Blt_CreateCrosshairs(Graph *graphPtr)
 {
-    Crosshairs *chPtr;
+  Crosshairs *chPtr = calloc(1, sizeof(Crosshairs));
+  chPtr->hidden = TRUE;
+  chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
+  graphPtr->crosshairs = chPtr;
+  return TCL_OK;
+}
 
-    chPtr = calloc(1, sizeof(Crosshairs));
-    chPtr->hidden = TRUE;
-    chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
-    graphPtr->crosshairs = chPtr;
-
-    if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
-	    "crosshairs", "Crosshairs", configSpecs, 0, (Tcl_Obj **)NULL,
-	    (char *)chPtr, 0) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+int Blt_ConfigureObjCrosshairs(Graph *graphPtr)
+{
+  if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
+				    "crosshairs", "Crosshairs", 
+				    configSpecs, 0, (Tcl_Obj**)NULL,
+				    (char*)graphPtr->crosshairs, 0) != TCL_OK) {
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
 /*

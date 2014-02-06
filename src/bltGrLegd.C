@@ -1599,23 +1599,7 @@ DisplayLegend(ClientData clientData)
     }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ConfigureLegend --
- *
- * 	Routine to configure the legend.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side Effects:
- *	Graph will be redrawn to reflect the new legend attributes.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_ConfigureLegend(Graph *graphPtr)
+void Blt_ConfigureLegend(Graph *graphPtr)
 {
     GC newGC;
     XGCValues gcValues;
@@ -1722,21 +1706,7 @@ Blt_DestroyLegend(Graph *graphPtr)
     free(legendPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_CreateLegend --
- *
- * 	Creates and initializes a legend structure with default settings
- *
- * Results:
- *	A standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-int
-Blt_CreateLegend(Graph *graphPtr)
+int Blt_CreateLegend(Graph *graphPtr)
 {
     Legend *legendPtr;
 
@@ -1778,7 +1748,7 @@ Blt_CreateLegend(Graph *graphPtr)
 	    (char *)legendPtr, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
-    Blt_ConfigureLegend(graphPtr);
+
     return TCL_OK;
 }
 

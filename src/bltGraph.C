@@ -126,23 +126,22 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
    DEF_GRAPH_ASPECT_RATIO, 
    -1, Tk_Offset(Graph, aspect), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_CUSTOM, "-background", "background", "Background",
    DEF_GRAPH_BACKGROUND, 
    -1, Tk_Offset(Graph, normalBg), 0, &backgroundObjOption, 
-   CACHE_DIRTY | REDRAW_WORLD},
+   CACHE_DIRTY},
   {TK_OPTION_STRING_TABLE, "-barmode", "barMode", "BarMode", 
    DEF_GRAPH_BAR_MODE, 
    -1, Tk_Offset(Graph, mode), 0, &barmodeObjOption, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
    DEF_GRAPH_BAR_WIDTH,
    -1, Tk_Offset(Graph, barWidth), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_DOUBLE, "-baseline", "baseline", "Baseline", 
    DEF_GRAPH_BAR_BASELINE, 
-   -1, Tk_Offset(Graph, baseline), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, baseline), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
    -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
@@ -152,144 +151,131 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_GRAPH_BORDERWIDTH, 
    -1, Tk_Offset(Graph, borderWidth), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "BottomMargin",
    DEF_GRAPH_MARGIN, 
    -1, Tk_Offset(Graph, bottomMargin.reqSize), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-bottomvariable", "bottomVariable", "BottomVariable",
    DEF_GRAPH_MARGIN_VAR, 
-   -1, Tk_Offset(Graph, bottomMargin.varName), TK_OPTION_NULL_OK, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, bottomMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-bufferelements", "bufferElements", "BufferElements",
    DEF_GRAPH_BUFFER_ELEMENTS, 
-   -1, Tk_Offset(Graph, backingStore), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, backingStore), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
    DEF_GRAPH_BUFFER_GRAPH, 
-   -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 0},
   {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", 
    DEF_GRAPH_CURSOR, 
-   -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 
    -1, 0, 0, "-foreground", 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
    DEF_GRAPH_FONT,
    -1, Tk_Offset(Graph, titleTextStyle.font), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    DEF_GRAPH_TITLE_COLOR, 
    -1, Tk_Offset(Graph, titleTextStyle.color), 0, NULL, 
-   REDRAW_WORLD},
+   CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-halo", "halo", "Halo", 
    DEF_GRAPH_HALO, 
-   -1, Tk_Offset(Graph, halo), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, halo), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-height", "height", "Height", 
    DEF_GRAPH_HEIGHT, 
    -1, Tk_Offset(Graph, reqHeight), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
    "HighlightBackground", 
    DEF_GRAPH_HIGHLIGHT_BACKGROUND, 
    -1, Tk_Offset(Graph, highlightBgColor), 0, NULL, 
-   CACHE_DIRTY | REDRAW_WORLD},
+   CACHE_DIRTY},
   {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
    DEF_GRAPH_HIGHLIGHT_COLOR, 
-   -1, Tk_Offset(Graph, highlightColor), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, highlightColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
    "HighlightThickness", 
    DEF_GRAPH_HIGHLIGHT_WIDTH, 
-   -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
    DEF_GRAPH_INVERT_XY,
    -1, Tk_Offset(Graph, inverted), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | RESET_AXES | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY | RESET_AXES},
   {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", 
    DEF_GRAPH_JUSTIFY, 
-   -1, Tk_Offset(Graph, titleTextStyle.justify), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, titleTextStyle.justify), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", 
    DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, leftMargin.reqSize), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
    DEF_GRAPH_MARGIN_VAR,
-   -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, 
    -1, 0, 0, "-leftmargin", 0},
   {TK_OPTION_CUSTOM, "-plotbackground", "plotbackground", "PlotBackground",
    DEF_GRAPH_PLOT_BACKGROUND, 
    -1, Tk_Offset(Graph, plotBg), 0, &backgroundObjOption, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
    DEF_GRAPH_PLOT_BORDERWIDTH, 
    -1, Tk_Offset(Graph, plotBW), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", 
    DEF_GRAPH_PLOT_PADX, 
    -1, Tk_Offset(Graph, xPad), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", 
    DEF_GRAPH_PLOT_PADY, 
    -1, Tk_Offset(Graph, yPad), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_RELIEF, "-plotrelief", "plotRelief", "Relief", 
    DEF_GRAPH_PLOT_RELIEF, 
    -1, Tk_Offset(Graph, plotRelief), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
    DEF_GRAPH_RELIEF, 
-   -1, Tk_Offset(Graph, relief), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, relief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", 
    DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, rightMargin.reqSize), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
    DEF_GRAPH_MARGIN_VAR,
-   -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL,
    -1, 0, 0, "-rightmargin", 0},
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
    DEF_GRAPH_STACK_AXES, 
-   -1, Tk_Offset(Graph, stackAxes), 0, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
    DEF_GRAPH_TAKE_FOCUS, 
    -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    DEF_GRAPH_TITLE, 
    -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_SYNONYM, "-tm", NULL, NULL, NULL,
    -1, 0, 0, "-topmargin", 0},
   {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", 
    DEF_GRAPH_MARGIN,
    -1, Tk_Offset(Graph, topMargin.reqSize), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
    DEF_GRAPH_MARGIN_VAR, 
-   -1, Tk_Offset(Graph, topMargin.varName), TK_OPTION_NULL_OK, NULL, 
-   REDRAW_WORLD},
+   -1, Tk_Offset(Graph, topMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-width", "width", "Width", 
    DEF_GRAPH_WIDTH, 
    -1, Tk_Offset(Graph, reqWidth), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotwidth", "plotWidth", "PlotWidth", 
    DEF_GRAPH_PLOT_WIDTH,
    -1, Tk_Offset(Graph, reqPlotWidth), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotheight", "plotHeight", "PlotHeight", 
    DEF_GRAPH_PLOT_HEIGHT,
    -1, Tk_Offset(Graph, reqPlotHeight), 0, NULL, 
-   MAP_WORLD | CACHE_DIRTY | REDRAW_WORLD},
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -644,7 +630,7 @@ static void ConfigureGraph(Graph* graphPtr)
 
   // Reconfigure the crosshairs, just in case the background color of the
   // plotarea has been changed.
-  Blt_ConfigureCrosshairs(graphPtr);
+  //  Blt_ConfigureCrosshairs(graphPtr);
 }
 
 /*
@@ -697,7 +683,8 @@ static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			     int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
-  int mask, error;
+  int mask =0;
+  int error;
   Tcl_Obj* errorResult;
 
   for (error=0; error<=1; error++) {
@@ -713,7 +700,8 @@ static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    //    ConfigureGraph(graphPtr);
+    graphPtr->flags |= mask;
+    ConfigureGraph(graphPtr);
     Blt_EventuallyRedrawGraph(graphPtr);
 
     // All ok
@@ -787,6 +775,13 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   graphPtr->markers.displayList = Blt_Chain_Create();
   graphPtr->axes.displayList = Blt_Chain_Create();
 
+  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
+    goto error;
+  if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
+    goto error;
+  if (Blt_CreateLegend(graphPtr) != TCL_OK)
+    goto error;
+
   switch (classId) {
   case CID_ELEM_LINE:
     Tk_SetClass(tkwin, "Graph");
@@ -814,14 +809,11 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
 
   AdjustAxisPointers(graphPtr);
 
-  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
+  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
-
-  if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
+  if (Blt_ConfigureObjCrosshairs(graphPtr) != TCL_OK)
     goto error;
-
-  if (Blt_CreateLegend(graphPtr) != TCL_OK)
-    goto error;
+  Blt_ConfigureLegend(graphPtr);
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -831,8 +823,6 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
 					    Blt_GraphInstCmdProc, 
 					    (ClientData)graphPtr, 
 					    GraphInstCmdDeleteProc);
-
-  ConfigureGraph(graphPtr);
 
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
@@ -908,9 +898,6 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   } else {
     if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
       return TCL_ERROR;
-
-    ConfigureGraph(graphPtr);
-    //    Blt_EventuallyRedrawGraph(graphPtr);
   }
   return TCL_OK;
 }
