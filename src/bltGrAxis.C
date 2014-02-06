@@ -163,6 +163,7 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_GRIDMINOR_COLOR	gray64
 #define DEF_AXIS_HIDE			"0"
 #define DEF_AXIS_JUSTIFY		"c"
+#define DEF_AXIS_LABEL_OFFSET	        "no"
 #define DEF_AXIS_LIMITS_FORMAT	        (char *)NULL
 #define DEF_AXIS_LINEWIDTH		"1"
 #define DEF_AXIS_LOGSCALE		"0"
@@ -179,15 +180,131 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_EXTERIOR		"1"
 #define DEF_AXIS_TICK_ANCHOR		"c"
 #define DEF_AXIS_LIMITS_FONT		STD_FONT_NUMBERS
-#define DEF_AXIS_TICKFONT_GRAPH		STD_FONT_NUMBERS
-#define DEF_AXIS_TICKFONT_BARCHART	STD_FONT_SMALL
+#define DEF_AXIS_TICKFONT		STD_FONT_NUMBERS
 #define DEF_AXIS_TICKLENGTH		"4"
 #define DEF_AXIS_DIVISIONS		"10"
+#define DEF_AXIS_TITLE	                NULL
 #define DEF_AXIS_TITLE_ALTERNATE	"0"
 #define DEF_AXIS_TITLE_FG		black
 #define DEF_AXIS_TITLE_FONT		STD_FONT_NORMAL
 #define DEF_AXIS_X_STEP_BARCHART	"1.0"
 #define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
+
+static Tk_OptionSpec optionSpecs[] = {
+  {TK_OPTION_CUSTOM, "-activebackground", "activeBackground", 
+   "ActiveBackground", 
+   DEF_AXIS_ACTIVEBACKGROUND, 
+   -1, Tk_Offset(Axis, activeBg), TK_OPTION_NULL_OK, &backgroundObjOption, 0},
+  {TK_OPTION_COLOR, "-activeforeground", "activeForeground", 
+   "ActiveForeground",
+   DEF_AXIS_ACTIVEFOREGROUND,
+   -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
+  {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "Relief",
+   DEF_AXIS_ACTIVERELIEF, 
+   -1, Tk_Offset(Axis, activeRelief), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-autorange", "autoRange", "AutoRange",
+   DEF_AXIS_RANGE, 
+   -1, Tk_Offset(Axis, windowSize), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-background", "background", "Background",
+   DEF_AXIS_BACKGROUND, 
+   -1, Tk_Offset(Axis, normalBg), TK_OPTION_NULL_OK, &backgroundObjOption, 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
+   -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
+   -1, 0, 0, "-borderWidth", 0},
+  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
+   DEF_AXIS_BORDERWIDTH, 
+   -1, Tk_Offset(Axis, borderWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-color", "color", "Color",
+   DEF_AXIS_FOREGROUND, 
+   -1, Tk_Offset(Axis, tickColor), 0, NULL, 0},
+  {TK_OPTION_STRING, "-command", "command", "Command",
+   DEF_AXIS_COMMAND,
+   -1, Tk_Offset(Axis, formatCmd), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-descending", "descending", "Descending",
+   DEF_AXIS_DESCENDING,
+   -1, Tk_Offset(Axis, descending), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
+   -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL,
+   -1, 0, 0, "-color", 0},
+  {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
+   DEF_AXIS_GRIDCOLOR, 
+   -1, Tk_Offset(Axis, major.color), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-gridlinewidth", "gridLineWidth", "GridLineWidth", 
+   DEF_AXIS_GRIDLINEWIDTH, 
+   -1, Tk_Offset(Axis, major.lineWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-gridminorcolor", "gridMinorColor", "GridColor", 
+   DEF_AXIS_GRIDMINOR_COLOR, 
+   -1, Tk_Offset(Axis, minor.color), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
+   "GridLineWidth", 
+   DEF_AXIS_GRIDLINEWIDTH, 
+   -1, Tk_Offset(Axis, minor.lineWidth), 0, NULL, 0},
+  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
+   DEF_AXIS_JUSTIFY, 
+   -1, Tk_Offset(Axis, titleJustify), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
+   DEF_AXIS_LABEL_OFFSET,
+   -1, Tk_Offset(Axis, labelOffset), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-limitscolor", "limitsColor", "Color",
+   DEF_AXIS_FOREGROUND, 
+   -1, Tk_Offset(Axis, limitsTextStyle.color), 0, NULL, 0},
+  {TK_OPTION_FONT, "-limitsfont", "limitsFont", "Font", 
+   DEF_AXIS_LIMITS_FONT,
+   -1, Tk_Offset(Axis, limitsTextStyle.font),  0, NULL, 0},
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
+   DEF_AXIS_LINEWIDTH, 
+   -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
+   DEF_AXIS_LOGSCALE, 
+   -1, Tk_Offset(Axis, logScale), 0, NULL, 0},
+  {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+   DEF_AXIS_RELIEF, 
+   -1, Tk_Offset(Axis, relief), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
+   DEF_AXIS_ANGLE, 
+   -1, Tk_Offset(Axis, tickAngle), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-scrollincrement", "scrollIncrement", "ScrollIncrement", 
+   DEF_AXIS_SCROLL_INCREMENT, 
+   -1, Tk_Offset(Axis, scrollUnits), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
+   DEF_AXIS_SHIFTBY, 
+   -1, Tk_Offset(Axis, shiftBy), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-stepsize", "stepSize", "StepSize",
+   DEF_AXIS_STEP, 
+   -1, Tk_Offset(Axis, reqStep), 0, NULL, 0},
+  {TK_OPTION_INT, "-subdivisions", "subdivisions", "Subdivisions",
+   DEF_AXIS_SUBDIVISIONS, 
+   -1, Tk_Offset(Axis, reqNumMinorTicks), 0, NULL, 0},
+  {TK_OPTION_ANCHOR, "-tickanchor", "tickAnchor", "Anchor",
+   DEF_AXIS_TICK_ANCHOR, 
+   -1, Tk_Offset(Axis, reqTickAnchor), 0, NULL, 0},
+  {TK_OPTION_FONT, "-tickfont", "tickFont", "Font",
+   DEF_AXIS_TICKFONT,
+   -1, Tk_Offset(Axis, tickFont), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-ticklength", "tickLength", "TickLength",
+   DEF_AXIS_TICKLENGTH, 
+   -1, Tk_Offset(Axis, tickLength), 0, NULL, 0},
+  {TK_OPTION_INT, "-tickdefault", "tickDefault", "TickDefault",
+   DEF_AXIS_DIVISIONS, 
+   -1, Tk_Offset(Axis, reqNumMajorTicks), 0, NULL, 0},
+  {TK_OPTION_STRING, "-title", "title", "Title",
+   DEF_AXIS_TITLE,
+   -1, Tk_Offset(Axis, title), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
+   DEF_AXIS_TITLE_ALTERNATE,
+   -1, Tk_Offset(Axis, titleAlternate), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-titlecolor", "titleColor", "Color", 
+   DEF_AXIS_FOREGROUND,
+   -1, Tk_Offset(Axis, titleColor), 0, NULL, 0},
+  {TK_OPTION_FONT, "-titlefont", "titleFont", "Font",
+   DEF_AXIS_TITLE_FONT, 
+   -1, Tk_Offset(Axis, titleFont), 0, NULL, 0},
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
+
+// ***
 
 Blt_CustomOption bitmaskGrAxisCheckLimitsOption =
 {
@@ -358,10 +475,10 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_ANCHOR, "-tickanchor", "tickAnchor", "Anchor",
    DEF_AXIS_TICK_ANCHOR, Tk_Offset(Axis, reqTickAnchor), ALL_GRAPHS},
   {BLT_CONFIG_FONT, "-tickfont", "tickFont", "Font",
-   DEF_AXIS_TICKFONT_GRAPH, Tk_Offset(Axis, tickFont), 
+   DEF_AXIS_TICKFONT, Tk_Offset(Axis, tickFont), 
    GRAPH | STRIPCHART},
   {BLT_CONFIG_FONT, "-tickfont", "tickFont", "Font",
-   DEF_AXIS_TICKFONT_BARCHART, Tk_Offset(Axis, tickFont), BARCHART},
+   DEF_AXIS_TICKFONT, Tk_Offset(Axis, tickFont), BARCHART},
   {BLT_CONFIG_PIXELS, "-ticklength", "tickLength", "TickLength",
    DEF_AXIS_TICKLENGTH, Tk_Offset(Axis, tickLength), 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},

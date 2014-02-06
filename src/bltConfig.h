@@ -173,6 +173,8 @@ typedef struct {
 
 #define LineIsDashed(d) ((d).values[0] != 0)
 
+extern Tk_ObjCustomOption backgroundObjOption;
+
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
 extern Blt_CustomOption fillOption;

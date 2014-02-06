@@ -119,48 +119,6 @@ extern Blt_CustomOption bltBarModeOption;
 #define DEF_GRAPH_UNMAP_HIDDEN_ELEMENTS	"0"
 #define DEF_GRAPH_WIDTH			"5i"
 
-// Background
-
-static Tk_CustomOptionSetProc BackgroundSetProc;
-static Tk_CustomOptionGetProc BackgroundGetProc;
-static Tk_ObjCustomOption backgroundObjOption =
-  {
-    "background", BackgroundSetProc, BackgroundGetProc, NULL, NULL, NULL
-  };
-
-
-static int BackgroundSetProc(ClientData clientData, Tcl_Interp *interp,
-			     Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			     int offset, char* save, int flags)
-{
-  Blt_Background* backgroundPtr = (Blt_Background*)(widgRec + offset);
-
-  if (*backgroundPtr)
-    Blt_FreeBackground(*backgroundPtr);
-  *backgroundPtr = NULL;
-
-  int length;
-  const char* string = Tcl_GetStringFromObj(*objPtr, &length);
-  if (string)
-    *backgroundPtr = Blt_GetBackground(interp, tkwin, string);
-  else
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* BackgroundGetProc(ClientData clientData, Tk_Window tkwin, 
-				  char *widgRec, int offset)
-{
-  Blt_Background* backgroundPtr = (Blt_Background*)(widgRec + offset);
-  if (*backgroundPtr) {
-    const char* string = Blt_NameOfBackground(*backgroundPtr);
-    return Tcl_NewStringObj(string, -1);
-  }
-  else
-    return Tcl_NewStringObj("", -1);
-}
-
 // BarMode
 
 static char* barmodeObjOption[] = {"normal", "stacked", "aligned", "overlap"};
@@ -875,6 +833,13 @@ static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
     //    ConfigureGraph(graphPtr);
 
+    if ((graphPtr->tkwin != NULL) && 
+	Tk_IsMapped(graphPtr->tkwin) &&
+	!(graphPtr->flags & REDRAW_PENDING)) {
+      Tk_DoWhenIdle(DisplayGraph, (ClientData)graphPtr);
+      graphPtr->flags |= REDRAW_PENDING;
+    }
+
     break; // All ok
   }
 
@@ -962,11 +927,7 @@ static Graph* CreateGraph(ClientData clientData, Tcl_Interp* interp,
   if (InitPens(graphPtr) != TCL_OK)
     goto error;
 
-  /*
-  if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, 
-				 objv + 2, (char*)graphPtr, 0) != TCL_OK)
-    goto error;
-  */
+  //  if (Blt_ConfigureWidgetFromObj(interp, tkwin, configSpecs, objc - 2, objv + 2, (char*)graphPtr, 0) != TCL_OK)
   if (Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK)
     goto error;
   if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
