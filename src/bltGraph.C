@@ -435,6 +435,26 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   return TCL_ERROR;
 }
 
+static Blt_OpSpec graphOps[];
+static int nGraphOps;
+typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+			   Tcl_Obj* const objv[]);
+
+int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
+			 Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = clientData;
+  GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
+					BLT_OP_ARG1, objc, objv, 0);
+  if (proc == NULL) {
+    return TCL_ERROR;
+  }
+  Tcl_Preserve(graphPtr);
+  int result = (*proc) (graphPtr, interp, objc, objv);
+  Tcl_Release(graphPtr);
+  return result;
+}
+
 static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 		       Tcl_Obj* const objv[])
 {
@@ -466,26 +486,6 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   else
     Tcl_SetObjResult(interp, objPtr);
   return TCL_OK;
-}
-
-static Blt_OpSpec graphOps[];
-static int nGraphOps;
-typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			   Tcl_Obj* const objv[]);
-
-int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
-		     Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = clientData;
-  GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
-					BLT_OP_ARG1, objc, objv, 0);
-  if (proc == NULL) {
-    return TCL_ERROR;
-  }
-  Tcl_Preserve(graphPtr);
-  int result = (*proc) (graphPtr, interp, objc, objv);
-  Tcl_Release(graphPtr);
-  return result;
 }
 
 static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
