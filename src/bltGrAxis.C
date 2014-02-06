@@ -2024,9 +2024,6 @@ Blt_ResetAxes(Graph *graphPtr)
 	Region2d exts;
 
 	elemPtr = Blt_Chain_GetValue(link);
-	if ((graphPtr->flags & UNMAP_HIDDEN) && (elemPtr->flags & HIDE)) {
-	    continue;
-	}
 	(*elemPtr->procsPtr->extentsProc) (elemPtr, &exts);
 	GetDataLimits(elemPtr->axes.x, exts.left, exts.right);
 	GetDataLimits(elemPtr->axes.y, exts.top, exts.bottom);

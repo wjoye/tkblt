@@ -493,8 +493,6 @@ struct _Graph {
 #define DRAW_LEGEND		(1<<12)/* 0x1000 */
 #define DRAW_MARGINS		(1<<13)/* 0x2000 */
 #define	CACHE_DIRTY		(1<<14)/* 0x4000 */
-#define REQ_BACKING_STORE	(1<<15)/* 0x8000 */
-#define UNMAP_HIDDEN		(1<<16)
 
 #define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
 #define REDRAW_WORLD		(DRAW_LEGEND)
