@@ -277,6 +277,7 @@ struct _Graph {
 					 * already gone away. */
   Tcl_Command cmdToken;		/* Token for graph's widget command. */
   Tk_OptionTable optionTable;
+
   ClassId classId;			/* Default element type */
   Tk_Cursor cursor;
   int inset;				/* Sum of focus highlight and 3-D
@@ -531,7 +532,6 @@ extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 
 extern void Blt_ComputeBarStacks(Graph *graphPtr);
 
-extern void Blt_ConfigureCrosshairs(Graph *graphPtr);
 extern void Blt_ConfigureLegend(Graph *graphPtr);
 extern void Blt_ConfigureElements(Graph *graphPtr);
 extern void Blt_ConfigureAxes(Graph *graphPtr);
@@ -620,7 +620,7 @@ extern int Blt_ElementOp(Graph *graphPtr, Tcl_Interp *interp, int objc,
 			 Tcl_Obj *const *objv, ClassId classId);
 
 extern int Blt_CrosshairsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
-			    Tcl_Obj *const *objv);
+				Tcl_Obj *const *objv);
 
 extern int Blt_MarkerOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
 			Tcl_Obj *const *objv);

@@ -391,9 +391,9 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   graphPtr->axes.displayList = Blt_Chain_Create();
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
-  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
-    goto error;
   if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
+    goto error;
+  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
   if (Blt_CreateLegend(graphPtr) != TCL_OK)
     goto error;
@@ -401,7 +401,6 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
     goto error;
   if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL)
     goto error;
-
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -416,9 +415,9 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     goto error;
 
-  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
-    goto error;
   if (Blt_ConfigureObjCrosshairs(graphPtr) != TCL_OK)
+    goto error;
+  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
   Blt_ConfigureLegend(graphPtr);
 
@@ -450,7 +449,7 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
 
   Tcl_Preserve(graphPtr);
-  int result = (*proc) (graphPtr, interp, objc, objv);
+  int result = (*proc)(graphPtr, interp, objc, objv);
   Tcl_Release(graphPtr);
   return result;
 }
@@ -464,8 +463,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   }
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)graphPtr, 
 				      graphPtr->optionTable,
-				      (objc == 3) ? objv[2] : NULL,
-				      graphPtr->tkwin);
+				      objv[2], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
