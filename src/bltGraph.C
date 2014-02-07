@@ -272,16 +272,13 @@ static Tk_EventProc GraphEventProc;
 Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 
 static Tcl_ObjCmdProc BarchartObjCmd;
-static Tcl_CmdDeleteProc BarchartObjDelete;
 static Tcl_ObjCmdProc GraphObjCmd;
-static Tcl_CmdDeleteProc GraphObjDelete;
 static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
 
 static Blt_BindPickProc PickEntry;
 
 static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
 		    int objc, Tcl_Obj* const objv[], ClassId classId);
-static void DeleteGraph(ClientData clientData);
 static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			     int objc, Tcl_Obj* const objv[]);
 static void AdjustAxisPointers(Graph* graphPtr);
@@ -294,9 +291,9 @@ static void UpdateMarginTraces(Graph* graphPtr);
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
   static Blt_InitCmdSpec graphSpec = 
-    {"graph", GraphObjCmd, GraphObjDelete, NULL};
+    {"graph", GraphObjCmd, NULL, NULL};
   static Blt_InitCmdSpec barchartSpec = 
-    {"barchart", BarchartObjCmd, BarchartObjDelete, NULL};
+    {"barchart", BarchartObjCmd, NULL, NULL};
 
   if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
     return TCL_ERROR;
@@ -326,21 +323,13 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
     return TCL_ERROR;
   }
 
-  Tk_OptionTable optionTable = (Tk_OptionTable)clientData;
-  if (!optionTable) {
-    optionTable = Tk_CreateOptionTable(interp, optionSpecs);
-    char* name = Tcl_GetString(objv[0]);
-    Tcl_CmdInfo info;
-    Tcl_GetCommandInfo(interp, name, &info);
-    info.objClientData = (ClientData)optionTable;
-    Tcl_SetCommandInfo(interp, name, &info);
-  }
-
   Tk_Window tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
 					    Tcl_GetString(objv[1]), 
 					    (char*)NULL);
   if (tkwin == NULL)
     return TCL_ERROR;
+
+  Tk_OptionTable optionTable = Tk_CreateOptionTable(interp, optionSpecs);
 
   switch (classId) {
   case CID_ELEM_LINE:
@@ -356,9 +345,14 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   Graph* graphPtr = calloc(1, sizeof(Graph));
   ((TkWindow*)tkwin)->instanceData = graphPtr;
 
-  graphPtr->interp = interp;
   graphPtr->tkwin = tkwin;
   graphPtr->display = Tk_Display(tkwin);
+  graphPtr->interp = interp;
+  graphPtr->cmdToken = Tcl_CreateObjCommand(interp, 
+					    Tk_PathName(graphPtr->tkwin), 
+					    Blt_GraphInstCmdProc, 
+					    graphPtr, 
+					    GraphInstCmdDeleteProc);
   graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
   graphPtr->backingStore = TRUE;
@@ -404,12 +398,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
-			GraphEventProc, (ClientData)graphPtr);
-
-  graphPtr->cmdToken = Tcl_CreateObjCommand(interp, Tcl_GetString(objv[1]), 
-					    Blt_GraphInstCmdProc, 
-					    (ClientData)graphPtr, 
-					    GraphInstCmdDeleteProc);
+			GraphEventProc, graphPtr);
 
   if ((Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK) ||
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
@@ -767,23 +756,6 @@ static void DestroyGraph(char* dataPtr)
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
 
   free(graphPtr);
-}
-
-static void GraphObjDelete(ClientData clientData)
-{
-  DeleteGraph(clientData);
-}
-
-static void BarchartObjDelete(ClientData clientData)
-{
-  DeleteGraph(clientData);
-}
-
-static void DeleteGraph(ClientData clientData)
-{
-  Tk_OptionTable optionTable = (Tk_OptionTable)clientData;
-  if (clientData)
-    Tk_DeleteOptionTable(optionTable);
 }
 
 // Widget commands
