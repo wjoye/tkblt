@@ -446,13 +446,31 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
   Graph* graphPtr = clientData;
   GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
 					BLT_OP_ARG1, objc, objv, 0);
-  if (proc == NULL) {
+  if (proc == NULL)
     return TCL_ERROR;
-  }
+
   Tcl_Preserve(graphPtr);
   int result = (*proc) (graphPtr, interp, objc, objv);
   Tcl_Release(graphPtr);
   return result;
+}
+
+static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+		  Tcl_Obj* const objv[])
+{
+  if (objc != 3) {
+    Tcl_WrongNumArgs(interp, 1, objv, "cget option");
+    return TCL_ERROR;
+  }
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)graphPtr, 
+				      graphPtr->optionTable,
+				      (objc == 3) ? objv[2] : NULL,
+				      graphPtr->tkwin);
+  if (objPtr == NULL)
+    return TCL_ERROR;
+  else
+    Tcl_SetObjResult(interp, objPtr);
+  return TCL_OK;
 }
 
 static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
@@ -463,29 +481,14 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 				       graphPtr->optionTable, 
 				       (objc == 3) ? objv[2] : NULL, 
 				       graphPtr->tkwin);
-    if (!objPtr)
+    if (objPtr == NULL)
       return TCL_ERROR;
     else
       Tcl_SetObjResult(interp, objPtr);
-  } else {
-    if (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK)
-      return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		  Tcl_Obj* const objv[])
-{
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)graphPtr, 
-				      graphPtr->optionTable,
-				      (objc == 3) ? objv[2] : NULL,
-				      graphPtr->tkwin);
-  if (!objPtr)
-    return TCL_ERROR;
+    return TCL_OK;
+  } 
   else
-    Tcl_SetObjResult(interp, objPtr);
-  return TCL_OK;
+    return GraphObjConfigure(interp, graphPtr, objc-2, objv+2);
 }
 
 static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
