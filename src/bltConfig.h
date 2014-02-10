@@ -175,6 +175,7 @@ typedef struct {
 
 extern Tk_ObjCustomOption backgroundObjOption;
 extern Tk_ObjCustomOption pointObjOption;
+extern Tk_ObjCustomOption dashesObjOption;
 
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
