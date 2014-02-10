@@ -40,13 +40,6 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 
-static Blt_OptionParseProc ObjToPoint;
-static Blt_OptionPrintProc PointToObj;
-Blt_CustomOption bltPointOption =
-{
-    ObjToPoint, PointToObj, NULL, (ClientData)0
-};
-
 /*
  *---------------------------------------------------------------------------
  * Custom option parse and print procedures
@@ -104,77 +97,6 @@ Blt_GetXY(Tcl_Interp *interp, Tk_Window tkwin, const char *string,
     Tcl_AppendResult(interp, "bad position \"", string, 
 	     "\": should be \"@x,y\"", (char *)NULL);
     return TCL_ERROR;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToPoint --
- *
- *	Convert the string representation of a legend XY position into window
- *	coordinates.  The form of the string must be "@x,y" or none.
- *
- * Results:
- *	A standard TCL result.  The symbol type is written into the
- *	widget record.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToPoint(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tk_Window tkwin,		/* Not used. */
-    Tcl_Obj *objPtr,		/* New legend position string */
-    char *widgRec,		/* Widget record */
-    int offset,			/* Offset to field in structure */
-    int flags)			/* Not used. */
-{
-    XPoint *pointPtr = (XPoint *)(widgRec + offset);
-    int x, y;
-
-    if (Blt_GetXY(interp, tkwin, Tcl_GetString(objPtr), &x, &y) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    pointPtr->x = x, pointPtr->y = y;
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * PointToObj --
- *
- *	Convert the window coordinates into a string.
- *
- * Results:
- *	The string representing the coordinate position is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-PointToObj(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Not used. */
-    Tk_Window tkwin,		/* Not used. */
-    char *widgRec,		/* Widget record */
-    int offset,			/* Offset to field in structure */
-    int flags)			/* Not used. */
-{
-    XPoint *pointPtr = (XPoint *)(widgRec + offset);
-    Tcl_Obj *objPtr;
-
-    if ((pointPtr->x != -SHRT_MAX) && (pointPtr->y != -SHRT_MAX)) {
-	char string[200];
-
-	sprintf_s(string, 200, "@%d,%d", pointPtr->x, pointPtr->y);
-	objPtr = Tcl_NewStringObj(string, -1);
-    } else { 
-	objPtr = Tcl_NewStringObj("", -1);
-    }
-    return objPtr;
 }
 
 int

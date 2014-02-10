@@ -404,7 +404,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     goto error;
 
-  if (Blt_ConfigureObjCrosshairs(graphPtr) != TCL_OK)
+  if (Blt_ConfigureObjCrosshairs(graphPtr, objc, objv) != TCL_OK)
     goto error;
   if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
@@ -428,8 +428,8 @@ static int nGraphOps;
 typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			   Tcl_Obj* const objv[]);
 
-int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
-			 Tcl_Obj* const objv[])
+int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
+			 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = clientData;
   GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
@@ -443,8 +443,8 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, int objc,
   return result;
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		  Tcl_Obj* const objv[])
+static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+		  int objc, Tcl_Obj* const objv[])
 {
   if (objc != 3) {
     Tcl_WrongNumArgs(interp, 1, objv, "cget option");
@@ -460,8 +460,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
-		       Tcl_Obj* const objv[])
+static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, 
+		       int objc, Tcl_Obj* const objv[])
 {
   if (objc <= 3) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)graphPtr, 
@@ -708,6 +708,8 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     if (graphPtr->tkwin != NULL) {
       Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
 			   graphPtr->tkwin);
+      Blt_DeleteCrosshairs(graphPtr);
+
       graphPtr->tkwin = NULL;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
     }
@@ -721,6 +723,7 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
   }
 }
 
+// called by Tcl_DeleteCommandx
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
   Graph* graphPtr = clientData;
@@ -733,16 +736,17 @@ static void GraphInstCmdDeleteProc(ClientData clientData)
   }
 }
 
+// called by Tcl_EventuallyFree and others
 static void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
 
+  Blt_DestroyCrosshairs(graphPtr);
   Blt_DestroyMarkers(graphPtr);
   Blt_DestroyElements(graphPtr);
   Blt_DestroyLegend(graphPtr);
   Blt_DestroyAxes(graphPtr);
   Blt_DestroyPens(graphPtr);
-  Blt_DestroyCrosshairs(graphPtr);
   Blt_DestroyPageSetup(graphPtr);
   Blt_DestroyBarSets(graphPtr);
   if (graphPtr->bindTable != NULL)

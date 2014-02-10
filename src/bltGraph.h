@@ -507,7 +507,9 @@ extern int Blt_CreatePageSetup(Graph *graphPtr);
 extern int Blt_ConfigurePageSetup(Graph *graphPtr);
 
 extern int Blt_CreateCrosshairs(Graph *graphPtr);
-extern int Blt_ConfigureObjCrosshairs(Graph *graphPtr);
+extern int Blt_ConfigureObjCrosshairs(Graph *graphPtr,
+				      int objc, Tcl_Obj* const objv[]);
+extern void Blt_DeleteCrosshairs(Graph* graphPtr);
 
 extern double Blt_InvHMap(Axis *axisPtr, double x);
 
