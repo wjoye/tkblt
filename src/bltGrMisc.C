@@ -40,242 +40,194 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 
-/*
- *---------------------------------------------------------------------------
- * Custom option parse and print procedures
- *---------------------------------------------------------------------------
- */
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetXY --
- *
- *	Converts a string in the form "@x,y" into an XPoint structure of the x
- *	and y coordinates.
- *
- * Results:
- *	A standard TCL result. If the string represents a valid position
- *	*pointPtr* will contain the converted x and y coordinates and TCL_OK
- *	is returned.  Otherwise, TCL_ERROR is returned and interp->result will
- *	contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetXY(Tcl_Interp *interp, Tk_Window tkwin, const char *string, 
-	  int *xPtr, int *yPtr)
+// Converts a string in the form "@x,y" into an XPoint structure of the x
+// and y coordinates.
+int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 
+	      int* xPtr, int* yPtr)
 {
-    char *comma;
-    int result;
-    int x, y;
+  char *comma;
+  int result;
+  int x, y;
 
-    if ((string == NULL) || (*string == '\0')) {
-	*xPtr = *yPtr = -SHRT_MAX;
-	return TCL_OK;
-    }
-    if (*string != '@') {
-	goto badFormat;
-    }
-    comma = strchr(string + 1, ',');
-    if (comma == NULL) {
-	goto badFormat;
-    }
-    *comma = '\0';
-    result = ((Tk_GetPixels(interp, tkwin, string + 1, &x) == TCL_OK) &&
-	      (Tk_GetPixels(interp, tkwin, comma + 1, &y) == TCL_OK));
-    *comma = ',';
-    if (!result) {
-	Tcl_AppendResult(interp, ": can't parse position \"", string, "\"",
-	    (char *)NULL);
-	return TCL_ERROR;
-    }
-    *xPtr = x, *yPtr = y;
+  if ((string == NULL) || (*string == '\0')) {
+    *xPtr = *yPtr = -SHRT_MAX;
     return TCL_OK;
-
-  badFormat:
-    Tcl_AppendResult(interp, "bad position \"", string, 
-	     "\": should be \"@x,y\"", (char *)NULL);
+  }
+  if (*string != '@') {
+    goto badFormat;
+  }
+  comma = strchr(string + 1, ',');
+  if (comma == NULL) {
+    goto badFormat;
+  }
+  *comma = '\0';
+  result = ((Tk_GetPixels(interp, tkwin, string + 1, &x) == TCL_OK) &&
+	    (Tk_GetPixels(interp, tkwin, comma + 1, &y) == TCL_OK));
+  *comma = ',';
+  if (!result) {
+    Tcl_AppendResult(interp, ": can't parse position \"", string, "\"",
+		     (char *)NULL);
     return TCL_ERROR;
+  }
+  *xPtr = x, *yPtr = y;
+  return TCL_OK;
+
+ badFormat:
+  Tcl_AppendResult(interp, "bad position \"", string, 
+		   "\": should be \"@x,y\"", (char *)NULL);
+  return TCL_ERROR;
 }
 
-int
-Blt_PointInSegments(
-    Point2d *samplePtr,
-    Segment2d *segments,
-    int nSegments,
-    double halo)
+int Blt_PointInSegments(Point2d* samplePtr, Segment2d* segments,
+			int nSegments, double halo)
 {
-    Segment2d *sp, *send;
-    double minDist;
+  Segment2d *sp, *send;
+  double minDist;
 
-    minDist = DBL_MAX;
-    for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-	double dist;
-	double left, right, top, bottom;
-	Point2d p, t;
+  minDist = DBL_MAX;
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    double dist;
+    double left, right, top, bottom;
+    Point2d p, t;
 
-	t = Blt_GetProjection((int)samplePtr->x, (int)samplePtr->y, 
-			      &sp->p, &sp->q);
-	if (sp->p.x > sp->q.x) {
-	    right = sp->p.x, left = sp->q.x;
-	} else {
-	    right = sp->q.x, left = sp->p.x;
-	}
-	if (sp->p.y > sp->q.y) {
-	    bottom = sp->p.y, top = sp->q.y;
-	} else {
-	    bottom = sp->q.y, top = sp->p.y;
-	}
-	p.x = BOUND(t.x, left, right);
-	p.y = BOUND(t.y, top, bottom);
-	dist = hypot(p.x - samplePtr->x, p.y - samplePtr->y);
-	if (dist < minDist) {
-	    minDist = dist;
-	}
-    }
-    return (minDist < halo);
-}
-
-int
-Blt_PointInPolygon(
-    Point2d *s,			/* Sample point. */
-    Point2d *points,		/* Points representing the polygon. */
-    int nPoints)		/* # of points in above array. */
-{
-    Point2d *p, *q, *qend;
-    int count;
-
-    count = 0;
-    for (p = points, q = p + 1, qend = p + nPoints; q < qend; p++, q++) {
-	if (((p->y <= s->y) && (s->y < q->y)) || 
-	    ((q->y <= s->y) && (s->y < p->y))) {
-	    double b;
-
-	    b = (q->x - p->x) * (s->y - p->y) / (q->y - p->y) + p->x;
-	    if (s->x < b) {
-		count++;	/* Count the number of intersections. */
-	    }
-	}
-    }
-    return (count & 0x01);
-}
-
-int
-Blt_RegionInPolygon(
-    Region2d *regionPtr,
-    Point2d *points,
-    int nPoints,
-    int enclosed)
-{
-    Point2d *pp, *pend;
-
-    if (enclosed) {
-	/*  
-	 * All points of the polygon must be inside the rectangle.
-	 */
-	for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
-	    if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
-		(pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
-		return FALSE;	/* One point is exterior. */
-	    }
-	}
-	return TRUE;
+    t = Blt_GetProjection((int)samplePtr->x, (int)samplePtr->y, 
+			  &sp->p, &sp->q);
+    if (sp->p.x > sp->q.x) {
+      right = sp->p.x, left = sp->q.x;
     } else {
-	Point2d r;
-	/*
-	 * If any segment of the polygon clips the bounding region, the
-	 * polygon overlaps the rectangle.
-	 */
-	points[nPoints] = points[0];
-	for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
-	    Point2d p, q;
-
-	    p = *pp;
-	    q = *(pp + 1);
-	    if (Blt_LineRectClip(regionPtr, &p, &q)) {
-		return TRUE;
-	    }
-	}
-	/* 
-	 * Otherwise the polygon and rectangle are either disjoint or
-	 * enclosed.  Check if one corner of the rectangle is inside the
-	 * polygon.
-	 */
-	r.x = regionPtr->left;
-	r.y = regionPtr->top;
-	return Blt_PointInPolygon(&r, points, nPoints);
+      right = sp->q.x, left = sp->p.x;
     }
+    if (sp->p.y > sp->q.y) {
+      bottom = sp->p.y, top = sp->q.y;
+    } else {
+      bottom = sp->q.y, top = sp->p.y;
+    }
+    p.x = BOUND(t.x, left, right);
+    p.y = BOUND(t.y, top, bottom);
+    dist = hypot(p.x - samplePtr->x, p.y - samplePtr->y);
+    if (dist < minDist) {
+      minDist = dist;
+    }
+  }
+  return (minDist < halo);
+}
+
+int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
+{
+  Point2d *p, *q, *qend;
+  int count;
+
+  count = 0;
+  for (p = points, q = p + 1, qend = p + nPoints; q < qend; p++, q++) {
+    if (((p->y <= s->y) && (s->y < q->y)) || 
+	((q->y <= s->y) && (s->y < p->y))) {
+      double b;
+
+      b = (q->x - p->x) * (s->y - p->y) / (q->y - p->y) + p->x;
+      if (s->x < b) {
+	count++;	/* Count the number of intersections. */
+      }
+    }
+  }
+  return (count & 0x01);
+}
+
+int Blt_RegionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
+			int enclosed)
+{
+  Point2d *pp, *pend;
+
+  if (enclosed) {
+    /*  
+     * All points of the polygon must be inside the rectangle.
+     */
+    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
+      if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
+	  (pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
+	return FALSE;	/* One point is exterior. */
+      }
+    }
+    return TRUE;
+  } else {
+    Point2d r;
+    /*
+     * If any segment of the polygon clips the bounding region, the
+     * polygon overlaps the rectangle.
+     */
+    points[nPoints] = points[0];
+    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
+      Point2d p, q;
+
+      p = *pp;
+      q = *(pp + 1);
+      if (Blt_LineRectClip(regionPtr, &p, &q)) {
+	return TRUE;
+      }
+    }
+    /* 
+     * Otherwise the polygon and rectangle are either disjoint or
+     * enclosed.  Check if one corner of the rectangle is inside the
+     * polygon.
+     */
+    r.x = regionPtr->left;
+    r.y = regionPtr->top;
+    return Blt_PointInPolygon(&r, points, nPoints);
+  }
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_GraphExtents --
- *
- *	Generates a bounding box representing the plotting area of the
- *	graph. This data structure is used to clip the points and line
- *	segments of the line element.
- *
- *	The clip region is the plotting area plus such arbitrary extra space.
- *	The reason we clip with a bounding box larger than the plot area is so
- *	that symbols will be drawn even if their center point isn't in the
- *	plotting area.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The bounding box is filled with the dimensions of the plotting area.
- *
+ * Generates a bounding box representing the plotting area of the
+ * graph. This data structure is used to clip the points and line
+ * segments of the line element.
+ * The clip region is the plotting area plus such arbitrary extra space.
+ * The reason we clip with a bounding box larger than the plot area is so
+ * that symbols will be drawn even if their center point isn't in the
+ * plotting area.
  *---------------------------------------------------------------------------
  */
-void
-Blt_GraphExtents(Graph *graphPtr, Region2d *regionPtr)
+
+void Blt_GraphExtents(Graph *graphPtr, Region2d *regionPtr)
 {
-    regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
-    regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);
-    regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
-	graphPtr->xPad);
-    regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
-	graphPtr->yPad);
+  regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
+  regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);
+  regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
+			      graphPtr->xPad);
+  regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
+			       graphPtr->yPad);
 }
 
-static int 
-ClipTest (double ds, double dr, double *t1, double *t2)
+static int ClipTest (double ds, double dr, double *t1, double *t2)
 {
   double t;
 
   if (ds < 0.0) {
-      t = dr / ds;
-      if (t > *t2) {
-	  return FALSE;
-      } 
-      if (t > *t1) {
-	  *t1 = t;
-      }
+    t = dr / ds;
+    if (t > *t2) {
+      return FALSE;
+    } 
+    if (t > *t1) {
+      *t1 = t;
+    }
   } else if (ds > 0.0) {
-      t = dr / ds;
-      if (t < *t1) {
-	  return FALSE;
-      } 
-      if (t < *t2) {
-	  *t2 = t;
-      }
+    t = dr / ds;
+    if (t < *t1) {
+      return FALSE;
+    } 
+    if (t < *t2) {
+      *t2 = t;
+    }
   } else {
-      /* d = 0, so line is parallel to this clipping edge */
-      if (dr < 0.0) {		/* Line is outside clipping edge */
-	  return FALSE;
-      }
+    /* d = 0, so line is parallel to this clipping edge */
+    if (dr < 0.0) {		/* Line is outside clipping edge */
+      return FALSE;
+    }
   }
   return TRUE;
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_LineRectClip --
- *
  *	Clips the given line segment to a rectangular region.  The coordinates
  *	of the clipped line segment are returned.  The original coordinates
  *	are overwritten.
@@ -283,49 +235,36 @@ ClipTest (double ds, double dr, double *t1, double *t2)
  *	Reference: 
  *	  Liang, Y-D., and B. Barsky, A new concept and method for
  *	  Line Clipping, ACM, TOG,3(1), 1984, pp.1-22.
- *
- * Results:
- *	Returns if line segment is visible within the region. The coordinates
- *	of the original line segment are overwritten by the clipped
- *	coordinates.
- *
  *---------------------------------------------------------------------------
  */
-int 
-Blt_LineRectClip(
-    Region2d *regionPtr,	/* Rectangular region to clip. */
-    Point2d *p, Point2d *q)	/* (in/out) Coordinates of original and
-				 * clipped line segment. */
+int Blt_LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 {
-    double t1, t2;
-    double dx, dy;
+  double t1, t2;
+  double dx, dy;
 
-    t1 = 0.0, t2 = 1.0;
-    dx = q->x - p->x;
-    if ((ClipTest (-dx, p->x - regionPtr->left, &t1, &t2)) &&
-	(ClipTest (dx, regionPtr->right - p->x, &t1, &t2))) {
-	dy = q->y - p->y;
-	if ((ClipTest (-dy, p->y - regionPtr->top, &t1, &t2)) && 
-	    (ClipTest (dy, regionPtr->bottom - p->y, &t1, &t2))) {
-	    if (t2 < 1.0) {
-		q->x = p->x + t2 * dx;
-		q->y = p->y + t2 * dy;
-	    }
-	    if (t1 > 0.0) {
-		p->x += t1 * dx;
-		p->y += t1 * dy;
-	    }
-	    return TRUE;
-	}
+  t1 = 0.0, t2 = 1.0;
+  dx = q->x - p->x;
+  if ((ClipTest (-dx, p->x - regionPtr->left, &t1, &t2)) &&
+      (ClipTest (dx, regionPtr->right - p->x, &t1, &t2))) {
+    dy = q->y - p->y;
+    if ((ClipTest (-dy, p->y - regionPtr->top, &t1, &t2)) && 
+	(ClipTest (dy, regionPtr->bottom - p->y, &t1, &t2))) {
+      if (t2 < 1.0) {
+	q->x = p->x + t2 * dx;
+	q->y = p->y + t2 * dy;
+      }
+      if (t1 > 0.0) {
+	p->x += t1 * dx;
+	p->y += t1 * dy;
+      }
+      return TRUE;
     }
-    return FALSE;
+  }
+  return FALSE;
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_PolyRectClip --
- *
  *	Clips the given polygon to a rectangular region.  The resulting
  *	polygon is returned. Note that the resulting polyon may be complex,
  *	connected by zero width/height segments.  The drawing routine (such as
@@ -335,127 +274,115 @@ Blt_LineRectClip(
  *	  Liang Y. D. and Brian A. Barsky, "Analysis and Algorithm for
  *	  Polygon Clipping", Communications of ACM, Vol. 26,
  *	  p.868-877, 1983
- *
- * Results:
- *	Returns the number of points in the clipped polygon. The points of the
- *	clipped polygon are stored in *outputPts*.
- *
  *---------------------------------------------------------------------------
  */
 #define EPSILON  FLT_EPSILON
 #define AddVertex(vx, vy)	    r->x=(vx), r->y=(vy), r++, count++ 
 #define LastVertex(vx, vy)	    r->x=(vx), r->y=(vy), count++ 
 
-int 
-Blt_PolyRectClip(
-    Region2d *regionPtr,	/* Rectangular region clipping the polygon. */
-    Point2d *points,		/* Points of polygon to be clipped. */
-    int nPoints,		/* # of points in polygon. */
-    Point2d *clipPts)		/* (out) Points of clipped polygon. */
+int Blt_PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
+		     Point2d *clipPts)
 {
-    Point2d *p;			/* First vertex of input polygon edge. */
-    Point2d *pend;
-    Point2d *q;			/* Last vertex of input polygon edge. */
-    Point2d *r;
-    int count;
+  Point2d *p;			/* First vertex of input polygon edge. */
+  Point2d *pend;
+  Point2d *q;			/* Last vertex of input polygon edge. */
+  Point2d *r;
+  int count;
 
-    r = clipPts;
-    count = 0;			/* Counts # of vertices in output polygon. */
+  r = clipPts;
+  count = 0;			/* Counts # of vertices in output polygon. */
 
-    points[nPoints] = points[0];
-    for (p = points, q = p + 1, pend = p + nPoints; p < pend; p++, q++) {
-	double dx, dy;
-	double tin1, tin2, tinx, tiny;
-	double xin, yin, xout, yout;
+  points[nPoints] = points[0];
+  for (p = points, q = p + 1, pend = p + nPoints; p < pend; p++, q++) {
+    double dx, dy;
+    double tin1, tin2, tinx, tiny;
+    double xin, yin, xout, yout;
 
-	dx = q->x - p->x;	/* X-direction */
-	dy = q->y - p->y;	/* Y-direction */
+    dx = q->x - p->x;	/* X-direction */
+    dy = q->y - p->y;	/* Y-direction */
 
-	if (fabs(dx) < EPSILON) { 
-	    dx = (p->x > regionPtr->left) ? -EPSILON : EPSILON ;
-	}
-	if (fabs(dy) < EPSILON) { 
-	    dy = (p->y > regionPtr->top) ? -EPSILON : EPSILON ;
-	}
+    if (fabs(dx) < EPSILON) { 
+      dx = (p->x > regionPtr->left) ? -EPSILON : EPSILON ;
+    }
+    if (fabs(dy) < EPSILON) { 
+      dy = (p->y > regionPtr->top) ? -EPSILON : EPSILON ;
+    }
 
-	if (dx > 0.0) {		/* Left */
-	    xin = regionPtr->left;
-	    xout = regionPtr->right + 1.0;
-	} else {		/* Right */
-	    xin = regionPtr->right + 1.0;
-	    xout = regionPtr->left;
-	}
-	if (dy > 0.0) {		/* Top */
-	    yin = regionPtr->top;
-	    yout = regionPtr->bottom + 1.0;
-	} else {		/* Bottom */
-	    yin = regionPtr->bottom + 1.0;
-	    yout = regionPtr->top;
-	}
+    if (dx > 0.0) {		/* Left */
+      xin = regionPtr->left;
+      xout = regionPtr->right + 1.0;
+    } else {		/* Right */
+      xin = regionPtr->right + 1.0;
+      xout = regionPtr->left;
+    }
+    if (dy > 0.0) {		/* Top */
+      yin = regionPtr->top;
+      yout = regionPtr->bottom + 1.0;
+    } else {		/* Bottom */
+      yin = regionPtr->bottom + 1.0;
+      yout = regionPtr->top;
+    }
 	
-	tinx = (xin - p->x) / dx;
-	tiny = (yin - p->y) / dy;
+    tinx = (xin - p->x) / dx;
+    tiny = (yin - p->y) / dy;
 	
-	if (tinx < tiny) {	/* Hits x first */
-	    tin1 = tinx;
-	    tin2 = tiny;
-	} else {		/* Hits y first */
-	    tin1 = tiny;
-	    tin2 = tinx;
-	}
+    if (tinx < tiny) {	/* Hits x first */
+      tin1 = tinx;
+      tin2 = tiny;
+    } else {		/* Hits y first */
+      tin1 = tiny;
+      tin2 = tinx;
+    }
 	
-	if (tin1 <= 1.0) {
-	    if (tin1 > 0.0) {
-		AddVertex(xin, yin);
-            }
-	    if (tin2 <= 1.0) {
-		double toutx, touty, tout1;
+    if (tin1 <= 1.0) {
+      if (tin1 > 0.0) {
+	AddVertex(xin, yin);
+      }
+      if (tin2 <= 1.0) {
+	double toutx, touty, tout1;
 
-		toutx = (xout - p->x) / dx;
-		touty = (yout - p->y) / dy;
-		tout1 = MIN(toutx, touty);
+	toutx = (xout - p->x) / dx;
+	touty = (yout - p->y) / dy;
+	tout1 = MIN(toutx, touty);
 		
-		if ((tin2 > 0.0) || (tout1 > 0.0)) {
-		    if (tin2 <= tout1) {
-			if (tin2 > 0.0) {
-			    if (tinx > tiny) {
-				AddVertex(xin, p->y + tinx * dy);
-			    } else {
-				AddVertex(p->x + tiny * dx, yin);
-			    }
-			}
-			if (tout1 < 1.0) {
-			    if (toutx < touty) {
-				AddVertex(xout, p->y + toutx * dy);
-			    } else {
-				AddVertex(p->x + touty * dx, yout);
-			    }
-			} else {
-			    AddVertex(q->x, q->y);
-			}
-		    } else {
-			if (tinx > tiny) {
-			    AddVertex(xin, yout);
-			} else {
-			    AddVertex(xout, yin);
-			}
+	if ((tin2 > 0.0) || (tout1 > 0.0)) {
+	  if (tin2 <= tout1) {
+	    if (tin2 > 0.0) {
+	      if (tinx > tiny) {
+		AddVertex(xin, p->y + tinx * dy);
+	      } else {
+		AddVertex(p->x + tiny * dx, yin);
+	      }
+	    }
+	    if (tout1 < 1.0) {
+	      if (toutx < touty) {
+		AddVertex(xout, p->y + toutx * dy);
+	      } else {
+		AddVertex(p->x + touty * dx, yout);
+	      }
+	    } else {
+	      AddVertex(q->x, q->y);
+	    }
+	  } else {
+	    if (tinx > tiny) {
+	      AddVertex(xin, yout);
+	    } else {
+	      AddVertex(xout, yin);
+	    }
 
-		    }
-		}
-            }
+	  }
 	}
+      }
     }
-    if (count > 0) {
-	LastVertex(clipPts[0].x, clipPts[0].y);
-    }
-    return count;
+  }
+  if (count > 0) {
+    LastVertex(clipPts[0].x, clipPts[0].y);
+  }
+  return count;
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_GetProjection --
- *
  *	Computes the projection of a point on a line.  The line (given by two
  *	points), is assumed the be infinite.
  *
@@ -464,136 +391,106 @@ Blt_PolyRectClip(
  *	test point and the computed slope), then find the intersection of both
  *	lines. This will be the projection of the sample point on the first
  *	line.
- *
- * Results:
- *	Returns the coordinates of the projection on the line.
- *
  *---------------------------------------------------------------------------
  */
-Point2d
-Blt_GetProjection(
-    int x, int y,		/* Screen coordinates of the sample point. */
-    Point2d *p, Point2d *q)	/* Line segment to project point onto */
+Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
 {
-    double dx, dy;
-    Point2d t;
+  double dx, dy;
+  Point2d t;
 
-    dx = p->x - q->x;
-    dy = p->y - q->y;
+  dx = p->x - q->x;
+  dy = p->y - q->y;
 
-    /* Test for horizontal and vertical lines */
-    if (fabs(dx) < DBL_EPSILON) {
-	t.x = p->x, t.y = (double)y;
-    } else if (fabs(dy) < DBL_EPSILON) {
-	t.x = (double)x, t.y = p->y;
-    } else {
-	double m1, m2;		/* Slope of both lines */
-	double b1, b2;		/* y-intercepts */
-	double midX, midY;	/* Midpoint of line segment. */
-	double ax, ay, bx, by;
+  /* Test for horizontal and vertical lines */
+  if (fabs(dx) < DBL_EPSILON) {
+    t.x = p->x, t.y = (double)y;
+  } else if (fabs(dy) < DBL_EPSILON) {
+    t.x = (double)x, t.y = p->y;
+  } else {
+    double m1, m2;		/* Slope of both lines */
+    double b1, b2;		/* y-intercepts */
+    double midX, midY;	/* Midpoint of line segment. */
+    double ax, ay, bx, by;
 
-	/* Compute the slope and intercept of PQ. */
-	m1 = (dy / dx);
-	b1 = p->y - (p->x * m1);
+    /* Compute the slope and intercept of PQ. */
+    m1 = (dy / dx);
+    b1 = p->y - (p->x * m1);
 
-	/* 
-	 * Compute the slope and intercept of a second line segment: one that
-	 * intersects through sample X-Y coordinate with a slope perpendicular
-	 * to original line.
-	 */
+    /* 
+     * Compute the slope and intercept of a second line segment: one that
+     * intersects through sample X-Y coordinate with a slope perpendicular
+     * to original line.
+     */
 
-	/* Find midpoint of PQ. */
-	midX = (p->x + q->x) * 0.5;
-	midY = (p->y + q->y) * 0.5;
+    /* Find midpoint of PQ. */
+    midX = (p->x + q->x) * 0.5;
+    midY = (p->y + q->y) * 0.5;
 
-	/* Rotate the line 90 degrees */
-	ax = midX - (0.5 * dy);
-	ay = midY - (0.5 * -dx);
-	bx = midX + (0.5 * dy);
-	by = midY + (0.5 * -dx);
+    /* Rotate the line 90 degrees */
+    ax = midX - (0.5 * dy);
+    ay = midY - (0.5 * -dx);
+    bx = midX + (0.5 * dy);
+    by = midY + (0.5 * -dx);
 
-	m2 = (ay - by) / (ax - bx);
-	b2 = y - (x * m2);
+    m2 = (ay - by) / (ax - bx);
+    b2 = y - (x * m2);
 
-	/*
-	 * Given the equations of two lines which contain the same point,
-	 *
-	 *    y = m1 * x + b1
-	 *    y = m2 * x + b2
-	 *
-	 * solve for the intersection.
-	 *
-	 *    x = (b2 - b1) / (m1 - m2)
-	 *    y = m1 * x + b1
-	 *
-	 */
+    /*
+     * Given the equations of two lines which contain the same point,
+     *
+     *    y = m1 * x + b1
+     *    y = m2 * x + b2
+     *
+     * solve for the intersection.
+     *
+     *    x = (b2 - b1) / (m1 - m2)
+     *    y = m1 * x + b1
+     *
+     */
 
-	t.x = (b2 - b1) / (m1 - m2);
-	t.y = m1 * t.x + b1;
-    }
-    return t;
+    t.x = (b2 - b1) / (m1 - m2);
+    t.y = m1 * t.x + b1;
+  }
+  return t;
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_UpdateScrollbar --
- *
  * 	Invoke a TCL command to the scrollbar, defining the new position and
  * 	length of the scroll. See the Tk documentation for further information
  * 	on the scrollbar.  It is assumed the scrollbar command prefix is
  * 	valid.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Scrollbar is commanded to change position and/or size.
- *
  *---------------------------------------------------------------------------
  */
-void
-Blt_UpdateScrollbar(
-    Tcl_Interp *interp,
-    Tcl_Obj *scrollCmdObjPtr,		/* Scrollbar command prefix. May be
-					 * several words */
-    int first, int last, int width)
+void Blt_UpdateScrollbar(Tcl_Interp *interp, Tcl_Obj *scrollCmdObjPtr,
+			 int first, int last, int width)
 {
-    Tcl_Obj *cmdObjPtr;
-    double firstFract, lastFract;
+  Tcl_Obj *cmdObjPtr;
+  double firstFract, lastFract;
 
-    firstFract = 0.0, lastFract = 1.0;
-    if (width > 0) {
-	firstFract = (double)first / (double)width;
-	lastFract = (double)last / (double)width;
-    }
-    cmdObjPtr = Tcl_DuplicateObj(scrollCmdObjPtr);
-    Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(firstFract));
-    Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(lastFract));
-    Tcl_IncrRefCount(cmdObjPtr);
-    if (Tcl_EvalObjEx(interp, cmdObjPtr, TCL_EVAL_GLOBAL) != TCL_OK) {
-	Tcl_BackgroundError(interp);
-    }
-    Tcl_DecrRefCount(cmdObjPtr);
-
+  firstFract = 0.0, lastFract = 1.0;
+  if (width > 0) {
+    firstFract = (double)first / (double)width;
+    lastFract = (double)last / (double)width;
+  }
+  cmdObjPtr = Tcl_DuplicateObj(scrollCmdObjPtr);
+  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(firstFract));
+  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(lastFract));
+  Tcl_IncrRefCount(cmdObjPtr);
+  if (Tcl_EvalObjEx(interp, cmdObjPtr, TCL_EVAL_GLOBAL) != TCL_OK) {
+    Tcl_BackgroundError(interp);
+  }
+  Tcl_DecrRefCount(cmdObjPtr);
 }
 
 /*
  *---------------------------------------------------------------------------
- *
- * Blt_GetPrivateGC --
- *
  *      Like Tk_GetGC, but doesn't share the GC with any other widget.  This
  *      is needed because the certain GC parameters (like dashes) can not be
  *      set via XCreateGC, therefore there is no way for Tk's hashing
  *      mechanism to recognize that two such GCs differ.
- *
- * Results:
- *      A new GC is returned.
- *
  *---------------------------------------------------------------------------
  */
-
 GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
 {
   GC gc;
@@ -620,55 +517,48 @@ void Blt_FreePrivateGC(Display *display, GC gc)
   XFreeGC(display, gc);
 }
 
-void
-Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
+void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 {
-    XSetDashes(display, gc, dashesPtr->offset, (const char *)dashesPtr->values,
-	(int)strlen((char *)dashesPtr->values));
+  XSetDashes(display, gc, dashesPtr->offset, (const char *)dashesPtr->values,
+	     (int)strlen((char *)dashesPtr->values));
 }
 
-void
-Blt_Draw2DSegments(
-    Display *display,
-    Drawable drawable,
-    GC gc,
-    Segment2d *segments,
-    int nSegments)
+void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc,
+			Segment2d *segments, int nSegments)
 {
-    XSegment *dp, *xsegments;
-    Segment2d *sp, *send;
+  XSegment *dp, *xsegments;
+  Segment2d *sp, *send;
 
-    xsegments = malloc(nSegments * sizeof(XSegment));
-    if (xsegments == NULL) {
-	return;
-    }
-    dp = xsegments;
-    for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-	dp->x1 = (short int)sp->p.x;
-	dp->y1 = (short int)sp->p.y;
-	dp->x2 = (short int)sp->q.x;
-	dp->y2 = (short int)sp->q.y;
-	dp++;
-    }
-    XDrawSegments(display, drawable, gc, xsegments, nSegments);
-    free(xsegments);
+  xsegments = malloc(nSegments * sizeof(XSegment));
+  if (xsegments == NULL) {
+    return;
+  }
+  dp = xsegments;
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    dp->x1 = (short int)sp->p.x;
+    dp->y1 = (short int)sp->p.y;
+    dp->x2 = (short int)sp->q.x;
+    dp->y2 = (short int)sp->q.y;
+    dp++;
+  }
+  XDrawSegments(display, drawable, gc, xsegments, nSegments);
+  free(xsegments);
 }
 
-long 
-Blt_MaxRequestSize(Display *display, size_t elemSize) 
+long Blt_MaxRequestSize(Display *display, size_t elemSize) 
 {
-    static long maxSizeBytes = 0L;
+  static long maxSizeBytes = 0L;
 
-    if (maxSizeBytes == 0L) {
-	long size;
-	size = XExtendedMaxRequestSize(display);
-	if (size == 0) {
-	    size = XMaxRequestSize(display);
-	}
-	size -= (4 * elemSize);
-	/*	maxSizeBytes = (size * 4); */
-	maxSizeBytes = size;
+  if (maxSizeBytes == 0L) {
+    long size;
+    size = XExtendedMaxRequestSize(display);
+    if (size == 0) {
+      size = XMaxRequestSize(display);
     }
-    return (maxSizeBytes / elemSize);
+    size -= (4 * elemSize);
+    /*	maxSizeBytes = (size * 4); */
+    maxSizeBytes = size;
+  }
+  return (maxSizeBytes / elemSize);
 }
 

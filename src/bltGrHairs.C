@@ -350,13 +350,3 @@ void Blt_DisableCrosshairs(Graph *graphPtr)
     TurnOffHairs(graphPtr->tkwin, graphPtr->crosshairs);
   }
 }
-
-void Blt_UpdateCrosshairs(Graph *graphPtr)
-{
-  Crosshairs *chPtr = graphPtr->crosshairs;
-
-  chPtr->segArr[0].y1 = graphPtr->bottom;
-  chPtr->segArr[0].y2 = graphPtr->top;
-  chPtr->segArr[1].x1 = graphPtr->left;
-  chPtr->segArr[1].x2 = graphPtr->right;
-}

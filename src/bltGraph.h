@@ -592,8 +592,6 @@ extern void Blt_MapElements(Graph *graphPtr);
 
 extern void Blt_MapMarkers(Graph *graphPtr);
 
-extern void Blt_UpdateCrosshairs(Graph *graphPtr);
-
 extern void Blt_DestroyPens(Graph *graphPtr);
 
 extern int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, 
