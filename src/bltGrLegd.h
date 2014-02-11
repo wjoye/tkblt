@@ -48,7 +48,11 @@
 #define LEGEND_PLOTAREA_MASK  (LEGEND_PLOT | LEGEND_XY)
 
 extern int Blt_CreateLegend(Graph *graphPtr);
+extern int Blt_ConfigureObjLegend(Graph *graphPtr,
+				      int objc, Tcl_Obj* const objv[]);
+extern void Blt_DeleteLegend(Graph* graphPtr);
 extern void Blt_DestroyLegend(Graph *graphPtr);
+
 extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
 extern void Blt_MapLegend(Graph *graphPtr, int width, int height);
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 

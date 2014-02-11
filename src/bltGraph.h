@@ -534,10 +534,6 @@ extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 
 extern void Blt_ComputeBarStacks(Graph *graphPtr);
 
-extern void Blt_ConfigureLegend(Graph *graphPtr);
-extern void Blt_ConfigureElements(Graph *graphPtr);
-extern void Blt_ConfigureAxes(Graph *graphPtr);
-extern void Blt_ConfigureMarkers(Graph *graphPtr);
 extern void Blt_ReconfigureGraph(Graph *graphPtr);
 
 extern void Blt_DestroyAxes(Graph *graphPtr);

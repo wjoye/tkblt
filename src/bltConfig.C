@@ -93,7 +93,6 @@ Tk_ObjCustomOption backgroundObjOption =
     "background", BackgroundSetProc, BackgroundGetProc, NULL, NULL, NULL
   };
 
-
 static int BackgroundSetProc(ClientData clientData, Tcl_Interp *interp,
 			     Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			     int offset, char* save, int flags)

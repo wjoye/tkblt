@@ -98,6 +98,7 @@ int Blt_CreateCrosshairs(Graph* graphPtr)
   chPtr->hidden = TRUE;
   chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
   graphPtr->crosshairs = chPtr;
+
   return TCL_OK;
 }
 
@@ -144,7 +145,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Crosshairs* chPtr = graphPtr->crosshairs;

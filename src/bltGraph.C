@@ -107,7 +107,8 @@ static const char* objectClassNames[] = {
 #define DEF_GRAPH_TITLE_COLOR		STD_NORMAL_FOREGROUND
 #define DEF_GRAPH_WIDTH			"5i"
 
-static char* barmodeObjOption[] = {"normal", "stacked", "aligned", "overlap"};
+static char* barmodeObjOption[] = 
+  {"normal", "stacked", "aligned", "overlap", NULL};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
@@ -387,9 +388,10 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 					       PickEntry, Blt_GraphTags);
   if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
     goto error;
-  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
-    goto error;
   if (Blt_CreateLegend(graphPtr) != TCL_OK)
+    goto error;
+
+  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
   if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL)
     goto error;
@@ -406,10 +408,11 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 
   if (Blt_ConfigureObjCrosshairs(graphPtr, objc, objv) != TCL_OK)
     goto error;
+  if (Blt_ConfigureObjLegend(graphPtr, objc, objv) != TCL_OK)
+    goto error;
+  
   if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
-  Blt_ConfigureLegend(graphPtr);
-
   if (Blt_DefaultAxes(graphPtr) != TCL_OK)
     goto error;
   AdjustAxisPointers(graphPtr);
@@ -572,10 +575,6 @@ static void ConfigureGraph(Graph* graphPtr)
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
     graphPtr->cache = None;
   }
-
-  // Reconfigure the crosshairs, just in case the background color of the
-  // plotarea has been changed.
-  //  Blt_ConfigureCrosshairs(graphPtr);
 }
 
 static void DisplayGraph(ClientData clientData)
@@ -709,6 +708,7 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
       Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
 			   graphPtr->tkwin);
       Blt_DeleteCrosshairs(graphPtr);
+      Blt_DeleteLegend(graphPtr);
 
       graphPtr->tkwin = NULL;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
@@ -743,7 +743,7 @@ static void DestroyGraph(char* dataPtr)
 
   Blt_DestroyCrosshairs(graphPtr);
   Blt_DestroyMarkers(graphPtr);
-  Blt_DestroyElements(graphPtr);
+  Blt_DestroyElements(graphPtr);  // must come before legend and others
   Blt_DestroyLegend(graphPtr);
   Blt_DestroyAxes(graphPtr);
   Blt_DestroyPens(graphPtr);
@@ -1448,8 +1448,8 @@ int Blt_GraphType(Graph* graphPtr)
 void Blt_ReconfigureGraph(Graph* graphPtr)	
 {
   ConfigureGraph(graphPtr);
-  Blt_ConfigureLegend(graphPtr);
-  Blt_ConfigureElements(graphPtr);
-  Blt_ConfigureAxes(graphPtr);
-  Blt_ConfigureMarkers(graphPtr);
+  //  Blt_ConfigureLegend(graphPtr);
+  //  Blt_ConfigureElements(graphPtr);
+  //  Blt_ConfigureAxes(graphPtr);
+  //  Blt_ConfigureMarkers(graphPtr);
 }
