@@ -277,7 +277,7 @@ typedef struct {
     short int left, right, top, bottom;	/* Region occupied by the of axis. */
     short int width, height;		/* Extents of axis */
     short int maxTickWidth, maxTickHeight;
-    Blt_Background normalBg;
+    Tk_3DBorder normalBg;
     Blt_Background activeBg;
     XColor *activeFgColor;
 

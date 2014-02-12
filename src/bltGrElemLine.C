@@ -316,7 +316,7 @@ typedef struct {
     XColor *fillBgColor;
     GC fillGC;
 
-    Blt_Background fillBg;		/* Background for fill area. */
+    Tk_3DBorder fillBg;		/* Background for fill area. */
 
     Point2d *fillPts;			/* Array of points used to draw polygon
 					 * to fill area under the curve */
@@ -449,10 +449,9 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
    DEF_LINE_PATTERN_FG, Tk_Offset(LineElement, fillFgColor), 
    BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-areabackground", "areaBackground", 
+  {BLT_CONFIG_BORDER, "-areabackground", "areaBackground", 
    "AreaBackground", DEF_LINE_PATTERN_BG, Tk_Offset(LineElement, fillBg),
-   BLT_CONFIG_NULL_OK,
-   &backgroundOption},
+   BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_LINE_TAGS, 
    Tk_Offset(LineElement, obj.tags), BLT_CONFIG_NULL_OK,
    &listOption},
@@ -4154,9 +4153,9 @@ DrawNormalLineProc(Graph *graphPtr, Drawable drawable, Element *basePtr)
 	    count++;
 	}
 	if (elemPtr->fillBg != NULL) {
-	    Blt_SetBackgroundOrigin(graphPtr->tkwin, elemPtr->fillBg, 0, 0);
-	    Blt_FillBackgroundPolygon(graphPtr->tkwin, drawable, 
-		elemPtr->fillBg, points, elemPtr->nFillPts, 0, TK_RELIEF_FLAT);
+	    Tk_Fill3DPolygon(graphPtr->tkwin, drawable, 
+			     elemPtr->fillBg, points, 
+			     elemPtr->nFillPts, 0, TK_RELIEF_FLAT);
 	}
 	free(points);
     }

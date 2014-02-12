@@ -350,10 +350,9 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_DOUBLE, "-autorange", "autoRange", "AutoRange",
    DEF_AXIS_RANGE, Tk_Offset(Axis, windowSize),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT}, 
-  {BLT_CONFIG_CUSTOM, "-background", "background", "Background",
+  {BLT_CONFIG_BORDER, "-background", "background", "Background",
    DEF_AXIS_BACKGROUND, Tk_Offset(Axis, normalBg),
-   ALL_GRAPHS | BLT_CONFIG_NULL_OK,
-   &backgroundOption},
+   ALL_GRAPHS | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL, (char *)NULL, 0, 0},
   {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_AXIS_TAGS, 
    Tk_Offset(Axis, obj.tags), ALL_GRAPHS | BLT_CONFIG_NULL_OK,
@@ -2904,12 +2903,13 @@ DrawAxis(Axis *axisPtr, Drawable drawable)
     Graph *graphPtr = axisPtr->obj.graphPtr;
 
     if (axisPtr->normalBg != NULL) {
-	Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, 
-		axisPtr->normalBg, 
-		axisPtr->left, axisPtr->top, 
-		axisPtr->right - axisPtr->left, 
-		axisPtr->bottom - axisPtr->top, axisPtr->borderWidth, 
-		axisPtr->relief);
+	Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
+			   axisPtr->normalBg, 
+			   axisPtr->left, axisPtr->top, 
+			   axisPtr->right - axisPtr->left, 
+			   axisPtr->bottom - axisPtr->top,
+			   axisPtr->borderWidth, 
+			   axisPtr->relief);
     }
     if (axisPtr->title != NULL) {
 	TextStyle ts;
@@ -3059,10 +3059,7 @@ AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
     Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->obj.name);
     if (axisPtr->normalBg != NULL) {
-	Tk_3DBorder border;
-
-	border = Blt_BackgroundBorder(axisPtr->normalBg);
-	Blt_Ps_Fill3DRectangle(ps, border, 
+	Blt_Ps_Fill3DRectangle(ps, axisPtr->normalBg, 
 		(double)axisPtr->left, (double)axisPtr->top, 
 		axisPtr->right - axisPtr->left, axisPtr->bottom - axisPtr->top, 
 		axisPtr->borderWidth, axisPtr->relief);
