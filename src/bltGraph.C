@@ -557,14 +557,6 @@ static void ConfigureGraph(Graph* graphPtr)
   }
   graphPtr->drawGC = newGC;
 
-  if (graphPtr->plotBg != NULL)
-    Blt_SetBackgroundChangedProc(graphPtr->plotBg, Blt_UpdateGraph, 
-				 graphPtr);
-
-  if (graphPtr->normalBg != NULL)
-    Blt_SetBackgroundChangedProc(graphPtr->normalBg, Blt_UpdateGraph, 
-				 graphPtr);
-
   // If the -inverted option changed, we need to readjust the pointers
   // to the axes and recompute the their scales.
   if (graphPtr->flags & RESET_AXES)
@@ -1006,17 +998,6 @@ static Blt_OpSpec graphOps[] =
 static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
 
 // Support
-
-void Blt_UpdateGraph(ClientData clientData)
-{
-  Graph* graphPtr = clientData;
-
-  graphPtr->flags |= REDRAW_WORLD;
-  if ((graphPtr->tkwin != NULL) && !(graphPtr->flags & REDRAW_PENDING)) {
-    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
-    graphPtr->flags |= REDRAW_PENDING;
-  }
-}
 
 void Blt_EventuallyRedrawGraph(Graph* graphPtr) 
 {

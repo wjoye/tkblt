@@ -3890,14 +3890,6 @@ ConfigureAxis(Axis *axisPtr)
     if (angle < 0.0f) {
 	angle += 360.0f;
     }
-    if (axisPtr->normalBg != NULL) {
-	Blt_SetBackgroundChangedProc(axisPtr->normalBg, Blt_UpdateGraph, 
-		graphPtr);
-    }
-    if (axisPtr->activeBg != NULL) {
-	Blt_SetBackgroundChangedProc(axisPtr->activeBg, Blt_UpdateGraph, 
-		graphPtr);
-    }
     axisPtr->tickAngle = angle;
     ResetTextStyles(axisPtr);
 

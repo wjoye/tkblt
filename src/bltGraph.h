@@ -657,8 +657,6 @@ extern Blt_BindTagProc Blt_AxisTags;
 
 extern int Blt_GraphType(Graph *graphPtr);
 
-extern void Blt_UpdateGraph(ClientData clientData);
-
 extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
 
 extern void Blt_MarkersToPostScript(Graph *graphPtr, Blt_Ps ps, int under);

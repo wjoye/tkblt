@@ -655,7 +655,6 @@ static ElementMapProc MapLineProc;
 static DistanceProc DistanceToYProc;
 static DistanceProc DistanceToXProc;
 static DistanceProc DistanceToLineProc;
-static Blt_BackgroundChangedProc BackgroundChangedProc;
 
 INLINE static int
 Round(double x)
@@ -3083,30 +3082,6 @@ GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
 /*
  *---------------------------------------------------------------------------
  *
- * BackgroundChangedProc
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-BackgroundChangedProc(ClientData clientData)
-{
-    Element *elemPtr = clientData;
-    Graph *graphPtr;
-
-    graphPtr = elemPtr->obj.graphPtr;
-    if (graphPtr->tkwin != NULL) {
-	graphPtr->flags |= REDRAW_WORLD;
-	Blt_EventuallyRedrawGraph(graphPtr);
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
  * ConfigureLineProc --
  *
  *	Sets up the appropriate configuration parameters in the GC.  It is
@@ -3149,10 +3124,6 @@ ConfigureLineProc(Graph *graphPtr, Element *basePtr)
     stylePtr = Blt_Chain_GetValue(link);
     stylePtr->penPtr = NORMALPEN(elemPtr);
 
-    if (elemPtr->fillBg != NULL) {
-	Blt_SetBackgroundChangedProc(elemPtr->fillBg, BackgroundChangedProc, 
-		elemPtr);
-    }
     /*
      * Set the outline GC for this pen: GCForeground is outline color.
      * GCBackground is the fill color (only used for bitmap symbols).
