@@ -190,7 +190,7 @@ struct _Legend {
 #define DEF_LEGEND_ACTIVEFOREGROUND	white
 #define DEF_LEGEND_ACTIVERELIEF		"flat"
 #define DEF_LEGEND_ANCHOR	   	"n"
-#define DEF_LEGEND_BACKGROUND	   	(char *)NULL
+#define DEF_LEGEND_BACKGROUND	   	NULL
 #define DEF_LEGEND_BORDERWIDTH		STD_BORDERWIDTH
 #define DEF_LEGEND_COLUMNS		"0"
 #define DEF_LEGEND_EXPORTSELECTION	"no"
@@ -207,7 +207,7 @@ struct _Legend {
 #define DEF_LEGEND_ROWS			"0"
 #define DEF_LEGEND_SELECTBACKGROUND 	skyblue4
 #define DEF_LEGEND_SELECTBORDERWIDTH	"1"
-#define DEF_LEGEND_SELECTCOMMAND        (char*)NULL
+#define DEF_LEGEND_SELECTCOMMAND        NULL
 #define DEF_LEGEND_SELECTMODE		"multiple"
 #define DEF_LEGEND_SELECTFOREGROUND 	white
 #define DEF_LEGEND_SELECTRELIEF		"flat"
@@ -215,7 +215,8 @@ struct _Legend {
 #define DEF_LEGEND_FOCUSEDIT		"no"
 #define DEF_LEGEND_FOCUSFOREGROUND	STD_ACTIVE_FOREGROUND
 #define DEF_LEGEND_TAKEFOCUS		"1"
-#define DEF_LEGEND_TITLE		(char*)NULL
+#define DEF_LEGEND_TITLE		NULL
+#define DEF_LEGEND_TITLEANCHOR		"nw"
 #define	DEF_LEGEND_TITLECOLOR		STD_NORMAL_FOREGROUND
 #define DEF_LEGEND_TITLEFONT		STD_FONT_SMALL
 
@@ -359,12 +360,14 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Legend, activeRelief), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
    DEF_LEGEND_ANCHOR, 
-   -1, Tk_Offset(Legend, anchor), 0, NULL, 0},
+   -1, Tk_Offset(Legend, anchor), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-background", "background", "Background",
    DEF_LEGEND_BACKGROUND, 
-   -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, &backgroundObjOption, 0},
+   -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, &backgroundObjOption,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_LEGEND_BORDERWIDTH, 
    -1, Tk_Offset(Legend, borderWidth), 0, NULL, 
@@ -373,7 +376,8 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_INT, "-columns", "columns", "columns",
    DEF_LEGEND_COLUMNS, 
-   -1, Tk_Offset(Legend, reqColumns), 0, NULL, 0},
+   -1, Tk_Offset(Legend, reqColumns), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_BOOLEAN, "-exportselection", "exportSelection",
    "ExportSelection", 
    DEF_LEGEND_EXPORTSELECTION, 
@@ -392,10 +396,12 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, 0, 0, "-foreground", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    DEF_LEGEND_FOREGROUND, 
-   -1, Tk_Offset(Legend, fgColor), 0, NULL, 0},
+   -1, Tk_Offset(Legend, fgColor), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    DEF_LEGEND_HIDE, 
-   -1, Tk_Offset(Legend, hide), 0, NULL, 0},
+   -1, Tk_Offset(Legend, hide), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-ipadx", "iPadX", "Pad", 
    DEF_LEGEND_IPADX, 
    -1, Tk_Offset(Legend, ixPad), 0, NULL,
@@ -422,13 +428,16 @@ static Tk_OptionSpec optionSpecs[] = {
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_CUSTOM, "-position", "position", "Position", 
    DEF_LEGEND_POSITION, 
-   -1, 0, 0, &positionObjOption, 0},
+   -1, 0, 0, &positionObjOption,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_BOOLEAN, "-raised", "raised", "Raised", 
    DEF_LEGEND_RAISED, 
-   -1, Tk_Offset(Legend, raised), 0, NULL, 0},
+   -1, Tk_Offset(Legend, raised), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
    DEF_LEGEND_RELIEF, 
-   -1, Tk_Offset(Legend, relief), 0, NULL, 0},
+   -1, Tk_Offset(Legend, relief), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_INT, "-rows", "rows", "rows", 
    DEF_LEGEND_ROWS, 
    -1, Tk_Offset(Legend, reqRows), 0, NULL,
@@ -440,7 +449,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-selectborderwidth", "selectBorderWidth", 
    "SelectBorderWidth", 
    DEF_LEGEND_SELECTBORDERWIDTH, 
-   -1, Tk_Offset(Legend, selBW), 0, NULL, 0},
+   -1, Tk_Offset(Legend, selBW), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-selectcommand", "selectCommand", "SelectCommand",
    DEF_LEGEND_SELECTCOMMAND,
    -1, Tk_Offset(Legend, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
@@ -458,13 +468,20 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Legend, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    DEF_LEGEND_TITLE, 
-   -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL, 0},
+   -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL,
+   RESET_WORLD | CACHE_DIRTY},
+  {TK_OPTION_ANCHOR, "-titleanchor", "titleAnchor", "TitleAnchor", 
+   DEF_LEGEND_TITLEANCHOR, 
+   -1, Tk_Offset(Legend, titleStyle.anchor), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-titlecolor", "titleColor", "TitleColor",
    DEF_LEGEND_TITLECOLOR, 
-   -1, Tk_Offset(Legend, titleStyle.color), 0, NULL, 0},
+   -1, Tk_Offset(Legend, titleStyle.color), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    DEF_LEGEND_TITLEFONT, 
-   -1, Tk_Offset(Legend, titleStyle.font), 0, NULL, 0},
+   -1, Tk_Offset(Legend, titleStyle.font), 0, NULL,
+   RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -600,9 +617,8 @@ static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    ConfigureLegend(graphPtr);
     graphPtr->flags |= mask;
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    ConfigureLegend(graphPtr);
     Blt_EventuallyRedrawGraph(graphPtr);
     break; 
   }
