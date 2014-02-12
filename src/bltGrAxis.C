@@ -191,10 +191,6 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
 
 static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_BORDER, "-activebackground", "activeBackground", 
-   "ActiveBackground", 
-   DEF_AXIS_ACTIVEBACKGROUND, 
-   -1, Tk_Offset(Axis, activeBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", 
    "ActiveForeground",
    DEF_AXIS_ACTIVEFOREGROUND,
@@ -337,10 +333,6 @@ Blt_CustomOption bitmaskGrAxisShowTicksOption =
 };
 
 static Blt_ConfigSpec configSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-activebackground", "activeBackground", 
-   "ActiveBackground", DEF_AXIS_ACTIVEBACKGROUND, 
-   Tk_Offset(Axis, activeBg), ALL_GRAPHS | BLT_CONFIG_NULL_OK,
-   &backgroundOption},
   {BLT_CONFIG_COLOR, "-activeforeground", "activeForeground",
    "ActiveForeground", DEF_AXIS_ACTIVEFOREGROUND,
    Tk_Offset(Axis, activeFgColor), ALL_GRAPHS}, 

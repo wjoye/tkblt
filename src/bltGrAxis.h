@@ -278,7 +278,6 @@ typedef struct {
     short int width, height;		/* Extents of axis */
     short int maxTickWidth, maxTickHeight;
     Tk_3DBorder normalBg;
-    Blt_Background activeBg;
     XColor *activeFgColor;
 
     int relief;
