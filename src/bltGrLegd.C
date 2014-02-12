@@ -110,7 +110,7 @@ struct _Legend {
 					 * displayed.  Used to calculate size
 					 * of legend */
   XColor *fgColor;
-  Blt_Background activeBg;		/* Active legend entry background
+  Tk_3DBorder activeBg;		/* Active legend entry background
 					 * color. */
   XColor *activeFgColor;
   int activeRelief;			/* 3-D effect on active entry. */
@@ -343,10 +343,10 @@ static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin,
 }
 
 static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_CUSTOM, "-activebackground", "activeBackground",
+  {TK_OPTION_BORDER, "-activebackground", "activeBackground",
    "ActiveBackground", 
    DEF_LEGEND_ACTIVEBACKGROUND, 
-   -1, Tk_Offset(Legend, activeBg), 0, &backgroundObjOption, 0},
+   -1, Tk_Offset(Legend, activeBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-activeborderwidth", "activeBorderWidth", 
    "ActiveBorderWidth", 
    DEF_LEGEND_BORDERWIDTH, 
@@ -1840,17 +1840,9 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
     }
     isSelected = EntryIsSelected(legendPtr, elemPtr);
     if (elemPtr->flags & LABEL_ACTIVE) {
-      int xOrigin, yOrigin;
-
-      Blt_GetBackgroundOrigin(legendPtr->activeBg, &xOrigin, &yOrigin);
-      Blt_SetBackgroundOrigin(tkwin, legendPtr->activeBg, 
-			      xOrigin - legendPtr->x, yOrigin - legendPtr->y);
-      Blt_Ts_SetForeground(legendPtr->style, legendPtr->activeFgColor);
-      Blt_FillBackgroundRectangle(tkwin, pixmap, legendPtr->activeBg, 
+      Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->activeBg, 
 				  x, y, legendPtr->entryWidth, legendPtr->entryHeight, 
 				  legendPtr->entryBW, legendPtr->activeRelief);
-      Blt_SetBackgroundOrigin(tkwin, legendPtr->activeBg, 
-			      xOrigin, yOrigin);
     } else if (isSelected) {
       int xOrigin, yOrigin;
       Blt_Background bg;
@@ -1991,11 +1983,8 @@ void Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps)
       continue;			/* Skip this label */
     }
     if (elemPtr->flags & LABEL_ACTIVE) {
-      Tk_3DBorder border;
-	    
-      border = Blt_BackgroundBorder(legendPtr->activeBg);
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->activeFgColor);
-      Blt_Ps_Fill3DRectangle(ps, border, x, y, legendPtr->entryWidth, 
+      Blt_Ps_Fill3DRectangle(ps, legendPtr->activeBg, x, y, legendPtr->entryWidth, 
 			     legendPtr->entryHeight, legendPtr->entryBW, 
 			     legendPtr->activeRelief);
     } else {

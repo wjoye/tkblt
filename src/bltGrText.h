@@ -52,9 +52,6 @@ typedef struct {
 					 * in the active color */
     XColor *color;			/* Color to draw the text. */
     Tk_Font font;			/* Font to use to draw text */
-    Blt_Background bg;			/* Background color of text.  This is
-					 * also used for drawing disabled
-					 * text. */
     double angle;			/* Rotation of text in degrees. */
     Tk_Justify justify;			/* Justification of the text
 					 * string. This only matters if the
