@@ -191,10 +191,10 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
 
 static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_CUSTOM, "-activebackground", "activeBackground", 
+  {TK_OPTION_BORDER, "-activebackground", "activeBackground", 
    "ActiveBackground", 
    DEF_AXIS_ACTIVEBACKGROUND, 
-   -1, Tk_Offset(Axis, activeBg), TK_OPTION_NULL_OK, &backgroundObjOption, 0},
+   -1, Tk_Offset(Axis, activeBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", 
    "ActiveForeground",
    DEF_AXIS_ACTIVEFOREGROUND,
@@ -205,9 +205,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-autorange", "autoRange", "AutoRange",
    DEF_AXIS_RANGE, 
    -1, Tk_Offset(Axis, windowSize), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-background", "background", "Background",
+  {TK_OPTION_BORDER, "-background", "background", "Background",
    DEF_AXIS_BACKGROUND, 
-   -1, Tk_Offset(Axis, normalBg), TK_OPTION_NULL_OK, &backgroundObjOption, 0},
+   -1, Tk_Offset(Axis, normalBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
