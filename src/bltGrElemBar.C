@@ -68,7 +68,7 @@ typedef struct {
 					 * with. */
     /* Barchart specific pen fields start here. */
     XColor *outlineColor;		/* Outline (foreground) color of bar */
-    Blt_Background fill;		/* 3D border and fill (background)
+    Tk_3DBorder fill;		/* 3D border and fill (background)
 					 * color */
     int borderWidth;			/* 3D border width of bar */
     int relief;				/* Relief of the bar */
@@ -236,14 +236,12 @@ Blt_CustomOption bltBarModeOption =
 #define DEF_PEN_SHOW_VALUES		"no"
 
 static Blt_ConfigSpec barPenConfigSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-background", "background", "Background",
+  {BLT_CONFIG_BORDER, "-background", "background", "Background",
    DEF_PEN_ACTIVE_BACKGROUND, Tk_Offset(BarPen, fill),
-   BLT_CONFIG_NULL_OK | ACTIVE_PEN,
-   &backgroundOption},
-  {BLT_CONFIG_CUSTOM, "-background", "background", "Background",
+   BLT_CONFIG_NULL_OK | ACTIVE_PEN},
+  {BLT_CONFIG_BORDER, "-background", "background", "Background",
    DEF_PEN_NORMAL_BACKGROUND, Tk_Offset(BarPen, fill),
-   BLT_CONFIG_NULL_OK | NORMAL_PEN,
-   &backgroundOption},
+   BLT_CONFIG_NULL_OK | NORMAL_PEN},
   {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL,
@@ -309,10 +307,9 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    DEF_BAR_ACTIVE_PEN, Tk_Offset(BarElement, activePenPtr), 
    BLT_CONFIG_NULL_OK, &bltBarPenOption},
-  {BLT_CONFIG_CUSTOM, "-background", "background", "Background",
+  {BLT_CONFIG_BORDER, "-background", "background", "Background",
    DEF_BAR_BACKGROUND, Tk_Offset(BarElement, builtinPen.fill),
-   BLT_CONFIG_NULL_OK,
-   &backgroundOption},
+   BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_DOUBLE, "-barwidth", "barWidth", "BarWidth",
    DEF_BAR_WIDTH, Tk_Offset(BarElement, barWidth),
    BLT_CONFIG_DONT_SET_DEFAULT},
@@ -591,7 +588,7 @@ ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
 	defColor = penPtr->outlineColor->pixel;
 	gcValues.foreground = penPtr->outlineColor->pixel;
     } else if (penPtr->fill != NULL) {
-	defColor = Blt_BackgroundBorderColor(penPtr->fill)->pixel;
+	defColor = Tk_3DBorderColor(penPtr->fill)->pixel;
 	gcValues.foreground = defColor;
     } else {
 	defColor = BlackPixel(graphPtr->display, screenNum);
@@ -609,8 +606,7 @@ ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
 	gcValues.foreground = BlackPixel(graphPtr->display, screenNum);
 	gcValues.background = WhitePixel(graphPtr->display, screenNum);
 	if (penPtr->fill != NULL) {
-	    gcValues.foreground =
-		Blt_BackgroundBorderColor(penPtr->fill)->pixel;
+	    gcValues.foreground = Tk_3DBorderColor(penPtr->fill)->pixel;
 	} else if (penPtr->outlineColor != NULL) {
 	    gcValues.foreground = penPtr->outlineColor->pixel;
 	}
@@ -1698,7 +1694,7 @@ DrawSymbolProc(Graph *graphPtr, Drawable drawable, Element *basePtr,
 	XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, x, y, 
 		       size, size);
     } else {
-	Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, penPtr->fill, 
+	Tk_Fill3DRectangle(graphPtr->tkwin, drawable, penPtr->fill, 
 		x, y, size, size, penPtr->borderWidth, penPtr->relief);
     }
     XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC, x, y, 
@@ -1756,7 +1752,7 @@ DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
 		XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, 
 			       rp->x, rp->y, rp->width, rp->height);
 	    } else {
-		Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, 
+		Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
 			penPtr->fill, rp->x, rp->y, rp->width, rp->height, 
 			penPtr->borderWidth, relief);
 	    }
@@ -1988,13 +1984,13 @@ SymbolToPostScriptProc(
 		  "gsave\n    ");
     if (penPtr->stipple != None) {
 	if (penPtr->fill != NULL) {
-	    Blt_Ps_XSetBackground(ps, Blt_BackgroundBorderColor(penPtr->fill));
+	    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penPtr->fill));
 	    Blt_Ps_Append(ps, "    gsave fill grestore\n    ");
 	}
 	if (penPtr->outlineColor != NULL) {
 	    Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
 	} else {
-	    Blt_Ps_XSetForeground(ps, Blt_BackgroundBorderColor(penPtr->fill));
+	    Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penPtr->fill));
 	}
 	Blt_Ps_XSetStipple(ps, graphPtr->display, penPtr->stipple);
     } else if (penPtr->outlineColor != NULL) {
@@ -2022,13 +2018,13 @@ SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr,
 	if (penPtr->stipple != None) {
 	    Blt_Ps_Rectangle(ps, rp->x, rp->y, rp->width - 1, rp->height - 1);
 	    if (penPtr->fill != NULL) {
-		Blt_Ps_XSetBackground(ps,Blt_BackgroundBorderColor(penPtr->fill));
+		Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penPtr->fill));
 		Blt_Ps_Append(ps, "gsave fill grestore\n");
 	    }
 	    if (penPtr->outlineColor != NULL) {
 		Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
 	    } else {
-		Blt_Ps_XSetForeground(ps,Blt_BackgroundBorderColor(penPtr->fill));
+		Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penPtr->fill));
 	    }
 	    Blt_Ps_XSetStipple(ps, graphPtr->display, penPtr->stipple);
 	} else if (penPtr->outlineColor != NULL) {
@@ -2038,7 +2034,7 @@ SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr,
 	}
 	if ((penPtr->fill != NULL) && (penPtr->borderWidth > 0) && 
 	    (penPtr->relief != TK_RELIEF_FLAT)) {
-	    Blt_Ps_Draw3DRectangle(ps, Blt_BackgroundBorder(penPtr->fill), 
+	    Blt_Ps_Draw3DRectangle(ps, penPtr->fill, 
 		(double)rp->x, (double)rp->y, (int)rp->width, (int)rp->height,
 		penPtr->borderWidth, penPtr->relief);
 	}
