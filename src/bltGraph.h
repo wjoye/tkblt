@@ -351,7 +351,7 @@ struct _Graph {
 					 * includes the axis lines */  
   int plotBW;				/* Width of interior 3-D border. */
   int plotRelief;			/* 3-d effect: TK_RELIEF_RAISED etc. */
-  Blt_Background plotBg;		/* Color of plotting surface */
+  Tk_3DBorder plotBg;		/* Color of plotting surface */
 
   /* If non-zero, force plot to conform to aspect ratio W/H */
   double aspect;

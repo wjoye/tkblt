@@ -2969,11 +2969,7 @@ ConfigureLineProc(Marker *markerPtr)
 	gcValues.function = GXxor;
 
 	gcMask |= GCFunction;
-	if (graphPtr->plotBg == NULL) {
-	    pixel = WhitePixelOfScreen(Tk_Screen(graphPtr->tkwin));
-	} else {
-	    pixel = Blt_BackgroundBorderColor(graphPtr->plotBg)->pixel;
-	}
+	pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
 	if (gcMask & GCBackground) {
 	    gcValues.background ^= pixel;
 	}
@@ -3401,12 +3397,7 @@ ConfigurePolygonProc(Marker *markerPtr)
 	gcValues.function = GXxor;
 
 	gcMask |= GCFunction;
-	if (graphPtr->plotBg == NULL) {
-	    /* The graph's color option may not have been set yet */
-	    pixel = WhitePixelOfScreen(Tk_Screen(graphPtr->tkwin));
-	} else {
-	    pixel = Blt_BackgroundBorderColor(graphPtr->plotBg)->pixel;
-	}
+	pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
 	if (gcMask & GCBackground) {
 	    gcValues.background ^= pixel;
 	}

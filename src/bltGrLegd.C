@@ -1800,8 +1800,8 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
       XCopyArea(graphPtr->display, graphPtr->cache, pixmap, 
 		graphPtr->drawGC, legendPtr->x, legendPtr->y, w, h, 0, 0);
     } else {
-      Blt_FillBackgroundRectangle(tkwin, pixmap, graphPtr->plotBg, 0, 0, 
-				  w, h, TK_RELIEF_FLAT, 0);
+      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->plotBg, 0, 0, 
+			 w, h, TK_RELIEF_FLAT, 0);
     }
   }
   else {

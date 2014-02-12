@@ -201,9 +201,9 @@ static Tk_OptionSpec optionSpecs[] = {
    -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, 
    -1, 0, 0, "-leftmargin", 0},
-  {TK_OPTION_CUSTOM, "-plotbackground", "plotbackground", "PlotBackground",
+  {TK_OPTION_BORDER, "-plotbackground", "plotbackground", "PlotBackground",
    DEF_GRAPH_PLOT_BACKGROUND, 
-   -1, Tk_Offset(Graph, plotBg), 0, &backgroundObjOption, 
+   -1, Tk_Offset(Graph, plotBg), 0, NULL,
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
    DEF_GRAPH_PLOT_BORDERWIDTH, 
@@ -1293,15 +1293,13 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   DrawMargins(graphPtr, drawable);
 
   /* Draw the background of the plotting area with 3D border. */
-  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
-			      graphPtr->left   - graphPtr->plotBW, 
-			      graphPtr->top    - graphPtr->plotBW, 
-			      graphPtr->right  - 
-			      graphPtr->left + 1 + 2 * graphPtr->plotBW,
-			      graphPtr->bottom - 
-			      graphPtr->top  + 1 + 2 * graphPtr->plotBW, 
-			      graphPtr->plotBW, graphPtr->plotRelief);
-
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
+		     graphPtr->left-graphPtr->plotBW, 
+		     graphPtr->top-graphPtr->plotBW, 
+		     graphPtr->right - graphPtr->left + 1 +2*graphPtr->plotBW,
+		     graphPtr->bottom - graphPtr->top  + 1 +2*graphPtr->plotBW, 
+		     graphPtr->plotBW, graphPtr->plotRelief);
+  
   /* Draw the elements, markers, legend, and axis limits. */
   Blt_DrawAxes(graphPtr, drawable);
   Blt_DrawGrids(graphPtr, drawable);

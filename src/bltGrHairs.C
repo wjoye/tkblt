@@ -212,13 +212,7 @@ static void ConfigureCrosshairs(Graph *graphPtr)
   XGCValues gcValues;
   gcValues.function = GXxor;
 
-  unsigned long int pixel;
-  if (graphPtr->plotBg == NULL) {
-    // The graph's color option may not have been set yet
-    pixel = WhitePixelOfScreen(Tk_Screen(graphPtr->tkwin));
-  } else {
-    pixel = Blt_BackgroundBorderColor(graphPtr->plotBg)->pixel;
-  }
+  unsigned long int pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
   gcValues.background = pixel;
   gcValues.foreground = (pixel ^ chPtr->colorPtr->pixel);
 
