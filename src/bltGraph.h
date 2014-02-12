@@ -287,7 +287,7 @@ struct _Graph {
   int borderWidth;			/* Width of the exterior border */
   int relief;				/* Relief of the exterior border. */
   unsigned int flags;			/* Flags;  see below for definitions. */
-  Blt_Background normalBg;		/* 3-D border used to delineate the
+  Tk_3DBorder normalBg;		/* 3-D border used to delineate the
 					 * plot surface and outer edge of
 					 * window. */
   int highlightWidth;			/* Width in pixels of highlight to

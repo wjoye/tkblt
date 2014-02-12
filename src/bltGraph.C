@@ -115,9 +115,9 @@ static Tk_OptionSpec optionSpecs[] = {
    DEF_GRAPH_ASPECT_RATIO, 
    -1, Tk_Offset(Graph, aspect), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_CUSTOM, "-background", "background", "Background",
+  {TK_OPTION_BORDER, "-background", "background", "Background",
    DEF_GRAPH_BACKGROUND, 
-   -1, Tk_Offset(Graph, normalBg), 0, &backgroundObjOption, 
+   -1, Tk_Offset(Graph, normalBg), 0, NULL, 
    CACHE_DIRTY},
   {TK_OPTION_STRING_TABLE, "-barmode", "barMode", "BarMode", 
    DEF_GRAPH_BAR_MODE, 
@@ -533,7 +533,7 @@ static void ConfigureGraph(Graph* graphPtr)
 		       graphPtr->reqHeight);
   }
   Tk_SetInternalBorder(graphPtr->tkwin, graphPtr->borderWidth);
-  XColor* colorPtr = Blt_BackgroundBorderColor(graphPtr->normalBg);
+  XColor* colorPtr = Tk_3DBorderColor(graphPtr->normalBg);
 
   graphPtr->titleWidth = graphPtr->titleHeight = 0;
   if (graphPtr->title != NULL) {
@@ -647,12 +647,11 @@ static void DisplayGraph(ClientData clientData)
   }
   /* Draw 3D border just inside of the focus highlight ring. */
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-				graphPtr->normalBg, graphPtr->highlightWidth, 
-				graphPtr->highlightWidth, 
-				graphPtr->width - 2*graphPtr->highlightWidth, 
-				graphPtr->height - 2*graphPtr->highlightWidth, 
-				graphPtr->borderWidth, graphPtr->relief);
+    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		       graphPtr->highlightWidth, graphPtr->highlightWidth, 
+		       graphPtr->width - 2*graphPtr->highlightWidth, 
+		       graphPtr->height - 2*graphPtr->highlightWidth, 
+		       graphPtr->borderWidth, graphPtr->relief);
   }
   /* Draw focus highlight ring. */
   if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
@@ -1249,22 +1248,18 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   rects[2].x = graphPtr->right;
   rects[2].width = graphPtr->width - graphPtr->right;
 
-  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-			      rects[0].x, rects[0].y, 
-			      rects[0].width, rects[0].height, 
-			      0, TK_RELIEF_FLAT);
-  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-			      rects[1].x, rects[1].y, 
-			      rects[1].width, rects[1].height, 
-			      0, TK_RELIEF_FLAT);
-  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-			      rects[2].x, rects[2].y, 
-			      rects[2].width, rects[2].height, 
-			      0, TK_RELIEF_FLAT);
-  Blt_FillBackgroundRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-			      rects[3].x, rects[3].y, 
-			      rects[3].width, rects[3].height, 
-			      0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
+		     0, TK_RELIEF_FLAT);
 
   /* Draw 3D border around the plotting area */
 
@@ -1275,10 +1270,8 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
     y = graphPtr->top - graphPtr->plotBW;
     w = (graphPtr->right - graphPtr->left) + (2*graphPtr->plotBW);
     h = (graphPtr->bottom - graphPtr->top) + (2*graphPtr->plotBW);
-    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-				graphPtr->normalBg, x, y, w, h, 
-				graphPtr->plotBW, 
-				graphPtr->plotRelief);
+    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		       x, y, w, h, graphPtr->plotBW, graphPtr->plotRelief);
   }
   int site = Blt_Legend_Site(graphPtr);
   if (site & LEGEND_MARGIN_MASK) {
@@ -1359,12 +1352,11 @@ void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
   }
   /* Draw 3D border just inside of the focus highlight ring. */
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-    Blt_DrawBackgroundRectangle(graphPtr->tkwin, drawable, 
-				graphPtr->normalBg, graphPtr->highlightWidth, 
-				graphPtr->highlightWidth, 
-				graphPtr->width  - 2*graphPtr->highlightWidth, 
-				graphPtr->height - 2*graphPtr->highlightWidth, 
-				graphPtr->borderWidth, graphPtr->relief);
+    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
+		       graphPtr->highlightWidth, graphPtr->highlightWidth, 
+		       graphPtr->width  - 2*graphPtr->highlightWidth, 
+		       graphPtr->height - 2*graphPtr->highlightWidth, 
+		       graphPtr->borderWidth, graphPtr->relief);
   }
   /* Draw focus highlight ring. */
   if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {

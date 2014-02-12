@@ -116,7 +116,7 @@ struct _Legend {
   int activeRelief;			/* 3-D effect on active entry. */
   int entryBW;		/* Border width around each entry in
 			 * legend. */
-  Blt_Background normalBg;		/* 3-D effect of legend. */
+  Tk_3DBorder normalBg;		/* 3-D effect of legend. */
   int borderWidth;			/* Width of legend 3-D border */
   int relief;				/* 3-d effect of border around the
 					 * legend: TK_RELIEF_RAISED etc. */
@@ -364,9 +364,9 @@ static Tk_OptionSpec optionSpecs[] = {
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
-  {TK_OPTION_CUSTOM, "-background", "background", "Background",
+  {TK_OPTION_BORDER, "-background", "background", "Background",
    DEF_LEGEND_BACKGROUND, 
-   -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, &backgroundObjOption,
+   -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, NULL,
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_LEGEND_BORDERWIDTH, 
@@ -1757,7 +1757,6 @@ void Blt_MapLegend(Graph *graphPtr, int plotWidth, int plotHeight)
 
 void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
 {
-  Blt_Background bg;
   Blt_ChainLink link;
   Tk_FontMetrics fontMetrics;
   Legend *legendPtr = graphPtr->legend;
@@ -1787,9 +1786,10 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
 			Tk_Depth(tkwin));
 
   if (legendPtr->normalBg != NULL) {
-    Blt_FillBackgroundRectangle(tkwin, pixmap, legendPtr->normalBg, 0, 0, 
-				w, h, 0, TK_RELIEF_FLAT);
-  } else if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
+    Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->normalBg, 0, 0, 
+		       w, h, 0, TK_RELIEF_FLAT);
+  }
+  else if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
     /* 
      * Legend background is transparent and is positioned over the the
      * plot area.  Either copy the part of the background from the backing
@@ -1803,17 +1803,13 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
       Blt_FillBackgroundRectangle(tkwin, pixmap, graphPtr->plotBg, 0, 0, 
 				  w, h, TK_RELIEF_FLAT, 0);
     }
-  } else {
-    int xOrigin, yOrigin;
+  }
+  else {
     /* 
      * The legend is located in one of the margins or the external window.
      */
-    Blt_GetBackgroundOrigin(graphPtr->normalBg, &xOrigin, &yOrigin);
-    Blt_SetBackgroundOrigin(graphPtr->tkwin, graphPtr->normalBg, 
-			    xOrigin - legendPtr->x,yOrigin - legendPtr->y);
-    Blt_FillBackgroundRectangle(tkwin, pixmap, graphPtr->normalBg, 0, 0, 
-				w, h, 0, TK_RELIEF_FLAT);
-    Blt_SetBackgroundOrigin(tkwin, graphPtr->normalBg, xOrigin, yOrigin);
+    Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 0, 0, 
+		       w, h, 0, TK_RELIEF_FLAT);
   }
   Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
 
@@ -1875,10 +1871,10 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
     } else {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
       if (elemPtr->legendRelief != TK_RELIEF_FLAT) {
-	Blt_FillBackgroundRectangle(tkwin, pixmap, graphPtr->normalBg, 
-				    x, y, legendPtr->entryWidth, 
-				    legendPtr->entryHeight, legendPtr->entryBW, 
-				    elemPtr->legendRelief);
+	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 
+			   x, y, legendPtr->entryWidth, 
+			   legendPtr->entryHeight, legendPtr->entryBW, 
+			   elemPtr->legendRelief);
       }
     }
     (*elemPtr->procsPtr->drawSymbolProc) (graphPtr, pixmap, elemPtr,
@@ -1916,16 +1912,16 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
   /*
    * Draw the border and/or background of the legend.
    */
-  bg = legendPtr->normalBg;
-  if (bg == NULL) {
+  Tk_3DBorder bg = legendPtr->normalBg;
+  if (bg == NULL)
     bg = graphPtr->normalBg;
-  }
+
   /* Disable crosshairs before redisplaying to the screen */
   if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
     Blt_DisableCrosshairs(graphPtr);
   }
-  Blt_DrawBackgroundRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
-			      legendPtr->borderWidth, legendPtr->relief);
+  Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
+		     legendPtr->borderWidth, legendPtr->relief);
   XCopyArea(graphPtr->display, pixmap, drawable, graphPtr->drawGC, 0, 0, w, h,
 	    legendPtr->x, legendPtr->y);
   if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
@@ -1958,19 +1954,13 @@ void Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps)
   Blt_Ps_Append(ps, "% Legend\n");
   graphPtr = legendPtr->graphPtr;
   if (graphPtr->pageSetup->flags & PS_DECORATIONS) {
-    if (legendPtr->normalBg != NULL) {
-      Tk_3DBorder border;
-
-      border = Blt_BackgroundBorder(legendPtr->normalBg);
-      Blt_Ps_Fill3DRectangle(ps, border, x, y, width, height, 
+    if (legendPtr->normalBg != NULL)
+      Blt_Ps_Fill3DRectangle(ps, legendPtr->normalBg, x, y, width, height, 
 			     legendPtr->borderWidth, legendPtr->relief);
-    } else {
-      Tk_3DBorder border;
-
-      border = Blt_BackgroundBorder(graphPtr->normalBg);
-      Blt_Ps_Draw3DRectangle(ps, border, x, y, width, height, 
+    else
+      Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, width, height, 
 			     legendPtr->borderWidth, legendPtr->relief);
-    }
+
   } else {
     Blt_Ps_SetClearBackground(ps);
     Blt_Ps_XFillRectangle(ps, x, y, width, height);
@@ -2011,10 +2001,8 @@ void Blt_LegendToPostScript(Graph *graphPtr, Blt_Ps ps)
     } else {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
       if (elemPtr->legendRelief != TK_RELIEF_FLAT) {
-	Tk_3DBorder border;
-
-	border = Blt_BackgroundBorder(graphPtr->normalBg);
-	Blt_Ps_Draw3DRectangle(ps, border, x, y, legendPtr->entryWidth,
+	Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, 
+			       legendPtr->entryWidth,
 			       legendPtr->entryHeight, legendPtr->entryBW, 
 			       elemPtr->legendRelief);
       }
