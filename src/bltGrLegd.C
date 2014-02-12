@@ -158,6 +158,7 @@ struct _Legend {
   Element *selLastPtr;		/* Last element selected in current
 				 * pick. */
   int hide;
+  int raised;
   int exportSelection;
   int active;
   int cursorOn;			/* Indicates if the cursor is
@@ -201,6 +202,7 @@ struct _Legend {
 #define DEF_LEGEND_PADX			"1"
 #define DEF_LEGEND_PADY			"1"
 #define DEF_LEGEND_POSITION		"rightmargin"
+#define DEF_LEGEND_RAISED       	"no"
 #define DEF_LEGEND_RELIEF		"flat"
 #define DEF_LEGEND_ROWS			"0"
 #define DEF_LEGEND_SELECTBACKGROUND 	skyblue4
@@ -421,6 +423,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-position", "position", "Position", 
    DEF_LEGEND_POSITION, 
    -1, 0, 0, &positionObjOption, 0},
+  {TK_OPTION_BOOLEAN, "-raised", "raised", "Raised", 
+   DEF_LEGEND_RAISED, 
+   -1, Tk_Offset(Legend, raised), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
    DEF_LEGEND_RELIEF, 
    -1, Tk_Offset(Legend, relief), 0, NULL, 0},
@@ -2280,7 +2285,7 @@ int Blt_Legend_IsHidden(Graph *graphPtr)
 
 int Blt_Legend_IsRaised(Graph *graphPtr)
 {
-  return 0;
+  return (graphPtr->legend->raised);
 }
 
 int Blt_Legend_X(Graph *graphPtr)
