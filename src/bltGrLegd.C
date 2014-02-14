@@ -129,8 +129,8 @@ struct _Legend {
   XColor *selInFocusFgColor;		/* Text color of a selected entry. */
   XColor *selOutFocusFgColor;
 
-  Blt_Background selInFocusBg;
-  Blt_Background selOutFocusBg;
+  Tk_3DBorder selInFocusBg;
+  Tk_3DBorder selOutFocusBg;
 
   XColor *focusColor;
   Blt_Dashes focusDashes;		/* Dash on-off value. */
@@ -410,10 +410,10 @@ static Tk_OptionSpec optionSpecs[] = {
    DEF_LEGEND_IPADY, 
    -1, Tk_Offset(Legend, iyPad), 0, NULL,
    RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_CUSTOM, "-nofocusselectbackground", "noFocusSelectBackground", 
+  {TK_OPTION_BORDER, "-nofocusselectbackground", "noFocusSelectBackground", 
    "NoFocusSelectBackground", 
    DEF_LEGEND_SELECTBACKGROUND, 
-   -1, Tk_Offset(Legend, selOutFocusBg), 0, &backgroundObjOption, 0},
+   -1, Tk_Offset(Legend, selOutFocusBg), 0, NULL, 0},
   {TK_OPTION_COLOR, "-nofocusselectforeground", "noFocusSelectForeground", 
    "NoFocusSelectForeground", 
    DEF_LEGEND_SELECTFOREGROUND, 
@@ -442,10 +442,10 @@ static Tk_OptionSpec optionSpecs[] = {
    DEF_LEGEND_ROWS, 
    -1, Tk_Offset(Legend, reqRows), 0, NULL,
    RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_CUSTOM, "-selectbackground", "selectBackground", 
+  {TK_OPTION_BORDER, "-selectbackground", "selectBackground", 
    "SelectBackground", 
    DEF_LEGEND_SELECTBACKGROUND, 
-   -1, Tk_Offset(Legend, selInFocusBg), 0, &backgroundObjOption, 0},
+   -1, Tk_Offset(Legend, selInFocusBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-selectborderwidth", "selectBorderWidth", 
    "SelectBorderWidth", 
    DEF_LEGEND_SELECTBORDERWIDTH, 
@@ -1841,25 +1841,17 @@ void Blt_DrawLegend(Graph *graphPtr, Drawable drawable)
     isSelected = EntryIsSelected(legendPtr, elemPtr);
     if (elemPtr->flags & LABEL_ACTIVE) {
       Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->activeBg, 
-				  x, y, legendPtr->entryWidth, legendPtr->entryHeight, 
-				  legendPtr->entryBW, legendPtr->activeRelief);
+			 x, y, legendPtr->entryWidth, legendPtr->entryHeight, 
+			 legendPtr->entryBW, legendPtr->activeRelief);
     } else if (isSelected) {
-      int xOrigin, yOrigin;
-      Blt_Background bg;
-      XColor *fg;
-
-      fg = (legendPtr->flags & FOCUS) ?
+      XColor* fg = (legendPtr->flags & FOCUS) ?
 	legendPtr->selInFocusFgColor : legendPtr->selOutFocusFgColor;
-      bg = (legendPtr->flags & FOCUS) ?
+      Tk_3DBorder bg = (legendPtr->flags & FOCUS) ?
 	legendPtr->selInFocusBg : legendPtr->selOutFocusBg;
-      Blt_GetBackgroundOrigin(bg, &xOrigin, &yOrigin);
-      Blt_SetBackgroundOrigin(tkwin, bg, xOrigin - legendPtr->x, 
-			      yOrigin - legendPtr->y);
       Blt_Ts_SetForeground(legendPtr->style, fg);
-      Blt_FillBackgroundRectangle(tkwin, pixmap, bg, x, y, 
-				  legendPtr->entryWidth, legendPtr->entryHeight, 
-				  legendPtr->selBW, legendPtr->selRelief);
-      Blt_SetBackgroundOrigin(tkwin, bg, xOrigin, yOrigin);
+      Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
+			 legendPtr->entryWidth, legendPtr->entryHeight, 
+			 legendPtr->selBW, legendPtr->selRelief);
     } else {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
       if (elemPtr->legendRelief != TK_RELIEF_FLAT) {

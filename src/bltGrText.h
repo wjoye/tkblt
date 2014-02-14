@@ -33,8 +33,6 @@
 #ifndef _BLT_TEXT_H
 #define _BLT_TEXT_H
 
-#include "bltBgStyle.h"
-
 #define DEF_TEXT_FLAGS (TK_PARTIAL_OK | TK_IGNORE_NEWLINES)
 #define UPDATE_GC	1
 

@@ -1704,6 +1704,35 @@ DrawSymbolProc(Graph *graphPtr, Drawable drawable, Element *basePtr,
     }
 }
 
+static void SetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border, 
+				    TkRegion rgn)
+{
+  Display *display;
+  GC gc;
+
+  display = Tk_Display(tkwin);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
+  TkSetRegion(display, gc, rgn);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
+  TkSetRegion(display, gc, rgn);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
+  TkSetRegion(display, gc, rgn);
+}
+
+static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
+{
+  Display *display;
+  GC gc;
+
+  display = Tk_Display(tkwin);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
+  XSetClipMask(display, gc, None);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
+  XSetClipMask(display, gc, None);
+  gc = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
+  XSetClipMask(display, gc, None);
+}
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -1716,9 +1745,8 @@ DrawSymbolProc(Graph *graphPtr, Drawable drawable, Element *basePtr,
  *
  *---------------------------------------------------------------------------
  */
-static void
-DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
-		XRectangle *bars, int nBars)
+static void DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
+			    XRectangle *bars, int nBars)
 {
     TkRegion rgn;
 
@@ -1743,7 +1771,7 @@ DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
 	if (penPtr->stipple != None) {
 	    TkSetRegion(graphPtr->display, penPtr->fillGC, rgn);
 	}
-	Blt_SetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill, rgn);
+	SetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill, rgn);
 	if (hasOutline) {
 	    TkSetRegion(graphPtr->display, penPtr->outlineGC, rgn);
 	}
@@ -1761,7 +1789,7 @@ DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
 			       rp->x, rp->y, rp->width, rp->height);
 	    }
 	}
-	Blt_UnsetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill);
+	UnsetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill);
 	if (hasOutline) {
 	    XSetClipMask(graphPtr->display, penPtr->outlineGC, None);
 	}
