@@ -194,13 +194,6 @@ extern Blt_CustomOption bltYAxisOption;
 extern Blt_CustomOption bltColorOption;
 extern Blt_CustomOption bltBarStylesOption;
 
-static Blt_OptionParseProc ObjToBarMode;
-static Blt_OptionPrintProc BarModeToObj;
-Blt_CustomOption bltBarModeOption =
-{
-    ObjToBarMode, BarModeToObj, NULL, (ClientData)0
-};
-
 #define DEF_BAR_ACTIVE_PEN		"activeBar"
 #define DEF_BAR_AXIS_X			"x"
 #define DEF_BAR_AXIS_Y			"y"
@@ -436,122 +429,6 @@ static ElementMapProc MapBarProc;
  * Custom option parse and print procedures
  *---------------------------------------------------------------------------
  */
-
-/*
- *---------------------------------------------------------------------------
- *
- * NameOfBarMode --
- *
- *	Converts the integer representing the mode style into a string.
- *
- *---------------------------------------------------------------------------
- */
-static const char *
-NameOfBarMode(BarMode mode)
-{
-    switch (mode) {
-    case BARS_INFRONT:
-	return "infront";
-    case BARS_OVERLAP:
-	return "overlap";
-    case BARS_STACKED:
-	return "stacked";
-    case BARS_ALIGNED:
-	return "aligned";
-    default:
-	return "unknown mode value";
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToMode --
- *
- *	Converts the mode string into its numeric representation.
- *
- *	Valid mode strings are:
- *
- *      "infront"   Draw a full bar at each point in the element.
- *
- * 	"stacked"   Stack bar segments vertically. Each stack is defined
- *		    by each ordinate at a particular abscissa. The height
- *		    of each segment is represented by the sum the previous
- *		    ordinates.
- *
- *	"aligned"   Align bar segments as smaller slices one next to
- *		    the other.  Like "stacks", aligned segments are
- *		    defined by each ordinate at a particular abscissa.
- *
- * Results:
- *	A standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToBarMode(
-    ClientData clientData,		/* Not used. */
-    Tcl_Interp *interp,			/* Interpreter to send results back
-					 * to */
-    Tk_Window tkwin,			/* Not used. */
-    Tcl_Obj *objPtr,			/* Mode style string */
-    char *widgRec,			/* Cubicle structure record */
-    int offset,				/* Offset to field in structure */
-    int flags)				/* Not used. */
-{
-    BarMode *modePtr = (BarMode *)(widgRec + offset);
-    int length;
-    char c;
-    char *string;
-    
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    c = string[0];
-    if ((c == 'n') && (strncmp(string, "normal", length) == 0)) {
-	*modePtr = BARS_INFRONT;
-    } else if ((c == 'i') && (strncmp(string, "infront", length) == 0)) {
-	*modePtr = BARS_INFRONT;
-    } else if ((c == 's') && (strncmp(string, "stacked", length) == 0)) {
-	*modePtr = BARS_STACKED;
-    } else if ((c == 'a') && (strncmp(string, "aligned", length) == 0)) {
-	*modePtr = BARS_ALIGNED;
-    } else if ((c == 'o') && (strncmp(string, "overlap", length) == 0)) {
-	*modePtr = BARS_OVERLAP;
-    } else {
-	Tcl_AppendResult(interp, "bad mode argument \"", string, "\": should"
-		"be \"infront\", \"stacked\", \"overlap\", or \"aligned\"",
-		(char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * BarModeToObj --
- *
- *	Returns the mode style string based upon the mode flags.
- *
- * Results:
- *	The mode style string is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-BarModeToObj(
-    ClientData clientData,		/* Not used. */
-    Tcl_Interp *interp,			/* Not used. */
-    Tk_Window tkwin,			/* Not used. */
-    char *widgRec,			/* Row/column structure record */
-    int offset,				/* Offset to field in structure */
-    int flags)				/* Not used. */
-{
-    BarMode mode = *(BarMode *)(widgRec + offset);
-
-    return Tcl_NewStringObj(NameOfBarMode(mode), -1);
-}
 
 /* 
  * Zero out the style's number of bars and errorbars. 
