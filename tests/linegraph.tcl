@@ -1,9 +1,8 @@
 source base.tcl
 
-set w .bar
-set graph [bltBarGraph $w]
+set w .line
+set graph [bltLineGraph $w]
 
-# Graph
 bltTest $graph -aspect 2
 bltTest $graph -background red
 bltTest $graph -barmode overlap
