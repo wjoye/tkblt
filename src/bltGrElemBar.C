@@ -2360,7 +2360,7 @@ void
 Blt_ComputeBarStacks(Graph *graphPtr)
 {
     Blt_ChainLink link;
-
+    printf("mode: %d groups: %d\n", graphPtr->mode, graphPtr->nBarGroups);
     if ((graphPtr->mode != BARS_STACKED) || (graphPtr->nBarGroups == 0)) {
 	return;
     }

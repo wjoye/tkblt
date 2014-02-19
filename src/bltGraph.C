@@ -92,12 +92,12 @@ static const char* objectClassNames[] = {
 #define DEF_GRAPH_JUSTIFY		"center"
 #define DEF_GRAPH_MARGIN		"0"
 #define DEF_GRAPH_MARGIN_VAR		NULL
-#define DEF_GRAPH_PLOT_BACKGROUND	"white"
-#define DEF_GRAPH_PLOT_BORDERWIDTH	"1"
+#define DEF_GRAPH_PLOT_BACKGROUND	STD_NORMAL_BACKGROUND
+#define DEF_GRAPH_PLOT_BORDERWIDTH	STD_BORDERWIDTH
 #define DEF_GRAPH_PLOT_HEIGHT           "0"
 #define DEF_GRAPH_PLOT_PADX		"0"
 #define DEF_GRAPH_PLOT_PADY		"0"
-#define DEF_GRAPH_PLOT_RELIEF		"solid"
+#define DEF_GRAPH_PLOT_RELIEF		"flat"
 #define DEF_GRAPH_PLOT_WIDTH            "0"
 #define DEF_GRAPH_RELIEF		"flat"
 #define DEF_GRAPH_SHOW_VALUES		"no"
