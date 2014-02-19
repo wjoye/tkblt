@@ -1,19 +1,22 @@
 source base.tcl
 
-set w .ch
+set w .line
 set graph [bltLineGraph $w]
 
-#bltTest2 $graph crosshairs -color green
-#bltTest2 $graph crosshairs -dashes "dotdot"
-#bltTest2 $graph crosshairs -dashes "5 8 3"
-#bltTest2 $graph crosshairs -hide yes
-#bltTest2 $graph crosshairs -linewidth 3
-#bltTest2 $graph crosshairs -position "@1,50"
+$graph crosshairs configure -hide no
+$graph crosshairs configure -position "@200,200"
 
-#$graph crosshairs on
-#$graph crosshairs off
-#$graph crosshairs toggle
+bltTest2 $graph crosshairs -color green
+bltTest2 $graph crosshairs -dashes "dashdot"
+bltTest2 $graph crosshairs -dashes "5 8 3"
+bltTest2 $graph crosshairs -hide yes
+bltTest2 $graph crosshairs -linewidth 3
+bltTest2 $graph crosshairs -position "@100,100"
+
+bltCmd $graph crosshairs on
+bltCmd $graph crosshairs off
+bltCmd $graph crosshairs toggle
 
 echo "done"
-#bltPlotDestroy $w
+bltPlotDestroy $w
 

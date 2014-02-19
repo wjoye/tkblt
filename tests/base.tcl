@@ -41,6 +41,15 @@ proc bltTest2 {graph which option value} {
     after $sleep
 }
 
+proc bltCmd {graph cmd value} {
+    global sleep
+
+    echo " $graph $cmd $value"
+    $graph $cmd $value
+    update
+    after $sleep
+}
+
 proc bltBarGraph {w} {
     global sleep
 
