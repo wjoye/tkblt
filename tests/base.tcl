@@ -86,13 +86,11 @@ proc bltLineGraph {w} {
     $graph element create data1 \
 	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
 	-ydata { 13 25 36 46 55 64 70 75 80 90} \
-	-color blue \
-	-symbol {}
+	-color blue
     $graph element create data2 \
 	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
 	-ydata { 26 50 72 92 110 128 140 150 160 180} \
-	-color red \
-	-symbol {}
+	-color red
     $graph legend configure -title "Legend"
 
     update

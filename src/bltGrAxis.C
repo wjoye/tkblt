@@ -154,10 +154,9 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_COMMAND		(char *)NULL
 #define DEF_AXIS_DESCENDING		"0"
 #define DEF_AXIS_FOREGROUND		black
-#define DEF_AXIS_GRID_BARCHART		"1"
+#define DEF_AXIS_GRID		        "1"
 #define DEF_AXIS_GRIDCOLOR		gray64
 #define DEF_AXIS_GRIDDASHES		"dot"
-#define DEF_AXIS_GRID_GRAPH		"0"
 #define DEF_AXIS_GRIDLINEWIDTH	"0"
 #define DEF_AXIS_GRIDMINOR		"1"
 #define DEF_AXIS_GRIDMINOR_COLOR	gray64
@@ -373,10 +372,10 @@ static Blt_ConfigSpec configSpecs[] = {
    (char *)NULL, 0, ALL_GRAPHS},
   {BLT_CONFIG_SYNONYM, "-foreground", "color", (char *)NULL, 
    (char *)NULL, 0, ALL_GRAPHS},
-  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID_BARCHART, 
+  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID, 
    Tk_Offset(Axis, flags), BARCHART, 
    &bitmaskGrAxisGridOption},
-  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID_GRAPH, 
+  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID, 
    Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
    &bitmaskGrAxisGridOption},
   {BLT_CONFIG_COLOR, "-gridcolor", "gridColor", "GridColor", 

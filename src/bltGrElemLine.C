@@ -409,7 +409,7 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_LINE_STATE			"normal"
 #define DEF_LINE_STIPPLE		(char *)NULL
 #define DEF_LINE_STYLES			""
-#define DEF_LINE_SYMBOL			"circle"
+#define DEF_LINE_SYMBOL			"none"
 #define DEF_LINE_TAGS			"all"
 #define DEF_LINE_X_DATA			(char *)NULL
 #define DEF_LINE_Y_DATA			(char *)NULL
@@ -428,7 +428,7 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_PEN_OUTLINE_COLOR		"defcolor"
 #define DEF_PEN_OUTLINE_WIDTH 		"1"
 #define DEF_PEN_PIXELS			"0.1i"
-#define DEF_PEN_SYMBOL			"circle"
+#define DEF_PEN_SYMBOL			"none"
 #define DEF_PEN_TYPE			"line"
 #define	DEF_PEN_VALUE_ANCHOR		"s"
 #define	DEF_PEN_VALUE_COLOR		black
@@ -1292,7 +1292,7 @@ InitLinePen(LinePen *penPtr)
     penPtr->symbol.bitmap = penPtr->symbol.mask = None;
     penPtr->symbol.outlineColor = penPtr->symbol.fillColor = COLOR_DEFAULT;
     penPtr->symbol.outlineWidth = penPtr->traceWidth = 1;
-    penPtr->symbol.type = SYMBOL_CIRCLE;
+    penPtr->symbol.type = SYMBOL_NONE;
     penPtr->valueShow = SHOW_NONE;
 }
 
