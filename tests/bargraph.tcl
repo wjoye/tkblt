@@ -51,5 +51,5 @@ bltTest $graph -plotwidth 300
 bltTest $graph -plotheight 300
 
 echo "done"
-#bltPlotDestroy $w
+bltPlotDestroy $w
 

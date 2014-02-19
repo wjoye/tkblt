@@ -41,11 +41,24 @@ proc bltTest2 {graph which option value} {
     after $sleep
 }
 
-proc bltCmd {graph cmd value} {
+proc bltTest3 {graph which item option value} {
     global sleep
 
-    echo " $graph $cmd $value"
-    $graph $cmd $value
+    echo "  $item $option $value"
+    set org [$graph $which cget $item $option]
+    $graph $which configure $item $option $value
+    update
+    after $sleep
+    $graph $which configure $item $option $org
+    update
+    after $sleep
+}
+
+proc bltCmd {graph args} {
+    global sleep
+
+    echo " $graph $args"
+    eval $graph $args
     update
     after $sleep
 }
@@ -93,13 +106,16 @@ proc bltLineGraph {w} {
     pack $graph -expand yes -fill both
 
     $graph element create data1 \
-	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
-	-ydata { 13 25 36 46 55 64 70 75 80 90} \
+	-xdata {0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0} \
+	-ydata {13 25 36 46 55 64 70 75 80 90} \
 	-color blue
     $graph element create data2 \
-	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
-	-ydata { 26 50 72 92 110 128 140 150 160 180} \
-	-color red
+	-xdata {0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0} \
+	-ydata {26 50 72 92 110 128 140 150 160 180} \
+	-yerror {10 10 10 10 10 10 10 10 10 10 10} \
+	-color red \
+	-dashes {10 20 10} \
+	-showvalues y
     $graph legend configure -title "Legend"
 
     update

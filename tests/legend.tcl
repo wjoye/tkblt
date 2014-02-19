@@ -1,6 +1,6 @@
 source base.tcl
 
-set w .lgd
+set w .line
 set graph [bltLineGraph $w]
 
 #bltTest2 $graph legend -activebackground
@@ -45,21 +45,23 @@ bltTest2 $graph legend -title "Hello World"
 ##bltTest2 $graph legend -titlecolor red
 bltTest2 $graph legend -titlefont "times 24 bold italic"
 
-#$graph active
-#$graph bind
-#$graph curselection
-#$graph deactive
-#$graph focus
-#$graph get
-#$graph selection anchor
-#$graph selection clear
-#$graph selection clearall
-#$graph selection includes
-#$graph selection mark
-#$graph selection present
-#$graph selection set
-#$graph selection toggle
+#bltCmd $graph legend active
+#bltCmd $graph legend bind
+#bltCmd $graph legend curselection
+#bltCmd $graph legend deactive
+bltCmd $graph legend focus data1
+bltCmd $graph legend get data1
+bltCmd $graph legend selection anchor data1
+bltCmd $graph legend selection mark data1
+bltCmd $graph legend selection includes data2
+bltCmd $graph legend selection present
+bltCmd $graph legend selection set data1 data2
+bltCmd $graph legend selection clear data1 data2
+bltCmd $graph legend selection set data1 data2
+bltCmd $graph legend selection toggle data1 data2
+bltCmd $graph legend selection set data1 data2
+bltCmd $graph legend selection clearall
 
 echo "done"
-#bltPlotDestroy $w
+bltPlotDestroy $w
 
