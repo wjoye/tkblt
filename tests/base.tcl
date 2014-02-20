@@ -113,9 +113,7 @@ proc bltLineGraph {w} {
 	-xdata {0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0} \
 	-ydata {26 50 72 92 110 128 140 150 160 180} \
 	-yerror {10 10 10 10 10 10 10 10 10 10 10} \
-	-color red \
-	-dashes {10 20 10} \
-	-showvalues y
+	-color red
     $graph legend configure -title "Legend"
 
     update

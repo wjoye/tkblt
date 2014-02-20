@@ -387,17 +387,17 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_LINE_ACTIVE_PEN		"activeLine"
 #define DEF_LINE_AXIS_X			"x"
 #define DEF_LINE_AXIS_Y			"y"
-#define DEF_LINE_DASHES			(char *)NULL
-#define DEF_LINE_DATA			(char *)NULL
+#define DEF_LINE_DASHES			NULL
+#define DEF_LINE_DATA			NULL
 #define DEF_LINE_FILL_COLOR    		"defcolor"
 #define DEF_LINE_HIDE			"no"
-#define DEF_LINE_LABEL			(char *)NULL
+#define DEF_LINE_LABEL			NULL
 #define DEF_LINE_LABEL_RELIEF		"flat"
 #define DEF_LINE_MAX_SYMBOLS		"0"
-#define DEF_LINE_OFFDASH_COLOR    	(char *)NULL
+#define DEF_LINE_OFFDASH_COLOR    	NULL
 #define DEF_LINE_OUTLINE_COLOR		"defcolor"
 #define DEF_LINE_OUTLINE_WIDTH 		"1"
-#define DEF_LINE_PATTERN_BG		(char *)NULL
+#define DEF_LINE_PATTERN_BG		NULL
 #define DEF_LINE_PATTERN_FG		black
 #define DEF_LINE_PEN_COLOR		navyblue
 #define DEF_LINE_PEN_DIRECTION		"both"
@@ -407,35 +407,96 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_LINE_SCALE_SYMBOLS		"yes"
 #define DEF_LINE_SMOOTH			"linear"
 #define DEF_LINE_STATE			"normal"
-#define DEF_LINE_STIPPLE		(char *)NULL
+#define DEF_LINE_STIPPLE		NULL
 #define DEF_LINE_STYLES			""
 #define DEF_LINE_SYMBOL			"none"
 #define DEF_LINE_TAGS			"all"
-#define DEF_LINE_X_DATA			(char *)NULL
-#define DEF_LINE_Y_DATA			(char *)NULL
+#define DEF_LINE_X_DATA			NULL
+#define DEF_LINE_Y_DATA			NULL
 
 #define DEF_LINE_ERRORBAR_COLOR		"defcolor"
-#define DEF_LINE_ERRORBAR_LINE_WIDTH	"2"
-#define DEF_LINE_ERRORBAR_CAP_WIDTH	"2"
+#define DEF_LINE_ERRORBAR_LINE_WIDTH	"1"
+#define DEF_LINE_ERRORBAR_CAP_WIDTH	"1"
 #define DEF_LINE_SHOW_ERRORBARS		"both"
 
 #define DEF_PEN_ACTIVE_COLOR		bblue
-#define DEF_PEN_DASHES			(char *)NULL
+#define DEF_PEN_DASHES			NULL
 #define DEF_PEN_FILL_COLOR    		"defcolor"
 #define DEF_PEN_LINE_WIDTH		"1"
 #define DEF_PEN_NORMAL_COLOR		navyblue
-#define DEF_PEN_OFFDASH_COLOR    	(char *)NULL
+#define DEF_PEN_OFFDASH_COLOR    	NULL
 #define DEF_PEN_OUTLINE_COLOR		"defcolor"
 #define DEF_PEN_OUTLINE_WIDTH 		"1"
 #define DEF_PEN_PIXELS			"0.1i"
+#define DEF_PEN_SHOW_VALUES		"no"
 #define DEF_PEN_SYMBOL			"none"
 #define DEF_PEN_TYPE			"line"
 #define	DEF_PEN_VALUE_ANCHOR		"s"
 #define	DEF_PEN_VALUE_COLOR		black
 #define	DEF_PEN_VALUE_FONT		STD_FONT_NUMBERS
 #define	DEF_PEN_VALUE_FORMAT		"%g"
-#define	DEF_PEN_VALUE_ANGLE		(char *)NULL
-#define DEF_PEN_SHOW_VALUES		"no"
+#define	DEF_PEN_VALUE_ANGLE		NULL
+#define	DEF_PEN_WIDTH 		        "1"
+
+//***
+
+static Tk_OptionSpec lineElemOptionSpecs[] = {
+  {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
+   DEF_LINE_PATTERN_FG, 
+   -1, Tk_Offset(LineElement, fillFgColor), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BORDER, "-areabackground", "areaBackground", "AreaBackground",
+   DEF_LINE_PATTERN_BG, 
+   -1, Tk_Offset(LineElement, fillBg), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_COLOR, "-color", "color", "Color", 
+   DEF_LINE_PEN_COLOR, 
+   -1, Tk_Offset(LineElement, builtinPen.traceColor), 0, NULL, 0},
+  {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
+   DEF_LINE_ERRORBAR_LINE_WIDTH, 
+   -1, Tk_Offset(LineElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
+   DEF_LINE_ERRORBAR_CAP_WIDTH, 
+   -1, Tk_Offset(LineElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_STRING, "-label", "label", "Label", 
+   NULL, 
+   -1, Tk_Offset(LineElement, label), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
+   DEF_LINE_LABEL_RELIEF, 
+   -1, Tk_Offset(LineElement, legendRelief), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
+   DEF_LINE_PEN_WIDTH, 
+   -1, Tk_Offset(LineElement, builtinPen.traceWidth), 0, NULL, 0},
+  {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
+   DEF_LINE_MAX_SYMBOLS, 
+   -1, Tk_Offset(LineElement, reqMaxSymbols), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
+   DEF_LINE_OUTLINE_WIDTH, 
+   -1, Tk_Offset(LineElement, builtinPen.symbol.outlineWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
+   DEF_LINE_PIXELS, 
+   -1, Tk_Offset(LineElement, builtinPen.symbol.size), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-reduce", "reduce", "Reduce",
+   DEF_LINE_REDUCE, 
+   -1, Tk_Offset(LineElement, rTolerance), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
+   DEF_LINE_SCALE_SYMBOLS, 
+   -1, Tk_Offset(LineElement, scaleSymbols), 0, NULL, 0},
+  {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
+   DEF_PEN_VALUE_ANCHOR, 
+   -1, Tk_Offset(LineElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
+   DEF_PEN_VALUE_COLOR, 
+   -1, Tk_Offset(LineElement, builtinPen.valueStyle.color), 0, NULL, 0},
+  {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
+   DEF_PEN_VALUE_FONT, 
+   -1, Tk_Offset(LineElement, builtinPen.valueStyle.font), 0, NULL, 0},
+  {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
+   DEF_PEN_VALUE_FORMAT, 
+   -1, Tk_Offset(LineElement, builtinPen.valueFormat), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
+   DEF_PEN_VALUE_ANGLE, 
+   -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
 
 Blt_CustomOption bitmaskLineElemHideOption =
 {
@@ -577,6 +638,48 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
+//***
+
+static Tk_OptionSpec linePenOptionSpecs[] = {
+  {TK_OPTION_COLOR, "-color", "color", "Color", 
+   DEF_PEN_ACTIVE_COLOR, 
+   -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
+   DEF_LINE_ERRORBAR_LINE_WIDTH, 
+   -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
+   DEF_LINE_ERRORBAR_CAP_WIDTH, 
+   -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
+   DEF_PEN_WIDTH, 
+   -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
+   DEF_PEN_OUTLINE_WIDTH, 
+   -1, Tk_Offset(LinePen, symbol.outlineWidth), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
+   DEF_PEN_PIXELS, 
+   -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
+  {TK_OPTION_STRING, "-type", "type", "Type",
+   DEF_PEN_TYPE, 
+   -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
+  {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
+   DEF_PEN_VALUE_ANCHOR, 
+   -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
+   DEF_PEN_VALUE_COLOR, 
+   -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
+  {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
+   DEF_PEN_VALUE_FONT, 
+   -1, Tk_Offset(LinePen, valueStyle.font), 0, NULL, 0},
+  {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
+   DEF_PEN_VALUE_FORMAT, 
+   -1, Tk_Offset(LinePen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
+   DEF_PEN_VALUE_ANGLE, 
+   -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
+
 static Blt_ConfigSpec linePenConfigSpecs[] = {
   {BLT_CONFIG_COLOR, "-color", "color", "Color", DEF_PEN_ACTIVE_COLOR, 
    Tk_Offset(LinePen, traceColor), ACTIVE_PEN},
@@ -598,7 +701,7 @@ static Blt_ConfigSpec linePenConfigSpecs[] = {
    Tk_Offset(LinePen, symbol.fillColor), BLT_CONFIG_NULL_OK | ALL_PENS, 
    &bltColorOption},
   {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   (char *)NULL, Tk_Offset(LinePen, traceWidth), 
+   NULL, Tk_Offset(LinePen, traceWidth), 
    ALL_PENS| BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-offdash", "offDash", "OffDash", DEF_PEN_OFFDASH_COLOR,
    Tk_Offset(LinePen, traceOffColor), BLT_CONFIG_NULL_OK | ALL_PENS, 

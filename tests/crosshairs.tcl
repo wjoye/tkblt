@@ -13,6 +13,8 @@ bltTest2 $graph crosshairs -hide yes
 bltTest2 $graph crosshairs -linewidth 3
 bltTest2 $graph crosshairs -position "@100,100"
 
+#bltCmd $graph crosshairs cget
+#bltCmd $graph crosshairs configure
 bltCmd $graph crosshairs on
 bltCmd $graph crosshairs off
 bltCmd $graph crosshairs toggle

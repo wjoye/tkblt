@@ -45,10 +45,12 @@ bltTest2 $graph legend -title "Hello World"
 ##bltTest2 $graph legend -titlecolor red
 bltTest2 $graph legend -titlefont "times 24 bold italic"
 
-#bltCmd $graph legend active
+#bltCmd $graph legend activate
 #bltCmd $graph legend bind
+#bltCmd $graph legend cget
+#bltCmd $graph legend configure
 #bltCmd $graph legend curselection
-#bltCmd $graph legend deactive
+#bltCmd $graph legend deactivate
 bltCmd $graph legend focus data1
 bltCmd $graph legend get data1
 bltCmd $graph legend selection anchor data1
