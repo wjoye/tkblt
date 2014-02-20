@@ -432,10 +432,10 @@ extern Blt_CustomOption bltYAxisOption;
 #define DEF_PEN_SYMBOL			"none"
 #define DEF_PEN_TYPE			"line"
 #define	DEF_PEN_VALUE_ANCHOR		"s"
+#define	DEF_PEN_VALUE_ANGLE		0
 #define	DEF_PEN_VALUE_COLOR		black
 #define	DEF_PEN_VALUE_FONT		STD_FONT_NUMBERS
 #define	DEF_PEN_VALUE_FORMAT		"%g"
-#define	DEF_PEN_VALUE_ANGLE		NULL
 #define	DEF_PEN_WIDTH 		        "1"
 
 //***
@@ -457,7 +457,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    DEF_LINE_ERRORBAR_CAP_WIDTH, 
    -1, Tk_Offset(LineElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label", 
-   NULL, 
+   DEF_LINE_LABEL, 
    -1, Tk_Offset(LineElement, label), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    DEF_LINE_LABEL_RELIEF, 
