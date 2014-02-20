@@ -417,7 +417,7 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
   GC newGC;
   XGCValues gcValues;
   unsigned long gcMask;
- 
+
   gcMask = GCFont;
   gcValues.font = Tk_FontId(stylePtr->font);
   if (stylePtr->color != NULL) {
@@ -425,9 +425,8 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
     gcValues.foreground = stylePtr->color->pixel;
   }
   newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
-  if (stylePtr->gc != NULL) {
+  if (stylePtr->gc != NULL)
     Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
-  }
 
   stylePtr->gc = newGC;
   stylePtr->flags &= ~UPDATE_GC;

@@ -103,7 +103,6 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
 	(((ts).font != (f)) ? ((ts).font = (f), (ts).flags |= UPDATE_GC) : 0)
 #define Blt_Ts_SetForeground(ts, c)    \
 	(((ts).color != (c)) ? ((ts).color = (c), (ts).flags |= UPDATE_GC) : 0)
-#define Blt_Ts_SetGC(ts, g)	((ts).gc = (g))
 #define Blt_Ts_SetJustify(ts, j)	((ts).justify = (j))
 #define Blt_Ts_SetLeader(ts, l)	((ts).leader = (l))
 #define Blt_Ts_SetMaxLength(ts, l)	((ts).maxLength = (l))

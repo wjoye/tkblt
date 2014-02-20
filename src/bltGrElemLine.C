@@ -1385,7 +1385,7 @@ static void
 InitLinePen(LinePen *penPtr)
 {
     Blt_Ts_InitStyle(penPtr->valueStyle);
-    penPtr->errorBarLineWidth = 2;
+    penPtr->errorBarLineWidth = 1;
     penPtr->errorBarShow = SHOW_BOTH;
     penPtr->configProc = ConfigurePenProc;
     penPtr->configSpecs = linePenConfigSpecs;
@@ -4125,6 +4125,9 @@ DrawValues(Graph *graphPtr, Drawable drawable, LineElement *elemPtr,
     }
     count = 0;
     xval = elemPtr->x.values, yval = elemPtr->y.values;
+
+    // be sure to update style->gc, things might have changed
+    penPtr->valueStyle.flags |= UPDATE_GC;
     for (pp = points, endp = points + length; pp < endp; pp++) {
 	double x, y;
 
@@ -4580,10 +4583,9 @@ TracesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr)
     }
 }
 
-
-static void
-ValuesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr,
-		   int nSymbolPts, Point2d *symbolPts, int *pointToData)
+static void ValuesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr,
+			       int nSymbolPts, Point2d *symbolPts, 
+			       int *pointToData)
 {
     Point2d *pp, *endp;
     int count;
