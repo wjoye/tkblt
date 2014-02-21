@@ -61,7 +61,7 @@ typedef struct {
   int refCount;			/* Reference count for elements using
 				 * this pen. */
   Tcl_HashEntry *hashPtr;
-  Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
   Graph *graphPtr;			/* Graph that the pen is associated
@@ -140,7 +140,7 @@ typedef struct {
 					 * then all data * points are drawn
 					 * active. */
   ElementProcs *procsPtr;
-  Blt_ConfigSpec *configSpecs;	/* Configuration specifications. */
+  Tk_OptionTable optionTable;	/* Configuration specifications. */
   BarPen *activePenPtr;		/* Standard Pens */
   BarPen *normalPenPtr;
   BarPen *builtinPenPtr;
@@ -623,8 +623,11 @@ static int ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
   return TCL_OK;
 }
 
-static void DestroyBarPen(Graph *graphPtr, BarPen *penPtr)
+static void DestroyBarPen(Graph* graphPtr, BarPen* penPtr)
 {
+  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(penPtr->optionTable);
+
   Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
   if (penPtr->outlineGC != NULL) {
     Tk_FreeGC(graphPtr->display, penPtr->outlineGC);
@@ -647,13 +650,14 @@ static void DestroyBarPenProc(Graph *graphPtr, Pen *basePtr)
   DestroyBarPen(graphPtr, (BarPen *)basePtr);
 }
 
-static void InitializeBarPen(BarPen *penPtr)
+static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
 {
   /* Generic fields common to all pen types. */
   penPtr->configProc = ConfigureBarPenProc;
   penPtr->destroyProc = DestroyBarPenProc;
   penPtr->flags = NORMAL_PEN;
-  penPtr->configSpecs = barPenConfigSpecs;
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
 
   /* Initialize fields specific to bar pens. */
   Blt_Ts_InitStyle(penPtr->valueStyle);
@@ -663,12 +667,10 @@ static void InitializeBarPen(BarPen *penPtr)
   penPtr->errorBarShow = SHOW_BOTH;
 }
 
-Pen* Blt_BarPen(const char *penName)
+Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
 {
-  BarPen *penPtr;
-
-  penPtr = calloc(1, sizeof(BarPen));
-  InitializeBarPen(penPtr);
+  BarPen *penPtr = calloc(1, sizeof(BarPen));
+  InitBarPen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
   if (strcmp(penName, "activeBar") == 0) {
     penPtr->flags = ACTIVE_PEN;
@@ -762,10 +764,12 @@ static int ConfigureBarProc(Graph *graphPtr, Element *basePtr)
   stylePtr = Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
 
+  /*
   if (Blt_ConfigModified(elemPtr->configSpecs, "-barwidth", "-*data",
 			 "-map*", "-label", "-hide", "-x", "-y", (char *)NULL)) {
     elemPtr->flags |= MAP_ITEM;
   }
+  */
   return TCL_OK;
 }
 
@@ -2200,31 +2204,18 @@ static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
     }
     if (penPtr->valueShow != SHOW_NONE) {
       BarValuesToPostScript(graphPtr, ps, elemPtr, penPtr, 
-			    stylePtr->bars, stylePtr->nBars, elemPtr->barToData + count);
+			    stylePtr->bars, stylePtr->nBars, 
+			    elemPtr->barToData + count);
     }
     count += stylePtr->nBars;
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DestroyBar --
- *
- *	Release memory and resources allocated for the bar element.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Everything associated with the bar element is freed up.
- *
- *---------------------------------------------------------------------------
- */
-
-static void DestroyBarProc(Graph *graphPtr, Element *basePtr)
+static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement*)basePtr;
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(elemPtr->optionTable);
 
   DestroyBarPen(graphPtr, elemPtr->builtinPenPtr);
   if (elemPtr->activePenPtr != NULL) {
@@ -2270,13 +2261,12 @@ static ElementProcs barProcs = {
   MapBarProc,
 };
 
-Element* Blt_BarElement(Graph *graphPtr, const char *name, ClassId classId)
+Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 {
-  BarElement *elemPtr;
-
-  elemPtr = calloc(1, sizeof(BarElement));
+  BarElement *elemPtr = calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
-  elemPtr->configSpecs = barElemConfigSpecs;
+  elemPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, barElemOptionSpecs);
   elemPtr->legendRelief = TK_RELIEF_FLAT;
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->obj.name = Blt_Strdup(name);
@@ -2284,9 +2274,10 @@ Element* Blt_BarElement(Graph *graphPtr, const char *name, ClassId classId)
   /* By default, an element's name and label are the same. */
   elemPtr->label = Blt_Strdup(name);
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  InitializeBarPen(elemPtr->builtinPenPtr);
+  InitBarPen(graphPtr, elemPtr->builtinPenPtr);
   elemPtr->stylePalette = Blt_Chain_Create();
   bltBarStylesOption.clientData = (ClientData)sizeof(BarStyle);
+
   return (Element *)elemPtr;
 }
 

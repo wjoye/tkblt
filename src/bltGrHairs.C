@@ -186,7 +186,9 @@ static int CrosshairsObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
+    graphPtr->flags |= mask;
     ConfigureCrosshairs(graphPtr);
+
     break; 
   }
 
@@ -255,6 +257,7 @@ void Blt_DestroyCrosshairs(Graph* graphPtr)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
   if (chPtr != NULL) {
+    Tk_DeleteOptionTable(chPtr->optionTable);
     if (chPtr->gc != NULL)
       Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
 

@@ -390,12 +390,12 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
     goto error;
   if (Blt_CreateLegend(graphPtr) != TCL_OK)
     goto error;
-
-  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
-    goto error;
   if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL)
     goto error;
   if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL)
+    goto error;
+
+  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
@@ -731,6 +731,7 @@ static void GraphInstCmdDeleteProc(ClientData clientData)
 static void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
+  Tk_DeleteOptionTable(graphPtr->optionTable);
 
   Blt_DestroyCrosshairs(graphPtr);
   Blt_DestroyMarkers(graphPtr);

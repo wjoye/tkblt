@@ -593,12 +593,12 @@ extern void Blt_DestroyPens(Graph *graphPtr);
 extern int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, 
 			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 
-extern Pen *Blt_BarPen(const char *penName);
+extern Pen* Blt_BarPen(Graph* graphPtr, const char* penName);
 
-extern Pen *Blt_LinePen(const char *penName);
+extern Pen* Blt_LinePen(Graph* graphPtr, const char* penName);
 
-extern Pen *Blt_CreatePen(Graph *graphPtr, const char *penName, 
-			  ClassId classId, int objc, Tcl_Obj *const *objv);
+extern Pen* Blt_CreatePen(Graph* graphPtr, const char* penName, 
+			  ClassId classId, int objc, Tcl_Obj* const objv[]);
 
 extern int Blt_InitLinePens(Graph *graphPtr);
 

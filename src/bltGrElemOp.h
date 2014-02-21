@@ -223,7 +223,7 @@ struct _Element {
 					 * "flags", then all data points are
 					 * drawn active. */
     ElementProcs *procsPtr;
-    Blt_ConfigSpec *configSpecs;	/* Configuration specifications. */
+    Tk_OptionTable optionTable;	/* Configuration specifications. */
     Pen *activePenPtr;			/* Standard Pens */
     Pen *normalPenPtr;
     Pen *builtinPenPtr;

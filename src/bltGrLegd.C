@@ -596,9 +596,11 @@ static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
+    graphPtr->flags |= mask;
     graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
     ConfigureLegend(graphPtr);
     Blt_EventuallyRedrawGraph(graphPtr);
+
     break; 
   }
 
@@ -725,10 +727,10 @@ void Blt_DeleteLegend(Graph* graphPtr)
 
 void Blt_DestroyLegend(Graph *graphPtr)
 {
-  Legend *legendPtr = graphPtr->legend;
-
-  if (graphPtr->legend == NULL)
+  Legend* legendPtr = graphPtr->legend;
+  if (legendPtr == NULL)
     return;
+  Tk_DeleteOptionTable(legendPtr->optionTable);
 
   Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->style);
   Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->titleStyle);

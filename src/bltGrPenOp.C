@@ -305,113 +305,107 @@ GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
     return TCL_OK;
 }
 
-static void
-DestroyPen(Pen *penPtr)
+static void DestroyPen(Pen* penPtr)
 {
-    Graph *graphPtr = penPtr->graphPtr;
+  Graph *graphPtr = penPtr->graphPtr;
 
-    Blt_FreeOptions(penPtr->configSpecs, (char *)penPtr, graphPtr->display, 0);
-    (*penPtr->destroyProc) (graphPtr, penPtr);
-    if ((penPtr->name != NULL) && (penPtr->name[0] != '\0')) {
-      free((void*)(penPtr->name));
-    }
-    if (penPtr->hashPtr != NULL) {
-	Tcl_DeleteHashEntry(penPtr->hashPtr);
-    }
-    free(penPtr);
+  (*penPtr->destroyProc) (graphPtr, penPtr);
+  if ((penPtr->name != NULL) && (penPtr->name[0] != '\0')) {
+    free((void*)(penPtr->name));
+  }
+  if (penPtr->hashPtr != NULL) {
+    Tcl_DeleteHashEntry(penPtr->hashPtr);
+  }
+  free(penPtr);
 }
 
-void
-Blt_FreePen(Pen *penPtr)
+void Blt_FreePen(Pen *penPtr)
 {
-    if (penPtr != NULL) {
-	penPtr->refCount--;
-	if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING)) {
-	    DestroyPen(penPtr);
-	}
+  if (penPtr != NULL) {
+    penPtr->refCount--;
+    if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING)) {
+      DestroyPen(penPtr);
     }
+  }
 }
 
-Pen *
-Blt_CreatePen(Graph *graphPtr, const char *penName, ClassId classId,
-	      int objc, Tcl_Obj *const *objv)
+Pen* Blt_CreatePen(Graph* graphPtr, const char* penName, ClassId classId,
+		   int objc, Tcl_Obj* const objv[])
 {
-    Pen *penPtr;
-    Tcl_HashEntry *hPtr;
-    unsigned int configFlags;
-    int isNew;
-    int i;
+  Pen *penPtr;
+  Tcl_HashEntry *hPtr;
+  unsigned int configFlags;
+  int isNew;
+  int i;
 
-    /*
-     * Scan the option list for a "-type" entry.  This will indicate what type
-     * of pen we are creating. Otherwise we'll default to the suggested type.
-     * Last -type option wins.
-     */
-    for (i = 0; i < objc; i += 2) {
-	char *string;
-	int length;
+  /*
+   * Scan the option list for a "-type" entry.  This will indicate what type
+   * of pen we are creating. Otherwise we'll default to the suggested type.
+   * Last -type option wins.
+   */
+  for (i = 0; i < objc; i += 2) {
+    char *string;
+    int length;
 
-	string = Tcl_GetStringFromObj(objv[i],  &length);
-	if ((length > 2) && (strncmp(string, "-type", length) == 0)) {
-	    char *arg;
+    string = Tcl_GetStringFromObj(objv[i],  &length);
+    if ((length > 2) && (strncmp(string, "-type", length) == 0)) {
+      char *arg;
 
-	    arg = Tcl_GetString(objv[i + 1]);
-	    if (strcmp(arg, "bar") == 0) {
-		classId = CID_ELEM_BAR;
-	    } else if (strcmp(arg, "line") == 0) {
-		classId = CID_ELEM_LINE;
-	    } else {
-		Tcl_AppendResult(graphPtr->interp, "unknown pen type \"",
-		    arg, "\" specified", (char *)NULL);
-		return NULL;
-	    }
-	}
-    }
-    classId = CID_ELEM_LINE;
-    hPtr = Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
-    if (!isNew) {
-	penPtr = Tcl_GetHashValue(hPtr);
-	if ((penPtr->flags & DELETE_PENDING) == 0) {
-	    Tcl_AppendResult(graphPtr->interp, "pen \"", penName,
-		"\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
-		(char *)NULL);
-	    return NULL;
-	}
-	if (penPtr->classId != classId) {
-	    Tcl_AppendResult(graphPtr->interp, "pen \"", penName,
-		"\" in-use: can't change pen type from \"", 
-		Blt_GraphClassName(penPtr->classId), "\" to \"", 
-		Blt_GraphClassName(classId), "\"", (char *)NULL);
-	    return NULL;
-	}
-	penPtr->flags &= ~DELETE_PENDING; /* Undelete the pen. */
-    } else {
-	if (classId == CID_ELEM_BAR) {
-	    penPtr = Blt_BarPen(penName);
-	} else {
-	    penPtr = Blt_LinePen(penName);
-	}
-	penPtr->classId = classId;
-	penPtr->hashPtr = hPtr;
-	penPtr->graphPtr = graphPtr;
-	Tcl_SetHashValue(hPtr, penPtr);
-    }
-    configFlags = (penPtr->flags & (ACTIVE_PEN | NORMAL_PEN));
-    if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
-	    penPtr->name, "Pen", penPtr->configSpecs, objc, objv,
-	    (char *)penPtr, configFlags) != TCL_OK) {
-	if (isNew) {
-	    DestroyPen(penPtr);
-	}
+      arg = Tcl_GetString(objv[i + 1]);
+      if (strcmp(arg, "bar") == 0) {
+	classId = CID_ELEM_BAR;
+      } else if (strcmp(arg, "line") == 0) {
+	classId = CID_ELEM_LINE;
+      } else {
+	Tcl_AppendResult(graphPtr->interp, "unknown pen type \"",
+			 arg, "\" specified", (char *)NULL);
 	return NULL;
+      }
     }
-    (*penPtr->configProc) (graphPtr, penPtr);
-    return penPtr;
+  }
+  classId = CID_ELEM_LINE;
+  hPtr = Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
+  if (!isNew) {
+    penPtr = Tcl_GetHashValue(hPtr);
+    if ((penPtr->flags & DELETE_PENDING) == 0) {
+      Tcl_AppendResult(graphPtr->interp, "pen \"", penName,
+		       "\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
+		       (char *)NULL);
+      return NULL;
+    }
+    if (penPtr->classId != classId) {
+      Tcl_AppendResult(graphPtr->interp, "pen \"", penName,
+		       "\" in-use: can't change pen type from \"", 
+		       Blt_GraphClassName(penPtr->classId), "\" to \"", 
+		       Blt_GraphClassName(classId), "\"", (char *)NULL);
+      return NULL;
+    }
+    penPtr->flags &= ~DELETE_PENDING; /* Undelete the pen. */
+  } else {
+    if (classId == CID_ELEM_BAR)
+      penPtr = Blt_BarPen(graphPtr, penName);
+    else
+      penPtr = Blt_LinePen(graphPtr, penName);
+    penPtr->classId = classId;
+    penPtr->hashPtr = hPtr;
+    penPtr->graphPtr = graphPtr;
+    Tcl_SetHashValue(hPtr, penPtr);
+  }
+  configFlags = (penPtr->flags & (ACTIVE_PEN | NORMAL_PEN));
+  if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
+				    penPtr->name, "Pen", penPtr->configSpecs, objc, objv,
+				    (char *)penPtr, configFlags) != TCL_OK) {
+    if (isNew) {
+      DestroyPen(penPtr);
+    }
+    return NULL;
+  }
+  (*penPtr->configProc) (graphPtr, penPtr);
+  return penPtr;
 }
 
-int
-Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
-		  ClassId classId, Pen **penPtrPtr)
+int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
+		      ClassId classId, Pen **penPtrPtr)
 {
     Tcl_HashEntry *hPtr;
     Pen *penPtr;
