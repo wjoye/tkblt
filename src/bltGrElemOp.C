@@ -40,11 +40,81 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-
-#define GRAPH_KEY		"BLT Graph Data"
+#include "bltGrElem.h"
 
 /* Ignore elements that aren't in the display list or have been deleted. */
 #define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
+
+static int ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
+		       double **arrayPtr);
+static void FreeDataValues(ElemValues *valuesPtr);
+static void FindRange(ElemValues *valuesPtr);
+
+// Value Pairs
+static Tk_CustomOptionSetProc PairsSetProc;
+static Tk_CustomOptionGetProc PairsGetProc;
+Tk_ObjCustomOption pairsObjOption =
+  {
+    "pairs", PairsSetProc, PairsGetProc, NULL, NULL, NULL
+  };
+
+static int PairsSetProc(ClientData clientData, Tcl_Interp *interp,
+		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		       int offset, char* save, int flags)
+{
+  double *values;
+  int nValues;
+  if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
+    return TCL_ERROR;
+
+  if (nValues & 1) {
+    Tcl_AppendResult(interp, "odd number of data points", (char *)NULL);
+    free(values);
+    return TCL_ERROR;
+  }
+
+  nValues /= 2;
+  size_t newSize = nValues * sizeof(double);
+
+  Element* elemPtr = (Element*)widgRec;
+  FreeDataValues(&elemPtr->x);
+  FreeDataValues(&elemPtr->y);
+
+  if (newSize > 0) {
+    elemPtr->x.values = malloc(newSize);
+    elemPtr->y.values = malloc(newSize);
+    elemPtr->x.nValues = elemPtr->y.nValues = nValues;
+    int ii=0;
+    for (double* p = values; ii<nValues; ii++) {
+      elemPtr->x.values[ii] = *p++;
+      elemPtr->y.values[ii] = *p++;
+    }
+    free(values);
+    FindRange(&elemPtr->x);
+    FindRange(&elemPtr->y);
+  }
+
+  return TCL_OK;
+};
+
+static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin, 
+			    char *widgRec, int offset)
+{
+  Element *elemPtr = (Element*)widgRec;
+  int length = NUMBEROFPOINTS(elemPtr);
+
+  Tcl_Obj** ll = calloc(2*length,sizeof(Tcl_Obj*));
+  for (int ii=0, jj=0; ii<length; ii++) {
+    ll[jj++] = Tcl_NewDoubleObj(elemPtr->x.values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(elemPtr->y.values[ii]);
+  }
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(2*length, ll);
+  free(ll);
+
+  return listObjPtr;
+};
+
+/* Along */
 
 static Blt_OptionParseProc ObjToAlong;
 static Blt_OptionPrintProc AlongToObj;
@@ -58,13 +128,6 @@ static Blt_OptionPrintProc ValuesToObj;
 Blt_CustomOption bltValuesOption =
   {
     ObjToValues, ValuesToObj, FreeValues, (ClientData)0
-  };
-static Blt_OptionFreeProc FreeValuePairs;
-static Blt_OptionParseProc ObjToValuePairs;
-static Blt_OptionPrintProc ValuePairsToObj;
-Blt_CustomOption bltValuePairsOption =
-  {
-    ObjToValuePairs, ValuePairsToObj, FreeValuePairs, (ClientData)0
   };
 
 static Blt_OptionFreeProc  FreeStyles;
@@ -80,12 +143,8 @@ Blt_CustomOption bltBarStylesOption =
     ObjToStyles, StylesToObj, FreeStyles, (ClientData)0,
   };
 
-#include "bltGrElem.h"
-
 static Blt_VectorChangedProc VectorChangedProc;
 
-static void FindRange(ElemValues *valuesPtr);
-static void FreeDataValues(ElemValues *valuesPtr);
 static Tcl_FreeProc FreeElement;
 
 static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
@@ -252,7 +311,8 @@ static void FreeDataValues(ElemValues *valuesPtr)
 {
   switch (valuesPtr->type) {
   case ELEM_SOURCE_VECTOR: 
-    FreeVectorSource(valuesPtr);	break;
+    FreeVectorSource(valuesPtr);
+    break;
   case ELEM_SOURCE_VALUES:
     break;
   }
@@ -403,74 +463,6 @@ static Tcl_Obj *ValuesToObj(ClientData clientData, Tcl_Interp *interp,
     abort();
   }
   return Tcl_NewStringObj("", 0);
-}
-
-static void FreeValuePairs(ClientData clientData, Display *display,
-			   char *widgRec, int offset)
-{
-  Element *elemPtr = (Element *)widgRec;
-
-  FreeDataValues(&elemPtr->x);
-  FreeDataValues(&elemPtr->y);
-}
-
-static int ObjToValuePairs(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			   int offset, int flags)
-{
-  Element *elemPtr = (Element *)widgRec;
-  double *values;
-  int nValues;
-  size_t newSize;
-
-  if (ParseValues(interp, objPtr, &nValues, &values) != TCL_OK) {
-    return TCL_ERROR;
-  }
-  if (nValues & 1) {
-    Tcl_AppendResult(interp, "odd number of data points", (char *)NULL);
-    free(values);
-    return TCL_ERROR;
-  }
-  nValues /= 2;
-  newSize = nValues * sizeof(double);
-  FreeDataValues(&elemPtr->x);	/* Release the current data sources. */
-  FreeDataValues(&elemPtr->y);
-  if (newSize > 0) {
-    double *p;
-    int i;
-
-    elemPtr->x.values = malloc(newSize);
-    elemPtr->y.values = malloc(newSize);
-    elemPtr->x.nValues = elemPtr->y.nValues = nValues;
-    for (p = values, i = 0; i < nValues; i++) {
-      elemPtr->x.values[i] = *p++;
-      elemPtr->y.values[i] = *p++;
-    }
-    free(values);
-    FindRange(&elemPtr->x);
-    FindRange(&elemPtr->y);
-  }
-  return TCL_OK;
-}
-
-static Tcl_Obj *ValuePairsToObj(ClientData clientData, Tcl_Interp *interp,
-				Tk_Window tkwin, char *widgRec,	int offset,
-				int flags)
-{
-  Element *elemPtr = (Element *)widgRec;
-  Tcl_Obj *listObjPtr;
-  int i;
-  int length;
-
-  length = NUMBEROFPOINTS(elemPtr);
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  for (i = 0; i < length; i++) {
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(elemPtr->x.values[i]));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(elemPtr->y.values[i]));
-  }
-  return listObjPtr;
 }
 
 static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
@@ -716,6 +708,8 @@ static void DestroyElement(Element *elemPtr)
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
 
+  FreeDataValues(&elemPtr->x);
+  FreeDataValues(&elemPtr->y);
   /*
    * Call the element's own destructor to release the memory and
    * resources allocated for it.
@@ -780,18 +774,16 @@ static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
   default:
     return TCL_ERROR;
   }
+  if (!elemPtr)
+    return TCL_ERROR;
+
   elemPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, elemPtr);
 
-  /*
-    if (Blt_ConfigureComponentFromObj(interp, graphPtr->tkwin, 
-    elemPtr->obj.name, "Element", elemPtr->configSpecs, objc - 4, objv + 4,
-    (char *)elemPtr, 0) != TCL_OK) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
-    }
-  */
-  (*elemPtr->procsPtr->configProc) (graphPtr, elemPtr);
+  }
 
   elemPtr->link = Blt_Chain_Append(graphPtr->elements.displayList, elemPtr);
   graphPtr->flags |= CACHE_DIRTY;
@@ -920,6 +912,126 @@ void Blt_ActiveElementsToPostScript( Graph *graphPtr, Blt_Ps ps)
   }
 }
 
+ClientData Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
+{
+  Tcl_HashEntry *hPtr;
+  int isNew;
+
+  hPtr = Tcl_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
+  return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+}
+
+static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+		  int objc, Tcl_Obj* const objv[])
+{
+  if (objc != 5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
+    return TCL_ERROR;
+  }
+
+  Element *elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
+				      elemPtr->optionTable,
+				      objv[4], graphPtr->tkwin);
+  if (objPtr == NULL)
+    return TCL_ERROR;
+  else
+    Tcl_SetObjResult(interp, objPtr);
+  return TCL_OK;
+}
+
+static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
+		       int objc, Tcl_Obj* const objv[])
+{
+  Element* elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc <= 5) {
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
+				       elemPtr->optionTable, 
+				       (objc == 5) ? objv[4] : NULL, 
+				       graphPtr->tkwin);
+    if (objPtr == NULL)
+      return TCL_ERROR;
+    else
+      Tcl_SetObjResult(interp, objPtr);
+    return TCL_OK;
+  } 
+  else
+    return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
+}
+
+static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+			       Element* elemPtr, 
+			       int objc, Tcl_Obj* const objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)elemPtr, elemPtr->optionTable, 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    graphPtr->flags |= mask;
+    graphPtr->flags |= CACHE_DIRTY;
+    if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
+    /*
+      if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
+      graphPtr->flags |= RESET_AXES;
+      elemPtr->flags |= MAP_ITEM;
+      }
+    */
+    /* If data points or axes have changed, reset the axes (may
+     * affect autoscaling) and recalculate the screen points of
+     * the element. */
+
+    /*
+      if (Blt_ConfigModified(elemPtr->configSpecs, "-*data", "-map*", "-x",
+      "-y", (char *)NULL)) {
+      graphPtr->flags |= RESET_WORLD;
+      elemPtr->flags |= MAP_ITEM;
+      }
+    */
+    /* The new label may change the size of the legend */
+    /*
+      if (Blt_ConfigModified(elemPtr->configSpecs, "-label", (char *)NULL)) {
+      graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+      }
+    */
+
+// Ops
+
 static int ActivateOp(Graph *graphPtr, Tcl_Interp *interp,
 		      int objc, Tcl_Obj *const *objv)
 {
@@ -974,15 +1086,6 @@ static int ActivateOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-ClientData Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
-{
-  Tcl_HashEntry *hPtr;
-  int isNew;
-
-  hPtr = Tcl_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
-}
-
 static int BindOp(Graph *graphPtr, Tcl_Interp *interp,
 		  int objc, Tcl_Obj *const *objv)
 {
@@ -1011,57 +1114,6 @@ static int CreateOp(Graph *graphPtr, Tcl_Interp *interp,
 {
   return CreateElement(graphPtr, interp, objc, objv, classId);
 }
-
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
-		  int objc, Tcl_Obj* const objv[])
-{
-  if (objc != 5) {
-    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
-    return TCL_ERROR;
-  }
-
-  Element *elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
-				      elemPtr->optionTable,
-				      objv[4], graphPtr->tkwin);
-  if (objPtr == NULL)
-    return TCL_ERROR;
-  else
-    Tcl_SetObjResult(interp, objPtr);
-  return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ClosestOp --
- *
- *	Find the element closest to the specified screen coordinates.
- *	Options:
- *	-halo		Consider points only with this maximum distance
- *			from the picked coordinate.
- *	-interpolate	Find closest point along element traces, not just
- *			data points.
- *	-along
- *
- * Results:
- *	A standard TCL result. If an element could be found within
- *	the halo distance, the interpreter result is "1", otherwise
- *	"0".  If a closest element exists, the designated TCL array
- *	variable will be set with the following information:
- *
- *	1) the element name,
- *	2) the index of the closest point,
- *	3) the distance (in screen coordinates) from the picked X-Y
- *	   coordinate and the closest point,
- *	4) the X coordinate (graph coordinate) of the closest point,
- *	5) and the Y-coordinate.
- *
- *---------------------------------------------------------------------------
- */
 
 static Blt_ConfigSpec closestSpecs[] = {
   {BLT_CONFIG_PIXELS, "-halo", (char *)NULL, (char *)NULL,
@@ -1184,93 +1236,6 @@ static int ClosestOp(Graph *graphPtr, Tcl_Interp *interp,
   }
   return TCL_OK;
 }
-
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
-		       int objc, Tcl_Obj* const objv[])
-{
-  Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
-				       elemPtr->optionTable, 
-				       (objc == 5) ? objv[4] : NULL, 
-				       graphPtr->tkwin);
-    if (objPtr == NULL)
-      return TCL_ERROR;
-    else
-      Tcl_SetObjResult(interp, objPtr);
-    return TCL_OK;
-  } 
-  else
-    return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
-}
-
-static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
-			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[])
-{
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)elemPtr, elemPtr->optionTable, 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    graphPtr->flags |= mask;
-    graphPtr->flags |= CACHE_DIRTY;
-    if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
-}
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
-      graphPtr->flags |= RESET_AXES;
-      elemPtr->flags |= MAP_ITEM;
-      }
-    */
-    /* If data points or axes have changed, reset the axes (may
-     * affect autoscaling) and recalculate the screen points of
-     * the element. */
-
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-*data", "-map*", "-x",
-      "-y", (char *)NULL)) {
-      graphPtr->flags |= RESET_WORLD;
-      elemPtr->flags |= MAP_ITEM;
-      }
-    */
-    /* The new label may change the size of the legend */
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-label", (char *)NULL)) {
-      graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-      }
-    */
 
 static int DeactivateOp(Graph *graphPtr, Tcl_Interp *interp,
 			int objc, Tcl_Obj *const *objv)

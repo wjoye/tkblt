@@ -209,14 +209,57 @@ static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
 
-  Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj**)NULL);
   Tcl_Obj* ll[12];
   int ii=0;
   while (dashesPtr->values[ii]) {
     ll[ii] = Tcl_NewIntObj(dashesPtr->values[ii]);
     ii++;
   }
-  Tcl_SetListObj(listObjPtr, ii, ll);
+  return Tcl_NewListObj(ii, ll);
+};
+
+// List
+static Tk_CustomOptionSetProc ListSetProc;
+static Tk_CustomOptionGetProc ListGetProc;
+Tk_ObjCustomOption listObjOption =
+  {
+    "list", ListSetProc, ListGetProc, NULL, NULL, NULL
+  };
+
+static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
+		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		       int offset, char* save, int flags)
+{
+  const char*** listPtr = (const char***)(widgRec + offset);
+
+  const char** argv;
+  int argc;
+  if (Tcl_SplitList(interp, Tcl_GetString(*objPtr), &argc, &argv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (*listPtr != NULL) {
+    Tcl_Free((void*)(*listPtr));
+    *listPtr = NULL;
+  }
+  *listPtr = argv;
+
+  return TCL_OK;
+};
+
+static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin, 
+			    char *widgRec, int offset)
+{
+  const char*** listPtr = (const char***)(widgRec + offset);
+
+  // count how many
+  int cnt=0;
+  for (const char** p = *listPtr; *p != NULL; p++,cnt++) {}
+
+  Tcl_Obj** ll = calloc(cnt,sizeof(Tcl_Obj*));
+  for (int ii=0; ii<cnt; ii++)
+    ll[ii] = Tcl_NewStringObj(*listPtr[ii], -1);
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
 
   return listObjPtr;
 };

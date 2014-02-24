@@ -43,12 +43,62 @@
 typedef int (GraphPenProc)(Tcl_Interp *interp, Graph *graphPtr, int objc, 
 	Tcl_Obj *const *objv);
 
-static Blt_OptionFreeProc FreeColor;
-static Blt_OptionParseProc ObjToColor;
-static Blt_OptionPrintProc ColorToObj;
-Blt_CustomOption bltColorOption = {
-    ObjToColor, ColorToObj, FreeColor, (ClientData)0
+//***
+
+static Tk_CustomOptionSetProc PenSetProc;
+static Tk_CustomOptionGetProc PenGetProc;
+Tk_ObjCustomOption barPenObjOption =
+  {
+    "barPen", PenSetProc, PenGetProc, NULL, NULL, (ClientData)CID_ELEM_BAR
+  };
+Tk_ObjCustomOption linePenObjOption =
+  {
+    "linePen", PenSetProc, PenGetProc, NULL, NULL, (ClientData)CID_ELEM_LINE
+  };
+
+static int PenSetProc(ClientData clientData, Tcl_Interp *interp,
+		      Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		      int offset, char* save, int flags)
+{
+  Pen** penPtrPtr = (Pen**)(widgRec + offset);
+  const char* string = Tcl_GetString(*objPtr);
+  if ((string[0] == '\0') && (flags & TK_OPTION_NULL_OK)) {
+    Blt_FreePen(*penPtrPtr);
+    *penPtrPtr = NULL;
+  } 
+  else {
+    Pen *penPtr;
+    Graph *graphPtr = Blt_GetGraphFromWindowData(tkwin);
+    ClassId classId = (ClassId)clientData; /* Element type. */
+
+    if (classId == CID_NONE)
+      classId = graphPtr->classId;
+
+    if (Blt_GetPenFromObj(interp, graphPtr, objPtr, classId, &penPtr) 
+	!= TCL_OK)
+      return TCL_ERROR;
+    
+    Blt_FreePen(*penPtrPtr);
+    *penPtrPtr = penPtr;
+  }
+
+  return TCL_OK;
 };
+
+static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin, 
+			   char *widgRec, int offset)
+{
+  Pen* penPtr = *(Pen**)(widgRec + offset);
+
+  if (penPtr == NULL) {
+    return Tcl_NewStringObj("", -1);
+  } 
+  else {
+    return Tcl_NewStringObj(penPtr->name, -1);
+  }
+};
+
+//***
 
 static Blt_OptionFreeProc FreePen;
 static Blt_OptionParseProc ObjToPen;
@@ -59,6 +109,110 @@ Blt_CustomOption bltBarPenOption = {
 Blt_CustomOption bltLinePenOption = {
     ObjToPen, PenToObj, FreePen, (ClientData)CID_ELEM_LINE
 };
+
+static Blt_OptionFreeProc FreeColor;
+static Blt_OptionParseProc ObjToColor;
+static Blt_OptionPrintProc ColorToObj;
+Blt_CustomOption bltColorOption = {
+    ObjToColor, ColorToObj, FreeColor, (ClientData)0
+};
+
+/*ARGSUSED*/
+static void
+FreePen(
+    ClientData clientData,	/* Not used. */
+    Display *display,		/* Not used. */
+    char *widgRec,
+    int offset)
+{
+    Pen **penPtrPtr = (Pen **)(widgRec + offset);
+
+    if (*penPtrPtr != NULL) {
+	Blt_FreePen(*penPtrPtr);
+    }
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * ObjToPen --
+ *
+ *	Convert the color value into a string.
+ *
+ * Results:
+ *	The string representing the symbol color is returned.
+ *
+ *---------------------------------------------------------------------------
+ */
+/*ARGSUSED*/
+static int
+ObjToPen(
+    ClientData clientData,	/* Not used. */
+    Tcl_Interp *interp,		/* Interpreter to send results back to */
+    Tk_Window tkwin,		/* Not used. */
+    Tcl_Obj *objPtr,		/* String representing pen */
+    char *widgRec,		/* Widget record */
+    int offset,			/* Offset to field in structure */
+    int flags)	
+{
+    Pen **penPtrPtr = (Pen **)(widgRec + offset);
+    const char *string;
+
+    string = Tcl_GetString(objPtr);
+    if ((string[0] == '\0') && (flags & BLT_CONFIG_NULL_OK)) {
+	Blt_FreePen(*penPtrPtr);
+	*penPtrPtr = NULL;
+    } else {
+	Pen *penPtr;
+	Graph *graphPtr;
+	ClassId classId = (ClassId)clientData; /* Element type. */
+
+	graphPtr = Blt_GetGraphFromWindowData(tkwin);
+	assert(graphPtr);
+
+	if (classId == CID_NONE) {	
+	    classId = graphPtr->classId;
+	}
+	if (Blt_GetPenFromObj(interp, graphPtr, objPtr, classId, &penPtr) 
+	    != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	Blt_FreePen(*penPtrPtr);
+	*penPtrPtr = penPtr;
+    }
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * PenToObj --
+ *
+ *	Parse the name of the name.
+ *
+ * Results:
+ *	The return value is a standard TCL result.
+ *
+ *---------------------------------------------------------------------------
+ */
+/*ARGSUSED*/
+static Tcl_Obj *
+PenToObj(
+    ClientData clientData,	/* Not used. */
+    Tcl_Interp *interp,		/* Not used. */
+    Tk_Window tkwin,		/* Not used. */
+    char *widgRec,		/* Widget information record */
+    int offset,			/* Offset to field in structure */
+    int flags)			/* Not used. */
+{
+    Pen *penPtr = *(Pen **)(widgRec + offset);
+
+    if (penPtr == NULL) {
+	return Tcl_NewStringObj("", -1);
+    } else {
+	return Tcl_NewStringObj(penPtr->name, -1);
+    }
+}
 
 /*ARGSUSED*/
 static void
@@ -166,103 +320,6 @@ ColorToObj(
 	objPtr = Tcl_NewStringObj(Tk_NameOfColor(colorPtr), -1);
     }
     return objPtr;
-}
-
-/*ARGSUSED*/
-static void
-FreePen(
-    ClientData clientData,	/* Not used. */
-    Display *display,		/* Not used. */
-    char *widgRec,
-    int offset)
-{
-    Pen **penPtrPtr = (Pen **)(widgRec + offset);
-
-    if (*penPtrPtr != NULL) {
-	Blt_FreePen(*penPtrPtr);
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToPen --
- *
- *	Convert the color value into a string.
- *
- * Results:
- *	The string representing the symbol color is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToPen(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tk_Window tkwin,		/* Not used. */
-    Tcl_Obj *objPtr,		/* String representing pen */
-    char *widgRec,		/* Widget record */
-    int offset,			/* Offset to field in structure */
-    int flags)	
-{
-    Pen **penPtrPtr = (Pen **)(widgRec + offset);
-    const char *string;
-
-    string = Tcl_GetString(objPtr);
-    if ((string[0] == '\0') && (flags & BLT_CONFIG_NULL_OK)) {
-	Blt_FreePen(*penPtrPtr);
-	*penPtrPtr = NULL;
-    } else {
-	Pen *penPtr;
-	Graph *graphPtr;
-	ClassId classId = (ClassId)clientData; /* Element type. */
-
-	graphPtr = Blt_GetGraphFromWindowData(tkwin);
-	assert(graphPtr);
-
-	if (classId == CID_NONE) {	
-	    classId = graphPtr->classId;
-	}
-	if (Blt_GetPenFromObj(interp, graphPtr, objPtr, classId, &penPtr) 
-	    != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	Blt_FreePen(*penPtrPtr);
-	*penPtrPtr = penPtr;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * PenToObj --
- *
- *	Parse the name of the name.
- *
- * Results:
- *	The return value is a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-PenToObj(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Not used. */
-    Tk_Window tkwin,		/* Not used. */
-    char *widgRec,		/* Widget information record */
-    int offset,			/* Offset to field in structure */
-    int flags)			/* Not used. */
-{
-    Pen *penPtr = *(Pen **)(widgRec + offset);
-
-    if (penPtr == NULL) {
-	return Tcl_NewStringObj("", -1);
-    } else {
-	return Tcl_NewStringObj(penPtr->name, -1);
-    }
 }
 
 /*

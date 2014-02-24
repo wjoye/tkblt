@@ -232,6 +232,8 @@ extern Blt_CustomOption bltBarStylesOption;
 
 //***
 
+extern Tk_ObjCustomOption pairsObjOption;
+
 static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
    DEF_BAR_BACKGROUND, 
@@ -248,6 +250,8 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    -1, Tk_Offset(BarElement, builtinPen.borderWidth), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
+  {TK_OPTION_CUSTOM, "-data", "data", "Data", 
+   NULL, -1, 0, 0, &pairsObjOption, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    DEF_BAR_ERRORBAR_LINE_WIDTH, 
    -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
@@ -334,8 +338,10 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
    Tk_Offset(BarElement, builtinPen.errorBarCapWidth),
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
+  /*
   {BLT_CONFIG_CUSTOM, "-data", "data", "Data", (char *)NULL, 0, 0, 
    &bltValuePairsOption},
+  */
   {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL,
    (char *)NULL, 0, 0},
   {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",

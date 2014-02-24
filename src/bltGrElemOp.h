@@ -196,7 +196,6 @@ typedef struct {
     double min, max;
 } ElemValues;
 
-
 struct _Element {
     GraphObj obj;			/* Must be first field in element. */
     unsigned int flags;		
