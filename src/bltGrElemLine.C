@@ -376,7 +376,6 @@ extern Blt_CustomOption bltLineStylesOption;
 extern Blt_CustomOption bltColorOption;
 extern Blt_CustomOption bltValuesOption;
 extern Blt_CustomOption bltValuePairsOption;
-extern Blt_CustomOption bltLinePenOption;
 extern Blt_CustomOption bltXAxisOption;
 extern Blt_CustomOption bltYAxisOption;
 
@@ -387,8 +386,8 @@ extern Tk_ObjCustomOption pairsObjOption;
 
 static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
-   NULL, -1, Tk_Offset(LineElement, activePenPtr), 
-   BLT_CONFIG_NULL_OK, &linePenObjOption, 0},
+   "activeLine", -1, Tk_Offset(LineElement, activePenPtr), 
+   TK_OPTION_NULL_OK, &linePenObjOption, 0},
   {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
    NULL, -1, Tk_Offset(LineElement, fillFgColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -434,10 +433,11 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
    "black", -1, Tk_Offset(LineElement, builtinPen.valueStyle.color),0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_NUMBERS, -1, Tk_Offset(LineElement, builtinPen.valueStyle.font),
+   STD_FONT_SMALL, -1, Tk_Offset(LineElement, builtinPen.valueStyle.font),
    0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", -1, Tk_Offset(LineElement, builtinPen.valueFormat), 0, NULL, 0},
+   "%g", -1, Tk_Offset(LineElement, builtinPen.valueFormat), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    0, -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -448,6 +448,7 @@ Blt_CustomOption bitmaskLineElemHideOption =
     ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
   };
 
+/*
 static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeLine", Tk_Offset(LineElement, activePenPtr),
@@ -466,10 +467,8 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", NULL, 
    Tk_Offset(LineElement, builtinPen.traceDashes), BLT_CONFIG_NULL_OK, 
    &dashesOption},
-  /*
   {BLT_CONFIG_CUSTOM, "-data", "data", "Data", NULL, 0, 0, 
    &bltValuePairsOption},
-  */
   {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    "defcolor", 
    Tk_Offset(LineElement, builtinPen.errorBarColor), 0, &bltColorOption},
@@ -552,7 +551,7 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
    black, 
    Tk_Offset(LineElement, builtinPen.valueStyle.color), 0},
   {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_NUMBERS, 
+   STD_FONT_SMALL, 
    Tk_Offset(LineElement, builtinPen.valueStyle.font), 0},
   {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
    "%g", Tk_Offset(LineElement, builtinPen.valueFormat),
@@ -584,49 +583,38 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
    Tk_Offset(LineElement, yLow), 0, &bltValuesOption},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
-
-//***
+*/
 
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
-   bblue, 
-   -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
+   "bblue", -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", 
-   -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1", 
-   -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   "1", 
-   -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
-   "1", 
-   -1, Tk_Offset(LinePen, symbol.outlineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePen, symbol.outlineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
-   "0.1i", 
-   -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
+   "0.1i", -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
-   "line", 
-   -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
+   "line", -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", 
-   -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
+   "s", -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   black, 
-   -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
+   "black", -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_NUMBERS, 
-   -1, Tk_Offset(LinePen, valueStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(LinePen, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", 
-   -1, Tk_Offset(LinePen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
+   "%g", -1, Tk_Offset(LinePen, valueFormat), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, 
-   -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
+   0, -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
+/*
 static Blt_ConfigSpec linePenConfigSpecs[] = {
   {BLT_CONFIG_COLOR, "-color", "color", "Color", bblue, 
    Tk_Offset(LinePen, traceColor), ACTIVE_PEN},
@@ -676,7 +664,7 @@ static Blt_ConfigSpec linePenConfigSpecs[] = {
   {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
    black, Tk_Offset(LinePen, valueStyle.color), ALL_PENS},
   {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_NUMBERS, Tk_Offset(LinePen, valueStyle.font), ALL_PENS},
+   STD_FONT_SMALL, Tk_Offset(LinePen, valueStyle.font), ALL_PENS},
   {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
    "%g", Tk_Offset(LinePen, valueFormat),
    ALL_PENS | BLT_CONFIG_NULL_OK},
@@ -684,6 +672,7 @@ static Blt_ConfigSpec linePenConfigSpecs[] = {
    0, Tk_Offset(LinePen, valueStyle.angle), ALL_PENS},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
+*/
 
 typedef double (DistanceProc)(int x, int y, Point2d *p, Point2d *q, Point2d *t);
 
@@ -4178,9 +4167,11 @@ static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
   Tk_DeleteOptionTable(elemPtr->optionTable);
 
   DestroyPenProc(graphPtr, (Pen *)&elemPtr->builtinPen);
-  if (elemPtr->activePenPtr != NULL) {
+  if (elemPtr->activePenPtr != NULL)
     Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  }
+  if (elemPtr->normalPenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
+
   ResetLine(elemPtr);
   if (elemPtr->stylesPalette != NULL) {
     Blt_FreeStylePalette(elemPtr->stylesPalette);

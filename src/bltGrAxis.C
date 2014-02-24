@@ -178,8 +178,8 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_TAGS			"all"
 #define DEF_AXIS_EXTERIOR		"1"
 #define DEF_AXIS_TICK_ANCHOR		"c"
-#define DEF_AXIS_LIMITS_FONT		STD_FONT_NUMBERS
-#define DEF_AXIS_TICKFONT		STD_FONT_NUMBERS
+#define DEF_AXIS_LIMITS_FONT		STD_FONT_SMALL
+#define DEF_AXIS_TICKFONT		STD_FONT_SMALL
 #define DEF_AXIS_TICKLENGTH		"4"
 #define DEF_AXIS_DIVISIONS		"10"
 #define DEF_AXIS_TITLE	                NULL

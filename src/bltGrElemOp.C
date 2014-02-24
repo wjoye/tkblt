@@ -566,7 +566,7 @@ static int ObjToStyles(ClientData clientData, Tcl_Interp *interp,
     Blt_Chain_LinkAfter(stylePalette, link, NULL);
   }
   stylePtr = Blt_Chain_GetValue(link);
-  stylePtr->penPtr = elemPtr->normalPenPtr;
+  stylePtr->penPtr = NORMALPEN(elemPtr);
   for (i = 0; i < objc; i++) {
     link = Blt_Chain_AllocLink(size);
     stylePtr = Blt_Chain_GetValue(link);
@@ -710,10 +710,7 @@ static void DestroyElement(Element *elemPtr)
 
   FreeDataValues(&elemPtr->x);
   FreeDataValues(&elemPtr->y);
-  /*
-   * Call the element's own destructor to release the memory and
-   * resources allocated for it.
-   */
+
   (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
 
   /* Remove it also from the element display list */
@@ -725,15 +722,15 @@ static void DestroyElement(Element *elemPtr)
     }
   }
   /* Remove the element for the graph's hash table of elements */
-  if (elemPtr->hashPtr != NULL) {
+  if (elemPtr->hashPtr != NULL)
     Tcl_DeleteHashEntry(elemPtr->hashPtr);
-  }
-  if (elemPtr->obj.name != NULL) {
+
+  if (elemPtr->obj.name != NULL)
     free((void*)(elemPtr->obj.name));
-  }
-  if (elemPtr->label != NULL) {
+
+  if (elemPtr->label != NULL)
     free((void*)(elemPtr->label));
-  }
+
   free(elemPtr);
 }
 

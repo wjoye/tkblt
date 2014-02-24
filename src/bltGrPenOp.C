@@ -74,7 +74,7 @@ static int PenSetProc(ClientData clientData, Tcl_Interp *interp,
     if (classId == CID_NONE)
       classId = graphPtr->classId;
 
-    if (Blt_GetPenFromObj(interp, graphPtr, objPtr, classId, &penPtr) 
+    if (Blt_GetPenFromObj(interp, graphPtr, *objPtr, classId, &penPtr) 
 	!= TCL_OK)
       return TCL_ERROR;
     
@@ -100,16 +100,6 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
 
 //***
 
-static Blt_OptionFreeProc FreePen;
-static Blt_OptionParseProc ObjToPen;
-static Blt_OptionPrintProc PenToObj;
-Blt_CustomOption bltBarPenOption = {
-    ObjToPen, PenToObj, FreePen, (ClientData)CID_ELEM_BAR
-};
-Blt_CustomOption bltLinePenOption = {
-    ObjToPen, PenToObj, FreePen, (ClientData)CID_ELEM_LINE
-};
-
 static Blt_OptionFreeProc FreeColor;
 static Blt_OptionParseProc ObjToColor;
 static Blt_OptionPrintProc ColorToObj;
@@ -117,132 +107,20 @@ Blt_CustomOption bltColorOption = {
     ObjToColor, ColorToObj, FreeColor, (ClientData)0
 };
 
-/*ARGSUSED*/
-static void
-FreePen(
-    ClientData clientData,	/* Not used. */
-    Display *display,		/* Not used. */
-    char *widgRec,
-    int offset)
-{
-    Pen **penPtrPtr = (Pen **)(widgRec + offset);
-
-    if (*penPtrPtr != NULL) {
-	Blt_FreePen(*penPtrPtr);
-    }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToPen --
- *
- *	Convert the color value into a string.
- *
- * Results:
- *	The string representing the symbol color is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToPen(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Interpreter to send results back to */
-    Tk_Window tkwin,		/* Not used. */
-    Tcl_Obj *objPtr,		/* String representing pen */
-    char *widgRec,		/* Widget record */
-    int offset,			/* Offset to field in structure */
-    int flags)	
-{
-    Pen **penPtrPtr = (Pen **)(widgRec + offset);
-    const char *string;
-
-    string = Tcl_GetString(objPtr);
-    if ((string[0] == '\0') && (flags & BLT_CONFIG_NULL_OK)) {
-	Blt_FreePen(*penPtrPtr);
-	*penPtrPtr = NULL;
-    } else {
-	Pen *penPtr;
-	Graph *graphPtr;
-	ClassId classId = (ClassId)clientData; /* Element type. */
-
-	graphPtr = Blt_GetGraphFromWindowData(tkwin);
-	assert(graphPtr);
-
-	if (classId == CID_NONE) {	
-	    classId = graphPtr->classId;
-	}
-	if (Blt_GetPenFromObj(interp, graphPtr, objPtr, classId, &penPtr) 
-	    != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	Blt_FreePen(*penPtrPtr);
-	*penPtrPtr = penPtr;
-    }
-    return TCL_OK;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * PenToObj --
- *
- *	Parse the name of the name.
- *
- * Results:
- *	The return value is a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-PenToObj(
-    ClientData clientData,	/* Not used. */
-    Tcl_Interp *interp,		/* Not used. */
-    Tk_Window tkwin,		/* Not used. */
-    char *widgRec,		/* Widget information record */
-    int offset,			/* Offset to field in structure */
-    int flags)			/* Not used. */
-{
-    Pen *penPtr = *(Pen **)(widgRec + offset);
-
-    if (penPtr == NULL) {
-	return Tcl_NewStringObj("", -1);
-    } else {
-	return Tcl_NewStringObj(penPtr->name, -1);
-    }
-}
-
-/*ARGSUSED*/
 static void
 FreeColor(
-    ClientData clientData,	/* Not used. */
-    Display *display,		/* Not used. */
-    char *widgRec,
-    int offset)
+	  ClientData clientData,	/* Not used. */
+	  Display *display,		/* Not used. */
+	  char *widgRec,
+	  int offset)
 {
-    XColor *colorPtr = *(XColor **)(widgRec + offset);
-
-    if ((colorPtr != NULL) && (colorPtr != COLOR_DEFAULT)) {
-	Tk_FreeColor(colorPtr);
-    }
+  XColor *colorPtr = *(XColor **)(widgRec + offset);
+ 
+  if ((colorPtr != NULL) && (colorPtr != COLOR_DEFAULT)) {
+    Tk_FreeColor(colorPtr);
+  }
 }
 
-/*
- *---------------------------------------------------------------------------
-
- * ObjToColor --
- *
- *	Convert the string representation of a color into a XColor pointer.
- *
- * Results:
- *	The return value is a standard TCL result.  The color pointer is
- *	written into the widget record.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
 static int
 ObjToColor(
     ClientData clientData,	/* Not used. */
@@ -287,19 +165,6 @@ ObjToColor(
     return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ColorToObj --
- *
- *	Convert the color value into a string.
- *
- * Results:
- *	The string representing the symbol color is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
 static Tcl_Obj *
 ColorToObj(
     ClientData clientData,	/* Not used. */

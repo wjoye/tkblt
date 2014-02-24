@@ -186,7 +186,6 @@ typedef struct {
   int errorBarCapWidth;		/* Length of cap on error bars */
 } BarElement;
 
-extern Blt_CustomOption bltBarPenOption;
 extern Blt_CustomOption bltValuesOption;
 extern Blt_CustomOption bltValuePairsOption;
 extern Blt_CustomOption bltXAxisOption;
@@ -194,109 +193,61 @@ extern Blt_CustomOption bltYAxisOption;
 extern Blt_CustomOption bltColorOption;
 extern Blt_CustomOption bltBarStylesOption;
 
-#define DEF_BAR_ACTIVE_PEN		"activeBar"
-#define DEF_BAR_AXIS_X			"x"
-#define DEF_BAR_AXIS_Y			"y"
-#define DEF_BAR_BACKGROUND		navyblue
-#define DEF_BAR_FOREGROUND		bblue
-#define DEF_BAR_BORDERWIDTH		STD_BORDERWIDTH
-#define DEF_BAR_ERRORBAR_COLOR		"defcolor"
-#define DEF_BAR_ERRORBAR_LINE_WIDTH	"1"
-#define DEF_BAR_ERRORBAR_CAP_WIDTH	"1"
-#define DEF_BAR_HIDE			"no"
-#define DEF_BAR_LABEL		        NULL
-#define DEF_BAR_LABEL_RELIEF		"flat"
-#define DEF_BAR_NORMAL_STIPPLE		""
-#define DEF_BAR_RELIEF			"raised"
-#define DEF_BAR_SHOW_ERRORBARS		"both"
-#define DEF_BAR_STATE			"normal"
-#define DEF_BAR_STACK			NULL
-#define DEF_BAR_STYLES			""
-#define DEF_BAR_TAGS			"all"
-#define DEF_BAR_WIDTH			"0.0"
-
-#define DEF_PEN_ACTIVE_BACKGROUND	rred
-#define DEF_PEN_ACTIVE_FOREGROUND     	pink
-#define DEF_PEN_BORDERWIDTH		STD_BORDERWIDTH
-#define DEF_PEN_NORMAL_BACKGROUND	navyblue
-#define DEF_PEN_NORMAL_FOREGROUND	bblue
-#define DEF_PEN_RELIEF			"raised"
-#define DEF_PEN_STIPPLE			""
-#define DEF_PEN_TYPE			"bar"
-#define	DEF_PEN_VALUE_ANCHOR		"s"
-#define	DEF_PEN_VALUE_ANGLE		0
-#define	DEF_PEN_VALUE_COLOR		black
-#define	DEF_PEN_VALUE_FONT		STD_FONT_SMALL
-#define	DEF_PEN_VALUE_FORMAT		"%g"
-#define DEF_PEN_SHOW_VALUES		"no"
-
 //***
 
+extern Tk_ObjCustomOption barPenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 
 static Tk_OptionSpec barElemOptionSpecs[] = {
+  {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
+   "activeBar", -1, Tk_Offset(BarElement, activePenPtr), 
+   BLT_CONFIG_NULL_OK, &barPenObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   DEF_BAR_BACKGROUND, 
-   -1, Tk_Offset(BarElement, builtinPen.fill), TK_OPTION_NULL_OK, NULL, 0},
+   "navyblue", -1, Tk_Offset(BarElement, builtinPen.fill), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   DEF_BAR_WIDTH, 
-   -1, Tk_Offset(BarElement, barWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
-   -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   0, -1, Tk_Offset(BarElement, barWidth), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_BAR_BORDERWIDTH, 
-   -1, Tk_Offset(BarElement, builtinPen.borderWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   STD_BORDERWIDTH, -1, Tk_Offset(BarElement, builtinPen.borderWidth),
+   0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, 0, 0, &pairsObjOption, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   DEF_BAR_ERRORBAR_LINE_WIDTH, 
-   -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   DEF_BAR_ERRORBAR_CAP_WIDTH, 
-   -1, Tk_Offset(BarElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
-   -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   "1", -1, Tk_Offset(BarElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_BAR_FOREGROUND, 
-   -1, Tk_Offset(BarElement, builtinPen.outlineColor),TK_OPTION_NULL_OK,NULL,0},
+   "bblue", -1, Tk_Offset(BarElement, builtinPen.outlineColor), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label",
-   DEF_BAR_LABEL,
-   -1, Tk_Offset(BarElement, label), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, label), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
-   DEF_BAR_LABEL_RELIEF, 
-   -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL,
-   -1, 0, 0, "-foreground", 0},
+   "flat", -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   DEF_BAR_RELIEF, 
-   -1, Tk_Offset(BarElement, builtinPen.relief), 0, NULL, 0},
+   "raised", -1, Tk_Offset(BarElement, builtinPen.relief), 0, NULL, 0},
   {TK_OPTION_STRING, "-stack", "stack", "Stack", 
-   DEF_BAR_STACK, 
-   -1, Tk_Offset(BarElement, groupName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, groupName), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
-   DEF_BAR_NORMAL_STIPPLE,
-   -1, Tk_Offset(BarElement, builtinPen.stipple), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, builtinPen.stipple), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   DEF_PEN_VALUE_ANCHOR, 
-   -1, Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
+   "s", -1, Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   DEF_PEN_VALUE_COLOR, 
-   -1, Tk_Offset(BarElement, builtinPen.valueStyle.color), 0, NULL, 0},
+   "black", -1, Tk_Offset(BarElement, builtinPen.valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   DEF_PEN_VALUE_FONT, 
-   -1, Tk_Offset(BarElement, builtinPen.valueStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(BarElement, builtinPen.valueStyle.font),
+   0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   DEF_PEN_VALUE_FORMAT, Tk_Offset(BarElement, builtinPen.valueFormat),
-   -1, TK_OPTION_NULL_OK, NULL, 0},
+   "%g", -1, Tk_Offset(BarElement, builtinPen.valueFormat),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   DEF_PEN_VALUE_ANGLE, 
-   -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+   0, -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -305,59 +256,58 @@ Blt_CustomOption bitmaskBarElemHideOption =
     ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
   };
 
+/*
 static Blt_ConfigSpec barElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
-   DEF_BAR_ACTIVE_PEN, Tk_Offset(BarElement, activePenPtr), 
+   "activeBar", Tk_Offset(BarElement, activePenPtr), 
    BLT_CONFIG_NULL_OK, &bltBarPenOption},
   {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   DEF_BAR_BACKGROUND, Tk_Offset(BarElement, builtinPen.fill),
+   "navyblue", Tk_Offset(BarElement, builtinPen.fill),
    BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   DEF_BAR_WIDTH, Tk_Offset(BarElement, barWidth),
+   0, Tk_Offset(BarElement, barWidth),
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
    (char *)NULL, 0, 0},
   {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL,
    (char *)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_BAR_TAGS, 
+  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "all", 
    Tk_Offset(BarElement, obj.tags), BLT_CONFIG_NULL_OK,
    &listOption},
   {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_BAR_BORDERWIDTH, Tk_Offset(BarElement, builtinPen.borderWidth), 0},
+   STD_BORDERWIDTH, Tk_Offset(BarElement, builtinPen.borderWidth), 0},
   {BLT_CONFIG_SYNONYM, "-color", "background", (char *)NULL,
    (char *)NULL, 0, 0},
   {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   DEF_BAR_ERRORBAR_COLOR, 
+   "defcolor", 
    Tk_Offset(BarElement, builtinPen.errorBarColor), 0, &bltColorOption},
   {BLT_CONFIG_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   DEF_BAR_ERRORBAR_LINE_WIDTH, 
+   "1", 
    Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   DEF_BAR_ERRORBAR_CAP_WIDTH, 
+   "1", 
    Tk_Offset(BarElement, builtinPen.errorBarCapWidth),
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
-  /*
   {BLT_CONFIG_CUSTOM, "-data", "data", "Data", (char *)NULL, 0, 0, 
    &bltValuePairsOption},
-  */
   {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL,
    (char *)NULL, 0, 0},
   {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_BAR_FOREGROUND, Tk_Offset(BarElement, builtinPen.outlineColor), 
+   "bblue", Tk_Offset(BarElement, builtinPen.outlineColor), 
    BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_STRING, "-label", "label", "Label", (char *)NULL, 
    Tk_Offset(BarElement, label), BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
-   DEF_BAR_LABEL_RELIEF, Tk_Offset(BarElement, legendRelief),
+   "flat", Tk_Offset(BarElement, legendRelief),
    BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_BAR_HIDE, 
+  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", "no",
    Tk_Offset(BarElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
    &bitmaskBarElemHideOption},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", DEF_BAR_AXIS_X, 
+  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
    Tk_Offset(BarElement, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_BAR_AXIS_Y, 
+  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
    Tk_Offset(BarElement, axes.y), 0, &bltYAxisOption},
   {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL,
    (char *)NULL, 0, 0},
@@ -365,33 +315,33 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
    Tk_Offset(BarElement, normalPenPtr), BLT_CONFIG_NULL_OK, 
    &bltBarPenOption},
   {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
-   DEF_BAR_RELIEF, Tk_Offset(BarElement, builtinPen.relief), 0},
+   "raised", Tk_Offset(BarElement, builtinPen.relief), 0},
   {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   DEF_BAR_SHOW_ERRORBARS, Tk_Offset(BarElement, builtinPen.errorBarShow),
+   "both", Tk_Offset(BarElement, builtinPen.errorBarShow),
    BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
   {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   DEF_PEN_SHOW_VALUES, Tk_Offset(BarElement, builtinPen.valueShow),
+   "no", Tk_Offset(BarElement, builtinPen.valueShow),
    BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_STRING, "-stack", "stack", "Stack", DEF_BAR_STACK, 
+  {BLT_CONFIG_STRING, "-stack", "stack", "Stack", NULL, 
    Tk_Offset(BarElement, groupName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_BAR_STATE, 
+  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
    Tk_Offset(BarElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
   {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple",
-   DEF_BAR_NORMAL_STIPPLE, Tk_Offset(BarElement, builtinPen.stipple),
+   "", Tk_Offset(BarElement, builtinPen.stipple),
    BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", DEF_BAR_STYLES, 
+  {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", "", 
    Tk_Offset(BarElement, stylePalette), 0, &bltBarStylesOption},
   {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   DEF_PEN_VALUE_ANCHOR, 
+   "s", 
    Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0},
   {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   DEF_PEN_VALUE_COLOR, 
+   "black", 
    Tk_Offset(BarElement, builtinPen.valueStyle.color), 0},
   {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   DEF_PEN_VALUE_FONT, 
+   STD_FONT_SMALL, 
    Tk_Offset(BarElement, builtinPen.valueStyle.font), 0},
   {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   DEF_PEN_VALUE_FORMAT, Tk_Offset(BarElement, builtinPen.valueFormat),
+   "%g", Tk_Offset(BarElement, builtinPen.valueFormat),
    BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    (char *)NULL, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0},
@@ -419,124 +369,127 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
    Tk_Offset(BarElement, yLow), 0, &bltValuesOption},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
+*/
 
 //***
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   DEF_PEN_NORMAL_BACKGROUND, 
+   "navyblue", 
    -1, Tk_Offset(BarPen, fill), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
    -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_PEN_BORDERWIDTH, 
+   STD_BORDERWIDTH, 
    -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
-   DEF_BAR_ERRORBAR_LINE_WIDTH,
+   "1",
    -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   DEF_BAR_ERRORBAR_CAP_WIDTH,
+   "1",
    -1, Tk_Offset(BarPen, errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
    -1, 0, 0, "-foreground", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL,
    -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_PEN_NORMAL_FOREGROUND, 
+   "bblue", 
    -1, Tk_Offset(BarPen, outlineColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL,
    -1, 0, 0, "-foreground", 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   DEF_PEN_RELIEF, 
+   "raised", 
    -1, Tk_Offset(BarPen, relief), 0, NULL, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
-   DEF_PEN_STIPPLE, 
+   NULL, 
    -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
-   DEF_PEN_TYPE, 
+   "bar", 
    -1, Tk_Offset(BarPen, typeId), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   DEF_PEN_VALUE_ANCHOR, 
+   "s", 
    -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   DEF_PEN_VALUE_COLOR, 
+   "black", 
    -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   DEF_PEN_VALUE_FONT, 
+   STD_FONT_SMALL, 
    -1, Tk_Offset(BarPen, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   DEF_PEN_VALUE_FORMAT, 
+   "%g", 
    -1, Tk_Offset(BarPen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   DEF_PEN_VALUE_ANGLE, 
+   0, 
    -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
+/*
 static Blt_ConfigSpec barPenConfigSpecs[] = {
   {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   DEF_PEN_ACTIVE_BACKGROUND, Tk_Offset(BarPen, fill),
+   "rred", Tk_Offset(BarPen, fill),
    BLT_CONFIG_NULL_OK | ACTIVE_PEN},
   {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   DEF_PEN_NORMAL_BACKGROUND, Tk_Offset(BarPen, fill),
+   "navyblue", Tk_Offset(BarPen, fill),
    BLT_CONFIG_NULL_OK | NORMAL_PEN},
   {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_PEN_BORDERWIDTH, Tk_Offset(BarPen, borderWidth), ALL_PENS},
+   STD_BORDERWIDTH, Tk_Offset(BarPen, borderWidth), ALL_PENS},
   {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   DEF_BAR_ERRORBAR_COLOR, Tk_Offset(BarPen, errorBarColor), ALL_PENS, 
+   "defcolor", Tk_Offset(BarPen, errorBarColor), ALL_PENS, 
    &bltColorOption},
   {BLT_CONFIG_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
-   DEF_BAR_ERRORBAR_LINE_WIDTH, Tk_Offset(BarPen, errorBarLineWidth),
+   "1", Tk_Offset(BarPen, errorBarLineWidth),
    ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   DEF_BAR_ERRORBAR_CAP_WIDTH, Tk_Offset(BarPen, errorBarCapWidth),
+   "1", Tk_Offset(BarPen, errorBarCapWidth),
    ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_PEN_ACTIVE_FOREGROUND, Tk_Offset(BarPen, outlineColor),
+   "pink", Tk_Offset(BarPen, outlineColor),
    ACTIVE_PEN | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_PEN_NORMAL_FOREGROUND, Tk_Offset(BarPen, outlineColor),
+   "bblue", Tk_Offset(BarPen, outlineColor),
    NORMAL_PEN |  BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL,
    (char *)NULL, 0, ALL_PENS},
   {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
-   DEF_PEN_RELIEF, Tk_Offset(BarPen, relief), ALL_PENS},
+   "raised", Tk_Offset(BarPen, relief), ALL_PENS},
   {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   DEF_BAR_SHOW_ERRORBARS, Tk_Offset(BarPen, errorBarShow),
+   "both", Tk_Offset(BarPen, errorBarShow),
    BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
   {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   DEF_PEN_SHOW_VALUES, Tk_Offset(BarPen, valueShow),
+   "no", Tk_Offset(BarPen, valueShow),
    ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", DEF_PEN_STIPPLE, 
+  {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", "", 
    Tk_Offset(BarPen, stipple), ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_STRING, "-type", (char *)NULL, (char *)NULL, DEF_PEN_TYPE, 
+  {BLT_CONFIG_STRING, "-type", (char *)NULL, (char *)NULL, "bar", 
    Tk_Offset(BarPen, typeId), ALL_PENS | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   DEF_PEN_VALUE_ANCHOR, Tk_Offset(BarPen, valueStyle.anchor), 
+   "s", Tk_Offset(BarPen, valueStyle.anchor), 
    ALL_PENS},
   {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   DEF_PEN_VALUE_COLOR, Tk_Offset(BarPen, valueStyle.color), 
+   "black", Tk_Offset(BarPen, valueStyle.color), 
    ALL_PENS},
   {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   DEF_PEN_VALUE_FONT, Tk_Offset(BarPen, valueStyle.font), 
+   STD_FONT_SMALL, Tk_Offset(BarPen, valueStyle.font), 
    ALL_PENS},
   {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   DEF_PEN_VALUE_FORMAT, Tk_Offset(BarPen, valueFormat),
+   "%g", Tk_Offset(BarPen, valueFormat),
    ALL_PENS | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    (char *)NULL, Tk_Offset(BarPen, valueStyle.angle), ALL_PENS},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
+*/
 
 /* Forward declarations */
 static PenConfigureProc ConfigureBarPenProc;
@@ -2224,9 +2177,11 @@ static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
   Tk_DeleteOptionTable(elemPtr->optionTable);
 
   DestroyBarPen(graphPtr, elemPtr->builtinPenPtr);
-  if (elemPtr->activePenPtr != NULL) {
+  if (elemPtr->activePenPtr != NULL)
     Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  }
+  if (elemPtr->normalPenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
+
   ResetBar(elemPtr);
   if (elemPtr->stylePalette != NULL) {
     Blt_FreeStylePalette(elemPtr->stylePalette);
