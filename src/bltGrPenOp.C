@@ -90,12 +90,10 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Pen* penPtr = *(Pen**)(widgRec + offset);
 
-  if (penPtr == NULL) {
+  if (penPtr == NULL)
     return Tcl_NewStringObj("", -1);
-  } 
-  else {
+  else
     return Tcl_NewStringObj(penPtr->name, -1);
-  }
 };
 
 //***

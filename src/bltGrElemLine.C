@@ -275,7 +275,7 @@ typedef struct {
   LinePen *activePenPtr;		/* Standard Pens */
   LinePen *normalPenPtr;
   LinePen *builtinPenPtr;
-  Blt_Chain stylesPalette;			/* Palette of pens. */
+  Blt_Chain stylePalette;			/* Palette of pens. */
 
   /* Symbol scaling */
   int scaleSymbols;			/* If non-zero, the symbols will scale
@@ -353,6 +353,16 @@ typedef struct {
 
 //***
 
+static char* smoothObjOption[] = 
+  {"linear", "step", "natural", "quadratic", "catrom", NULL};
+
+static Tk_ObjCustomOption styleObjOption =
+  {
+    "styles", StyleSetProc, StyleGetProc, NULL, NULL, 
+    (ClientData)sizeof(LineStyle)
+
+  };
+
 extern Tk_ObjCustomOption linePenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
@@ -419,6 +429,18 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    0, -1, Tk_Offset(LineElement, rTolerance), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
    "yes", -1, Tk_Offset(LineElement, scaleSymbols), 0, NULL, 0},
+  {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
+   "both", -1, Tk_Offset(LineElement, builtinPen.errorBarShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
+   "no", -1, Tk_Offset(LineElement, builtinPen.valueShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-smooth", "smooth", "Smooth", 
+   "linear", -1, Tk_Offset(LineElement, reqSmooth), 0, &smoothObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
+   "normal", -1, Tk_Offset(LineElement, state), 0, &stateObjOption, 0},
+  {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
+   "", -1, Tk_Offset(LineElement, stylePalette), 0, &styleObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LineElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -434,7 +456,6 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-extern Blt_CustomOption bltLineStylesOption;
 /*
 static Blt_OptionParseProc ObjToSmoothProc;
 static Blt_OptionPrintProc SmoothToObjProc;
@@ -463,6 +484,7 @@ extern Blt_CustomOption bltValuesOption;
 extern Blt_CustomOption bltValuePairsOption;
 extern Blt_CustomOption bltXAxisOption;
 extern Blt_CustomOption bltYAxisOption;
+extern Blt_CustomOption bltLineStylesOption;
 
 static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -552,7 +574,7 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
    Tk_Offset(LineElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
   {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", "", 
-   Tk_Offset(LineElement, stylesPalette), 0, &bltLineStylesOption},
+   Tk_Offset(LineElement, stylePalette), 0, &bltLineStylesOption},
   {BLT_CONFIG_CUSTOM, "-symbol", "symbol", "Symbol", "none", 
    Tk_Offset(LineElement, builtinPen.symbol), 
    BLT_CONFIG_DONT_SET_DEFAULT, &symbolOption},
@@ -1772,11 +1794,11 @@ static void MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
  */
 static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
 {
-  if (Blt_Chain_GetLength(elemPtr->stylesPalette) < 2) {
+  if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
     Blt_ChainLink link;
     LineStyle *stylePtr;
 
-    link = Blt_Chain_FirstLink(elemPtr->stylesPalette);
+    link = Blt_Chain_FirstLink(elemPtr->stylePalette);
     stylePtr = Blt_Chain_GetValue(link);
     stylePtr->errorBarCapWidth = elemPtr->errorBarCapWidth;
     stylePtr->lines.length = elemPtr->lines.length;
@@ -1801,7 +1823,7 @@ static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
     segments = malloc(elemPtr->lines.length * sizeof(Segment2d));
     map = malloc(elemPtr->lines.length * sizeof(int));
     sp = segments, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       int i;
@@ -1833,7 +1855,7 @@ static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
     points = malloc(elemPtr->symbolPts.length * sizeof(Point2d));
     map = malloc(elemPtr->symbolPts.length * sizeof(int));
     pp = points, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       int i;
@@ -1864,7 +1886,7 @@ static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
     segments = malloc(elemPtr->xeb.length * sizeof(Segment2d));
     map = malloc(elemPtr->xeb.length * sizeof(int));
     sp = segments, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       int i;
@@ -1895,7 +1917,7 @@ static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
     segments = malloc(elemPtr->yeb.length * sizeof(Segment2d));
     map = malloc(elemPtr->yeb.length * sizeof(int));
     sp = segments, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       int i;
@@ -2184,7 +2206,7 @@ static void MapFillArea(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 static void ResetLine(LineElement *elemPtr)
 {
   FreeTraces(elemPtr);
-  ResetStylePalette(elemPtr->stylesPalette);
+  ResetStylePalette(elemPtr->stylePalette);
   if (elemPtr->symbolPts.points != NULL) {
     free(elemPtr->symbolPts.points);
   }
@@ -2428,7 +2450,7 @@ static void MapLineProc(Graph *graphPtr, Element *basePtr)
   free(mi.map);
 
   /* Set the symbol size of all the pen styles. */
-  for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); link != NULL;
+  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
     LinePen *penPtr;
@@ -2787,10 +2809,10 @@ static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
    * Point to the static normal/active pens if no external pens have been
    * selected.
    */
-  link = Blt_Chain_FirstLink(elemPtr->stylesPalette);
+  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
   if (link == NULL) {
     link = Blt_Chain_AllocLink(sizeof(LineStyle));
-    Blt_Chain_LinkAfter(elemPtr->stylesPalette, link, NULL);
+    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
   } 
   stylePtr = Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
@@ -3746,7 +3768,7 @@ static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable,
 
   /* Lines: stripchart segments or graph traces. */
   if (elemPtr->lines.length > 0) {
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       LinePen *penPtr;
@@ -3773,7 +3795,7 @@ static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable,
     int total;
 
     total = 0;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
 
@@ -3787,7 +3809,7 @@ static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable,
   /* Symbols, error bars, values. */
 
   count = 0;
-  for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); link != NULL;
+  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
     LinePen *penPtr;
@@ -4104,7 +4126,7 @@ static void NormalLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
 
   /* Draw lines (strip chart) or traces (xy graph) */
   if (elemPtr->lines.length > 0) {
-    for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); link != NULL; 
+    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
       LinePen *penPtr;
@@ -4132,7 +4154,7 @@ static void NormalLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   /* Draw symbols, error bars, values. */
 
   count = 0;
-  for (link = Blt_Chain_FirstLink(elemPtr->stylesPalette); link != NULL;
+  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link != NULL;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
     LinePen *penPtr;
@@ -4184,9 +4206,9 @@ static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
     Blt_FreePen((Pen *)elemPtr->normalPenPtr);
 
   ResetLine(elemPtr);
-  if (elemPtr->stylesPalette != NULL) {
-    Blt_FreeStylePalette(elemPtr->stylesPalette);
-    Blt_Chain_Destroy(elemPtr->stylesPalette);
+  if (elemPtr->stylePalette != NULL) {
+    Blt_FreeStylePalette(elemPtr->stylePalette);
+    Blt_Chain_Destroy(elemPtr->stylePalette);
   }
   if (elemPtr->activeIndices != NULL) {
     free(elemPtr->activeIndices);
@@ -4231,11 +4253,10 @@ Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
   elemPtr->label = Blt_Strdup(name);
   elemPtr->legendRelief = TK_RELIEF_FLAT;
   elemPtr->penDir = PEN_BOTH_DIRECTIONS;
-  elemPtr->stylesPalette = Blt_Chain_Create();
+  elemPtr->stylePalette = Blt_Chain_Create();
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   elemPtr->reqSmooth = PEN_SMOOTH_LINEAR;
   InitLinePen(graphPtr, elemPtr->builtinPenPtr);
-  bltLineStylesOption.clientData = (ClientData)sizeof(LineStyle);
 
   Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr, 
 		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);

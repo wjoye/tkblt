@@ -240,6 +240,9 @@ struct _Element {
   Blt_ChainLink link;			/* Element's link in display list. */
 };
 
+extern char* fillObjOption[];
+extern Tk_CustomOptionSetProc StyleSetProc;
+extern Tk_CustomOptionGetProc StyleGetProc;
 
 extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
 extern void Blt_ResizeStatusArray(Element *elemPtr, int nPoints);

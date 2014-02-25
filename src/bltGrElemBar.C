@@ -196,6 +196,13 @@ extern Blt_CustomOption bltBarStylesOption;
 
 //***
 
+static Tk_ObjCustomOption styleObjOption =
+  {
+    "style", StyleSetProc, StyleGetProc, NULL, NULL, 
+    (ClientData)sizeof(BarStyle)
+
+  };
+
 extern Tk_ObjCustomOption barPenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 
@@ -237,6 +244,8 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
    NULL, -1, Tk_Offset(BarElement, builtinPen.stipple), 
    TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
+   "", -1, Tk_Offset(BarElement, stylePalette), 0, &styleObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -2233,7 +2242,6 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitBarPen(graphPtr, elemPtr->builtinPenPtr);
   elemPtr->stylePalette = Blt_Chain_Create();
-  bltBarStylesOption.clientData = (ClientData)sizeof(BarStyle);
 
   return (Element *)elemPtr;
 }

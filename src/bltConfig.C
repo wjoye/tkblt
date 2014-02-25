@@ -83,6 +83,9 @@
 
 #include "bltInt.h"
 
+// State
+char* stateObjOption[] = {"normal", "active", "disabled", NULL};
+
 // Point
 static Tk_CustomOptionSetProc PointSetProc;
 static Tk_CustomOptionGetProc PointGetProc;
@@ -209,13 +212,21 @@ static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
 
-  Tcl_Obj* ll[12];
-  int ii=0;
-  while (dashesPtr->values[ii]) {
+  // count how many
+  int cnt =0;
+  while (dashesPtr->values[cnt])
+    cnt++;
+
+  if (!cnt)
+    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
+
+  Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+  for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewIntObj(dashesPtr->values[ii]);
-    ii++;
-  }
-  return Tcl_NewListObj(ii, ll);
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+
+  return listObjPtr;
 };
 
 // List
@@ -254,8 +265,10 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
   // count how many
   int cnt=0;
   for (const char** p = *listPtr; *p != NULL; p++,cnt++) {}
+  if (!cnt)
+    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(cnt,sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
   for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewStringObj(*listPtr[ii], -1);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);

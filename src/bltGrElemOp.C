@@ -49,6 +49,12 @@ static int ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr);
 static void FreeDataValues(ElemValues *valuesPtr);
 static void FindRange(ElemValues *valuesPtr);
+static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
+			      Tcl_Obj *objPtr, ClassId classId,
+			      PenStyle *stylePtr);
+
+// Fill
+char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
 // Value Pairs
 static Tk_CustomOptionSetProc PairsSetProc;
@@ -101,18 +107,90 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
 			    char *widgRec, int offset)
 {
   Element *elemPtr = (Element*)widgRec;
-  int length = NUMBEROFPOINTS(elemPtr);
+  int cnt = NUMBEROFPOINTS(elemPtr);
+  if (!cnt)
+    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(2*length,sizeof(Tcl_Obj*));
-  for (int ii=0, jj=0; ii<length; ii++) {
+  Tcl_Obj** ll = calloc(2*cnt,sizeof(Tcl_Obj*));
+  for (int ii=0, jj=0; ii<cnt; ii++) {
     ll[jj++] = Tcl_NewDoubleObj(elemPtr->x.values[ii]);
     ll[jj++] = Tcl_NewDoubleObj(elemPtr->y.values[ii]);
   }
-  Tcl_Obj* listObjPtr = Tcl_NewListObj(2*length, ll);
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(2*cnt, ll);
   free(ll);
 
   return listObjPtr;
 };
+
+// Style
+int StyleSetProc(ClientData clientData, Tcl_Interp *interp,
+		 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		 int offset, char* save, int flags)
+{
+  Blt_Chain stylePalette = *(Blt_Chain*)(widgRec + offset);
+  Element* elemPtr = (Element*)(widgRec);
+  size_t size = (size_t)clientData;
+
+  Tcl_Obj** objv;
+  int objc;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  /* Reserve the first entry for the "normal" pen. We'll set the
+   * style later */
+  Blt_FreeStylePalette(stylePalette);
+  Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette);
+  if (link == NULL) {
+    link = Blt_Chain_AllocLink(size);
+    Blt_Chain_LinkAfter(stylePalette, link, NULL);
+  }
+  PenStyle* stylePtr = Blt_Chain_GetValue(link);
+  stylePtr->penPtr = NORMALPEN(elemPtr);
+  for (int ii = 0; ii<objc; ii++) {
+    link = Blt_Chain_AllocLink(size);
+    stylePtr = Blt_Chain_GetValue(link);
+    stylePtr->weight.min = (double)ii;
+    stylePtr->weight.max = (double)ii + 1.0;
+    stylePtr->weight.range = 1.0;
+    if (GetPenStyleFromObj(interp, elemPtr->obj.graphPtr, objv[ii], 
+			   elemPtr->obj.classId, 
+			   (PenStyle *)stylePtr) != TCL_OK) {
+      Blt_FreeStylePalette(stylePalette);
+      return TCL_ERROR;
+    }
+    Blt_Chain_LinkAfter(stylePalette, link, NULL);
+  }
+
+  return TCL_OK;
+}
+
+Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin, 
+		      char *widgRec, int offset)
+{
+  Blt_Chain stylePalette = *(Blt_Chain*)(widgRec + offset);
+
+  // count how many
+  int cnt =0;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
+       link = Blt_Chain_NextLink(link), cnt++) {}
+  if (!cnt)
+    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
+
+  Tcl_Obj** ll = calloc(3*cnt, sizeof(Tcl_Obj*));
+  int ii=0;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
+       link = Blt_Chain_NextLink(link)) {
+    PenStyle *stylePtr = Blt_Chain_GetValue(link);
+    ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name, -1);
+    ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.min);
+    ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.max);
+  }
+  Tcl_Obj *listObjPtr = Tcl_NewListObj(3*cnt,ll);
+  free(ll);
+
+  return listObjPtr;
+}
+//**
 
 /* Along */
 
