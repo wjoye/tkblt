@@ -66,15 +66,6 @@
 				  (e)->builtinPenPtr :		\
 				  (e)->normalPenPtr))
 
-/*
- *---------------------------------------------------------------------------
- *
- * Weight --
- *
- *	Designates a range of values by a minimum and maximum limit.
- *
- *---------------------------------------------------------------------------
- */
 typedef struct {
   double min, max, range;
 } Weight;
@@ -87,7 +78,7 @@ typedef struct {
   ((l).min = (lo), (l).max = (hi), SetRange(l))
 
 typedef struct {
-  Segment2d *segments;	/* Point to start of this pen's X-error bar
+  Segment2d* segments;	/* Point to start of this pen's X-error bar
 			 * segments in the element's array. */
   int nSegments;
 } ErrorBarSegments;
@@ -99,9 +90,8 @@ typedef struct {
  */
 typedef struct {
   Weight weight;		/* Weight range where this pen is valid. */
-  Pen *penPtr;		/* Pen to use. */
+  Pen* penPtr;		/* Pen to use. */
 } PenStyle;
-
 
 typedef struct {
   XColor *color;		/* Color of error bar */

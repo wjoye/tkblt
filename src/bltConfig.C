@@ -434,62 +434,6 @@ static Tcl_Obj* DashesToObjProc(ClientData clientData, Tcl_Interp *interp,
   return listObjPtr;
 }
 
-/* FILL */
-
-static Blt_OptionParseProc ObjToFillProc;
-static Blt_OptionPrintProc FillToObjProc;
-Blt_CustomOption fillOption =
-{
-    ObjToFillProc, FillToObjProc, NULL, (ClientData)0
-};
-
-static int ObjToFillProc(ClientData clientData, Tcl_Interp *interp,
-			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			  int offset, int flags)
-{
-  const char* string;
-  int length;
-  int* fillPtr;
-
-  fillPtr = (int*)(widgRec + offset);
-
-  string = Tcl_GetStringFromObj(objPtr, &length);
-  if (!strncmp(string, "none", length)) {
-    *fillPtr = BLT_FILL_NONE;
-  } else if (!strncmp(string, "x", length)) {
-    *fillPtr = BLT_FILL_X;
-  } else if (!strncmp(string, "y", length)) {
-    *fillPtr = BLT_FILL_Y;
-  } else if (!strncmp(string, "both", length)) {
-    *fillPtr = BLT_FILL_BOTH;
-  } else {
-    Tcl_AppendResult(interp, "bad argument \"", string,
-		     "\": should be \"none\", \"x\", \"y\", or \"both\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-    
-static Tcl_Obj* FillToObjProc(ClientData clientData, Tcl_Interp *interp,
-			       Tk_Window tkwin, char *widgRec, 
-			       int offset, int flags)
-{
-  int* fillPtr;
-
-  fillPtr = (int*)(widgRec + offset);
-  switch (*fillPtr) {
-  case BLT_FILL_X:
-    return Tcl_NewStringObj("x", -1);
-  case BLT_FILL_Y:
-    return Tcl_NewStringObj("y", -1);
-  case BLT_FILL_NONE:
-    return Tcl_NewStringObj("none", -1);
-  case BLT_FILL_BOTH:
-    return Tcl_NewStringObj("both", -1);
-  }
-  return Tcl_NewStringObj("unknown", -1);
-}
-
 /* BITMASK */
 
 int ObjToBitmaskProc(ClientData clientData, Tcl_Interp *interp,

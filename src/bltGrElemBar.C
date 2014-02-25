@@ -222,7 +222,8 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, 0, 0, &pairsObjOption, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "red", -1, Tk_Offset(BarElement, builtinPen.errorBarColor), 0, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, builtinPen.errorBarColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -299,13 +300,6 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
 };
 
 /*
-extern Blt_CustomOption bltValuesOption;
-extern Blt_CustomOption bltValuePairsOption;
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-extern Blt_CustomOption bltColorOption;
-extern Blt_CustomOption bltBarStylesOption;
-
 static Blt_ConfigSpec barElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeBar", Tk_Offset(BarElement, activePenPtr), 
@@ -430,7 +424,8 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "red", -1, Tk_Offset(BarPen, errorBarColor), 0, NULL, 0},
+   NULL, -1, Tk_Offset(BarPen, errorBarColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
    "1", -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -607,11 +602,10 @@ static int ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
   penPtr->fillGC = newGC;
 
   gcMask = GCForeground | GCLineWidth;
-  if (penPtr->errorBarColor == COLOR_DEFAULT) {
-    gcValues.foreground = defColor;
-  } else {
-    gcValues.foreground = penPtr->errorBarColor->pixel;
-  }
+  XColor *colorPtr = penPtr->errorBarColor;
+  if (!colorPtr)
+    colorPtr = penPtr->outlineColor;
+  gcValues.foreground = colorPtr->pixel;
   gcValues.line_width = LineWidth(penPtr->errorBarLineWidth);
   newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   if (penPtr->errorBarGC != NULL) {
@@ -2185,9 +2179,9 @@ static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
 			   stylePtr->nBars);
     }
     colorPtr = penPtr->errorBarColor;
-    if (colorPtr == COLOR_DEFAULT) {
+    if (!colorPtr)
       colorPtr = penPtr->outlineColor;
-    }
+
     if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, penPtr->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);

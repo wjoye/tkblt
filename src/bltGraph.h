@@ -42,18 +42,9 @@ typedef struct _Element Element;
 typedef struct _Legend Legend;
 
 typedef enum {
-  CID_NONE, 
-  CID_AXIS_X,
-  CID_AXIS_Y,
-  CID_ELEM_BAR,
-  CID_ELEM_LINE,
-  CID_MARKER_BITMAP,
-  CID_MARKER_IMAGE,
-  CID_MARKER_LINE,
-  CID_MARKER_POLYGON,
-  CID_MARKER_TEXT,
-  CID_MARKER_WINDOW,
-  CID_LEGEND_ENTRY,
+  CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
+  CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,
+  CID_MARKER_TEXT, CID_MARKER_WINDOW, CID_LEGEND_ENTRY,
 } ClassId;
 
 typedef struct {
@@ -175,18 +166,7 @@ typedef struct {
  */
 
 typedef enum BarModes {
-  BARS_INFRONT,			/* Each successive bar in a group is
-				 * drawn in front of the previous. */
-  BARS_STACKED,			/* Each successive bar in a group is
-				 * drawn stacked on top of the previous
-				 * bar. */
-  BARS_ALIGNED,			/* Each successive bar in a group is
-				 * drawn aligned side-by-side to the
-				 * previous from right-to-left. */
-  BARS_OVERLAP			/* Like "aligned", each successive bar
-				 * in a group is drawn from
-				 * right-to-left. The bars will overlap
-				 * each other by ~50%. */
+  BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
 } BarMode;
 
 typedef struct _Pen Pen;
@@ -207,9 +187,7 @@ struct _Pen {
   int refCount;			/* Reference count for elements using
 				 * this pen. */
   Tcl_HashEntry *hashPtr;
-
-  Blt_ConfigSpec *configSpecs;	/* Configuration specifications */
-
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
   Graph *graphPtr;			/* Graph that the pen is associated*/

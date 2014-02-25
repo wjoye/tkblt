@@ -47,9 +47,6 @@
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
-#define COLOR_DEFAULT	(XColor *)1
-#define PATTERN_SOLID	((Pixmap)1)
-
 typedef enum {
   PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
 } PenDirection;
@@ -475,7 +472,8 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, 0, 0, &pairsObjOption, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "red", -1, Tk_Offset(LineElement, builtinPen.errorBarColor), 0, NULL, 0},
+   NULL, -1, Tk_Offset(LineElement, builtinPen.errorBarColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LineElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -713,7 +711,8 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
    NULL, -1, Tk_Offset(LinePen, traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "red", -1, Tk_Offset(LinePen, errorBarColor), 0, NULL, 0},
+   NULL, -1, Tk_Offset(LinePen, errorBarColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -977,9 +976,9 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
   gcValues.line_width = LineWidth(lpPtr->traceWidth);
 
   colorPtr = lpPtr->traceOffColor;
-  if (colorPtr == COLOR_DEFAULT) {
+  if (!colorPtr)
     colorPtr = lpPtr->traceColor;
-  }
+
   if (colorPtr != NULL) {
     gcMask |= GCBackground;
     gcValues.background = colorPtr->pixel;
@@ -1002,9 +1001,9 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
 
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->errorBarColor;
-  if (colorPtr == COLOR_DEFAULT) {
+  if (!colorPtr)
     colorPtr = lpPtr->traceColor;
-  }
+
   gcValues.line_width = LineWidth(lpPtr->errorBarLineWidth);
   gcValues.foreground = colorPtr->pixel;
   newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
@@ -3873,9 +3872,9 @@ static void NormalLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = (LinePen *)stylePtr->penPtr;
     colorPtr = penPtr->errorBarColor;
-    if (colorPtr == COLOR_DEFAULT) {
+    if (!colorPtr)
       colorPtr = penPtr->traceColor;
-    }
+
     if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, penPtr->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
