@@ -50,51 +50,29 @@
 #define COLOR_DEFAULT	(XColor *)1
 #define PATTERN_SOLID	((Pixmap)1)
 
-#define PEN_INCREASING  1		/* Draw line segments for only those
-					 * data points whose abscissas are
-					 * monotonically increasing in
-					 * order. */
-#define PEN_DECREASING  2		/* Lines will be drawn between only
-					 * those points whose abscissas are
-					 * decreasing in order. */
-
-#define PEN_BOTH_DIRECTIONS	(PEN_INCREASING | PEN_DECREASING)
+typedef enum {
+  PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
+} PenDirection;
 
 /* Lines will be drawn between points regardless of the ordering of the
  * abscissas */
 
+#define BROKEN_TRACE(dir,last,next) \
+  (((dir == PEN_INCREASING) && (next < last)) || \
+   ((dir == PEN_DECREASING) && (next > last)))
+/*
 #define BROKEN_TRACE(dir,last,next)				\
   (((((dir) & PEN_DECREASING) == 0) && ((next) < (last))) ||	\
    ((((dir) & PEN_INCREASING) == 0) && ((next) > (last))))
+*/
 
 #define DRAW_SYMBOL(linePtr)					\
   (((linePtr)->symbolCounter % (linePtr)->symbolInterval) == 0)
 
-typedef enum { 
-  PEN_SMOOTH_LINEAR,			/* Line segments */
-  PEN_SMOOTH_STEP,			/* Step-and-hold */
-  PEN_SMOOTH_NATURAL,			/* Natural cubic spline */
-  PEN_SMOOTH_QUADRATIC,		/* Quadratic spline */
-  PEN_SMOOTH_CATROM,			/* Catrom parametric spline */
-  PEN_SMOOTH_LAST			/* Sentinel */
+typedef enum {
+  PEN_SMOOTH_LINEAR, PEN_SMOOTH_STEP, PEN_SMOOTH_NATURAL,
+  PEN_SMOOTH_QUADRATIC, PEN_SMOOTH_CATROM
 } Smoothing;
-
-typedef struct {
-  const char *name;
-  Smoothing value;
-} SmoothingInfo;
-
-static SmoothingInfo smoothingInfo[] = {
-  { "none",		PEN_SMOOTH_LINEAR	},
-  { "linear",		PEN_SMOOTH_LINEAR	},
-  { "step",		PEN_SMOOTH_STEP		},
-  { "natural",	PEN_SMOOTH_NATURAL	},
-  { "cubic",		PEN_SMOOTH_NATURAL	},
-  { "quadratic",	PEN_SMOOTH_QUADRATIC	},
-  { "catrom",		PEN_SMOOTH_CATROM	},
-  { (char *)NULL,	PEN_SMOOTH_LAST		}
-};
-
 
 typedef struct {
   Point2d *screenPts;			/* Array of transformed coordinates */
@@ -105,19 +83,9 @@ typedef struct {
 } MapInfo;
 
 /* Symbol types for line elements */
-typedef enum {
-  SYMBOL_NONE,
-  SYMBOL_SQUARE,
-  SYMBOL_CIRCLE,
-  SYMBOL_DIAMOND,
-  SYMBOL_PLUS,
-  SYMBOL_CROSS,
-  SYMBOL_SPLUS,
-  SYMBOL_SCROSS,
-  SYMBOL_TRIANGLE,
-  SYMBOL_ARROW,
-  SYMBOL_BITMAP,
-  SYMBOL_IMAGE
+typedef enum {SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND,
+	      SYMBOL_PLUS, SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS,
+	      SYMBOL_TRIANGLE, SYMBOL_ARROW, SYMBOL_BITMAP, SYMBOL_IMAGE
 } SymbolType;
 
 typedef struct {
@@ -351,10 +319,17 @@ typedef struct {
 				 * grouped by pen style. */
 } LineElement;
 
+static void DestroySymbol(Display *display, Symbol *symbolPtr);
+static void ImageChangedProc(ClientData clientData, int x, int y, int w, int h,
+			     int imageWidth, int imageHeight);
+
 //***
 
 static char* smoothObjOption[] = 
   {"linear", "step", "natural", "quadratic", "catrom", NULL};
+
+static char* penDirObjOption[] = 
+  {"increasing", "decreasing", "both", NULL};
 
 static Tk_ObjCustomOption styleObjOption =
   {
@@ -363,8 +338,119 @@ static Tk_ObjCustomOption styleObjOption =
 
   };
 
+static Tk_CustomOptionSetProc SymbolSetProc;
+static Tk_CustomOptionGetProc SymbolGetProc;
+Tk_ObjCustomOption symbolObjOption =
+  {
+    "symbol", SymbolSetProc, SymbolGetProc, NULL, NULL, NULL
+  };
+
+static int SymbolSetProc(ClientData clientData, Tcl_Interp *interp,
+		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		       int offset, char* save, int flags)
+{
+  Symbol* symbolPtr = (Symbol*)(widgRec + offset);
+  const char *string;
+
+  // string
+  {
+    int length;
+    string = Tcl_GetStringFromObj(*objPtr, &length);
+    if (length == 0) {
+      DestroySymbol(Tk_Display(tkwin), symbolPtr);
+      symbolPtr->type = SYMBOL_NONE;
+      return TCL_OK;
+    }
+    char c = string[0];
+
+    for (GraphSymbolType* p = graphSymbols; p->name != NULL; p++) {
+      if (length < p->minChars) {
+	continue;
+      }
+      if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
+	DestroySymbol(Tk_Display(tkwin), symbolPtr);
+	symbolPtr->type = p->type;
+	return TCL_OK;
+      }
+    }
+  }
+
+  // image
+  {
+    Element* elemPtr = (Element*)widgRec;
+
+    Tk_Image tkImage = 
+      Tk_GetImage(interp, tkwin, string, ImageChangedProc, elemPtr);
+    if (tkImage != NULL) {
+      DestroySymbol(Tk_Display(tkwin), symbolPtr);
+      symbolPtr->image = tkImage;
+      symbolPtr->type = SYMBOL_IMAGE;
+      return TCL_OK;
+    }
+  }
+
+  // bitmap
+  {
+    Tcl_Obj **objv;
+    int objc;
+    if ((Tcl_ListObjGetElements(NULL, *objPtr, &objc, &objv) != TCL_OK) || 
+	(objc > 2)) {
+      goto error;
+    }
+    Pixmap bitmap = None;
+    Pixmap mask = None;
+    if (objc > 0) {
+      bitmap = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[0]);
+      if (!bitmap)
+	goto error;
+
+    }
+    if (objc > 1) {
+      mask = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[1]);
+      if (!mask)
+	goto error;
+    }
+    DestroySymbol(Tk_Display(tkwin), symbolPtr);
+    symbolPtr->bitmap = bitmap;
+    symbolPtr->mask = mask;
+    symbolPtr->type = SYMBOL_BITMAP;
+
+    return TCL_OK;
+  }
+ error:
+  Tcl_AppendResult(interp, "bad symbol \"", string, 
+		   "\": should be \"none\", \"circle\", \"square\", \"diamond\", "
+		   "\"plus\", \"cross\", \"splus\", \"scross\", \"triangle\", "
+		   "\"arrow\" or the name of a bitmap", (char *)NULL);
+  return TCL_ERROR;
+}
+
+static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  Symbol* symbolPtr = (Symbol*)(widgRec + offset);
+
+  Tcl_Obj* ll[2];
+  if (symbolPtr->type == SYMBOL_BITMAP) {
+    ll[0] = 
+      Tcl_NewStringObj(Tk_NameOfBitmap(Tk_Display(tkwin),symbolPtr->bitmap),-1);
+    ll[1] = symbolPtr->mask ? 
+      Tcl_NewStringObj(Tk_NameOfBitmap(Tk_Display(tkwin),symbolPtr->mask),-1) :
+      Tcl_NewStringObj("", -1);
+    return Tcl_NewListObj(2, ll);
+  }
+  else {
+    for (GraphSymbolType* p = graphSymbols; p->name != NULL; p++) {
+      if (p->type == symbolPtr->type)
+	return Tcl_NewStringObj(p->name, -1);
+    }
+    return Tcl_NewStringObj("?unknown symbol type?", -1);
+  }
+}
+
 extern Tk_ObjCustomOption linePenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
+extern Tk_ObjCustomOption valuesObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
 
@@ -433,7 +519,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    "both", -1, Tk_Offset(LineElement, builtinPen.errorBarShow), 
    0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "no", -1, Tk_Offset(LineElement, builtinPen.valueShow), 
+   "none", -1, Tk_Offset(LineElement, builtinPen.valueShow), 
    0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-smooth", "smooth", "Smooth", 
    "linear", -1, Tk_Offset(LineElement, reqSmooth), 0, &smoothObjOption, 0},
@@ -441,6 +527,11 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    "normal", -1, Tk_Offset(LineElement, state), 0, &stateObjOption, 0},
   {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
    "", -1, Tk_Offset(LineElement, stylePalette), 0, &styleObjOption, 0},
+  {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
+   "none", -1, Tk_Offset(LineElement, builtinPen.symbol), 
+   0, &symbolObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-trace", "trace", "Trace",
+   "both", -1, Tk_Offset(LineElement, penDir), 0, &penDirObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LineElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -453,39 +544,32 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    0, -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
+   NULL, -1, Tk_Offset(LineElement, w), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-x", "x", "X", 
+   NULL, -1, Tk_Offset(LineElement, x), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
+   NULL, -1, Tk_Offset(LineElement, x), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
+   NULL, -1, Tk_Offset(LineElement, xError), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
+   NULL, -1, Tk_Offset(LineElement, xHigh), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
+   NULL, -1, Tk_Offset(LineElement, xLow), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-y", "y", "Y",
+   NULL, -1, Tk_Offset(LineElement, y), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
+   NULL, -1, Tk_Offset(LineElement, y), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
+   NULL, -1, Tk_Offset(LineElement, yError), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
+   NULL, -1, Tk_Offset(LineElement, yHigh), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
+   NULL, -1, Tk_Offset(LineElement, yLow), 0, &valuesObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
 /*
-static Blt_OptionParseProc ObjToSmoothProc;
-static Blt_OptionPrintProc SmoothToObjProc;
-static Blt_CustomOption smoothOption =
-  {
-    ObjToSmoothProc, SmoothToObjProc, NULL, (ClientData)0
-  };
-
-static Blt_OptionParseProc ObjToPenDirProc;
-static Blt_OptionPrintProc PenDirToObjProc;
-static Blt_CustomOption penDirOption =
-  {
-    ObjToPenDirProc, PenDirToObjProc, NULL, (ClientData)0
-  };
-
-static Blt_OptionFreeProc FreeSymbolProc;
-static Blt_OptionParseProc ObjToSymbolProc;
-static Blt_OptionPrintProc SymbolToObjProc;
-static Blt_CustomOption symbolOption =
-  {
-    ObjToSymbolProc, SymbolToObjProc, FreeSymbolProc, (ClientData)0
-  };
-
-extern Blt_CustomOption bltColorOption;
-extern Blt_CustomOption bltValuesOption;
-extern Blt_CustomOption bltValuePairsOption;
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-extern Blt_CustomOption bltLineStylesOption;
-
 static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeLine", Tk_Offset(LineElement, activePenPtr),
@@ -625,16 +709,39 @@ static Blt_ConfigSpec lineElemConfigSpecs[] = {
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
    "bblue", -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
+   NULL, -1, Tk_Offset(LinePen, traceDashes), 
+   TK_OPTION_NULL_OK, &dashesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
+   "red", -1, Tk_Offset(LinePen, errorBarColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "1", -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
+   NULL, -1, Tk_Offset(LinePen, symbol.fillColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
+   NULL, -1, Tk_Offset(LinePen, traceOffColor),
+   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
+   NULL, -1, Tk_Offset(LinePen, symbol.outlineColor), 
+   TK_OPTION_NULL_OK, NULL,0},
   {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
    "1", -1, Tk_Offset(LinePen, symbol.outlineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
    "0.1i", -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
+  {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
+   "both", -1, Tk_Offset(LinePen, errorBarShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
+   "none", -1, Tk_Offset(LinePen, valueShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
+   "none", -1, Tk_Offset(LinePen, symbol), 
+   0, &symbolObjOption, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
    "line", -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
@@ -694,6 +801,7 @@ static Blt_ConfigSpec linePenConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-symbol", "symbol", "Symbol", "none", 
    Tk_Offset(LinePen, symbol), BLT_CONFIG_DONT_SET_DEFAULT | ALL_PENS, 
    &symbolOption},
+
   {BLT_CONFIG_STRING, "-type", (char *)NULL, (char *)NULL, "line", 
    Tk_Offset(Pen, typeId), ALL_PENS | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
@@ -772,234 +880,6 @@ static void ImageChangedProc(ClientData clientData,
   graphPtr->flags |= CACHE_DIRTY;
   Blt_EventuallyRedrawGraph(graphPtr);
 }
-
-static void FreeSymbolProc(ClientData clientData, Display *display,
-			   char *widgRec, int offset)
-{
-  Symbol *symbolPtr = (Symbol *)(widgRec + offset);
-
-  DestroySymbol(display, symbolPtr);
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToSymbol --
- *
- *	Convert the string representation of a line style or symbol name into
- *	its numeric form.
- *
- * Results:
- *	The return value is a standard TCL result.  The symbol type is written
- *	into the widget record.
- *
- *---------------------------------------------------------------------------
- */
-
-static int ObjToSymbolProc(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			   int offset, int flags)
-{
-  Symbol *symbolPtr = (Symbol *)(widgRec + offset);
-  const char *string;
-
-  {
-    int length;
-    GraphSymbolType *p;
-    char c;
-
-    string = Tcl_GetStringFromObj(objPtr, &length);
-    if (length == 0) {
-      DestroySymbol(Tk_Display(tkwin), symbolPtr);
-      symbolPtr->type = SYMBOL_NONE;
-      return TCL_OK;
-    }
-    c = string[0];
-    for (p = graphSymbols; p->name != NULL; p++) {
-      if (length < p->minChars) {
-	continue;
-      }
-      if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
-	DestroySymbol(Tk_Display(tkwin), symbolPtr);
-	symbolPtr->type = p->type;
-	return TCL_OK;
-      }
-    }
-  }
-  {
-    Tk_Image tkImage;
-    Element *elemPtr = (Element *)widgRec;
-
-    tkImage = Tk_GetImage(interp, tkwin, string, ImageChangedProc, elemPtr);
-    if (tkImage != NULL) {
-      DestroySymbol(Tk_Display(tkwin), symbolPtr);
-      symbolPtr->image = tkImage;
-      symbolPtr->type = SYMBOL_IMAGE;
-      return TCL_OK;
-    }
-  }
-  {
-    Pixmap bitmap, mask;
-    Tcl_Obj **objv;
-    int objc;
-
-    if ((Tcl_ListObjGetElements(NULL, objPtr, &objc, &objv) != TCL_OK) || 
-	(objc > 2)) {
-      goto error;
-    }
-    bitmap = mask = None;
-    if (objc > 0) {
-      bitmap = Tk_AllocBitmapFromObj((Tcl_Interp *)NULL, tkwin, objv[0]);
-      if (bitmap == None) {
-	goto error;
-      }
-    }
-    if (objc > 1) {
-      mask = Tk_AllocBitmapFromObj((Tcl_Interp *)NULL, tkwin, objv[1]);
-      if (mask == None) {
-	goto error;
-      }
-    }
-    DestroySymbol(Tk_Display(tkwin), symbolPtr);
-    symbolPtr->bitmap = bitmap;
-    symbolPtr->mask = mask;
-    symbolPtr->type = SYMBOL_BITMAP;
-    return TCL_OK;
-  }
- error:
-  Tcl_AppendResult(interp, "bad symbol \"", string, 
-		   "\": should be \"none\", \"circle\", \"square\", \"diamond\", "
-		   "\"plus\", \"cross\", \"splus\", \"scross\", \"triangle\", "
-		   "\"arrow\" or the name of a bitmap", (char *)NULL);
-  return TCL_ERROR;
-}
-
-static Tcl_Obj* SymbolToObjProc(ClientData clientData, Tcl_Interp *interp,
-				Tk_Window tkwin, char *widgRec,	int offset,
-				int flags)
-{
-  Symbol *symbolPtr = (Symbol *)(widgRec + offset);
-
-  if (symbolPtr->type == SYMBOL_BITMAP) {
-    Tcl_Obj *listObjPtr, *objPtr;
-    const char *name;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    name = Tk_NameOfBitmap(Tk_Display(tkwin), symbolPtr->bitmap);
-    objPtr = Tcl_NewStringObj(name, -1);
-    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-    if (symbolPtr->mask == None) {
-      objPtr = Tcl_NewStringObj("", -1);
-    } else {
-      name = Tk_NameOfBitmap(Tk_Display(tkwin), symbolPtr->mask);
-      objPtr = Tcl_NewStringObj(name, -1);
-    }
-    Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-    return listObjPtr;
-  } else {
-    GraphSymbolType *p;
-
-    for (p = graphSymbols; p->name != NULL; p++) {
-      if (p->type == symbolPtr->type) {
-	return Tcl_NewStringObj(p->name, -1);
-      }
-    }
-    return Tcl_NewStringObj("?unknown symbol type?", -1);
-  }
-}
-
-static const char* NameOfSmooth(Smoothing value)
-{
-  SmoothingInfo *siPtr;
-
-  for (siPtr = smoothingInfo; siPtr->name != NULL; siPtr++) {
-    if (siPtr->value == value) {
-      return siPtr->name;
-    }
-  }
-  return "unknown smooth value";
-}
-
-static int ObjToSmoothProc(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			   int offset, int flags)
-{
-  Smoothing *valuePtr = (Smoothing *)(widgRec + offset);
-  SmoothingInfo *siPtr;
-  const char *string;
-  char c;
-
-  string = Tcl_GetString(objPtr);
-  c = string[0];
-  for (siPtr = smoothingInfo; siPtr->name != NULL; siPtr++) {
-    if ((c == siPtr->name[0]) && (strcmp(string, siPtr->name) == 0)) {
-      *valuePtr = siPtr->value;
-      return TCL_OK;
-    }
-  }
-  Tcl_AppendResult(interp, "bad smooth value \"", string, "\": should be \
-linear, step, natural, or quadratic", (char *)NULL);
-  return TCL_ERROR;
-}
-
-static Tcl_Obj* SmoothToObjProc(ClientData clientData, Tcl_Interp *interp,
-				Tk_Window tkwin, char *widgRec,	int offset,
-				int flags)
-{
-  int smooth = *(int *)(widgRec + offset);
-
-  return Tcl_NewStringObj(NameOfSmooth(smooth), -1);
-}
-
-static int ObjToPenDirProc(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			   int offset, int flags)
-{
-  int *penDirPtr = (int *)(widgRec + offset);
-  int length;
-  char c;
-  char *string;
-
-  string = Tcl_GetStringFromObj(objPtr, &length);
-  c = string[0];
-  if ((c == 'i') && (strncmp(string, "increasing", length) == 0)) {
-    *penDirPtr = PEN_INCREASING;
-  } else if ((c == 'd') && (strncmp(string, "decreasing", length) == 0)) {
-    *penDirPtr = PEN_DECREASING;
-  } else if ((c == 'b') && (strncmp(string, "both", length) == 0)) {
-    *penDirPtr = PEN_BOTH_DIRECTIONS;
-  } else {
-    Tcl_AppendResult(interp, "bad trace value \"", string,
-		     "\" : should be \"increasing\", \"decreasing\", or \"both\"",
-		     (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-static const char* NameOfPenDir(int penDir)
-{
-  switch (penDir) {
-  case PEN_INCREASING:
-    return "increasing";
-  case PEN_DECREASING:
-    return "decreasing";
-  case PEN_BOTH_DIRECTIONS:
-    return "both";
-  default:
-    return "unknown trace direction";
-  }
-}
-
-static Tcl_Obj* PenDirToObjProc(ClientData clientData, Tcl_Interp *interp,
-				Tk_Window tkwin, char *widgRec,	int offset,
-				int flags)
-{
-  int penDir = *(int *)(widgRec + offset);
-
-  return Tcl_NewStringObj(NameOfPenDir(penDir), -1);
-}
-
 
 /*
  * Reset the number of points and segments, in case there are no segments or
@@ -1196,33 +1076,6 @@ Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
   return (Pen *)penPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- *	In this section, the routines deal with building and filling the
- *	element's data structures with transformed screen coordinates.  They are
- *	triggered from TranformLine which is called whenever the data or
- *	coordinates axes have changed and new screen coordinates need to be
- *	calculated.
- *
- *---------------------------------------------------------------------------
- */
-
-/*
- *---------------------------------------------------------------------------
- *
- * ScaleSymbol --
- *
- *	Returns the scaled size for the line element. Scaling depends upon when
- *	the base line ranges for the element were set and the current range of
- *	the graph.
- *
- * Results:
- *	The new size of the symbol, after considering how much the graph has
- *	been scaled, is returned.
- *
- *---------------------------------------------------------------------------
- */
 static int ScaleSymbol(LineElement *elemPtr, int normalSize)
 {
   int maxSize;
@@ -1266,28 +1119,6 @@ static int ScaleSymbol(LineElement *elemPtr, int normalSize)
   return newSize;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GetScreenPoints --
- *
- *	Generates a coordinate array of transformed screen coordinates from
- *	the data points.  Coordinates with Inf, -Inf, or NaN values are
- *	removed.
- *
- * Results:
- *	The transformed screen coordinates are returned.
- *
- * Side effects:
- *	Memory is allocated for the coordinate array.
- *
- *
- * Future ideas:
- *	Allow bad values to be removed (as done currently) or break
- *	into separate traces.  Smoothing would be affected.  
- *
- *---------------------------------------------------------------------------
- */
 static void GetScreenPoints(Graph *graphPtr, LineElement *elemPtr, 
 			    MapInfo *mapPtr)
 {
@@ -1328,22 +1159,6 @@ static void GetScreenPoints(Graph *graphPtr, LineElement *elemPtr,
   mapPtr->map = map;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ReducePoints --
- *
- *	Generates a coordinate array of transformed screen coordinates from
- *	the data points.
- *
- * Results:
- *	The transformed screen coordinates are returned.
- *
- * Side effects:
- *	Memory is allocated for the coordinate array.
- *
- *---------------------------------------------------------------------------
- */
 static void ReducePoints(MapInfo *mapPtr, double tolerance)
 {
   int i, np;
@@ -1370,23 +1185,6 @@ static void ReducePoints(MapInfo *mapPtr, double tolerance)
   mapPtr->nScreenPts = np;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GenerateSteps --
- *
- *	Resets the coordinate and pen index arrays adding new points for
- *	step-and-hold type smoothing.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The temporary arrays for screen coordinates and pen indices
- *	are updated.
- *
- *---------------------------------------------------------------------------
- */
 static void GenerateSteps(MapInfo *mapPtr)
 {
   int newSize;
@@ -1419,27 +1217,6 @@ static void GenerateSteps(MapInfo *mapPtr)
   mapPtr->nScreenPts = newSize;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GenerateSpline --
- *
- *	Computes a spline based upon the data points, returning a new (larger)
- *	coordinate array or points.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The temporary arrays for screen coordinates and data map are updated
- *	based upon spline.
- *
- * FIXME:  Can't interpolate knots along the Y-axis.   Need to break
- *	   up point array into interchangable X and Y vectors earlier.
- *	   Pass extents (left/right or top/bottom) as parameters.
- *
- *---------------------------------------------------------------------------
- */
 static void GenerateSpline(Graph *graphPtr, LineElement *elemPtr, 
 			   MapInfo *mapPtr)
 {
@@ -1540,27 +1317,6 @@ static void GenerateSpline(Graph *graphPtr, LineElement *elemPtr,
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GenerateParametricSpline --
- *
- *	Computes a spline based upon the data points, returning a new (larger)
- *	coordinate array or points.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The temporary arrays for screen coordinates and data map are updated
- *	based upon spline.
- *
- * FIXME:  Can't interpolate knots along the Y-axis.   Need to break
- *	   up point array into interchangable X and Y vectors earlier.
- *	   Pass extents (left/right or top/bottom) as parameters.
- *
- *---------------------------------------------------------------------------
- */
 static void GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr, 
 				     MapInfo *mapPtr)
 {
@@ -1671,22 +1427,6 @@ static void GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr,
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapSymbols --
- *
- *	Creates two arrays of points and pen map, filled with the screen
- *	coordinates of the visible
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is freed and allocated for the index array.
- *
- *---------------------------------------------------------------------------
- */
 static void MapSymbols(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 {
   Region2d exts;
@@ -1713,21 +1453,6 @@ static void MapSymbols(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
   elemPtr->symbolPts.map = map;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapActiveSymbols --
- *
- *	Creates an array of points of the active graph coordinates.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is freed and allocated for the active point array.
- *
- *---------------------------------------------------------------------------
- */
 static void MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
 {
   Point2d *points;
@@ -1776,22 +1501,6 @@ static void MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
   elemPtr->flags &= ~ACTIVE_PENDING;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MergePens --
- *
- *	Reorders the both arrays of points and segments to merge pens.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The old arrays are freed and new ones allocated containing
- *	the reordered points and segments.
- *
- *---------------------------------------------------------------------------
- */
 static void MergePens(LineElement *elemPtr, LineStyle **styleMap)
 {
   if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
@@ -2836,6 +2545,7 @@ static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
   }
   elemPtr->fillGC = newGC;
 
+  // waj
   /*
     if (Blt_ConfigModified(elemPtr->configSpecs, "-scalesymbols", 
     (char *)NULL)) {
@@ -3514,7 +3224,7 @@ static void DrawSymbols(Graph *graphPtr, Drawable drawable,
 	    
 	    x = Round(pp->x) - dx;
 	    y = Round(pp->y) - dy;
-	    if ((penPtr->symbol.fillGC == NULL) || (mask !=None)) {
+	    if ((penPtr->symbol.fillGC == NULL) || (mask != None)) {
 	      XSetClipOrigin(graphPtr->display,
 			     penPtr->symbol.outlineGC, x, y);
 	    }

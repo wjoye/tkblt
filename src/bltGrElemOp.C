@@ -52,11 +52,95 @@ static void FindRange(ElemValues *valuesPtr);
 static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
+static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, 
+			 const char *vecName);
+
+//**
 
 // Fill
 char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
-// Value Pairs
+// Values
+static Tk_CustomOptionSetProc ValuesSetProc;
+static Tk_CustomOptionGetProc ValuesGetProc;
+Tk_ObjCustomOption valuesObjOption =
+  {
+    "values", ValuesSetProc, ValuesGetProc, NULL, NULL, NULL
+  };
+
+static int ValuesSetProc(ClientData clientData, Tcl_Interp *interp,
+		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+		       int offset, char* save, int flags)
+{
+  ElemValues* valuesPtr = (ElemValues*)(widgRec + offset);
+  Element* elemPtr = (Element*)widgRec;
+
+  valuesPtr->elemPtr = elemPtr;
+  Tcl_Obj** objv;
+  int objc;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+  elemPtr->flags |= MAP_ITEM;
+
+  FreeDataValues(valuesPtr);
+  if (objc == 0)
+    return TCL_OK;
+
+  const char *string = Tcl_GetString(objv[0]);
+  int result;
+  if ((objc == 1) && (Blt_VectorExists2(interp, string)))
+    result = GetVectorData(interp, valuesPtr, string);
+  else {
+    double *values;
+    int nValues;
+    result = ParseValues(interp, *objPtr, &nValues, &values);
+    if (result != TCL_OK)
+      return TCL_ERROR;
+
+    FreeDataValues(valuesPtr);
+    if (nValues > 0)
+      valuesPtr->values = values;
+
+    valuesPtr->nValues = nValues;
+    FindRange(valuesPtr);
+    valuesPtr->type = ELEM_SOURCE_VALUES;
+  }
+
+  return result;
+}
+
+static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin, 
+			    char *widgRec, int offset)
+{
+  ElemValues* valuesPtr = (ElemValues*)(widgRec + offset);
+
+  switch (valuesPtr->type) {
+  case ELEM_SOURCE_VECTOR:
+    {
+      const char* vecName = 
+	Blt_NameOfVectorId(valuesPtr->vectorSource.vector);
+      return Tcl_NewStringObj(vecName, -1);
+    }
+  case ELEM_SOURCE_VALUES:
+    {
+      int cnt = valuesPtr->nValues;
+      if (!cnt)
+	return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
+
+      Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+      for (int ii=0; ii<cnt; ii++)
+	ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
+      Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+      free(ll);
+
+      return listObjPtr;
+    }
+ default:
+   return Tcl_NewStringObj("", 0);
+  }
+}
+
+// Pairs
 static Tk_CustomOptionSetProc PairsSetProc;
 static Tk_CustomOptionGetProc PairsGetProc;
 Tk_ObjCustomOption pairsObjOption =
@@ -199,26 +283,6 @@ static Blt_OptionPrintProc AlongToObj;
 static Blt_CustomOption alongOption =
   {
     ObjToAlong, AlongToObj, NULL, (ClientData)0
-  };
-static Blt_OptionFreeProc FreeValues;
-static Blt_OptionParseProc ObjToValues;
-static Blt_OptionPrintProc ValuesToObj;
-Blt_CustomOption bltValuesOption =
-  {
-    ObjToValues, ValuesToObj, FreeValues, (ClientData)0
-  };
-
-static Blt_OptionFreeProc  FreeStyles;
-static Blt_OptionParseProc ObjToStyles;
-static Blt_OptionPrintProc StylesToObj;
-Blt_CustomOption bltLineStylesOption =
-  {
-    ObjToStyles, StylesToObj, FreeStyles, (ClientData)0,
-  };
-
-Blt_CustomOption bltBarStylesOption =
-  {
-    ObjToStyles, StylesToObj, FreeStyles, (ClientData)0,
   };
 
 static Blt_VectorChangedProc VectorChangedProc;
@@ -458,91 +522,6 @@ double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
   return min;
 }
 
-static void FreeValues(ClientData clientData, Display *display, char *widgRec,
-		       int offset)
-{
-  ElemValues *valuesPtr = (ElemValues *)(widgRec + offset);
-
-  FreeDataValues(valuesPtr);
-}
-
-static int ObjToValues(ClientData clientData, Tcl_Interp *interp,
-		       Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-		       int offset, int flags)
-{
-  ElemValues *valuesPtr = (ElemValues *)(widgRec + offset);
-  Element *elemPtr = (Element *)widgRec;
-  Tcl_Obj **objv;
-  int objc;
-  int result;
-  const char *string;
-
-  valuesPtr->elemPtr = elemPtr;
-  if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-    return TCL_ERROR;
-  }
-  elemPtr->flags |= MAP_ITEM;
-
-  /* Release the current data sources. */
-  FreeDataValues(valuesPtr);
-  if (objc == 0) {
-    return TCL_OK;			/* Empty list of values. */
-  }
-  string = Tcl_GetString(objv[0]);
-  if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
-    result = GetVectorData(interp, valuesPtr, string);
-  } else {
-    double *values;
-    int nValues;
-
-    result = ParseValues(interp, objPtr, &nValues, &values);
-    if (result != TCL_OK) {
-      return TCL_ERROR;		/* Can't parse the values as numbers. */
-    }
-    FreeDataValues(valuesPtr);
-    if (nValues > 0) {
-      valuesPtr->values = values;
-    }
-    valuesPtr->nValues = nValues;
-    FindRange(valuesPtr);
-    valuesPtr->type = ELEM_SOURCE_VALUES;
-  }
-  return result;
-}
-
-static Tcl_Obj *ValuesToObj(ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, char *widgRec, int offset,
-			    int flags)
-{
-  ElemValues *valuesPtr = (ElemValues *)(widgRec + offset);
-
-  switch (valuesPtr->type) {
-  case ELEM_SOURCE_VECTOR:
-    {
-      const char *vecName;
-	    
-      vecName = Blt_NameOfVectorId(valuesPtr->vectorSource.vector);
-      return Tcl_NewStringObj(vecName, -1);
-    }
-  case ELEM_SOURCE_VALUES:
-    {
-      Tcl_Obj *listObjPtr;
-      double *vp, *vend; 
-	    
-      listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-      for (vp = valuesPtr->values, vend = vp + valuesPtr->nValues; 
-	   vp < vend; vp++) {
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewDoubleObj(*vp));
-      }
-      return listObjPtr;
-    }
-  default:
-    abort();
-  }
-  return Tcl_NewStringObj("", 0);
-}
-
 static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
 		      Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 		      int offset, int flags)
@@ -608,89 +587,6 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
       Blt_Chain_DeleteLink(stylePalette, link);
     }
   }
-}
-
-static void FreeStyles(ClientData clientData, Display *display,
-		       char *widgRec, int offset)
-{
-  Blt_Chain stylePalette = *(Blt_Chain *)(widgRec + offset);
-
-  Blt_FreeStylePalette(stylePalette);
-}
-
-static int ObjToStyles(ClientData clientData, Tcl_Interp *interp,
-		       Tk_Window tkwin, Tcl_Obj *objPtr,char *widgRec,
-		       int offset, int flags)
-{
-  Blt_Chain stylePalette = *(Blt_Chain *)(widgRec + offset);
-  Blt_ChainLink link;
-  Element *elemPtr = (Element *)(widgRec);
-  PenStyle *stylePtr;
-  Tcl_Obj **objv;
-  int objc;
-  int i;
-  size_t size = (size_t)clientData;
-
-
-  if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-    return TCL_ERROR;
-  }
-  /* Reserve the first entry for the "normal" pen. We'll set the
-   * style later */
-  Blt_FreeStylePalette(stylePalette);
-  link = Blt_Chain_FirstLink(stylePalette);
-  if (link == NULL) {
-    link = Blt_Chain_AllocLink(size);
-    Blt_Chain_LinkAfter(stylePalette, link, NULL);
-  }
-  stylePtr = Blt_Chain_GetValue(link);
-  stylePtr->penPtr = NORMALPEN(elemPtr);
-  for (i = 0; i < objc; i++) {
-    link = Blt_Chain_AllocLink(size);
-    stylePtr = Blt_Chain_GetValue(link);
-    stylePtr->weight.min = (double)i;
-    stylePtr->weight.max = (double)i + 1.0;
-    stylePtr->weight.range = 1.0;
-    if (GetPenStyleFromObj(interp, elemPtr->obj.graphPtr, objv[i], 
-			   elemPtr->obj.classId, 
-			   (PenStyle *)stylePtr) != TCL_OK) {
-      Blt_FreeStylePalette(stylePalette);
-      return TCL_ERROR;
-    }
-    Blt_Chain_LinkAfter(stylePalette, link, NULL);
-  }
-  return TCL_OK;
-}
-
-static Tcl_Obj *StylesToObj(ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, char *widgRec,
-			    int offset, int flags)
-{
-  Blt_Chain stylePalette = *(Blt_Chain *)(widgRec + offset);
-  Blt_ChainLink link;
-  Tcl_Obj *listObjPtr;
-
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  link = Blt_Chain_FirstLink(stylePalette);
-  if (link != NULL) {
-    /* Skip the first style (it's the default) */
-    for (link = Blt_Chain_NextLink(link); link != NULL; 
-	 link = Blt_Chain_NextLink(link)) {
-      PenStyle *stylePtr;
-      Tcl_Obj *subListObjPtr;
-
-      stylePtr = Blt_Chain_GetValue(link);
-      subListObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-      Tcl_ListObjAppendElement(interp, subListObjPtr, 
-			       Tcl_NewStringObj(stylePtr->penPtr->name, -1));
-      Tcl_ListObjAppendElement(interp, subListObjPtr, 
-			       Tcl_NewDoubleObj(stylePtr->weight.min));
-      Tcl_ListObjAppendElement(interp, subListObjPtr, 
-			       Tcl_NewDoubleObj(stylePtr->weight.max));
-      Tcl_ListObjAppendElement(interp, listObjPtr, subListObjPtr);
-    }
-  }
-  return listObjPtr;
 }
 
 PenStyle **Blt_StyleMap(Element *elemPtr)
@@ -1085,29 +981,30 @@ static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
     return TCL_ERROR;
   }
 }
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
-      graphPtr->flags |= RESET_AXES;
-      elemPtr->flags |= MAP_ITEM;
-      }
-    */
-    /* If data points or axes have changed, reset the axes (may
-     * affect autoscaling) and recalculate the screen points of
-     * the element. */
+// waj
+/*
+  if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
+  graphPtr->flags |= RESET_AXES;
+  elemPtr->flags |= MAP_ITEM;
+  }
+*/
+/* If data points or axes have changed, reset the axes (may
+ * affect autoscaling) and recalculate the screen points of
+ * the element. */
 
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-*data", "-map*", "-x",
-      "-y", (char *)NULL)) {
-      graphPtr->flags |= RESET_WORLD;
-      elemPtr->flags |= MAP_ITEM;
-      }
-    */
-    /* The new label may change the size of the legend */
-    /*
-      if (Blt_ConfigModified(elemPtr->configSpecs, "-label", (char *)NULL)) {
-      graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-      }
-    */
+/*
+  if (Blt_ConfigModified(elemPtr->configSpecs, "-*data", "-map*", "-x",
+  "-y", (char *)NULL)) {
+  graphPtr->flags |= RESET_WORLD;
+  elemPtr->flags |= MAP_ITEM;
+  }
+*/
+/* The new label may change the size of the legend */
+/*
+  if (Blt_ConfigModified(elemPtr->configSpecs, "-label", (char *)NULL)) {
+  graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+  }
+*/
 
 // Ops
 

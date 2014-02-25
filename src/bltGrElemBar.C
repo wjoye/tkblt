@@ -187,13 +187,6 @@ typedef struct {
   int errorBarCapWidth;		/* Length of cap on error bars */
 } BarElement;
 
-extern Blt_CustomOption bltValuesOption;
-extern Blt_CustomOption bltValuePairsOption;
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-extern Blt_CustomOption bltColorOption;
-extern Blt_CustomOption bltBarStylesOption;
-
 //***
 
 static Tk_ObjCustomOption styleObjOption =
@@ -205,6 +198,9 @@ static Tk_ObjCustomOption styleObjOption =
 
 extern Tk_ObjCustomOption barPenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
+extern Tk_ObjCustomOption valuesObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -216,12 +212,17 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    0, -1, Tk_Offset(BarElement, barWidth), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
+   "all", -1, Tk_Offset(BarElement, obj.tags), 
+   TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarElement, builtinPen.borderWidth),
    0, NULL, 0},
   {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, 0, 0, &pairsObjOption, 0},
+  {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
+   "red", -1, Tk_Offset(BarElement, builtinPen.errorBarColor), 0, NULL, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -230,17 +231,31 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    "bblue", -1, Tk_Offset(BarElement, builtinPen.outlineColor), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
+   "no", -1, Tk_Offset(BarElement, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label",
    NULL, -1, Tk_Offset(BarElement, label), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
+   "x", -1, Tk_Offset(BarElement, axes.x), 0, &xAxisObjOption, 0},
+  {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
+   "y", -1, Tk_Offset(BarElement, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
+   NULL, -1, Tk_Offset(BarElement, normalPenPtr), 
+   TK_OPTION_NULL_OK, &barPenObjOption},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "raised", -1, Tk_Offset(BarElement, builtinPen.relief), 0, NULL, 0},
+  {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
+   "both", -1, Tk_Offset(BarElement, builtinPen.errorBarShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
+   "none", -1, Tk_Offset(BarElement, builtinPen.valueShow), 
+   0, &fillObjOption, 0},
   {TK_OPTION_STRING, "-stack", "stack", "Stack", 
-   NULL, -1, Tk_Offset(BarElement, groupName), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, groupName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
    NULL, -1, Tk_Offset(BarElement, builtinPen.stipple), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -258,10 +273,39 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    0, -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
+   NULL, -1, Tk_Offset(BarElement, w), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-x", "x", "X", 
+   NULL, -1, Tk_Offset(BarElement, x), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
+   NULL, -1, Tk_Offset(BarElement, x), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
+   NULL, -1, Tk_Offset(BarElement, xError), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
+   NULL, -1, Tk_Offset(BarElement, xHigh), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
+   NULL, -1, Tk_Offset(BarElement, xLow), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-y", "y", "Y",
+   NULL, -1, Tk_Offset(BarElement, y), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
+   NULL, -1, Tk_Offset(BarElement, y), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
+   NULL, -1, Tk_Offset(BarElement, yError), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
+   NULL, -1, Tk_Offset(BarElement, yHigh), 0, &valuesObjOption, 0},
+  {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
+   NULL, -1, Tk_Offset(BarElement, yLow), 0, &valuesObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
 /*
+extern Blt_CustomOption bltValuesOption;
+extern Blt_CustomOption bltValuePairsOption;
+extern Blt_CustomOption bltXAxisOption;
+extern Blt_CustomOption bltYAxisOption;
+extern Blt_CustomOption bltColorOption;
+extern Blt_CustomOption bltBarStylesOption;
+
 static Blt_ConfigSpec barElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeBar", Tk_Offset(BarElement, activePenPtr), 
@@ -380,54 +424,44 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   "navyblue", 
-   -1, Tk_Offset(BarPen, fill), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
-   -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   "navyblue", -1, Tk_Offset(BarPen, fill), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, 
-   -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
+   STD_BORDERWIDTH, -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
+   "red", -1, Tk_Offset(BarPen, errorBarColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
-   "1",
-   -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1",
-   -1, Tk_Offset(BarPen, errorBarCapWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
-   -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   "1", -1, Tk_Offset(BarPen, errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   "bblue", 
-   -1, Tk_Offset(BarPen, outlineColor), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL,
-   -1, 0, 0, "-foreground", 0},
+   "bblue", -1, Tk_Offset(BarPen, outlineColor), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   "raised", 
-   -1, Tk_Offset(BarPen, relief), 0, NULL, 0},
+   "raised", -1, Tk_Offset(BarPen, relief), 0, NULL, 0},
+  {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
+   "both", -1, Tk_Offset(BarPen, errorBarShow), 
+   0, &fillObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
+   "none", -1, Tk_Offset(BarPen, valueShow), 
+   0, &fillObjOption, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
-   NULL, 
-   -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
-   "bar", 
-   -1, Tk_Offset(BarPen, typeId), TK_OPTION_NULL_OK, NULL, 0},
+   "bar", -1, Tk_Offset(BarPen, typeId), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", 
-   -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
+   "s", -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", 
-   -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
+   "black", -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, 
-   -1, Tk_Offset(BarPen, valueStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(BarPen, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", 
-   -1, Tk_Offset(BarPen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
+   "%g", -1, Tk_Offset(BarPen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, 
-   -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
+   0, -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
