@@ -62,8 +62,8 @@
 
 #define NUMBEROFPOINTS(e)	MIN((e)->x.nValues, (e)->y.nValues)
 
-#define NORMALPEN(e)		((((e)->normalPenPtr == NULL) ?  \
-				  (e)->builtinPenPtr :		 \
+#define NORMALPEN(e)		((((e)->normalPenPtr == NULL) ?	\
+				  (e)->builtinPenPtr :		\
 				  (e)->normalPenPtr))
 
 /*
@@ -76,20 +76,20 @@
  *---------------------------------------------------------------------------
  */
 typedef struct {
-    double min, max, range;
+  double min, max, range;
 } Weight;
 
-#define SetRange(l) \
-	((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
-#define SetScale(l) \
-	((l).scale = 1.0 / (l).range)
-#define SetWeight(l, lo, hi) \
-	((l).min = (lo), (l).max = (hi), SetRange(l))
+#define SetRange(l)							\
+  ((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
+#define SetScale(l)				\
+  ((l).scale = 1.0 / (l).range)
+#define SetWeight(l, lo, hi)			\
+  ((l).min = (lo), (l).max = (hi), SetRange(l))
 
 typedef struct {
-    Segment2d *segments;	/* Point to start of this pen's X-error bar
-				 * segments in the element's array. */
-    int nSegments;
+  Segment2d *segments;	/* Point to start of this pen's X-error bar
+			 * segments in the element's array. */
+  int nSegments;
 } ErrorBarSegments;
 
 /* 
@@ -98,50 +98,50 @@ typedef struct {
  * distinguishes it among the list of all elements.
  */
 typedef struct {
-    Weight weight;		/* Weight range where this pen is valid. */
-    Pen *penPtr;		/* Pen to use. */
+  Weight weight;		/* Weight range where this pen is valid. */
+  Pen *penPtr;		/* Pen to use. */
 } PenStyle;
 
 
 typedef struct {
-    XColor *color;		/* Color of error bar */
-    int lineWidth;		/* Width of the error bar segments. */
-    GC gc;
-    int show;			/* Flags for errorbars: none, x, y, or both */
+  XColor *color;		/* Color of error bar */
+  int lineWidth;		/* Width of the error bar segments. */
+  GC gc;
+  int show;			/* Flags for errorbars: none, x, y, or both */
 } ErrorBarAttributes;
 
 typedef struct {
-    /* Inputs */
-    int halo;			/* Maximal screen distance a candidate point
+  /* Inputs */
+  int halo;			/* Maximal screen distance a candidate point
 				 * can be from the sample window coordinate */
 
-    int mode;			/* Indicates whether to find the closest data
+  int mode;			/* Indicates whether to find the closest data
 				 * point or the closest point on the trace by
 				 * interpolating the line segments.  Can also
 				 * be SEARCH_AUTO, indicating to choose how to
 				 * search.*/
 
-    int x, y;			/* Screen coordinates of test point */
+  int x, y;			/* Screen coordinates of test point */
 
-    int along;			/* Indicates to let search run along a
+  int along;			/* Indicates to let search run along a
 				 * particular axis: x, y, or both. */
 
-    /* Outputs */
-    Element *elemPtr;		/* Name of the closest element */
+  /* Outputs */
+  Element *elemPtr;		/* Name of the closest element */
 
-    Point2d point;		/* Graph coordinates of closest point */
+  Point2d point;		/* Graph coordinates of closest point */
 
-    int index;			/* Index of closest data point */
+  int index;			/* Index of closest data point */
 
-    double dist;		/* Distance in screen coordinates */
+  double dist;		/* Distance in screen coordinates */
 
 } ClosestSearch;
 
 typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
-	Element *elemPtr);
+				Element *elemPtr);
 
 typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-	Element *elemPtr);
+					Element *elemPtr);
 
 typedef void (ElementDestroyProc) (Graph *graphPtr, Element *elemPtr);
 
@@ -152,30 +152,30 @@ typedef void (ElementMapProc) (Graph *graphPtr, Element *elemPtr);
 typedef void (ElementExtentsProc) (Element *elemPtr, Region2d *extsPtr);
 
 typedef void (ElementClosestProc) (Graph *graphPtr, Element *elemPtr, 
-	ClosestSearch *searchPtr);
+				   ClosestSearch *searchPtr);
 
 typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
-	Element *elemPtr, int x, int y, int symbolSize);
+				      Element *elemPtr, int x, int y, int symbolSize);
 
 typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, 
-	Blt_Ps ps, Element *elemPtr, double x, double y, int symSize);
+					      Blt_Ps ps, Element *elemPtr, double x, double y, int symSize);
 
 typedef struct {
-    ElementClosestProc *closestProc;
-    ElementConfigProc *configProc;
-    ElementDestroyProc *destroyProc;
-    ElementDrawProc *drawActiveProc;
-    ElementDrawProc *drawNormalProc;
-    ElementDrawSymbolProc *drawSymbolProc;
-    ElementExtentsProc *extentsProc;
-    ElementToPostScriptProc *printActiveProc;
-    ElementToPostScriptProc *printNormalProc;
-    ElementSymbolToPostScriptProc *printSymbolProc;
-    ElementMapProc *mapProc;
+  ElementClosestProc *closestProc;
+  ElementConfigProc *configProc;
+  ElementDestroyProc *destroyProc;
+  ElementDrawProc *drawActiveProc;
+  ElementDrawProc *drawNormalProc;
+  ElementDrawSymbolProc *drawSymbolProc;
+  ElementExtentsProc *extentsProc;
+  ElementToPostScriptProc *printActiveProc;
+  ElementToPostScriptProc *printNormalProc;
+  ElementSymbolToPostScriptProc *printSymbolProc;
+  ElementMapProc *mapProc;
 } ElementProcs;
 
 typedef struct {
-    Blt_VectorId vector;
+  Blt_VectorId vector;
 } VectorDataSource;
 
 /* 
@@ -184,72 +184,73 @@ typedef struct {
  * the number and minimum/maximum values.
  */
 typedef struct {
-    int type;			/* Selects the type of data populating this
+  int type;			/* Selects the type of data populating this
 				 * vector: ELEM_SOURCE_VECTOR,
 				 * ELEM_SOURCE_TABLE, or ELEM_SOURCE_VALUES
 				 */
-    Element *elemPtr;		/* Element associated with vector. */
-    VectorDataSource vectorSource;
-    double *values;
-    int nValues;
-    int arraySize;
-    double min, max;
+  Element *elemPtr;		/* Element associated with vector. */
+  VectorDataSource vectorSource;
+  double *values;
+  int nValues;
+  int arraySize;
+  double min, max;
 } ElemValues;
 
 struct _Element {
-    GraphObj obj;			/* Must be first field in element. */
-    unsigned int flags;		
-    Tcl_HashEntry *hashPtr;
+  GraphObj obj;			/* Must be first field in element. */
+  unsigned int flags;		
+  int hide;
+  Tcl_HashEntry *hashPtr;
 
-    /* Fields specific to elements. */
-    const char *label;			/* Label displayed in legend */
-    unsigned short row, col;		/* Position of the entry in the
+  /* Fields specific to elements. */
+  const char *label;			/* Label displayed in legend */
+  unsigned short row, col;		/* Position of the entry in the
 					 * legend. */
-    int legendRelief;			/* Relief of label in legend. */
-    Axis2d axes;			/* X-axis and Y-axis mapping the
-					 * element */
-    ElemValues x, y, w;			/* Contains array of floating point
+  int legendRelief;			/* Relief of label in legend. */
+  Axis2d axes;			/* X-axis and Y-axis mapping the
+				 * element */
+  ElemValues x, y, w;			/* Contains array of floating point
 					 * graph coordinate values. Also holds
 					 * min/max and the number of
 					 * coordinates */
-    int *activeIndices;			/* Array of indices (malloc-ed) which
+  int *activeIndices;			/* Array of indices (malloc-ed) which
 					 * indicate which data points are
 					 * active (drawn with "active"
 					 * colors). */
-    int nActiveIndices;			/* Number of active data points.
+  int nActiveIndices;			/* Number of active data points.
 					 * Special case: if nActiveIndices < 0
 					 * and the active bit is set in
 					 * "flags", then all data points are
 					 * drawn active. */
-    ElementProcs *procsPtr;
-    Tk_OptionTable optionTable;	/* Configuration specifications. */
-    Pen *activePenPtr;			/* Standard Pens */
-    Pen *normalPenPtr;
-    Pen *builtinPenPtr;
-    Blt_Chain stylePalette;		/* Palette of pens. */
+  ElementProcs *procsPtr;
+  Tk_OptionTable optionTable;	/* Configuration specifications. */
+  Pen *activePenPtr;			/* Standard Pens */
+  Pen *normalPenPtr;
+  Pen *builtinPenPtr;
+  Blt_Chain stylePalette;		/* Palette of pens. */
 
-    /* Symbol scaling */
-    int scaleSymbols;			/* If non-zero, the symbols will scale
+  /* Symbol scaling */
+  int scaleSymbols;			/* If non-zero, the symbols will scale
 					 * in size as the graph is zoomed
 					 * in/out.  */
-    double xRange, yRange;		/* Initial X-axis and Y-axis ranges:
+  double xRange, yRange;		/* Initial X-axis and Y-axis ranges:
 					 * used to scale the size of element's
 					 * symbol. */
-    int state;
-    Blt_ChainLink link;			/* Element's link in display list. */
+  int state;
+  Blt_ChainLink link;			/* Element's link in display list. */
 };
 
 
 extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
 extern void Blt_ResizeStatusArray(Element *elemPtr, int nPoints);
 extern int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
-	PenStyle *stylePtr);
+			   PenStyle *stylePtr);
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
 extern PenStyle **Blt_StyleMap (Element *elemPtr);
 extern void Blt_MapErrorBars(Graph *graphPtr, Element *elemPtr, 
-	PenStyle **dataToStyle);
+			     PenStyle **dataToStyle);
 extern void Blt_FreeDataValues(ElemValues *evPtr);
 extern int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 
-	Tcl_Obj *objPtr, Element **elemPtrPtr);
+			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 
 #endif /* _BLT_GR_ELEM_H */

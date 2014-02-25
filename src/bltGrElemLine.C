@@ -248,6 +248,7 @@ typedef struct {
 typedef struct {
   GraphObj obj;			/* Must be first field in element. */
   unsigned int flags;		
+  int hide;
   Tcl_HashEntry *hashPtr;
 
   /* Fields specific to elements. */
@@ -350,39 +351,12 @@ typedef struct {
 				 * grouped by pen style. */
 } LineElement;
 
-static Blt_OptionParseProc ObjToSmoothProc;
-static Blt_OptionPrintProc SmoothToObjProc;
-static Blt_CustomOption smoothOption =
-  {
-    ObjToSmoothProc, SmoothToObjProc, NULL, (ClientData)0
-  };
-
-static Blt_OptionParseProc ObjToPenDirProc;
-static Blt_OptionPrintProc PenDirToObjProc;
-static Blt_CustomOption penDirOption =
-  {
-    ObjToPenDirProc, PenDirToObjProc, NULL, (ClientData)0
-  };
-
-static Blt_OptionFreeProc FreeSymbolProc;
-static Blt_OptionParseProc ObjToSymbolProc;
-static Blt_OptionPrintProc SymbolToObjProc;
-static Blt_CustomOption symbolOption =
-  {
-    ObjToSymbolProc, SymbolToObjProc, FreeSymbolProc, (ClientData)0
-  };
-
-extern Blt_CustomOption bltLineStylesOption;
-extern Blt_CustomOption bltColorOption;
-extern Blt_CustomOption bltValuesOption;
-extern Blt_CustomOption bltValuePairsOption;
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-
 //***
 
 extern Tk_ObjCustomOption linePenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -404,10 +378,17 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, 0, 0, &pairsObjOption, 0},
+  {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
+   "red", -1, Tk_Offset(LineElement, builtinPen.errorBarColor), 0, NULL, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LineElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "1", -1, Tk_Offset(LineElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
+   NULL, -1, Tk_Offset(LineElement, builtinPen.symbol.fillColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
+   "no", -1, Tk_Offset(LineElement, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label", 
    NULL, -1, Tk_Offset(LineElement, label), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -415,8 +396,18 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    "flat", -1, Tk_Offset(LineElement, legendRelief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LineElement, builtinPen.traceWidth), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
+   "x", -1, Tk_Offset(LineElement, axes.x), 0, &xAxisObjOption, 0},
+  {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
+   "y", -1, Tk_Offset(LineElement, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
    0, -1, Tk_Offset(LineElement, reqMaxSymbols), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
+   NULL, -1, Tk_Offset(LineElement, builtinPen.traceOffColor),
+   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
+   NULL, -1, Tk_Offset(LineElement, builtinPen.symbol.outlineColor), 
+   TK_OPTION_NULL_OK, NULL,0},
   {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
    "1", -1, Tk_Offset(LineElement, builtinPen.symbol.outlineWidth), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen",
@@ -443,12 +434,36 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-Blt_CustomOption bitmaskLineElemHideOption =
+extern Blt_CustomOption bltLineStylesOption;
+/*
+static Blt_OptionParseProc ObjToSmoothProc;
+static Blt_OptionPrintProc SmoothToObjProc;
+static Blt_CustomOption smoothOption =
   {
-    ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
+    ObjToSmoothProc, SmoothToObjProc, NULL, (ClientData)0
   };
 
-/*
+static Blt_OptionParseProc ObjToPenDirProc;
+static Blt_OptionPrintProc PenDirToObjProc;
+static Blt_CustomOption penDirOption =
+  {
+    ObjToPenDirProc, PenDirToObjProc, NULL, (ClientData)0
+  };
+
+static Blt_OptionFreeProc FreeSymbolProc;
+static Blt_OptionParseProc ObjToSymbolProc;
+static Blt_OptionPrintProc SymbolToObjProc;
+static Blt_CustomOption symbolOption =
+  {
+    ObjToSymbolProc, SymbolToObjProc, FreeSymbolProc, (ClientData)0
+  };
+
+extern Blt_CustomOption bltColorOption;
+extern Blt_CustomOption bltValuesOption;
+extern Blt_CustomOption bltValuePairsOption;
+extern Blt_CustomOption bltXAxisOption;
+extern Blt_CustomOption bltYAxisOption;
+
 static Blt_ConfigSpec lineElemConfigSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeLine", Tk_Offset(LineElement, activePenPtr),
@@ -996,15 +1011,15 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
    */
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->symbol.outlineColor;
-  if (colorPtr == COLOR_DEFAULT) {
+  if (colorPtr == NULL) {
     colorPtr = lpPtr->traceColor;
   }
   gcValues.foreground = colorPtr->pixel;
   if (lpPtr->symbol.type == SYMBOL_BITMAP) {
     colorPtr = lpPtr->symbol.fillColor;
-    if (colorPtr == COLOR_DEFAULT) {
+    if (!colorPtr)
       colorPtr = lpPtr->traceColor;
-    }
+
     /*
      * Set a clip mask if either
      *	1) no background color was designated or
@@ -1037,9 +1052,9 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
 
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->symbol.fillColor;
-  if (colorPtr == COLOR_DEFAULT) {
+  if (!colorPtr)
     colorPtr = lpPtr->traceColor;
-  }
+
   newGC = NULL;
   if (colorPtr != NULL) {
     gcValues.foreground = colorPtr->pixel;
@@ -1140,7 +1155,8 @@ static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
   penPtr->flags = NORMAL_PEN;
   penPtr->name = "";
   penPtr->symbol.bitmap = penPtr->symbol.mask = None;
-  penPtr->symbol.outlineColor = penPtr->symbol.fillColor = COLOR_DEFAULT;
+  penPtr->symbol.outlineColor = NULL;
+  penPtr->symbol.fillColor = NULL;
   penPtr->symbol.outlineWidth = penPtr->traceWidth = 1;
   penPtr->symbol.type = SYMBOL_NONE;
   penPtr->valueShow = SHOW_NONE;
@@ -3805,23 +3821,19 @@ static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable,
 static void GetSymbolPostScriptInfo(Graph *graphPtr, Blt_Ps ps,
 				    LinePen *penPtr, int size)
 {
-  XColor *outlineColor, *fillColor, *defaultColor;
-
   /* Set line and foreground attributes */
-  outlineColor = penPtr->symbol.outlineColor;
-  fillColor = penPtr->symbol.fillColor;
-  defaultColor = penPtr->traceColor;
+  XColor* fillColor = penPtr->symbol.fillColor;
+  if (!fillColor)
+    fillColor = penPtr->traceColor;
 
-  if (fillColor == COLOR_DEFAULT) {
-    fillColor = defaultColor;
-  }
-  if (outlineColor == COLOR_DEFAULT) {
-    outlineColor = defaultColor;
-  }
-  if (penPtr->symbol.type == SYMBOL_NONE) {
-    Blt_Ps_XSetLineAttributes(ps, defaultColor, penPtr->traceWidth + 2,
+  XColor* outlineColor = penPtr->symbol.outlineColor;
+  if (!outlineColor)
+    outlineColor = penPtr->traceColor;
+
+  if (penPtr->symbol.type == SYMBOL_NONE)
+    Blt_Ps_XSetLineAttributes(ps, penPtr->traceColor, penPtr->traceWidth + 2,
 			      &penPtr->traceDashes, CapButt, JoinMiter);
-  } else {
+  else {
     Blt_Ps_XSetLineWidth(ps, penPtr->symbol.outlineWidth);
     Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
   }
@@ -3849,7 +3861,7 @@ static void GetSymbolPostScriptInfo(Graph *graphPtr, Blt_Ps ps,
       sy = (double)size / (double)h;
       scale = MIN(sx, sy);
 
-      if ((penPtr->symbol.mask != None) && (fillColor != NULL)) {
+      if (penPtr->symbol.mask != None) {
 	Blt_Ps_VarAppend(ps, "\n  % Bitmap mask is \"",
 			 Tk_NameOfBitmap(graphPtr->display, penPtr->symbol.mask),
 			 "\"\n\n  ", (char *)NULL);
@@ -3862,16 +3874,15 @@ static void GetSymbolPostScriptInfo(Graph *graphPtr, Blt_Ps ps,
 		       "\"\n\n  ", (char *)NULL);
       Blt_Ps_XSetForeground(ps, outlineColor);
       Blt_Ps_DrawBitmap(ps, graphPtr->display, penPtr->symbol.bitmap, 
-			scale, scale);
+			  scale, scale);
     }
     break;
   default:
-    if (fillColor != NULL) {
       Blt_Ps_Append(ps, "  ");
       Blt_Ps_XSetBackground(ps, fillColor);
       Blt_Ps_Append(ps, "  gsave fill grestore\n");
-    }
-    if ((outlineColor != NULL) && (penPtr->symbol.outlineWidth > 0)) {
+
+    if (penPtr->symbol.outlineWidth > 0) {
       Blt_Ps_Append(ps, "  ");
       Blt_Ps_XSetForeground(ps, outlineColor);
       Blt_Ps_Append(ps, "  stroke\n");

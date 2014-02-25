@@ -853,7 +853,7 @@ void Blt_DrawElements(Graph *graphPtr, Drawable drawable)
     Element *elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if ((elemPtr->flags & (HIDE|DELETE_PENDING)) == 0) {
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
       (*elemPtr->procsPtr->drawNormalProc)(graphPtr, drawable, elemPtr);
     }
   }
@@ -868,7 +868,9 @@ void Blt_DrawActiveElements(Graph *graphPtr, Drawable drawable)
     Element *elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if ((elemPtr->flags & (HIDE|ACTIVE|DELETE_PENDING)) == ACTIVE) {
+    if (!(elemPtr->flags & DELETE_PENDING) && 
+	(elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide) {
       (*elemPtr->procsPtr->drawActiveProc)(graphPtr, drawable, elemPtr);
     }
   }
@@ -883,7 +885,7 @@ void Blt_ElementsToPostScript(Graph *graphPtr, Blt_Ps ps)
     Element *elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->flags & (HIDE|DELETE_PENDING)) {
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
       continue;
     }
     /* Comment the PostScript to indicate the start of the element */
@@ -901,7 +903,9 @@ void Blt_ActiveElementsToPostScript( Graph *graphPtr, Blt_Ps ps)
     Element *elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if ((elemPtr->flags & (DELETE_PENDING|HIDE|ACTIVE)) == ACTIVE) {
+    if (!(elemPtr->flags & DELETE_PENDING) && 
+	(elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide) {
       Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", 
 		    elemPtr->obj.name);
       (*elemPtr->procsPtr->printActiveProc)(graphPtr, ps, elemPtr);
@@ -1180,7 +1184,7 @@ static int ClosestOp(Graph *graphPtr, Tcl_Interp *interp,
       if (IGNORE_ELEMENT(elemPtr)) {
 	continue;
       }
-      if (elemPtr->flags & (HIDE|MAP_ITEM)) {
+      if ((elemPtr->flags & MAP_ITEM) && elemPtr->hide) {
 	continue;
       }
       (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
@@ -1197,7 +1201,7 @@ static int ClosestOp(Graph *graphPtr, Tcl_Interp *interp,
     for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       elemPtr = Blt_Chain_GetValue(link);
-      if (elemPtr->flags & (HIDE|MAP_ITEM|DELETE_PENDING)) {
+      if ((elemPtr->flags & (MAP_ITEM|DELETE_PENDING)) && elemPtr->hide) {
 	continue;
       }
       (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);

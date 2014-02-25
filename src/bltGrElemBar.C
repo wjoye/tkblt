@@ -118,6 +118,7 @@ typedef struct {
 typedef struct {
   GraphObj obj;			/* Must be first field in element. */
   unsigned int flags;		
+  int hide;
   Tcl_HashEntry *hashPtr;
 
   /* Fields specific to elements. */
@@ -250,11 +251,6 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    0, -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
-
-Blt_CustomOption bitmaskBarElemHideOption =
-  {
-    ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)HIDE
-  };
 
 /*
 static Blt_ConfigSpec barElemConfigSpecs[] = {
@@ -2295,7 +2291,7 @@ void Blt_InitBarSetTable(Graph *graphPtr)
     int nPoints;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if ((elemPtr->flags & HIDE) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
+    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
       continue;
     }
     nSegs++;
@@ -2436,7 +2432,7 @@ void Blt_ComputeBarStacks(Graph *graphPtr)
     double *x, *y, *xend;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if ((elemPtr->flags & HIDE) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
+    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
       continue;
     }
     for (x = elemPtr->x.values, y = elemPtr->y.values, 
