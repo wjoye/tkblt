@@ -54,8 +54,14 @@ static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
 			      PenStyle *stylePtr);
 static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, 
 			 const char *vecName);
+static void DestroyElement(Element *elemPtr);
+static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+			       Element* elemPtr, 
+			       int objc, Tcl_Obj* const objv[]);
+typedef int (GraphElementProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+			       Tcl_Obj *const *objv);
 
-//**
+// OptionSpecs
 
 // Fill
 char* fillObjOption[] = {"none", "x", "y", "both", NULL};
@@ -274,26 +280,149 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
 
   return listObjPtr;
 }
-//**
 
-/* Along */
-
-static Blt_OptionParseProc ObjToAlong;
-static Blt_OptionPrintProc AlongToObj;
-static Blt_CustomOption alongOption =
-  {
-    ObjToAlong, AlongToObj, NULL, (ClientData)0
-  };
+// Configure
 
 static Blt_VectorChangedProc VectorChangedProc;
 
-static Tcl_FreeProc FreeElement;
+static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+			 Tcl_Obj *const *objv, ClassId classId)
+{
+  Element *elemPtr;
+  Tcl_HashEntry *hPtr;
+  int isNew;
+  char *string;
+
+  string = Tcl_GetString(objv[3]);
+  if (string[0] == '-') {
+    Tcl_AppendResult(graphPtr->interp, "name of element \"", string, 
+		     "\" can't start with a '-'", (char *)NULL);
+    return TCL_ERROR;
+  }
+  hPtr = Tcl_CreateHashEntry(&graphPtr->elements.table, string, &isNew);
+  if (!isNew) {
+    Tcl_AppendResult(interp, "element \"", string, 
+		     "\" already exists in \"", Tcl_GetString(objv[0]), 
+		     "\"", (char *)NULL);
+    return TCL_ERROR;
+  }
+  switch (classId) {
+  case CID_ELEM_BAR:
+    elemPtr = Blt_BarElement(graphPtr, string, classId);
+    break;
+  case CID_ELEM_LINE:
+    elemPtr = Blt_LineElement(graphPtr, string, classId);
+    break;
+  default:
+    return TCL_ERROR;
+  }
+  if (!elemPtr)
+    return TCL_ERROR;
+
+  elemPtr->hashPtr = hPtr;
+  Tcl_SetHashValue(hPtr, elemPtr);
+
+  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
+    DestroyElement(elemPtr);
+    return TCL_ERROR;
+  }
+
+  elemPtr->link = Blt_Chain_Append(graphPtr->elements.displayList, elemPtr);
+  graphPtr->flags |= CACHE_DIRTY;
+  Blt_EventuallyRedrawGraph(graphPtr);
+  elemPtr->flags |= MAP_ITEM;
+  graphPtr->flags |= RESET_AXES;
+  Tcl_SetObjResult(interp, objv[3]);
+  return TCL_OK;
+}
+
+static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+		  int objc, Tcl_Obj* const objv[])
+{
+  if (objc != 5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
+    return TCL_ERROR;
+  }
+
+  Element *elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
+				      elemPtr->optionTable,
+				      objv[4], graphPtr->tkwin);
+  if (objPtr == NULL)
+    return TCL_ERROR;
+  else
+    Tcl_SetObjResult(interp, objPtr);
+  return TCL_OK;
+}
+
+static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
+		       int objc, Tcl_Obj* const objv[])
+{
+  Element* elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc <= 5) {
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
+				       elemPtr->optionTable, 
+				       (objc == 5) ? objv[4] : NULL, 
+				       graphPtr->tkwin);
+    if (objPtr == NULL)
+      return TCL_ERROR;
+    else
+      Tcl_SetObjResult(interp, objPtr);
+    return TCL_OK;
+  } 
+  else
+    return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
+}
 
 static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
 			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[]);
-typedef int (GraphElementProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
-			       Tcl_Obj *const *objv);
+			       int objc, Tcl_Obj* const objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)elemPtr, elemPtr->optionTable, 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    graphPtr->flags |= mask;
+    graphPtr->flags |= CACHE_DIRTY;
+    if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
+
+// Support
 
 static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
@@ -522,52 +651,6 @@ double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
   return min;
 }
 
-static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
-		      Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-		      int offset, int flags)
-{
-  int *intPtr = (int *)(widgRec + offset);
-  char *string;
-
-  string = Tcl_GetString(objPtr);
-  if ((string[0] == 'x') && (string[1] == '\0')) {
-    *intPtr = SEARCH_X;
-  } else if ((string[0] == 'y') && (string[1] == '\0')) { 
-    *intPtr = SEARCH_Y;
-  } else if ((string[0] == 'b') && (strcmp(string, "both") == 0)) {
-    *intPtr = SEARCH_BOTH;
-  } else {
-    Tcl_AppendResult(interp, "bad along value \"", string, "\"",
-		     (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-static Tcl_Obj *AlongToObj(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, char *widgRec, int offset,
-			   int flags)
-{
-  int along = *(int *)(widgRec + offset);
-  Tcl_Obj *objPtr;
-
-  switch (along) {
-  case SEARCH_X:
-    objPtr = Tcl_NewStringObj("x", 1);
-    break;
-  case SEARCH_Y:
-    objPtr = Tcl_NewStringObj("y", 1);
-    break;
-  case SEARCH_BOTH:
-    objPtr = Tcl_NewStringObj("both", 4);
-    break;
-  default:
-    objPtr = Tcl_NewStringObj("unknown along value", 4);
-    break;
-  }
-  return objPtr;
-}
-
 void Blt_FreeStylePalette(Blt_Chain stylePalette)
 {
   Blt_ChainLink link;
@@ -714,57 +797,6 @@ static void FreeElement(char* data)
   DestroyElement(elemPtr);
 }
 
-static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc, 
-			 Tcl_Obj *const *objv, ClassId classId)
-{
-  Element *elemPtr;
-  Tcl_HashEntry *hPtr;
-  int isNew;
-  char *string;
-
-  string = Tcl_GetString(objv[3]);
-  if (string[0] == '-') {
-    Tcl_AppendResult(graphPtr->interp, "name of element \"", string, 
-		     "\" can't start with a '-'", (char *)NULL);
-    return TCL_ERROR;
-  }
-  hPtr = Tcl_CreateHashEntry(&graphPtr->elements.table, string, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp, "element \"", string, 
-		     "\" already exists in \"", Tcl_GetString(objv[0]), 
-		     "\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-  switch (classId) {
-  case CID_ELEM_BAR:
-    elemPtr = Blt_BarElement(graphPtr, string, classId);
-    break;
-  case CID_ELEM_LINE:
-    elemPtr = Blt_LineElement(graphPtr, string, classId);
-    break;
-  default:
-    return TCL_ERROR;
-  }
-  if (!elemPtr)
-    return TCL_ERROR;
-
-  elemPtr->hashPtr = hPtr;
-  Tcl_SetHashValue(hPtr, elemPtr);
-
-  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
-    DestroyElement(elemPtr);
-    return TCL_ERROR;
-  }
-
-  elemPtr->link = Blt_Chain_Append(graphPtr->elements.displayList, elemPtr);
-  graphPtr->flags |= CACHE_DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
-  elemPtr->flags |= MAP_ITEM;
-  graphPtr->flags |= RESET_AXES;
-  Tcl_SetObjResult(interp, objv[3]);
-  return TCL_OK;
-}
-
 void Blt_DestroyElements(Graph *graphPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -896,91 +928,6 @@ ClientData Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
   return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
-		  int objc, Tcl_Obj* const objv[])
-{
-  if (objc != 5) {
-    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
-    return TCL_ERROR;
-  }
-
-  Element *elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
-				      elemPtr->optionTable,
-				      objv[4], graphPtr->tkwin);
-  if (objPtr == NULL)
-    return TCL_ERROR;
-  else
-    Tcl_SetObjResult(interp, objPtr);
-  return TCL_OK;
-}
-
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
-		       int objc, Tcl_Obj* const objv[])
-{
-  Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
-				       elemPtr->optionTable, 
-				       (objc == 5) ? objv[4] : NULL, 
-				       graphPtr->tkwin);
-    if (objPtr == NULL)
-      return TCL_ERROR;
-    else
-      Tcl_SetObjResult(interp, objPtr);
-    return TCL_OK;
-  } 
-  else
-    return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
-}
-
-static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
-			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[])
-{
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)elemPtr, elemPtr->optionTable, 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    graphPtr->flags |= mask;
-    graphPtr->flags |= CACHE_DIRTY;
-    if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
-}
 // waj
 /*
   if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
@@ -1089,6 +1036,59 @@ static int CreateOp(Graph *graphPtr, Tcl_Interp *interp,
 		    int objc, Tcl_Obj *const *objv, ClassId classId)
 {
   return CreateElement(graphPtr, interp, objc, objv, classId);
+}
+
+static Blt_OptionParseProc ObjToAlong;
+static Blt_OptionPrintProc AlongToObj;
+static Blt_CustomOption alongOption =
+  {
+    ObjToAlong, AlongToObj, NULL, (ClientData)0
+  };
+
+static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
+		      Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+		      int offset, int flags)
+{
+  int *intPtr = (int *)(widgRec + offset);
+  char *string;
+
+  string = Tcl_GetString(objPtr);
+  if ((string[0] == 'x') && (string[1] == '\0')) {
+    *intPtr = SEARCH_X;
+  } else if ((string[0] == 'y') && (string[1] == '\0')) { 
+    *intPtr = SEARCH_Y;
+  } else if ((string[0] == 'b') && (strcmp(string, "both") == 0)) {
+    *intPtr = SEARCH_BOTH;
+  } else {
+    Tcl_AppendResult(interp, "bad along value \"", string, "\"",
+		     (char *)NULL);
+    return TCL_ERROR;
+  }
+  return TCL_OK;
+}
+
+static Tcl_Obj *AlongToObj(ClientData clientData, Tcl_Interp *interp,
+			   Tk_Window tkwin, char *widgRec, int offset,
+			   int flags)
+{
+  int along = *(int *)(widgRec + offset);
+  Tcl_Obj *objPtr;
+
+  switch (along) {
+  case SEARCH_X:
+    objPtr = Tcl_NewStringObj("x", 1);
+    break;
+  case SEARCH_Y:
+    objPtr = Tcl_NewStringObj("y", 1);
+    break;
+  case SEARCH_BOTH:
+    objPtr = Tcl_NewStringObj("both", 4);
+    break;
+  default:
+    objPtr = Tcl_NewStringObj("unknown along value", 4);
+    break;
+  }
+  return objPtr;
 }
 
 static Blt_ConfigSpec closestSpecs[] = {

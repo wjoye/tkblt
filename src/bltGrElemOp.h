@@ -83,6 +83,23 @@ typedef struct {
   int nSegments;
 } ErrorBarSegments;
 
+struct _Pen {
+  const char *name;			/* Pen style identifier.  If NULL pen
+					 * was statically allocated. */
+  ClassId classId;			/* Type element using this pen. */
+  const char *typeId;			/* String token identifying the type of
+					 * pen. */
+  unsigned int flags;			/* Indicates if the pen element is
+					 * active or normal. */
+  int refCount;			/* Reference count for elements using
+				 * this pen. */
+  Tcl_HashEntry *hashPtr;
+  Tk_OptionTable optionTable;	/* Configuration specifications */
+  PenConfigureProc *configProc;
+  PenDestroyProc *destroyProc;
+  Graph *graphPtr;			/* Graph that the pen is associated*/
+};
+
 /* 
  * An element has one or more vectors plus several attributes, such as line
  * style, thickness, color, and symbol type.  It has an identifier which

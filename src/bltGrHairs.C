@@ -44,7 +44,7 @@ struct _Crosshairs {
   XPoint hotSpot;		/* Hot spot for crosshairs */
   int visible;		/* Internal state of crosshairs. If non-zero,
 			 * crosshairs are displayed. */
-  int hidden;			/* If non-zero, crosshairs are not displayed.
+  int hide;			/* If non-zero, crosshairs are not displayed.
 				 * This is not necessarily consistent with the
 				 * internal state variable.  This is true when
 				 * the hot spot is off the graph.  */
@@ -60,47 +60,63 @@ struct _Crosshairs {
 				 * GXxor to not require redraws of graph */
 };
 
-#define DEF_HAIRS_DASHES	NULL
-#define DEF_HAIRS_FOREGROUND	black
-#define DEF_HAIRS_LINE_WIDTH	"0"
-#define DEF_HAIRS_HIDE		"yes"
-#define DEF_HAIRS_POSITION	NULL
-
-static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_COLOR, "-color", "color", "Color", 
-   DEF_HAIRS_FOREGROUND, 
-   -1, Tk_Offset(Crosshairs, colorPtr), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
-   DEF_HAIRS_DASHES, 
-   -1, Tk_Offset(Crosshairs, dashes), TK_OPTION_NULL_OK, &dashesObjOption, 0},
-  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   DEF_HAIRS_HIDE, 
-   -1, Tk_Offset(Crosshairs, hidden), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
-   DEF_HAIRS_LINE_WIDTH, 
-   -1, Tk_Offset(Crosshairs, lineWidth), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-position", "position", "Position", 
-   DEF_HAIRS_POSITION, 
-   -1, Tk_Offset(Crosshairs, hotSpot), 0, &pointObjOption, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
-};
-
 static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[]);
 static void ConfigureCrosshairs(Graph *graphPtr);
 static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr);
 static void TurnOnHairs(Graph *graphPtr, Crosshairs *chPtr);
 
+// OptionSpecs
+
+static Tk_OptionSpec optionSpecs[] = {
+  {TK_OPTION_COLOR, "-color", "color", "Color", 
+   "green", -1, Tk_Offset(Crosshairs, colorPtr), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
+   NULL, -1, Tk_Offset(Crosshairs, dashes), 
+   TK_OPTION_NULL_OK, &dashesObjOption, 0},
+  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
+   "yes", -1, Tk_Offset(Crosshairs, hide), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
+   "0", -1, Tk_Offset(Crosshairs, lineWidth), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-position", "position", "Position", 
+   NULL, -1, Tk_Offset(Crosshairs, hotSpot), 
+   TK_OPTION_NULL_OK, &pointObjOption, 0},
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
+
+// Create
+
 int Blt_CreateCrosshairs(Graph* graphPtr)
 {
   Crosshairs* chPtr = calloc(1, sizeof(Crosshairs));
   chPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  chPtr->hidden = TRUE;
+  chPtr->hide = TRUE;
   chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
   graphPtr->crosshairs = chPtr;
 
   return TCL_OK;
 }
+
+void Blt_DeleteCrosshairs(Graph* graphPtr)
+{
+  Crosshairs *chPtr = graphPtr->crosshairs;
+  if (chPtr != NULL)
+    Tk_FreeConfigOptions((char*)chPtr, chPtr->optionTable, graphPtr->tkwin);
+}
+
+void Blt_DestroyCrosshairs(Graph* graphPtr)
+{
+  Crosshairs *chPtr = graphPtr->crosshairs;
+  if (chPtr != NULL) {
+    Tk_DeleteOptionTable(chPtr->optionTable);
+    if (chPtr->gc != NULL)
+      Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
+
+    free(chPtr);
+  }
+}
+
+// Configure
 
 int Blt_ConfigureObjCrosshairs(Graph* graphPtr,
 			       int objc, Tcl_Obj* const objv[])
@@ -108,22 +124,6 @@ int Blt_ConfigureObjCrosshairs(Graph* graphPtr,
   Crosshairs* chPtr = graphPtr->crosshairs;
   return Tk_InitOptions(graphPtr->interp, (char*)chPtr, chPtr->optionTable, 
 			graphPtr->tkwin);
-}
-
-static Blt_OpSpec xhairOps[];
-static int nXhairOps;
-typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
-	int objc, Tcl_Obj* const objv[]);
-
-int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
-		     int objc, Tcl_Obj* const objv[])
-{
-  GraphCrosshairProc* proc = Blt_GetOpFromObj(interp, nXhairOps, xhairOps, 
-					      BLT_OP_ARG2, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
 }
 
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
@@ -242,27 +242,26 @@ static void ConfigureCrosshairs(Graph *graphPtr)
   chPtr->segArr[1].x1 = graphPtr->left;
   chPtr->segArr[1].x2 = graphPtr->right;
 
-  if (!chPtr->hidden)
+  if (!chPtr->hide)
     TurnOnHairs(graphPtr, chPtr);
 }
 
-void Blt_DeleteCrosshairs(Graph* graphPtr)
-{
-  Crosshairs *chPtr = graphPtr->crosshairs;
-  if (chPtr != NULL)
-    Tk_FreeConfigOptions((char*)chPtr, chPtr->optionTable, graphPtr->tkwin);
-}
+// Ops
 
-void Blt_DestroyCrosshairs(Graph* graphPtr)
-{
-  Crosshairs *chPtr = graphPtr->crosshairs;
-  if (chPtr != NULL) {
-    Tk_DeleteOptionTable(chPtr->optionTable);
-    if (chPtr->gc != NULL)
-      Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
+static Blt_OpSpec xhairOps[];
+static int nXhairOps;
+typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
+	int objc, Tcl_Obj* const objv[]);
 
-    free(chPtr);
-  }
+int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
+		     int objc, Tcl_Obj* const objv[])
+{
+  GraphCrosshairProc* proc = Blt_GetOpFromObj(interp, nXhairOps, xhairOps, 
+					      BLT_OP_ARG2, objc, objv, 0);
+  if (proc == NULL)
+    return TCL_ERROR;
+
+  return (*proc)(graphPtr, interp, objc, objv);
 }
 
 // Widget commands
@@ -272,9 +271,9 @@ static int OnOp(Graph *graphPtr, Tcl_Interp *interp,
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
-  if (chPtr->hidden) {
+  if (chPtr->hide) {
     TurnOnHairs(graphPtr, chPtr);
-    chPtr->hidden = FALSE;
+    chPtr->hide = FALSE;
   }
   return TCL_OK;
 }
@@ -284,9 +283,9 @@ static int OffOp(Graph *graphPtr, Tcl_Interp *interp,
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
-  if (!chPtr->hidden) {
+  if (!chPtr->hide) {
     TurnOffHairs(graphPtr->tkwin, chPtr);
-    chPtr->hidden = TRUE;
+    chPtr->hide = TRUE;
   }
   return TCL_OK;
 }
@@ -296,8 +295,8 @@ static int ToggleOp(Graph *graphPtr, Tcl_Interp *interp,
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
-  chPtr->hidden = (chPtr->hidden == 0);
-  if (chPtr->hidden)
+  chPtr->hide = (chPtr->hide == 0);
+  if (chPtr->hide)
     TurnOffHairs(graphPtr->tkwin, chPtr);
   else
     TurnOnHairs(graphPtr, chPtr);
@@ -340,14 +339,12 @@ static void TurnOnHairs(Graph *graphPtr, Crosshairs *chPtr)
 
 void Blt_EnableCrosshairs(Graph *graphPtr)
 {
-  if (!graphPtr->crosshairs->hidden) {
+  if (!graphPtr->crosshairs->hide)
     TurnOnHairs(graphPtr, graphPtr->crosshairs);
-  }
 }
 
 void Blt_DisableCrosshairs(Graph *graphPtr)
 {
-  if (!graphPtr->crosshairs->hidden) {
+  if (!graphPtr->crosshairs->hide)
     TurnOffHairs(graphPtr->tkwin, graphPtr->crosshairs);
-  }
 }

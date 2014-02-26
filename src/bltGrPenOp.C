@@ -38,12 +38,9 @@
 
 #include "bltInt.h"
 #include "bltGraph.h"
+#include "bltGrElem.h"
 #include "bltOp.h"
 
-typedef int (GraphPenProc)(Tcl_Interp *interp, Graph *graphPtr, int objc, 
-			   Tcl_Obj *const *objv);
-
-//***
 static Tk_CustomOptionSetProc PenSetProc;
 static Tk_CustomOptionGetProc PenGetProc;
 Tk_ObjCustomOption barPenObjOption =
@@ -94,6 +91,12 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
   else
     return Tcl_NewStringObj(penPtr->name, -1);
 };
+
+static int PenObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+			   Pen* penPtr, 
+			   int objc, Tcl_Obj* const objv[]);
+typedef int (GraphPenProc)(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+			   Tcl_Obj *const *objv);
 
 static int GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr)
@@ -207,19 +210,16 @@ Pen* Blt_CreatePen(Graph* graphPtr, const char* penName, ClassId classId,
     penPtr->graphPtr = graphPtr;
     Tcl_SetHashValue(hPtr, penPtr);
   }
+
   /*
-    // waj
-  configFlags = (penPtr->flags & (ACTIVE_PEN | NORMAL_PEN));
-  if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
-				    penPtr->name, "Pen", penPtr->configSpecs, objc, objv,
-				    (char *)penPtr, configFlags) != TCL_OK) {
-    if (isNew) {
-      DestroyPen(penPtr);
-    }
-    return NULL;
+  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
+    if (isNew)
+      DestroyElement(penPtr);
+    return TCL_ERROR;
   }
   */
-  (*penPtr->configProc) (graphPtr, penPtr);
+
+  //  (*penPtr->configProc) (graphPtr, penPtr);
   return penPtr;
 }
 

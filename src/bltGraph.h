@@ -176,23 +176,6 @@ typedef Pen *(PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph *graphPtr, Pen *penPtr);
 typedef void (PenDestroyProc)(Graph *graphPtr, Pen *penPtr);
 
-struct _Pen {
-  const char *name;			/* Pen style identifier.  If NULL pen
-					 * was statically allocated. */
-  ClassId classId;			/* Type element using this pen. */
-  const char *typeId;			/* String token identifying the type of
-					 * pen. */
-  unsigned int flags;			/* Indicates if the pen element is
-					 * active or normal. */
-  int refCount;			/* Reference count for elements using
-				 * this pen. */
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications */
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph *graphPtr;			/* Graph that the pen is associated*/
-};
-
 /*
  *---------------------------------------------------------------------------
  *
@@ -283,9 +266,7 @@ struct _Graph {
   TextStyle titleTextStyle;		/* Title attributes: font, color,
 					 * etc.*/
     
-  const char *takeFocus;		/* Not used in C code, indicates if
-					 * widget should be included in focus
-					 * traversal. */
+
   Axis *focusPtr;			/* The axis that currently has focus. */
     
   int reqWidth, reqHeight;		/* Requested size of graph window */

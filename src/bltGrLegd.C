@@ -67,7 +67,11 @@
 #define SELECT_BLTMASK		(SELECT_SET | SELECT_CLEAR)
 #define SELECT_SORTED		(1<<20)
 
-typedef enum {SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE} SelectMode;
+#define LABEL_PAD	2
+
+typedef enum {
+  SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
+} SelectMode;
 
 struct _Legend {
   Tk_OptionTable optionTable;
@@ -137,7 +141,6 @@ struct _Legend {
   GC focusGC;				/* Graphics context for the active
 					 * label. */
 
-  const char *takeFocus;
   int focus;				/* Position of the focus entry. */
 
   int cursorX, cursorY;		/* Position of the insertion cursor in
@@ -183,43 +186,6 @@ struct _Legend {
   TextStyle titleStyle;		/* Legend title attributes */
 };
 
-#define LABEL_PAD	2
-
-#define DEF_LEGEND_ACTIVEBACKGROUND 	skyblue4
-#define DEF_LEGEND_ACTIVEBORDERWIDTH    STD_BORDERWIDTH
-#define DEF_LEGEND_ACTIVEFOREGROUND	white
-#define DEF_LEGEND_ACTIVERELIEF		"flat"
-#define DEF_LEGEND_ANCHOR	   	"n"
-#define DEF_LEGEND_BACKGROUND	   	NULL
-#define DEF_LEGEND_BORDERWIDTH		STD_BORDERWIDTH
-#define DEF_LEGEND_COLUMNS		"0"
-#define DEF_LEGEND_EXPORTSELECTION	"no"
-#define DEF_LEGEND_FONT			"hevetica 8 normal roman"
-#define DEF_LEGEND_FOREGROUND		STD_NORMAL_FOREGROUND
-#define DEF_LEGEND_HIDE			"no"
-#define DEF_LEGEND_IPADX		"1"
-#define DEF_LEGEND_IPADY		"1"
-#define DEF_LEGEND_PADX			"1"
-#define DEF_LEGEND_PADY			"1"
-#define DEF_LEGEND_POSITION		"rightmargin"
-#define DEF_LEGEND_RAISED       	"no"
-#define DEF_LEGEND_RELIEF		"flat"
-#define DEF_LEGEND_ROWS			"0"
-#define DEF_LEGEND_SELECTBACKGROUND 	skyblue4
-#define DEF_LEGEND_SELECTBORDERWIDTH	"1"
-#define DEF_LEGEND_SELECTCOMMAND        NULL
-#define DEF_LEGEND_SELECTMODE		"multiple"
-#define DEF_LEGEND_SELECTFOREGROUND 	white
-#define DEF_LEGEND_SELECTRELIEF		"flat"
-#define DEF_LEGEND_FOCUSDASHES		"dot"
-#define DEF_LEGEND_FOCUSEDIT		"no"
-#define DEF_LEGEND_FOCUSFOREGROUND	STD_ACTIVE_FOREGROUND
-#define DEF_LEGEND_TAKEFOCUS		"1"
-#define DEF_LEGEND_TITLE		NULL
-#define DEF_LEGEND_TITLEANCHOR		"nw"
-#define	DEF_LEGEND_TITLECOLOR		STD_NORMAL_FOREGROUND
-#define DEF_LEGEND_TITLEFONT		STD_FONT_SMALL
-
 static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
 static void ConfigureLegend(Graph *graphPtr);
@@ -234,12 +200,22 @@ static void SelectEntry(Legend *legendPtr, Element *elemPtr);
 static int CreateLegendWindow(Tcl_Interp *interp, Legend *legendPtr, 
 			      const char *pathName);
 
-// SelectMode
+static Tcl_IdleProc DisplayLegend;
+static Blt_BindPickProc PickEntryProc;
+static Tk_EventProc LegendEventProc;
+static Tcl_TimerProc BlinkCursorProc;
+static Tk_LostSelProc LostSelectionProc;
+static Tk_SelectionProc SelectionProc;
+
+extern Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+
+typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
+			      int objc, Tcl_Obj* const objv[]);
+
+// OptionSpecs
 
 static char* selectmodeObjOption[] = 
   {"single", "multiple", NULL};
-
-// Position
 
 static Tk_CustomOptionSetProc PositionSetProc;
 static Tk_CustomOptionGetProc PositionGetProc;
@@ -345,133 +321,87 @@ static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin,
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BORDER, "-activebackground", "activeBackground",
    "ActiveBackground", 
-   DEF_LEGEND_ACTIVEBACKGROUND, 
-   -1, Tk_Offset(Legend, activeBg), 0, NULL, 0},
+   "skyblue4", -1, Tk_Offset(Legend, activeBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-activeborderwidth", "activeBorderWidth", 
    "ActiveBorderWidth", 
-   DEF_LEGEND_BORDERWIDTH, 
-   -1, Tk_Offset(Legend, entryBW), 0, NULL, 0}, 
+   STD_BORDERWIDTH, -1, Tk_Offset(Legend, entryBW), 0, NULL, 0}, 
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
-   DEF_LEGEND_ACTIVEFOREGROUND,
-   -1, Tk_Offset(Legend, activeFgColor), 0, NULL, 0},
+   "white", -1, Tk_Offset(Legend, activeFgColor), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "ActiveRelief",
-   DEF_LEGEND_ACTIVERELIEF, 
-   -1, Tk_Offset(Legend, activeRelief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(Legend, activeRelief), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
-   DEF_LEGEND_ANCHOR, 
-   -1, Tk_Offset(Legend, anchor), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
+   "n", -1, Tk_Offset(Legend, anchor), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   DEF_LEGEND_BACKGROUND, 
-   -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_LEGEND_BORDERWIDTH, 
-   -1, Tk_Offset(Legend, borderWidth), 0, NULL, 0}, 
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
-   -1, 0, 0, "-borderwidth", 0},
+   STD_BORDERWIDTH, -1, Tk_Offset(Legend, borderWidth), 0, NULL, 0}, 
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_INT, "-columns", "columns", "columns",
-   DEF_LEGEND_COLUMNS, 
-   -1, Tk_Offset(Legend, reqColumns), 0, NULL, 0},
+   0, -1, Tk_Offset(Legend, reqColumns), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-exportselection", "exportSelection",
    "ExportSelection", 
-   DEF_LEGEND_EXPORTSELECTION, 
-   -1, Tk_Offset(Legend, exportSelection), 0, NULL, 0},
+   "no",  -1, Tk_Offset(Legend, exportSelection), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-focusdashes", "focusDashes", "FocusDashes",
-   DEF_LEGEND_FOCUSDASHES, 
-   -1, Tk_Offset(Legend, focusDashes), TK_OPTION_NULL_OK, &dashesObjOption, 0},
+   "dot", -1, Tk_Offset(Legend, focusDashes), 
+   TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
-   DEF_LEGEND_FOCUSFOREGROUND,
-   -1, Tk_Offset(Legend, focusColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Legend, focusColor), 0, NULL, 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
-   DEF_LEGEND_FONT, 
-   -1, Tk_Offset(Legend, style.font), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
-   -1, 0, 0, "-foreground", 0},
+   STD_FONT_SMALL, -1, Tk_Offset(Legend, style.font), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   DEF_LEGEND_FOREGROUND, 
-   -1, Tk_Offset(Legend, fgColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Legend, fgColor), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   DEF_LEGEND_HIDE, 
-   -1, Tk_Offset(Legend, hide), 0, NULL, 0},
+   "no", -1, Tk_Offset(Legend, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-ipadx", "iPadX", "Pad", 
-   DEF_LEGEND_IPADX, 
-   -1, Tk_Offset(Legend, ixPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(Legend, ixPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-ipady", "iPadY", "Pad", 
-   DEF_LEGEND_IPADY, 
-   -1, Tk_Offset(Legend, iyPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(Legend, iyPad), 0, NULL, 0},
   {TK_OPTION_BORDER, "-nofocusselectbackground", "noFocusSelectBackground", 
    "NoFocusSelectBackground", 
-   DEF_LEGEND_SELECTBACKGROUND, 
-   -1, Tk_Offset(Legend, selOutFocusBg), 0, NULL, 0},
+   "skyblue4", -1, Tk_Offset(Legend, selOutFocusBg), 0, NULL, 0},
   {TK_OPTION_COLOR, "-nofocusselectforeground", "noFocusSelectForeground", 
    "NoFocusSelectForeground", 
-   DEF_LEGEND_SELECTFOREGROUND, 
-   -1, Tk_Offset(Legend, selOutFocusFgColor), 0, NULL, 0},
+   "white", -1, Tk_Offset(Legend, selOutFocusFgColor), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-padx", "padX", "Pad", 
-   DEF_LEGEND_PADX, 
-   -1, Tk_Offset(Legend, xPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(Legend, xPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pady", "padY", "Pad", 
-   DEF_LEGEND_PADY, 
-   -1, Tk_Offset(Legend, yPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(Legend, yPad), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-position", "position", "Position", 
-   DEF_LEGEND_POSITION, 
-   -1, 0, 0, &positionObjOption, 0},
+   "rightmargin", -1, 0, 0, &positionObjOption, 0},
   {TK_OPTION_BOOLEAN, "-raised", "raised", "Raised", 
-   DEF_LEGEND_RAISED, 
-   -1, Tk_Offset(Legend, raised), 0, NULL, 0},
+   "no", -1, Tk_Offset(Legend, raised), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
-   DEF_LEGEND_RELIEF, 
-   -1, Tk_Offset(Legend, relief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(Legend, relief), 0, NULL, 0},
   {TK_OPTION_INT, "-rows", "rows", "rows", 
-   DEF_LEGEND_ROWS, 
-   -1, Tk_Offset(Legend, reqRows), 0, NULL, 0},
+   0, -1, Tk_Offset(Legend, reqRows), 0, NULL, 0},
   {TK_OPTION_BORDER, "-selectbackground", "selectBackground", 
    "SelectBackground", 
-   DEF_LEGEND_SELECTBACKGROUND, 
-   -1, Tk_Offset(Legend, selInFocusBg), 0, NULL, 0},
+   "skyblue4", -1, Tk_Offset(Legend, selInFocusBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-selectborderwidth", "selectBorderWidth", 
    "SelectBorderWidth", 
-   DEF_LEGEND_SELECTBORDERWIDTH, 
-   -1, Tk_Offset(Legend, selBW), 0, NULL, 0},
+   "1", -1, Tk_Offset(Legend, selBW), 0, NULL, 0},
   {TK_OPTION_STRING, "-selectcommand", "selectCommand", "SelectCommand",
-   DEF_LEGEND_SELECTCOMMAND,
-   -1, Tk_Offset(Legend, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(Legend, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-selectforeground", "selectForeground", "SelectForeground",
-   DEF_LEGEND_SELECTFOREGROUND, 
-   -1, Tk_Offset(Legend, selInFocusFgColor), 0, NULL, 0},
+   "white", -1, Tk_Offset(Legend, selInFocusFgColor), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-selectmode", "selectMode", "SelectMode",
-   DEF_LEGEND_SELECTMODE, 
-   -1, Tk_Offset(Legend, selectMode), 0, &selectmodeObjOption, 0},
+   "multiple", -1, Tk_Offset(Legend, selectMode), 0, &selectmodeObjOption, 0},
   {TK_OPTION_RELIEF, "-selectrelief", "selectRelief", "SelectRelief",
-   DEF_LEGEND_SELECTRELIEF, 
-   -1, Tk_Offset(Legend, selRelief), 0, NULL, 0},
-  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
-   DEF_LEGEND_TAKEFOCUS, 
-   -1, Tk_Offset(Legend, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
+   "flat", -1, Tk_Offset(Legend, selRelief), 0, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
-   DEF_LEGEND_TITLE, 
-   -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-titleanchor", "titleAnchor", "TitleAnchor", 
-   DEF_LEGEND_TITLEANCHOR, 
-   -1, Tk_Offset(Legend, titleStyle.anchor), 0, NULL, 0},
+   "nw", -1, Tk_Offset(Legend, titleStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-titlecolor", "titleColor", "TitleColor",
-   DEF_LEGEND_TITLECOLOR, 
-   -1, Tk_Offset(Legend, titleStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Legend, titleStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
-   DEF_LEGEND_TITLEFONT, 
-   -1, Tk_Offset(Legend, titleStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(Legend, titleStyle.font), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static Tcl_IdleProc DisplayLegend;
-static Blt_BindPickProc PickEntryProc;
-static Tk_EventProc LegendEventProc;
-static Tcl_TimerProc BlinkCursorProc;
-static Tk_LostSelProc LostSelectionProc;
-static Tk_SelectionProc SelectionProc;
-
-extern Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+// Create
 
 int Blt_CreateLegend(Graph* graphPtr)
 {
@@ -513,27 +443,120 @@ int Blt_CreateLegend(Graph* graphPtr)
     return TCL_OK;
 }
 
+void Blt_DeleteLegend(Graph* graphPtr)
+{
+  Legend *legendPtr = graphPtr->legend;
+  if (legendPtr != NULL)
+    Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
+			 graphPtr->tkwin);
+}
+
+void Blt_DestroyLegend(Graph *graphPtr)
+{
+  Legend* legendPtr = graphPtr->legend;
+  if (legendPtr == NULL)
+    return;
+  Tk_DeleteOptionTable(legendPtr->optionTable);
+
+  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->style);
+  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->titleStyle);
+  Blt_DestroyBindingTable(legendPtr->bindTable);
+    
+  if (legendPtr->focusGC != NULL) {
+    Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
+  }
+  if (legendPtr->timerToken != NULL) {
+    Tcl_DeleteTimerHandler(legendPtr->timerToken);
+  }
+  if (legendPtr->tkwin != NULL) {
+    Tk_DeleteSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING);
+  }
+  if (legendPtr->site == LEGEND_WINDOW) {
+    Tk_Window tkwin;
+	
+    /* The graph may be in the process of being torn down */
+    if (legendPtr->cmdToken != NULL) {
+      Tcl_DeleteCommandFromToken(graphPtr->interp, legendPtr->cmdToken);
+    }
+    if (legendPtr->flags & REDRAW_PENDING) {
+      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
+      legendPtr->flags &= ~REDRAW_PENDING;
+    }
+    tkwin = legendPtr->tkwin;
+    legendPtr->tkwin = NULL;
+    if (tkwin != NULL) {
+      Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
+			    LegendEventProc, graphPtr);
+      Tk_DestroyWindow(tkwin);
+    }
+  }
+  free(legendPtr);
+}
+
+static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
+{
+  Graph *graphPtr = clientData;
+  Legend *legendPtr;
+
+  legendPtr = graphPtr->legend;
+  if (eventPtr->type == Expose) {
+    if (eventPtr->xexpose.count == 0) {
+      Blt_Legend_EventuallyRedraw(graphPtr);
+    }
+  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+    if (eventPtr->xfocus.detail == NotifyInferior) {
+      return;
+    }
+    if (eventPtr->type == FocusIn) {
+      legendPtr->flags |= FOCUS;
+    } else {
+      legendPtr->flags &= ~FOCUS;
+    }
+    Tcl_DeleteTimerHandler(legendPtr->timerToken);
+    if ((legendPtr->active) && (legendPtr->flags & FOCUS)) {
+      legendPtr->cursorOn = TRUE;
+      if (legendPtr->offTime != 0) {
+	legendPtr->timerToken = Tcl_CreateTimerHandler(legendPtr->onTime,
+						       BlinkCursorProc,
+						       graphPtr);
+      }
+    } else {
+      legendPtr->cursorOn = FALSE;
+      legendPtr->timerToken = (Tcl_TimerToken)NULL;
+    }
+    Blt_Legend_EventuallyRedraw(graphPtr);
+  } else if (eventPtr->type == DestroyNotify) {
+    Graph *graphPtr = legendPtr->graphPtr;
+
+    if (legendPtr->site == LEGEND_WINDOW) {
+      if (legendPtr->cmdToken != NULL) {
+	Tcl_DeleteCommandFromToken(graphPtr->interp, 
+				   legendPtr->cmdToken);
+	legendPtr->cmdToken = NULL;
+      }
+      legendPtr->tkwin = graphPtr->tkwin;
+    }
+    if (legendPtr->flags & REDRAW_PENDING) {
+      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
+      legendPtr->flags &= ~REDRAW_PENDING;
+    }
+    legendPtr->site = LEGEND_RIGHT;
+    legendPtr->hide = 1;
+    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    Blt_MoveBindingTable(legendPtr->bindTable, graphPtr->tkwin);
+    Blt_EventuallyRedrawGraph(graphPtr);
+  } else if (eventPtr->type == ConfigureNotify) {
+    Blt_Legend_EventuallyRedraw(graphPtr);
+  }
+}
+
+// Configure
+
 int Blt_ConfigureObjLegend(Graph* graphPtr, int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
   return Tk_InitOptions(graphPtr->interp, (char*)legendPtr, 
 			legendPtr->optionTable, graphPtr->tkwin);
-}
-
-static Blt_OpSpec legendOps[];
-static int nLegendOps;
-typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
-			      int objc, Tcl_Obj* const objv[]);
-
-int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-    GraphLegendProc *proc = Blt_GetOpFromObj(interp, nLegendOps, legendOps, 
-					     BLT_OP_ARG2, objc, objv,0);
-    if (proc == NULL)
-	return TCL_ERROR;
-
-    return (*proc) (graphPtr, interp, objc, objv);
 }
 
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
@@ -636,138 +659,21 @@ static void ConfigureLegend(Graph *graphPtr)
   legendPtr->focusGC = newGC;
 }
 
-static void DisplayLegend(ClientData clientData)
+// Ops
+
+static Blt_OpSpec legendOps[];
+static int nLegendOps;
+
+int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
+		 int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = clientData;
-  Graph *graphPtr;
+    GraphLegendProc *proc = Blt_GetOpFromObj(interp, nLegendOps, legendOps, 
+					     BLT_OP_ARG2, objc, objv,0);
+    if (proc == NULL)
+	return TCL_ERROR;
 
-  legendPtr->flags &= ~REDRAW_PENDING;
-  if (legendPtr->tkwin == NULL) {
-    return;				/* Window has been destroyed. */
-  }
-  graphPtr = legendPtr->graphPtr;
-  if (legendPtr->site == LEGEND_WINDOW) {
-    int w, h;
-
-    w = Tk_Width(legendPtr->tkwin);
-    h = Tk_Height(legendPtr->tkwin);
-    if ((w != legendPtr->width) || (h != legendPtr->height)) {
-      Blt_MapLegend(graphPtr, w, h);
-    }
-  }
-  if (Tk_IsMapped(legendPtr->tkwin)) {
-    Blt_DrawLegend(graphPtr, Tk_WindowId(legendPtr->tkwin));
-  }
+    return (*proc) (graphPtr, interp, objc, objv);
 }
-
-static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
-{
-  Graph *graphPtr = clientData;
-  Legend *legendPtr;
-
-  legendPtr = graphPtr->legend;
-  if (eventPtr->type == Expose) {
-    if (eventPtr->xexpose.count == 0) {
-      Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
-    if (eventPtr->xfocus.detail == NotifyInferior) {
-      return;
-    }
-    if (eventPtr->type == FocusIn) {
-      legendPtr->flags |= FOCUS;
-    } else {
-      legendPtr->flags &= ~FOCUS;
-    }
-    Tcl_DeleteTimerHandler(legendPtr->timerToken);
-    if ((legendPtr->active) && (legendPtr->flags & FOCUS)) {
-      legendPtr->cursorOn = TRUE;
-      if (legendPtr->offTime != 0) {
-	legendPtr->timerToken = Tcl_CreateTimerHandler(legendPtr->onTime,
-						       BlinkCursorProc,
-						       graphPtr);
-      }
-    } else {
-      legendPtr->cursorOn = FALSE;
-      legendPtr->timerToken = (Tcl_TimerToken)NULL;
-    }
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  } else if (eventPtr->type == DestroyNotify) {
-    Graph *graphPtr = legendPtr->graphPtr;
-
-    if (legendPtr->site == LEGEND_WINDOW) {
-      if (legendPtr->cmdToken != NULL) {
-	Tcl_DeleteCommandFromToken(graphPtr->interp, 
-				   legendPtr->cmdToken);
-	legendPtr->cmdToken = NULL;
-      }
-      legendPtr->tkwin = graphPtr->tkwin;
-    }
-    if (legendPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
-      legendPtr->flags &= ~REDRAW_PENDING;
-    }
-    legendPtr->site = LEGEND_RIGHT;
-    legendPtr->hide = 1;
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_MoveBindingTable(legendPtr->bindTable, graphPtr->tkwin);
-    Blt_EventuallyRedrawGraph(graphPtr);
-  } else if (eventPtr->type == ConfigureNotify) {
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  }
-}
-
-void Blt_DeleteLegend(Graph* graphPtr)
-{
-  Legend *legendPtr = graphPtr->legend;
-  if (legendPtr != NULL)
-    Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
-			 graphPtr->tkwin);
-}
-
-void Blt_DestroyLegend(Graph *graphPtr)
-{
-  Legend* legendPtr = graphPtr->legend;
-  if (legendPtr == NULL)
-    return;
-  Tk_DeleteOptionTable(legendPtr->optionTable);
-
-  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->style);
-  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->titleStyle);
-  Blt_DestroyBindingTable(legendPtr->bindTable);
-    
-  if (legendPtr->focusGC != NULL) {
-    Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
-  }
-  if (legendPtr->timerToken != NULL) {
-    Tcl_DeleteTimerHandler(legendPtr->timerToken);
-  }
-  if (legendPtr->tkwin != NULL) {
-    Tk_DeleteSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING);
-  }
-  if (legendPtr->site == LEGEND_WINDOW) {
-    Tk_Window tkwin;
-	
-    /* The graph may be in the process of being torn down */
-    if (legendPtr->cmdToken != NULL) {
-      Tcl_DeleteCommandFromToken(graphPtr->interp, legendPtr->cmdToken);
-    }
-    if (legendPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
-      legendPtr->flags &= ~REDRAW_PENDING;
-    }
-    tkwin = legendPtr->tkwin;
-    legendPtr->tkwin = NULL;
-    if (tkwin != NULL) {
-      Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
-			    LegendEventProc, graphPtr);
-      Tk_DestroyWindow(tkwin);
-    }
-  }
-  free(legendPtr);
-}
-
-// Widget commands
 
 static int ActivateOp(Graph *graphPtr, Tcl_Interp *interp, 
 		      int objc, Tcl_Obj *const *objv)
@@ -1166,6 +1072,30 @@ static Blt_OpSpec selectionOps[] =
 static int nSelectionOps = sizeof(selectionOps) / sizeof(Blt_OpSpec);
 
 // Support
+
+static void DisplayLegend(ClientData clientData)
+{
+  Legend *legendPtr = clientData;
+  Graph *graphPtr;
+
+  legendPtr->flags &= ~REDRAW_PENDING;
+  if (legendPtr->tkwin == NULL) {
+    return;				/* Window has been destroyed. */
+  }
+  graphPtr = legendPtr->graphPtr;
+  if (legendPtr->site == LEGEND_WINDOW) {
+    int w, h;
+
+    w = Tk_Width(legendPtr->tkwin);
+    h = Tk_Height(legendPtr->tkwin);
+    if ((w != legendPtr->width) || (h != legendPtr->height)) {
+      Blt_MapLegend(graphPtr, w, h);
+    }
+  }
+  if (Tk_IsMapped(legendPtr->tkwin)) {
+    Blt_DrawLegend(graphPtr, Tk_WindowId(legendPtr->tkwin));
+  }
+}
 
 void Blt_Legend_EventuallyRedraw(Graph *graphPtr) 
 {

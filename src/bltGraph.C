@@ -107,6 +107,28 @@ static const char* objectClassNames[] = {
 #define DEF_GRAPH_TITLE_COLOR		STD_NORMAL_FOREGROUND
 #define DEF_GRAPH_WIDTH			"5i"
 
+static Tcl_IdleProc DisplayGraph;
+static Tcl_FreeProc DestroyGraph;
+static Tk_EventProc GraphEventProc;
+Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+
+static Tcl_ObjCmdProc BarchartObjCmd;
+static Tcl_ObjCmdProc GraphObjCmd;
+static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
+
+static Blt_BindPickProc PickEntry;
+
+static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
+		    int objc, Tcl_Obj* const objv[], ClassId classId);
+static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+			     int objc, Tcl_Obj* const objv[]);
+static void AdjustAxisPointers(Graph* graphPtr);
+static void ConfigureGraph(Graph* graphPtr);
+static void DrawPlot(Graph* graphPtr, Drawable drawable);
+static void UpdateMarginTraces(Graph* graphPtr);
+
+// OptionSpecs
+
 static char* barmodeObjOption[] = 
   {"normal", "stacked", "aligned", "overlap", NULL};
 
@@ -236,9 +258,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
    DEF_GRAPH_STACK_AXES, 
    -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
-  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
-   DEF_GRAPH_TAKE_FOCUS, 
-   -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    DEF_GRAPH_TITLE, 
    -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 
@@ -267,27 +286,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static Tcl_IdleProc DisplayGraph;
-static Tcl_FreeProc DestroyGraph;
-static Tk_EventProc GraphEventProc;
-Tcl_ObjCmdProc Blt_GraphInstCmdProc;
-
-static Tcl_ObjCmdProc BarchartObjCmd;
-static Tcl_ObjCmdProc GraphObjCmd;
-static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
-
-static Blt_BindPickProc PickEntry;
-
-static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
-		    int objc, Tcl_Obj* const objv[], ClassId classId);
-static int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			     int objc, Tcl_Obj* const objv[]);
-static void AdjustAxisPointers(Graph* graphPtr);
-static void ConfigureGraph(Graph* graphPtr);
-static void DrawPlot(Graph* graphPtr, Drawable drawable);
-static void UpdateMarginTraces(Graph* graphPtr);
-
-// Graph Widget
+// Create
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
@@ -446,6 +445,87 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   return result;
 }
 
+// called by Tcl_DeleteCommandx
+static void GraphInstCmdDeleteProc(ClientData clientData)
+{
+  Graph* graphPtr = clientData;
+
+  // NULL indicates window has already been destroyed.
+  if (graphPtr->tkwin != NULL) {
+    Tk_Window tkwin = graphPtr->tkwin;
+    graphPtr->tkwin = NULL;
+    Tk_DestroyWindow(tkwin);
+  }
+}
+
+// called by Tcl_EventuallyFree and others
+static void DestroyGraph(char* dataPtr)
+{
+  Graph* graphPtr = (Graph*)dataPtr;
+  Tk_DeleteOptionTable(graphPtr->optionTable);
+
+  Blt_DestroyCrosshairs(graphPtr);
+  Blt_DestroyMarkers(graphPtr);
+  Blt_DestroyElements(graphPtr);  // must come before legend and others
+  Blt_DestroyLegend(graphPtr);
+  Blt_DestroyAxes(graphPtr);
+  Blt_DestroyPens(graphPtr);
+  Blt_DestroyPageSetup(graphPtr);
+  Blt_DestroyBarSets(graphPtr);
+  if (graphPtr->bindTable != NULL)
+    Blt_DestroyBindingTable(graphPtr->bindTable);
+
+  if (graphPtr->drawGC != NULL)
+    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
+
+  Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);
+  if (graphPtr->cache != None)
+    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
+
+  free(graphPtr);
+}
+
+static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
+{
+  Graph* graphPtr = clientData;
+
+  if (eventPtr->type == Expose) {
+    if (eventPtr->xexpose.count == 0) {
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
+    }
+  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+    if (eventPtr->xfocus.detail != NotifyInferior) {
+      if (eventPtr->type == FocusIn) {
+	graphPtr->flags |= FOCUS;
+      } else {
+	graphPtr->flags &= ~FOCUS;
+      }
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
+    }
+  } else if (eventPtr->type == DestroyNotify) {
+    if (graphPtr->tkwin != NULL) {
+      Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
+			   graphPtr->tkwin);
+      Blt_DeleteCrosshairs(graphPtr);
+      Blt_DeleteLegend(graphPtr);
+
+      graphPtr->tkwin = NULL;
+      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
+    }
+    if (graphPtr->flags & REDRAW_PENDING) {
+      Tcl_CancelIdleCall(DisplayGraph, graphPtr);
+    }
+    Tcl_EventuallyFree(graphPtr, DestroyGraph);
+  } else if (eventPtr->type == ConfigureNotify) {
+    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    Blt_EventuallyRedrawGraph(graphPtr);
+  }
+}
+
+// Configure
+
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
@@ -569,6 +649,8 @@ static void ConfigureGraph(Graph* graphPtr)
   }
 }
 
+// Support
+
 static void DisplayGraph(ClientData clientData)
 {
   Graph* graphPtr = clientData;
@@ -675,86 +757,7 @@ static void DisplayGraph(ClientData clientData)
   UpdateMarginTraces(graphPtr);
 }
 
-static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
-{
-  Graph* graphPtr = clientData;
-
-  if (eventPtr->type == Expose) {
-    if (eventPtr->xexpose.count == 0) {
-      graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
-    }
-  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
-    if (eventPtr->xfocus.detail != NotifyInferior) {
-      if (eventPtr->type == FocusIn) {
-	graphPtr->flags |= FOCUS;
-      } else {
-	graphPtr->flags &= ~FOCUS;
-      }
-      graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
-    }
-  } else if (eventPtr->type == DestroyNotify) {
-    if (graphPtr->tkwin != NULL) {
-      Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
-			   graphPtr->tkwin);
-      Blt_DeleteCrosshairs(graphPtr);
-      Blt_DeleteLegend(graphPtr);
-
-      graphPtr->tkwin = NULL;
-      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
-    }
-    if (graphPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayGraph, graphPtr);
-    }
-    Tcl_EventuallyFree(graphPtr, DestroyGraph);
-  } else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_EventuallyRedrawGraph(graphPtr);
-  }
-}
-
-// called by Tcl_DeleteCommandx
-static void GraphInstCmdDeleteProc(ClientData clientData)
-{
-  Graph* graphPtr = clientData;
-
-  // NULL indicates window has already been destroyed.
-  if (graphPtr->tkwin != NULL) {
-    Tk_Window tkwin = graphPtr->tkwin;
-    graphPtr->tkwin = NULL;
-    Tk_DestroyWindow(tkwin);
-  }
-}
-
-// called by Tcl_EventuallyFree and others
-static void DestroyGraph(char* dataPtr)
-{
-  Graph* graphPtr = (Graph*)dataPtr;
-  Tk_DeleteOptionTable(graphPtr->optionTable);
-
-  Blt_DestroyCrosshairs(graphPtr);
-  Blt_DestroyMarkers(graphPtr);
-  Blt_DestroyElements(graphPtr);  // must come before legend and others
-  Blt_DestroyLegend(graphPtr);
-  Blt_DestroyAxes(graphPtr);
-  Blt_DestroyPens(graphPtr);
-  Blt_DestroyPageSetup(graphPtr);
-  Blt_DestroyBarSets(graphPtr);
-  if (graphPtr->bindTable != NULL)
-    Blt_DestroyBindingTable(graphPtr->bindTable);
-
-  if (graphPtr->drawGC != NULL)
-    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
-
-  Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);
-  if (graphPtr->cache != None)
-    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-
-  free(graphPtr);
-}
-
-// Widget commands
+// Ops
 
 static int XAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
