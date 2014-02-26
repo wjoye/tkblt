@@ -110,50 +110,27 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
 		  const char* penName, ClassId classId,
 		  int objc, Tcl_Obj* const objv[])
 {
-  /*
-   * Scan the option list for a "-type" entry.  This will indicate what type
-   * of pen we are creating. Otherwise we'll default to the suggested type.
-   * Last -type option wins.
-   */
-  for (int ii = 0; ii<objc; ii += 2) {
-    char *string;
-    int length;
-
-    string = Tcl_GetStringFromObj(objv[ii],  &length);
-    if ((length > 2) && (strncmp(string, "-type", length) == 0)) {
-      char *arg;
-
-      arg = Tcl_GetString(objv[ii + 1]);
-      if (strcmp(arg, "bar") == 0)
-	classId = CID_ELEM_BAR;
-      else if (strcmp(arg, "line") == 0)
-	classId = CID_ELEM_LINE;
-      else {
-	Tcl_AppendResult(interp, "unknown pen type \"",
-			 arg, "\" specified", (char *)NULL);
-	return TCL_ERROR;
-      }
-    }
-  }
-
   Pen *penPtr;
   int isNew;
   Tcl_HashEntry *hPtr = 
     Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
   if (!isNew) {
-    penPtr = Tcl_GetHashValue(hPtr);
-    if ((penPtr->flags & DELETE_PENDING) == 0)
-      Tcl_AppendResult(interp, "pen \"", penName, "\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
-    else if (penPtr->classId != classId)
-      Tcl_AppendResult(interp, "pen \"", penName, "\" in-use: can't change pen type from \"", Blt_GraphClassName(penPtr->classId), "\" to \"", Blt_GraphClassName(classId), "\"", (char *)NULL);
-
+    Tcl_AppendResult(interp, "pen \"", penName, 
+		     "\" already exists in \"", Tk_PathName(graphPtr->tkwin),
+		     "\"", (char *)NULL);
     return TCL_ERROR;
   }
 
-  if (classId == CID_ELEM_BAR)
+  switch (classId) {
+  case CID_ELEM_BAR:
     penPtr = Blt_BarPen(graphPtr, penName);
-  else
+    break;
+  case CID_ELEM_LINE:
     penPtr = Blt_LinePen(graphPtr, penName);
+    break;
+  default:
+    return TCL_ERROR;
+  }
   if (!penPtr)
     return TCL_ERROR;
 
@@ -171,7 +148,6 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   graphPtr->flags |= CACHE_DIRTY;
   Blt_EventuallyRedrawGraph(graphPtr);
 
-  Tcl_SetObjResult(interp, objv[3]);
   return TCL_OK;
 }
 
@@ -283,8 +259,10 @@ static int PenObjConfigure(Tcl_Interp *interp, Graph* graphPtr, Pen* penPtr,
 static int CreateOp(Tcl_Interp *interp, Graph *graphPtr, 
 		    int objc, Tcl_Obj *const *objv)
 {
-  return Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]),
-		       graphPtr->classId, objc, objv);
+  if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]), graphPtr->classId, objc, objv) != TCL_OK)
+    return TCL_ERROR;
+  Tcl_SetObjResult(interp, objv[3]);
+  return TCL_OK;
 }
 
 static int DeleteOp(Tcl_Interp *interp, Graph *graphPtr, 

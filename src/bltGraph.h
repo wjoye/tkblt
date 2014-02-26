@@ -267,6 +267,7 @@ struct _Graph {
 					 * etc.*/
     
 
+  const char *takeFocus;		/* Not used in C code */
   Axis *focusPtr;			/* The axis that currently has focus. */
     
   int reqWidth, reqHeight;		/* Requested size of graph window */

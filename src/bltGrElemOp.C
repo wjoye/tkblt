@@ -332,7 +332,6 @@ static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
   graphPtr->flags |= RESET_AXES;
   Blt_EventuallyRedrawGraph(graphPtr);
 
-  Tcl_SetObjResult(interp, objv[3]);
   return TCL_OK;
 }
 
@@ -539,7 +538,10 @@ static int BindOp(Graph *graphPtr, Tcl_Interp *interp,
 static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[], ClassId classId)
 {
-  return CreateElement(graphPtr, interp, objc, objv, classId);
+  if (CreateElement(graphPtr, interp, objc, objv, classId) != TCL_OK)
+    return TCL_ERROR;
+  Tcl_SetObjResult(interp, objv[3]);
+  return TCL_OK;
 }
 
 static Blt_OptionParseProc ObjToAlong;

@@ -381,7 +381,6 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 {
   BarElement *elemPtr = calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
-  elemPtr->legendRelief = TK_RELIEF_FLAT;
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->obj.name = Blt_Strdup(name);
   elemPtr->obj.graphPtr = graphPtr;

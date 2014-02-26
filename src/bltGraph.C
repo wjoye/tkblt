@@ -177,6 +177,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL, -1, 0, 0, "-rightmargin", 0},
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
    "no", -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
+  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
+   NULL, -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    NULL, -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 
    RESET_WORLD | CACHE_DIRTY},

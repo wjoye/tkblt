@@ -141,6 +141,7 @@ struct _Legend {
   GC focusGC;				/* Graphics context for the active
 					 * label. */
 
+  const char *takeFocus;
   int focus;				/* Position of the focus entry. */
 
   int cursorX, cursorY;		/* Position of the insertion cursor in
@@ -391,6 +392,8 @@ static Tk_OptionSpec optionSpecs[] = {
    "multiple", -1, Tk_Offset(Legend, selectMode), 0, &selectmodeObjOption, 0},
   {TK_OPTION_RELIEF, "-selectrelief", "selectRelief", "SelectRelief",
    "flat", -1, Tk_Offset(Legend, selRelief), 0, NULL, 0},
+  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus", 
+   NULL, -1, Tk_Offset(Legend, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    NULL, -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-titleanchor", "titleAnchor", "TitleAnchor", 

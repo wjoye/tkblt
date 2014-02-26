@@ -617,7 +617,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
    NULL, -1, Tk_Offset(LinePen, traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
-  {TK_OPTION_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
+  {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(LinePen, errorBarColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
@@ -663,23 +663,20 @@ Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
 {
   LineElement *elemPtr = calloc(1, sizeof(LineElement));
   elemPtr->procsPtr = &lineProcs;
-  elemPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
   elemPtr->obj.name = Blt_Strdup(name);
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->flags = SCALE_SYMBOL;
   elemPtr->obj.graphPtr = graphPtr;
   /* By default an element's name and label are the same. */
   elemPtr->label = Blt_Strdup(name);
-  elemPtr->legendRelief = TK_RELIEF_FLAT;
-  elemPtr->penDir = PEN_BOTH_DIRECTIONS;
   elemPtr->stylePalette = Blt_Chain_Create();
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  elemPtr->reqSmooth = PEN_SMOOTH_LINEAR;
   InitLinePen(graphPtr, elemPtr->builtinPenPtr);
 
-  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr, 
-		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
+  elemPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable,
+		 graphPtr->tkwin);
 
   return (Element *)elemPtr;
 }
@@ -698,21 +695,27 @@ Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
 
 static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
 {
+  penPtr->configProc = ConfigurePenProc;
+  penPtr->destroyProc = DestroyPenProc;
+  penPtr->flags = NORMAL_PEN;
+
   Blt_Ts_InitStyle(penPtr->valueStyle);
   penPtr->errorBarLineWidth = 1;
   penPtr->errorBarShow = SHOW_BOTH;
-  penPtr->configProc = ConfigurePenProc;
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
-  penPtr->destroyProc = DestroyPenProc;
-  penPtr->flags = NORMAL_PEN;
   penPtr->name = "";
-  penPtr->symbol.bitmap = penPtr->symbol.mask = None;
+  penPtr->symbol.bitmap = None;
+  penPtr->symbol.mask = None;
   penPtr->symbol.outlineColor = NULL;
   penPtr->symbol.fillColor = NULL;
-  penPtr->symbol.outlineWidth = penPtr->traceWidth = 1;
+  penPtr->symbol.outlineWidth = 1;
+  penPtr->traceWidth = 1;
   penPtr->symbol.type = SYMBOL_NONE;
   penPtr->valueShow = SHOW_NONE;
+
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable,
+		 graphPtr->tkwin);
 }
 
 static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
@@ -846,9 +849,9 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
    */
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->symbol.outlineColor;
-  if (colorPtr == NULL) {
+  if (colorPtr == NULL)
     colorPtr = lpPtr->traceColor;
-  }
+
   gcValues.foreground = colorPtr->pixel;
   if (lpPtr->symbol.type == SYMBOL_BITMAP) {
     colorPtr = lpPtr->symbol.fillColor;
