@@ -301,9 +301,11 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
     goto error;
   if (Blt_CreateLegend(graphPtr) != TCL_OK)
     goto error;
-  if (Blt_CreatePen(graphPtr, "activeLine", CID_ELEM_LINE, 0, NULL) == NULL)
+  if (Blt_CreatePen(graphPtr, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
+      TCL_OK)
     goto error;
-  if (Blt_CreatePen(graphPtr, "activeBar", CID_ELEM_BAR, 0, NULL) == NULL)
+  if (Blt_CreatePen(graphPtr, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
+      TCL_OK)
     goto error;
 
   if (Blt_CreatePageSetup(graphPtr) != TCL_OK)

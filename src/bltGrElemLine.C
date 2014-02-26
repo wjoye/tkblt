@@ -832,9 +832,9 @@ static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
   return TCL_OK;
 }
 
-static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
+static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
 {
-  LinePen* lpPtr = (LinePen*)penPtr;
+  LinePen* lpPtr = (LinePen*)basePtr;
   unsigned long gcMask;
   GC newGC;
   XGCValues gcValues;

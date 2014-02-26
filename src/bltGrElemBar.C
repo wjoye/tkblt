@@ -187,6 +187,39 @@ typedef struct {
   int errorBarCapWidth;		/* Length of cap on error bars */
 } BarElement;
 
+// Defs
+
+static void InitBarPen(Graph* graphPtr, BarPen* penPtr);
+static void ResetBar(BarElement* elemPtr);
+
+static PenConfigureProc ConfigurePenProc;
+static PenDestroyProc DestroyPenProc;
+static ElementClosestProc ClosestBarProc;
+static ElementConfigProc ConfigureBarProc;
+static ElementDestroyProc DestroyBarProc;
+static ElementDrawProc DrawActiveBarProc;
+static ElementDrawProc DrawNormalBarProc;
+static ElementDrawSymbolProc DrawSymbolProc;
+static ElementExtentsProc GetBarExtentsProc;
+static ElementToPostScriptProc ActiveBarToPostScriptProc;
+static ElementToPostScriptProc NormalBarToPostScriptProc;
+static ElementSymbolToPostScriptProc SymbolToPostScriptProc;
+static ElementMapProc MapBarProc;
+
+static ElementProcs barProcs = {
+  ClosestBarProc,
+  ConfigureBarProc,
+  DestroyBarProc,
+  DrawActiveBarProc,
+  DrawNormalBarProc,
+  DrawSymbolProc,
+  GetBarExtentsProc,
+  ActiveBarToPostScriptProc,
+  NormalBarToPostScriptProc,
+  SymbolToPostScriptProc,
+  MapBarProc,
+};
+
 // OptionSpecs
 
 static Tk_ObjCustomOption styleObjOption =
@@ -301,123 +334,6 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-/*
-static Blt_ConfigSpec barElemConfigSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
-   "activeBar", Tk_Offset(BarElement, activePenPtr), 
-   BLT_CONFIG_NULL_OK, &bltBarPenOption},
-  {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   "navyblue", Tk_Offset(BarElement, builtinPen.fill),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   0, Tk_Offset(BarElement, barWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
-   (char *)NULL, 0, 0},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL,
-   (char *)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "all", 
-   Tk_Offset(BarElement, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, Tk_Offset(BarElement, builtinPen.borderWidth), 0},
-  {BLT_CONFIG_SYNONYM, "-color", "background", (char *)NULL,
-   (char *)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "defcolor", 
-   Tk_Offset(BarElement, builtinPen.errorBarColor), 0, &bltColorOption},
-  {BLT_CONFIG_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", 
-   Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1", 
-   Tk_Offset(BarElement, builtinPen.errorBarCapWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-data", "data", "Data", (char *)NULL, 0, 0, 
-   &bltValuePairsOption},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL,
-   (char *)NULL, 0, 0},
-  {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   "bblue", Tk_Offset(BarElement, builtinPen.outlineColor), 
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_STRING, "-label", "label", "Label", (char *)NULL, 
-   Tk_Offset(BarElement, label), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
-   "flat", Tk_Offset(BarElement, legendRelief),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", "no",
-   Tk_Offset(BarElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
-   &bitmaskBarElemHideOption},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(BarElement, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(BarElement, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL,
-   (char *)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-pen", "pen", "Pen", (char *)NULL, 
-   Tk_Offset(BarElement, normalPenPtr), BLT_CONFIG_NULL_OK, 
-   &bltBarPenOption},
-  {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
-   "raised", Tk_Offset(BarElement, builtinPen.relief), 0},
-  {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", Tk_Offset(BarElement, builtinPen.errorBarShow),
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   "no", Tk_Offset(BarElement, builtinPen.valueShow),
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_STRING, "-stack", "stack", "Stack", NULL, 
-   Tk_Offset(BarElement, groupName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(BarElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple",
-   "", Tk_Offset(BarElement, builtinPen.stipple),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", "", 
-   Tk_Offset(BarElement, stylePalette), 0, &bltBarStylesOption},
-  {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", 
-   Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0},
-  {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", 
-   Tk_Offset(BarElement, builtinPen.valueStyle.color), 0},
-  {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, 
-   Tk_Offset(BarElement, builtinPen.valueStyle.font), 0},
-  {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", Tk_Offset(BarElement, builtinPen.valueFormat),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   (char *)NULL, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0},
-  {BLT_CONFIG_CUSTOM, "-weights", "weights", "Weights", (char *)NULL, 
-   Tk_Offset(BarElement, w), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-x", "xdata", "Xdata", (char *)NULL, 
-   Tk_Offset(BarElement, x), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-y", "ydata", "Ydata", (char *)NULL, 
-   Tk_Offset(BarElement, y), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xdata", "xdata", "Xdata", (char *)NULL, 
-   Tk_Offset(BarElement, x), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-ydata", "ydata", "Ydata", (char *)NULL, 
-   Tk_Offset(BarElement, y), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xerror", "xError", "XError", (char *)NULL, 
-   Tk_Offset(BarElement, xError), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xhigh", "xHigh", "XHigh", (char *)NULL, 
-   Tk_Offset(BarElement, xHigh), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xlow", "xLow", "XLow", (char *)NULL, 
-   Tk_Offset(BarElement, xLow), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-yerror", "yError", "YError", (char *)NULL, 
-   Tk_Offset(BarElement, yError), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-yhigh", "yHigh", "YHigh", (char *)NULL, 
-   Tk_Offset(BarElement, yHigh), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-ylow", "yLow", "YLow", (char *)NULL, 
-   Tk_Offset(BarElement, yLow), 0, &bltValuesOption},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-*/
-
-//***
-
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, fill), 0, NULL, 0},
@@ -459,102 +375,134 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-/*
-static Blt_ConfigSpec barPenConfigSpecs[] = {
-  {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   "rred", Tk_Offset(BarPen, fill),
-   BLT_CONFIG_NULL_OK | ACTIVE_PEN},
-  {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   "navyblue", Tk_Offset(BarPen, fill),
-   BLT_CONFIG_NULL_OK | NORMAL_PEN},
-  {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL,
-   (char *)NULL, 0, ALL_PENS},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL,
-   (char *)NULL, 0, ALL_PENS},
-  {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, Tk_Offset(BarPen, borderWidth), ALL_PENS},
-  {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "defcolor", Tk_Offset(BarPen, errorBarColor), ALL_PENS, 
-   &bltColorOption},
-  {BLT_CONFIG_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
-   "1", Tk_Offset(BarPen, errorBarLineWidth),
-   ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1", Tk_Offset(BarPen, errorBarCapWidth),
-   ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL,
-   (char *)NULL, 0, ALL_PENS},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL,
-   (char *)NULL, 0, ALL_PENS},
-  {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   "pink", Tk_Offset(BarPen, outlineColor),
-   ACTIVE_PEN | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   "bblue", Tk_Offset(BarPen, outlineColor),
-   NORMAL_PEN |  BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL,
-   (char *)NULL, 0, ALL_PENS},
-  {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
-   "raised", Tk_Offset(BarPen, relief), ALL_PENS},
-  {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", Tk_Offset(BarPen, errorBarShow),
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   "no", Tk_Offset(BarPen, valueShow),
-   ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", "", 
-   Tk_Offset(BarPen, stipple), ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_STRING, "-type", (char *)NULL, (char *)NULL, "bar", 
-   Tk_Offset(BarPen, typeId), ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", Tk_Offset(BarPen, valueStyle.anchor), 
-   ALL_PENS},
-  {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", Tk_Offset(BarPen, valueStyle.color), 
-   ALL_PENS},
-  {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, Tk_Offset(BarPen, valueStyle.font), 
-   ALL_PENS},
-  {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", Tk_Offset(BarPen, valueFormat),
-   ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   (char *)NULL, Tk_Offset(BarPen, valueStyle.angle), ALL_PENS},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-*/
+// Create
 
-/* Forward declarations */
-static PenConfigureProc ConfigureBarPenProc;
-static PenDestroyProc DestroyBarPenProc;
-static ElementClosestProc ClosestBarProc;
-static ElementConfigProc ConfigureBarProc;
-static ElementDestroyProc DestroyBarProc;
-static ElementDrawProc DrawActiveBarProc;
-static ElementDrawProc DrawNormalBarProc;
-static ElementDrawSymbolProc DrawSymbolProc;
-static ElementExtentsProc GetBarExtentsProc;
-static ElementToPostScriptProc ActiveBarToPostScriptProc;
-static ElementToPostScriptProc NormalBarToPostScriptProc;
-static ElementSymbolToPostScriptProc SymbolToPostScriptProc;
-static ElementMapProc MapBarProc;
-
-static void ResetStylePalette(Blt_Chain stylePalette)
+Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 {
-  Blt_ChainLink link;
+  BarElement *elemPtr = calloc(1, sizeof(BarElement));
+  elemPtr->procsPtr = &barProcs;
+  elemPtr->legendRelief = TK_RELIEF_FLAT;
+  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
+  elemPtr->obj.name = Blt_Strdup(name);
+  elemPtr->obj.graphPtr = graphPtr;
+  /* By default, an element's name and label are the same. */
+  elemPtr->label = Blt_Strdup(name);
+  elemPtr->builtinPenPtr = &elemPtr->builtinPen;
+  InitBarPen(graphPtr, elemPtr->builtinPenPtr);
+  elemPtr->stylePalette = Blt_Chain_Create();
 
-  for (link = Blt_Chain_FirstLink(stylePalette); link != NULL; 
-       link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr;
+  elemPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, barElemOptionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable,
+		 graphPtr->tkwin);
 
-    stylePtr = Blt_Chain_GetValue(link);
-    stylePtr->xeb.length = stylePtr->yeb.length = 0;
-    stylePtr->nBars = 0;
+  return (Element *)elemPtr;
+}
+
+Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
+{
+  BarPen* penPtr = calloc(1, sizeof(BarPen));
+  InitBarPen(graphPtr, penPtr);
+  penPtr->name = Blt_Strdup(penName);
+  if (strcmp(penName, "activeBar") == 0)
+    penPtr->flags = ACTIVE_PEN;
+
+  return (Pen*)penPtr;
+}
+
+static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
+{
+  /* Generic fields common to all pen types. */
+  penPtr->configProc = ConfigurePenProc;
+  penPtr->destroyProc = DestroyPenProc;
+  penPtr->flags = NORMAL_PEN;
+  /* Initialize fields specific to bar pens. */
+  Blt_Ts_InitStyle(penPtr->valueStyle);
+  penPtr->relief = TK_RELIEF_RAISED;
+  penPtr->valueShow = SHOW_NONE;
+  penPtr->borderWidth = 2;
+  penPtr->errorBarShow = SHOW_BOTH;
+
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable,
+		 graphPtr->tkwin);
+}
+
+static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
+{
+  BarElement* elemPtr = (BarElement*)basePtr;
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(elemPtr->optionTable);
+
+  DestroyPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
+  if (elemPtr->activePenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->activePenPtr);
+  if (elemPtr->normalPenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
+
+  ResetBar(elemPtr);
+  if (elemPtr->stylePalette != NULL) {
+    Blt_FreeStylePalette(elemPtr->stylePalette);
+    Blt_Chain_Destroy(elemPtr->stylePalette);
+  }
+  if (elemPtr->activeIndices != NULL) {
+    free(elemPtr->activeIndices);
   }
 }
 
-static int ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
+static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 {
+  BarPen* penPtr = (BarPen*)basePtr;
+  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(penPtr->optionTable);
+
+  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
+  if (penPtr->outlineGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->outlineGC);
+  }
+  if (penPtr->fillGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->fillGC);
+  }
+  if (penPtr->errorBarGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
+  }
+}
+
+// Configure
+
+static int ConfigureBarProc(Graph *graphPtr, Element *basePtr)
+{
+  BarElement *elemPtr = (BarElement *)basePtr;
+  Blt_ChainLink link;
+  BarStyle *stylePtr;
+
+  if (ConfigurePenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK) {
+    return TCL_ERROR;
+  }
+  /*
+   * Point to the static normal pen if no external pens have been selected.
+   */
+  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+  if (link == NULL) {
+    link = Blt_Chain_AllocLink(sizeof(BarStyle));
+    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
+  }
+  stylePtr = Blt_Chain_GetValue(link);
+  stylePtr->penPtr = NORMALPEN(elemPtr);
+
+  /*
+  if (Blt_ConfigModified(elemPtr->configSpecs, "-barwidth", "-*data",
+			 "-map*", "-label", "-hide", "-x", "-y", (char *)NULL)) {
+    elemPtr->flags |= MAP_ITEM;
+  }
+  */
+  return TCL_OK;
+}
+
+static int ConfigurePenProc(Graph *graphPtr, Pen *basePtr)
+{
+  BarPen* penPtr = (BarPen*)basePtr;
   XGCValues gcValues;
   unsigned long gcMask;
   GC newGC;
@@ -614,87 +562,30 @@ static int ConfigureBarPen(Graph *graphPtr, BarPen *penPtr)
   return TCL_OK;
 }
 
-static void DestroyBarPen(Graph* graphPtr, BarPen* penPtr)
-{
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(penPtr->optionTable);
+// Support
 
-  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
-  if (penPtr->outlineGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->outlineGC);
+static void ResetStylePalette(Blt_Chain stylePalette)
+{
+  Blt_ChainLink link;
+
+  for (link = Blt_Chain_FirstLink(stylePalette); link != NULL; 
+       link = Blt_Chain_NextLink(link)) {
+    BarStyle *stylePtr;
+
+    stylePtr = Blt_Chain_GetValue(link);
+    stylePtr->xeb.length = stylePtr->yeb.length = 0;
+    stylePtr->nBars = 0;
   }
-  if (penPtr->fillGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->fillGC);
-  }
-  if (penPtr->errorBarGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
-  }
 }
 
-static int ConfigureBarPenProc(Graph *graphPtr, Pen *basePtr)
-{
-  return ConfigureBarPen(graphPtr, (BarPen *)basePtr);
-}
-
-static void DestroyBarPenProc(Graph *graphPtr, Pen *basePtr)
-{
-  DestroyBarPen(graphPtr, (BarPen *)basePtr);
-}
-
-static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
-{
-  /* Generic fields common to all pen types. */
-  penPtr->configProc = ConfigureBarPenProc;
-  penPtr->destroyProc = DestroyBarPenProc;
-  penPtr->flags = NORMAL_PEN;
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
-
-  /* Initialize fields specific to bar pens. */
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->relief = TK_RELIEF_RAISED;
-  penPtr->valueShow = SHOW_NONE;
-  penPtr->borderWidth = 2;
-  penPtr->errorBarShow = SHOW_BOTH;
-}
-
-Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
-{
-  BarPen *penPtr = calloc(1, sizeof(BarPen));
-  InitBarPen(graphPtr, penPtr);
-  penPtr->name = Blt_Strdup(penName);
-  if (strcmp(penName, "activeBar") == 0) {
-    penPtr->flags = ACTIVE_PEN;
-  }
-  return (Pen *)penPtr;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * CheckBarStacks --
- *
- *	Check that the data limits are not superseded by the heights of
- *	stacked bar segments.  The heights are calculated by
- *	Blt_ComputeStacks.
- *
- * Results:
- *	If the y-axis limits need to be adjusted for stacked segments,
- *	*minPtr* or *maxPtr* are updated.
- *
- * Side effects:
- *	Autoscaling of the y-axis is affected.
- *
- *---------------------------------------------------------------------------
- */
 static void CheckBarStacks(Graph *graphPtr, Axis2d *pairPtr, 
 			   double *minPtr, double *maxPtr)
 {
   BarGroup *gp, *gend;
 
-  if ((graphPtr->mode != BARS_STACKED) || (graphPtr->nBarGroups == 0)) {
+  if ((graphPtr->mode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
     return;
-  }
+
   for (gp = graphPtr->barGroups, gend = gp + graphPtr->nBarGroups; gp < gend;
        gp++) {
     if ((gp->axes.x == pairPtr->x) && (gp->axes.y == pairPtr->y)) {
@@ -713,55 +604,6 @@ static void CheckBarStacks(Graph *graphPtr, Axis2d *pairPtr,
       }
     }
   }
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * ConfigureBarProc --
- *
- *	Sets up the appropriate configuration parameters in the GC.  It is
- *	assumed the parameters have been previously set by a call to
- *	Blt_ConfigureWidget.
- *
- * Results:
- *	The return value is a standard TCL result.  If TCL_ERROR is returned,
- *	then interp->result contains an error message.
- *
- * Side effects:
- *	Configuration information such as bar foreground/background color and
- *	stipple etc. get set in a new GC.
- *
- *---------------------------------------------------------------------------
- */
-
-static int ConfigureBarProc(Graph *graphPtr, Element *basePtr)
-{
-  BarElement *elemPtr = (BarElement *)basePtr;
-  Blt_ChainLink link;
-  BarStyle *stylePtr;
-
-  if (ConfigureBarPen(graphPtr, elemPtr->builtinPenPtr)!= TCL_OK) {
-    return TCL_ERROR;
-  }
-  /*
-   * Point to the static normal pen if no external pens have been selected.
-   */
-  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-  if (link == NULL) {
-    link = Blt_Chain_AllocLink(sizeof(BarStyle));
-    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
-  }
-  stylePtr = Blt_Chain_GetValue(link);
-  stylePtr->penPtr = NORMALPEN(elemPtr);
-
-  /*
-  if (Blt_ConfigModified(elemPtr->configSpecs, "-barwidth", "-*data",
-			 "-map*", "-label", "-hide", "-x", "-y", (char *)NULL)) {
-    elemPtr->flags |= MAP_ITEM;
-  }
-  */
-  return TCL_OK;
 }
 
 static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
@@ -906,28 +748,8 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ClosestBar --
- *
- *	Find the bar segment closest to the window coordinates point
- *	specified.
- *
- *	Note:  This does not return the height of the stacked segment
- *	       (in graph coordinates) properly.
- *
- * Results:
- *	Returns 1 if the point is width any bar segment, otherwise 0.
- *
- *---------------------------------------------------------------------------
- */
-
-static void ClosestBarProc(
-			   Graph *graphPtr,			/* Not used. */
-			   Element *basePtr,			/* Bar element */
-			   ClosestSearch *searchPtr)		/* Information about closest point in
-								 * element */
+static void ClosestBarProc(Graph *graphPtr, Element *basePtr,
+			   ClosestSearch *searchPtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
   XRectangle *bp;
@@ -986,23 +808,6 @@ static void ClosestBarProc(
     searchPtr->point.y = (double)elemPtr->y.values[imin];
   }
 }
-
-/*
- *---------------------------------------------------------------------------
- *
- * MergePens --
- *
- *	Reorders the both arrays of points and errorbars to merge pens.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The old arrays are freed and new ones allocated containing
- *	the reordered points and errorbars.
- *
- *---------------------------------------------------------------------------
- */
 
 static void MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
 {
@@ -1122,22 +927,6 @@ static void MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapActiveBars --
- *
- *	Creates an array of points of the active graph coordinates.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is freed and allocated for the active point array.
- *
- *---------------------------------------------------------------------------
- */
-
 static void MapActiveBars(BarElement *elemPtr)
 {
   if (elemPtr->activeRects != NULL) {
@@ -1216,22 +1005,6 @@ static void ResetBar(BarElement *elemPtr)
     elemPtr->nBars = 0;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_MapErrorBars --
- *
- *	Creates two arrays of points and pen indices, filled with the screen
- *	coordinates of the visible
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is freed and allocated for the index array.
- *
- *---------------------------------------------------------------------------
- */
 static void MapErrorBars(Graph *graphPtr, BarElement *elemPtr, 
 			 BarStyle **dataToStyle)
 {
@@ -1369,30 +1142,6 @@ static void MapErrorBars(Graph *graphPtr, BarElement *elemPtr,
     elemPtr->yeb.map = map;
   }
 }
-
-
-/*
- *---------------------------------------------------------------------------
- *
- * MapBarProc --
- *
- *	Calculates the actual window coordinates of the bar element.  The
- *	window coordinates are saved in the bar element structure.
- *
- * Results:
- *	None.
- *
- * Notes:
- *	A bar can have multiple segments (more than one x,y pairs).  In this
- *	case, the bar can be represented as either a set of non-contiguous
- *	bars or a single multi-segmented (stacked) bar.
- *
- *	The x-axis layout for a barchart may be presented in one of two ways.
- *	If abscissas are used, the bars are placed at those coordinates.
- *	Otherwise, the range will represent the number of values.
- *
- *---------------------------------------------------------------------------
- */
 
 static void MapBarProc(Graph *graphPtr, Element *basePtr)
 {
@@ -1627,23 +1376,6 @@ static void MapBarProc(Graph *graphPtr, Element *basePtr)
   free(dataToStyle);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawSymbolProc --
- *
- * 	Draw a symbol centered at the given x,y window coordinate based upon
- * 	the element symbol type and size.
- *
- * Results:
- *	None.
- *
- * Problems:
- *	Most notable is the round-off errors generated when calculating the
- *	centered position of the symbol.  
- *---------------------------------------------------------------------------
- */
-
 static void DrawSymbolProc(Graph *graphPtr, Drawable drawable, 
 			   Element *basePtr, int x, int y, int size)
 {
@@ -1706,19 +1438,6 @@ static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
   XSetClipMask(display, gc, None);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawBarSegments --
- *
- * 	Draws each of the rectangular segments for the element.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-
 static void DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
 			    XRectangle *bars, int nBars)
 {
@@ -1779,18 +1498,6 @@ static void DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
   TkDestroyRegion(rgn);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawBarValues --
- *
- * 	Draws the numeric value of the bar.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
 static void DrawBarValues(Graph *graphPtr, Drawable drawable, 
 			  BarElement *elemPtr,
 			  BarPen *penPtr, XRectangle *bars, int nBars, 
@@ -1841,28 +1548,6 @@ static void DrawBarValues(Graph *graphPtr, Drawable drawable,
   }
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * DrawNormalBar --
- *
- *	Draws the rectangle representing the bar element.  If the relief
- *	option is set to "raised" or "sunken" and the bar borderwidth is set
- *	(borderwidth > 0), a 3D border is drawn around the bar.
- *
- *	Don't draw bars that aren't visible (i.e. within the limits of the
- *	axis).
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	X drawing commands are output.
- *
- *---------------------------------------------------------------------------
- */
-
 static void DrawNormalBarProc(Graph *graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
@@ -1899,24 +1584,6 @@ static void DrawNormalBarProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawActiveBar --
- *
- *	Draws bars representing the active segments of the bar element.  If
- *	the -relief option is set (other than "flat") and the borderwidth is
- *	greater than 0, a 3D border is drawn around the each bar segment.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	X drawing commands are output.
- *
- *---------------------------------------------------------------------------
- */
-
 static void DrawActiveBarProc(Graph *graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
@@ -1947,30 +1614,8 @@ static void DrawActiveBarProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * SymbolToPostScript --
- *
- * 	Draw a symbol centered at the given x,y window coordinate based upon
- * 	the element symbol type and size.
- *
- * Results:
- *	None.
- *
- * Problems:
- *	Most notable is the round-off errors generated when calculating the
- *	centered position of the symbol.
- *
- *---------------------------------------------------------------------------
- */
-
-static void SymbolToPostScriptProc(
-				   Graph *graphPtr,
-				   Blt_Ps ps,
-				   Element *basePtr,
-				   double x, double y,
-				   int size)
+static void SymbolToPostScriptProc(Graph *graphPtr, Blt_Ps ps, Element *basePtr,
+				   double x, double y, int size)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
   BarPen *penPtr;
@@ -2006,9 +1651,8 @@ static void SymbolToPostScriptProc(
   Blt_Ps_Format(ps, "%g %g %d Sq\n", x, y, size);
 }
 
-static void
-SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr, 
-		     XRectangle *bars, int nBars)
+static void SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr, 
+				 XRectangle *bars, int nBars)
 {
   XRectangle *rp, *rend;
 
@@ -2038,8 +1682,8 @@ SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr,
     }
     if ((penPtr->fill != NULL) && (penPtr->borderWidth > 0) && 
 	(penPtr->relief != TK_RELIEF_FLAT)) {
-      Blt_Ps_Draw3DRectangle(ps, penPtr->fill, 
-			     (double)rp->x, (double)rp->y, (int)rp->width, (int)rp->height,
+      Blt_Ps_Draw3DRectangle(ps, penPtr->fill, (double)rp->x, (double)rp->y,
+			     (int)rp->width, (int)rp->height,
 			     penPtr->borderWidth, penPtr->relief);
     }
   }
@@ -2092,24 +1736,6 @@ static void BarValuesToPostScript(Graph *graphPtr, Blt_Ps ps,
 		    anchorPos.y);
   }
 }
-
-/*
- *---------------------------------------------------------------------------
- *
- * ActiveBarToPostScript --
- *
- *	Similar to the NormalBarToPostScript procedure, generates PostScript
- *	commands to display the bars representing the active bar segments of
- *	the element.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	PostScript pen width, dashes, and color settings are changed.
- *
- *---------------------------------------------------------------------------
- */
 
 static void ActiveBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
@@ -2183,61 +1809,6 @@ static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
     }
     count += stylePtr->nBars;
   }
-}
-
-static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
-{
-  BarElement* elemPtr = (BarElement*)basePtr;
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(elemPtr->optionTable);
-
-  DestroyBarPen(graphPtr, elemPtr->builtinPenPtr);
-  if (elemPtr->activePenPtr != NULL)
-    Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  if (elemPtr->normalPenPtr != NULL)
-    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
-
-  ResetBar(elemPtr);
-  if (elemPtr->stylePalette != NULL) {
-    Blt_FreeStylePalette(elemPtr->stylePalette);
-    Blt_Chain_Destroy(elemPtr->stylePalette);
-  }
-  if (elemPtr->activeIndices != NULL) {
-    free(elemPtr->activeIndices);
-  }
-}
-
-static ElementProcs barProcs = {
-  ClosestBarProc,
-  ConfigureBarProc,
-  DestroyBarProc,
-  DrawActiveBarProc,
-  DrawNormalBarProc,
-  DrawSymbolProc,
-  GetBarExtentsProc,
-  ActiveBarToPostScriptProc,
-  NormalBarToPostScriptProc,
-  SymbolToPostScriptProc,
-  MapBarProc,
-};
-
-Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
-{
-  BarElement *elemPtr = calloc(1, sizeof(BarElement));
-  elemPtr->procsPtr = &barProcs;
-  elemPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barElemOptionSpecs);
-  elemPtr->legendRelief = TK_RELIEF_FLAT;
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-  elemPtr->obj.name = Blt_Strdup(name);
-  elemPtr->obj.graphPtr = graphPtr;
-  /* By default, an element's name and label are the same. */
-  elemPtr->label = Blt_Strdup(name);
-  elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  InitBarPen(graphPtr, elemPtr->builtinPenPtr);
-  elemPtr->stylePalette = Blt_Chain_Create();
-
-  return (Element *)elemPtr;
 }
 
 void Blt_InitBarSetTable(Graph *graphPtr)
