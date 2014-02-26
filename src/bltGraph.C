@@ -44,18 +44,6 @@
 #include "bltOp.h"
 #include "bltGrElem.h"
 
-/* 
- * Objects in the graph have their own class names.  These class names are
- * used for the resource database and bindings.  Example.
- *
- *	option add *X.title "X Axis Title" widgetDefault
- *	.g marker bind BitmapMarker <Enter> { ... }
- *
- * The option database trick is performed by creating a temporary window when
- * an object is initially configured.  The class name of the temporary window
- * will be from the list below.
- */
-
 static const char* objectClassNames[] = {
   "unknown",
   "XAxis", 
@@ -71,6 +59,8 @@ static const char* objectClassNames[] = {
   "TextMarker", 
   "WindowMarker",
 };
+
+// Defs
 
 static Tcl_IdleProc DisplayGraph;
 static Tcl_FreeProc DestroyGraph;

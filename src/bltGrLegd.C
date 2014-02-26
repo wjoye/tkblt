@@ -186,6 +186,8 @@ struct _Legend {
   TextStyle titleStyle;		/* Legend title attributes */
 };
 
+// Defs
+
 static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
 static void ConfigureLegend(Graph *graphPtr);

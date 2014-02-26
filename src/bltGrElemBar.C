@@ -187,7 +187,7 @@ typedef struct {
   int errorBarCapWidth;		/* Length of cap on error bars */
 } BarElement;
 
-//***
+// OptionSpecs
 
 static Tk_ObjCustomOption styleObjOption =
   {
@@ -207,7 +207,8 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    "activeBar", -1, Tk_Offset(BarElement, activePenPtr), 
    BLT_CONFIG_NULL_OK, &barPenObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   "navyblue", -1, Tk_Offset(BarElement, builtinPen.fill), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement, builtinPen.fill),
+   0, NULL, 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth",
    0, -1, Tk_Offset(BarElement, barWidth), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
@@ -231,12 +232,12 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   "bblue", -1, Tk_Offset(BarElement, builtinPen.outlineColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement, builtinPen.outlineColor),
+   0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(BarElement, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label",
-   NULL, -1, Tk_Offset(BarElement, label), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElement, label), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
@@ -265,7 +266,8 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", -1, Tk_Offset(BarElement, builtinPen.valueStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement,builtinPen.valueStyle.color),
+   0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
    STD_FONT_SMALL, -1, Tk_Offset(BarElement, builtinPen.valueStyle.font),
    0, NULL, 0},
@@ -273,7 +275,7 @@ static Tk_OptionSpec barElemOptionSpecs[] = {
    "%g", -1, Tk_Offset(BarElement, builtinPen.valueFormat),
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(BarElement, w), 0, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-x", "x", "X", 
@@ -418,14 +420,13 @@ static Blt_ConfigSpec barElemConfigSpecs[] = {
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   "navyblue", -1, Tk_Offset(BarPen, fill), TK_OPTION_NULL_OK, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, fill), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   NULL, -1, Tk_Offset(BarPen, errorBarColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarPen, errorBarColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
    "1", -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
@@ -433,16 +434,14 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   "bblue", -1, Tk_Offset(BarPen, outlineColor), TK_OPTION_NULL_OK, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, outlineColor), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "raised", -1, Tk_Offset(BarPen, relief), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", -1, Tk_Offset(BarPen, errorBarShow), 
-   0, &fillObjOption, 0},
+   "both", -1, Tk_Offset(BarPen, errorBarShow), 0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "none", -1, Tk_Offset(BarPen, valueShow), 
-   0, &fillObjOption, 0},
+   "none", -1, Tk_Offset(BarPen, valueShow), 0, &fillObjOption, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
    NULL, -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
@@ -450,13 +449,13 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
    STD_FONT_SMALL, -1, Tk_Offset(BarPen, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
    "%g", -1, Tk_Offset(BarPen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -2141,23 +2140,6 @@ static void ActiveBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NormalBarToPostScript --
- *
- *	Generates PostScript commands to form the bars representing the
- *	segments of the bar element.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	PostScript pen width, dashes, and color settings are changed.
- *
- *---------------------------------------------------------------------------
- */
-
 static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
 {
@@ -2225,22 +2207,6 @@ static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_BarElement --
- *
- *	Allocate memory and initialize methods for the new bar element.
- *
- * Results:
- *	The pointer to the newly allocated element structure is returned.
- *
- * Side effects:
- *	Memory is allocated for the bar element structure.
- *
- *---------------------------------------------------------------------------
- */
-
 static ElementProcs barProcs = {
   ClosestBarProc,
   ConfigureBarProc,
@@ -2273,25 +2239,6 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 
   return (Element *)elemPtr;
 }
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_InitBarSetTable --
- *
- *	Generate a table of abscissa frequencies.  Duplicate x-coordinates
- *	(depending upon the bar drawing mode) indicate that something special
- *	should be done with each bar segment mapped to the same abscissa
- *	(i.e. it should be stacked, aligned, or overlay-ed with other segments)
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Memory is allocated for the bar element structure.
- *
- *---------------------------------------------------------------------------
- */
 
 void Blt_InitBarSetTable(Graph *graphPtr)
 {
@@ -2418,29 +2365,6 @@ void Blt_InitBarSetTable(Graph *graphPtr)
   graphPtr->maxBarSetSize = max;
   graphPtr->nBarGroups = sum;
 }
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ComputeStacks --
- *
- *	Determine the height of each stack of bar segments.  A stack is created
- *	by designating two or more points with the same abscissa.  Each ordinate
- *	defines the height of a segment in the stack.  This procedure simply
- *	looks at all the data points summing the heights of each stacked
- *	segment. The sum is saved in the frequency information table.  This
- *	value will be used to calculate the y-axis limits (data limits aren't
- *	sufficient).
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The heights of each stack is computed. CheckBarGroups will use this
- *	information to adjust the y-axis limits if necessary.
- *
- *---------------------------------------------------------------------------
- */
 
 void Blt_ComputeBarStacks(Graph *graphPtr)
 {

@@ -60,6 +60,8 @@ struct _Crosshairs {
 				 * GXxor to not require redraws of graph */
 };
 
+// Defs
+
 static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[]);
 static void ConfigureCrosshairs(Graph *graphPtr);

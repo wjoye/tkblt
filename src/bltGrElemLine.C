@@ -316,11 +316,56 @@ typedef struct {
 				 * grouped by pen style. */
 } LineElement;
 
+// Defs
+
 static void DestroySymbol(Display *display, Symbol *symbolPtr);
 static void ImageChangedProc(ClientData clientData, int x, int y, int w, int h,
 			     int imageWidth, int imageHeight);
+typedef double (DistanceProc)(int x, int y, Point2d *p, Point2d *q, Point2d *t);
+static void InitLinePen(Graph* graphPtr, LinePen* penPtr);
+static void ResetLine(LineElement *elemPtr);
 
-//***
+static PenConfigureProc ConfigurePenProc;
+static PenDestroyProc DestroyPenProc;
+static ElementClosestProc ClosestLineProc;
+static ElementConfigProc ConfigureLineProc;
+static ElementDestroyProc DestroyLineProc;
+static ElementDrawProc DrawActiveLineProc;
+static ElementDrawProc DrawNormalLineProc;
+static ElementDrawSymbolProc DrawSymbolProc;
+static ElementExtentsProc GetLineExtentsProc;
+static ElementToPostScriptProc ActiveLineToPostScriptProc;
+static ElementToPostScriptProc NormalLineToPostScriptProc;
+static ElementSymbolToPostScriptProc SymbolToPostScriptProc;
+static ElementMapProc MapLineProc;
+static DistanceProc DistanceToYProc;
+static DistanceProc DistanceToXProc;
+static DistanceProc DistanceToLineProc;
+
+static ElementProcs lineProcs =
+  {
+    ClosestLineProc,			/* Finds the closest element/data
+					 * point */
+    ConfigureLineProc,			/* Configures the element. */
+    DestroyLineProc,			/* Destroys the element. */
+    DrawActiveLineProc,			/* Draws active element */
+    DrawNormalLineProc,			/* Draws normal element */
+    DrawSymbolProc,			/* Draws the element symbol. */
+    GetLineExtentsProc,			/* Find the extents of the element's
+					 * data. */
+    ActiveLineToPostScriptProc,		/* Prints active element. */
+    NormalLineToPostScriptProc,		/* Prints normal element. */
+    SymbolToPostScriptProc,		/* Prints the line's symbol. */
+    MapLineProc				/* Compute element's screen
+					 * coordinates. */
+  };
+
+INLINE static int Round(double x)
+{
+  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
+}
+
+// OptionSpecs
 
 static char* smoothObjOption[] = 
   {"linear", "step", "natural", "quadratic", "catrom", NULL};
@@ -456,16 +501,15 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    "activeLine", -1, Tk_Offset(LineElement, activePenPtr), 
    TK_OPTION_NULL_OK, &linePenObjOption, 0},
   {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
-   NULL, -1, Tk_Offset(LineElement, fillFgColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LineElement, fillFgColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BORDER, "-areabackground", "areaBackground", "AreaBackground",
-   NULL, -1, Tk_Offset(LineElement, fillBg), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LineElement, fillBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "all", -1, Tk_Offset(LineElement, obj.tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_COLOR, "-color", "color", "Color", 
-   navyblue, -1, Tk_Offset(LineElement, builtinPen.traceColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LineElement, builtinPen.traceColor),
+   0, NULL, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
    NULL, -1, Tk_Offset(LineElement, builtinPen.traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
@@ -484,8 +528,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(LineElement, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label", 
-   NULL, -1, Tk_Offset(LineElement, label), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LineElement, label), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(LineElement, legendRelief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
@@ -495,7 +538,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
    "y", -1, Tk_Offset(LineElement, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
-   0, -1, Tk_Offset(LineElement, reqMaxSymbols), 0, NULL, 0},
+   "0", -1, Tk_Offset(LineElement, reqMaxSymbols), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
    NULL, -1, Tk_Offset(LineElement, builtinPen.traceOffColor),
    TK_OPTION_NULL_OK, NULL, 0},
@@ -510,7 +553,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
    "0.1i", -1, Tk_Offset(LineElement, builtinPen.symbol.size), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-reduce", "reduce", "Reduce",
-   0, -1, Tk_Offset(LineElement, rTolerance), 0, NULL, 0},
+   "0", -1, Tk_Offset(LineElement, rTolerance), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
    "yes", -1, Tk_Offset(LineElement, scaleSymbols), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
@@ -533,7 +576,8 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LineElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", -1, Tk_Offset(LineElement, builtinPen.valueStyle.color),0, NULL, 0},
+   STD_NORMAL_FOREGROUND,-1,Tk_Offset(LineElement, builtinPen.valueStyle.color),
+   0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
    STD_FONT_SMALL, -1, Tk_Offset(LineElement, builtinPen.valueStyle.font),
    0, NULL, 0},
@@ -541,7 +585,7 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
    "%g", -1, Tk_Offset(LineElement, builtinPen.valueFormat), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(LineElement, w), 0, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-x", "x", "X", 
@@ -567,164 +611,24 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-/*
-static Blt_ConfigSpec lineElemConfigSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-activepen", "activePen", "ActivePen",
-   "activeLine", Tk_Offset(LineElement, activePenPtr),
-   BLT_CONFIG_NULL_OK, &bltLinePenOption},
-  {BLT_CONFIG_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
-   "black", Tk_Offset(LineElement, fillFgColor), 
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_BORDER, "-areabackground", "areaBackground", 
-   "AreaBackground", NULL, Tk_Offset(LineElement, fillBg),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "all", 
-   Tk_Offset(LineElement, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_COLOR, "-color", "color", "Color", navyblue, 
-   Tk_Offset(LineElement, builtinPen.traceColor), 0},
-  {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", NULL, 
-   Tk_Offset(LineElement, builtinPen.traceDashes), BLT_CONFIG_NULL_OK, 
-   &dashesOption},
-  {BLT_CONFIG_CUSTOM, "-data", "data", "Data", NULL, 0, 0, 
-   &bltValuePairsOption},
-  {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "defcolor", 
-   Tk_Offset(LineElement, builtinPen.errorBarColor), 0, &bltColorOption},
-  {BLT_CONFIG_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", 
-   Tk_Offset(LineElement, builtinPen.errorBarLineWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1", 
-   Tk_Offset(LineElement, builtinPen.errorBarCapWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-fill", "fill", "Fill", "defcolor",
-   Tk_Offset(LineElement, builtinPen.symbol.fillColor), 
-   BLT_CONFIG_NULL_OK, &bltColorOption},
-  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(LineElement, flags), BLT_CONFIG_DONT_SET_DEFAULT,
-   &bitmaskLineElemHideOption},
-  {BLT_CONFIG_STRING, "-label", "label", "Label", (char *)NULL, 
-   Tk_Offset(LineElement, label), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
-   "flat", Tk_Offset(LineElement, legendRelief),
-   BLT_CONFIG_DONT_SET_DEFAULT}, 
-  {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   "1", Tk_Offset(LineElement, builtinPen.traceWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", Tk_Offset(LineElement, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", Tk_Offset(LineElement, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
-   "0", Tk_Offset(LineElement, reqMaxSymbols),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-offdash", "offDash", "OffDash", 
-   NULL, 
-   Tk_Offset(LineElement, builtinPen.traceOffColor),
-   BLT_CONFIG_NULL_OK, &bltColorOption},
-  {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", 
-   "defcolor", 
-   Tk_Offset(LineElement, builtinPen.symbol.outlineColor), 
-   0, &bltColorOption},
-  {BLT_CONFIG_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
-   "1", 
-   Tk_Offset(LineElement, builtinPen.symbol.outlineWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-pen", "pen", "Pen", (char *)NULL, 
-   Tk_Offset(LineElement, normalPenPtr), BLT_CONFIG_NULL_OK, 
-   &bltLinePenOption},
-  {BLT_CONFIG_PIXELS, "-pixels", "pixels", "Pixels", "0.1i", 
-   Tk_Offset(LineElement, builtinPen.symbol.size), GRAPH | STRIPCHART}, 
-  {BLT_CONFIG_DOUBLE, "-reduce", "reduce", "Reduce",
-   0, Tk_Offset(LineElement, rTolerance),
-   GRAPH | STRIPCHART | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
-   "yes", Tk_Offset(LineElement, scaleSymbols),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", 
-   Tk_Offset(LineElement, builtinPen.errorBarShow), 
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   "no", Tk_Offset(LineElement, builtinPen.valueShow),
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-smooth", "smooth", "Smooth", "linear", 
-   Tk_Offset(LineElement, reqSmooth), BLT_CONFIG_DONT_SET_DEFAULT, 
-   &smoothOption},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(LineElement, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_CUSTOM, "-styles", "styles", "Styles", "", 
-   Tk_Offset(LineElement, stylePalette), 0, &bltLineStylesOption},
-  {BLT_CONFIG_CUSTOM, "-symbol", "symbol", "Symbol", "none", 
-   Tk_Offset(LineElement, builtinPen.symbol), 
-   BLT_CONFIG_DONT_SET_DEFAULT, &symbolOption},
-  {BLT_CONFIG_CUSTOM, "-trace", "trace", "Trace", "both", 
-   Tk_Offset(LineElement, penDir), 
-   BLT_CONFIG_DONT_SET_DEFAULT, &penDirOption},
-  {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", 
-   Tk_Offset(LineElement, builtinPen.valueStyle.anchor), 0},
-  {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   black, 
-   Tk_Offset(LineElement, builtinPen.valueStyle.color), 0},
-  {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, 
-   Tk_Offset(LineElement, builtinPen.valueStyle.font), 0},
-  {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", Tk_Offset(LineElement, builtinPen.valueFormat),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, 
-   Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0},
-  {BLT_CONFIG_CUSTOM, "-weights", "weights", "Weights", (char *)NULL, 
-   Tk_Offset(LineElement, w), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-x", "xData", "XData", (char *)NULL, 
-   Tk_Offset(LineElement, x), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xdata", "xData", "XData", (char *)NULL, 
-   Tk_Offset(LineElement, x), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xerror", "xError", "XError", (char *)NULL, 
-   Tk_Offset(LineElement, xError), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xhigh", "xHigh", "XHigh", (char *)NULL, 
-   Tk_Offset(LineElement, xHigh), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-xlow", "xLow", "XLow", (char *)NULL, 
-   Tk_Offset(LineElement, xLow), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-y", "yData", "YData", (char *)NULL, 
-   Tk_Offset(LineElement, y), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-ydata", "yData", "YData", (char *)NULL, 
-   Tk_Offset(LineElement, y), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-yerror", "yError", "YError", (char *)NULL, 
-   Tk_Offset(LineElement, yError), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-yhigh", "yHigh", "YHigh", (char *)NULL, 
-   Tk_Offset(LineElement, yHigh), 0, &bltValuesOption},
-  {BLT_CONFIG_CUSTOM, "-ylow", "yLow", "YLow", (char *)NULL, 
-   Tk_Offset(LineElement, yLow), 0, &bltValuesOption},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-*/
-
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
-   "bblue", -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
    NULL, -1, Tk_Offset(LinePen, traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   NULL, -1, Tk_Offset(LinePen, errorBarColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePen, errorBarColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "1", -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
-   NULL, -1, Tk_Offset(LinePen, symbol.fillColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePen, symbol.fillColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
-   NULL, -1, Tk_Offset(LinePen, traceOffColor),
-   TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePen, traceOffColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
    NULL, -1, Tk_Offset(LinePen, symbol.outlineColor), 
    TK_OPTION_NULL_OK, NULL,0},
@@ -733,169 +637,199 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
    "0.1i", -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", -1, Tk_Offset(LinePen, errorBarShow), 
-   0, &fillObjOption, 0},
+   "both", -1, Tk_Offset(LinePen, errorBarShow), 0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "none", -1, Tk_Offset(LinePen, valueShow), 
-   0, &fillObjOption, 0},
+   "none", -1, Tk_Offset(LinePen, valueShow), 0, &fillObjOption, 0},
   {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
-   "none", -1, Tk_Offset(LinePen, symbol), 
-   0, &symbolObjOption, 0},
+   "none", -1, Tk_Offset(LinePen, symbol), 0, &symbolObjOption, 0},
   {TK_OPTION_STRING, "-type", "type", "Type",
    "line", -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   "black", -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
    STD_FONT_SMALL, -1, Tk_Offset(LinePen, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", -1, Tk_Offset(LinePen, valueFormat), 
-   TK_OPTION_NULL_OK, NULL, 0},
+   "%g", -1, Tk_Offset(LinePen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-/*
-static Blt_ConfigSpec linePenConfigSpecs[] = {
-  {BLT_CONFIG_COLOR, "-color", "color", "Color", bblue, 
-   Tk_Offset(LinePen, traceColor), ACTIVE_PEN},
-  {BLT_CONFIG_COLOR, "-color", "color", "Color", navyblue, 
-   Tk_Offset(LinePen, traceColor), NORMAL_PEN},
-  {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", NULL, 
-   Tk_Offset(LinePen, traceDashes), BLT_CONFIG_NULL_OK | ALL_PENS,
-   &dashesOption},
-  {BLT_CONFIG_CUSTOM, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   "defcolor", Tk_Offset(LinePen, errorBarColor), 
-   ALL_PENS, &bltColorOption},
-  {BLT_CONFIG_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", Tk_Offset(LinePen, errorBarLineWidth),
-   ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "1", Tk_Offset(LinePen, errorBarCapWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-fill", "fill", "Fill", "defcolor", 
-   Tk_Offset(LinePen, symbol.fillColor), BLT_CONFIG_NULL_OK | ALL_PENS, 
-   &bltColorOption},
-  {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   NULL, Tk_Offset(LinePen, traceWidth), 
-   ALL_PENS| BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-offdash", "offDash", "OffDash", NULL,
-   Tk_Offset(LinePen, traceOffColor), BLT_CONFIG_NULL_OK | ALL_PENS, 
-   &bltColorOption},
-  {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", "defcolor",
-   Tk_Offset(LinePen, symbol.outlineColor), ALL_PENS, &bltColorOption},
-  {BLT_CONFIG_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
-   "1", Tk_Offset(LinePen, symbol.outlineWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT | ALL_PENS},
-  {BLT_CONFIG_PIXELS, "-pixels", "pixels", "Pixels", "0.1i", 
-   Tk_Offset(LinePen, symbol.size), ALL_PENS},
-  {BLT_CONFIG_CUSTOM, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", Tk_Offset(LinePen, errorBarShow),
-   BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-showvalues", "showValues", "ShowValues",
-   "no", Tk_Offset(LinePen, valueShow),
-   ALL_PENS | BLT_CONFIG_DONT_SET_DEFAULT, &fillOption},
-  {BLT_CONFIG_CUSTOM, "-symbol", "symbol", "Symbol", "none", 
-   Tk_Offset(LinePen, symbol), BLT_CONFIG_DONT_SET_DEFAULT | ALL_PENS, 
-   &symbolOption},
+// Create
 
-  {BLT_CONFIG_STRING, "-type", (char *)NULL, (char *)NULL, "line", 
-   Tk_Offset(Pen, typeId), ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", Tk_Offset(LinePen, valueStyle.anchor), ALL_PENS},
-  {BLT_CONFIG_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   black, Tk_Offset(LinePen, valueStyle.color), ALL_PENS},
-  {BLT_CONFIG_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, Tk_Offset(LinePen, valueStyle.font), ALL_PENS},
-  {BLT_CONFIG_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", Tk_Offset(LinePen, valueFormat),
-   ALL_PENS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   0, Tk_Offset(LinePen, valueStyle.angle), ALL_PENS},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-*/
-
-typedef double (DistanceProc)(int x, int y, Point2d *p, Point2d *q, Point2d *t);
-
-/* Forward declarations */
-static PenConfigureProc ConfigurePenProc;
-static PenDestroyProc DestroyPenProc;
-static ElementClosestProc ClosestLineProc;
-static ElementConfigProc ConfigureLineProc;
-static ElementDestroyProc DestroyLineProc;
-static ElementDrawProc DrawActiveLineProc;
-static ElementDrawProc DrawNormalLineProc;
-static ElementDrawSymbolProc DrawSymbolProc;
-static ElementExtentsProc GetLineExtentsProc;
-static ElementToPostScriptProc ActiveLineToPostScriptProc;
-static ElementToPostScriptProc NormalLineToPostScriptProc;
-static ElementSymbolToPostScriptProc SymbolToPostScriptProc;
-static ElementMapProc MapLineProc;
-static DistanceProc DistanceToYProc;
-static DistanceProc DistanceToXProc;
-static DistanceProc DistanceToLineProc;
-
-INLINE static int Round(double x)
+Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
 {
-  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
+  LineElement *elemPtr = calloc(1, sizeof(LineElement));
+  elemPtr->procsPtr = &lineProcs;
+  elemPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
+  elemPtr->obj.name = Blt_Strdup(name);
+  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
+  elemPtr->flags = SCALE_SYMBOL;
+  elemPtr->obj.graphPtr = graphPtr;
+  /* By default an element's name and label are the same. */
+  elemPtr->label = Blt_Strdup(name);
+  elemPtr->legendRelief = TK_RELIEF_FLAT;
+  elemPtr->penDir = PEN_BOTH_DIRECTIONS;
+  elemPtr->stylePalette = Blt_Chain_Create();
+  elemPtr->builtinPenPtr = &elemPtr->builtinPen;
+  elemPtr->reqSmooth = PEN_SMOOTH_LINEAR;
+  InitLinePen(graphPtr, elemPtr->builtinPenPtr);
+
+  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr, 
+		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
+
+  return (Element *)elemPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- * 	Custom configuration option (parse and print) routines
- *---------------------------------------------------------------------------
- */
-
-static void DestroySymbol(Display *display, Symbol *symbolPtr)
+Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
 {
-  if (symbolPtr->image != NULL) {
-    Tk_FreeImage(symbolPtr->image);
-    symbolPtr->image = NULL;
-  }
-  if (symbolPtr->bitmap != None) {
-    Tk_FreeBitmap(display, symbolPtr->bitmap);
-    symbolPtr->bitmap = None;
-  }
-  if (symbolPtr->mask != None) {
-    Tk_FreeBitmap(display, symbolPtr->mask);
-    symbolPtr->mask = None;
-  }
-  symbolPtr->type = SYMBOL_NONE;
+  LinePen *penPtr = calloc(1, sizeof(LinePen));
+  InitLinePen(graphPtr, penPtr);
+  penPtr->name = Blt_Strdup(penName);
+  penPtr->classId = CID_ELEM_LINE;
+  if (strcmp(penName, "activeLine") == 0)
+    penPtr->flags = ACTIVE_PEN;
+
+  return (Pen *)penPtr;
 }
 
-static void ImageChangedProc(ClientData clientData,
-			     int x, int y, int w, int h,
-			     int imageWidth, int imageHeight)
+static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
 {
-  Element *elemPtr;
-  Graph *graphPtr;
-
-  elemPtr = clientData;
-  elemPtr->flags |= MAP_ITEM;
-  graphPtr = elemPtr->obj.graphPtr;
-  graphPtr->flags |= CACHE_DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  Blt_Ts_InitStyle(penPtr->valueStyle);
+  penPtr->errorBarLineWidth = 1;
+  penPtr->errorBarShow = SHOW_BOTH;
+  penPtr->configProc = ConfigurePenProc;
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
+  penPtr->destroyProc = DestroyPenProc;
+  penPtr->flags = NORMAL_PEN;
+  penPtr->name = "";
+  penPtr->symbol.bitmap = penPtr->symbol.mask = None;
+  penPtr->symbol.outlineColor = NULL;
+  penPtr->symbol.fillColor = NULL;
+  penPtr->symbol.outlineWidth = penPtr->traceWidth = 1;
+  penPtr->symbol.type = SYMBOL_NONE;
+  penPtr->valueShow = SHOW_NONE;
 }
 
-/*
- * Reset the number of points and segments, in case there are no segments or
- * points
- */
-static void ResetStylePalette(Blt_Chain styles)
+static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
 {
+  LineElement* elemPtr = (LineElement*)basePtr;
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(elemPtr->optionTable);
+
+  DestroyPenProc(graphPtr, (Pen *)&elemPtr->builtinPen);
+  if (elemPtr->activePenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->activePenPtr);
+  if (elemPtr->normalPenPtr != NULL)
+    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
+
+  ResetLine(elemPtr);
+  if (elemPtr->stylePalette != NULL) {
+    Blt_FreeStylePalette(elemPtr->stylePalette);
+    Blt_Chain_Destroy(elemPtr->stylePalette);
+  }
+  if (elemPtr->activeIndices != NULL) {
+    free(elemPtr->activeIndices);
+  }
+  if (elemPtr->fillPts != NULL) {
+    free(elemPtr->fillPts);
+  }
+  if (elemPtr->fillGC != NULL) {
+    Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
+  }
+}
+
+static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
+{
+  LinePen* penPtr = (LinePen*)basePtr;
+  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
+  Tk_DeleteOptionTable(penPtr->optionTable);
+  
+  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
+  if (penPtr->symbol.outlineGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->symbol.outlineGC);
+  }
+  if (penPtr->symbol.fillGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->symbol.fillGC);
+  }
+  if (penPtr->errorBarGC != NULL) {
+    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
+  }
+  if (penPtr->traceGC != NULL) {
+    Blt_FreePrivateGC(graphPtr->display, penPtr->traceGC);
+  }
+  if (penPtr->symbol.bitmap != None) {
+    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.bitmap);
+    penPtr->symbol.bitmap = None;
+  }
+  if (penPtr->symbol.mask != None) {
+    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.mask);
+    penPtr->symbol.mask = None;
+  }
+}
+
+// Configure
+
+static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
+{
+  LineElement *elemPtr = (LineElement *)basePtr;
+  unsigned long gcMask;
+  XGCValues gcValues;
+  GC newGC;
   Blt_ChainLink link;
+  LineStyle *stylePtr;
 
-  for (link = Blt_Chain_FirstLink(styles); link != NULL;
-       link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr;
-
-    stylePtr = Blt_Chain_GetValue(link);
-    stylePtr->lines.length = stylePtr->symbolPts.length = 0;
-    stylePtr->xeb.length = stylePtr->yeb.length = 0;
+  if (ConfigurePenProc(graphPtr, (Pen *)&elemPtr->builtinPen) != TCL_OK) {
+    return TCL_ERROR;
   }
+  /*
+   * Point to the static normal/active pens if no external pens have been
+   * selected.
+   */
+  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+  if (link == NULL) {
+    link = Blt_Chain_AllocLink(sizeof(LineStyle));
+    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
+  } 
+  stylePtr = Blt_Chain_GetValue(link);
+  stylePtr->penPtr = NORMALPEN(elemPtr);
+
+  /*
+   * Set the outline GC for this pen: GCForeground is outline color.
+   * GCBackground is the fill color (only used for bitmap symbols).
+   */
+  gcMask = 0;
+  if (elemPtr->fillFgColor != NULL) {
+    gcMask |= GCForeground;
+    gcValues.foreground = elemPtr->fillFgColor->pixel;
+  }
+  if (elemPtr->fillBgColor != NULL) {
+    gcMask |= GCBackground;
+    gcValues.background = elemPtr->fillBgColor->pixel;
+  }
+  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (elemPtr->fillGC != NULL) {
+    Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
+  }
+  elemPtr->fillGC = newGC;
+
+  // waj
+  /*
+    if (Blt_ConfigModified(elemPtr->configSpecs, "-scalesymbols", 
+    (char *)NULL)) {
+    elemPtr->flags |= (MAP_ITEM | SCALE_SYMBOL);
+    }
+    if (Blt_ConfigModified(elemPtr->configSpecs, "-pixels", "-trace", 
+    "-*data", "-smooth", "-map*", "-label", "-hide", "-x", "-y", 
+    "-areabackground", (char *)NULL)) {
+    elemPtr->flags |= MAP_ITEM;
+    }
+  */
+  return TCL_OK;
 }
 
 static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
@@ -1015,64 +949,55 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* penPtr)
   return TCL_OK;
 }
 
-static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
+// Support
+
+static void DestroySymbol(Display *display, Symbol *symbolPtr)
 {
-  LinePen* penPtr = (LinePen*)basePtr;
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(penPtr->optionTable);
-  
-  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
-  if (penPtr->symbol.outlineGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->symbol.outlineGC);
+  if (symbolPtr->image != NULL) {
+    Tk_FreeImage(symbolPtr->image);
+    symbolPtr->image = NULL;
   }
-  if (penPtr->symbol.fillGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->symbol.fillGC);
+  if (symbolPtr->bitmap != None) {
+    Tk_FreeBitmap(display, symbolPtr->bitmap);
+    symbolPtr->bitmap = None;
   }
-  if (penPtr->errorBarGC != NULL) {
-    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
+  if (symbolPtr->mask != None) {
+    Tk_FreeBitmap(display, symbolPtr->mask);
+    symbolPtr->mask = None;
   }
-  if (penPtr->traceGC != NULL) {
-    Blt_FreePrivateGC(graphPtr->display, penPtr->traceGC);
-  }
-  if (penPtr->symbol.bitmap != None) {
-    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.bitmap);
-    penPtr->symbol.bitmap = None;
-  }
-  if (penPtr->symbol.mask != None) {
-    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.mask);
-    penPtr->symbol.mask = None;
-  }
+  symbolPtr->type = SYMBOL_NONE;
 }
 
-static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
+static void ImageChangedProc(ClientData clientData,
+			     int x, int y, int w, int h,
+			     int imageWidth, int imageHeight)
 {
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->errorBarLineWidth = 1;
-  penPtr->errorBarShow = SHOW_BOTH;
-  penPtr->configProc = ConfigurePenProc;
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
-  penPtr->destroyProc = DestroyPenProc;
-  penPtr->flags = NORMAL_PEN;
-  penPtr->name = "";
-  penPtr->symbol.bitmap = penPtr->symbol.mask = None;
-  penPtr->symbol.outlineColor = NULL;
-  penPtr->symbol.fillColor = NULL;
-  penPtr->symbol.outlineWidth = penPtr->traceWidth = 1;
-  penPtr->symbol.type = SYMBOL_NONE;
-  penPtr->valueShow = SHOW_NONE;
+  Element *elemPtr;
+  Graph *graphPtr;
+
+  elemPtr = clientData;
+  elemPtr->flags |= MAP_ITEM;
+  graphPtr = elemPtr->obj.graphPtr;
+  graphPtr->flags |= CACHE_DIRTY;
+  Blt_EventuallyRedrawGraph(graphPtr);
 }
 
-Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
+/*
+ * Reset the number of points and segments, in case there are no segments or
+ * points
+ */
+static void ResetStylePalette(Blt_Chain styles)
 {
-  LinePen *penPtr = calloc(1, sizeof(LinePen));
-  InitLinePen(graphPtr, penPtr);
-  penPtr->name = Blt_Strdup(penName);
-  penPtr->classId = CID_ELEM_LINE;
-  if (strcmp(penName, "activeLine") == 0)
-    penPtr->flags = ACTIVE_PEN;
+  Blt_ChainLink link;
 
-  return (Pen *)penPtr;
+  for (link = Blt_Chain_FirstLink(styles); link != NULL;
+       link = Blt_Chain_NextLink(link)) {
+    LineStyle *stylePtr;
+
+    stylePtr = Blt_Chain_GetValue(link);
+    stylePtr->lines.length = stylePtr->symbolPts.length = 0;
+    stylePtr->xeb.length = stylePtr->yeb.length = 0;
+  }
 }
 
 static int ScaleSymbol(LineElement *elemPtr, int normalSize)
@@ -2501,64 +2426,6 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
   }
 }
 
-static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
-{
-  LineElement *elemPtr = (LineElement *)basePtr;
-  unsigned long gcMask;
-  XGCValues gcValues;
-  GC newGC;
-  Blt_ChainLink link;
-  LineStyle *stylePtr;
-
-  if (ConfigurePenProc(graphPtr, (Pen *)&elemPtr->builtinPen) != TCL_OK) {
-    return TCL_ERROR;
-  }
-  /*
-   * Point to the static normal/active pens if no external pens have been
-   * selected.
-   */
-  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-  if (link == NULL) {
-    link = Blt_Chain_AllocLink(sizeof(LineStyle));
-    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
-  } 
-  stylePtr = Blt_Chain_GetValue(link);
-  stylePtr->penPtr = NORMALPEN(elemPtr);
-
-  /*
-   * Set the outline GC for this pen: GCForeground is outline color.
-   * GCBackground is the fill color (only used for bitmap symbols).
-   */
-  gcMask = 0;
-  if (elemPtr->fillFgColor != NULL) {
-    gcMask |= GCForeground;
-    gcValues.foreground = elemPtr->fillFgColor->pixel;
-  }
-  if (elemPtr->fillBgColor != NULL) {
-    gcMask |= GCBackground;
-    gcValues.background = elemPtr->fillBgColor->pixel;
-  }
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (elemPtr->fillGC != NULL) {
-    Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
-  }
-  elemPtr->fillGC = newGC;
-
-  // waj
-  /*
-    if (Blt_ConfigModified(elemPtr->configSpecs, "-scalesymbols", 
-    (char *)NULL)) {
-    elemPtr->flags |= (MAP_ITEM | SCALE_SYMBOL);
-    }
-    if (Blt_ConfigModified(elemPtr->configSpecs, "-pixels", "-trace", 
-    "-*data", "-smooth", "-map*", "-label", "-hide", "-x", "-y", 
-    "-areabackground", (char *)NULL)) {
-    elemPtr->flags |= MAP_ITEM;
-    }
-  */
-  return TCL_OK;
-}
-
 static void ClosestLineProc(Graph *graphPtr, Element *basePtr, 
 			    ClosestSearch *searchPtr)
 {
@@ -3902,73 +3769,3 @@ static void NormalLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
-{
-  LineElement* elemPtr = (LineElement*)basePtr;
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(elemPtr->optionTable);
-
-  DestroyPenProc(graphPtr, (Pen *)&elemPtr->builtinPen);
-  if (elemPtr->activePenPtr != NULL)
-    Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  if (elemPtr->normalPenPtr != NULL)
-    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
-
-  ResetLine(elemPtr);
-  if (elemPtr->stylePalette != NULL) {
-    Blt_FreeStylePalette(elemPtr->stylePalette);
-    Blt_Chain_Destroy(elemPtr->stylePalette);
-  }
-  if (elemPtr->activeIndices != NULL) {
-    free(elemPtr->activeIndices);
-  }
-  if (elemPtr->fillPts != NULL) {
-    free(elemPtr->fillPts);
-  }
-  if (elemPtr->fillGC != NULL) {
-    Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
-  }
-}
-
-static ElementProcs lineProcs =
-  {
-    ClosestLineProc,			/* Finds the closest element/data
-					 * point */
-    ConfigureLineProc,			/* Configures the element. */
-    DestroyLineProc,			/* Destroys the element. */
-    DrawActiveLineProc,			/* Draws active element */
-    DrawNormalLineProc,			/* Draws normal element */
-    DrawSymbolProc,			/* Draws the element symbol. */
-    GetLineExtentsProc,			/* Find the extents of the element's
-					 * data. */
-    ActiveLineToPostScriptProc,		/* Prints active element. */
-    NormalLineToPostScriptProc,		/* Prints normal element. */
-    SymbolToPostScriptProc,		/* Prints the line's symbol. */
-    MapLineProc				/* Compute element's screen
-					 * coordinates. */
-  };
-
-Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
-{
-  LineElement *elemPtr = calloc(1, sizeof(LineElement));
-  elemPtr->procsPtr = &lineProcs;
-  elemPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
-  elemPtr->obj.name = Blt_Strdup(name);
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-  elemPtr->flags = SCALE_SYMBOL;
-  elemPtr->obj.graphPtr = graphPtr;
-  /* By default an element's name and label are the same. */
-  elemPtr->label = Blt_Strdup(name);
-  elemPtr->legendRelief = TK_RELIEF_FLAT;
-  elemPtr->penDir = PEN_BOTH_DIRECTIONS;
-  elemPtr->stylePalette = Blt_Chain_Create();
-  elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  elemPtr->reqSmooth = PEN_SMOOTH_LINEAR;
-  InitLinePen(graphPtr, elemPtr->builtinPenPtr);
-
-  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr, 
-		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
-
-  return (Element *)elemPtr;
-}
