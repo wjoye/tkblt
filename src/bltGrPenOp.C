@@ -82,8 +82,7 @@ static int PenSetProc(ClientData clientData, Tcl_Interp *interp,
     if (classId == CID_NONE)
       classId = graphPtr->classId;
 
-    if (Blt_GetPenFromObj(interp, graphPtr, *objPtr, classId, &penPtr) 
-	!= TCL_OK)
+    if (Blt_GetPenFromObj(interp, graphPtr, *objPtr, classId,&penPtr) != TCL_OK)
       return TCL_ERROR;
     
     Blt_FreePen(*penPtrPtr);
@@ -137,7 +136,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   penPtr->graphPtr = graphPtr;
   penPtr->classId = classId;
 
-  if (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyPen(penPtr);
     return TCL_ERROR;
   }
@@ -405,36 +404,29 @@ void Blt_FreePen(Pen *penPtr)
 int Blt_GetPenFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 		      ClassId classId, Pen **penPtrPtr)
 {
-  Tcl_HashEntry *hPtr;
-  Pen *penPtr;
-  const char *name;
-    
-  penPtr = NULL;
-  name = Tcl_GetString(objPtr);
-  hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
+  Pen *penPtr = NULL;
+  const char *name = Tcl_GetString(objPtr);
+  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
   if (hPtr != NULL) {
     penPtr = Tcl_GetHashValue(hPtr);
-    if (penPtr->flags & DELETE_PENDING) {
+    if (penPtr->flags & DELETE_PENDING)
       penPtr = NULL;
-    }
   }
-  if (penPtr == NULL) {
-    if (interp != NULL) {
-      Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
-    }
+
+  if (!penPtr) {
+    Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
+		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
     return TCL_ERROR;
   }
-  classId = CID_ELEM_LINE;
+
   if (penPtr->classId != classId) {
-    if (interp != NULL) {
-      Tcl_AppendResult(interp, "pen \"", name, 
-		       "\" is the wrong type (is \"", 
-		       Blt_GraphClassName(penPtr->classId), "\"", ", wanted \"", 
-		       Blt_GraphClassName(classId), "\")", (char *)NULL);
-    }
+    Tcl_AppendResult(interp, "pen \"", name, 
+		     "\" is the wrong type (is \"", 
+		     Blt_GraphClassName(penPtr->classId), "\"", ", wanted \"", 
+		     Blt_GraphClassName(classId), "\")", (char *)NULL);
     return TCL_ERROR;
   }
+
   penPtr->refCount++;
   *penPtrPtr = penPtr;
   return TCL_OK;

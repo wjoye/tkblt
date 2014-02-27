@@ -45,19 +45,18 @@
 #include "bltGrElem.h"
 
 static const char* objectClassNames[] = {
-  "unknown",
+  "none",
   "XAxis", 
   "YAxis",
   "BarElement", 
-  "ContourElement",
   "LineElement", 
-  "StripElement", 
   "BitmapMarker", 
   "ImageMarker", 
   "LineMarker", 
   "PolygonMarker",
   "TextMarker", 
   "WindowMarker",
+  "LegendEntry"
 };
 
 // Defs
@@ -364,7 +363,7 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   return result;
 }
 
-// called by Tcl_DeleteCommandx
+// called by Tcl_DeleteCommand
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
   Graph* graphPtr = clientData;
@@ -385,10 +384,11 @@ static void DestroyGraph(char* dataPtr)
   Blt_DestroyPens(graphPtr);
   Blt_DestroyPageSetup(graphPtr);
   Blt_DestroyBarSets(graphPtr);
-  if (graphPtr->bindTable != NULL)
+
+  if (graphPtr->bindTable)
     Blt_DestroyBindingTable(graphPtr->bindTable);
 
-  if (graphPtr->drawGC != NULL)
+  if (graphPtr->drawGC)
     Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
 
   Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);

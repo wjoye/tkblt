@@ -123,18 +123,6 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp *interp,
 			int offset, char* save, int flags)
 {
   Axis** axisPtrPtr = (Axis**)(widgRec + offset);
-
-  if (flags & BLT_CONFIG_NULL_OK) {
-    const char* string;
-
-    string  = Tcl_GetString(*objPtr);
-    if (string[0] == '\0') {
-      ReleaseAxis(*axisPtrPtr);
-      *axisPtrPtr = NULL;
-      return TCL_OK;
-    }
-  }
-
   Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
   ClassId classId = (ClassId)clientData;
   Axis* axisPtr;

@@ -238,7 +238,7 @@ extern Tk_ObjCustomOption yAxisObjOption;
 static Tk_OptionSpec barElemOptionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeBar", -1, Tk_Offset(BarElement, activePenPtr), 
-   BLT_CONFIG_NULL_OK, &barPenObjOption, 0},
+   TK_OPTION_NULL_OK, &barPenObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement, builtinPen.fill),
    0, NULL, 0},
@@ -381,8 +381,8 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 {
   BarElement *elemPtr = calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->obj.name = Blt_Strdup(name);
+  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->obj.graphPtr = graphPtr;
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
@@ -392,14 +392,14 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitBarPen(graphPtr, elemPtr->builtinPenPtr);
+  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
+		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
   elemPtr->stylePalette = Blt_Chain_Create();
 
   elemPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, barElemOptionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable,
-		 graphPtr->tkwin);
 
-  return (Element *)elemPtr;
+  return (Element*)elemPtr;
 }
 
 Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
@@ -407,7 +407,7 @@ Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
   BarPen* penPtr = calloc(1, sizeof(BarPen));
   InitBarPen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
-  if (strcmp(penName, "activeBar") == 0)
+  if (!strcmp(penName, "activeBar"))
     penPtr->flags = ACTIVE_PEN;
 
   return (Pen*)penPtr;
@@ -415,21 +415,14 @@ Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
 
 static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
 {
-  /* Generic fields common to all pen types. */
   penPtr->configProc = ConfigurePenProc;
   penPtr->destroyProc = DestroyPenProc;
   penPtr->flags = NORMAL_PEN;
-  /* Initialize fields specific to bar pens. */
+
   Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->relief = TK_RELIEF_RAISED;
-  penPtr->valueShow = SHOW_NONE;
-  penPtr->borderWidth = 2;
-  penPtr->errorBarShow = SHOW_BOTH;
 
   penPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable,
-		 graphPtr->tkwin);
 }
 
 static void DestroyBarProc(Graph* graphPtr, Element* basePtr)

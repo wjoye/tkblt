@@ -318,7 +318,7 @@ static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
   if (!elemPtr)
     return TCL_ERROR;
 
-  if (ElementObjConfigure(interp,graphPtr, elemPtr, objc-4, objv+4) != TCL_OK) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp,graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
   }
@@ -1052,10 +1052,9 @@ static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
     }
     return TCL_ERROR;
   }
-  if (Blt_GetPenFromObj(interp, graphPtr, objv[0], classId, &penPtr) 
-      != TCL_OK) {
+  if (Blt_GetPenFromObj(interp, graphPtr, objv[0], classId, &penPtr) != TCL_OK)
     return TCL_ERROR;
-  }
+
   if (objc == 3) {
     double min, max;
 

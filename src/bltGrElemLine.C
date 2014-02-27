@@ -675,16 +675,16 @@ Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
   if (name)
     strcpy((char*)elemPtr->label,(char*)name);
 
-  elemPtr->stylePalette = Blt_Chain_Create();
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitLinePen(graphPtr, elemPtr->builtinPenPtr);
+  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
+		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
+  elemPtr->stylePalette = Blt_Chain_Create();
 
   elemPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable,
-		 graphPtr->tkwin);
 
-  return (Element *)elemPtr;
+  return (Element*)elemPtr;
 }
 
 Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
@@ -693,10 +693,10 @@ Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
   InitLinePen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
   penPtr->classId = CID_ELEM_LINE;
-  if (strcmp(penName, "activeLine") == 0)
+  if (!strcmp(penName, "activeLine"))
     penPtr->flags = ACTIVE_PEN;
 
-  return (Pen *)penPtr;
+  return (Pen*)penPtr;
 }
 
 static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
@@ -706,15 +706,12 @@ static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
   penPtr->flags = NORMAL_PEN;
 
   Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->name = "";
   penPtr->symbol.bitmap = None;
   penPtr->symbol.mask = None;
   penPtr->symbol.type = SYMBOL_NONE;
 
   penPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable,
-		 graphPtr->tkwin);
 }
 
 static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
