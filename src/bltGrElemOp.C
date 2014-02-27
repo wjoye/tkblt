@@ -437,8 +437,8 @@ static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
-    graphPtr->flags |= CACHE_DIRTY;
+    elemPtr->flags |= mask;
+    graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
     if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
@@ -1495,29 +1495,3 @@ ClientData Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
   hPtr = Tcl_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 }
-
-// waj
-/*
-  if (Blt_ConfigModified(elemPtr->configSpecs, "-hide", (char *)NULL)) {
-  graphPtr->flags |= RESET_AXES;
-  elemPtr->flags |= MAP_ITEM;
-  }
-*/
-/* If data points or axes have changed, reset the axes (may
- * affect autoscaling) and recalculate the screen points of
- * the element. */
-
-/*
-  if (Blt_ConfigModified(elemPtr->configSpecs, "-*data", "-map*", "-x",
-  "-y", (char *)NULL)) {
-  graphPtr->flags |= RESET_WORLD;
-  elemPtr->flags |= MAP_ITEM;
-  }
-*/
-/* The new label may change the size of the legend */
-/*
-  if (Blt_ConfigModified(elemPtr->configSpecs, "-label", (char *)NULL)) {
-  graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-  }
-*/
-
