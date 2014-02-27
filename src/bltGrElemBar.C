@@ -384,8 +384,12 @@ Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->obj.name = Blt_Strdup(name);
   elemPtr->obj.graphPtr = graphPtr;
-  /* By default, an element's name and label are the same. */
-  elemPtr->label = Blt_Strdup(name);
+  // this is an option and will be freed via Tk_FreeConfigOptions
+  // By default an element's name and label are the same
+  elemPtr->label = ckalloc(strlen(name)+1);
+  if (name)
+    strcpy((char*)elemPtr->label,(char*)name);
+
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitBarPen(graphPtr, elemPtr->builtinPenPtr);
   elemPtr->stylePalette = Blt_Chain_Create();
@@ -431,8 +435,6 @@ static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
 static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
 {
   BarElement* elemPtr = (BarElement*)basePtr;
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(elemPtr->optionTable);
 
   DestroyPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
   if (elemPtr->activePenPtr != NULL)
@@ -448,13 +450,13 @@ static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
   if (elemPtr->activeIndices != NULL) {
     free(elemPtr->activeIndices);
   }
+
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 }
 
 static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 {
   BarPen* penPtr = (BarPen*)basePtr;
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(penPtr->optionTable);
 
   Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
   if (penPtr->outlineGC != NULL) {
@@ -466,6 +468,8 @@ static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
   if (penPtr->errorBarGC != NULL) {
     Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
   }
+
+  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
 }
 
 // Configure

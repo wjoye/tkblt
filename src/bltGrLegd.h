@@ -50,7 +50,6 @@
 extern int Blt_CreateLegend(Graph *graphPtr);
 extern int Blt_ConfigureObjLegend(Graph *graphPtr,
 				      int objc, Tcl_Obj* const objv[]);
-extern void Blt_DeleteLegend(Graph* graphPtr);
 extern void Blt_DestroyLegend(Graph *graphPtr);
 
 extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);

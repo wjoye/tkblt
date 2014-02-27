@@ -99,23 +99,17 @@ int Blt_CreateCrosshairs(Graph* graphPtr)
   return TCL_OK;
 }
 
-void Blt_DeleteCrosshairs(Graph* graphPtr)
-{
-  Crosshairs *chPtr = graphPtr->crosshairs;
-  if (chPtr != NULL)
-    Tk_FreeConfigOptions((char*)chPtr, chPtr->optionTable, graphPtr->tkwin);
-}
-
 void Blt_DestroyCrosshairs(Graph* graphPtr)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
-  if (chPtr != NULL) {
-    Tk_DeleteOptionTable(chPtr->optionTable);
-    if (chPtr->gc != NULL)
-      Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
+  if (!chPtr)
+    return;
 
-    free(chPtr);
-  }
+  if (chPtr->gc)
+    Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
+
+  Tk_FreeConfigOptions((char*)chPtr, chPtr->optionTable, graphPtr->tkwin);
+  free(chPtr);
 }
 
 // Configure

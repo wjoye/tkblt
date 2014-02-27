@@ -455,6 +455,8 @@ struct _Graph {
 #define DRAW_MARGINS		(1<<13)/* 0x2000 */
 #define	CACHE_DIRTY		(1<<14)/* 0x4000 */
 
+#define	GRAPH_DELETED		(1<<15)/* 0x4000 */
+
 #define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
 #define REDRAW_WORLD		(DRAW_LEGEND)
 #define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
@@ -467,9 +469,9 @@ extern int Blt_CreatePageSetup(Graph *graphPtr);
 extern int Blt_ConfigurePageSetup(Graph *graphPtr);
 
 extern int Blt_CreateCrosshairs(Graph *graphPtr);
-extern int Blt_ConfigureObjCrosshairs(Graph *graphPtr,
-				      int objc, Tcl_Obj* const objv[]);
-extern void Blt_DeleteCrosshairs(Graph* graphPtr);
+extern int Blt_ConfigureObjCrosshairs(Graph *graphPtr, int objc, 
+				      Tcl_Obj* const objv[]);
+extern void Blt_DestroyCrosshairs(Graph *graphPtr);
 
 extern double Blt_InvHMap(Axis *axisPtr, double x);
 
@@ -498,7 +500,6 @@ extern void Blt_ReconfigureGraph(Graph *graphPtr);
 
 extern void Blt_DestroyAxes(Graph *graphPtr);
 
-extern void Blt_DestroyCrosshairs(Graph *graphPtr);
 
 extern void Blt_DestroyElements(Graph *graphPtr);
 

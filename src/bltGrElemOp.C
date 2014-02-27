@@ -362,8 +362,9 @@ static void DestroyElement(Element *elemPtr)
   if (elemPtr->obj.name)
     free((void*)(elemPtr->obj.name));
 
-  if (elemPtr->label)
-    free((void*)(elemPtr->label));
+  // should already been freed via Tk_FreeConfigOptions
+  //  if (elemPtr->label)
+  //    free((void*)(elemPtr->label));
 
   free(elemPtr);
 }

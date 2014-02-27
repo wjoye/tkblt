@@ -80,30 +80,11 @@ typedef struct {
 } MapInfo;
 
 /* Symbol types for line elements */
-typedef enum {SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND,
-	      SYMBOL_PLUS, SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS,
-	      SYMBOL_TRIANGLE, SYMBOL_ARROW, SYMBOL_BITMAP, SYMBOL_IMAGE
+typedef enum {
+  SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
+  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
+  SYMBOL_BITMAP, SYMBOL_IMAGE
 } SymbolType;
-
-typedef struct {
-  const char *name;
-  unsigned int minChars;
-  SymbolType type;
-} GraphSymbolType;
-
-static GraphSymbolType graphSymbols[] = {
-  { "arrow",	  1, SYMBOL_ARROW,	},
-  { "circle",	  2, SYMBOL_CIRCLE,	},
-  { "cross",	  2, SYMBOL_CROSS,	}, 
-  { "diamond",  1, SYMBOL_DIAMOND,	}, 
-  { "none",	  1, SYMBOL_NONE,	}, 
-  { "plus",	  1, SYMBOL_PLUS,	}, 
-  { "scross",	  2, SYMBOL_SCROSS,	}, 
-  { "splus",	  2, SYMBOL_SPLUS,	}, 
-  { "square",	  2, SYMBOL_SQUARE,	}, 
-  { "triangle", 1, SYMBOL_TRIANGLE,	}, 
-  { NULL,       0, 0			}, 
-};
 
 typedef struct {
   SymbolType type;			/* Type of symbol to be drawn/printed */
@@ -380,6 +361,26 @@ static Tk_ObjCustomOption styleObjOption =
 
   };
 
+typedef struct {
+  const char *name;
+  unsigned int minChars;
+  SymbolType type;
+} GraphSymbolType;
+
+static GraphSymbolType graphSymbols[] = {
+  { "arrow",	  1, SYMBOL_ARROW,	},
+  { "circle",	  2, SYMBOL_CIRCLE,	},
+  { "cross",	  2, SYMBOL_CROSS,	}, 
+  { "diamond",  1, SYMBOL_DIAMOND,	}, 
+  { "none",	  1, SYMBOL_NONE,	}, 
+  { "plus",	  1, SYMBOL_PLUS,	}, 
+  { "scross",	  2, SYMBOL_SCROSS,	}, 
+  { "splus",	  2, SYMBOL_SPLUS,	}, 
+  { "square",	  2, SYMBOL_SQUARE,	}, 
+  { "triangle", 1, SYMBOL_TRIANGLE,	}, 
+  { NULL,       0, 0			}, 
+};
+
 static Tk_CustomOptionSetProc SymbolSetProc;
 static Tk_CustomOptionGetProc SymbolGetProc;
 Tk_ObjCustomOption symbolObjOption =
@@ -528,7 +529,8 @@ static Tk_OptionSpec lineElemOptionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(LineElement, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label", 
-   NULL, -1, Tk_Offset(LineElement, label), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LineElement, label), 
+   TK_OPTION_NULL_OK | TK_OPTION_DONT_SET_DEFAULT, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(LineElement, legendRelief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
@@ -667,8 +669,12 @@ Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->flags = SCALE_SYMBOL;
   elemPtr->obj.graphPtr = graphPtr;
-  /* By default an element's name and label are the same. */
-  elemPtr->label = Blt_Strdup(name);
+  // this is an option and will be freed via Tk_FreeConfigOptions
+  // By default an element's name and label are the same
+  elemPtr->label = ckalloc(strlen(name)+1);
+  if (name)
+    strcpy((char*)elemPtr->label,(char*)name);
+
   elemPtr->stylePalette = Blt_Chain_Create();
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitLinePen(graphPtr, elemPtr->builtinPenPtr);
@@ -700,17 +706,10 @@ static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
   penPtr->flags = NORMAL_PEN;
 
   Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->errorBarLineWidth = 1;
-  penPtr->errorBarShow = SHOW_BOTH;
   penPtr->name = "";
   penPtr->symbol.bitmap = None;
   penPtr->symbol.mask = None;
-  penPtr->symbol.outlineColor = NULL;
-  penPtr->symbol.fillColor = NULL;
-  penPtr->symbol.outlineWidth = 1;
-  penPtr->traceWidth = 1;
   penPtr->symbol.type = SYMBOL_NONE;
-  penPtr->valueShow = SHOW_NONE;
 
   penPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
@@ -721,50 +720,47 @@ static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
 static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
 {
   LineElement* elemPtr = (LineElement*)basePtr;
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(elemPtr->optionTable);
 
   DestroyPenProc(graphPtr, (Pen *)&elemPtr->builtinPen);
-  if (elemPtr->activePenPtr != NULL)
+  if (elemPtr->activePenPtr)
     Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  if (elemPtr->normalPenPtr != NULL)
+  if (elemPtr->normalPenPtr)
     Blt_FreePen((Pen *)elemPtr->normalPenPtr);
 
   ResetLine(elemPtr);
-  if (elemPtr->stylePalette != NULL) {
+  if (elemPtr->stylePalette) {
     Blt_FreeStylePalette(elemPtr->stylePalette);
     Blt_Chain_Destroy(elemPtr->stylePalette);
   }
-  if (elemPtr->activeIndices != NULL) {
+  if (elemPtr->activeIndices)
     free(elemPtr->activeIndices);
-  }
-  if (elemPtr->fillPts != NULL) {
+
+  if (elemPtr->fillPts)
     free(elemPtr->fillPts);
-  }
-  if (elemPtr->fillGC != NULL) {
+
+  if (elemPtr->fillGC)
     Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
-  }
+
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 }
 
 static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 {
   LinePen* penPtr = (LinePen*)basePtr;
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
-  Tk_DeleteOptionTable(penPtr->optionTable);
   
   Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
-  if (penPtr->symbol.outlineGC != NULL) {
+  if (penPtr->symbol.outlineGC)
     Tk_FreeGC(graphPtr->display, penPtr->symbol.outlineGC);
-  }
-  if (penPtr->symbol.fillGC != NULL) {
+
+  if (penPtr->symbol.fillGC)
     Tk_FreeGC(graphPtr->display, penPtr->symbol.fillGC);
-  }
-  if (penPtr->errorBarGC != NULL) {
+
+  if (penPtr->errorBarGC)
     Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
-  }
-  if (penPtr->traceGC != NULL) {
+
+  if (penPtr->traceGC)
     Blt_FreePrivateGC(graphPtr->display, penPtr->traceGC);
-  }
+
   if (penPtr->symbol.bitmap != None) {
     Tk_FreeBitmap(graphPtr->display, penPtr->symbol.bitmap);
     penPtr->symbol.bitmap = None;
@@ -773,6 +769,8 @@ static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
     Tk_FreeBitmap(graphPtr->display, penPtr->symbol.mask);
     penPtr->symbol.mask = None;
   }
+
+  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
 }
 
 // Configure

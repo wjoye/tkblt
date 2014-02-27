@@ -115,7 +115,7 @@ struct _Legend {
 					 * of legend */
   XColor *fgColor;
   Tk_3DBorder activeBg;		/* Active legend entry background
-					 * color. */
+				 * color. */
   XColor *activeFgColor;
   int activeRelief;			/* 3-D effect on active entry. */
   int entryBW;		/* Border width around each entry in
@@ -228,59 +228,59 @@ Tk_ObjCustomOption positionObjOption =
   };
 
 static int PositionSetProc(ClientData clientData, Tcl_Interp *interp,
-			     Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			     int offset, char* save, int flags)
+			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			   int offset, char* save, int flags)
 {
-    Legend* legendPtr = (Legend*)widgRec;
-    int length;
-    const char* string = Tcl_GetStringFromObj(*objPtr, &length);
-    char c;
-    c = string[0];
-    if (c == '\0') {
-	legendPtr->site = LEGEND_RIGHT;
-    } else if ((c == 'l') && (strncmp(string, "leftmargin", length) == 0)) {
-	legendPtr->site = LEGEND_LEFT;
-    } else if ((c == 'r') && (strncmp(string, "rightmargin", length) == 0)) {
-	legendPtr->site = LEGEND_RIGHT;
-    } else if ((c == 't') && (strncmp(string, "topmargin", length) == 0)) {
-	legendPtr->site = LEGEND_TOP;
-    } else if ((c == 'b') && (strncmp(string, "bottommargin", length) == 0)) {
-	legendPtr->site = LEGEND_BOTTOM;
-    } else if ((c == 'p') && (strncmp(string, "plotarea", length) == 0)) {
-	legendPtr->site = LEGEND_PLOT;
-    } else if (c == '@') {
-	char *comma;
-	long x, y;
-	int result;
+  Legend* legendPtr = (Legend*)widgRec;
+  int length;
+  const char* string = Tcl_GetStringFromObj(*objPtr, &length);
+  char c;
+  c = string[0];
+  if (c == '\0') {
+    legendPtr->site = LEGEND_RIGHT;
+  } else if ((c == 'l') && (strncmp(string, "leftmargin", length) == 0)) {
+    legendPtr->site = LEGEND_LEFT;
+  } else if ((c == 'r') && (strncmp(string, "rightmargin", length) == 0)) {
+    legendPtr->site = LEGEND_RIGHT;
+  } else if ((c == 't') && (strncmp(string, "topmargin", length) == 0)) {
+    legendPtr->site = LEGEND_TOP;
+  } else if ((c == 'b') && (strncmp(string, "bottommargin", length) == 0)) {
+    legendPtr->site = LEGEND_BOTTOM;
+  } else if ((c == 'p') && (strncmp(string, "plotarea", length) == 0)) {
+    legendPtr->site = LEGEND_PLOT;
+  } else if (c == '@') {
+    char *comma;
+    long x, y;
+    int result;
 	
-	comma = strchr(string + 1, ',');
-	if (comma == NULL) {
-	    Tcl_AppendResult(interp, "bad screen position \"", string,
-			     "\": should be @x,y", (char *)NULL);
-	    return TCL_ERROR;
-	}
-	x = y = 0;
-	*comma = '\0';
-	result = ((Tcl_ExprLong(interp, string + 1, &x) == TCL_OK) &&
-		  (Tcl_ExprLong(interp, comma + 1, &y) == TCL_OK));
-	*comma = ',';
-	if (!result) {
-	    return TCL_ERROR;
-	}
-	legendPtr->xReq = x;
-	legendPtr->yReq = y;
-	legendPtr->site = LEGEND_XY;
-    } else if (c == '.') {
-	if (CreateLegendWindow(interp, legendPtr, string) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-    } else {
-	Tcl_AppendResult(interp, "bad position \"", string, "\": should be  \
+    comma = strchr(string + 1, ',');
+    if (comma == NULL) {
+      Tcl_AppendResult(interp, "bad screen position \"", string,
+		       "\": should be @x,y", (char *)NULL);
+      return TCL_ERROR;
+    }
+    x = y = 0;
+    *comma = '\0';
+    result = ((Tcl_ExprLong(interp, string + 1, &x) == TCL_OK) &&
+	      (Tcl_ExprLong(interp, comma + 1, &y) == TCL_OK));
+    *comma = ',';
+    if (!result) {
+      return TCL_ERROR;
+    }
+    legendPtr->xReq = x;
+    legendPtr->yReq = y;
+    legendPtr->site = LEGEND_XY;
+  } else if (c == '.') {
+    if (CreateLegendWindow(interp, legendPtr, string) != TCL_OK) {
+      return TCL_ERROR;
+    }
+  } else {
+    Tcl_AppendResult(interp, "bad position \"", string, "\": should be  \
 \"leftmargin\", \"rightmargin\", \"topmargin\", \"bottommargin\", \
 \"plotarea\", windowName or @x,y", (char *)NULL);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
 static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin, 
@@ -409,91 +409,74 @@ static Tk_OptionSpec optionSpecs[] = {
 
 int Blt_CreateLegend(Graph* graphPtr)
 {
-    Legend *legendPtr = calloc(1, sizeof(Legend));
-    graphPtr->legend = legendPtr;
-    legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-    legendPtr->graphPtr = graphPtr;
-    legendPtr->tkwin = graphPtr->tkwin;
-    legendPtr->xReq = legendPtr->yReq = -SHRT_MAX;
-    legendPtr->relief = TK_RELIEF_SUNKEN;
-    legendPtr->activeRelief = TK_RELIEF_FLAT;
-    legendPtr->entryBW = 2;
-    legendPtr->borderWidth = 2;
-    legendPtr->ixPad = 1;
-    legendPtr->iyPad = 1;
-    legendPtr->xPad = 1;
-    legendPtr->yPad = 1;
-    legendPtr->anchor = TK_ANCHOR_N;
-    legendPtr->site = LEGEND_RIGHT;
-    legendPtr->selectMode = SELECT_MODE_MULTIPLE;
-    Blt_Ts_InitStyle(legendPtr->style);
-    Blt_Ts_InitStyle(legendPtr->titleStyle);
-    legendPtr->style.justify = TK_JUSTIFY_LEFT;
-    legendPtr->style.anchor = TK_ANCHOR_NW;
-    legendPtr->titleStyle.justify = TK_JUSTIFY_LEFT;
-    legendPtr->titleStyle.anchor = TK_ANCHOR_NW;
-    legendPtr->bindTable = Blt_CreateBindingTable(graphPtr->interp,
-	graphPtr->tkwin, graphPtr, PickEntryProc, Blt_GraphTags);
+  Legend *legendPtr = calloc(1, sizeof(Legend));
+  graphPtr->legend = legendPtr;
+  legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  legendPtr->graphPtr = graphPtr;
+  legendPtr->tkwin = graphPtr->tkwin;
+  legendPtr->xReq = -SHRT_MAX;
+  legendPtr->yReq = -SHRT_MAX;
+  Blt_Ts_InitStyle(legendPtr->style);
+  Blt_Ts_InitStyle(legendPtr->titleStyle);
+  legendPtr->style.justify = TK_JUSTIFY_LEFT;
+  legendPtr->style.anchor = TK_ANCHOR_NW;
+  legendPtr->titleStyle.justify = TK_JUSTIFY_LEFT;
+  legendPtr->titleStyle.anchor = TK_ANCHOR_NW;
+  legendPtr->bindTable = Blt_CreateBindingTable(graphPtr->interp,
+						graphPtr->tkwin, graphPtr, PickEntryProc, Blt_GraphTags);
 
-    Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
-    legendPtr->selected = Blt_Chain_Create();
-    Tk_CreateSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING, 
-	SelectionProc, legendPtr, XA_STRING);
-    legendPtr->selRelief = TK_RELIEF_FLAT;
-    legendPtr->selBW = 1;
-    legendPtr->onTime = 600;
-    legendPtr->offTime = 300;
+  Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
+  legendPtr->selected = Blt_Chain_Create();
+  Tk_CreateSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING, 
+		      SelectionProc, legendPtr, XA_STRING);
+  legendPtr->onTime = 600;
+  legendPtr->offTime = 300;
 
-    return TCL_OK;
-}
-
-void Blt_DeleteLegend(Graph* graphPtr)
-{
-  Legend *legendPtr = graphPtr->legend;
-  if (legendPtr != NULL)
-    Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
-			 graphPtr->tkwin);
+  return TCL_OK;
 }
 
 void Blt_DestroyLegend(Graph *graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
-  if (legendPtr == NULL)
+  if (!legendPtr)
     return;
-  Tk_DeleteOptionTable(legendPtr->optionTable);
 
   Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->style);
   Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->titleStyle);
   Blt_DestroyBindingTable(legendPtr->bindTable);
     
-  if (legendPtr->focusGC != NULL) {
+  if (legendPtr->focusGC)
     Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
-  }
-  if (legendPtr->timerToken != NULL) {
+
+  if (legendPtr->timerToken)
     Tcl_DeleteTimerHandler(legendPtr->timerToken);
-  }
-  if (legendPtr->tkwin != NULL) {
+
+  if (legendPtr->tkwin)
     Tk_DeleteSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING);
-  }
+
   if (legendPtr->site == LEGEND_WINDOW) {
     Tk_Window tkwin;
 	
     /* The graph may be in the process of being torn down */
-    if (legendPtr->cmdToken != NULL) {
+    if (legendPtr->cmdToken) {
       Tcl_DeleteCommandFromToken(graphPtr->interp, legendPtr->cmdToken);
-    }
-    if (legendPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
-      legendPtr->flags &= ~REDRAW_PENDING;
-    }
-    tkwin = legendPtr->tkwin;
-    legendPtr->tkwin = NULL;
-    if (tkwin != NULL) {
-      Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
-			    LegendEventProc, graphPtr);
-      Tk_DestroyWindow(tkwin);
+
+      if (legendPtr->flags & REDRAW_PENDING) {
+	Tcl_CancelIdleCall(DisplayLegend, legendPtr);
+	legendPtr->flags &= ~REDRAW_PENDING;
+      }
+      tkwin = legendPtr->tkwin;
+      legendPtr->tkwin = NULL;
+      if (tkwin) {
+	Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
+			      LegendEventProc, graphPtr);
+	Tk_DestroyWindow(tkwin);
+      }
     }
   }
+
+  Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
+		       graphPtr->tkwin);
   free(legendPtr);
 }
 
@@ -507,7 +490,8 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
     if (eventPtr->xexpose.count == 0) {
       Blt_Legend_EventuallyRedraw(graphPtr);
     }
-  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+  } 
+  else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
     if (eventPtr->xfocus.detail == NotifyInferior) {
       return;
     }
@@ -524,12 +508,14 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
 						       BlinkCursorProc,
 						       graphPtr);
       }
-    } else {
+    } 
+    else {
       legendPtr->cursorOn = FALSE;
       legendPtr->timerToken = (Tcl_TimerToken)NULL;
     }
     Blt_Legend_EventuallyRedraw(graphPtr);
-  } else if (eventPtr->type == DestroyNotify) {
+  } 
+  else if (eventPtr->type == DestroyNotify) {
     Graph *graphPtr = legendPtr->graphPtr;
 
     if (legendPtr->site == LEGEND_WINDOW) {
@@ -549,7 +535,8 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
     graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
     Blt_MoveBindingTable(legendPtr->bindTable, graphPtr->tkwin);
     Blt_EventuallyRedrawGraph(graphPtr);
-  } else if (eventPtr->type == ConfigureNotify) {
+  } 
+  else if (eventPtr->type == ConfigureNotify) {
     Blt_Legend_EventuallyRedraw(graphPtr);
   }
 }
@@ -602,7 +589,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
-				  int objc, Tcl_Obj* const objv[])
+			      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
   Tk_SavedOptions savedOptions;
@@ -1111,23 +1098,6 @@ void Blt_Legend_EventuallyRedraw(Graph *graphPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * SelectCmdProc --
- *
- *      Invoked at the next idle point whenever the current selection changes.
- *      Executes some application-specific code in the -selectcommand option.
- *      This provides a way for applications to handle selection changes.
- *
- * Results:
- *      None.
- *
- * Side effects:
- *      TCL code gets executed for some application-specific task.
- *
- *---------------------------------------------------------------------------
- */
 static void SelectCmdProc(ClientData clientData) 
 {
   Legend *legendPtr = clientData;
@@ -1145,23 +1115,6 @@ static void SelectCmdProc(ClientData clientData)
   Tcl_Release(legendPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * EventuallyInvokeSelectCmd --
- *
- *      Queues a request to execute the -selectcommand code associated with
- *      the widget at the next idle point.  Invoked whenever the selection
- *      changes.
- *
- * Results:
- *      None.
- *
- * Side effects:
- *      TCL code gets executed for some application-specific task.
- *
- *---------------------------------------------------------------------------
- */
 static void EventuallyInvokeSelectCmd(Legend *legendPtr)
 {
   if ((legendPtr->flags & SELECT_PENDING) == 0) {
@@ -1181,30 +1134,12 @@ static void ClearSelection(Legend *legendPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * LostSelectionProc --
- *
- *	This procedure is called back by Tk when the selection is grabbed away
- *	from a Text widget.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The existing selection is unhighlighted, and the window is marked as
- *	not containing a selection.
- *
- *---------------------------------------------------------------------------
- */
 static void LostSelectionProc(ClientData clientData)
 {
   Legend *legendPtr = clientData;
 
-  if (legendPtr->exportSelection) {
+  if (legendPtr->exportSelection)
     ClearSelection(legendPtr);
-  }
 }
 
 static int CreateLegendWindow(Tcl_Interp *interp, Legend *legendPtr, 
@@ -1480,32 +1415,6 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   return NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_MapLegend --
- *
- * 	Calculates the dimensions (width and height) needed for the legend.
- * 	Also determines the number of rows and columns necessary to list all
- * 	the valid element labels.
- *
- * Results:
- *      None.
- *
- * Side effects:
- *   	The following fields of the legend are calculated and set.
- *
- * 	nEntries   - number of valid labels of elements in the
- *		      display list.
- * 	nRows	    - number of rows of entries
- * 	nColumns    - number of columns of entries
- * 	entryHeight - height of each entry
- * 	entryWidth  - width of each entry
- * 	height	    - width of legend (includes borders and padding)
- * 	width	    - height of legend (includes borders and padding)
- *
- *---------------------------------------------------------------------------
- */
 void Blt_MapLegend(Graph *graphPtr, int plotWidth, int plotHeight)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -2033,25 +1942,6 @@ static Element *GetLastElement(Graph *graphPtr)
   return NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GetElementFromObj --
- *
- *	Parse an index into an entry and return either its value or an error.
- *
- * Results:
- *	A standard TCL result.  If all went well, then *indexPtr is filled in
- *	with the character index (into entryPtr) corresponding to string.  The
- *	index value is guaranteed to lie between 0 and the number of characters
- *	in the string, inclusive.  If an error occurs then an error message is
- *	left in the interp's result.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
 static int GetElementFromObj(Graph *graphPtr, Tcl_Obj *objPtr, 
 			     Element **elemPtrPtr)
 {
@@ -2117,19 +2007,6 @@ static int GetElementFromObj(Graph *graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * SelectRange --
- *
- *	Sets the selection flag for a range of nodes.  The range is determined
- *	by two pointers which designate the first/last nodes of the range.
- *
- * Results:
- *	Always returns TCL_OK.
- *
- *---------------------------------------------------------------------------
- */
 static int SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr)
 {
 
@@ -2203,26 +2080,6 @@ void Blt_Legend_RemoveElement(Graph *graphPtr, Element *elemPtr)
     Blt_DeleteBindings(graphPtr->legend->bindTable, elemPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * SelectionProc --
- *
- *	This procedure is called back by Tk when the selection is requested by
- *	someone.  It returns part or all of the selection in a buffer provided
- *	by the caller.
- *
- * Results:
- *	The return value is the number of non-NULL bytes stored at buffer.
- *	Buffer is filled (or partially filled) with a NUL-terminated string
- *	containing part or all of the selection, as given by offset and
- *	maxBytes.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
 static int SelectionProc(ClientData clientData, int offset, 
 			 char *buffer, int maxBytes)
 {
@@ -2270,23 +2127,6 @@ static int SelectionProc(ClientData clientData, int offset,
   return MIN(nBytes, maxBytes);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * BlinkCursorProc --
- *
- *	This procedure is called as a timer handler to blink the insertion
- *	cursor off and on.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The cursor gets turned on or off, redisplay gets invoked, and this
- *	procedure reschedules itself.
- *
- *---------------------------------------------------------------------------
- */
 static void BlinkCursorProc(ClientData clientData)
 {
   Graph *graphPtr = clientData;

@@ -367,7 +367,6 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
 // called by Tcl_DeleteCommandx
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
-  printf("GraphInstCmdDeleteProc\n");
   Graph* graphPtr = clientData;
   if (!(graphPtr->flags & GRAPH_DELETED))
     Tk_DestroyWindow(graphPtr->tkwin);
@@ -376,7 +375,6 @@ static void GraphInstCmdDeleteProc(ClientData clientData)
 // called by Tcl_EventuallyFree and others
 static void DestroyGraph(char* dataPtr)
 {
-  printf("DestroyGraph\n");
   Graph* graphPtr = (Graph*)dataPtr;
 
   Blt_DestroyCrosshairs(graphPtr);
@@ -412,18 +410,18 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
       graphPtr->flags |= REDRAW_WORLD;
       Blt_EventuallyRedrawGraph(graphPtr);
     }
+
   } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
     if (eventPtr->xfocus.detail != NotifyInferior) {
-      if (eventPtr->type == FocusIn) {
+      if (eventPtr->type == FocusIn)
 	graphPtr->flags |= FOCUS;
-      } else {
+      else
 	graphPtr->flags &= ~FOCUS;
-      }
       graphPtr->flags |= REDRAW_WORLD;
       Blt_EventuallyRedrawGraph(graphPtr);
     }
+
   } else if (eventPtr->type == DestroyNotify) {
-    printf("GraphEventProc:DestroyNotify\n");
     if (!(graphPtr->flags & GRAPH_DELETED)) {
       graphPtr->flags |= GRAPH_DELETED;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
