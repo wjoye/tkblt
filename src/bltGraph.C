@@ -309,9 +309,12 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   if (Blt_CreatePen(graphPtr, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
       TCL_OK)
     goto error;
-
   if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
+
+  // Keep a hold of the associated tkwin until we destroy the graph,
+  // otherwise Tk might free it while we still need it.
+  Tcl_Preserve(graphPtr->tkwin);
 
   Tk_CreateEventHandler(graphPtr->tkwin, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -364,21 +367,17 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
 // called by Tcl_DeleteCommandx
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
+  printf("GraphInstCmdDeleteProc\n");
   Graph* graphPtr = clientData;
-
-  // NULL indicates window has already been destroyed.
-  if (graphPtr->tkwin != NULL) {
-    Tk_Window tkwin = graphPtr->tkwin;
-    graphPtr->tkwin = NULL;
-    Tk_DestroyWindow(tkwin);
-  }
+  if (!(graphPtr->flags & GRAPH_DELETED))
+    Tk_DestroyWindow(graphPtr->tkwin);
 }
 
 // called by Tcl_EventuallyFree and others
 static void DestroyGraph(char* dataPtr)
 {
+  printf("DestroyGraph\n");
   Graph* graphPtr = (Graph*)dataPtr;
-  Tk_DeleteOptionTable(graphPtr->optionTable);
 
   Blt_DestroyCrosshairs(graphPtr);
   Blt_DestroyMarkers(graphPtr);
@@ -398,6 +397,9 @@ static void DestroyGraph(char* dataPtr)
   if (graphPtr->cache != None)
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
 
+  Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, graphPtr->tkwin);
+  Tcl_Release(graphPtr->tkwin);
+  graphPtr->tkwin = NULL;
   free(graphPtr);
 }
 
@@ -421,19 +423,14 @@ static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
       Blt_EventuallyRedrawGraph(graphPtr);
     }
   } else if (eventPtr->type == DestroyNotify) {
-    if (graphPtr->tkwin != NULL) {
-      Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, 
-			   graphPtr->tkwin);
-      Blt_DeleteCrosshairs(graphPtr);
-      Blt_DeleteLegend(graphPtr);
-
-      graphPtr->tkwin = NULL;
+    printf("GraphEventProc:DestroyNotify\n");
+    if (!(graphPtr->flags & GRAPH_DELETED)) {
+      graphPtr->flags |= GRAPH_DELETED;
       Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
+      if (graphPtr->flags & REDRAW_PENDING)
+	Tcl_CancelIdleCall(DisplayGraph, graphPtr);
+      Tcl_EventuallyFree(graphPtr, DestroyGraph);
     }
-    if (graphPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayGraph, graphPtr);
-    }
-    Tcl_EventuallyFree(graphPtr, DestroyGraph);
   } else if (eventPtr->type == ConfigureNotify) {
     graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
     Blt_EventuallyRedrawGraph(graphPtr);
@@ -570,16 +567,12 @@ static void ConfigureGraph(Graph* graphPtr)
 static void DisplayGraph(ClientData clientData)
 {
   Graph* graphPtr = clientData;
-  Pixmap drawable;
-  Tk_Window tkwin;
-  int site;
+  Tk_Window tkwin = graphPtr->tkwin;
 
   graphPtr->flags &= ~REDRAW_PENDING;
-  if (graphPtr->tkwin == NULL) {
-    return;				/* Window has been destroyed (we
-					 * should not get here) */
-  }
-  tkwin = graphPtr->tkwin;
+  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin))
+    return;
+
   if ((Tk_Width(tkwin) <= 1) || (Tk_Height(tkwin) <= 1)) {
     /* Don't bother computing the layout until the size of the window is
      * something reasonable. */
@@ -595,12 +588,13 @@ static void DisplayGraph(ClientData clientData)
     return;
   }
   /* Create a pixmap the size of the window for double buffering. */
-  if (graphPtr->doubleBuffer) {
+  Pixmap drawable;
+  if (graphPtr->doubleBuffer)
     drawable = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), 
 			    graphPtr->width, graphPtr->height, Tk_Depth(tkwin));
-  } else {
+  else
     drawable = Tk_WindowId(tkwin);
-  }
+
   if (graphPtr->backingStore) {
     if ((graphPtr->cache == None) || 
 	(graphPtr->cacheWidth != graphPtr->width) ||
@@ -636,7 +630,7 @@ static void DisplayGraph(ClientData clientData)
   Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
   /* Don't draw legend in the plot area. */
-  site = Blt_Legend_Site(graphPtr);
+  int site = Blt_Legend_Site(graphPtr);
   if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr))) {
     Blt_DrawLegend(graphPtr, drawable);
   }
@@ -920,11 +914,12 @@ static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
 
 void Blt_EventuallyRedrawGraph(Graph* graphPtr) 
 {
-  if ((graphPtr->tkwin != NULL) && 
-      Tk_IsMapped(graphPtr->tkwin) &&
-      !(graphPtr->flags & REDRAW_PENDING)) {
-    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
+  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin))
+    return;
+
+  if (!(graphPtr->flags & REDRAW_PENDING)) {
     graphPtr->flags |= REDRAW_PENDING;
+    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
   }
 }
 
