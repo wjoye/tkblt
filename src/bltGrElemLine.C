@@ -826,7 +826,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
   // GCBackground is the fill color (only used for bitmap symbols).
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->symbol.outlineColor;
-  if (colorPtr)
+  if (!colorPtr)
     colorPtr = lpPtr->traceColor;
 
   gcValues.foreground = colorPtr->pixel;
