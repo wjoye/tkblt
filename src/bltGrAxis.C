@@ -50,6 +50,16 @@
 			 * accuracy used when outputting axis
 			 * tick labels. */
 
+#define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
+#define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
+#define AXIS_USE		(1<<18)	/* Axis is displayed on the screen via
+					 * the "use" operation */
+#define AXIS_GRID		(1<<19)
+#define AXIS_GRID_MINOR		(1<<20)
+#define AXIS_SHOWTICKS		(1<<21)
+#define AXIS_EXTERIOR   	(1<<22)
+#define AXIS_CHECK_LIMITS	(1<<23)
+
 #define FCLAMP(x)	((((x) < 0.0) ? 0.0 : ((x) > 1.0) ? 1.0 : (x)))
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
@@ -1204,7 +1214,8 @@ static TickLabel *MakeLabel(Axis *axisPtr, double value)
   }
   labelPtr = malloc(sizeof(TickLabel) + strlen(string));
   strcpy(labelPtr->string, string);
-  labelPtr->anchorPos.x = labelPtr->anchorPos.y = DBL_MAX;
+  labelPtr->anchorPos.x = DBL_MAX;
+  labelPtr->anchorPos.y = DBL_MAX;
   return labelPtr;
 }
 
@@ -2168,14 +2179,15 @@ static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
 static void MakeTick(Axis *axisPtr, double value, int tick, int line, 
 		     Segment2d *sp)
 {
-  if (axisPtr->logScale) {
+  if (axisPtr->logScale)
     value = EXP10(value);
-  }
+
   if (AxisIsHorizontal(axisPtr)) {
     sp->p.x = sp->q.x = Blt_HMap(axisPtr, value);
     sp->p.y = line;
     sp->q.y = tick;
-  } else {
+  }
+  else {
     sp->p.x = line;
     sp->p.y = sp->q.y = Blt_VMap(axisPtr, value);
     sp->q.x = tick;
@@ -2189,17 +2201,17 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
   Segment2d *segments;
   Segment2d *sp;
 
-  if (axisPtr->segments != NULL) {
+  if (axisPtr->segments) {
     free(axisPtr->segments);
     axisPtr->segments = NULL;	
   }
   nMajorTicks = nMinorTicks = 0;
-  if (axisPtr->t1Ptr != NULL) {
+  if (axisPtr->t1Ptr)
     nMajorTicks = axisPtr->t1Ptr->nTicks;
-  }
-  if (axisPtr->t2Ptr != NULL) {
+
+  if (axisPtr->t2Ptr)
     nMinorTicks = axisPtr->t2Ptr->nTicks;
-  }
+
   arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
   segments = malloc(arraySize * sizeof(Segment2d));
   sp = segments;
@@ -2424,17 +2436,17 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     Blt_Ts_SetPadding(ts, 1, 0);
     Blt_Ts_SetAnchor(ts, axisPtr->titleAnchor);
     Blt_Ts_SetJustify(ts, axisPtr->titleJustify);
-    if (axisPtr->flags & ACTIVE) {
+    if (axisPtr->flags & ACTIVE)
       Blt_Ts_SetForeground(ts, axisPtr->activeFgColor);
-    } else {
+    else
       Blt_Ts_SetForeground(ts, axisPtr->titleColor);
-    }
+
     Blt_Ts_SetForeground(ts, axisPtr->titleColor);
-    if ((axisPtr->titleAngle == 90.0) || (axisPtr->titleAngle == 270.0)) {
+    if ((axisPtr->titleAngle == 90.0) || (axisPtr->titleAngle == 270.0))
       Blt_Ts_SetMaxLength(ts, axisPtr->height);
-    } else {
+    else
       Blt_Ts_SetMaxLength(ts, axisPtr->width);
-    }
+
     Blt_Ts_DrawText(graphPtr->tkwin, drawable, axisPtr->title, -1, &ts, 
 		    (int)axisPtr->titlePos.x, (int)axisPtr->titlePos.y);
   }
@@ -2510,11 +2522,11 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     Blt_Ts_SetFont(ts, axisPtr->tickFont);
     Blt_Ts_SetPadding(ts, 2, 0);
     Blt_Ts_SetAnchor(ts, axisPtr->tickAnchor);
-    if (axisPtr->flags & ACTIVE) {
+    if (axisPtr->flags & ACTIVE)
       Blt_Ts_SetForeground(ts, axisPtr->activeFgColor);
-    } else {
+    else
       Blt_Ts_SetForeground(ts, axisPtr->tickColor);
-    }
+
     for (link = Blt_Chain_FirstLink(axisPtr->tickLabels); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {	
       TickLabel *labelPtr;
@@ -2979,40 +2991,38 @@ void Blt_LayoutGraph(Graph* graphPtr)
   bottom = GetMarginGeometry(graphPtr, &graphPtr->bottomMargin);
 
   pad = graphPtr->bottomMargin.maxTickWidth;
-  if (pad < graphPtr->topMargin.maxTickWidth) {
+  if (pad < graphPtr->topMargin.maxTickWidth)
     pad = graphPtr->topMargin.maxTickWidth;
-  }
-  pad = pad / 2 + 3;
-  if (right < pad) {
-    right = pad;
-  }
-  if (left < pad) {
-    left = pad;
-  }
-  pad = graphPtr->leftMargin.maxTickHeight;
-  if (pad < graphPtr->rightMargin.maxTickHeight) {
-    pad = graphPtr->rightMargin.maxTickHeight;
-  }
-  pad = pad / 2;
-  if (top < pad) {
-    top = pad;
-  }
-  if (bottom < pad) {
-    bottom = pad;
-  }
 
-  if (graphPtr->leftMargin.reqSize > 0) {
+  pad = pad / 2 + 3;
+  if (right < pad)
+    right = pad;
+
+  if (left < pad)
+    left = pad;
+
+  pad = graphPtr->leftMargin.maxTickHeight;
+  if (pad < graphPtr->rightMargin.maxTickHeight)
+    pad = graphPtr->rightMargin.maxTickHeight;
+
+  pad = pad / 2;
+  if (top < pad)
+    top = pad;
+
+  if (bottom < pad)
+    bottom = pad;
+
+  if (graphPtr->leftMargin.reqSize > 0)
     left = graphPtr->leftMargin.reqSize;
-  }
-  if (graphPtr->rightMargin.reqSize > 0) {
+
+  if (graphPtr->rightMargin.reqSize > 0)
     right = graphPtr->rightMargin.reqSize;
-  }
-  if (graphPtr->topMargin.reqSize > 0) {
+
+  if (graphPtr->topMargin.reqSize > 0)
     top = graphPtr->topMargin.reqSize;
-  }
-  if (graphPtr->bottomMargin.reqSize > 0) {
+
+  if (graphPtr->bottomMargin.reqSize > 0)
     bottom = graphPtr->bottomMargin.reqSize;
-  }
 
   /* 
    * Step 2:  Add the graph title height to the top margin. 
@@ -3335,13 +3345,14 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
       return NULL;
     }
     axisPtr->flags &= ~DELETE_PENDING;
-  } else {
+  }
+  else {
     axisPtr = calloc(1, sizeof(Axis));
     axisPtr->obj.name = Blt_Strdup(name);
     axisPtr->hashPtr = hPtr;
     Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
     axisPtr->obj.graphPtr = graphPtr;
-    axisPtr->looseMin = AXIS_TIGH;
+    axisPtr->looseMin = AXIS_TIGHT;
     axisPtr->looseMax = AXIS_TIGHT;
     axisPtr->reqNumMinorTicks = 2;
     axisPtr->reqNumMajorTicks = 4 /*10*/;
@@ -3355,6 +3366,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
     axisPtr->flags = (AXIS_AUTO_MAJOR|AXIS_AUTO_MINOR);
     axisPtr->exterior =1;
     axisPtr->hide =0;
+    axisPtr->showTicks =1;
     axisPtr->showGridMinor =1;
     axisPtr->showGrid =1;
     axisPtr->checkLimits =0;
@@ -4526,7 +4538,7 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
 	((axisPtr->flags & (DELETE_PENDING|AXIS_USE)) != AXIS_USE))
       continue;
 
-    if (axisPtr->flags & AXIS_SHOWTICKS) {
+    if (axisPtr->showTicks) {
       Blt_ChainLink link;
 
       for (link = Blt_Chain_FirstLink(axisPtr->tickLabels); link != NULL; 

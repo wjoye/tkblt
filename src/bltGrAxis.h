@@ -257,14 +257,4 @@ typedef struct {
   Axis *x, *y;
 } Axis2d;
 
-#define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
-#define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
-#define AXIS_USE		(1<<18)	/* Axis is displayed on the screen via
-					 * the "use" operation */
-#define AXIS_GRID		(1<<19)
-#define AXIS_GRID_MINOR		(1<<20)
-#define AXIS_SHOWTICKS		(1<<21)
-#define AXIS_EXTERIOR   	(1<<22)
-#define AXIS_CHECK_LIMITS	(1<<23)
-
 #endif /* _BLT_GR_AXIS_H */
