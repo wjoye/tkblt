@@ -51,8 +51,7 @@
  *	SELECT_SET		Set selection flag of entry.
  *
  *	SELECT_TOGGLE		Toggle selection flag of entry.
- *
- *	SELECT_BLTMASK		Mask of selection set/clear/toggle flags.
+ *			        Mask of selection set/clear/toggle flags.
  *
  *	SELECT_SORTED		Indicates if the entries in the selection 
  *				should be sorted or displayed in the order 
@@ -60,12 +59,11 @@
  *
  */
 
-#define SELECT_CLEAR		(1<<16)
-#define SELECT_PENDING		(1<<18)
-#define SELECT_SET		(1<<19)
+#define SELECT_CLEAR		(1<<24)
+#define SELECT_PENDING		(1<<25)
+#define SELECT_SET		(1<<26)
+#define SELECT_SORTED		(1<<27)
 #define SELECT_TOGGLE		(SELECT_SET | SELECT_CLEAR)
-#define SELECT_BLTMASK		(SELECT_SET | SELECT_CLEAR)
-#define SELECT_SORTED		(1<<20)
 
 #define LABEL_PAD	2
 
@@ -963,7 +961,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
       }
       DeselectElement(legendPtr, selectPtr);
     }
-    legendPtr->flags &= ~SELECT_BLTMASK;
+    legendPtr->flags &= ~SELECT_TOGGLE;
     legendPtr->flags |= SELECT_SET;
     SelectRange(legendPtr, legendPtr->selAnchorPtr, elemPtr);
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name, -1);
@@ -995,7 +993,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   Element *firstPtr, *lastPtr;
   const char *string;
 
-  legendPtr->flags &= ~SELECT_BLTMASK;
+  legendPtr->flags &= ~SELECT_TOGGLE;
   string = Tcl_GetString(objv[3]);
   switch (string[0]) {
   case 's':
@@ -1011,7 +1009,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetElementFromObj(graphPtr, objv[4], &firstPtr) != TCL_OK) {
     return TCL_ERROR;
   }
-  if ((firstPtr->flags & HIDE) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
+  if ((firstPtr->hide) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
     Tcl_AppendResult(interp, "can't select hidden node \"", 
 		     Tcl_GetString(objv[4]), "\"", (char *)NULL);
     return TCL_ERROR;
@@ -1021,8 +1019,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetElementFromObj(graphPtr, objv[5], &lastPtr) != TCL_OK) {
       return TCL_ERROR;
     }
-    if ((lastPtr->flags & HIDE) && 
-	((legendPtr->flags & SELECT_CLEAR) == 0)) {
+    if (lastPtr->hide && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
       Tcl_AppendResult(interp, "can't select hidden node \"", 
 		       Tcl_GetString(objv[5]), "\"", (char *)NULL);
       return TCL_ERROR;
@@ -1340,7 +1337,7 @@ static void SelectEntry(Legend *legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry *hPtr;
 
-  switch (legendPtr->flags & SELECT_BLTMASK) {
+  switch (legendPtr->flags & SELECT_TOGGLE) {
   case SELECT_CLEAR:
     DeselectElement(legendPtr, elemPtr);
     break;

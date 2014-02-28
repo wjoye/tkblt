@@ -40,43 +40,25 @@
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
+#include "bltGrAxis.h"
 #include "bltGrElem.h"
 #include "bltConfig.h"
 
-#define MAXTICKS	10001
+#define AXIS_PAD_TITLE 2
+#define MAXTICKS 10001
+#define NUMDIGITS 15	/* Specifies the number of digits of
+			 * accuracy used when outputting axis
+			 * tick labels. */
 
 #define FCLAMP(x)	((((x) < 0.0) ? 0.0 : ((x) > 1.0) ? 1.0 : (x)))
-
-/*
- * Round x in terms of units
- */
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
 #define UFLOOR(x,u)		(floor((x)/(u))*(u))
+#define HORIZMARGIN(m)	(!((m)->site & 0x1)) /* Even sites are horizontal */
 
-#define NUMDIGITS		15	/* Specifies the number of digits of
-					 * accuracy used when outputting axis
-					 * tick labels. */
 enum TickRange {
   AXIS_TIGHT, AXIS_LOOSE, AXIS_ALWAYS_LOOSE
 };
-
-#define AXIS_PAD_TITLE		2	/* Padding for axis title. */
-
-/* Axis flags: */
-
-#define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
-#define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
-#define AXIS_USE		(1<<18)	/* Axis is displayed on the screen via
-					 * the "use" operation */
-#define AXIS_GRID		(1<<19)	/* Display grid lines. */
-#define AXIS_GRIDMINOR		(1<<20)	/* Display grid lines for minor
-					 * ticks. */
-#define AXIS_SHOWTICKS		(1<<21)	/* Display axis ticks. */
-#define AXIS_EXTERIOR		(1<<22)	/* Axis is exterior to the plot. */
-#define AXIS_CHECK_LIMITS	(1<<23)	/* Validate user-defined axis limits. */
-
-#define HORIZMARGIN(m)	(!((m)->site & 0x1)) /* Even sites are horizontal */
 
 typedef struct {
   int axis;				/* Length of the axis.  */
@@ -190,6 +172,55 @@ static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin,
   return objPtr;
 }
 
+static Tk_CustomOptionSetProc FormatSetProc;
+static Tk_CustomOptionGetProc FormatGetProc;
+Tk_ObjCustomOption formatObjOption =
+  {
+    "format", FormatSetProc, FormatGetProc, NULL, NULL, NULL
+  };
+
+static int FormatSetProc(ClientData clientData, Tcl_Interp* interp,
+			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			int offset, char* save, int flags)
+{
+  Axis *axisPtr = (Axis*)(widgRec);
+
+  const char **argv;
+  int argc;
+  if (Tcl_SplitList(interp, Tcl_GetString(*objPtr), &argc, &argv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (argc > 2) {
+    Tcl_AppendResult(interp, "too many elements in limits format list \"",
+		     Tcl_GetString(*objPtr), "\"", NULL);
+    free(argv);
+    return TCL_ERROR;
+  }
+  if (axisPtr->limitsFormats)
+    free(axisPtr->limitsFormats);
+
+  axisPtr->limitsFormats = argv;
+  axisPtr->nFormats = argc;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* FormatGetProc(ClientData clientData, Tk_Window tkwin, 
+			     char *widgRec, int offset)
+{
+  Axis *axisPtr = (Axis*)(widgRec);
+  Tcl_Obj* objPtr;
+
+  if (axisPtr->nFormats == 0)
+    objPtr = Tcl_NewStringObj("", -1);
+  else {
+    char *string = Tcl_Merge(axisPtr->nFormats, axisPtr->limitsFormats); 
+    objPtr = Tcl_NewStringObj(string, -1);
+    free(string);
+  }
+  return objPtr;
+}
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
    STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
@@ -223,13 +254,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   /*
   {TK_OPTION_CUSTOM, "-grid", "grid", "Grid", "1", 
-   Tk_Offset(Axis, flags), BARCHART, 
-   &bitmaskGrAxisGridOption},
-  */
-  /*
-  {TK_OPTION_CUSTOM, "-grid", "grid", "Grid", "1", 
-   Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
-   &bitmaskGrAxisGridOption},
+   Tk_Offset(Axis, flags), BARCHART, &bitmaskGrAxisGridOption},
   */
   {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
    "gray64", -1, Tk_Offset(Axis, major.color), 0, NULL, 0},
@@ -240,8 +265,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(Axis, major.lineWidth), 0, NULL, 0},
   /*
   {TK_OPTION_CUSTOM, "-gridminor", "gridMinor", "GridMinor", 
-   "1", Tk_Offset(Axis, flags), 
-   TK_OPTION_DONT_SET_DEFAULT | ALL_GRAPHS, 
+   "1", Tk_Offset(Axis, flags), TK_OPTION_DONT_SET_DEFAULT | ALL_GRAPHS, 
    &bitmaskGrAxisGridMinorOption},
   */
   {TK_OPTION_COLOR, "-gridminorcolor", "gridMinorColor", "GridMinorColor", 
@@ -252,11 +276,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
    "GridMinorLineWidth",
    "0", -1, Tk_Offset(Axis, minor.lineWidth), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-hide", "hide", "Hide", "0",
-   Tk_Offset(Axis, flags), ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT, 
-   &bitmaskGrAxisHideOption},
-  */
+  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide",
+   "no", -1, Tk_Offset(Axis, hide), 0, NULL, 0},
   {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
    "c", -1, Tk_Offset(Axis, titleJustify), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
@@ -266,11 +287,9 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_FONT, "-limitsfont", "limitsFont", "LimitsFont",
    STD_FONT_SMALL, -1, Tk_Offset(Axis, limitsTextStyle.font), 0, NULL, 0},
-  /*
   {TK_OPTION_CUSTOM, "-limitsformat", "limitsFormat", "LimitsFormat",
-   NULL, -1, Tk_Offset(Axis, limitsFormats), TK_OPTION_NULL_OK
-   ALL_GRAPHS, &formatOption},
-  */
+   NULL, -1, Tk_Offset(Axis, limitsFormats), 
+   TK_OPTION_NULL_OK, &formatObjOption, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
@@ -406,7 +425,7 @@ Blt_CustomOption bitmaskGrAxisGridOption =
 
 Blt_CustomOption bitmaskGrAxisGridMinorOption =
   {
-    ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_GRIDMINOR
+    ObjToBitmaskProc, BitmaskToObjProc, NULL, (ClientData)AXIS_GRID_MINOR
   };
 
 Blt_CustomOption bitmaskGrAxisHideOption =
@@ -2475,7 +2494,7 @@ static void MapGridlines(Axis *axisPtr)
     t2Ptr = GenerateTicks(&axisPtr->minorSweep);
   }
   needed = t1Ptr->nTicks;
-  if (axisPtr->flags & AXIS_GRIDMINOR) {
+  if (axisPtr->flags & AXIS_GRID_MINOR) {
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
   }
   if (needed == 0) {
@@ -2504,7 +2523,7 @@ static void MapGridlines(Axis *axisPtr)
     double value;
 
     value = t1Ptr->values[i];
-    if (axisPtr->flags & AXIS_GRIDMINOR) {
+    if (axisPtr->flags & AXIS_GRID_MINOR) {
       int j;
 
       for (j = 0; j < t2Ptr->nTicks; j++) {
@@ -2656,7 +2675,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
       Axis *axisPtr;
 	    
       axisPtr = Blt_Chain_GetValue(link);
-      if ((axisPtr->flags & (HIDE|AXIS_USE)) == AXIS_USE) {
+      if (!axisPtr->hide && (axisPtr->flags & AXIS_USE)) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY) {
 	  GetAxisGeometry(graphPtr, axisPtr);
@@ -2684,7 +2703,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
       Axis *axisPtr;
 	    
       axisPtr = Blt_Chain_GetValue(link);
-      if ((axisPtr->flags & (HIDE|AXIS_USE)) == AXIS_USE) {
+      if (!axisPtr->hide && (axisPtr->flags & AXIS_USE)) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY) {
 	  GetAxisGeometry(graphPtr, axisPtr);
@@ -3203,7 +3222,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
     axisPtr->scrollUnits = 10;
     axisPtr->reqMin = axisPtr->reqMax = NAN;
     axisPtr->reqScrollMin = axisPtr->reqScrollMax = NAN;
-    axisPtr->flags = (AXIS_SHOWTICKS|AXIS_GRIDMINOR|AXIS_AUTO_MAJOR|
+    axisPtr->flags = (AXIS_SHOWTICKS|AXIS_GRID_MINOR|AXIS_AUTO_MAJOR|
 		      AXIS_AUTO_MINOR | AXIS_EXTERIOR);
     if (graphPtr->classId == CID_ELEM_BAR) {
       axisPtr->flags |= AXIS_GRID;
@@ -3213,9 +3232,9 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
       axisPtr->reqStep = 1.0;
       axisPtr->reqNumMinorTicks = 0;
     } 
-    if ((margin == MARGIN_RIGHT) || (margin == MARGIN_TOP)) {
-      axisPtr->flags |= HIDE;
-    }
+    if ((margin == MARGIN_RIGHT) || (margin == MARGIN_TOP))
+      axisPtr->hide = 1;
+
     Blt_Ts_InitStyle(axisPtr->limitsTextStyle);
     axisPtr->tickLabels = Blt_Chain_Create();
     axisPtr->lineWidth = 1;
@@ -3370,7 +3389,7 @@ static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *cons
   } else {
     axisPtr->flags &= ~ACTIVE;
   }
-  if ((axisPtr->flags & (AXIS_USE|HIDE)) == AXIS_USE) {
+  if (!axisPtr->hide && (axisPtr->flags & AXIS_USE)) {
     graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
     Blt_EventuallyRedrawGraph(graphPtr);
   }
@@ -3823,10 +3842,9 @@ static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *c
       return TCL_ERROR;
     }
     graphPtr->focusPtr = NULL;
-    if ((axisPtr != NULL) && 
-	((axisPtr->flags & (AXIS_USE|HIDE)) == AXIS_USE)) {
+    if (axisPtr && !axisPtr->hide && (axisPtr->flags & AXIS_USE))
       graphPtr->focusPtr = axisPtr;
-    }
+
     Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr, NULL);
   }
   /* Return the name of the axis that has focus. */
@@ -4109,9 +4127,9 @@ Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
       Axis *axisPtr;
 
       axisPtr = Blt_Chain_GetValue(link);
-      if ((axisPtr->flags & (DELETE_PENDING|HIDE|AXIS_USE)) == AXIS_USE) {
+      if (!axisPtr->hide && 
+	  ((axisPtr->flags & (DELETE_PENDING|AXIS_USE)) == AXIS_USE))
 	DrawAxis(axisPtr, drawable);
-      }
     }
   }
 }
@@ -4128,14 +4146,14 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
       Axis *axisPtr;
 
       axisPtr = Blt_Chain_GetValue(link);
-      if (axisPtr->flags & (DELETE_PENDING|HIDE)) {
+      if (axisPtr->hide || (axisPtr->flags & DELETE_PENDING))
 	continue;
-      }
+
       if ((axisPtr->flags & AXIS_USE) && (axisPtr->flags & AXIS_GRID)) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, 
 			   axisPtr->major.gc, axisPtr->major.segments, 
 			   axisPtr->major.nUsed);
-	if (axisPtr->flags & AXIS_GRIDMINOR) {
+	if (axisPtr->flags & AXIS_GRID_MINOR) {
 	  Blt_Draw2DSegments(graphPtr->display, drawable, 
 			     axisPtr->minor.gc, axisPtr->minor.segments, 
 			     axisPtr->minor.nUsed);
@@ -4157,10 +4175,11 @@ void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
       Axis *axisPtr;
 
       axisPtr = Blt_Chain_GetValue(link);
-      if ((axisPtr->flags & (DELETE_PENDING|HIDE|AXIS_USE|AXIS_GRID)) !=
-	  (AXIS_GRID|AXIS_USE)) {
+      if (axisPtr->hide || 
+	  ((axisPtr->flags & (DELETE_PENDING|AXIS_USE|AXIS_GRID))) !=
+	  (AXIS_GRID|AXIS_USE))
 	continue;
-      }
+
       Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n",
 		    axisPtr->obj.name);
       Blt_Ps_XSetLineAttributes(ps, axisPtr->major.color, 
@@ -4170,7 +4189,7 @@ void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
 		    axisPtr->obj.name);
       Blt_Ps_Draw2DSegments(ps, axisPtr->major.segments, 
 			    axisPtr->major.nUsed);
-      if (axisPtr->flags & AXIS_GRIDMINOR) {
+      if (axisPtr->flags & AXIS_GRID_MINOR) {
 	Blt_Ps_XSetLineAttributes(ps, axisPtr->minor.color, 
 				  axisPtr->minor.lineWidth, &axisPtr->minor.dashes, CapButt, 
 				  JoinMiter);
@@ -4195,9 +4214,9 @@ void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
       Axis *axisPtr;
 
       axisPtr = Blt_Chain_GetValue(link);
-      if ((axisPtr->flags & (DELETE_PENDING|HIDE|AXIS_USE)) == AXIS_USE) {
+      if (!axisPtr->hide && 
+	  ((axisPtr->flags & (DELETE_PENDING|AXIS_USE)) == AXIS_USE))
 	AxisToPostScript(ps, axisPtr);
-      }
     }
   }
 }
@@ -4370,9 +4389,10 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
     Axis *axisPtr;
 
     axisPtr = Tcl_GetHashValue(hPtr);
-    if ((axisPtr->flags & (DELETE_PENDING|HIDE|AXIS_USE)) != AXIS_USE) {
+    if (axisPtr->hide || 
+	((axisPtr->flags & (DELETE_PENDING|AXIS_USE)) != AXIS_USE))
       continue;
-    }
+
     if (axisPtr->flags & AXIS_SHOWTICKS) {
       Blt_ChainLink link;
 
