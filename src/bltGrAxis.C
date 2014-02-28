@@ -116,18 +116,6 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Axis *axisPtr, int objc,
 typedef int (GraphVirtualAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
 				   int objc, Tcl_Obj *const *objv);
 
-INLINE static double
-Clamp(double x) 
-{
-  return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
-}
-
-INLINE static int
-Round(double x)
-{
-  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
-}
-
 // OptionSpecs
 
 static Tk_CustomOptionSetProc AxisSetProc;
@@ -210,162 +198,9 @@ static Blt_CustomOption useOption = {
   ObjToUseProc, UseToObjProc, NULL, (ClientData)0
 };
 
-#define DEF_AXIS_ACTIVEBACKGROUND	STD_ACTIVE_BACKGROUND
-#define DEF_AXIS_ACTIVEFOREGROUND	STD_ACTIVE_FOREGROUND
-#define DEF_AXIS_ACTIVERELIEF		"flat"
-#define DEF_AXIS_ANGLE			"0.0"
-#define DEF_AXIS_BACKGROUND		NULL
-#define DEF_AXIS_BORDERWIDTH		"0"
-#define DEF_AXIS_CHECKLIMITS		"0"
-#define DEF_AXIS_COMMAND		NULL
-#define DEF_AXIS_DESCENDING		"0"
-#define DEF_AXIS_FOREGROUND		black
-#define DEF_AXIS_GRID		        "1"
-#define DEF_AXIS_GRIDCOLOR		gray64
-#define DEF_AXIS_GRIDDASHES		"dot"
-#define DEF_AXIS_GRIDLINEWIDTH	"0"
-#define DEF_AXIS_GRIDMINOR		"1"
-#define DEF_AXIS_GRIDMINOR_COLOR	gray64
-#define DEF_AXIS_HIDE			"0"
-#define DEF_AXIS_JUSTIFY		"c"
-#define DEF_AXIS_LABEL_OFFSET	        "no"
-#define DEF_AXIS_LIMITS_FORMAT	        NULL
-#define DEF_AXIS_LINEWIDTH		"1"
-#define DEF_AXIS_LOGSCALE		"0"
-#define DEF_AXIS_LOOSE			"0"
-#define DEF_AXIS_RANGE			"0.0"
-#define DEF_AXIS_RELIEF			"flat"
-#define DEF_AXIS_SCROLL_INCREMENT 	"10"
-#define DEF_AXIS_SHIFTBY		"0.0"
-#define DEF_AXIS_SHOWTICKS		"1"
-#define DEF_AXIS_STEP			"0.0"
-#define DEF_AXIS_STEP			"0.0"
-#define DEF_AXIS_SUBDIVISIONS		"2"
-#define DEF_AXIS_TAGS			"all"
-#define DEF_AXIS_EXTERIOR		"1"
-#define DEF_AXIS_TICK_ANCHOR		"c"
-#define DEF_AXIS_LIMITS_FONT		STD_FONT_SMALL
-#define DEF_AXIS_TICKFONT		STD_FONT_SMALL
-#define DEF_AXIS_TICKLENGTH		"4"
-#define DEF_AXIS_DIVISIONS		"10"
-#define DEF_AXIS_TITLE	                NULL
-#define DEF_AXIS_TITLE_ALTERNATE	"0"
-#define DEF_AXIS_TITLE_FG		black
-#define DEF_AXIS_TITLE_FONT		STD_FONT_NORMAL
-#define DEF_AXIS_X_STEP_BARCHART	"1.0"
-#define DEF_AXIS_X_SUBDIVISIONS_BARCHART "0"
-
-/*
 static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_COLOR, "-activeforeground", "activeForeground", 
-   "ActiveForeground",
-   DEF_AXIS_ACTIVEFOREGROUND,
-   -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
-  {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "Relief",
-   DEF_AXIS_ACTIVERELIEF, 
-   -1, Tk_Offset(Axis, activeRelief), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-autorange", "autoRange", "AutoRange",
-   DEF_AXIS_RANGE, 
-   -1, Tk_Offset(Axis, windowSize), 0, NULL, 0},
-  {TK_OPTION_BORDER, "-background", "background", "Background",
-   DEF_AXIS_BACKGROUND, 
-   -1, Tk_Offset(Axis, normalBg), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL,
-   -1, 0, 0, "-background", 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL,
-   -1, 0, 0, "-borderWidth", 0},
-  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_AXIS_BORDERWIDTH, 
-   -1, Tk_Offset(Axis, borderWidth), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-color", "color", "Color",
-   DEF_AXIS_FOREGROUND, 
-   -1, Tk_Offset(Axis, tickColor), 0, NULL, 0},
-  {TK_OPTION_STRING, "-command", "command", "Command",
-   DEF_AXIS_COMMAND,
-   -1, Tk_Offset(Axis, formatCmd), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-descending", "descending", "Descending",
-   DEF_AXIS_DESCENDING,
-   -1, Tk_Offset(Axis, descending), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL,
-   -1, 0, 0, "-color", 0},
-  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL,
-   -1, 0, 0, "-color", 0},
-  {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
-   DEF_AXIS_GRIDCOLOR, 
-   -1, Tk_Offset(Axis, major.color), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-gridlinewidth", "gridLineWidth", "GridLineWidth", 
-   DEF_AXIS_GRIDLINEWIDTH, 
-   -1, Tk_Offset(Axis, major.lineWidth), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-gridminorcolor", "gridMinorColor", "GridColor", 
-   DEF_AXIS_GRIDMINOR_COLOR, 
-   -1, Tk_Offset(Axis, minor.color), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
-   "GridLineWidth", 
-   DEF_AXIS_GRIDLINEWIDTH, 
-   -1, Tk_Offset(Axis, minor.lineWidth), 0, NULL, 0},
-  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
-   DEF_AXIS_JUSTIFY, 
-   -1, Tk_Offset(Axis, titleJustify), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
-   DEF_AXIS_LABEL_OFFSET,
-   -1, Tk_Offset(Axis, labelOffset), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-limitscolor", "limitsColor", "Color",
-   DEF_AXIS_FOREGROUND, 
-   -1, Tk_Offset(Axis, limitsTextStyle.color), 0, NULL, 0},
-  {TK_OPTION_FONT, "-limitsfont", "limitsFont", "Font", 
-   DEF_AXIS_LIMITS_FONT,
-   -1, Tk_Offset(Axis, limitsTextStyle.font),  0, NULL, 0},
-  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   DEF_AXIS_LINEWIDTH, 
-   -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
-   DEF_AXIS_LOGSCALE, 
-   -1, Tk_Offset(Axis, logScale), 0, NULL, 0},
-  {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   DEF_AXIS_RELIEF, 
-   -1, Tk_Offset(Axis, relief), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
-   DEF_AXIS_ANGLE, 
-   -1, Tk_Offset(Axis, tickAngle), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-scrollincrement", "scrollIncrement", "ScrollIncrement", 
-   DEF_AXIS_SCROLL_INCREMENT, 
-   -1, Tk_Offset(Axis, scrollUnits), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
-   DEF_AXIS_SHIFTBY, 
-   -1, Tk_Offset(Axis, shiftBy), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-stepsize", "stepSize", "StepSize",
-   DEF_AXIS_STEP, 
-   -1, Tk_Offset(Axis, reqStep), 0, NULL, 0},
-  {TK_OPTION_INT, "-subdivisions", "subdivisions", "Subdivisions",
-   DEF_AXIS_SUBDIVISIONS, 
-   -1, Tk_Offset(Axis, reqNumMinorTicks), 0, NULL, 0},
-  {TK_OPTION_ANCHOR, "-tickanchor", "tickAnchor", "Anchor",
-   DEF_AXIS_TICK_ANCHOR, 
-   -1, Tk_Offset(Axis, reqTickAnchor), 0, NULL, 0},
-  {TK_OPTION_FONT, "-tickfont", "tickFont", "Font",
-   DEF_AXIS_TICKFONT,
-   -1, Tk_Offset(Axis, tickFont), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-ticklength", "tickLength", "TickLength",
-   DEF_AXIS_TICKLENGTH, 
-   -1, Tk_Offset(Axis, tickLength), 0, NULL, 0},
-  {TK_OPTION_INT, "-tickdefault", "tickDefault", "TickDefault",
-   DEF_AXIS_DIVISIONS, 
-   -1, Tk_Offset(Axis, reqNumMajorTicks), 0, NULL, 0},
-  {TK_OPTION_STRING, "-title", "title", "Title",
-   DEF_AXIS_TITLE,
-   -1, Tk_Offset(Axis, title), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
-   DEF_AXIS_TITLE_ALTERNATE,
-   -1, Tk_Offset(Axis, titleAlternate), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-titlecolor", "titleColor", "Color", 
-   DEF_AXIS_FOREGROUND,
-   -1, Tk_Offset(Axis, titleColor), 0, NULL, 0},
-  {TK_OPTION_FONT, "-titlefont", "titleFont", "Font",
-   DEF_AXIS_TITLE_FONT, 
-   -1, Tk_Offset(Axis, titleFont), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
-*/
 
 Blt_CustomOption bitmaskGrAxisCheckLimitsOption =
   {
@@ -399,96 +234,96 @@ Blt_CustomOption bitmaskGrAxisShowTicksOption =
 
 static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_COLOR, "-activeforeground", "activeForeground",
-   "ActiveForeground", DEF_AXIS_ACTIVEFOREGROUND,
+   "ActiveForeground", STD_ACTIVE_FOREGROUND,
    Tk_Offset(Axis, activeFgColor), ALL_GRAPHS}, 
   {BLT_CONFIG_RELIEF, "-activerelief", "activeRelief", "Relief",
-   DEF_AXIS_ACTIVERELIEF, Tk_Offset(Axis, activeRelief),
+   "flat", Tk_Offset(Axis, activeRelief),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT}, 
   {BLT_CONFIG_DOUBLE, "-autorange", "autoRange", "AutoRange",
-   DEF_AXIS_RANGE, Tk_Offset(Axis, windowSize),
+   "0.0", Tk_Offset(Axis, windowSize),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT}, 
   {BLT_CONFIG_BORDER, "-background", "background", "Background",
-   DEF_AXIS_BACKGROUND, Tk_Offset(Axis, normalBg),
+   NULL, Tk_Offset(Axis, normalBg),
    ALL_GRAPHS | BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_SYNONYM, "-bg", "background", NULL, NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_AXIS_TAGS, 
+  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "all", 
    Tk_Offset(Axis, obj.tags), ALL_GRAPHS | BLT_CONFIG_NULL_OK,
    &listOption},
   {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", NULL, NULL, 
    0, ALL_GRAPHS},
   {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   DEF_AXIS_BORDERWIDTH, Tk_Offset(Axis, borderWidth),
+   "0", Tk_Offset(Axis, borderWidth),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-checklimits", "checkLimits", "CheckLimits", 
-   DEF_AXIS_CHECKLIMITS, Tk_Offset(Axis, flags), 
+   "0", Tk_Offset(Axis, flags), 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
    &bitmaskGrAxisCheckLimitsOption},
   {BLT_CONFIG_COLOR, "-color", "color", "Color",
-   DEF_AXIS_FOREGROUND, Tk_Offset(Axis, tickColor), ALL_GRAPHS},
+   STD_NORMAL_FOREGROUND, Tk_Offset(Axis, tickColor), ALL_GRAPHS},
   {BLT_CONFIG_STRING, "-command", "command", "Command",
-   DEF_AXIS_COMMAND, Tk_Offset(Axis, formatCmd),
+   NULL, Tk_Offset(Axis, formatCmd),
    BLT_CONFIG_NULL_OK | ALL_GRAPHS},
   {BLT_CONFIG_BOOLEAN, "-descending", "descending", "Descending",
-   DEF_AXIS_DESCENDING, Tk_Offset(Axis, descending),
+   "0", Tk_Offset(Axis, descending),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-exterior", "exterior", "exterior", DEF_AXIS_EXTERIOR,
+  {BLT_CONFIG_CUSTOM, "-exterior", "exterior", "exterior", "1",
    Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
    &bitmaskGrAxisExteriorOption},
   {BLT_CONFIG_SYNONYM, "-fg", "color", NULL, 
    NULL, 0, ALL_GRAPHS},
   {BLT_CONFIG_SYNONYM, "-foreground", "color", NULL, 
    NULL, 0, ALL_GRAPHS},
-  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID, 
+  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", "1", 
    Tk_Offset(Axis, flags), BARCHART, 
    &bitmaskGrAxisGridOption},
-  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID, 
+  {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", "1", 
    Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
    &bitmaskGrAxisGridOption},
   {BLT_CONFIG_COLOR, "-gridcolor", "gridColor", "GridColor", 
-   DEF_AXIS_GRIDCOLOR, Tk_Offset(Axis, major.color), ALL_GRAPHS},
+   "gray64", Tk_Offset(Axis, major.color), ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-griddashes", "gridDashes", "GridDashes", 
-   DEF_AXIS_GRIDDASHES, Tk_Offset(Axis, major.dashes), 
+   "dot", Tk_Offset(Axis, major.dashes), 
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &dashesOption},
   {BLT_CONFIG_PIXELS, "-gridlinewidth", "gridLineWidth", 
-   "GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
+   "GridLineWidth", "0",
    Tk_Offset(Axis, major.lineWidth), 
    BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-gridminor", "gridMinor", "GridMinor", 
-   DEF_AXIS_GRIDMINOR, Tk_Offset(Axis, flags), 
+   "1", Tk_Offset(Axis, flags), 
    BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS, 
    &bitmaskGrAxisGridMinorOption},
   {BLT_CONFIG_COLOR, "-gridminorcolor", "gridMinorColor", "GridColor", 
-   DEF_AXIS_GRIDMINOR_COLOR, Tk_Offset(Axis, minor.color), ALL_GRAPHS},
+   "gray64", Tk_Offset(Axis, minor.color), ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-gridminordashes", "gridMinorDashes", "GridDashes", 
-   DEF_AXIS_GRIDDASHES, Tk_Offset(Axis, minor.dashes), 
+   "dot", Tk_Offset(Axis, minor.dashes), 
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &dashesOption},
   {BLT_CONFIG_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
-   "GridLineWidth", DEF_AXIS_GRIDLINEWIDTH, 
+   "GridLineWidth", "0",
    Tk_Offset(Axis, minor.lineWidth), 
    BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS},
-  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", DEF_AXIS_HIDE, 
+  {BLT_CONFIG_CUSTOM, "-hide", "hide", "Hide", "0",
    Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
    &bitmaskGrAxisHideOption},
   {BLT_CONFIG_JUSTIFY, "-justify", "justify", "Justify",
-   DEF_AXIS_JUSTIFY, Tk_Offset(Axis, titleJustify),
+   "c", Tk_Offset(Axis, titleJustify),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
-   NULL, Tk_Offset(Axis, labelOffset), ALL_GRAPHS}, 
+   "no", Tk_Offset(Axis, labelOffset), ALL_GRAPHS}, 
   {BLT_CONFIG_COLOR, "-limitscolor", "limitsColor", "Color",
-   DEF_AXIS_FOREGROUND, Tk_Offset(Axis, limitsTextStyle.color), 
+   STD_NORMAL_FOREGROUND, Tk_Offset(Axis, limitsTextStyle.color), 
    ALL_GRAPHS},
-  {BLT_CONFIG_FONT, "-limitsfont", "limitsFont", "Font", DEF_AXIS_LIMITS_FONT,
+  {BLT_CONFIG_FONT, "-limitsfont", "limitsFont", "Font", STD_FONT_SMALL,
    Tk_Offset(Axis, limitsTextStyle.font), ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-limitsformat", "limitsFormat", "LimitsFormat",
    NULL, Tk_Offset(Axis, limitsFormats),
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &formatOption},
   {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   DEF_AXIS_LINEWIDTH, Tk_Offset(Axis, lineWidth),
+   "1", Tk_Offset(Axis, lineWidth),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_BOOLEAN, "-logscale", "logScale", "LogScale",
-   DEF_AXIS_LOGSCALE, Tk_Offset(Axis, logScale),
+   "0", Tk_Offset(Axis, logScale),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-loose", "loose", "Loose", DEF_AXIS_LOOSE, 0, 
+  {BLT_CONFIG_CUSTOM, "-loose", "loose", "Loose", "0", 0, 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, &looseOption},
   {BLT_CONFIG_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
    NULL, Tk_Offset(Axis, t1Ptr),
@@ -501,61 +336,71 @@ static Blt_ConfigSpec configSpecs[] = {
    NULL, Tk_Offset(Axis, t2Ptr), 
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &minorTicksOption},
   {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
-   DEF_AXIS_RELIEF, Tk_Offset(Axis, relief), 
+   "flat", Tk_Offset(Axis, relief), 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_AXIS_ANGLE, 
+  {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", "0", 
    Tk_Offset(Axis, tickAngle), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-scrollcommand", "scrollCommand", "ScrollCommand",
    NULL, Tk_Offset(Axis, scrollCmdObjPtr),
    ALL_GRAPHS | BLT_CONFIG_NULL_OK,
    &objectOption},
   {BLT_CONFIG_PIXELS, "-scrollincrement", "scrollIncrement", 
-   "ScrollIncrement", DEF_AXIS_SCROLL_INCREMENT, 
+   "ScrollIncrement", "10",
    Tk_Offset(Axis, scrollUnits), ALL_GRAPHS|BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-scrollmax", "scrollMax", "ScrollMax", NULL, 
    Tk_Offset(Axis, reqScrollMax),  ALL_GRAPHS, &limitOption},
   {BLT_CONFIG_CUSTOM, "-scrollmin", "scrollMin", "ScrollMin", NULL, 
    Tk_Offset(Axis, reqScrollMin), ALL_GRAPHS, &limitOption},
   {BLT_CONFIG_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
-   DEF_AXIS_SHIFTBY, Tk_Offset(Axis, shiftBy),
+   "0.0", Tk_Offset(Axis, shiftBy),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-showticks", "showTicks", "ShowTicks",
-   DEF_AXIS_SHOWTICKS, Tk_Offset(Axis, flags), 
+   "1", Tk_Offset(Axis, flags), 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT,
    &bitmaskGrAxisShowTicksOption},
   {BLT_CONFIG_DOUBLE, "-stepsize", "stepSize", "StepSize",
-   DEF_AXIS_STEP, Tk_Offset(Axis, reqStep),
+   "0.0", Tk_Offset(Axis, reqStep),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_INT, "-subdivisions", "subdivisions", "Subdivisions",
-   DEF_AXIS_SUBDIVISIONS, Tk_Offset(Axis, reqNumMinorTicks), ALL_GRAPHS},
+   "2", Tk_Offset(Axis, reqNumMinorTicks), ALL_GRAPHS},
   {BLT_CONFIG_ANCHOR, "-tickanchor", "tickAnchor", "Anchor",
-   DEF_AXIS_TICK_ANCHOR, Tk_Offset(Axis, reqTickAnchor), ALL_GRAPHS},
+   "c", Tk_Offset(Axis, reqTickAnchor), ALL_GRAPHS},
   {BLT_CONFIG_FONT, "-tickfont", "tickFont", "Font",
-   DEF_AXIS_TICKFONT, Tk_Offset(Axis, tickFont), 
+   STD_FONT_SMALL, Tk_Offset(Axis, tickFont), 
    GRAPH | STRIPCHART},
   {BLT_CONFIG_FONT, "-tickfont", "tickFont", "Font",
-   DEF_AXIS_TICKFONT, Tk_Offset(Axis, tickFont), BARCHART},
+   STD_FONT_SMALL, Tk_Offset(Axis, tickFont), BARCHART},
   {BLT_CONFIG_PIXELS, "-ticklength", "tickLength", "TickLength",
-   DEF_AXIS_TICKLENGTH, Tk_Offset(Axis, tickLength), 
+   "4", Tk_Offset(Axis, tickLength), 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_INT, "-tickdefault", "tickDefault", "TickDefault",
-   DEF_AXIS_DIVISIONS, Tk_Offset(Axis, reqNumMajorTicks),
+   "10", Tk_Offset(Axis, reqNumMajorTicks),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_STRING, "-title", "title", "Title",
    NULL, Tk_Offset(Axis, title),
    BLT_CONFIG_DONT_SET_DEFAULT | BLT_CONFIG_NULL_OK | ALL_GRAPHS},
   {BLT_CONFIG_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
-   DEF_AXIS_TITLE_ALTERNATE, Tk_Offset(Axis, titleAlternate),
+   "0", Tk_Offset(Axis, titleAlternate),
    BLT_CONFIG_DONT_SET_DEFAULT | ALL_GRAPHS},
   {BLT_CONFIG_COLOR, "-titlecolor", "titleColor", "Color", 
-   DEF_AXIS_FOREGROUND, Tk_Offset(Axis, titleColor), 	
+   STD_NORMAL_FOREGROUND, Tk_Offset(Axis, titleColor), 	
    ALL_GRAPHS},
-  {BLT_CONFIG_FONT, "-titlefont", "titleFont", "Font", DEF_AXIS_TITLE_FONT, 
+  {BLT_CONFIG_FONT, "-titlefont", "titleFont", "Font", STD_FONT_NORMAL, 
    Tk_Offset(Axis, titleFont), ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-use", "use", "Use", NULL, 0, ALL_GRAPHS, 
    &useOption},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
+
+static double Clamp(double x) 
+{
+  return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
+}
+
+static int Round(double x)
+{
+  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
+}
 
 static void SetAxisRange(AxisRange *rangePtr, double min, double max)
 {
