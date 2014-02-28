@@ -173,8 +173,8 @@ typedef struct _Pen Pen;
 typedef struct _Marker Marker;
 
 typedef Pen *(PenCreateProc)(void);
-typedef int (PenConfigureProc)(Graph* graphPtr, Pen *penPtr);
-typedef void (PenDestroyProc)(Graph* graphPtr, Pen *penPtr);
+typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
+typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
 
 /*
  *---------------------------------------------------------------------------
@@ -255,10 +255,10 @@ struct _Graph {
 					 * draw around widget when it has the
 					 * focus.  <= 0 means don't draw a
 					 * highlight. */
-  XColor *highlightBgColor;		/* Color for drawing traversal
+  XColor* highlightBgColor;		/* Color for drawing traversal
 					 * highlight area when highlight is
 					 * off. */
-  XColor *highlightColor;		/* Color for drawing traversal
+  XColor* highlightColor;		/* Color for drawing traversal
 					 * highlight. */
   const char *title;			/* Graph title */
   short int titleX, titleY;		/* Position of title on graph. */
@@ -566,7 +566,7 @@ extern int Blt_InitLinePens(Graph* graphPtr);
 
 extern int Blt_InitBarPens(Graph* graphPtr);
 
-extern void Blt_FreePen(Pen *penPtr);
+extern void Blt_FreePen(Pen* penPtr);
 
 extern int Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp *interp, 
 			     int objc, Tcl_Obj *const *objv);

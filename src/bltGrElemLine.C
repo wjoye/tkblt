@@ -91,13 +91,13 @@ typedef struct {
 
   int size;				/* Requested size of symbol in pixels */
 
-  XColor *outlineColor;		/* Outline color */
+  XColor* outlineColor;		/* Outline color */
 
   int outlineWidth;			/* Width of the outline */
 
   GC outlineGC;			/* Outline graphics context */
 
-  XColor *fillColor;			/* Normal fill color */
+  XColor* fillColor;			/* Normal fill color */
 
   GC fillGC;				/* Fill graphics context */
 
@@ -147,9 +147,9 @@ typedef struct {
 
   Blt_Dashes traceDashes;		/* Dash on-off list value */
 
-  XColor *traceColor;			/* Line segment color */
+  XColor* traceColor;			/* Line segment color */
 
-  XColor *traceOffColor;		/* Line segment dash gap color */
+  XColor* traceOffColor;		/* Line segment dash gap color */
 
   GC traceGC;				/* Line segment graphics context */
     
@@ -161,7 +161,7 @@ typedef struct {
 
   int errorBarCapWidth;		/* Width of the cap on error bars. */
 
-  XColor *errorBarColor;		/* Color of the error bar. */
+  XColor* errorBarColor;		/* Color of the error bar. */
 
   GC errorBarGC;			/* Error bar graphics context. */
 
@@ -178,7 +178,7 @@ typedef struct {
 typedef struct {
   Weight weight;			/* Weight range where this pen is
 					 * valid. */
-  LinePen *penPtr;			/* Pen to use. */
+  LinePen* penPtr;			/* Pen to use. */
   GraphPoints symbolPts;
 
   GraphSegments lines;		/* Points to start of the line segments
@@ -255,8 +255,8 @@ typedef struct {
   /* Drawing-related data structures. */
 
   /* Area-under-curve fill attributes. */
-  XColor *fillFgColor;
-  XColor *fillBgColor;
+  XColor* fillFgColor;
+  XColor* fillBgColor;
   GC fillGC;
 
   Tk_3DBorder fillBg;		/* Background for fill area. */
@@ -693,7 +693,7 @@ Element * Blt_LineElement(Graph* graphPtr, const char *name, ClassId classId)
 
 Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
 {
-  LinePen *penPtr = calloc(1, sizeof(LinePen));
+  LinePen* penPtr = calloc(1, sizeof(LinePen));
   InitLinePen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
   penPtr->classId = CID_ELEM_LINE;
@@ -820,7 +820,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
   unsigned long gcMask;
   GC newGC;
   XGCValues gcValues;
-  XColor *colorPtr;
+  XColor* colorPtr;
 
   // Set the outline GC for this pen: GCForeground is outline color.
   // GCBackground is the fill color (only used for bitmap symbols).
@@ -2064,7 +2064,7 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
-    LinePen *penPtr;
+    LinePen* penPtr;
 
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = (LinePen *)stylePtr->penPtr;
@@ -2412,7 +2412,7 @@ static void ClosestLineProc(Graph* graphPtr, Element *basePtr,
 
   mode = searchPtr->mode;
   if (mode == SEARCH_AUTO) {
-    LinePen *penPtr;
+    LinePen* penPtr;
 
     penPtr = NORMALPEN(elemPtr);
     mode = SEARCH_POINTS;
@@ -2456,7 +2456,7 @@ static void ClosestLineProc(Graph* graphPtr, Element *basePtr,
 #define MAX_DRAWARCS(d)		Blt_MaxRequestSize(d, sizeof(XArc))
 
 static void DrawCircles(Display *display, Drawable drawable, 
-			LineElement *elemPtr, LinePen *penPtr, 
+			LineElement *elemPtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int radius)
 {
   int i;
@@ -2516,7 +2516,7 @@ static void DrawCircles(Display *display, Drawable drawable,
 }
 
 static void DrawSquares(Display *display, Drawable drawable, 
-			LineElement *elemPtr, LinePen *penPtr, 
+			LineElement *elemPtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int r)
 {
   XRectangle *rectangles;
@@ -2573,7 +2573,7 @@ static void DrawSquares(Display *display, Drawable drawable,
 }
 
 static void DrawSymbols(Graph* graphPtr, Drawable drawable,
-			LineElement *elemPtr, LinePen *penPtr,
+			LineElement *elemPtr, LinePen* penPtr,
 			int size, int nSymbolPts, Point2d *symbolPts)
 {
   XPoint pattern[13];			/* Template for polygon symbols */
@@ -3106,7 +3106,7 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
 			   Element *basePtr, int x, int y, int size)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
-  LinePen *penPtr;
+  LinePen* penPtr;
 
   penPtr = NORMALPEN(elemPtr);
   if (penPtr->traceWidth > 0) {
@@ -3129,7 +3129,7 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
 }
 
 static void DrawTraces(Graph* graphPtr, Drawable drawable, 
-		       LineElement *elemPtr, LinePen *penPtr)
+		       LineElement *elemPtr, LinePen* penPtr)
 {
   Blt_ChainLink link;
   XPoint *points;
@@ -3200,7 +3200,7 @@ static void DrawTraces(Graph* graphPtr, Drawable drawable,
 }
 
 static void DrawValues(Graph* graphPtr, Drawable drawable, 
-		       LineElement *elemPtr, LinePen *penPtr, 
+		       LineElement *elemPtr, LinePen* penPtr, 
 		       int length, Point2d *points, int *map)
 {
   Point2d *pp, *endp;
@@ -3242,7 +3242,7 @@ static void DrawActiveLineProc(Graph* graphPtr, Drawable drawable,
 			       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
-  LinePen *penPtr = (LinePen *)elemPtr->activePenPtr;
+  LinePen* penPtr = (LinePen *)elemPtr->activePenPtr;
   int symbolSize;
 
   if (penPtr == NULL) {
@@ -3325,7 +3325,7 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
-      LinePen *penPtr;
+      LinePen* penPtr;
 
       stylePtr = Blt_Chain_GetValue(link);
       penPtr = (LinePen *)stylePtr->penPtr;
@@ -3336,7 +3336,7 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
       }
     }
   } else {
-    LinePen *penPtr;
+    LinePen* penPtr;
 
     penPtr = NORMALPEN(elemPtr);
     if ((Blt_Chain_GetLength(elemPtr->traces) > 0) && 
@@ -3366,7 +3366,7 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
-    LinePen *penPtr;
+    LinePen* penPtr;
 
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = (LinePen *)stylePtr->penPtr;
@@ -3395,7 +3395,7 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
 }
 
 static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
-				    LinePen *penPtr, int size)
+				    LinePen* penPtr, int size)
 {
   /* Set line and foreground attributes */
   XColor* fillColor = penPtr->symbol.fillColor;
@@ -3468,7 +3468,7 @@ static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
   Blt_Ps_Append(ps, "} def\n\n");
 }
 
-static void SymbolsToPostScript(Graph* graphPtr, Blt_Ps ps, LinePen *penPtr,
+static void SymbolsToPostScript(Graph* graphPtr, Blt_Ps ps, LinePen* penPtr,
 				int size, int nSymbolPts, Point2d *symbolPts)
 {
   double symbolSize;
@@ -3514,7 +3514,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 				   int size)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
-  LinePen *penPtr;
+  LinePen* penPtr;
 
   penPtr = NORMALPEN(elemPtr);
   if (penPtr->traceWidth > 0) {
@@ -3535,7 +3535,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   }
 }
 
-static void SetLineAttributes(Blt_Ps ps, LinePen *penPtr)
+static void SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
 {
   /* Set the attributes of the line (color, dashes, linewidth) */
   Blt_Ps_XSetLineAttributes(ps, penPtr->traceColor, penPtr->traceWidth, 
@@ -3552,7 +3552,7 @@ static void SetLineAttributes(Blt_Ps ps, LinePen *penPtr)
   }
 }
 
-static void TracesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr)
+static void TracesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen* penPtr)
 {
   Blt_ChainLink link;
 
@@ -3571,7 +3571,7 @@ static void TracesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr)
   }
 }
 
-static void ValuesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr,
+static void ValuesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen* penPtr,
 			       int nSymbolPts, Point2d *symbolPts, 
 			       int *pointToData)
 {
@@ -3608,7 +3608,7 @@ static void ActiveLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 				       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
-  LinePen *penPtr = (LinePen *)elemPtr->activePenPtr;
+  LinePen* penPtr = (LinePen *)elemPtr->activePenPtr;
   int symbolSize;
 
   if (penPtr == NULL) {
@@ -3683,7 +3683,7 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr;
-      LinePen *penPtr;
+      LinePen* penPtr;
 
       stylePtr = Blt_Chain_GetValue(link);
       penPtr = (LinePen *)stylePtr->penPtr;
@@ -3696,7 +3696,7 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
       }
     }
   } else {
-    LinePen *penPtr;
+    LinePen* penPtr;
 
     penPtr = NORMALPEN(elemPtr);
     if ((Blt_Chain_GetLength(elemPtr->traces) > 0) && 
@@ -3711,8 +3711,8 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr;
-    LinePen *penPtr;
-    XColor *colorPtr;
+    LinePen* penPtr;
+    XColor* colorPtr;
 
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = (LinePen *)stylePtr->penPtr;

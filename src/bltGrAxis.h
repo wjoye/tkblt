@@ -52,7 +52,7 @@ typedef struct {
 				 * array of alternatingly drawn pixel
 				 * values. */
     int lineWidth;		/* Width of the grid lines */
-    XColor *color;		/* Color of the grid lines */
+    XColor* color;		/* Color of the grid lines */
     GC gc;			/* Graphics context for the grid. */
 
     Segment2d *segments;	/* Array of line segments representing the
@@ -278,7 +278,7 @@ typedef struct {
     short int width, height;		/* Extents of axis */
     short int maxTickWidth, maxTickHeight;
     Tk_3DBorder normalBg;
-    XColor *activeFgColor;
+    XColor* activeFgColor;
 
     int relief;
     int borderWidth;
@@ -288,7 +288,7 @@ typedef struct {
     Tk_Font tickFont;
     Tk_Anchor tickAnchor;
     Tk_Anchor reqTickAnchor;
-    XColor *tickColor;
+    XColor* tickColor;
     GC tickGC;				/* Graphics context for axis and tick
 					 * labels */
     GC activeTickGC;
@@ -297,7 +297,7 @@ typedef struct {
     Tk_Font titleFont;
     Tk_Anchor titleAnchor;
     Tk_Justify titleJustify;
-    XColor *titleColor;
+    XColor* titleColor;
     
     Grid major, minor;			/* Axis grid information. */
 

@@ -48,7 +48,7 @@
 typedef struct {
     unsigned int state;			/* If non-zero, indicates to draw text
 					 * in the active color */
-    XColor *color;			/* Color to draw the text. */
+    XColor* color;			/* Color to draw the text. */
     Tk_Font font;			/* Font to use to draw text */
     double angle;			/* Rotation of text in degrees. */
     Tk_Justify justify;			/* Justification of the text
@@ -112,7 +112,7 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
 
 #define Blt_Ts_InitStyle(ts)		\
     ((ts).anchor = TK_ANCHOR_NW,	\
-     (ts).color = (XColor *)NULL,	\
+     (ts).color = (XColor*)NULL,	\
      (ts).font = NULL,			\
      (ts).justify = TK_JUSTIFY_LEFT,	\
      (ts).leader = 0,			\

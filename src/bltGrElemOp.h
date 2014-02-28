@@ -111,7 +111,7 @@ typedef struct {
 } PenStyle;
 
 typedef struct {
-  XColor *color;		/* Color of error bar */
+  XColor* color;		/* Color of error bar */
   int lineWidth;		/* Width of the error bar segments. */
   GC gc;
   int show;			/* Flags for errorbars: none, x, y, or both */

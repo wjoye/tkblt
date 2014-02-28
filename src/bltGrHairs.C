@@ -55,7 +55,7 @@ struct _Crosshairs {
   int lineWidth;		/* Width of the simulated crosshair lines */
   XSegment segArr[2];		/* Positions of line segments representing the
 				 * simulated crosshairs. */
-  XColor *colorPtr;		/* Foreground color of crosshairs */
+  XColor* colorPtr;		/* Foreground color of crosshairs */
   GC gc;			/* Graphics context for crosshairs. Set to
 				 * GXxor to not require redraws of graph */
 };

@@ -67,7 +67,7 @@ typedef struct {
   Graph* graphPtr;			/* Graph that the pen is associated
 					 * with. */
   /* Barchart specific pen fields start here. */
-  XColor *outlineColor;		/* Outline (foreground) color of bar */
+  XColor* outlineColor;		/* Outline (foreground) color of bar */
   Tk_3DBorder fill;		/* 3D border and fill (background)
 				 * color */
   int borderWidth;			/* 3D border width of bar */
@@ -83,7 +83,7 @@ typedef struct {
   int errorBarLineWidth;		/* Width of the error bar segments. */
 
   int errorBarCapWidth;
-  XColor *errorBarColor;		/* Color of the error bar. */
+  XColor* errorBarColor;		/* Color of the error bar. */
 
   GC errorBarGC;			/* Error bar graphics context. */
 
@@ -100,7 +100,7 @@ typedef struct {
 typedef struct {
   Weight weight;			/* Weight range where this pen is
 					 * valid. */
-  BarPen *penPtr;			/* Pen to use. */
+  BarPen* penPtr;			/* Pen to use. */
 
   XRectangle *bars;			/* Indicates starting location in bar
 					 * array for this pen. */
@@ -533,7 +533,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen *basePtr)
 
   // errorBarGC
   gcMask = GCForeground | GCLineWidth;
-  XColor *colorPtr = penPtr->errorBarColor;
+  XColor* colorPtr = penPtr->errorBarColor;
   if (!colorPtr)
     colorPtr = penPtr->outlineColor;
   gcValues.foreground = colorPtr->pixel;
@@ -1363,7 +1363,7 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
 			   Element *basePtr, int x, int y, int size)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
-  BarPen *penPtr;
+  BarPen* penPtr;
   int radius;
 
   penPtr = NORMALPEN(elemPtr);
@@ -1420,7 +1420,7 @@ static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
   XSetClipMask(display, gc, None);
 }
 
-static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen *penPtr,
+static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 			    XRectangle *bars, int nBars)
 {
   TkRegion rgn;
@@ -1484,7 +1484,7 @@ static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen *penPtr,
 
 static void DrawBarValues(Graph* graphPtr, Drawable drawable, 
 			  BarElement *elemPtr,
-			  BarPen *penPtr, XRectangle *bars, int nBars, 
+			  BarPen* penPtr, XRectangle *bars, int nBars, 
 			  int *barToData)
 {
   XRectangle *rp, *rend;
@@ -1543,7 +1543,7 @@ static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable,
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr;
-    BarPen *penPtr;
+    BarPen* penPtr;
 
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = stylePtr->penPtr;
@@ -1574,7 +1574,7 @@ static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable,
   BarElement *elemPtr = (BarElement *)basePtr;
 
   if (elemPtr->activePenPtr) {
-    BarPen *penPtr = elemPtr->activePenPtr;
+    BarPen* penPtr = elemPtr->activePenPtr;
 
     if (elemPtr->nActiveIndices > 0) {
       if (elemPtr->flags & ACTIVE_PENDING) {
@@ -1602,7 +1602,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
 				   double x, double y, int size)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
-  BarPen *penPtr;
+  BarPen* penPtr;
 
   penPtr = NORMALPEN(elemPtr);
   if (!penPtr->fill && !penPtr->outlineColor)
@@ -1635,7 +1635,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
   Blt_Ps_Format(ps, "%g %g %d Sq\n", x, y, size);
 }
 
-static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen *penPtr, 
+static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen* penPtr, 
 				 XRectangle *bars, int nBars)
 {
   XRectangle *rp, *rend;
@@ -1675,7 +1675,7 @@ static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen *penPtr,
 
 static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps, 
 				  BarElement *elemPtr,
-				  BarPen *penPtr, XRectangle *bars, int nBars, 
+				  BarPen* penPtr, XRectangle *bars, int nBars, 
 				  int *barToData)
 {
   XRectangle *rp, *rend;
@@ -1727,7 +1727,7 @@ static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   BarElement *elemPtr = (BarElement *)basePtr;
 
   if (elemPtr->activePenPtr) {
-    BarPen *penPtr = elemPtr->activePenPtr;
+    BarPen* penPtr = elemPtr->activePenPtr;
 	
     if (elemPtr->nActiveIndices > 0) {
       if (elemPtr->flags & ACTIVE_PENDING) {
@@ -1761,8 +1761,8 @@ static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr;
-    BarPen *penPtr;
-    XColor *colorPtr;
+    BarPen* penPtr;
+    XColor* colorPtr;
 
     stylePtr = Blt_Chain_GetValue(link);
     penPtr = stylePtr->penPtr;

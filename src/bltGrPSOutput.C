@@ -413,7 +413,7 @@ Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, const char *fileName)
  *---------------------------------------------------------------------------
  */
 static void
-XColorToPostScript(Blt_Ps ps, XColor *colorPtr)
+XColorToPostScript(Blt_Ps ps, XColor* colorPtr)
 {
     /* 
      * Shift off the lower byte before dividing because some versions of Tk
@@ -426,7 +426,7 @@ XColorToPostScript(Blt_Ps ps, XColor *colorPtr)
 }
 
 void
-Blt_Ps_XSetBackground(PostScript *psPtr, XColor *colorPtr)
+Blt_Ps_XSetBackground(PostScript *psPtr, XColor* colorPtr)
 {
     /* If the color name exists in TCL array variable, use that translation */
     if ((psPtr->setupPtr != NULL) && (psPtr->setupPtr->colorVarName != NULL)) {
@@ -447,7 +447,7 @@ Blt_Ps_XSetBackground(PostScript *psPtr, XColor *colorPtr)
 }
 
 void
-Blt_Ps_XSetForeground(PostScript *psPtr, XColor *colorPtr)
+Blt_Ps_XSetForeground(PostScript *psPtr, XColor* colorPtr)
 {
     /* If the color name exists in TCL array variable, use that translation */
     if ((psPtr->setupPtr != NULL) && (psPtr->setupPtr->colorVarName != NULL)) {
@@ -688,7 +688,7 @@ Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr)
 void
 Blt_Ps_XSetLineAttributes(
     Blt_Ps ps,
-    XColor *colorPtr,
+    XColor* colorPtr,
     int lineWidth,
     Blt_Dashes *dashesPtr,
     int capStyle, 
@@ -810,8 +810,8 @@ Blt_Ps_Draw3DRectangle(
 {
     Point2d points[7];
     TkBorder *borderPtr = (TkBorder *) border;
-    XColor *lightPtr, *darkPtr;
-    XColor *topPtr, *bottomPtr;
+    XColor* lightPtr, *darkPtr;
+    XColor* topPtr, *bottomPtr;
     XColor light, dark;
     int twiceWidth = (borderWidth * 2);
 

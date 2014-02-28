@@ -113,10 +113,10 @@ struct _Legend {
   int maxSymSize;			/* Size of largest symbol to be
 					 * displayed.  Used to calculate size
 					 * of legend */
-  XColor *fgColor;
+  XColor* fgColor;
   Tk_3DBorder activeBg;		/* Active legend entry background
 				 * color. */
-  XColor *activeFgColor;
+  XColor* activeFgColor;
   int activeRelief;			/* 3-D effect on active entry. */
   int entryBW;		/* Border width around each entry in
 			 * legend. */
@@ -130,13 +130,13 @@ struct _Legend {
   int selRelief;
   int selBW;
 
-  XColor *selInFocusFgColor;		/* Text color of a selected entry. */
-  XColor *selOutFocusFgColor;
+  XColor* selInFocusFgColor;		/* Text color of a selected entry. */
+  XColor* selOutFocusFgColor;
 
   Tk_3DBorder selInFocusBg;
   Tk_3DBorder selOutFocusBg;
 
-  XColor *focusColor;
+  XColor* focusColor;
   Blt_Dashes focusDashes;		/* Dash on-off value. */
   GC focusGC;				/* Graphics context for the active
 					 * label. */
@@ -1693,7 +1693,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     count++;
     if (legendPtr->focusPtr == elemPtr) { /* Focus outline */
       if (isSelected) {
-	XColor *color;
+	XColor* color;
 
 	color = (legendPtr->flags & FOCUS) ?
 	  legendPtr->selInFocusFgColor :

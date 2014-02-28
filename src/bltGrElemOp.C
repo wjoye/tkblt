@@ -1036,7 +1036,7 @@ static int GetPenStyleFromObj(Tcl_Interp *interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr)
 {
-  Pen *penPtr;
+  Pen* penPtr;
   Tcl_Obj **objv;
   int objc;
 

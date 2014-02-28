@@ -245,7 +245,7 @@ typedef struct {
   Point2d anchorPt;			/* Translated anchor point. */
 
   XColor *outlineColor;		/* Foreground color */
-  XColor *fillColor;			/* Background color */
+  XColor* fillColor;			/* Background color */
 
   GC gc;				/* Private graphic context */
   GC fillGC;				/* Shared graphic context */
@@ -367,8 +367,8 @@ typedef struct {
 
   int state;
 
-  XColor *fillColor;
-  XColor *outlineColor;		/* Foreground and background colors */
+  XColor* fillColor;
+  XColor* outlineColor;		/* Foreground and background colors */
 
   int lineWidth;			/* Line width. */
   int capStyle;			/* Cap style. */
@@ -656,7 +656,7 @@ typedef struct {
   TextStyle style;			/* Text attributes (font, fg, anchor,
 					 * etc) */
   Point2d outline[5];
-  XColor *fillColor;
+  XColor* fillColor;
   GC fillGC;
 } TextMarker;
 
@@ -1158,7 +1158,7 @@ GetColorPair(
 	     ColorPair *pairPtr,
 	     int allowDefault)
 {
-  XColor *fgColor, *bgColor;
+  XColor* fgColor, *bgColor;
   const char *string;
 
   fgColor = bgColor = NULL;
@@ -1286,20 +1286,7 @@ ObjToColorPairProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NameOfColor --
- *
- *	Convert the color option value into a string.
- *
- * Results:
- *	The static string representing the color option is returned.
- *
- *---------------------------------------------------------------------------
- */
-static const char *
-NameOfColor(XColor *colorPtr)
+static const char* NameOfColor(XColor* colorPtr)
 {
   if (colorPtr == NULL) {
     return "";
@@ -1310,19 +1297,6 @@ NameOfColor(XColor *colorPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ColorPairToObjProc --
- *
- *	Convert the color pairs into color names.
- *
- * Results:
- *	The string representing the symbol color is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
 static Tcl_Obj *
 ColorPairToObjProc(
 		   ClientData clientData,		/* Not used. */
