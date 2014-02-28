@@ -85,6 +85,8 @@ static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 
 // Defs
 
+static void FreeTicksProc(ClientData clientData, Display *display,
+			  char *widgRec, int offset);
 static void ReleaseAxis(Axis *axisPtr);
 static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
@@ -221,6 +223,157 @@ static Tcl_Obj* FormatGetProc(ClientData clientData, Tk_Window tkwin,
   return objPtr;
 }
 
+static Tk_CustomOptionSetProc UseSetProc;
+static Tk_CustomOptionGetProc UseGetProc;
+Tk_ObjCustomOption useObjOption =
+  {
+    "use", UseSetProc, UseGetProc, NULL, NULL, NULL
+  };
+
+static int UseSetProc(ClientData clientData, Tcl_Interp* interp,
+			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			int offset, char* save, int flags)
+{
+  Axis* axisPtr = (Axis*)(widgRec);
+
+  Graph* graphPtr = axisPtr->obj.graphPtr;
+
+  // Clear the axis class if it's not currently used by an element
+  if (axisPtr->refCount == 0)
+    Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
+
+  // Remove the axis from the margin's use list and clear its use flag.
+  if (axisPtr->link)
+    Blt_Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
+
+  axisPtr->flags &= ~AXIS_USE;
+  const char *string = Tcl_GetString(*objPtr);
+  if ((string == NULL) || (string[0] == '\0'))
+    goto done;
+
+  AxisName *p, *pend;
+  for (p = axisNames, pend = axisNames + nAxisNames; p < pend; p++) {
+    if (strcmp(p->name, string) == 0) {
+      break;			/* Found the axis name. */
+    }
+  }
+  if (p == pend) {
+    Tcl_AppendResult(interp, "unknown axis type \"", string, "\": "
+		     "should be x, y, x1, y2, or \"\".", NULL);
+    return TCL_ERROR;
+  }
+
+  // Check the axis class
+  // Can't use the axis if it's already being used as another type.
+  if (axisPtr->obj.classId == CID_NONE)
+    Blt_GraphSetObjectClass(&axisPtr->obj, p->classId);
+  else if (axisPtr->obj.classId != p->classId) {
+    Tcl_AppendResult(interp, "wrong type for axis \"", 
+		     axisPtr->obj.name, "\": can't use ", 
+		     axisPtr->obj.className, " type axis.", NULL); 
+    return TCL_ERROR;
+  }
+
+  int margin = (graphPtr->inverted) ? p->invertMargin : p->margin;
+  Blt_Chain chain = graphPtr->margins[margin].axes;
+  // Move the axis from the old margin's "use" list to the new.
+  if (axisPtr->link)
+    Blt_Chain_AppendLink(chain, axisPtr->link);
+  else
+    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
+
+  axisPtr->chain = chain;
+  axisPtr->flags |= AXIS_USE;
+  axisPtr->margin = margin;
+
+ done:
+  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
+  // When any axis changes, we need to layout the entire graph.
+  graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+  Blt_EventuallyRedrawGraph(graphPtr);
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* UseGetProc(ClientData clientData, Tk_Window tkwin, 
+			     char *widgRec, int offset)
+{
+  Axis* axisPtr = (Axis*)(widgRec);
+    
+  if (axisPtr->margin == MARGIN_NONE)
+    return Tcl_NewStringObj("", -1);
+
+  return Tcl_NewStringObj(axisNames[axisPtr->margin].name, -1);
+}
+
+static Tk_CustomOptionSetProc TicksSetProc;
+static Tk_CustomOptionGetProc TicksGetProc;
+Tk_ObjCustomOption majorTicksObjOption =
+  {
+    "majorTicks", TicksSetProc, TicksGetProc, NULL, NULL, 
+    (ClientData)AXIS_AUTO_MAJOR,
+  };
+Tk_ObjCustomOption minorTicksObjOption =
+  {
+    "minorTicks", TicksSetProc, TicksGetProc, NULL, NULL, 
+    (ClientData)AXIS_AUTO_MINOR,
+  };
+
+static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
+			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			int offset, char* save, int flags)
+{
+  Axis* axisPtr = (Axis*)widgRec;
+  Ticks** ticksPtrPtr = (Ticks**)(widgRec + offset);
+  unsigned long mask = (unsigned long)clientData;
+
+  int objc;
+  Tcl_Obj** objv;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  axisPtr->flags |= mask;
+  Ticks* ticksPtr = NULL;
+  if (objc > 0) {
+    ticksPtr = malloc(sizeof(Ticks) + (objc*sizeof(double)));
+    for (int ii = 0; ii<objc; ii++) {
+      double value;
+      if (Blt_ExprDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
+	free(ticksPtr);
+	return TCL_ERROR;
+      }
+      ticksPtr->values[ii] = value;
+    }
+    ticksPtr->nTicks = objc;
+    axisPtr->flags &= ~mask;
+  }
+  FreeTicksProc(clientData, Tk_Display(tkwin), widgRec, offset);
+  *ticksPtrPtr = ticksPtr;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin, 
+			     char *widgRec, int offset)
+{
+  Axis* axisPtr = (Axis*)widgRec;
+  Ticks* ticksPtr = *(Ticks**) (widgRec + offset);
+  unsigned long mask = (unsigned long)clientData;
+
+  if (ticksPtr && !(axisPtr->flags & mask)) {
+    int cnt = ticksPtr->nTicks;
+    Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+    for (int ii = 0; ii<cnt; ii++)
+      ll[ii] = Tcl_NewDoubleObj(ticksPtr->values[ii]);
+
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+    free(ll);
+    return listObjPtr;
+  }
+  else
+    return Tcl_NewListObj(0, NULL);
+}
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
    STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
@@ -236,26 +389,20 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    "0", -1, Tk_Offset(Axis, borderWidth), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-checklimits", "checkLimits", "CheckLimits", 
-   "0", Tk_Offset(Axis, flags), &bitmaskGrAxisCheckLimitsOption},
-  */
+  {TK_OPTION_BOOLEAN, "-checklimits", "checkLimits", "CheckLimits", 
+   "no", -1, Tk_Offset(Axis, flags), 0, NULL, 0},
   {TK_OPTION_COLOR, "-color", "color", "Color",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, tickColor), 0, NULL, 0},
   {TK_OPTION_STRING, "-command", "command", "Command",
    NULL, -1, Tk_Offset(Axis, formatCmd), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-descending", "descending", "Descending",
    "no", -1, Tk_Offset(Axis, descending), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-exterior", "exterior", "exterior", "1",
-   Tk_Offset(Axis, flags), &bitmaskGrAxisExteriorOption},
-  */
+  {TK_OPTION_BOOLEAN, "-exterior", "exterior", "exterior",
+   "yes", -1, Tk_Offset(Axis, exterior), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
-  /*
-  {TK_OPTION_CUSTOM, "-grid", "grid", "Grid", "1", 
-   Tk_Offset(Axis, flags), BARCHART, &bitmaskGrAxisGridOption},
-  */
+  {TK_OPTION_BOOLEAN, "-grid", "grid", "Grid",
+   "yes", -1, Tk_Offset(Axis, showGrid), 0, NULL, 0},
   {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
    "gray64", -1, Tk_Offset(Axis, major.color), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-griddashes", "gridDashes", "GridDashes", 
@@ -263,11 +410,8 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_PIXELS, "-gridlinewidth", "gridLineWidth", "GridLineWidth",
    "0", -1, Tk_Offset(Axis, major.lineWidth), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-gridminor", "gridMinor", "GridMinor", 
-   "1", Tk_Offset(Axis, flags), TK_OPTION_DONT_SET_DEFAULT | ALL_GRAPHS, 
-   &bitmaskGrAxisGridMinorOption},
-  */
+  {TK_OPTION_BOOLEAN, "-gridminor", "gridMinor", "GridMinor", 
+   "yes", -1, Tk_Offset(Axis, showGridMinor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-gridminorcolor", "gridMinorColor", "GridMinorColor", 
    "gray64", -1, Tk_Offset(Axis, minor.color), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-gridminordashes", "gridMinorDashes", "GridMinorDashes", 
@@ -298,20 +442,16 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-loose", "loose", "Loose", 
    "0", 0, ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT, &looseOption},
   */
-  /*
   {TK_OPTION_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
-   NULL, Tk_Offset(Axis, t1Ptr),
-   TK_OPTION_NULL_OK | ALL_GRAPHS, &majorTicksOption},
-  */
+   NULL, -1, Tk_Offset(Axis, t1Ptr), 
+   TK_OPTION_NULL_OK, &majorTicksObjOption, 0},
   {TK_OPTION_CUSTOM, "-max", "max", "Max", 
    NULL, -1, Tk_Offset(Axis, reqMax), TK_OPTION_NULL_OK, &limitObjOption, 0},
   {TK_OPTION_CUSTOM, "-min", "min", "Min", 
    NULL, -1, Tk_Offset(Axis, reqMin), TK_OPTION_NULL_OK, &limitObjOption, 0},
-  /*
   {TK_OPTION_CUSTOM, "-minorticks", "minorTicks", "MinorTicks",
-   NULL, Tk_Offset(Axis, t2Ptr), 
-   TK_OPTION_NULL_OK | ALL_GRAPHS, &minorTicksOption},
-  */
+   NULL, -1, Tk_Offset(Axis, t2Ptr), 
+   TK_OPTION_NULL_OK, &minorTicksObjOption, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "flat", -1, Tk_Offset(Axis, relief), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
@@ -332,12 +472,8 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &limitObjOption, 0},
   {TK_OPTION_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
    "0.0", -1, Tk_Offset(Axis, shiftBy), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-showticks", "showTicks", "ShowTicks",
-   "1", Tk_Offset(Axis, flags), 
-   ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT,
-   &bitmaskGrAxisShowTicksOption},
-  */
+  {TK_OPTION_BOOLEAN, "-showticks", "showTicks", "ShowTicks",
+   "yes", -1, Tk_Offset(Axis, showTicks), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-stepsize", "stepSize", "StepSize",
    "0.0", -1, Tk_Offset(Axis, reqStep), 0, NULL, 0},
   {TK_OPTION_INT, "-subdivisions", "subdivisions", "Subdivisions",
@@ -358,10 +494,8 @@ static Tk_OptionSpec optionSpecs[] = {
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, titleColor), 0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    STD_FONT_NORMAL, -1, Tk_Offset(Axis, titleFont), 0, NULL, 0},
-  /*
-  {TK_OPTION_CUSTOM, "-use", "use", "Use", NULL, 0, ALL_GRAPHS, 
-   &useOption},
-  */
+  {TK_OPTION_CUSTOM, "-use", "use", "Use", 
+   NULL, -1, 0, TK_OPTION_NULL_OK, &useObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -1732,14 +1866,13 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
   tickLabel = axisLine = t1 = t2 = 0;
   labelOffset = AXIS_PAD_TITLE;
   if (axisPtr->lineWidth > 0) {
-    if (axisPtr->flags & AXIS_SHOWTICKS) {
+    if (axisPtr->showTicks) {
       t1 = axisPtr->tickLength;
       t2 = (t1 * 10) / 15;
     }
     labelOffset = t1 + AXIS_PAD_TITLE;
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior)
       labelOffset += axisPtr->lineWidth;
-    }
   }
   axisPad = 0;
   if (graphPtr->plotRelief != TK_RELIEF_SOLID) {
@@ -1759,7 +1892,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
   switch (margin) {
   case MARGIN_TOP:
     axisLine = graphPtr->top;
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior) {
       axisLine -= graphPtr->plotBW + axisPad + axisPtr->lineWidth / 2;
       tickLabel = axisLine - 2;
       if (axisPtr->lineWidth > 0) {
@@ -1817,7 +1950,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
     if (graphPtr->plotRelief == TK_RELIEF_SOLID) {
       axisLine++;
     } 
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior) {
       axisLine += graphPtr->plotBW + axisPad + axisPtr->lineWidth / 2;
       tickLabel = axisLine + 2;
       if (axisPtr->lineWidth > 0) {
@@ -1905,7 +2038,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
      * H = highlight thickness
      */
     axisLine = graphPtr->left;
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior) {
       axisLine -= graphPtr->plotBW + axisPad + axisPtr->lineWidth / 2;
       tickLabel = axisLine - 2;
       if (axisPtr->lineWidth > 0) {
@@ -1951,7 +2084,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       axisLine++;			/* Draw axis line within solid plot
 					 * border. */
     } 
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior) {
       axisLine += graphPtr->plotBW + axisPad + axisPtr->lineWidth / 2;
       tickLabel = axisLine + 2;
       if (axisPtr->lineWidth > 0) {
@@ -2004,7 +2137,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
   } else {
     infoPtr->label = axisLine + labelOffset;
   }
-  if ((axisPtr->flags & AXIS_EXTERIOR) == 0) {
+  if (!axisPtr->exterior) {
     /*infoPtr->label = axisLine + labelOffset - t1; */
     infoPtr->t1 = axisLine - t1;
     infoPtr->t2 = axisLine - t2;
@@ -2075,7 +2208,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     MakeAxisLine(axisPtr, infoPtr->axis, sp);
     sp++;
   }
-  if (axisPtr->flags & AXIS_SHOWTICKS) {
+  if (axisPtr->showTicks) {
     Blt_ChainLink link;
     double labelPos;
     int i;
@@ -2368,7 +2501,7 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
 			  viewMax, viewMin, worldWidth);
     }
   }
-  if (axisPtr->flags & AXIS_SHOWTICKS) {
+  if (axisPtr->showTicks) {
     Blt_ChainLink link;
     TextStyle ts;
 
@@ -2429,7 +2562,7 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
     Blt_Ps_DrawText(ps, axisPtr->title, &ts, axisPtr->titlePos.x, 
 		    axisPtr->titlePos.y);
   }
-  if (axisPtr->flags & AXIS_SHOWTICKS) {
+  if (axisPtr->showTicks) {
     Blt_ChainLink link;
     TextStyle ts;
 
@@ -2494,9 +2627,9 @@ static void MapGridlines(Axis *axisPtr)
     t2Ptr = GenerateTicks(&axisPtr->minorSweep);
   }
   needed = t1Ptr->nTicks;
-  if (axisPtr->flags & AXIS_GRID_MINOR) {
+  if (axisPtr->showGridMinor)
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
-  }
+
   if (needed == 0) {
     return;			
   }
@@ -2523,7 +2656,7 @@ static void MapGridlines(Axis *axisPtr)
     double value;
 
     value = t1Ptr->values[i];
-    if (axisPtr->flags & AXIS_GRID_MINOR) {
+    if (axisPtr->showGridMinor) {
       int j;
 
       for (j = 0; j < t2Ptr->nTicks; j++) {
@@ -2559,14 +2692,12 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
   FreeTickLabels(axisPtr->tickLabels);
   y = 0;
 
-  if ((axisPtr->flags & AXIS_EXTERIOR) && 
-      (graphPtr->plotRelief != TK_RELIEF_SOLID)) {
-    /* Leave room for axis baseline and padding */
+  // Leave room for axis baseline and padding
+  if (axisPtr->exterior && (graphPtr->plotRelief != TK_RELIEF_SOLID))
     y += axisPtr->lineWidth + 2;
-  }
 
   axisPtr->maxTickHeight = axisPtr->maxTickWidth = 0;
-  if (axisPtr->flags & AXIS_SHOWTICKS) {
+  if (axisPtr->showTicks) {
     unsigned int pad;
     unsigned int i, nLabels, nTicks;
 
@@ -2618,7 +2749,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
     assert(nLabels <= nTicks);
 	
     pad = 0;
-    if (axisPtr->flags & AXIS_EXTERIOR) {
+    if (axisPtr->exterior) {
       /* Because the axis cap style is "CapProjecting", we need to
        * account for an extra 1.5 linewidth at the end of each line.  */
       pad = ((axisPtr->lineWidth * 12) / 8);
@@ -2632,7 +2763,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
       }  
     }
     y += 2 * AXIS_PAD_TITLE;
-    if ((axisPtr->lineWidth > 0) && (axisPtr->flags & AXIS_EXTERIOR)) {
+    if ((axisPtr->lineWidth > 0) && axisPtr->exterior) {
       /* Distance from axis line to tick label. */
       y += axisPtr->tickLength;
     }
@@ -3133,7 +3264,7 @@ static int ConfigureAxis(Axis *axisPtr)
   axisPtr->scrollMin = axisPtr->reqScrollMin;
   axisPtr->scrollMax = axisPtr->reqScrollMax;
   if (axisPtr->logScale) {
-    if (axisPtr->flags & AXIS_CHECK_LIMITS) {
+    if (axisPtr->checkLimits) {
       /* Check that the logscale limits are positive.  */
       if ((!isnan(axisPtr->reqMin)) && (axisPtr->reqMin <= 0.0)) {
 	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
@@ -3198,35 +3329,36 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
     axisPtr = Tcl_GetHashValue(hPtr);
     if ((axisPtr->flags & DELETE_PENDING) == 0) {
       Tcl_AppendResult(graphPtr->interp, "axis \"", name,
-		       "\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
+		       "\" already exists in \"", 
+		       Tk_PathName(graphPtr->tkwin), "\"",
 		       NULL);
       return NULL;
     }
     axisPtr->flags &= ~DELETE_PENDING;
   } else {
     axisPtr = calloc(1, sizeof(Axis));
-    if (axisPtr == NULL) {
-      Tcl_AppendResult(graphPtr->interp, 
-		       "can't allocate memory for axis \"", name, "\"", NULL);
-      return NULL;
-    }
     axisPtr->obj.name = Blt_Strdup(name);
     axisPtr->hashPtr = hPtr;
     Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
     axisPtr->obj.graphPtr = graphPtr;
-    axisPtr->looseMin = axisPtr->looseMax = AXIS_TIGHT;
+    axisPtr->looseMin = AXIS_TIGH;
+    axisPtr->looseMax = AXIS_TIGHT;
     axisPtr->reqNumMinorTicks = 2;
     axisPtr->reqNumMajorTicks = 4 /*10*/;
     axisPtr->margin = MARGIN_NONE;
     axisPtr->tickLength = 8;
     axisPtr->scrollUnits = 10;
-    axisPtr->reqMin = axisPtr->reqMax = NAN;
-    axisPtr->reqScrollMin = axisPtr->reqScrollMax = NAN;
-    axisPtr->flags = (AXIS_SHOWTICKS|AXIS_GRID_MINOR|AXIS_AUTO_MAJOR|
-		      AXIS_AUTO_MINOR | AXIS_EXTERIOR);
-    if (graphPtr->classId == CID_ELEM_BAR) {
-      axisPtr->flags |= AXIS_GRID;
-    }
+    axisPtr->reqMin = NAN;
+    axisPtr->reqMax = NAN;
+    axisPtr->reqScrollMin = NAN;
+    axisPtr->reqScrollMax = NAN;
+    axisPtr->flags = (AXIS_AUTO_MAJOR|AXIS_AUTO_MINOR);
+    axisPtr->exterior =1;
+    axisPtr->hide =0;
+    axisPtr->showGridMinor =1;
+    axisPtr->showGrid =1;
+    axisPtr->checkLimits =0;
+
     if ((graphPtr->classId == CID_ELEM_BAR) && 
 	((margin == MARGIN_TOP) || (margin == MARGIN_BOTTOM))) {
       axisPtr->reqStep = 1.0;
@@ -4104,9 +4236,9 @@ Blt_MapAxes(Graph* graphPtr)
 	}
 	MapAxis(axisPtr, offset, margin);
       }
-      if (axisPtr->flags & AXIS_GRID) {
+      if (axisPtr->showGrid)
 	MapGridlines(axisPtr);
-      }
+
       offset += (AxisIsHorizontal(axisPtr)) 
 	? axisPtr->height : axisPtr->width;
       count++;
@@ -4149,15 +4281,15 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
       if (axisPtr->hide || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
-      if ((axisPtr->flags & AXIS_USE) && (axisPtr->flags & AXIS_GRID)) {
+      if ((axisPtr->flags & AXIS_USE) && axisPtr->showGrid) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, 
 			   axisPtr->major.gc, axisPtr->major.segments, 
 			   axisPtr->major.nUsed);
-	if (axisPtr->flags & AXIS_GRID_MINOR) {
+
+	if (axisPtr->showGridMinor)
 	  Blt_Draw2DSegments(graphPtr->display, drawable, 
 			     axisPtr->minor.gc, axisPtr->minor.segments, 
 			     axisPtr->minor.nUsed);
-	}
       }
     }
   }
@@ -4175,23 +4307,24 @@ void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
       Axis *axisPtr;
 
       axisPtr = Blt_Chain_GetValue(link);
-      if (axisPtr->hide || 
-	  ((axisPtr->flags & (DELETE_PENDING|AXIS_USE|AXIS_GRID))) !=
-	  (AXIS_GRID|AXIS_USE))
+      if (axisPtr->hide || !axisPtr->showGrid ||
+	  ((axisPtr->flags & (DELETE_PENDING|AXIS_USE))) != AXIS_USE)
 	continue;
 
       Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n",
 		    axisPtr->obj.name);
       Blt_Ps_XSetLineAttributes(ps, axisPtr->major.color, 
-				axisPtr->major.lineWidth, &axisPtr->major.dashes, CapButt, 
+				axisPtr->major.lineWidth, 
+				&axisPtr->major.dashes, CapButt, 
 				JoinMiter);
       Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n",
 		    axisPtr->obj.name);
       Blt_Ps_Draw2DSegments(ps, axisPtr->major.segments, 
 			    axisPtr->major.nUsed);
-      if (axisPtr->flags & AXIS_GRID_MINOR) {
+      if (axisPtr->showGridMinor) {
 	Blt_Ps_XSetLineAttributes(ps, axisPtr->minor.color, 
-				  axisPtr->minor.lineWidth, &axisPtr->minor.dashes, CapButt, 
+				  axisPtr->minor.lineWidth, 
+				  &axisPtr->minor.dashes, CapButt, 
 				  JoinMiter);
 	Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n",
 		      axisPtr->obj.name);

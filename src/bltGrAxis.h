@@ -76,6 +76,11 @@ typedef struct {
   GraphObj obj;			/* Must be first field in axis. */
 
   int hide;
+  int showTicks;
+  int showGrid;
+  int showGridMinor;
+  int exterior;
+  int checkLimits;
   unsigned int flags;		
 
   Tcl_HashEntry *hashPtr;
