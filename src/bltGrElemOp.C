@@ -56,14 +56,14 @@ static void FreeElement(char* data);
 static void FindRange(ElemValues *valuesPtr);
 static int GetIndex(Tcl_Interp *interp, Element *elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
-static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
+static int GetPenStyleFromObj(Tcl_Interp *interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
 static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, 
 			 const char *vecName);
 static int ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr);
-typedef int (GraphElementProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp *interp, int objc, 
 			       Tcl_Obj *const *objv);
 
 // OptionSpecs
@@ -284,7 +284,7 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
 
 // Create
 
-static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+static int CreateElement(Graph* graphPtr, Tcl_Interp *interp, int objc, 
 			 Tcl_Obj *const *objv, ClassId classId)
 {
   char *string = Tcl_GetString(objv[3]);
@@ -337,7 +337,7 @@ static int CreateElement(Graph *graphPtr, Tcl_Interp *interp, int objc,
 
 static void DestroyElement(Element *elemPtr)
 {
-  Graph *graphPtr = elemPtr->obj.graphPtr;
+  Graph* graphPtr = elemPtr->obj.graphPtr;
 
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
@@ -459,7 +459,7 @@ static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
 
 // Ops
 
-static int ActivateOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ActivateOp(Graph* graphPtr, Tcl_Interp *interp,
 		      int objc, Tcl_Obj *const *objv)
 {
   Element *elemPtr;
@@ -513,7 +513,7 @@ static int ActivateOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int BindOp(Graph *graphPtr, Tcl_Interp *interp,
+static int BindOp(Graph* graphPtr, Tcl_Interp *interp,
 		  int objc, Tcl_Obj *const *objv)
 {
   if (objc == 3) {
@@ -609,7 +609,7 @@ static Blt_ConfigSpec closestSpecs[] = {
    (char *)NULL, 0, 0}
 };
 
-static int ClosestOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ClosestOp(Graph* graphPtr, Tcl_Interp *interp,
 		     int objc, Tcl_Obj *const *objv)
 {
   Element *elemPtr;
@@ -720,7 +720,7 @@ static int ClosestOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int DeactivateOp(Graph *graphPtr, Tcl_Interp *interp,
+static int DeactivateOp(Graph* graphPtr, Tcl_Interp *interp,
 			int objc, Tcl_Obj *const *objv)
 {
   int i;
@@ -742,7 +742,7 @@ static int DeactivateOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int DeleteOp(Graph *graphPtr, Tcl_Interp *interp,
+static int DeleteOp(Graph* graphPtr, Tcl_Interp *interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   int i;
@@ -760,7 +760,7 @@ static int DeleteOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ExistsOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ExistsOp(Graph* graphPtr, Tcl_Interp *interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   Tcl_HashEntry *hPtr;
@@ -770,7 +770,7 @@ static int ExistsOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int GetOp(Graph *graphPtr, Tcl_Interp *interp,
+static int GetOp(Graph* graphPtr, Tcl_Interp *interp,
 		 int objc, Tcl_Obj *const *objv)
 {
   char *string;
@@ -790,7 +790,7 @@ static int GetOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *DisplayListObj(Graph *graphPtr)
+static Tcl_Obj *DisplayListObj(Graph* graphPtr)
 {
   Tcl_Obj *listObjPtr;
   Blt_ChainLink link;
@@ -808,7 +808,7 @@ static Tcl_Obj *DisplayListObj(Graph *graphPtr)
   return listObjPtr;
 }
 
-static int LowerOp(Graph *graphPtr, Tcl_Interp *interp, 
+static int LowerOp(Graph* graphPtr, Tcl_Interp *interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
   Blt_Chain chain;
@@ -840,7 +840,7 @@ static int LowerOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int NamesOp(Graph *graphPtr, Tcl_Interp *interp,
+static int NamesOp(Graph* graphPtr, Tcl_Interp *interp,
 		   int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
@@ -884,7 +884,7 @@ static int NamesOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int RaiseOp(Graph *graphPtr, Tcl_Interp *interp, 
+static int RaiseOp(Graph* graphPtr, Tcl_Interp *interp, 
 		   int objc, Tcl_Obj *const *objv)
 {
   Blt_Chain chain;
@@ -916,7 +916,7 @@ static int RaiseOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ShowOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ShowOp(Graph* graphPtr, Tcl_Interp *interp,
 		  int objc, Tcl_Obj *const *objv)
 {
   if (objc == 4) {
@@ -964,7 +964,7 @@ static int ShowOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int TypeOp(Graph *graphPtr, Tcl_Interp *interp,
+static int TypeOp(Graph* graphPtr, Tcl_Interp *interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Element *elemPtr;
@@ -1003,7 +1003,7 @@ static Blt_OpSpec elemOps[] = {
 };
 static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);
 
-int Blt_ElementOp(Graph *graphPtr, Tcl_Interp *interp,
+int Blt_ElementOp(Graph* graphPtr, Tcl_Interp *interp,
 		  int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   void *ptr;
@@ -1032,7 +1032,7 @@ static void FreeElement(char* data)
   DestroyElement(elemPtr);
 }
 
-static int GetPenStyleFromObj(Tcl_Interp *interp, Graph *graphPtr,
+static int GetPenStyleFromObj(Tcl_Interp *interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr)
 {
@@ -1120,7 +1120,7 @@ static void VectorChangedProc(Tcl_Interp *interp, ClientData clientData,
   }
   {
     Element *elemPtr = valuesPtr->elemPtr;
-    Graph *graphPtr;
+    Graph* graphPtr;
 	
     graphPtr = elemPtr->obj.graphPtr;
     graphPtr->flags |= RESET_AXES;
@@ -1345,7 +1345,7 @@ static int GetIndex(Tcl_Interp *interp, Element *elemPtr,
   return TCL_OK;
 }
 
-int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr, 
+int Blt_GetElement(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 		   Element **elemPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -1365,7 +1365,7 @@ int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-void Blt_DestroyElements(Graph *graphPtr)
+void Blt_DestroyElements(Graph* graphPtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch iter;
@@ -1382,34 +1382,26 @@ void Blt_DestroyElements(Graph *graphPtr)
   Blt_Chain_Destroy(graphPtr->elements.displayList);
 }
 
-void Blt_ConfigureElements(Graph *graphPtr)
+void Blt_ConfigureElements(Graph* graphPtr)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+  for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element *elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = Blt_Chain_GetValue(link);
     (*elemPtr->procsPtr->configProc) (graphPtr, elemPtr);
   }
 }
 
-void Blt_MapElements(Graph *graphPtr)
+void Blt_MapElements(Graph* graphPtr)
 {
-  Blt_ChainLink link;
-
-  if (graphPtr->mode != BARS_INFRONT) {
+  if (graphPtr->barMode != BARS_INFRONT)
     Blt_ResetBarGroups(graphPtr);
-  }
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element *elemPtr;
 
-    elemPtr = Blt_Chain_GetValue(link);
-    if (IGNORE_ELEMENT(elemPtr)) {
+  for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+       link != NULL; link = Blt_Chain_NextLink(link)) {
+    Element *elemPtr = Blt_Chain_GetValue(link);
+    if (IGNORE_ELEMENT(elemPtr))
       continue;
-    }
+
     if ((graphPtr->flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
       (*elemPtr->procsPtr->mapProc) (graphPtr, elemPtr);
       elemPtr->flags &= ~MAP_ITEM;
@@ -1417,7 +1409,7 @@ void Blt_MapElements(Graph *graphPtr)
   }
 }
 
-void Blt_DrawElements(Graph *graphPtr, Drawable drawable)
+void Blt_DrawElements(Graph* graphPtr, Drawable drawable)
 {
   Blt_ChainLink link;
 
@@ -1433,7 +1425,7 @@ void Blt_DrawElements(Graph *graphPtr, Drawable drawable)
   }
 }
 
-void Blt_DrawActiveElements(Graph *graphPtr, Drawable drawable)
+void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
 {
   Blt_ChainLink link;
 
@@ -1450,7 +1442,7 @@ void Blt_DrawActiveElements(Graph *graphPtr, Drawable drawable)
   }
 }
 
-void Blt_ElementsToPostScript(Graph *graphPtr, Blt_Ps ps)
+void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Blt_ChainLink link;
 
@@ -1468,7 +1460,7 @@ void Blt_ElementsToPostScript(Graph *graphPtr, Blt_Ps ps)
   }
 }
 
-void Blt_ActiveElementsToPostScript( Graph *graphPtr, Blt_Ps ps)
+void Blt_ActiveElementsToPostScript( Graph* graphPtr, Blt_Ps ps)
 {
   Blt_ChainLink link;
 
@@ -1487,7 +1479,7 @@ void Blt_ActiveElementsToPostScript( Graph *graphPtr, Blt_Ps ps)
   }
 }
 
-ClientData Blt_MakeElementTag(Graph *graphPtr, const char *tagName)
+ClientData Blt_MakeElementTag(Graph* graphPtr, const char *tagName)
 {
   Tcl_HashEntry *hPtr;
   int isNew;

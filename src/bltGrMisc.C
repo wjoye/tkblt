@@ -187,7 +187,7 @@ int Blt_RegionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
  *---------------------------------------------------------------------------
  */
 
-void Blt_GraphExtents(Graph *graphPtr, Region2d *regionPtr)
+void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
 {
   regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
   regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);

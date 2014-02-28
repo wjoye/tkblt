@@ -41,7 +41,7 @@
 #include "bltBitmap.h"
 #include "bltConfig.h"
 
-typedef int (GraphMarkerProc)(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp *interp, int objc, 
 			      Tcl_Obj *const *objv);
 
 #define GETBITMAP(b)							\
@@ -869,7 +869,7 @@ static MarkerClass windowMarkerClass = {
  *---------------------------------------------------------------------------
  */
 static int
-BoxesDontOverlap(Graph *graphPtr, Region2d *extsPtr)
+BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
 {
   assert(extsPtr->right >= extsPtr->left);
   assert(extsPtr->bottom >= extsPtr->top);
@@ -1347,7 +1347,7 @@ static INLINE int
 IsElementHidden(Marker *markerPtr)
 {
   Tcl_HashEntry *hPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   /* Look up the named element and see if it's hidden */
   hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
@@ -1459,7 +1459,7 @@ MapPoint(
 	 Axis2d *axesPtr)		/* Specifies which axes to use */
 {
   Point2d result;
-  Graph *graphPtr = axesPtr->y->obj.graphPtr;
+  Graph* graphPtr = axesPtr->y->obj.graphPtr;
 
   if (graphPtr->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
@@ -1473,7 +1473,7 @@ MapPoint(
 
 static Marker *
 CreateMarker(
-	     Graph *graphPtr,
+	     Graph* graphPtr,
 	     const char *name,
 	     ClassId classId)
 {    
@@ -1514,7 +1514,7 @@ CreateMarker(
 static void
 DestroyMarker(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   if (markerPtr->drawUnder) {
     /* If the marker to be deleted is currently displayed below the
@@ -1576,7 +1576,7 @@ static void FreeMarker(char* dataPtr)
 static int
 ConfigureBitmapProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
   GC newGC;
   XGCValues gcValues;
@@ -1666,7 +1666,7 @@ MapBitmapProc(Marker *markerPtr)
 {
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
   Region2d extents;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   Point2d anchorPt;
   Point2d corner1, corner2;
   int destWidth, destHeight;
@@ -1915,7 +1915,7 @@ RegionInBitmapProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 static void
 DrawBitmapProc(Marker *markerPtr, Drawable drawable)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
   double rangle;
   Pixmap bitmap;
@@ -1969,7 +1969,7 @@ DrawBitmapProc(Marker *markerPtr, Drawable drawable)
 static void
 BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
   Pixmap bitmap;
 
@@ -2017,7 +2017,7 @@ static void
 FreeBitmapProc(Marker *markerPtr)
 {
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   if (bmPtr->gc != NULL) {
     Tk_FreeGC(graphPtr->display, bmPtr->gc);
@@ -2077,7 +2077,7 @@ CreateBitmapProc(void)
 static int
 ConfigureTextProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker *tmPtr = (TextMarker *)markerPtr;
   GC newGC;
   XGCValues gcValues;
@@ -2128,7 +2128,7 @@ ConfigureTextProc(Marker *markerPtr)
 static void
 MapTextProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker *tmPtr = (TextMarker *)markerPtr;
   Region2d extents;
   Point2d anchorPt;
@@ -2256,7 +2256,7 @@ static void
 DrawTextProc(Marker *markerPtr, Drawable drawable) 
 {
   TextMarker *tmPtr = (TextMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   if (tmPtr->string == NULL) {
     return;
@@ -2345,7 +2345,7 @@ static void
 FreeTextProc(Marker *markerPtr)
 {
   TextMarker *tmPtr = (TextMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   Blt_Ts_FreeStyle(graphPtr->display, &tmPtr->style);
 }
@@ -2415,7 +2415,7 @@ static Tk_GeomMgr winMarkerMgrInfo =
 static int
 ConfigureWindowProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   WindowMarker *wmPtr = (WindowMarker *)markerPtr;
   Tk_Window tkwin;
 
@@ -2470,7 +2470,7 @@ static void
 MapWindowProc(Marker *markerPtr)
 {
   WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   Point2d anchorPt;
   Region2d extents;
   int width, height;
@@ -2735,7 +2735,7 @@ static void
 ChildCustodyProc(ClientData clientData, Tk_Window tkwin)
 {
   Marker *markerPtr = clientData;
-  Graph *graphPtr;
+  Graph* graphPtr;
 
   graphPtr = markerPtr->obj.graphPtr;
   markerPtr->flags |= DELETE_PENDING;
@@ -2764,7 +2764,7 @@ ChildCustodyProc(ClientData clientData, Tk_Window tkwin)
 static void
 MapLineProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker *)markerPtr;
   Point2d *srcPtr, *pend;
   Segment2d *segments, *segPtr;
@@ -2882,7 +2882,7 @@ DrawLineProc(Marker *markerPtr, Drawable drawable)
   LineMarker *lmPtr = (LineMarker *)markerPtr;
 
   if (lmPtr->nSegments > 0) {
-    Graph *graphPtr = markerPtr->obj.graphPtr;
+    Graph* graphPtr = markerPtr->obj.graphPtr;
 
     Blt_Draw2DSegments(graphPtr->display, drawable, lmPtr->gc, 
 		       lmPtr->segments, lmPtr->nSegments);
@@ -2915,7 +2915,7 @@ DrawLineProc(Marker *markerPtr, Drawable drawable)
 static int
 ConfigureLineProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker *)markerPtr;
   GC newGC;
   XGCValues gcValues;
@@ -3040,7 +3040,7 @@ static void
 FreeLineProc(Marker *markerPtr)
 {
   LineMarker *lmPtr = (LineMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   if (lmPtr->gc != NULL) {
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
@@ -3095,7 +3095,7 @@ CreateLineProc(void)
 static void
 MapPolygonProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
   Point2d *screenPts;
   Region2d extents;
@@ -3222,7 +3222,7 @@ RegionInPolygonProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 static void
 DrawPolygonProc(Marker *markerPtr, Drawable drawable)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
 
   /* Draw polygon fill region */
@@ -3258,7 +3258,7 @@ DrawPolygonProc(Marker *markerPtr, Drawable drawable)
 static void
 PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
 
   if (pmPtr->fill.fgColor != NULL) {
@@ -3341,7 +3341,7 @@ PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 static int
 ConfigurePolygonProc(Marker *markerPtr)
 {
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
   GC newGC;
   XGCValues gcValues;
@@ -3447,7 +3447,7 @@ static void
 FreePolygonProc(Marker *markerPtr)
 {
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  Graph *graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = markerPtr->obj.graphPtr;
 
   if (pmPtr->fillGC != NULL) {
     Tk_FreeGC(graphPtr->display, pmPtr->fillGC);
@@ -3494,7 +3494,7 @@ CreatePolygonProc(void)
 }
 
 static int
-GetMarkerFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
+GetMarkerFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 		 Marker **markerPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -3515,7 +3515,7 @@ GetMarkerFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 
 
 static int
-RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName, 
+RenameMarker(Graph* graphPtr, Marker *markerPtr, const char *oldName, 
 	     const char *newName)
 {
   int isNew;
@@ -3554,7 +3554,7 @@ RenameMarker(Graph *graphPtr, Marker *markerPtr, const char *oldName,
  *---------------------------------------------------------------------------
  */
 static int
-NamesOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+NamesOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
 
@@ -3606,7 +3606,7 @@ NamesOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-BindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+BindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   if (objc == 3) {
     Tcl_HashEntry *hp;
@@ -3640,7 +3640,7 @@ BindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-CgetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+CgetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
 
@@ -3668,7 +3668,7 @@ CgetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-ConfigureOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   Tcl_Obj *const *options;
@@ -3752,7 +3752,7 @@ ConfigureOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-CreateOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   Tcl_HashEntry *hPtr;
@@ -3856,7 +3856,7 @@ CreateOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-DeleteOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+DeleteOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   int i;
 
@@ -3892,7 +3892,7 @@ DeleteOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-GetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+GetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   const char *string;
@@ -3933,7 +3933,7 @@ GetOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-RelinkOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+RelinkOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link, place;
   Marker *markerPtr;
@@ -3985,7 +3985,7 @@ RelinkOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-FindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+FindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link;
   Region2d extents;
@@ -4065,7 +4065,7 @@ FindOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-ExistsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+ExistsOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Tcl_HashEntry *hPtr;
 
@@ -4089,7 +4089,7 @@ ExistsOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-TypeOp(Graph *graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+TypeOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   const char *type;
@@ -4149,7 +4149,7 @@ static int nMarkerOps = sizeof(markerOps) / sizeof(Blt_OpSpec);
 
 /*ARGSUSED*/
 int
-Blt_MarkerOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+Blt_MarkerOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
 	     Tcl_Obj *const *objv)
 {
   GraphMarkerProc *proc;
@@ -4172,7 +4172,7 @@ Blt_MarkerOp(Graph *graphPtr, Tcl_Interp *interp, int objc,
  *---------------------------------------------------------------------------
  */
 void
-Blt_MarkersToPostScript(Graph *graphPtr, Blt_Ps ps, int under)
+Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 {
   Blt_ChainLink link;
 
@@ -4232,7 +4232,7 @@ Blt_MarkersToPostScript(Graph *graphPtr, Blt_Ps ps, int under)
  *---------------------------------------------------------------------------
  */
 void
-Blt_DrawMarkers(Graph *graphPtr, Drawable drawable, int under)
+Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
 {
   Blt_ChainLink link;
 
@@ -4257,7 +4257,7 @@ Blt_DrawMarkers(Graph *graphPtr, Drawable drawable, int under)
 }
 
 void
-Blt_ConfigureMarkers(Graph *graphPtr)
+Blt_ConfigureMarkers(Graph* graphPtr)
 {
   Blt_ChainLink link;
 
@@ -4271,7 +4271,7 @@ Blt_ConfigureMarkers(Graph *graphPtr)
 }
 
 void
-Blt_MapMarkers(Graph *graphPtr)
+Blt_MapMarkers(Graph* graphPtr)
 {
   Blt_ChainLink link;
 
@@ -4294,7 +4294,7 @@ Blt_MapMarkers(Graph *graphPtr)
 }
 
 void
-Blt_DestroyMarkers(Graph *graphPtr)
+Blt_DestroyMarkers(Graph* graphPtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch iter;
@@ -4318,7 +4318,7 @@ Blt_DestroyMarkers(Graph *graphPtr)
 
 Marker *
 Blt_NearestMarker(
-		  Graph *graphPtr,
+		  Graph* graphPtr,
 		  int x, int y,			/* Screen coordinates */
 		  int under)
 {
@@ -4357,7 +4357,7 @@ Blt_NearestMarker(
 }
 
 ClientData
-Blt_MakeMarkerTag(Graph *graphPtr, const char *tagName)
+Blt_MakeMarkerTag(Graph* graphPtr, const char *tagName)
 {
   Tcl_HashEntry *hPtr;
   int isNew;

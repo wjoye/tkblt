@@ -134,7 +134,7 @@ typedef struct {
   Tk_OptionTable optionTable;	/* Configuration specifications */
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
-  Graph *graphPtr;			/* Graph that the pen is associated
+  Graph* graphPtr;			/* Graph that the pen is associated
 					 * with. */
 
   /* Symbol attributes. */
@@ -665,7 +665,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 
 // Create
 
-Element * Blt_LineElement(Graph *graphPtr, const char *name, ClassId classId)
+Element * Blt_LineElement(Graph* graphPtr, const char *name, ClassId classId)
 {
   LineElement *elemPtr = calloc(1, sizeof(LineElement));
   elemPtr->procsPtr = &lineProcs;
@@ -776,7 +776,7 @@ static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 
 // Configure
 
-static int ConfigureLineProc(Graph *graphPtr, Element *basePtr)
+static int ConfigureLineProc(Graph* graphPtr, Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
 
@@ -951,7 +951,7 @@ static void ImageChangedProc(ClientData clientData,
 			     int imageWidth, int imageHeight)
 {
   Element *elemPtr;
-  Graph *graphPtr;
+  Graph* graphPtr;
 
   elemPtr = clientData;
   elemPtr->flags |= MAP_ITEM;
@@ -1021,7 +1021,7 @@ static int ScaleSymbol(LineElement *elemPtr, int normalSize)
   return newSize;
 }
 
-static void GetScreenPoints(Graph *graphPtr, LineElement *elemPtr, 
+static void GetScreenPoints(Graph* graphPtr, LineElement *elemPtr, 
 			    MapInfo *mapPtr)
 {
   double *x, *y;
@@ -1119,7 +1119,7 @@ static void GenerateSteps(MapInfo *mapPtr)
   mapPtr->nScreenPts = newSize;
 }
 
-static void GenerateSpline(Graph *graphPtr, LineElement *elemPtr, 
+static void GenerateSpline(Graph* graphPtr, LineElement *elemPtr, 
 			   MapInfo *mapPtr)
 {
   Point2d *origPts, *iPts;
@@ -1219,7 +1219,7 @@ static void GenerateSpline(Graph *graphPtr, LineElement *elemPtr,
   }
 }
 
-static void GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr, 
+static void GenerateParametricSpline(Graph* graphPtr, LineElement *elemPtr, 
 				     MapInfo *mapPtr)
 {
   Region2d exts;
@@ -1329,7 +1329,7 @@ static void GenerateParametricSpline(Graph *graphPtr, LineElement *elemPtr,
   }
 }
 
-static void MapSymbols(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
+static void MapSymbols(Graph* graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 {
   Region2d exts;
   Point2d *pp, *points;
@@ -1355,7 +1355,7 @@ static void MapSymbols(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
   elemPtr->symbolPts.map = map;
 }
 
-static void MapActiveSymbols(Graph *graphPtr, LineElement *elemPtr)
+static void MapActiveSymbols(Graph* graphPtr, LineElement *elemPtr)
 {
   Point2d *points;
   Region2d exts;
@@ -1676,7 +1676,7 @@ static void FreeTraces(LineElement *elemPtr)
   elemPtr->traces = NULL;
 }
 
-static void MapTraces(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
+static void MapTraces(Graph* graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 {
   Point2d *p, *q;
   Region2d exts;
@@ -1740,7 +1740,7 @@ static void MapTraces(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
   }
 }
 
-static void MapFillArea(Graph *graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
+static void MapFillArea(Graph* graphPtr, LineElement *elemPtr, MapInfo *mapPtr)
 {
   Point2d *origPts, *clipPts;
   Region2d exts;
@@ -1856,7 +1856,7 @@ static void ResetLine(LineElement *elemPtr)
     elemPtr->lines.length = elemPtr->xeb.length = elemPtr->yeb.length = 0;
 }
 
-static void MapErrorBars(Graph *graphPtr, LineElement *elemPtr, 
+static void MapErrorBars(Graph* graphPtr, LineElement *elemPtr, 
 			 LineStyle **styleMap)
 {
   int n, np;
@@ -1994,7 +1994,7 @@ static void MapErrorBars(Graph *graphPtr, LineElement *elemPtr,
   }
 }
 
-static void MapLineProc(Graph *graphPtr, Element *basePtr)
+static void MapLineProc(Graph* graphPtr, Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
   MapInfo mi;
@@ -2201,7 +2201,7 @@ static double DistanceToYProc(int x, int y, Point2d *p, Point2d *q, Point2d *t)
   return fabs(d);
 }
 
-static int ClosestTrace(Graph *graphPtr, LineElement *elemPtr,
+static int ClosestTrace(Graph* graphPtr, LineElement *elemPtr,
 			ClosestSearch *searchPtr, DistanceProc *distProc)
 {
   Blt_ChainLink link;
@@ -2404,7 +2404,7 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
   }
 }
 
-static void ClosestLineProc(Graph *graphPtr, Element *basePtr, 
+static void ClosestLineProc(Graph* graphPtr, Element *basePtr, 
 			    ClosestSearch *searchPtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
@@ -2572,7 +2572,7 @@ static void DrawSquares(Display *display, Drawable drawable,
   free(rectangles);
 }
 
-static void DrawSymbols(Graph *graphPtr, Drawable drawable,
+static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 			LineElement *elemPtr, LinePen *penPtr,
 			int size, int nSymbolPts, Point2d *symbolPts)
 {
@@ -3102,7 +3102,7 @@ static void DrawSymbols(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void DrawSymbolProc(Graph *graphPtr, Drawable drawable,
+static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
 			   Element *basePtr, int x, int y, int size)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
@@ -3128,7 +3128,7 @@ static void DrawSymbolProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void DrawTraces(Graph *graphPtr, Drawable drawable, 
+static void DrawTraces(Graph* graphPtr, Drawable drawable, 
 		       LineElement *elemPtr, LinePen *penPtr)
 {
   Blt_ChainLink link;
@@ -3199,7 +3199,7 @@ static void DrawTraces(Graph *graphPtr, Drawable drawable,
   free(points);
 }
 
-static void DrawValues(Graph *graphPtr, Drawable drawable, 
+static void DrawValues(Graph* graphPtr, Drawable drawable, 
 		       LineElement *elemPtr, LinePen *penPtr, 
 		       int length, Point2d *points, int *map)
 {
@@ -3238,7 +3238,7 @@ static void DrawValues(Graph *graphPtr, Drawable drawable,
   } 
 }
 
-static void DrawActiveLineProc(Graph *graphPtr, Drawable drawable, 
+static void DrawActiveLineProc(Graph* graphPtr, Drawable drawable, 
 			       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
@@ -3292,7 +3292,7 @@ static void DrawActiveLineProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable, 
+static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable, 
 			       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
@@ -3394,7 +3394,7 @@ static void DrawNormalLineProc(Graph *graphPtr, Drawable drawable,
   elemPtr->symbolInterval = 0;
 }
 
-static void GetSymbolPostScriptInfo(Graph *graphPtr, Blt_Ps ps,
+static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
 				    LinePen *penPtr, int size)
 {
   /* Set line and foreground attributes */
@@ -3468,7 +3468,7 @@ static void GetSymbolPostScriptInfo(Graph *graphPtr, Blt_Ps ps,
   Blt_Ps_Append(ps, "} def\n\n");
 }
 
-static void SymbolsToPostScript(Graph *graphPtr, Blt_Ps ps, LinePen *penPtr,
+static void SymbolsToPostScript(Graph* graphPtr, Blt_Ps ps, LinePen *penPtr,
 				int size, int nSymbolPts, Point2d *symbolPts)
 {
   double symbolSize;
@@ -3509,7 +3509,7 @@ static void SymbolsToPostScript(Graph *graphPtr, Blt_Ps ps, LinePen *penPtr,
   }
 }
 
-static void SymbolToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
+static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 				   Element *basePtr, double x, double y,
 				   int size)
 {
@@ -3604,7 +3604,7 @@ static void ValuesToPostScript(Blt_Ps ps, LineElement *elemPtr, LinePen *penPtr,
   } 
 }
 
-static void ActiveLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
+static void ActiveLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;
@@ -3649,7 +3649,7 @@ static void ActiveLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-static void NormalLineToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
+static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				       Element *basePtr)
 {
   LineElement *elemPtr = (LineElement *)basePtr;

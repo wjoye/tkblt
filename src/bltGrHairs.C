@@ -64,9 +64,9 @@ struct _Crosshairs {
 
 static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[]);
-static void ConfigureCrosshairs(Graph *graphPtr);
+static void ConfigureCrosshairs(Graph* graphPtr);
 static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr);
-static void TurnOnHairs(Graph *graphPtr, Crosshairs *chPtr);
+static void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr);
 
 // OptionSpecs
 
@@ -199,7 +199,7 @@ static int CrosshairsObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
   }
 }
 
-static void ConfigureCrosshairs(Graph *graphPtr)
+static void ConfigureCrosshairs(Graph* graphPtr)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
@@ -262,7 +262,7 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Widget commands
 
-static int OnOp(Graph *graphPtr, Tcl_Interp *interp, 
+static int OnOp(Graph* graphPtr, Tcl_Interp *interp, 
 		int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
@@ -274,7 +274,7 @@ static int OnOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int OffOp(Graph *graphPtr, Tcl_Interp *interp,
+static int OffOp(Graph* graphPtr, Tcl_Interp *interp,
 		 int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
@@ -286,7 +286,7 @@ static int OffOp(Graph *graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ToggleOp(Graph *graphPtr, Tcl_Interp *interp,
+static int ToggleOp(Graph* graphPtr, Tcl_Interp *interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
@@ -321,7 +321,7 @@ static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr)
   }
 }
 
-static void TurnOnHairs(Graph *graphPtr, Crosshairs *chPtr)
+static void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr)
 {
   if (Tk_IsMapped(graphPtr->tkwin) && (!chPtr->visible)) {
     if (!PointInGraph(graphPtr, chPtr->hotSpot.x, chPtr->hotSpot.y)) {
@@ -333,13 +333,13 @@ static void TurnOnHairs(Graph *graphPtr, Crosshairs *chPtr)
   }
 }
 
-void Blt_EnableCrosshairs(Graph *graphPtr)
+void Blt_EnableCrosshairs(Graph* graphPtr)
 {
   if (!graphPtr->crosshairs->hide)
     TurnOnHairs(graphPtr, graphPtr->crosshairs);
 }
 
-void Blt_DisableCrosshairs(Graph *graphPtr)
+void Blt_DisableCrosshairs(Graph* graphPtr)
 {
   if (!graphPtr->crosshairs->hide)
     TurnOffHairs(graphPtr->tkwin, graphPtr->crosshairs);

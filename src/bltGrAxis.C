@@ -102,7 +102,7 @@ static AxisName axisNames[] = {
 static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 
 static void ReleaseAxis(Axis *axisPtr);
-static int GetAxisByClass(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
+static int GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
 
 //***
@@ -545,7 +545,7 @@ static void TimeScaleAxis(Axis *axisPtr, double min, double max);
 static int lastMargin;
 typedef int (GraphAxisProc)(Tcl_Interp *interp, Axis *axisPtr, int objc, 
 			    Tcl_Obj *const *objv);
-typedef int (GraphVirtualAxisProc)(Tcl_Interp *interp, Graph *graphPtr, 
+typedef int (GraphVirtualAxisProc)(Tcl_Interp *interp, Graph* graphPtr, 
 				   int objc, Tcl_Obj *const *objv);
 
 INLINE static double
@@ -608,7 +608,7 @@ InRange(double x, AxisRange *rangePtr)
 INLINE static int
 AxisIsHorizontal(Axis *axisPtr)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   return ((axisPtr->obj.classId == CID_AXIS_Y) == graphPtr->inverted);
 }
@@ -643,7 +643,7 @@ static int ObjToAxisProc(ClientData clientData, Tcl_Interp *interp,
   ClassId classId = (ClassId)clientData;
   Axis **axisPtrPtr = (Axis **)(widgRec + offset);
   Axis *axisPtr;
-  Graph *graphPtr;
+  Graph* graphPtr;
 
   if (flags & BLT_CONFIG_NULL_OK) {
     const char *string;
@@ -876,7 +876,7 @@ ObjToUseProc(
   Axis *axisPtr = (Axis *)(widgRec);
   AxisName *p, *pend;
   Blt_Chain chain;
-  Graph *graphPtr;
+  Graph* graphPtr;
   const char *string;
   int margin;
 
@@ -1239,7 +1239,7 @@ MakeLabel(Axis *axisPtr, double value)
   }
 
   if (axisPtr->formatCmd != NULL) {
-    Graph *graphPtr;
+    Graph* graphPtr;
     Tcl_Interp *interp;
     Tk_Window tkwin;
 	
@@ -1403,7 +1403,7 @@ Blt_VMap(Axis *axisPtr, double y)
  */
 Point2d
 Blt_Map2D(
-	  Graph *graphPtr,
+	  Graph* graphPtr,
 	  double x, double y,			/* Graph x and y coordinates */
 	  Axis2d *axesPtr)			/* Specifies which axes to use */
 {
@@ -1434,7 +1434,7 @@ Blt_Map2D(
  */
 Point2d
 Blt_InvMap2D(
-	     Graph *graphPtr,
+	     Graph* graphPtr,
 	     double x, double y,			/* Window x and y coordinates */
 	     Axis2d *axesPtr)			/* Specifies which axes to use */
 {
@@ -1966,7 +1966,7 @@ SweepTicks(Axis *axisPtr)
  *---------------------------------------------------------------------------
  */
 void
-Blt_ResetAxes(Graph *graphPtr)
+Blt_ResetAxes(Graph* graphPtr)
 {
   Blt_ChainLink link;
   Tcl_HashEntry *hPtr;
@@ -1978,9 +1978,9 @@ Blt_ResetAxes(Graph *graphPtr)
    *	      Needs to be done before the axis limits are set.
    */
   Blt_InitBarSetTable(graphPtr);
-  if ((graphPtr->mode == BARS_STACKED) && (graphPtr->nBarGroups > 0)) {
+  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
     Blt_ComputeBarStacks(graphPtr);
-  }
+
   /*
    * Step 1:  Reset all axes. Initialize the data limits of the axis to
    *		impossible values.
@@ -2075,7 +2075,7 @@ Blt_ResetAxes(Graph *graphPtr)
 static void
 ResetTextStyles(Axis *axisPtr)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   GC newGC;
   XGCValues gcValues;
   unsigned long gcMask;
@@ -2152,7 +2152,7 @@ ResetTextStyles(Axis *axisPtr)
 static void
 DestroyAxis(Axis *axisPtr)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   int flags;
 
   flags = Blt_GraphType(graphPtr);
@@ -2223,7 +2223,7 @@ AxisOffsets(
 	    int offset,
 	    AxisInfo *infoPtr)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   Margin *marginPtr;
   int pad;				/* Offset of axis from interior
 					 * region. This includes a possible
@@ -2676,7 +2676,7 @@ static void
 MapAxis(Axis *axisPtr, int offset, int margin)
 {
   AxisInfo info;
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (AxisIsHorizontal(axisPtr)) {
     axisPtr->screenMin = graphPtr->hOffset;
@@ -2719,7 +2719,7 @@ static void
 MapStackedAxis(Axis *axisPtr, int count, int margin)
 {
   AxisInfo info;
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   unsigned int slice, w, h;
 
   if ((graphPtr->margins[axisPtr->margin].axes->nLinks > 1) ||
@@ -2883,7 +2883,7 @@ GetAxisScrollInfo(
 static void
 DrawAxis(Axis *axisPtr, Drawable drawable)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (axisPtr->normalBg != NULL) {
     Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
@@ -3090,7 +3090,7 @@ AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 static void
 MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (axisPtr->logScale) {
     value = EXP10(value);
@@ -3228,7 +3228,7 @@ MapGridlines(Axis *axisPtr)
  *---------------------------------------------------------------------------
  */
 static void
-GetAxisGeometry(Graph *graphPtr, Axis *axisPtr)
+GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
   unsigned int y;
 
@@ -3355,7 +3355,7 @@ GetAxisGeometry(Graph *graphPtr, Axis *axisPtr)
  *---------------------------------------------------------------------------
  */
 static int
-GetMarginGeometry(Graph *graphPtr, Margin *marginPtr)
+GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 {
   Blt_ChainLink link;
   unsigned int l, w, h;		/* Length, width, and height. */
@@ -3523,7 +3523,7 @@ GetMarginGeometry(Graph *graphPtr, Margin *marginPtr)
  *---------------------------------------------------------------------------
  */
 void
-Blt_LayoutGraph(Graph *graphPtr)
+Blt_LayoutGraph(Graph* graphPtr)
 {
   unsigned int titleY;
   unsigned int left, right, top, bottom;
@@ -3831,7 +3831,7 @@ Blt_LayoutGraph(Graph *graphPtr)
 static int
 ConfigureAxis(Axis *axisPtr)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   float angle;
 
   /* Check the requested axis limits. Can't allow -min to be greater than
@@ -3912,7 +3912,7 @@ ConfigureAxis(Axis *axisPtr)
  *---------------------------------------------------------------------------
  */
 static Axis *
-NewAxis(Graph *graphPtr, const char *name, int margin)
+NewAxis(Graph* graphPtr, const char *name, int margin)
 {
   Axis *axisPtr;
   Tcl_HashEntry *hPtr;
@@ -3974,7 +3974,7 @@ NewAxis(Graph *graphPtr, const char *name, int margin)
 }
 
 static int
-GetAxisFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr, 
+GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 	       Axis **axisPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -4000,7 +4000,7 @@ GetAxisFromObj(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 }
 
 static int
-GetAxisByClass(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
+GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 	       ClassId classId, Axis **axisPtrPtr)
 {
   Axis *axisPtr;
@@ -4028,7 +4028,7 @@ GetAxisByClass(Tcl_Interp *interp, Graph *graphPtr, Tcl_Obj *objPtr,
 }
 
 void
-Blt_DestroyAxes(Graph *graphPtr)
+Blt_DestroyAxes(Graph* graphPtr)
 {
   {
     Tcl_HashEntry *hPtr;
@@ -4056,7 +4056,7 @@ Blt_DestroyAxes(Graph *graphPtr)
 }
 
 void
-Blt_ConfigureAxes(Graph *graphPtr)
+Blt_ConfigureAxes(Graph* graphPtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -4071,7 +4071,7 @@ Blt_ConfigureAxes(Graph *graphPtr)
 }
 
 int
-Blt_DefaultAxes(Graph *graphPtr)
+Blt_DefaultAxes(Graph* graphPtr)
 {
   int i;
   int flags;
@@ -4132,7 +4132,7 @@ Blt_DefaultAxes(Graph *graphPtr)
 static int
 ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   const char *string;
 
   string = Tcl_GetString(objv[2]);
@@ -4159,7 +4159,7 @@ ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable,
 				      Blt_MakeAxisTag(graphPtr, axisPtr->obj.name), objc, objv);
@@ -4182,7 +4182,7 @@ BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
 
   return Blt_ConfigureValueFromObj(interp, graphPtr->tkwin, configSpecs,
 				   (char *)axisPtr, objv[0], Blt_GraphType(graphPtr));
@@ -4208,7 +4208,7 @@ CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   int flags;
 
   flags = BLT_CONFIG_OBJV_ONLY | Blt_GraphType(graphPtr);
@@ -4255,7 +4255,7 @@ ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   Tcl_Obj *listObjPtr;
   double min, max;
 
@@ -4295,7 +4295,7 @@ static int
 InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   double y;				/* Real graph coordinate */
   int sy;				/* Integer window coordinate*/
 
@@ -4369,7 +4369,7 @@ MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->obj.graphPtr;
   double x;
 
   if (graphPtr->flags & RESET_AXES) {
@@ -4440,7 +4440,7 @@ TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr = (Graph *)axisPtr;
+  Graph* graphPtr = (Graph *)axisPtr;
   Blt_Chain chain;
   Blt_ChainLink link;
   Tcl_Obj **axisObjv;
@@ -4520,7 +4520,7 @@ UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 static int
 ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
-  Graph *graphPtr;
+  Graph* graphPtr;
   double axisOffset, axisScale;
   double fract;
   double viewMin, viewMax, worldMin, worldMax;
@@ -4611,7 +4611,7 @@ ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-AxisCreateOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4649,7 +4649,7 @@ AxisCreateOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  *---------------------------------------------------------------------------
  */
 static int
-AxisActivateOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4671,7 +4671,7 @@ AxisActivateOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  */
 /*ARGSUSED*/
 static int
-AxisBindOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	   Tcl_Obj *const *objv)
 {
   if (objc == 3) {
@@ -4712,7 +4712,7 @@ AxisBindOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  */
 /* ARGSUSED */
 static int
-AxisCgetOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
+AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -4740,7 +4740,7 @@ AxisCgetOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-AxisConfigureOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Tcl_Obj *const *options;
@@ -4798,7 +4798,7 @@ AxisConfigureOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  */
 /*ARGSUSED*/
 static int
-AxisDeleteOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   int i;
@@ -4834,7 +4834,7 @@ AxisDeleteOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  *---------------------------------------------------------------------------
  */
 static int
-AxisFocusOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
+AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   if (objc > 3) {
     Axis *axisPtr;
@@ -4878,7 +4878,7 @@ AxisFocusOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-AxisGetOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
+AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -4917,7 +4917,7 @@ AxisGetOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-AxisInvTransformOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4943,7 +4943,7 @@ AxisInvTransformOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  *---------------------------------------------------------------------------
  */
 static int
-AxisLimitsOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4969,7 +4969,7 @@ AxisLimitsOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  *---------------------------------------------------------------------------
  */
 static int
-AxisMarginOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4996,7 +4996,7 @@ AxisMarginOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
 
 /*ARGSUSED*/
 static int
-AxisNamesOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
+AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
 
@@ -5056,7 +5056,7 @@ AxisNamesOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-AxisTransformOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -5082,7 +5082,7 @@ AxisTransformOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
  *---------------------------------------------------------------------------
  */
 static int
-AxisTypeOp(Tcl_Interp *interp, Graph *graphPtr, int objc, 
+AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -5095,7 +5095,7 @@ AxisTypeOp(Tcl_Interp *interp, Graph *graphPtr, int objc,
 
 
 static int
-AxisViewOp(Tcl_Interp *interp, Graph *graphPtr, int objc, Tcl_Obj *const *objv)
+AxisViewOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -5128,7 +5128,7 @@ static Blt_OpSpec virtAxisOps[] = {
 static int nVirtAxisOps = sizeof(virtAxisOps) / sizeof(Blt_OpSpec);
 
 int
-Blt_VirtualAxisOp(Graph *graphPtr, Tcl_Interp *interp, int objc, 
+Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
 		  Tcl_Obj *const *objv)
 {
   GraphVirtualAxisProc *proc;
@@ -5159,7 +5159,7 @@ static Blt_OpSpec axisOps[] = {
 static int nAxisOps = sizeof(axisOps) / sizeof(Blt_OpSpec);
 
 int
-Blt_AxisOp(Tcl_Interp *interp, Graph *graphPtr, int margin, int objc,
+Blt_AxisOp(Tcl_Interp *interp, Graph* graphPtr, int margin, int objc,
 	   Tcl_Obj *const *objv)
 {
   int result;
@@ -5188,7 +5188,7 @@ Blt_AxisOp(Tcl_Interp *interp, Graph *graphPtr, int margin, int objc,
 }
 
 void
-Blt_MapAxes(Graph *graphPtr)
+Blt_MapAxes(Graph* graphPtr)
 {
   int margin;
     
@@ -5229,7 +5229,7 @@ Blt_MapAxes(Graph *graphPtr)
 }
 
 void
-Blt_DrawAxes(Graph *graphPtr, Drawable drawable)
+Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
 {
   int i;
 
@@ -5261,7 +5261,7 @@ Blt_DrawAxes(Graph *graphPtr, Drawable drawable)
  *---------------------------------------------------------------------------
  */
 void
-Blt_DrawGrids(Graph *graphPtr, Drawable drawable) 
+Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
 {
   int i;
 
@@ -5303,7 +5303,7 @@ Blt_DrawGrids(Graph *graphPtr, Drawable drawable)
  *---------------------------------------------------------------------------
  */
 void
-Blt_GridsToPostScript(Graph *graphPtr, Blt_Ps ps) 
+Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   int i;
 
@@ -5342,7 +5342,7 @@ Blt_GridsToPostScript(Graph *graphPtr, Blt_Ps ps)
 }
 
 void
-Blt_AxesToPostScript(Graph *graphPtr, Blt_Ps ps) 
+Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   Margin *mp, *mend;
 
@@ -5381,7 +5381,7 @@ Blt_AxesToPostScript(Graph *graphPtr, Blt_Ps ps)
  *---------------------------------------------------------------------------
  */
 void
-Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
+Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5459,7 +5459,7 @@ Blt_DrawAxisLimits(Graph *graphPtr, Drawable drawable)
 }
 
 void
-Blt_AxisLimitsToPostScript(Graph *graphPtr, Blt_Ps ps)
+Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5541,7 +5541,7 @@ Blt_GetFirstAxis(Blt_Chain chain)
 }
 
 Axis *
-Blt_NearestAxis(Graph *graphPtr, int x, int y)
+Blt_NearestAxis(Graph* graphPtr, int x, int y)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5612,7 +5612,7 @@ Blt_NearestAxis(Graph *graphPtr, int x, int y)
 }
  
 ClientData
-Blt_MakeAxisTag(Graph *graphPtr, const char *tagName)
+Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
 {
   Tcl_HashEntry *hPtr;
   int isNew;

@@ -64,7 +64,7 @@ typedef struct {
   Tk_OptionTable optionTable;	/* Configuration specifications */
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
-  Graph *graphPtr;			/* Graph that the pen is associated
+  Graph* graphPtr;			/* Graph that the pen is associated
 					 * with. */
   /* Barchart specific pen fields start here. */
   XColor *outlineColor;		/* Outline (foreground) color of bar */
@@ -468,7 +468,7 @@ static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 
 // Configure
 
-static int ConfigureBarProc(Graph *graphPtr, Element *basePtr)
+static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
   Blt_ChainLink link;
@@ -490,7 +490,7 @@ static int ConfigureBarProc(Graph *graphPtr, Element *basePtr)
   return TCL_OK;
 }
 
-static int ConfigurePenProc(Graph *graphPtr, Pen *basePtr)
+static int ConfigurePenProc(Graph* graphPtr, Pen *basePtr)
 {
   BarPen* penPtr = (BarPen*)basePtr;
   int screenNum = Tk_ScreenNumber(graphPtr->tkwin);
@@ -562,12 +562,12 @@ static void ResetStylePalette(Blt_Chain stylePalette)
   }
 }
 
-static void CheckBarStacks(Graph *graphPtr, Axis2d *pairPtr, 
+static void CheckBarStacks(Graph* graphPtr, Axis2d *pairPtr, 
 			   double *minPtr, double *maxPtr)
 {
   BarGroup *gp, *gend;
 
-  if ((graphPtr->mode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
+  if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
     return;
 
   for (gp = graphPtr->barGroups, gend = gp + graphPtr->nBarGroups; gp < gend;
@@ -593,7 +593,7 @@ static void CheckBarStacks(Graph *graphPtr, Axis2d *pairPtr,
 static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
-  Graph *graphPtr;
+  Graph* graphPtr;
   double middle, barWidth;
   int nPoints;
 
@@ -606,9 +606,9 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     return;				/* No data points */
   }
   barWidth = graphPtr->barWidth;
-  if (elemPtr->barWidth > 0.0f) {
+  if (elemPtr->barWidth > 0.0f)
     barWidth = elemPtr->barWidth;
-  }
+
   middle = 0.5;
   regPtr->left = elemPtr->x.min - middle;
   regPtr->right = elemPtr->x.max + middle;
@@ -624,7 +624,7 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
    * If element is stacked, the sum of its ordinates may be outside the
    * minimum/maximum limits of the element's data points.
    */
-  if ((graphPtr->mode == BARS_STACKED) && (graphPtr->nBarGroups > 0)) {
+  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0)) {
     CheckBarStacks(graphPtr, &elemPtr->axes, &regPtr->top, &regPtr->bottom);
   }
   /* Warning: You get what you deserve if the x-axis is logScale */
@@ -732,7 +732,7 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
 }
 
-static void ClosestBarProc(Graph *graphPtr, Element *basePtr,
+static void ClosestBarProc(Graph* graphPtr, Element *basePtr,
 			   ClosestSearch *searchPtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -989,7 +989,7 @@ static void ResetBar(BarElement *elemPtr)
     elemPtr->nBars = 0;
 }
 
-static void MapErrorBars(Graph *graphPtr, BarElement *elemPtr, 
+static void MapErrorBars(Graph* graphPtr, BarElement *elemPtr, 
 			 BarStyle **dataToStyle)
 {
   int n, nPoints;
@@ -1127,7 +1127,7 @@ static void MapErrorBars(Graph *graphPtr, BarElement *elemPtr,
   }
 }
 
-static void MapBarProc(Graph *graphPtr, Element *basePtr)
+static void MapBarProc(Graph* graphPtr, Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
   BarStyle **dataToStyle;
@@ -1143,12 +1143,11 @@ static void MapBarProc(Graph *graphPtr, Element *basePtr)
 
   ResetBar(elemPtr);
   nPoints = NUMBEROFPOINTS(elemPtr);
-  if (nPoints < 1) {
+  if (nPoints < 1)
     return;				/* No data points */
-  }
+
   barWidth = graphPtr->barWidth;
-  barWidth = (elemPtr->barWidth > 0.0f) 
-    ? elemPtr->barWidth : graphPtr->barWidth;
+  barWidth = (elemPtr->barWidth > 0.0f) ? elemPtr->barWidth:graphPtr->barWidth;
   baseline = (elemPtr->axes.y->logScale) ? 0.0 : graphPtr->baseline;
   barOffset = barWidth * 0.5;
 
@@ -1183,7 +1182,7 @@ static void MapBarProc(Graph *graphPtr, Element *basePtr)
      * coordinates of the two corners.
      */
 
-    if ((graphPtr->nBarGroups > 0) && (graphPtr->mode != BARS_INFRONT) && 
+    if ((graphPtr->nBarGroups > 0) && (graphPtr->barMode != BARS_INFRONT) && 
 	(!graphPtr->stackAxes)) {
       Tcl_HashEntry *hPtr;
       BarSetKey key;
@@ -1211,7 +1210,7 @@ static void MapBarProc(Graph *graphPtr, Element *basePtr)
 	    offset += slice * 0.05;
 	    slice *= 0.90;
 	  }
-	  switch (graphPtr->mode) {
+	  switch (graphPtr->barMode) {
 	  case BARS_STACKED:
 	    groupPtr->count++;
 	    c2.y = groupPtr->lastY;
@@ -1360,7 +1359,7 @@ static void MapBarProc(Graph *graphPtr, Element *basePtr)
   free(dataToStyle);
 }
 
-static void DrawSymbolProc(Graph *graphPtr, Drawable drawable, 
+static void DrawSymbolProc(Graph* graphPtr, Drawable drawable, 
 			   Element *basePtr, int x, int y, int size)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1421,7 +1420,7 @@ static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
   XSetClipMask(display, gc, None);
 }
 
-static void DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
+static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen *penPtr,
 			    XRectangle *bars, int nBars)
 {
   TkRegion rgn;
@@ -1483,7 +1482,7 @@ static void DrawBarSegments(Graph *graphPtr, Drawable drawable, BarPen *penPtr,
   TkDestroyRegion(rgn);
 }
 
-static void DrawBarValues(Graph *graphPtr, Drawable drawable, 
+static void DrawBarValues(Graph* graphPtr, Drawable drawable, 
 			  BarElement *elemPtr,
 			  BarPen *penPtr, XRectangle *bars, int nBars, 
 			  int *barToData)
@@ -1533,7 +1532,7 @@ static void DrawBarValues(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void DrawNormalBarProc(Graph *graphPtr, Drawable drawable, 
+static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1569,7 +1568,7 @@ static void DrawNormalBarProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void DrawActiveBarProc(Graph *graphPtr, Drawable drawable, 
+static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1599,7 +1598,7 @@ static void DrawActiveBarProc(Graph *graphPtr, Drawable drawable,
   }
 }
 
-static void SymbolToPostScriptProc(Graph *graphPtr, Blt_Ps ps, Element *basePtr,
+static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
 				   double x, double y, int size)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1636,7 +1635,7 @@ static void SymbolToPostScriptProc(Graph *graphPtr, Blt_Ps ps, Element *basePtr,
   Blt_Ps_Format(ps, "%g %g %d Sq\n", x, y, size);
 }
 
-static void SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr, 
+static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen *penPtr, 
 				 XRectangle *bars, int nBars)
 {
   XRectangle *rp, *rend;
@@ -1674,7 +1673,7 @@ static void SegmentsToPostScript(Graph *graphPtr, Blt_Ps ps, BarPen *penPtr,
   }
 }
 
-static void BarValuesToPostScript(Graph *graphPtr, Blt_Ps ps, 
+static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps, 
 				  BarElement *elemPtr,
 				  BarPen *penPtr, XRectangle *bars, int nBars, 
 				  int *barToData)
@@ -1722,7 +1721,7 @@ static void BarValuesToPostScript(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-static void ActiveBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
+static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1751,7 +1750,7 @@ static void ActiveBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps, 
+static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
 {
   BarElement *elemPtr = (BarElement *)basePtr;
@@ -1796,7 +1795,7 @@ static void NormalBarToPostScriptProc(Graph *graphPtr, Blt_Ps ps,
   }
 }
 
-void Blt_InitBarSetTable(Graph *graphPtr)
+void Blt_InitBarSetTable(Graph* graphPtr)
 {
   Blt_ChainLink link;
   int nStacks, nSegs;
@@ -1810,7 +1809,7 @@ void Blt_InitBarSetTable(Graph *graphPtr)
    * the array of frequency information and the table itself
    */
   Blt_DestroyBarSets(graphPtr);
-  if (graphPtr->mode == BARS_INFRONT) {
+  if (graphPtr->barMode == BARS_INFRONT) {
     return;				/* No set table is needed for
 					 * "infront" mode */
   }
@@ -1922,10 +1921,10 @@ void Blt_InitBarSetTable(Graph *graphPtr)
   graphPtr->nBarGroups = sum;
 }
 
-void Blt_ComputeBarStacks(Graph *graphPtr)
+void Blt_ComputeBarStacks(Graph* graphPtr)
 {
   Blt_ChainLink link;
-  if ((graphPtr->mode != BARS_STACKED) || (graphPtr->nBarGroups == 0)) {
+  if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0)) {
     return;
   }
 
@@ -1979,7 +1978,7 @@ void Blt_ComputeBarStacks(Graph *graphPtr)
   }
 }
 
-void Blt_ResetBarGroups(Graph *graphPtr)
+void Blt_ResetBarGroups(Graph* graphPtr)
 {
   BarGroup* gp;
   BarGroup* gend;
@@ -1990,7 +1989,7 @@ void Blt_ResetBarGroups(Graph *graphPtr)
   }
 }
 
-void Blt_DestroyBarSets(Graph *graphPtr)
+void Blt_DestroyBarSets(Graph* graphPtr)
 {
   if (graphPtr->barGroups) {
     free(graphPtr->barGroups);
