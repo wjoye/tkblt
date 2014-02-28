@@ -155,6 +155,197 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
   return Tcl_NewStringObj(name, -1);
 };
 
+static Tk_CustomOptionSetProc LimitSetProc;
+static Tk_CustomOptionGetProc LimitGetProc;
+Tk_ObjCustomOption limitObjOption =
+  {
+    "limit", LimitSetProc, LimitGetProc, NULL, NULL, NULL
+  };
+
+static int LimitSetProc(ClientData clientData, Tcl_Interp* interp,
+			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			int offset, char* save, int flags)
+{
+  double* limitPtr = (double*)(widgRec + offset);
+  const char* string = Tcl_GetString(*objPtr);
+  if (string[0] == '\0')
+    *limitPtr = NAN;
+  else if (Blt_ExprDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin, 
+			     char *widgRec, int offset)
+{
+  double limit = *(double*)(widgRec + offset);
+  Tcl_Obj* objPtr;
+
+  if (!isnan(limit))
+    objPtr = Tcl_NewDoubleObj(limit);
+  else
+    objPtr = Tcl_NewStringObj("", -1);
+
+  return objPtr;
+}
+
+static Tk_OptionSpec optionSpecs[] = {
+  {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
+  {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "Relief",
+   "flat", -1, Tk_Offset(Axis, activeRelief), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-autorange", "autoRange", "AutoRange",
+   "0.0", -1, Tk_Offset(Axis, windowSize), 0, NULL, 0},
+  {TK_OPTION_BORDER, "-background", "background", "Background",
+   NULL, -1, Tk_Offset(Axis, normalBg), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
+   "all", -1, Tk_Offset(Axis, obj.tags), TK_OPTION_NULL_OK, &listObjOption, 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
+   "0", -1, Tk_Offset(Axis, borderWidth), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-checklimits", "checkLimits", "CheckLimits", 
+   "0", Tk_Offset(Axis, flags), &bitmaskGrAxisCheckLimitsOption},
+  */
+  {TK_OPTION_COLOR, "-color", "color", "Color",
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, tickColor), 0, NULL, 0},
+  {TK_OPTION_STRING, "-command", "command", "Command",
+   NULL, -1, Tk_Offset(Axis, formatCmd), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-descending", "descending", "Descending",
+   "no", -1, Tk_Offset(Axis, descending), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-exterior", "exterior", "exterior", "1",
+   Tk_Offset(Axis, flags), &bitmaskGrAxisExteriorOption},
+  */
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  /*
+  {TK_OPTION_CUSTOM, "-grid", "grid", "Grid", "1", 
+   Tk_Offset(Axis, flags), BARCHART, 
+   &bitmaskGrAxisGridOption},
+  */
+  /*
+  {TK_OPTION_CUSTOM, "-grid", "grid", "Grid", "1", 
+   Tk_Offset(Axis, flags), GRAPH | STRIPCHART, 
+   &bitmaskGrAxisGridOption},
+  */
+  {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
+   "gray64", -1, Tk_Offset(Axis, major.color), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-griddashes", "gridDashes", "GridDashes", 
+   "dot", -1, Tk_Offset(Axis, major.dashes), 
+   TK_OPTION_NULL_OK, &dashesObjOption, 0},
+  {TK_OPTION_PIXELS, "-gridlinewidth", "gridLineWidth", "GridLineWidth",
+   "0", -1, Tk_Offset(Axis, major.lineWidth), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-gridminor", "gridMinor", "GridMinor", 
+   "1", Tk_Offset(Axis, flags), 
+   TK_OPTION_DONT_SET_DEFAULT | ALL_GRAPHS, 
+   &bitmaskGrAxisGridMinorOption},
+  */
+  {TK_OPTION_COLOR, "-gridminorcolor", "gridMinorColor", "GridMinorColor", 
+   "gray64", -1, Tk_Offset(Axis, minor.color), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-gridminordashes", "gridMinorDashes", "GridMinorDashes", 
+   "dot", -1, Tk_Offset(Axis, minor.dashes), 
+   TK_OPTION_NULL_OK, &dashesObjOption, 0},
+  {TK_OPTION_PIXELS, "-gridminorlinewidth", "gridMinorLineWidth", 
+   "GridMinorLineWidth",
+   "0", -1, Tk_Offset(Axis, minor.lineWidth), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-hide", "hide", "Hide", "0",
+   Tk_Offset(Axis, flags), ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT, 
+   &bitmaskGrAxisHideOption},
+  */
+  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
+   "c", -1, Tk_Offset(Axis, titleJustify), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
+   "no", -1, Tk_Offset(Axis, labelOffset), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-limitscolor", "limitsColor", "LimitsColor",
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, limitsTextStyle.color), 
+   0, NULL, 0},
+  {TK_OPTION_FONT, "-limitsfont", "limitsFont", "LimitsFont",
+   STD_FONT_SMALL, -1, Tk_Offset(Axis, limitsTextStyle.font), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-limitsformat", "limitsFormat", "LimitsFormat",
+   NULL, -1, Tk_Offset(Axis, limitsFormats), TK_OPTION_NULL_OK
+   ALL_GRAPHS, &formatOption},
+  */
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
+   "1", -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
+   "no", -1, Tk_Offset(Axis, logScale), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-loose", "loose", "Loose", 
+   "0", 0, ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT, &looseOption},
+  */
+  /*
+  {TK_OPTION_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
+   NULL, Tk_Offset(Axis, t1Ptr),
+   TK_OPTION_NULL_OK | ALL_GRAPHS, &majorTicksOption},
+  */
+  {TK_OPTION_CUSTOM, "-max", "max", "Max", 
+   NULL, -1, Tk_Offset(Axis, reqMax), TK_OPTION_NULL_OK, &limitObjOption, 0},
+  {TK_OPTION_CUSTOM, "-min", "min", "Min", 
+   NULL, -1, Tk_Offset(Axis, reqMin), TK_OPTION_NULL_OK, &limitObjOption, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-minorticks", "minorTicks", "MinorTicks",
+   NULL, Tk_Offset(Axis, t2Ptr), 
+   TK_OPTION_NULL_OK | ALL_GRAPHS, &minorTicksOption},
+  */
+  {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+   "flat", -1, Tk_Offset(Axis, relief), 0, NULL, 0},
+  {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
+   "0", -1, Tk_Offset(Axis, tickAngle), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-scrollcommand", "scrollCommand", "ScrollCommand",
+   NULL, Tk_Offset(Axis, scrollCmdObjPtr),
+   ALL_GRAPHS | TK_OPTION_NULL_OK,
+   &objectOption},
+  */
+  {TK_OPTION_PIXELS, "-scrollincrement", "scrollIncrement", "ScrollIncrement",
+   "10", -1, Tk_Offset(Axis, scrollUnits), 0, NULL, 0},
+  {TK_OPTION_CUSTOM, "-scrollmax", "scrollMax", "ScrollMax", 
+   NULL, -1, Tk_Offset(Axis, reqScrollMax),  
+   TK_OPTION_NULL_OK, &limitObjOption, 0},
+  {TK_OPTION_CUSTOM, "-scrollmin", "scrollMin", "ScrollMin", 
+   NULL, -1, Tk_Offset(Axis, reqScrollMin), 
+   TK_OPTION_NULL_OK, &limitObjOption, 0},
+  {TK_OPTION_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
+   "0.0", -1, Tk_Offset(Axis, shiftBy), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-showticks", "showTicks", "ShowTicks",
+   "1", Tk_Offset(Axis, flags), 
+   ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT,
+   &bitmaskGrAxisShowTicksOption},
+  */
+  {TK_OPTION_DOUBLE, "-stepsize", "stepSize", "StepSize",
+   "0.0", -1, Tk_Offset(Axis, reqStep), 0, NULL, 0},
+  {TK_OPTION_INT, "-subdivisions", "subdivisions", "Subdivisions",
+   "2", -1, Tk_Offset(Axis, reqNumMinorTicks), 0, NULL, 0},
+  {TK_OPTION_ANCHOR, "-tickanchor", "tickAnchor", "Anchor",
+   "c", -1, Tk_Offset(Axis, reqTickAnchor), 0, NULL, 0},
+  {TK_OPTION_FONT, "-tickfont", "tickFont", "Font",
+   STD_FONT_SMALL, -1, Tk_Offset(Axis, tickFont), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-ticklength", "tickLength", "TickLength",
+   "4", -1, Tk_Offset(Axis, tickLength), 0, NULL, 0},
+  {TK_OPTION_INT, "-tickdefault", "tickDefault", "TickDefault",
+   "10", -1, Tk_Offset(Axis, reqNumMajorTicks), 0, NULL, 0},
+  {TK_OPTION_STRING, "-title", "title", "Title",
+   NULL, -1, Tk_Offset(Axis, title), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
+   "no", -1, Tk_Offset(Axis, titleAlternate), 0, NULL, 0},
+  {TK_OPTION_COLOR, "-titlecolor", "titleColor", "TitleColor", 
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, titleColor), 0, NULL, 0},
+  {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
+   STD_FONT_NORMAL, -1, Tk_Offset(Axis, titleFont), 0, NULL, 0},
+  /*
+  {TK_OPTION_CUSTOM, "-use", "use", "Use", NULL, 0, ALL_GRAPHS, 
+   &useOption},
+  */
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+};
+
 static Blt_OptionParseProc ObjToLimitProc;
 static Blt_OptionPrintProc LimitToObjProc;
 static Blt_CustomOption limitOption = {
@@ -196,10 +387,6 @@ static Blt_OptionParseProc ObjToUseProc;
 static Blt_OptionPrintProc UseToObjProc;
 static Blt_CustomOption useOption = {
   ObjToUseProc, UseToObjProc, NULL, (ClientData)0
-};
-
-static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
 Blt_CustomOption bitmaskGrAxisCheckLimitsOption =
