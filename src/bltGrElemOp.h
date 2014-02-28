@@ -134,7 +134,7 @@ typedef struct {
 				 * particular axis: x, y, or both. */
 
   /* Outputs */
-  Element *elemPtr;		/* Name of the closest element */
+  Element* elemPtr;		/* Name of the closest element */
 
   Point2d point;		/* Graph coordinates of closest point */
 
@@ -145,27 +145,27 @@ typedef struct {
 } ClosestSearch;
 
 typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
-				Element *elemPtr);
+				Element* elemPtr);
 
 typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-					Element *elemPtr);
+					Element* elemPtr);
 
-typedef void (ElementDestroyProc) (Graph *graphPtr, Element *elemPtr);
+typedef void (ElementDestroyProc) (Graph *graphPtr, Element* elemPtr);
 
-typedef int (ElementConfigProc) (Graph *graphPtr, Element *elemPtr);
+typedef int (ElementConfigProc) (Graph *graphPtr, Element* elemPtr);
 
-typedef void (ElementMapProc) (Graph *graphPtr, Element *elemPtr);
+typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
 
-typedef void (ElementExtentsProc) (Element *elemPtr, Region2d *extsPtr);
+typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
 
-typedef void (ElementClosestProc) (Graph *graphPtr, Element *elemPtr, 
+typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr, 
 				   ClosestSearch *searchPtr);
 
 typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
-				      Element *elemPtr, int x, int y, int symbolSize);
+				      Element* elemPtr, int x, int y, int symbolSize);
 
 typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, 
-					      Blt_Ps ps, Element *elemPtr, double x, double y, int symSize);
+					      Blt_Ps ps, Element* elemPtr, double x, double y, int symSize);
 
 typedef struct {
   ElementClosestProc *closestProc;
@@ -195,7 +195,7 @@ typedef struct {
 				 * vector: ELEM_SOURCE_VECTOR,
 				 * ELEM_SOURCE_TABLE, or ELEM_SOURCE_VALUES
 				 */
-  Element *elemPtr;		/* Element associated with vector. */
+  Element* elemPtr;		/* Element associated with vector. */
   VectorDataSource vectorSource;
   double *values;
   int nValues;
@@ -252,12 +252,12 @@ extern Tk_CustomOptionSetProc StyleSetProc;
 extern Tk_CustomOptionGetProc StyleGetProc;
 
 extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
-extern void Blt_ResizeStatusArray(Element *elemPtr, int nPoints);
+extern void Blt_ResizeStatusArray(Element* elemPtr, int nPoints);
 extern int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
 			   PenStyle *stylePtr);
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
-extern PenStyle **Blt_StyleMap (Element *elemPtr);
-extern void Blt_MapErrorBars(Graph *graphPtr, Element *elemPtr, 
+extern PenStyle **Blt_StyleMap (Element* elemPtr);
+extern void Blt_MapErrorBars(Graph *graphPtr, Element* elemPtr, 
 			     PenStyle **dataToStyle);
 extern void Blt_FreeDataValues(ElemValues *evPtr);
 extern int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 

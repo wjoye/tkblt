@@ -1009,13 +1009,9 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   /* Always add the name of the object to the tag array. */
   Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->name), 0);
   Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->className), 0);
-  if (graphObjPtr->tags != NULL) {
-    const char **p;
-
-    for (p = graphObjPtr->tags; *p != NULL; p++) {
+  if (graphObjPtr->tags)
+    for (const char** p = graphObjPtr->tags; *p != NULL; p++)
       Blt_List_Append(list, (*tagProc) (graphPtr, *p), 0);
-    }
-  }
 }
 
 /*

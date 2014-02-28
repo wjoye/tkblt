@@ -101,11 +101,34 @@ static AxisName axisNames[] = {
 } ;
 static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 
+// Defs
+
 static void ReleaseAxis(Axis *axisPtr);
 static int GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
+static void DestroyAxis(Axis *axisPtr);
+static Tcl_FreeProc FreeAxis;
+static void TimeScaleAxis(Axis *axisPtr, double min, double max);
 
-//***
+static int lastMargin;
+typedef int (GraphAxisProc)(Tcl_Interp *interp, Axis *axisPtr, int objc, 
+			    Tcl_Obj *const *objv);
+typedef int (GraphVirtualAxisProc)(Tcl_Interp *interp, Graph* graphPtr, 
+				   int objc, Tcl_Obj *const *objv);
+
+INLINE static double
+Clamp(double x) 
+{
+  return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
+}
+
+INLINE static int
+Round(double x)
+{
+  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
+}
+
+// OptionSpecs
 
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
@@ -143,8 +166,6 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
 
   return Tcl_NewStringObj(name, -1);
 };
-
-//***
 
 static Blt_OptionParseProc ObjToLimitProc;
 static Blt_OptionPrintProc LimitToObjProc;
@@ -193,10 +214,10 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_ACTIVEFOREGROUND	STD_ACTIVE_FOREGROUND
 #define DEF_AXIS_ACTIVERELIEF		"flat"
 #define DEF_AXIS_ANGLE			"0.0"
-#define DEF_AXIS_BACKGROUND		(char *)NULL
+#define DEF_AXIS_BACKGROUND		NULL
 #define DEF_AXIS_BORDERWIDTH		"0"
 #define DEF_AXIS_CHECKLIMITS		"0"
-#define DEF_AXIS_COMMAND		(char *)NULL
+#define DEF_AXIS_COMMAND		NULL
 #define DEF_AXIS_DESCENDING		"0"
 #define DEF_AXIS_FOREGROUND		black
 #define DEF_AXIS_GRID		        "1"
@@ -208,7 +229,7 @@ static Blt_CustomOption useOption = {
 #define DEF_AXIS_HIDE			"0"
 #define DEF_AXIS_JUSTIFY		"c"
 #define DEF_AXIS_LABEL_OFFSET	        "no"
-#define DEF_AXIS_LIMITS_FORMAT	        (char *)NULL
+#define DEF_AXIS_LIMITS_FORMAT	        NULL
 #define DEF_AXIS_LINEWIDTH		"1"
 #define DEF_AXIS_LOGSCALE		"0"
 #define DEF_AXIS_LOOSE			"0"
@@ -345,7 +366,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 */
-// ***
 
 Blt_CustomOption bitmaskGrAxisCheckLimitsOption =
   {
@@ -390,11 +410,11 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_BORDER, "-background", "background", "Background",
    DEF_AXIS_BACKGROUND, Tk_Offset(Axis, normalBg),
    ALL_GRAPHS | BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL, (char *)NULL, 0, 0},
+  {BLT_CONFIG_SYNONYM, "-bg", "background", NULL, NULL, 0, 0},
   {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_AXIS_TAGS, 
    Tk_Offset(Axis, obj.tags), ALL_GRAPHS | BLT_CONFIG_NULL_OK,
    &listOption},
-  {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", (char *)NULL, (char *)NULL, 
+  {BLT_CONFIG_SYNONYM, "-bd", "borderWidth", NULL, NULL, 
    0, ALL_GRAPHS},
   {BLT_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    DEF_AXIS_BORDERWIDTH, Tk_Offset(Axis, borderWidth),
@@ -414,10 +434,10 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-exterior", "exterior", "exterior", DEF_AXIS_EXTERIOR,
    Tk_Offset(Axis, flags), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, 
    &bitmaskGrAxisExteriorOption},
-  {BLT_CONFIG_SYNONYM, "-fg", "color", (char *)NULL, 
-   (char *)NULL, 0, ALL_GRAPHS},
-  {BLT_CONFIG_SYNONYM, "-foreground", "color", (char *)NULL, 
-   (char *)NULL, 0, ALL_GRAPHS},
+  {BLT_CONFIG_SYNONYM, "-fg", "color", NULL, 
+   NULL, 0, ALL_GRAPHS},
+  {BLT_CONFIG_SYNONYM, "-foreground", "color", NULL, 
+   NULL, 0, ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-grid", "grid", "Grid", DEF_AXIS_GRID, 
    Tk_Offset(Axis, flags), BARCHART, 
    &bitmaskGrAxisGridOption},
@@ -453,14 +473,14 @@ static Blt_ConfigSpec configSpecs[] = {
    DEF_AXIS_JUSTIFY, Tk_Offset(Axis, titleJustify),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_BOOLEAN, "-labeloffset", "labelOffset", "LabelOffset",
-   (char *)NULL, Tk_Offset(Axis, labelOffset), ALL_GRAPHS}, 
+   NULL, Tk_Offset(Axis, labelOffset), ALL_GRAPHS}, 
   {BLT_CONFIG_COLOR, "-limitscolor", "limitsColor", "Color",
    DEF_AXIS_FOREGROUND, Tk_Offset(Axis, limitsTextStyle.color), 
    ALL_GRAPHS},
   {BLT_CONFIG_FONT, "-limitsfont", "limitsFont", "Font", DEF_AXIS_LIMITS_FONT,
    Tk_Offset(Axis, limitsTextStyle.font), ALL_GRAPHS},
   {BLT_CONFIG_CUSTOM, "-limitsformat", "limitsFormat", "LimitsFormat",
-   (char *)NULL, Tk_Offset(Axis, limitsFormats),
+   NULL, Tk_Offset(Axis, limitsFormats),
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &formatOption},
   {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    DEF_AXIS_LINEWIDTH, Tk_Offset(Axis, lineWidth),
@@ -471,14 +491,14 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_CUSTOM, "-loose", "loose", "Loose", DEF_AXIS_LOOSE, 0, 
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT, &looseOption},
   {BLT_CONFIG_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
-   (char *)NULL, Tk_Offset(Axis, t1Ptr),
+   NULL, Tk_Offset(Axis, t1Ptr),
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &majorTicksOption},
-  {BLT_CONFIG_CUSTOM, "-max", "max", "Max", (char *)NULL, 
+  {BLT_CONFIG_CUSTOM, "-max", "max", "Max", NULL, 
    Tk_Offset(Axis, reqMax), ALL_GRAPHS, &limitOption},
-  {BLT_CONFIG_CUSTOM, "-min", "min", "Min", (char *)NULL, 
+  {BLT_CONFIG_CUSTOM, "-min", "min", "Min", NULL, 
    Tk_Offset(Axis, reqMin), ALL_GRAPHS, &limitOption},
   {BLT_CONFIG_CUSTOM, "-minorticks", "minorTicks", "MinorTicks",
-   (char *)NULL, Tk_Offset(Axis, t2Ptr), 
+   NULL, Tk_Offset(Axis, t2Ptr), 
    BLT_CONFIG_NULL_OK | ALL_GRAPHS, &minorTicksOption},
   {BLT_CONFIG_RELIEF, "-relief", "relief", "Relief",
    DEF_AXIS_RELIEF, Tk_Offset(Axis, relief), 
@@ -486,15 +506,15 @@ static Blt_ConfigSpec configSpecs[] = {
   {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_AXIS_ANGLE, 
    Tk_Offset(Axis, tickAngle), ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_CUSTOM, "-scrollcommand", "scrollCommand", "ScrollCommand",
-   (char *)NULL, Tk_Offset(Axis, scrollCmdObjPtr),
+   NULL, Tk_Offset(Axis, scrollCmdObjPtr),
    ALL_GRAPHS | BLT_CONFIG_NULL_OK,
    &objectOption},
   {BLT_CONFIG_PIXELS, "-scrollincrement", "scrollIncrement", 
    "ScrollIncrement", DEF_AXIS_SCROLL_INCREMENT, 
    Tk_Offset(Axis, scrollUnits), ALL_GRAPHS|BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-scrollmax", "scrollMax", "ScrollMax", (char *)NULL, 
+  {BLT_CONFIG_CUSTOM, "-scrollmax", "scrollMax", "ScrollMax", NULL, 
    Tk_Offset(Axis, reqScrollMax),  ALL_GRAPHS, &limitOption},
-  {BLT_CONFIG_CUSTOM, "-scrollmin", "scrollMin", "ScrollMin", (char *)NULL, 
+  {BLT_CONFIG_CUSTOM, "-scrollmin", "scrollMin", "ScrollMin", NULL, 
    Tk_Offset(Axis, reqScrollMin), ALL_GRAPHS, &limitOption},
   {BLT_CONFIG_DOUBLE, "-shiftby", "shiftBy", "ShiftBy",
    DEF_AXIS_SHIFTBY, Tk_Offset(Axis, shiftBy),
@@ -522,7 +542,7 @@ static Blt_ConfigSpec configSpecs[] = {
    DEF_AXIS_DIVISIONS, Tk_Offset(Axis, reqNumMajorTicks),
    ALL_GRAPHS | BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_STRING, "-title", "title", "Title",
-   (char *)NULL, Tk_Offset(Axis, title),
+   NULL, Tk_Offset(Axis, title),
    BLT_CONFIG_DONT_SET_DEFAULT | BLT_CONFIG_NULL_OK | ALL_GRAPHS},
   {BLT_CONFIG_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
    DEF_AXIS_TITLE_ALTERNATE, Tk_Offset(Axis, titleAlternate),
@@ -532,36 +552,12 @@ static Blt_ConfigSpec configSpecs[] = {
    ALL_GRAPHS},
   {BLT_CONFIG_FONT, "-titlefont", "titleFont", "Font", DEF_AXIS_TITLE_FONT, 
    Tk_Offset(Axis, titleFont), ALL_GRAPHS},
-  {BLT_CONFIG_CUSTOM, "-use", "use", "Use", (char *)NULL, 0, ALL_GRAPHS, 
+  {BLT_CONFIG_CUSTOM, "-use", "use", "Use", NULL, 0, ALL_GRAPHS, 
    &useOption},
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
-/* Forward declarations */
-static void DestroyAxis(Axis *axisPtr);
-static Tcl_FreeProc FreeAxis;
-static void TimeScaleAxis(Axis *axisPtr, double min, double max);
-
-static int lastMargin;
-typedef int (GraphAxisProc)(Tcl_Interp *interp, Axis *axisPtr, int objc, 
-			    Tcl_Obj *const *objv);
-typedef int (GraphVirtualAxisProc)(Tcl_Interp *interp, Graph* graphPtr, 
-				   int objc, Tcl_Obj *const *objv);
-
-INLINE static double
-Clamp(double x) 
-{
-  return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
-}
-
-INLINE static int
-Round(double x)
-{
-  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
-}
-
-static void
-SetAxisRange(AxisRange *rangePtr, double min, double max)
+static void SetAxisRange(AxisRange *rangePtr, double min, double max)
 {
   rangePtr->min = min;
   rangePtr->max = max;
@@ -572,28 +568,7 @@ SetAxisRange(AxisRange *rangePtr, double min, double max)
   rangePtr->scale = 1.0 / rangePtr->range;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * InRange --
- *
- *	Determines if a value lies within a given range.
- *
- *	The value is normalized and compared against the interval [0..1],
- *	where 0.0 is the minimum and 1.0 is the maximum.  DBL_EPSILON is the
- *	smallest number that can be represented on the host machine, such that
- *	(1.0 + epsilon) != 1.0.
- *
- *	Please note, *max* can't equal *min*.
- *
- * Results:
- *	If the value is within the interval [min..max], 1 is returned; 0
- *	otherwise.
- *
- *---------------------------------------------------------------------------
- */
-INLINE static int
-InRange(double x, AxisRange *rangePtr)
+static int InRange(double x, AxisRange *rangePtr)
 {
   if (rangePtr->range < DBL_EPSILON) {
     return (fabs(rangePtr->max - x) >= DBL_EPSILON);
@@ -605,8 +580,7 @@ InRange(double x, AxisRange *rangePtr)
   }
 }
 
-INLINE static int
-AxisIsHorizontal(Axis *axisPtr)
+static int AxisIsHorizontal(Axis *axisPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -677,13 +651,8 @@ static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp *interp,
   return Tcl_NewStringObj(name, -1);
 }
 
-/*ARGSUSED*/
-static void
-FreeFormatProc(
-	       ClientData clientData,		/* Not used. */
-	       Display *display,			/* Not used. */
-	       char *widgRec,
-	       int offset)				/* Not used. */
+static void FreeFormatProc(ClientData clientData, Display *display,
+			   char *widgRec, int offset)
 {
   Axis *axisPtr = (Axis *)(widgRec);
 
@@ -694,30 +663,9 @@ FreeFormatProc(
   axisPtr->nFormats = 0;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToFormatProc --
- *
- *	Convert the name of virtual axis to an pointer.
- *
- * Results:
- *	The return value is a standard TCL result.  The axis flags are written
- *	into the widget record.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToFormatProc(
-		ClientData clientData,		/* Not used. */
-		Tcl_Interp *interp,			/* Interpreter to report results. */
-		Tk_Window tkwin,			/* Not used. */
-		Tcl_Obj *objPtr,			/* String representing new value. */
-		char *widgRec,			/* Pointer to structure record. */
-		int offset,				/* Not used. */
-		int flags)				/* Not used. */
+static int ObjToFormatProc(ClientData clientData, Tcl_Interp *interp,
+			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			   int offset, int flags)
 {
   Axis *axisPtr = (Axis *)(widgRec);
   const char **argv;
@@ -728,7 +676,7 @@ ObjToFormatProc(
   }
   if (argc > 2) {
     Tcl_AppendResult(interp, "too many elements in limits format list \"",
-		     Tcl_GetString(objPtr), "\"", (char *)NULL);
+		     Tcl_GetString(objPtr), "\"", NULL);
     free(argv);
     return TCL_ERROR;
   }
@@ -740,27 +688,9 @@ ObjToFormatProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * FormatToObjProc --
- *
- *	Convert the window coordinates into a string.
- *
- * Results:
- *	The string representing the coordinate position is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-FormatToObjProc(
-		ClientData clientData,		/* Not used. */
-		Tcl_Interp *interp,			/* Not used. */
-		Tk_Window tkwin,			/* Not used. */
-		char *widgRec,			/* Widget record */
-		int offset,				/* Not used. */
-		int flags)				/* Not used. */
+static Tcl_Obj *FormatToObjProc(ClientData clientData, Tcl_Interp *interp,
+				Tk_Window tkwin, char *widgRec,
+				int offset, int flags)
 {
   Axis *axisPtr = (Axis *)(widgRec);
   Tcl_Obj *objPtr;
@@ -777,31 +707,9 @@ FormatToObjProc(
   return objPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToLimitProc --
- *
- *	Convert the string representation of an axis limit into its numeric
- *	form.
- *
- * Results:
- *	The return value is a standard TCL result.  The symbol type is written
- *	into the widget record.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToLimitProc(
-	       ClientData clientData,		/* Not used. */
-	       Tcl_Interp *interp,			/* Interpreter to send results back
-							 * to */
-	       Tk_Window tkwin,			/* Not used. */
-	       Tcl_Obj *objPtr,			/* String representing new value. */
-	       char *widgRec,			/* Pointer to structure record. */
-	       int offset,				/* Offset to field in structure */
-	       int flags)				/* Not used. */
+static int ObjToLimitProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
 {
   double *limitPtr = (double *)(widgRec + offset);
   const char *string;
@@ -815,63 +723,24 @@ ObjToLimitProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * LimitToObjProc --
- *
- *	Convert the floating point axis limits into a string.
- *
- * Results:
- *	The string representation of the limits is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-LimitToObjProc(
-	       ClientData clientData,		/* Not used. */
-	       Tcl_Interp *interp,			/* Not used. */
-	       Tk_Window tkwin,			/* Not used. */
-	       char *widgRec,			/* */
-	       int offset,				/* Offset to field in structure */
-	       int flags)				/* Not used. */
+static Tcl_Obj *LimitToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec,
+			       int offset, int flags)
 {
   double limit = *(double *)(widgRec + offset);
   Tcl_Obj *objPtr;
 
-  if (!isnan(limit)) {
+  if (!isnan(limit))
     objPtr = Tcl_NewDoubleObj(limit);
-  } else {
+  else
     objPtr = Tcl_NewStringObj("", -1);
-  }
+
   return objPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToUseProc --
- *
- *	Convert the string representation of the margin to use into its 
- *	numeric form.
- *
- * Results:
- *	The return value is a standard TCL result.  The use type is written
- *	into the widget record.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToUseProc(
-	     ClientData clientData,		/* Not used. */
-	     Tcl_Interp *interp,		        /* Interpreter to send results. */
-	     Tk_Window tkwin,			/* Not used. */
-	     Tcl_Obj *objPtr,			/* String representing new value. */
-	     char *widgRec,			/* Pointer to structure record. */
-	     int offset,				/* Offset to field in structure */
-	     int flags)				/* Not used. */
+static int ObjToUseProc(ClientData clientData, Tcl_Interp *interp,
+			Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			int offset, int flags)
 {
   Axis *axisPtr = (Axis *)(widgRec);
   AxisName *p, *pend;
@@ -901,7 +770,7 @@ ObjToUseProc(
   }
   if (p == pend) {
     Tcl_AppendResult(interp, "unknown axis type \"", string, "\": "
-		     "should be x, y, x1, y2, or \"\".", (char *)NULL);
+		     "should be x, y, x1, y2, or \"\".", NULL);
     return TCL_ERROR;
   }
   /* Check the axis class. Can't use the axis if it's already being used as
@@ -911,7 +780,7 @@ ObjToUseProc(
   } else if (axisPtr->obj.classId != p->classId) {
     Tcl_AppendResult(interp, "wrong type for axis \"", 
 		     axisPtr->obj.name, "\": can't use ", 
-		     axisPtr->obj.className, " type axis.", (char *)NULL); 
+		     axisPtr->obj.className, " type axis.", NULL); 
     return TCL_ERROR;
   }
   margin = (graphPtr->inverted) ? p->invertMargin : p->margin;
@@ -933,27 +802,9 @@ ObjToUseProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * UseToObjProc --
- *
- *	Convert the floating point axis limits into a string.
- *
- * Results:
- *	The string representation of the limits is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-UseToObjProc(
-	     ClientData clientData,		/* Not used. */
-	     Tcl_Interp *interp,			/* Not used. */
-	     Tk_Window tkwin,			/* Not used. */
-	     char *widgRec,			/* */
-	     int offset,				/* Offset to field in structure */
-	     int flags)				/* Not used. */
+static Tcl_Obj *UseToObjProc(ClientData clientData, Tcl_Interp *interp,
+			     Tk_Window tkwin, char *widgRec,
+			     int offset, int flags)
 {
   Axis *axisPtr = (Axis *)(widgRec);
     
@@ -963,14 +814,8 @@ UseToObjProc(
   return Tcl_NewStringObj(axisNames[axisPtr->margin].name, -1);
 }
 
-/*ARGSUSED*/
-static void
-FreeTicksProc(
-	      ClientData clientData,		/* Either AXIS_AUTO_MAJOR or
-						 * AXIS_AUTO_MINOR. */
-	      Display *display,			/* Not used. */
-	      char *widgRec,
-	      int offset)
+static void FreeTicksProc(ClientData clientData, Display *display,
+			  char *widgRec, int offset)
 {
   Axis *axisPtr = (Axis *)widgRec;
   Ticks **ticksPtrPtr = (Ticks **) (widgRec + offset);
@@ -983,27 +828,9 @@ FreeTicksProc(
   *ticksPtrPtr = NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToTicksProc --
- *
- *
- * Results:
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToTicksProc(
-	       ClientData clientData,		/* Either AXIS_AUTO_MAJOR or
-						 * AXIS_AUTO_MINOR. */
-	       Tcl_Interp *interp,		        /* Interpreter to send results. */
-	       Tk_Window tkwin,			/* Not used. */
-	       Tcl_Obj *objPtr,			/* String representing new value. */
-	       char *widgRec,			/* Pointer to structure record. */
-	       int offset,				/* Offset to field in structure */
-	       int flags)				/* Not used. */
+static int ObjToTicksProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
 {
   Axis *axisPtr = (Axis *)widgRec;
   Tcl_Obj **objv;
@@ -1038,27 +865,9 @@ ObjToTicksProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * TicksToObjProc --
- *
- *	Convert array of tick coordinates to a list.
- *
- * Results:
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-TicksToObjProc(
-	       ClientData clientData,		/* Either AXIS_AUTO_MAJOR or
-						 * AXIS_AUTO_MINOR. */
-	       Tcl_Interp *interp,
-	       Tk_Window tkwin,			/* Not used. */
-	       char *widgRec,			/* */
-	       int offset,				/* Offset to field in structure */
-	       int flags)				/* Not used. */
+static Tcl_Obj *TicksToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec,
+			       int offset, int flags)
 {
   Axis *axisPtr;
   Tcl_Obj *listObjPtr;
@@ -1082,32 +891,9 @@ TicksToObjProc(
   return listObjPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ObjToLooseProc --
- *
- *	Convert a string to one of three values.
- *		0 - false, no, off
- *		1 - true, yes, on
- *		2 - always
- * Results:
- *	If the string is successfully converted, TCL_OK is returned.
- *	Otherwise, TCL_ERROR is returned and an error message is left in
- *	interpreter's result field.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-ObjToLooseProc(
-	       ClientData clientData,		/* Not used. */
-	       Tcl_Interp *interp,		        /* Interpreter to send results. */
-	       Tk_Window tkwin,			/* Not used. */
-	       Tcl_Obj *objPtr,			/* String representing new value. */
-	       char *widgRec,			/* Pointer to structure record. */
-	       int offset,				/* Not used. */
-	       int flags)				/* Not used. */
+static int ObjToLooseProc(ClientData clientData, Tcl_Interp *interp,
+			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
+			  int offset, int flags)
 {
   Axis *axisPtr = (Axis *)(widgRec);
   Tcl_Obj **objv;
@@ -1120,7 +906,7 @@ ObjToLooseProc(
   }
   if ((objc < 1) || (objc > 2)) {
     Tcl_AppendResult(interp, "wrong # elements in loose value \"",
-		     Tcl_GetString(objPtr), "\"", (char *)NULL);
+		     Tcl_GetString(objPtr), "\"", NULL);
     return TCL_ERROR;
   }
   for (i = 0; i < objc; i++) {
@@ -1145,25 +931,9 @@ ObjToLooseProc(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * LooseToObjProc --
- *
- * Results:
- *	The string representation of the auto boolean is returned.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static Tcl_Obj *
-LooseToObjProc(
-	       ClientData clientData,		/* Not used. */
-	       Tcl_Interp *interp,
-	       Tk_Window tkwin,			/* Not used. */
-	       char *widgRec,			/* Widget record */
-	       int offset,				/* Not used. */
-	       int flags)				/* Not used. */
+static Tcl_Obj *LooseToObjProc(ClientData clientData, Tcl_Interp *interp,
+			       Tk_Window tkwin, char *widgRec,
+			       int offset, int flags)
 {
   Axis *axisPtr = (Axis *)widgRec;
   Tcl_Obj *listObjPtr;
@@ -1192,8 +962,7 @@ LooseToObjProc(
   return listObjPtr;
 }
 
-static void
-FreeTickLabels(Blt_Chain chain)
+static void FreeTickLabels(Blt_Chain chain)
 {
   Blt_ChainLink link;
 
@@ -1207,25 +976,7 @@ FreeTickLabels(Blt_Chain chain)
   Blt_Chain_Reset(chain);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MakeLabel --
- *
- *	Converts a floating point tick value to a string to be used as its
- *	label.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Returns a new label in the string character buffer.  The formatted
- *	tick label will be displayed on the graph.
- *
- * -------------------------------------------------------------------------- 
- */
-static TickLabel *
-MakeLabel(Axis *axisPtr, double value)
+static TickLabel *MakeLabel(Axis *axisPtr, double value)
 {
 #define TICK_LABEL_SIZE		200
   char string[TICK_LABEL_SIZE + 1];
@@ -1253,7 +1004,7 @@ MakeLabel(Axis *axisPtr, double value)
      */
     Tcl_ResetResult(interp);
     if (Tcl_VarEval(interp, axisPtr->formatCmd, " ", Tk_PathName(tkwin),
-		    " ", string, (char *)NULL) != TCL_OK) {
+		    " ", string, NULL) != TCL_OK) {
       Tcl_BackgroundError(interp);
     } else {
       /* 
@@ -1272,22 +1023,7 @@ MakeLabel(Axis *axisPtr, double value)
   return labelPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_InvHMap --
- *
- *	Maps the given screen coordinate back to a graph coordinate.  Called
- *	by the graph locater routine.
- *
- * Results:
- *	Returns the graph coordinate value at the given window
- *	y-coordinate.
- *
- *---------------------------------------------------------------------------
- */
-double
-Blt_InvHMap(Axis *axisPtr, double x)
+double Blt_InvHMap(Axis *axisPtr, double x)
 {
   double value;
 
@@ -1302,22 +1038,7 @@ Blt_InvHMap(Axis *axisPtr, double x)
   return value;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_InvVMap --
- *
- *	Maps the given screen y-coordinate back to the graph coordinate
- *	value. Called by the graph locater routine.
- *
- * Results:
- *	Returns the graph coordinate value for the given screen
- *	coordinate.
- *
- *---------------------------------------------------------------------------
- */
-double
-Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
+double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
 {
   double value;
 
@@ -1332,22 +1053,7 @@ Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
   return value;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_HMap --
- *
- *	Map the given graph coordinate value to its axis, returning a window
- *	position.
- *
- * Results:
- *	Returns a double precision number representing the window coordinate
- *	position on the given axis.
- *
- *---------------------------------------------------------------------------
- */
-double
-Blt_HMap(Axis *axisPtr, double x)
+double Blt_HMap(Axis *axisPtr, double x)
 {
   if ((axisPtr->logScale) && (x != 0.0)) {
     x = log10(fabs(x));
@@ -1360,22 +1066,7 @@ Blt_HMap(Axis *axisPtr, double x)
   return (x * axisPtr->screenRange + axisPtr->screenMin);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_VMap --
- *
- *	Map the given graph coordinate value to its axis, returning a window
- *	position.
- *
- * Results:
- *	Returns a double precision number representing the window coordinate
- *	position on the given axis.
- *
- *---------------------------------------------------------------------------
- */
-double
-Blt_VMap(Axis *axisPtr, double y)
+double Blt_VMap(Axis *axisPtr, double y)
 {
   if ((axisPtr->logScale) && (y != 0.0)) {
     y = log10(fabs(y));
@@ -1388,24 +1079,7 @@ Blt_VMap(Axis *axisPtr, double y)
   return ((1.0 - y) * axisPtr->screenRange + axisPtr->screenMin);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Map2D --
- *
- *	Maps the given graph x,y coordinate values to a window position.
- *
- * Results:
- *	Returns a XPoint structure containing the window coordinates of
- *	the given graph x,y coordinate.
- *
- *---------------------------------------------------------------------------
- */
-Point2d
-Blt_Map2D(
-	  Graph* graphPtr,
-	  double x, double y,			/* Graph x and y coordinates */
-	  Axis2d *axesPtr)			/* Specifies which axes to use */
+Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 {
   Point2d point;
 
@@ -1419,24 +1093,7 @@ Blt_Map2D(
   return point;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_InvMap2D --
- *
- *	Maps the given window x,y coordinates to graph values.
- *
- * Results:
- *	Returns a structure containing the graph coordinates of the given
- *	window x,y coordinate.
- *
- *---------------------------------------------------------------------------
- */
-Point2d
-Blt_InvMap2D(
-	     Graph* graphPtr,
-	     double x, double y,			/* Window x and y coordinates */
-	     Axis2d *axesPtr)			/* Specifies which axes to use */
+Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 {
   Point2d point;
 
@@ -1450,9 +1107,7 @@ Blt_InvMap2D(
   return point;
 }
 
-
-static void
-GetDataLimits(Axis *axisPtr, double min, double max)
+static void GetDataLimits(Axis *axisPtr, double min, double max)
 {
   if (axisPtr->valueRange.min > min) {
     axisPtr->valueRange.min = min;
@@ -1462,8 +1117,7 @@ GetDataLimits(Axis *axisPtr, double min, double max)
   }
 }
 
-static void
-FixAxisRange(Axis *axisPtr)
+static void FixAxisRange(Axis *axisPtr)
 {
   double min, max;
 
@@ -1570,21 +1224,9 @@ FixAxisRange(Axis *axisPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NiceNum --
- *
- *	Reference: Paul Heckbert, "Nice Numbers for Graph Labels",
- *		   Graphics Gems, pp 61-63.  
- *
- *	Finds a "nice" number approximately equal to x.
- *
- *---------------------------------------------------------------------------
- */
-static double
-NiceNum(double x, int round)		/* If non-zero, round. Otherwise take
-					 * ceiling of value. */
+// Reference: Paul Heckbert, "Nice Numbers for Graph Labels",
+// Graphics Gems, pp 61-63.  
+double NiceNum(double x, int round)
 {
   double expt;			/* Exponent of x */
   double frac;			/* Fractional part of x */
@@ -1616,8 +1258,7 @@ NiceNum(double x, int round)		/* If non-zero, round. Otherwise take
   return nice * EXP10(expt);
 }
 
-static Ticks *
-GenerateTicks(TickSweep *sweepPtr)
+static Ticks *GenerateTicks(TickSweep *sweepPtr)
 {
   Ticks *ticksPtr;
 
@@ -1659,81 +1300,7 @@ GenerateTicks(TickSweep *sweepPtr)
   return ticksPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * LogScaleAxis --
- *
- * 	Determine the range and units of a log scaled axis.
- *
- * 	Unless the axis limits are specified, the axis is scaled
- * 	automatically, where the smallest and largest major ticks encompass
- * 	the range of actual data values.  When an axis limit is specified,
- * 	that value represents the smallest(min)/largest(max) value in the
- * 	displayed range of values.
- *
- * 	Both manual and automatic scaling are affected by the step used.  By
- * 	default, the step is the largest power of ten to divide the range in
- * 	more than one piece.
- *
- *	Automatic scaling:
- *	Find the smallest number of units which contain the range of values.
- *	The minimum and maximum major tick values will be represent the
- *	range of values for the axis. This greatest number of major ticks
- *	possible is 10.
- *
- * 	Manual scaling:
- *   	Make the minimum and maximum data values the represent the range of
- *   	the values for the axis.  The minimum and maximum major ticks will be
- *   	inclusive of this range.  This provides the largest area for plotting
- *   	and the expected results when the axis min and max values have be set
- *   	by the user (.e.g zooming).  The maximum number of major ticks is 20.
- *
- *   	For log scale, there's the possibility that the minimum and
- *   	maximum data values are the same magnitude.  To represent the
- *   	points properly, at least one full decade should be shown.
- *   	However, if you zoom a log scale plot, the results should be
- *   	predictable. Therefore, in that case, show only minor ticks.
- *   	Lastly, there should be an appropriate way to handle numbers
- *   	<=0.
- *
- *          maxY
- *            |    units = magnitude (of least significant digit)
- *            |    high  = largest unit tick < max axis value
- *      high _|    low   = smallest unit tick > min axis value
- *            |
- *            |    range = high - low
- *            |    # ticks = greatest factor of range/units
- *           _|
- *        U   |
- *        n   |
- *        i   |
- *        t  _|
- *            |
- *            |
- *            |
- *       low _|
- *            |
- *            |_minX________________maxX__
- *            |   |       |      |       |
- *     minY  low                        high
- *           minY
- *
- *
- * 	numTicks = Number of ticks
- * 	min = Minimum value of axis
- * 	max = Maximum value of axis
- * 	range    = Range of values (max - min)
- *
- * 	If the number of decades is greater than ten, it is assumed
- *	that the full set of log-style ticks can't be drawn properly.
- *
- * Results:
- *	None
- *
- * -------------------------------------------------------------------------- */
-static void
-LogScaleAxis(Axis *axisPtr, double min, double max)
+static void LogScaleAxis(Axis *axisPtr, double min, double max)
 {
   double range;
   double tickMin, tickMax;
@@ -1801,69 +1368,7 @@ LogScaleAxis(Axis *axisPtr, double min, double max)
   SetAxisRange(&axisPtr->axisRange, tickMin, tickMax);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * LinearScaleAxis --
- *
- * 	Determine the units of a linear scaled axis.
- *
- *	The axis limits are either the range of the data values mapped
- *	to the axis (autoscaled), or the values specified by the -min
- *	and -max options (manual).
- *
- *	If autoscaled, the smallest and largest major ticks will
- *	encompass the range of data values.  If the -loose option is
- *	selected, the next outer ticks are choosen.  If tight, the
- *	ticks are at or inside of the data limits are used.
- *
- * 	If manually set, the ticks are at or inside the data limits
- * 	are used.  This makes sense for zooming.  You want the
- * 	selected range to represent the next limit, not something a
- * 	bit bigger.
- *
- *	Note: I added an "always" value to the -loose option to force
- *	      the manually selected axes to be loose. It's probably
- *	      not a good idea.
- *
- *          maxY
- *            |    units = magnitude (of least significant digit)
- *            |    high  = largest unit tick < max axis value
- *      high _|    low   = smallest unit tick > min axis value
- *            |
- *            |    range = high - low
- *            |    # ticks = greatest factor of range/units
- *           _|
- *        U   |
- *        n   |
- *        i   |
- *        t  _|
- *            |
- *            |
- *            |
- *       low _|
- *            |
- *            |_minX________________maxX__
- *            |   |       |      |       |
- *     minY  low                        high
- *           minY
- *
- * 	numTicks = Number of ticks
- * 	min = Minimum value of axis
- * 	max = Maximum value of axis
- * 	range    = Range of values (max - min)
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The axis tick information is set.  The actual tick values will
- *	be generated later.
- *
- *---------------------------------------------------------------------------
- */
-static void
-LinearScaleAxis(Axis *axisPtr, double min, double max)
+static void LinearScaleAxis(Axis *axisPtr, double min, double max)
 {
   double step;
   double tickMin, tickMax;
@@ -1937,9 +1442,7 @@ LinearScaleAxis(Axis *axisPtr, double min, double max)
   axisPtr->minorSweep.nSteps = nTicks;
 }
 
-
-static void
-SweepTicks(Axis *axisPtr)
+static void SweepTicks(Axis *axisPtr)
 {
   if (axisPtr->flags & AXIS_AUTO_MAJOR) {
     if (axisPtr->t1Ptr != NULL) {
@@ -1955,18 +1458,7 @@ SweepTicks(Axis *axisPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ResetAxes --
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_ResetAxes(Graph* graphPtr)
+void Blt_ResetAxes(Graph* graphPtr)
 {
   Blt_ChainLink link;
   Tcl_HashEntry *hPtr;
@@ -2002,7 +1494,7 @@ Blt_ResetAxes(Graph* graphPtr)
    */
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element *elemPtr;
+    Element* elemPtr;
     Region2d exts;
 
     elemPtr = Blt_Chain_GetValue(link);
@@ -2053,27 +1545,7 @@ Blt_ResetAxes(Graph* graphPtr)
 		      REDRAW_WORLD);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ResetTextStyles --
- *
- *	Configures axis attributes (font, line width, label, etc) and
- *	allocates a new (possibly shared) graphics context.  Line cap style is
- *	projecting.  This is for the problem of when a tick sits directly at
- *	the end point of the axis.
- *
- * Results:
- *	The return value is a standard TCL result.
- *
- * Side Effects:
- *	Axis resources are allocated (GC, font). Axis layout is deferred until
- *	the height and width of the window are known.
- *
- *---------------------------------------------------------------------------
- */
-static void
-ResetTextStyles(Axis *axisPtr)
+static void ResetTextStyles(Axis *axisPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   GC newGC;
@@ -2135,28 +1607,13 @@ ResetTextStyles(Axis *axisPtr)
   axisPtr->minor.gc = newGC;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DestroyAxis --
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Resources (font, color, gc, labels, etc.) associated with the axis are
- *	deallocated.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DestroyAxis(Axis *axisPtr)
+static void DestroyAxis(Axis *axisPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   int flags;
 
   flags = Blt_GraphType(graphPtr);
-  Blt_FreeOptions(configSpecs, (char *)axisPtr, graphPtr->display, flags);
+  Blt_FreeOptions(configSpecs, (char*)axisPtr, graphPtr->display, flags);
   if (graphPtr->bindTable != NULL) {
     Blt_DeleteBindings(graphPtr->bindTable, axisPtr);
   }
@@ -2203,25 +1660,8 @@ static float titleAngle[4] =		/* Rotation for each axis title */
     0.0, 90.0, 0.0, 270.0
   };
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisOffsets --
- *
- *	Determines the sites of the axis, major and minor ticks, and title of
- *	the axis.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-AxisOffsets(
-	    Axis *axisPtr,
-	    int margin,
-	    int offset,
-	    AxisInfo *infoPtr)
+static void AxisOffsets(Axis *axisPtr, int margin, int offset,
+			AxisInfo *infoPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   Margin *marginPtr;
@@ -2520,8 +1960,7 @@ AxisOffsets(
   } 
 }
 
-static void
-MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
+static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
 {
   double min, max;
 
@@ -2542,9 +1981,8 @@ MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
   }
 }
 
-
-static void
-MakeTick(Axis *axisPtr, double value, int tick, int line, Segment2d *sp)
+static void MakeTick(Axis *axisPtr, double value, int tick, int line, 
+		     Segment2d *sp)
 {
   if (axisPtr->logScale) {
     value = EXP10(value);
@@ -2560,8 +1998,7 @@ MakeTick(Axis *axisPtr, double value, int tick, int line, Segment2d *sp)
   }
 }
 
-static void
-MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
+static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 {
   int arraySize;
   int nMajorTicks, nMinorTicks;
@@ -2649,31 +2086,7 @@ MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
   assert(axisPtr->nSegments <= arraySize);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapAxis --
- *
- *	Pre-calculates positions of the axis, ticks, and labels (to be used
- *	later when displaying the axis).  Calculates the values for each major
- *	and minor tick and checks to see if they are in range (the outer ticks
- *	may be outside of the range of plotted values).
- *
- *	Line segments for the minor and major ticks are saved into one
- *	XSegment array so that they can be drawn by a single XDrawSegments
- *	call. The positions of the tick labels are also computed and saved.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Line segments and tick labels are saved and used later to draw the
- *	axis.
- *
- *---------------------------------------------------------------------------
- */
-static void
-MapAxis(Axis *axisPtr, int offset, int margin)
+static void MapAxis(Axis *axisPtr, int offset, int margin)
 {
   AxisInfo info;
   Graph* graphPtr = axisPtr->obj.graphPtr;
@@ -2692,31 +2105,7 @@ MapAxis(Axis *axisPtr, int offset, int margin)
   MakeSegments(axisPtr, &info);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapStackedAxis --
- *
- *	Pre-calculates positions of the axis, ticks, and labels (to be used
- *	later when displaying the axis).  Calculates the values for each major
- *	and minor tick and checks to see if they are in range (the outer ticks
- *	may be outside of the range of plotted values).
- *
- *	Line segments for the minor and major ticks are saved into one XSegment
- *	array so that they can be drawn by a single XDrawSegments call. The
- *	positions of the tick labels are also computed and saved.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Line segments and tick labels are saved and used later to draw the
- *	axis.
- *
- *---------------------------------------------------------------------------
- */
-static void
-MapStackedAxis(Axis *axisPtr, int count, int margin)
+static void MapStackedAxis(Axis *axisPtr, int count, int margin)
 {
   AxisInfo info;
   Graph* graphPtr = axisPtr->obj.graphPtr;
@@ -2744,34 +2133,7 @@ MapStackedAxis(Axis *axisPtr, int count, int margin)
   MakeSegments(axisPtr, &info);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AdjustViewport --
- *
- *	Adjusts the offsets of the viewport according to the scroll mode.  This
- *	is to accommodate both "listbox" and "canvas" style scrolling.
- *
- *	"canvas"	The viewport scrolls within the range of world
- *			coordinates.  This way the viewport always displays
- *			a full page of the world.  If the world is smaller
- *			than the viewport, then (bizarrely) the world and
- *			viewport are inverted so that the world moves up
- *			and down within the viewport.
- *
- *	"listbox"	The viewport can scroll beyond the range of world
- *			coordinates.  Every entry can be displayed at the
- *			top of the viewport.  This also means that the
- *			scrollbar thumb weirdly shrinks as the last entry
- *			is scrolled upward.
- *
- * Results:
- *	The corrected offset is returned.
- *
- *---------------------------------------------------------------------------
- */
-static double
-AdjustViewport(double offset, double windowSize)
+static double AdjustViewport(double offset, double windowSize)
 {
   /*
    * Canvas-style scrolling allows the world to be scrolled within the window.
@@ -2794,15 +2156,9 @@ AdjustViewport(double offset, double windowSize)
   return offset;
 }
 
-static int
-GetAxisScrollInfo(
-		  Tcl_Interp *interp,
-		  int objc,
-		  Tcl_Obj *const *objv,
-		  double *offsetPtr,
-		  double windowSize,
-		  double scrollUnits,
-		  double scale)
+static int GetAxisScrollInfo(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv,
+			     double *offsetPtr, double windowSize,
+			     double scrollUnits, double scale)
 {
   const char *string;
   char c;
@@ -2833,7 +2189,7 @@ GetAxisScrollInfo(
       fract = count * scale;
     } else {
       Tcl_AppendResult(interp, "unknown \"scroll\" units \"", string,
-		       "\"", (char *)NULL);
+		       "\"", NULL);
       return TCL_ERROR;
     }
     offset += fract;
@@ -2862,26 +2218,7 @@ GetAxisScrollInfo(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawAxis --
- *
- *	Draws the axis, ticks, and labels onto the canvas.
- *
- *	Initializes and passes text attribute information through TextStyle
- *	structure.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Axis gets drawn on window.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DrawAxis(Axis *axisPtr, Drawable drawable)
+static void DrawAxis(Axis *axisPtr, Drawable drawable)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -3018,33 +2355,14 @@ DrawAxis(Axis *axisPtr, Drawable drawable)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisToPostScript --
- *
- *	Generates PostScript output to draw the axis, ticks, and labels.
- *
- *	Initializes and passes text attribute information through TextStyle
- *	structure.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	PostScript output is left in graphPtr->interp->result;
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED */
-static void
-AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
+static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
   Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->obj.name);
   if (axisPtr->normalBg != NULL) {
     Blt_Ps_Fill3DRectangle(ps, axisPtr->normalBg, 
 			   (double)axisPtr->left, (double)axisPtr->top, 
-			   axisPtr->right - axisPtr->left, axisPtr->bottom - axisPtr->top, 
+			   axisPtr->right - axisPtr->left, 
+			   axisPtr->bottom - axisPtr->top, 
 			   axisPtr->borderWidth, axisPtr->relief);
   }
   if (axisPtr->title != NULL) {
@@ -3087,8 +2405,7 @@ AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
   }
 }
 
-static void
-MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
+static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -3107,22 +2424,7 @@ MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * MapGridlines --
- *
- *	Assembles the grid lines associated with an axis. Generates tick
- *	positions if necessary (this happens when the axis is not a logical axis
- *	too).
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-MapGridlines(Axis *axisPtr)
+static void MapGridlines(Axis *axisPtr)
 {
   Segment2d *s1, *s2;
   Ticks *t1Ptr, *t2Ptr;
@@ -3199,36 +2501,7 @@ MapGridlines(Axis *axisPtr)
   axisPtr->minor.nUsed = s2 - axisPtr->minor.segments;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GetAxisGeometry --
- *
- * Results:
- *	None.
- *
- * Exterior axis:
- *                    l       r
- *  |a|b|c|d|e|f|g|h|i|   j   |i|h|g|f|e|d|c|d|a|
- *
- * Interior axis: 
- *                  l           r
- *  |a|b|c|d|h|g|f|e|     j     |e|f|g|h|d|c|b|a|
- *               i..             ..i 
- * a = highlight thickness
- * b = graph borderwidth
- * c = axis title
- * d = tick label 
- * e = tick 
- * f = axis line
- * g = 1 pixel pad
- * h = plot borderwidth
- * i = plot pad
- * j = plot area 
- *---------------------------------------------------------------------------
- */
-static void
-GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
+static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
   unsigned int y;
 
@@ -3332,30 +2605,7 @@ GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GetMarginGeometry --
- *
- *	Examines all the axes in the given margin and determines the area
- *	required to display them.
- *
- *	Note: For multiple axes, the titles are displayed in another
- *	      margin. So we must keep track of the widest title.
- *	
- * Results:
- *	Returns the width or height of the margin, depending if it runs
- *	horizontally along the graph or vertically.
- *
- * Side Effects:
- *	The area width and height set in the margin.  Note again that this may
- *	be corrected later (mulitple axes) to adjust for the longest title in
- *	another margin.
- *
- *---------------------------------------------------------------------------
- */
-static int
-GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
+static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 {
   Blt_ChainLink link;
   unsigned int l, w, h;		/* Length, width, and height. */
@@ -3522,8 +2772,8 @@ GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
  * if reqPlotWidth > 0 : set plot size
  *---------------------------------------------------------------------------
  */
-void
-Blt_LayoutGraph(Graph* graphPtr)
+
+void Blt_LayoutGraph(Graph* graphPtr)
 {
   unsigned int titleY;
   unsigned int left, right, top, bottom;
@@ -3812,24 +3062,7 @@ Blt_LayoutGraph(Graph* graphPtr)
 
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ConfigureAxis --
- *
- *	Configures axis attributes (font, line width, label, etc).
- *
- * Results:
- *	The return value is a standard TCL result.
- *
- * Side Effects:
- *	Axis layout is deferred until the height and width of the window are
- *	known.
- *
- *---------------------------------------------------------------------------
- */
-static int
-ConfigureAxis(Axis *axisPtr)
+static int ConfigureAxis(Axis *axisPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   float angle;
@@ -3843,7 +3076,7 @@ ConfigureAxis(Axis *axisPtr)
     sprintf_s(msg, 200, 
 	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
 	      axisPtr->reqMin, axisPtr->reqMax, axisPtr->obj.name);
-    Tcl_AppendResult(graphPtr->interp, msg, (char *)NULL);
+    Tcl_AppendResult(graphPtr->interp, msg, NULL);
     return TCL_ERROR;
   }
   axisPtr->scrollMin = axisPtr->reqScrollMin;
@@ -3855,7 +3088,7 @@ ConfigureAxis(Axis *axisPtr)
 	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
 			 Blt_Dtoa(graphPtr->interp, axisPtr->reqMin), 
 			 "\" for axis \"", axisPtr->obj.name, "\"", 
-			 (char *)NULL);
+			 NULL);
 	return TCL_ERROR;
       }
     }
@@ -3898,21 +3131,7 @@ ConfigureAxis(Axis *axisPtr)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NewAxis --
- *
- *	Create and initialize a structure containing information to display
- *	a graph axis.
- *
- * Results:
- *	The return value is a pointer to an Axis structure.
- *
- *---------------------------------------------------------------------------
- */
-static Axis *
-NewAxis(Graph* graphPtr, const char *name, int margin)
+static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
 {
   Axis *axisPtr;
   Tcl_HashEntry *hPtr;
@@ -3920,7 +3139,7 @@ NewAxis(Graph* graphPtr, const char *name, int margin)
 
   if (name[0] == '-') {
     Tcl_AppendResult(graphPtr->interp, "name of axis \"", name, 
-		     "\" can't start with a '-'", (char *)NULL);
+		     "\" can't start with a '-'", NULL);
     return NULL;
   }
   hPtr = Tcl_CreateHashEntry(&graphPtr->axes.table, name, &isNew);
@@ -3929,7 +3148,7 @@ NewAxis(Graph* graphPtr, const char *name, int margin)
     if ((axisPtr->flags & DELETE_PENDING) == 0) {
       Tcl_AppendResult(graphPtr->interp, "axis \"", name,
 		       "\" already exists in \"", Tk_PathName(graphPtr->tkwin), "\"",
-		       (char *)NULL);
+		       NULL);
       return NULL;
     }
     axisPtr->flags &= ~DELETE_PENDING;
@@ -3937,7 +3156,7 @@ NewAxis(Graph* graphPtr, const char *name, int margin)
     axisPtr = calloc(1, sizeof(Axis));
     if (axisPtr == NULL) {
       Tcl_AppendResult(graphPtr->interp, 
-		       "can't allocate memory for axis \"", name, "\"", (char *)NULL);
+		       "can't allocate memory for axis \"", name, "\"", NULL);
       return NULL;
     }
     axisPtr->obj.name = Blt_Strdup(name);
@@ -3973,8 +3192,7 @@ NewAxis(Graph* graphPtr, const char *name, int margin)
   return axisPtr;
 }
 
-static int
-GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+static int GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 	       Axis **axisPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -3994,14 +3212,13 @@ GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
   }
   if (interp != NULL) {
     Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
+		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
   }
   return TCL_ERROR;
 }
 
-static int
-GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
-	       ClassId classId, Axis **axisPtrPtr)
+static int GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
+			  ClassId classId, Axis **axisPtrPtr)
 {
   Axis *axisPtr;
 
@@ -4017,7 +3234,7 @@ GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 	Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
 			 "\" is already in use on an opposite ", 
 			 axisPtr->obj.className, "-axis", 
-			 (char *)NULL);
+			 NULL);
       }
       return TCL_ERROR;
     }
@@ -4027,8 +3244,7 @@ GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-void
-Blt_DestroyAxes(Graph* graphPtr)
+void Blt_DestroyAxes(Graph* graphPtr)
 {
   {
     Tcl_HashEntry *hPtr;
@@ -4055,8 +3271,7 @@ Blt_DestroyAxes(Graph* graphPtr)
   Blt_Chain_Destroy(graphPtr->axes.displayList);
 }
 
-void
-Blt_ConfigureAxes(Graph* graphPtr)
+void Blt_ConfigureAxes(Graph* graphPtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -4070,8 +3285,7 @@ Blt_ConfigureAxes(Graph* graphPtr)
   }
 }
 
-int
-Blt_DefaultAxes(Graph* graphPtr)
+int Blt_DefaultAxes(Graph* graphPtr)
 {
   int i;
   int flags;
@@ -4101,7 +3315,7 @@ Blt_DefaultAxes(Graph* graphPtr)
      */
     if (Blt_ConfigureComponentFromObj(graphPtr->interp, graphPtr->tkwin,
 				      axisPtr->obj.name, "Axis", configSpecs, 0, (Tcl_Obj **)NULL,
-				      (char *)axisPtr, flags) != TCL_OK) {
+				      (char*)axisPtr, flags) != TCL_OK) {
       return TCL_ERROR;
     }
     if (ConfigureAxis(axisPtr) != TCL_OK) {
@@ -4113,24 +3327,7 @@ Blt_DefaultAxes(Graph* graphPtr)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ActivateOp --
- *
- * 	Activates the axis, drawing the axis with its -activeforeground,
- *	-activebackgound, -activerelief attributes.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side Effects:
- *	Graph will be redrawn to reflect the new axis attributes.
- *
- *---------------------------------------------------------------------------
- */
-static int
-ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   const char *string;
@@ -4148,16 +3345,7 @@ ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*-------------------------------------------------------------------------------
- *
- * BindOp --
- *
- *    .g axis bind axisName sequence command
- *
- *---------------------------------------------------------------------------
- */
-static int
-BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -4165,48 +3353,15 @@ BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 				      Blt_MakeAxisTag(graphPtr, axisPtr->obj.name), objc, objv);
 }
           
-/*
- *---------------------------------------------------------------------------
- *
- * CgetOp --
- *
- *	Queries axis attributes (font, line width, label, etc).
- *
- * Results:
- *	Return value is a standard TCL result.  If querying configuration
- *	values, interp->result will contain the results.
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED */
-static int
-CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
   return Blt_ConfigureValueFromObj(interp, graphPtr->tkwin, configSpecs,
-				   (char *)axisPtr, objv[0], Blt_GraphType(graphPtr));
+				   (char*)axisPtr, objv[0], Blt_GraphType(graphPtr));
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ConfigureOp --
- *
- *	Queries or resets axis attributes (font, line width, label, etc).
- *
- * Results:
- *	Return value is a standard TCL result.  If querying configuration
- *	values, interp->result will contain the results.
- *
- * Side Effects:
- *	Axis resources are possibly allocated (GC, font). Axis layout is
- *	deferred until the height and width of the window are known.
- *
- *---------------------------------------------------------------------------
- */
-static int
-ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   int flags;
@@ -4214,13 +3369,13 @@ ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   flags = BLT_CONFIG_OBJV_ONLY | Blt_GraphType(graphPtr);
   if (objc == 0) {
     return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
-				    (char *)axisPtr, (Tcl_Obj *)NULL, flags);
+				    (char*)axisPtr, (Tcl_Obj *)NULL, flags);
   } else if (objc == 1) {
     return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, configSpecs,
-				    (char *)axisPtr, objv[0], flags);
+				    (char*)axisPtr, objv[0], flags);
   }
   if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, configSpecs, 
-				 objc, objv, (char *)axisPtr, flags) != TCL_OK) {
+				 objc, objv, (char*)axisPtr, flags) != TCL_OK) {
     return TCL_ERROR;
   }
   if (ConfigureAxis(axisPtr) != TCL_OK) {
@@ -4228,7 +3383,7 @@ ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   }
   if (axisPtr->flags & AXIS_USE) {
     if (!Blt_ConfigModified(configSpecs, "-*color", "-background", "-bg",
-			    (char *)NULL)) {
+			    NULL)) {
       graphPtr->flags |= CACHE_DIRTY;
     }
     Blt_EventuallyRedrawGraph(graphPtr);
@@ -4236,24 +3391,7 @@ ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * LimitsOp --
- *
- *	This procedure returns a string representing the axis limits
- *	of the graph.  The format of the string is { left top right bottom}.
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is
- *	a list of the graph axis limits.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   Tcl_Obj *listObjPtr;
@@ -4276,23 +3414,7 @@ LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * InvTransformOp --
- *
- *	Maps the given window coordinate into an axis-value.
- *
- * Results:
- *	Returns a standard TCL result.  interp->result contains
- *	the axis value. If an error occurred, TCL_ERROR is returned
- *	and interp->result will contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, 
+static int InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
@@ -4321,24 +3443,7 @@ InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc,
   return TCL_OK;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * MarginOp --
- *
- *	This procedure returns a string representing the margin the axis
- *	resides.  The format of the string is { left top right bottom}.
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is
- *	a list of the graph axis limits.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   const char *marginName;
 
@@ -4350,24 +3455,7 @@ MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * TransformOp --
- *
- *	Maps the given axis-value to a window coordinate.
- *
- * Results:
- *	Returns a standard TCL result.  interp->result contains
- *	the window coordinate. If an error occurred, TCL_ERROR
- *	is returned and interp->result will contain an error
- *	message.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   double x;
@@ -4387,24 +3475,7 @@ TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * TypeOp --
- *
- *	This procedure returns a string representing the margin the axis
- *	resides.  The format of the string is "x", "y", or "".
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is the type of 
- *	axis.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   const char *typeName;
 
@@ -4420,25 +3491,7 @@ TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * UseOp --
- *
- *	Sets the default axis for a margin.
- *
- * Results:
- *	A standard TCL result.  If the named axis doesn't exist
- *	an error message is put in interp->result.
- *
- * .g xaxis use "abc def gah"
- * .g xaxis use [lappend abc [.g axis use]]
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = (Graph *)axisPtr;
   Blt_Chain chain;
@@ -4497,7 +3550,7 @@ UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
     } else if (axisPtr->obj.classId != classId) {
       Tcl_AppendResult(interp, "wrong type axis \"", 
 		       axisPtr->obj.name, "\": can't use ", 
-		       axisPtr->obj.className, " type axis.", (char *)NULL); 
+		       axisPtr->obj.className, " type axis.", NULL); 
       return TCL_ERROR;
     }
     if (axisPtr->link != NULL) {
@@ -4517,8 +3570,7 @@ UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-static int
-ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr;
   double axisOffset, axisScale;
@@ -4597,22 +3649,8 @@ ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisCreateOp --
- *
- *	Creates a new axis.
- *
- * Results:
- *	Returns a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
-	     Tcl_Obj *const *objv)
+static int AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+			Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
   int flags;
@@ -4624,7 +3662,7 @@ AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   flags = Blt_GraphType(graphPtr);
   if ((Blt_ConfigureComponentFromObj(interp, graphPtr->tkwin, 
 				     axisPtr->obj.name, "Axis", configSpecs, objc - 4, objv + 4, 
-				     (char *)axisPtr, flags) != TCL_OK) || 
+				     (char*)axisPtr, flags) != TCL_OK) || 
       (ConfigureAxis(axisPtr) != TCL_OK)) {
     DestroyAxis(axisPtr);
     return TCL_ERROR;
@@ -4632,24 +3670,8 @@ AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->obj.name, -1);
   return TCL_OK;
 }
-/*
- *---------------------------------------------------------------------------
- *
- * AxisActivateOp --
- *
- * 	Activates the axis, drawing the axis with its -activeforeground,
- *	-activebackgound, -activerelief attributes.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side Effects:
- *	Graph will be redrawn to reflect the new axis attributes.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+
+static int AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4660,19 +3682,8 @@ AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return ActivateOp(interp, axisPtr, objc, objv);
 }
 
-
-/*-------------------------------------------------------------------------------
- *
- * AxisBindOp --
- *
- *    .g axis bind axisName sequence command
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
-	   Tcl_Obj *const *objv)
+static int AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+		      Tcl_Obj *const *objv)
 {
   if (objc == 3) {
     Tcl_HashEntry *hPtr;
@@ -4696,23 +3707,7 @@ AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
 				      Blt_MakeAxisTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * AxisCgetOp --
- *
- *	Queries axis attributes (font, line width, label, etc).
- *
- * Results:
- *	Return value is a standard TCL result.  If querying configuration
- *	values, interp->result will contain the results.
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED */
-static int
-AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -4722,25 +3717,7 @@ AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
   return CgetOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisConfigureOp --
- *
- *	Queries or resets axis attributes (font, line width, label, etc).
- *
- * Results:
- *	Return value is a standard TCL result.  If querying configuration
- *	values, interp->result will contain the results.
- *
- * Side Effects:
- *	Axis resources are possibly allocated (GC, font). Axis layout is
- *	deferred until the height and width of the window are known.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Tcl_Obj *const *options;
@@ -4782,23 +3759,7 @@ AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisDeleteOp --
- *
- *	Deletes one or more axes.  The actual removal may be deferred until the
- *	axis is no longer used by any element. The axis can't be referenced by
- *	its name any longer and it may be recreated.
- *
- * Results:
- *	Returns a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   int i;
@@ -4817,24 +3778,7 @@ AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisFocusOp --
- *
- * 	Activates the axis, drawing the axis with its -activeforeground,
- *	-activebackgound, -activerelief attributes.
- *
- * Results:
- *	A standard TCL result.
- *
- * Side Effects:
- *	Graph will be redrawn to reflect the new axis attributes.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   if (objc > 3) {
     Axis *axisPtr;
@@ -4861,24 +3805,7 @@ AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * AxisGetOp --
- *
- *    Returns the name of the picked axis (using the axis bind operation).
- *    Right now, the only name accepted is "current".
- *
- * Results:
- *    A standard TCL result.  The interpreter result will contain the name of
- *    the axis.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -4902,22 +3829,7 @@ AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisInvTransformOp --
- *
- *	Maps the given window coordinate into an axis-value.
- *
- * Results:
- *	Returns a standard TCL result.  interp->result contains
- *	the axis value. If an error occurred, TCL_ERROR is returned
- *	and interp->result will contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4928,22 +3840,7 @@ AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return InvTransformOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisLimitsOp --
- *
- *	This procedure returns a string representing the axis limits of the
- *	graph.  The format of the string is { left top right bottom}.
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is
- *	a list of the graph axis limits.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4954,22 +3851,7 @@ AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return LimitsOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisMarginOp --
- *
- *	This procedure returns a string representing the axis limits of the
- *	graph.  The format of the string is { left top right bottom}.
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is
- *	a list of the graph axis limits.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -4980,23 +3862,7 @@ AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return MarginOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * AxisNamesOp --
- *
- *	Return a list of the names of all the axes.
- *
- * Results:
- *	Returns a standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-
-/*ARGSUSED*/
-static int
-AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
 
@@ -5042,21 +3908,7 @@ AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisTransformOp --
- *
- *	Maps the given axis-value to a window coordinate.
- *
- * Results:
- *	Returns the window coordinate via interp->result.  If an error occurred,
- *	TCL_ERROR is returned and interp->result will contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -5067,22 +3919,7 @@ AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TransformOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * AxisMarginOp --
- *
- *	This procedure returns a string representing the axis limits of the
- *	graph.  The format of the string is { left top right bottom}.
- *
- * Results:
- *	Always returns TCL_OK.  The interp->result field is
- *	a list of the graph axis limits.
- *
- *---------------------------------------------------------------------------
- */
-static int
-AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
 	   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -5092,7 +3929,6 @@ AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   }
   return TypeOp(interp, axisPtr, objc - 4, objv + 4);
 }
-
 
 static int
 AxisViewOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
@@ -5248,20 +4084,7 @@ Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DrawGrids --
- *
- *	Draws the grid lines associated with each axis.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
+void Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
 {
   int i;
 
@@ -5290,20 +4113,7 @@ Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GridsToPostScript --
- *
- *	Draws the grid lines associated with each axis.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
+void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   int i;
 
@@ -5341,8 +4151,7 @@ Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
   }
 }
 
-void
-Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
+void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   Margin *mp, *mend;
 
@@ -5361,27 +4170,7 @@ Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
   }
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DrawAxisLimits --
- *
- *	Draws the min/max values of the axis in the plotting area.  The text
- *	strings are formatted according to the "sprintf" format descriptors in
- *	the limitsFormats array.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Draws the numeric values of the axis limits into the outer regions of
- *	the plotting area.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
+void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5458,8 +4247,7 @@ Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
   } /* Loop on axes */
 }
 
-void
-Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
+void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5540,8 +4328,7 @@ Blt_GetFirstAxis(Blt_Chain chain)
   return Blt_Chain_GetValue(link);
 }
 
-Axis *
-Blt_NearestAxis(Graph* graphPtr, int x, int y)
+Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -5611,8 +4398,7 @@ Blt_NearestAxis(Graph* graphPtr, int x, int y)
   return NULL;
 }
  
-ClientData
-Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
+ClientData Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
 {
   Tcl_HashEntry *hPtr;
   int isNew;
@@ -5621,67 +4407,6 @@ Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
   return Tcl_GetHashKey(&graphPtr->axes.tagTable, hPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * TimeScaleAxis --
- *
- * 	Determine the units of a linear scaled axis.
- *
- *	The axis limits are either the range of the data values mapped
- *	to the axis (autoscaled), or the values specified by the -min
- *	and -max options (manual).
- *
- *	If autoscaled, the smallest and largest major ticks will
- *	encompass the range of data values.  If the -loose option is
- *	selected, the next outer ticks are choosen.  If tight, the
- *	ticks are at or inside of the data limits are used.
- *
- * 	If manually set, the ticks are at or inside the data limits
- * 	are used.  This makes sense for zooming.  You want the
- * 	selected range to represent the next limit, not something a
- * 	bit bigger.
- *
- *	Note: I added an "always" value to the -loose option to force
- *	      the manually selected axes to be loose. It's probably
- *	      not a good idea.
- *
- *          maxY
- *            |    units = magnitude (of least significant digit)
- *            |    high  = largest unit tick < max axis value
- *      high _|    low   = smallest unit tick > min axis value
- *            |
- *            |    range = high - low
- *            |    # ticks = greatest factor of range/units
- *           _|
- *        U   |
- *        n   |
- *        i   |
- *        t  _|
- *            |
- *            |
- *            |
- *       low _|
- *            |
- *            |_minX________________maxX__
- *            |   |       |      |       |
- *     minY  low                        high
- *           minY
- *
- * 	numTicks = Number of ticks
- * 	min = Minimum value of axis
- * 	max = Maximum value of axis
- * 	range    = Range of values (max - min)
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The axis tick information is set.  The actual tick values will
- *	be generated later.
- *
- *---------------------------------------------------------------------------
- */
 static void TimeScaleAxis(Axis *axisPtr, double min, double max)
 {
 }

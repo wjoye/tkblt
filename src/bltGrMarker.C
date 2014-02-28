@@ -56,12 +56,12 @@ typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp *interp, int objc,
 
 #define DEF_MARKER_ANCHOR	"center"
 #define DEF_MARKER_BACKGROUND	white
-#define DEF_MARKER_BITMAP	(char *)NULL
+#define DEF_MARKER_BITMAP	(char*)NULL
 #define DEF_MARKER_CAP_STYLE	"butt"
-#define DEF_MARKER_COORDS	(char *)NULL
-#define DEF_MARKER_DASHES	(char *)NULL
+#define DEF_MARKER_COORDS	(char*)NULL
+#define DEF_MARKER_DASHES	(char*)NULL
 #define DEF_MARKER_DASH_OFFSET	"0"
-#define DEF_MARKER_ELEMENT	(char *)NULL
+#define DEF_MARKER_ELEMENT	(char*)NULL
 #define DEF_MARKER_FOREGROUND	black
 #define DEF_MARKER_FILL_COLOR	rred
 #define DEF_MARKER_FONT		STD_FONT_NORMAL
@@ -73,17 +73,17 @@ typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp *interp, int objc,
 #define DEF_MARKER_LINE_WIDTH	"1"
 #define DEF_MARKER_MAP_X	"x"
 #define DEF_MARKER_MAP_Y	"y"
-#define DEF_MARKER_NAME		(char *)NULL
+#define DEF_MARKER_NAME		(char*)NULL
 #define DEF_MARKER_OUTLINE_COLOR black
 #define DEF_MARKER_PAD		"4"
 #define DEF_MARKER_ANGLE	"0.0"
 #define DEF_MARKER_SCALE	"1.0"
 #define DEF_MARKER_STATE	"normal"
-#define DEF_MARKER_STIPPLE	(char *)NULL
-#define DEF_MARKER_TEXT		(char *)NULL
+#define DEF_MARKER_STIPPLE	(char*)NULL
+#define DEF_MARKER_TEXT		(char*)NULL
 #define DEF_MARKER_UNDER	"no"
 #define DEF_MARKER_WIDTH	"0"
-#define DEF_MARKER_WINDOW	(char *)NULL
+#define DEF_MARKER_WINDOW	(char*)NULL
 #define DEF_MARKER_XOR		"no"
 #define DEF_MARKER_X_OFFSET	"0"
 #define DEF_MARKER_Y_OFFSET	"0"
@@ -162,7 +162,7 @@ struct _Marker {
 
   Blt_ChainLink link;
 
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -203,7 +203,7 @@ typedef struct {
 
   Blt_ChainLink link;
 
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -263,7 +263,7 @@ static Blt_ConfigSpec bitmapConfigSpecs[] = {
   {BLT_CONFIG_COLOR, "-background", "background", "Background",
    DEF_MARKER_BACKGROUND, Tk_Offset(BitmapMarker, fillColor),
    BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char *)NULL, (char *)NULL, 0, 0},
+  {BLT_CONFIG_SYNONYM, "-bg", "background", (char*)NULL, (char*)NULL, 0, 0},
   {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_BITMAP_TAGS, 
    Tk_Offset(BitmapMarker, obj.tags), BLT_CONFIG_NULL_OK,
    &listOption},
@@ -274,8 +274,8 @@ static Blt_ConfigSpec bitmapConfigSpecs[] = {
    &coordsOption},
   {BLT_CONFIG_STRING, "-element", "element", "Element", DEF_MARKER_ELEMENT, 
    Tk_Offset(BitmapMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char *)NULL, (char *)NULL, 0, 0},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL, (char *)NULL, 
+  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char*)NULL, (char*)NULL, 0, 0},
+  {BLT_CONFIG_SYNONYM, "-fill", "background", (char*)NULL, (char*)NULL, 
    0, 0},
   {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
    DEF_MARKER_FOREGROUND, Tk_Offset(BitmapMarker, outlineColor),
@@ -286,9 +286,9 @@ static Blt_ConfigSpec bitmapConfigSpecs[] = {
    Tk_Offset(BitmapMarker, axes.x), 0, &bltXAxisOption},
   {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
    Tk_Offset(BitmapMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
+  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, DEF_MARKER_NAME, 
    Tk_Offset(BitmapMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL, (char *)NULL, 
+  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char*)NULL, (char*)NULL, 
    0, 0},
   {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", DEF_MARKER_ANGLE, 
    Tk_Offset(BitmapMarker, reqAngle), BLT_CONFIG_DONT_SET_DEFAULT},
@@ -339,7 +339,7 @@ typedef struct {
 
   Blt_ChainLink link;
 
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -404,7 +404,7 @@ static Blt_ConfigSpec lineConfigSpecs[] = {
    BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_STRING, "-element", "element", "Element", DEF_MARKER_ELEMENT, 
    Tk_Offset(LineMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-fill", "fill", "Fill", (char *)NULL, 
+  {BLT_CONFIG_COLOR, "-fill", "fill", "Fill", (char*)NULL, 
    Tk_Offset(LineMarker, fillColor), BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_JOIN_STYLE, "-join", "join", "Join", DEF_MARKER_JOIN_STYLE, 
    Tk_Offset(LineMarker, joinStyle), BLT_CONFIG_DONT_SET_DEFAULT},
@@ -417,7 +417,7 @@ static Blt_ConfigSpec lineConfigSpecs[] = {
    Tk_Offset(LineMarker, axes.x), 0, &bltXAxisOption},
   {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
    Tk_Offset(LineMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
+  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, DEF_MARKER_NAME, 
    Tk_Offset(LineMarker, obj.name), BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_COLOR, "-outline", "outline", "Outline",
    DEF_MARKER_OUTLINE_COLOR, Tk_Offset(LineMarker, outlineColor),
@@ -471,7 +471,7 @@ typedef struct {
 
   Blt_ChainLink link;
 
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -570,7 +570,7 @@ static Blt_ConfigSpec polygonConfigSpecs[] = {
    Tk_Offset(PolygonMarker, axes.x), 0, &bltXAxisOption},
   {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
    Tk_Offset(PolygonMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
+  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, DEF_MARKER_NAME, 
    Tk_Offset(PolygonMarker, obj.name), BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", 
    DEF_MARKER_OUTLINE_COLOR, Tk_Offset(PolygonMarker, outline),
@@ -624,7 +624,7 @@ typedef struct {
   MarkerClass *classPtr;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -647,7 +647,7 @@ typedef struct {
   int state;
 
   /* Fields specific to text markers. */
-  const char *string;			/* Text string to be display.  The
+  const char* string;			/* Text string to be display.  The
 					 * string make contain newlines. */
   Tk_Anchor anchor;			/* Indicates how to translate the given
 					 * marker position. */
@@ -664,8 +664,8 @@ static Blt_ConfigSpec textConfigSpecs[] = {
   {BLT_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor", DEF_MARKER_ANCHOR, 
    Tk_Offset(TextMarker, anchor), 0},
   {BLT_CONFIG_COLOR, "-background", "background", "MarkerBackground",
-   (char *)NULL, Tk_Offset(TextMarker, fillColor), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", "Background", (char *)NULL, 0, 0},
+   (char*)NULL, Tk_Offset(TextMarker, fillColor), BLT_CONFIG_NULL_OK},
+  {BLT_CONFIG_SYNONYM, "-bg", "background", "Background", (char*)NULL, 0, 0},
   {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", DEF_TEXT_TAGS,
    Tk_Offset(TextMarker, obj.tags), BLT_CONFIG_NULL_OK,
    &listOption},
@@ -675,8 +675,8 @@ static Blt_ConfigSpec textConfigSpecs[] = {
   {BLT_CONFIG_STRING, "-element", "element", "Element",
    DEF_MARKER_ELEMENT, Tk_Offset(TextMarker, elemName), 
    BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", "Foreground", (char *)NULL, 0, 0},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char *)NULL, (char *)NULL, 
+  {BLT_CONFIG_SYNONYM, "-fg", "foreground", "Foreground", (char*)NULL, 0, 0},
+  {BLT_CONFIG_SYNONYM, "-fill", "background", (char*)NULL, (char*)NULL, 
    0, 0},
   {BLT_CONFIG_FONT, "-font", "font", "Font", 	DEF_MARKER_FONT, 
    Tk_Offset(TextMarker, style.font), 0},
@@ -691,9 +691,9 @@ static Blt_ConfigSpec textConfigSpecs[] = {
    Tk_Offset(TextMarker, axes.x), 0, &bltXAxisOption},
   {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
    Tk_Offset(TextMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
+  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, DEF_MARKER_NAME, 
    Tk_Offset(TextMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char *)NULL, (char *)NULL, 
+  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char*)NULL, (char*)NULL, 
    0, 0},
   {BLT_CONFIG_PIXELS, "-padx", "padX", "PadX", DEF_MARKER_PAD, 
    Tk_Offset(TextMarker, style.xPad), BLT_CONFIG_DONT_SET_DEFAULT},
@@ -750,7 +750,7 @@ typedef struct {
 
   Blt_ChainLink link;
 
-  const char *elemName;		/* Element associated with marker. Let's
+  const char* elemName;		/* Element associated with marker. Let's
 				 * you link a marker to an element. The
 				 * marker is drawn only if the element
 				 * is also visible. */
@@ -780,7 +780,7 @@ typedef struct {
 
   /* Fields specific to window markers. */
 
-  const char *childName;		/* Name of child widget. */
+  const char* childName;		/* Name of child widget. */
   Tk_Window child;			/* Window to display. */
   int reqWidth, reqHeight;		/* If non-zero, this overrides the size
 					 * requested by the child widget. */
@@ -812,7 +812,7 @@ static Blt_ConfigSpec windowConfigSpecs[] = {
    Tk_Offset(WindowMarker, axes.x), 0, &bltXAxisOption},
   {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", DEF_MARKER_MAP_Y, 
    Tk_Offset(WindowMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char *)NULL, (char *)NULL, DEF_MARKER_NAME, 
+  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, DEF_MARKER_NAME, 
    Tk_Offset(WindowMarker, obj.name), BLT_CONFIG_NULL_OK},
   {BLT_CONFIG_CUSTOM, "-state", "state", "State", DEF_MARKER_STATE, 
    Tk_Offset(WindowMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
@@ -907,7 +907,7 @@ GetCoordinate(
 	      double *valuePtr)			/* Real-valued result of expression */
 {
   char c;
-  const char *expr;
+  const char* expr;
     
   expr = Tcl_GetString(objPtr);
   c = expr[0];
@@ -988,7 +988,7 @@ ParseCoordinates(
   }
   if (objc & 1) {
     Tcl_AppendResult(interp, "odd number of marker coordinates specified",
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
   switch (markerPtr->obj.classId) {
@@ -1007,25 +1007,25 @@ ParseCoordinates(
     minArgs = 2, maxArgs = 4;
     break;
   default:
-    Tcl_AppendResult(interp, "unknown marker type", (char *)NULL);
+    Tcl_AppendResult(interp, "unknown marker type", (char*)NULL);
     return TCL_ERROR;
   }
 
   if (objc < minArgs) {
     Tcl_AppendResult(interp, "too few marker coordinates specified",
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
   if ((maxArgs > 0) && (objc > maxArgs)) {
     Tcl_AppendResult(interp, "too many marker coordinates specified",
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
   nWorldPts = objc / 2;
   worldPts = malloc(nWorldPts * sizeof(Point2d));
   if (worldPts == NULL) {
     Tcl_AppendResult(interp, "can't allocate new coordinate array",
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
 
@@ -1060,7 +1060,7 @@ static void
 FreeCoordsProc(
 	       ClientData clientData,		/* Not used. */
 	       Display *display,			/* Not used. */
-	       char *widgRec,
+	       char* widgRec,
 	       int offset)
 {
   Marker *markerPtr = (Marker *)widgRec;
@@ -1097,7 +1097,7 @@ ObjToCoordsProc(
 		Tcl_Interp *interp,		/* Interpreter to return results */
 		Tk_Window tkwin,		/* Not used. */
 		Tcl_Obj *objPtr,		/* TCL list of numeric expressions */
-		char *widgRec,		/* Marker record */
+		char* widgRec,		/* Marker record */
 		int offset,			/* Not used. */
 		int flags)			/* Not used. */
 {
@@ -1132,7 +1132,7 @@ CoordsToObjProc(
 		ClientData clientData,	/* Not used. */
 		Tcl_Interp *interp,
 		Tk_Window tkwin,		/* Not used. */
-		char *widgRec,		/* Marker record */
+		char* widgRec,		/* Marker record */
 		int offset,			/* Not used. */
 		int flags)			/* Not used. */
 {
@@ -1159,7 +1159,7 @@ GetColorPair(
 	     int allowDefault)
 {
   XColor* fgColor, *bgColor;
-  const char *string;
+  const char* string;
 
   fgColor = bgColor = NULL;
   if (fgObjPtr != NULL) {
@@ -1221,7 +1221,7 @@ static void
 FreeColorPairProc(
 		  ClientData clientData,		/* Not used. */
 		  Display *display,			/* Not used. */
-		  char *widgRec,
+		  char* widgRec,
 		  int offset)
 {
   ColorPair *pairPtr = (ColorPair *)(widgRec + offset);
@@ -1249,7 +1249,7 @@ ObjToColorPairProc(
 		   Tcl_Interp *interp,			/* Interpreter to return results */
 		   Tk_Window tkwin,			/* Not used. */
 		   Tcl_Obj *objPtr,			/* String representing color */
-		   char *widgRec,			/* Widget record */
+		   char* widgRec,			/* Widget record */
 		   int offset,				/* Offset to field in structure */
 		   int flags)				/* Not used. */
 {
@@ -1264,7 +1264,7 @@ ObjToColorPairProc(
   }
   if (objc > 2) {
     Tcl_AppendResult(interp, "too many names in colors list", 
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
   if (objc == 0) {
@@ -1302,7 +1302,7 @@ ColorPairToObjProc(
 		   ClientData clientData,		/* Not used. */
 		   Tcl_Interp *interp,
 		   Tk_Window tkwin,			/* Not used. */
-		   char *widgRec,			/* Element information record */
+		   char* widgRec,			/* Element information record */
 		   int offset,				/* Offset to field in structure */
 		   int flags)				/* Not used. */
 {
@@ -1326,7 +1326,7 @@ IsElementHidden(Marker *markerPtr)
   /* Look up the named element and see if it's hidden */
   hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
   if (hPtr != NULL) {
-    Element *elemPtr;
+    Element* elemPtr;
 	
     elemPtr = Tcl_GetHashValue(hPtr);
     if ((elemPtr->link == NULL) || (elemPtr->flags & HIDE)) {
@@ -1448,7 +1448,7 @@ MapPoint(
 static Marker *
 CreateMarker(
 	     Graph* graphPtr,
-	     const char *name,
+	     const char* name,
 	     ClassId classId)
 {    
   Marker *markerPtr;
@@ -1505,7 +1505,7 @@ DestroyMarker(Marker *markerPtr)
   Blt_DeleteBindings(graphPtr->bindTable, markerPtr);
 
   /* Release all the X resources associated with the marker. */
-  Blt_FreeOptions(markerPtr->classPtr->configSpecs, (char *)markerPtr,
+  Blt_FreeOptions(markerPtr->classPtr->configSpecs, (char*)markerPtr,
 		  graphPtr->display, 0);
 
   if (markerPtr->hashPtr != NULL) {
@@ -1968,7 +1968,7 @@ BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 			bmPtr->destWidth, bmPtr->destHeight);
   Blt_Ps_VarAppend(ps, 
 		   "    } imagemask\n",
-		   "grestore\n", (char *)NULL);
+		   "grestore\n", (char*)NULL);
 }
 
 /*
@@ -2358,7 +2358,7 @@ static Tk_GeomRequestProc ChildGeometryProc;
 static Tk_GeomLostSlaveProc ChildCustodyProc;
 static Tk_GeomMgr winMarkerMgrInfo =
   {
-    (char *)"graph",			/* Name of geometry manager used by
+    (char*)"graph",			/* Name of geometry manager used by
 					 * winfo */
     ChildGeometryProc,			/* Procedure to for new geometry
 					 * requests. */
@@ -2404,7 +2404,7 @@ ConfigureWindowProc(Marker *markerPtr)
   if (Tk_Parent(tkwin) != graphPtr->tkwin) {
     Tcl_AppendResult(graphPtr->interp, "\"", wmPtr->childName,
 		     "\" is not a child of \"", Tk_PathName(graphPtr->tkwin), "\"",
-		     (char *)NULL);
+		     (char*)NULL);
     return TCL_ERROR;
   }
   if (tkwin != wmPtr->child) {
@@ -2986,7 +2986,7 @@ LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
       Blt_Ps_VarAppend(ps,
 		       "stroke\n",
 		       "  grestore\n",
-		       "} def\n", (char *)NULL);
+		       "} def\n", (char*)NULL);
     } else {
       Blt_Ps_Append(ps, "/DashesProc {} def\n");
     }
@@ -3472,7 +3472,7 @@ GetMarkerFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 		 Marker **markerPtrPtr)
 {
   Tcl_HashEntry *hPtr;
-  const char *string;
+  const char* string;
 
   string = Tcl_GetString(objPtr);
   hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, string);
@@ -3482,15 +3482,15 @@ GetMarkerFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
   }
   if (interp != NULL) {
     Tcl_AppendResult(interp, "can't find marker \"", string, 
-		     "\" in \"", Tk_PathName(graphPtr->tkwin), (char *)NULL);
+		     "\" in \"", Tk_PathName(graphPtr->tkwin), (char*)NULL);
   }
   return TCL_ERROR;
 }
 
 
 static int
-RenameMarker(Graph* graphPtr, Marker *markerPtr, const char *oldName, 
-	     const char *newName)
+RenameMarker(Graph* graphPtr, Marker *markerPtr, const char* oldName, 
+	     const char* newName)
 {
   int isNew;
   Tcl_HashEntry *hPtr;
@@ -3499,12 +3499,12 @@ RenameMarker(Graph* graphPtr, Marker *markerPtr, const char *oldName,
   hPtr = Tcl_CreateHashEntry(&graphPtr->markers.table, newName, &isNew);
   if (!isNew) {
     Tcl_AppendResult(graphPtr->interp, "can't rename marker: \"", newName,
-		     "\" already exists", (char *)NULL);
+		     "\" already exists", (char*)NULL);
     return TCL_ERROR;
   }
   markerPtr->obj.name = Blt_Strdup(newName);
   markerPtr->hashPtr = hPtr;
-  Tcl_SetHashValue(hPtr, (char *)markerPtr);
+  Tcl_SetHashValue(hPtr, (char*)markerPtr);
 
   /* Delete the old hash entry */
   hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, oldName);
@@ -3554,7 +3554,7 @@ NamesOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 
       markerPtr = Blt_Chain_GetValue(link);
       for (i = 3; i < objc; i++) {
-	const char *pattern;
+	const char* pattern;
 
 	pattern = Tcl_GetString(objv[i]);
 	if (Tcl_StringMatch(markerPtr->obj.name, pattern)) {
@@ -3590,7 +3590,7 @@ BindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     for (hp = Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter);
 	 hp != NULL; hp = Tcl_NextHashEntry(&iter)) {
-      const char *tag;
+      const char* tag;
       Tcl_Obj *objPtr;
 
       tag = Tcl_GetHashKey(&graphPtr->markers.tagTable, hp);
@@ -3622,7 +3622,7 @@ CgetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     return TCL_ERROR;
   }
   if (Blt_ConfigureValueFromObj(interp, graphPtr->tkwin, 
-				markerPtr->classPtr->configSpecs, (char *)markerPtr, objv[4], 0) 
+				markerPtr->classPtr->configSpecs, (char*)markerPtr, objv[4], 0) 
       != TCL_OK) {
     return TCL_ERROR;
   }
@@ -3646,8 +3646,8 @@ ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   Tcl_Obj *const *options;
-  const char *oldName;
-  const char *string;
+  const char* oldName;
+  const char* string;
   int flags = BLT_CONFIG_OBJV_ONLY;
   int nNames, nOpts;
   int i;
@@ -3675,11 +3675,11 @@ ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     GetMarkerFromObj(interp, graphPtr, objv[i], &markerPtr);
     if (nOpts == 0) {
       return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin, 
-				      markerPtr->classPtr->configSpecs, (char *)markerPtr, 
+				      markerPtr->classPtr->configSpecs, (char*)markerPtr, 
 				      (Tcl_Obj *)NULL, flags);
     } else if (nOpts == 1) {
       return Blt_ConfigureInfoFromObj(interp, graphPtr->tkwin,
-				      markerPtr->classPtr->configSpecs, (char *)markerPtr, 
+				      markerPtr->classPtr->configSpecs, (char*)markerPtr, 
 				      options[0], flags);
     }
     /* Save the old marker name. */
@@ -3687,7 +3687,7 @@ ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     under = markerPtr->drawUnder;
     if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, 
 				   markerPtr->classPtr->configSpecs, nOpts, options, 
-				   (char *)markerPtr, flags) != TCL_OK) {
+				   (char*)markerPtr, flags) != TCL_OK) {
       return TCL_ERROR;
     }
     if (oldName != markerPtr->obj.name) {
@@ -3733,9 +3733,9 @@ CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
   int isNew;
   ClassId classId;
   int i;
-  const char *name;
+  const char* name;
   char ident[200];
-  const char *string;
+  const char* string;
   char c;
 
   string = Tcl_GetString(objv[3]);
@@ -3756,7 +3756,7 @@ CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
   } else {
     Tcl_AppendResult(interp, "unknown marker type \"", string,
 		     "\": should be \"text\", \"line\", \"polygon\", \"bitmap\", \"image\", or \
-\"window\"", (char *)NULL);
+\"window\"", (char*)NULL);
     return TCL_ERROR;
   }
   /* Scan for "-name" option. We need it for the component name */
@@ -3776,13 +3776,13 @@ CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     name = ident;
   } else if (name[0] == '-') {
     Tcl_AppendResult(interp, "name of marker \"", name, 
-		     "\" can't start with a '-'", (char *)NULL);
+		     "\" can't start with a '-'", (char*)NULL);
     return TCL_ERROR;
   }
   markerPtr = CreateMarker(graphPtr, name, classId);
   if (Blt_ConfigureComponentFromObj(interp, graphPtr->tkwin, name, 
 				    markerPtr->obj.className, markerPtr->classPtr->configSpecs, 
-				    objc - 4, objv + 4, (char *)markerPtr, 0) != TCL_OK) {
+				    objc - 4, objv + 4, (char*)markerPtr, 0) != TCL_OK) {
     DestroyMarker(markerPtr);
     return TCL_ERROR;
   }
@@ -3869,7 +3869,7 @@ static int
 GetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
-  const char *string;
+  const char* string;
 
   string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
@@ -3911,7 +3911,7 @@ RelinkOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link, place;
   Marker *markerPtr;
-  const char *string;
+  const char* string;
 
   /* Find the marker to be raised or lowered. */
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK) {
@@ -3963,7 +3963,7 @@ FindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link;
   Region2d extents;
-  const char *string;
+  const char* string;
   int enclosed;
   int left, right, top, bottom;
   int mode;
@@ -3977,7 +3977,7 @@ FindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
     mode = FIND_OVERLAPPING;
   } else {
     Tcl_AppendResult(interp, "bad search type \"", string, 
-		     ": should be \"enclosed\", or \"overlapping\"", (char *)NULL);
+		     ": should be \"enclosed\", or \"overlapping\"", (char*)NULL);
     return TCL_ERROR;
   }
 
@@ -4066,7 +4066,7 @@ static int
 TypeOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
-  const char *type;
+  const char* type;
 
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK) {
     return TCL_ERROR;
@@ -4169,7 +4169,7 @@ Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
       continue;
     }
     Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->obj.name, 
-		     "\" is a ", markerPtr->obj.className, ".\n", (char *)NULL);
+		     "\" is a ", markerPtr->obj.className, ".\n", (char*)NULL);
     (*markerPtr->classPtr->postscriptProc) (markerPtr, ps);
   }
 }
@@ -4331,7 +4331,7 @@ Blt_NearestMarker(
 }
 
 ClientData
-Blt_MakeMarkerTag(Graph* graphPtr, const char *tagName)
+Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName)
 {
   Tcl_HashEntry *hPtr;
   int isNew;

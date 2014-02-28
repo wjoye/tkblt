@@ -381,7 +381,7 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 
 Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
 {
-  BarElement *elemPtr = calloc(1, sizeof(BarElement));
+  BarElement* elemPtr = calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
   elemPtr->obj.name = Blt_Strdup(name);
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
@@ -470,7 +470,7 @@ static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
 
 static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   Blt_ChainLink link;
   BarStyle *stylePtr;
 
@@ -592,7 +592,7 @@ static void CheckBarStacks(Graph* graphPtr, Axis2d *pairPtr,
 
 static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   Graph* graphPtr;
   double middle, barWidth;
   int nPoints;
@@ -735,7 +735,7 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
 static void ClosestBarProc(Graph* graphPtr, Element *basePtr,
 			   ClosestSearch *searchPtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   XRectangle *bp;
   double minDist;
   int imin;
@@ -793,7 +793,7 @@ static void ClosestBarProc(Graph* graphPtr, Element *basePtr,
   }
 }
 
-static void MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
+static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
 {
   if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
     Blt_ChainLink link;
@@ -911,7 +911,7 @@ static void MergePens(BarElement *elemPtr, BarStyle **dataToStyle)
   }
 }
 
-static void MapActiveBars(BarElement *elemPtr)
+static void MapActiveBars(BarElement* elemPtr)
 {
   if (elemPtr->activeRects) {
     free(elemPtr->activeRects);
@@ -953,7 +953,7 @@ static void MapActiveBars(BarElement *elemPtr)
   elemPtr->flags &= ~ACTIVE_PENDING;
 }
 
-static void ResetBar(BarElement *elemPtr)
+static void ResetBar(BarElement* elemPtr)
 {
   /* Release any storage associated with the display of the bar */
   ResetStylePalette(elemPtr->stylePalette);
@@ -989,7 +989,7 @@ static void ResetBar(BarElement *elemPtr)
     elemPtr->nBars = 0;
 }
 
-static void MapErrorBars(Graph* graphPtr, BarElement *elemPtr, 
+static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr, 
 			 BarStyle **dataToStyle)
 {
   int n, nPoints;
@@ -1129,7 +1129,7 @@ static void MapErrorBars(Graph* graphPtr, BarElement *elemPtr,
 
 static void MapBarProc(Graph* graphPtr, Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   BarStyle **dataToStyle;
   double *x, *y;
   double barWidth, barOffset;
@@ -1362,7 +1362,7 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
 static void DrawSymbolProc(Graph* graphPtr, Drawable drawable, 
 			   Element *basePtr, int x, int y, int size)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   BarPen* penPtr;
   int radius;
 
@@ -1483,7 +1483,7 @@ static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 }
 
 static void DrawBarValues(Graph* graphPtr, Drawable drawable, 
-			  BarElement *elemPtr,
+			  BarElement* elemPtr,
 			  BarPen* penPtr, XRectangle *bars, int nBars, 
 			  int *barToData)
 {
@@ -1535,7 +1535,7 @@ static void DrawBarValues(Graph* graphPtr, Drawable drawable,
 static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   int count;
   Blt_ChainLink link;
 
@@ -1571,7 +1571,7 @@ static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable,
 static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable, 
 			      Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
 
   if (elemPtr->activePenPtr) {
     BarPen* penPtr = elemPtr->activePenPtr;
@@ -1601,7 +1601,7 @@ static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable,
 static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
 				   double x, double y, int size)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   BarPen* penPtr;
 
   penPtr = NORMALPEN(elemPtr);
@@ -1674,7 +1674,7 @@ static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen* penPtr,
 }
 
 static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps, 
-				  BarElement *elemPtr,
+				  BarElement* elemPtr,
 				  BarPen* penPtr, XRectangle *bars, int nBars, 
 				  int *barToData)
 {
@@ -1724,7 +1724,7 @@ static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps,
 static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
 
   if (elemPtr->activePenPtr) {
     BarPen* penPtr = elemPtr->activePenPtr;
@@ -1753,7 +1753,7 @@ static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
 				      Element *basePtr)
 {
-  BarElement *elemPtr = (BarElement *)basePtr;
+  BarElement* elemPtr = (BarElement *)basePtr;
   Blt_ChainLink link;
   int count;
 
@@ -1824,7 +1824,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
   nSegs = nStacks = 0;
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link; link = Blt_Chain_NextLink(link)) {
-    BarElement *elemPtr;
+    BarElement* elemPtr;
     double *x, *xend;
     int nPoints;
 
@@ -1943,7 +1943,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
-    BarElement *elemPtr;
+    BarElement* elemPtr;
     double *x, *y, *xend;
 
     elemPtr = Blt_Chain_GetValue(link);
