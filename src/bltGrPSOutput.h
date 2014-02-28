@@ -90,7 +90,7 @@ typedef struct  {
 
 typedef struct _Blt_Ps *Blt_Ps;
 
-extern Blt_Ps Blt_Ps_Create(Tcl_Interp *interp, PageSetup *setupPtr);
+extern Blt_Ps Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr);
 
 extern void Blt_Ps_Free(Blt_Ps ps);
 
@@ -102,7 +102,7 @@ extern Tcl_DString *Blt_Ps_GetDString(Blt_Ps ps);
 
 extern char *Blt_Ps_GetScratchBuffer(Blt_Ps ps);
 
-extern void Blt_Ps_SetInterp(Blt_Ps ps, Tcl_Interp *interp);
+extern void Blt_Ps_SetInterp(Blt_Ps ps, Tcl_Interp* interp);
 
 extern void Blt_Ps_Append(Blt_Ps ps, const char *string);
 
@@ -114,10 +114,10 @@ extern void Blt_Ps_Format TCL_VARARGS(Blt_Ps, ps);
 
 extern void Blt_Ps_SetClearBackground(Blt_Ps ps);
 
-extern int Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, 
+extern int Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, 
 	const char *fileName);
 
-extern int Blt_Ps_GetPicaFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, 
+extern int Blt_Ps_GetPicaFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
 	int *picaPtr);
 
 extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
@@ -125,7 +125,7 @@ extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
 
 
-extern int Blt_Ps_SaveFile(Tcl_Interp *interp, Blt_Ps ps, 
+extern int Blt_Ps_SaveFile(Tcl_Interp* interp, Blt_Ps ps, 
 	const char *fileName);
 
 #ifdef _TK

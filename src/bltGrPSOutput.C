@@ -79,7 +79,7 @@ static Tcl_Interp *psInterp = NULL;
  */
 int
 Blt_Ps_GetPicaFromObj(
-    Tcl_Interp *interp,			/* Use this for error reporting. */
+    Tcl_Interp* interp,			/* Use this for error reporting. */
     Tcl_Obj *objPtr,			/* String describing a number of
 					 * pixels. */
     int *picaPtr)			/* Place to store converted result. */
@@ -207,7 +207,7 @@ Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
 }
 
 PostScript *
-Blt_Ps_Create(Tcl_Interp *interp, PageSetup *setupPtr)
+Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr)
 {
     PostScript *psPtr;
 
@@ -245,7 +245,7 @@ Blt_Ps_GetValue(PostScript *psPtr, int *lengthPtr)
 }
 
 void
-Blt_Ps_SetInterp(PostScript *psPtr, Tcl_Interp *interp)
+Blt_Ps_SetInterp(PostScript *psPtr, Tcl_Interp* interp)
 {
     Tcl_DStringResult(interp, &psPtr->dString);
 }
@@ -269,7 +269,7 @@ Blt_Ps_GetDString(PostScript *psPtr)
 }
 
 int 
-Blt_Ps_SaveFile(Tcl_Interp *interp, PostScript *psPtr, const char *fileName)
+Blt_Ps_SaveFile(Tcl_Interp* interp, PostScript *psPtr, const char *fileName)
 {
     Tcl_Channel channel;
     int nWritten, nBytes;
@@ -339,7 +339,7 @@ TCL_VARARGS_DEF(PostScript *, arg1)
 }
 
 int
-Blt_Ps_IncludeFile(Tcl_Interp *interp, Blt_Ps ps, const char *fileName)
+Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, const char *fileName)
 {
     Tcl_Channel channel;
     Tcl_DString dString;
@@ -944,7 +944,7 @@ void
 Blt_Ps_XSetFont(PostScript *psPtr, Tk_Font font) 
 {
 #if 0
-    Tcl_Interp *interp = psPtr->interp;
+    Tcl_Interp* interp = psPtr->interp;
     const char *family;
 
     /* Use the font variable information if it exists. */

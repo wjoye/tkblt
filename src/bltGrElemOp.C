@@ -48,22 +48,22 @@
 // Defs
 
 static void DestroyElement(Element* elemPtr);
-static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			       Element* elemPtr, 
 			       int objc, Tcl_Obj* const objv[]);
 static void FreeDataValues(ElemValues *valuesPtr);
 static void FreeElement(char* data);
 static void FindRange(ElemValues *valuesPtr);
-static int GetIndex(Tcl_Interp *interp, Element* elemPtr, 
+static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
-static int GetPenStyleFromObj(Tcl_Interp *interp, Graph* graphPtr,
+static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
-static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, 
+static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr, 
 			 const char *vecName);
-static int ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
+static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr);
-typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			       Tcl_Obj *const *objv);
 
 // OptionSpecs
@@ -77,7 +77,7 @@ Tk_ObjCustomOption valuesObjOption =
     "values", ValuesSetProc, ValuesGetProc, NULL, NULL, NULL
   };
 
-static int ValuesSetProc(ClientData clientData, Tcl_Interp *interp,
+static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		       int offset, char* save, int flags)
 {
@@ -156,7 +156,7 @@ Tk_ObjCustomOption pairsObjOption =
     "pairs", PairsSetProc, PairsGetProc, NULL, NULL, NULL
   };
 
-static int PairsSetProc(ClientData clientData, Tcl_Interp *interp,
+static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		       int offset, char* save, int flags)
 {
@@ -214,7 +214,7 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
   return listObjPtr;
 };
 
-int StyleSetProc(ClientData clientData, Tcl_Interp *interp,
+int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 		 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		 int offset, char* save, int flags)
 {
@@ -284,7 +284,7 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
 
 // Create
 
-static int CreateElement(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj *const *objv, ClassId classId)
 {
   char *string = Tcl_GetString(objv[3]);
@@ -415,7 +415,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
 }
 
-static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			       Element* elemPtr, 
 			       int objc, Tcl_Obj* const objv[])
 {
@@ -459,7 +459,7 @@ static int ElementObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
 
 // Ops
 
-static int ActivateOp(Graph* graphPtr, Tcl_Interp *interp,
+static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj *const *objv)
 {
   Element* elemPtr;
@@ -513,7 +513,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int BindOp(Graph* graphPtr, Tcl_Interp *interp,
+static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj *const *objv)
 {
   if (objc == 3) {
@@ -552,7 +552,7 @@ static Blt_CustomOption alongOption =
     ObjToAlong, AlongToObj, NULL, (ClientData)0
   };
 
-static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
+static int ObjToAlong(ClientData clientData, Tcl_Interp* interp,
 		      Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 		      int offset, int flags)
 {
@@ -574,7 +574,7 @@ static int ObjToAlong(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *AlongToObj(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *AlongToObj(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, char *widgRec, int offset,
 			   int flags)
 {
@@ -609,7 +609,7 @@ static Blt_ConfigSpec closestSpecs[] = {
    (char *)NULL, 0, 0}
 };
 
-static int ClosestOp(Graph* graphPtr, Tcl_Interp *interp,
+static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 		     int objc, Tcl_Obj *const *objv)
 {
   Element* elemPtr;
@@ -720,7 +720,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int DeactivateOp(Graph* graphPtr, Tcl_Interp *interp,
+static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
 			int objc, Tcl_Obj *const *objv)
 {
   int i;
@@ -742,7 +742,7 @@ static int DeactivateOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int DeleteOp(Graph* graphPtr, Tcl_Interp *interp,
+static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   int i;
@@ -760,7 +760,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ExistsOp(Graph* graphPtr, Tcl_Interp *interp,
+static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   Tcl_HashEntry *hPtr;
@@ -770,7 +770,7 @@ static int ExistsOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int GetOp(Graph* graphPtr, Tcl_Interp *interp,
+static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj *const *objv)
 {
   char *string;
@@ -808,7 +808,7 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
   return listObjPtr;
 }
 
-static int LowerOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int LowerOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
   Blt_Chain chain;
@@ -840,7 +840,7 @@ static int LowerOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int NamesOp(Graph* graphPtr, Tcl_Interp *interp,
+static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 		   int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
@@ -884,7 +884,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int RaiseOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int RaiseOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj *const *objv)
 {
   Blt_Chain chain;
@@ -916,7 +916,7 @@ static int RaiseOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ShowOp(Graph* graphPtr, Tcl_Interp *interp,
+static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj *const *objv)
 {
   if (objc == 4) {
@@ -964,7 +964,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int TypeOp(Graph* graphPtr, Tcl_Interp *interp,
+static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Element* elemPtr;
@@ -1003,7 +1003,7 @@ static Blt_OpSpec elemOps[] = {
 };
 static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);
 
-int Blt_ElementOp(Graph* graphPtr, Tcl_Interp *interp,
+int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   void *ptr;
@@ -1032,7 +1032,7 @@ static void FreeElement(char* data)
   DestroyElement(elemPtr);
 }
 
-static int GetPenStyleFromObj(Tcl_Interp *interp, Graph* graphPtr,
+static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr)
 {
@@ -1077,7 +1077,7 @@ static void FreeVectorSource(ElemValues *valuesPtr)
   }
 }
 
-static int FetchVectorValues(Tcl_Interp *interp, ElemValues *valuesPtr, 
+static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr, 
 			     Blt_Vector *vector)
 {
   double *array;
@@ -1103,7 +1103,7 @@ static int FetchVectorValues(Tcl_Interp *interp, ElemValues *valuesPtr,
   return TCL_OK;
 }
 
-static void VectorChangedProc(Tcl_Interp *interp, ClientData clientData, 
+static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
 			      Blt_VectorNotify notify)
 {
   ElemValues *valuesPtr = clientData;
@@ -1132,7 +1132,7 @@ static void VectorChangedProc(Tcl_Interp *interp, ClientData clientData,
   }
 }
 
-static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr, 
+static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr, 
 			 const char *vecName)
 {
   Blt_Vector *vecPtr;
@@ -1152,7 +1152,7 @@ static int GetVectorData(Tcl_Interp *interp, ElemValues *valuesPtr,
   return TCL_OK;
 }
 
-static int ParseValues(Tcl_Interp *interp, Tcl_Obj *objPtr, int *nValuesPtr,
+static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr)
 {
   int objc;
@@ -1331,7 +1331,7 @@ PenStyle **Blt_StyleMap(Element* elemPtr)
 }
 
 
-static int GetIndex(Tcl_Interp *interp, Element* elemPtr, 
+static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr)
 {
   char *string;
@@ -1345,7 +1345,7 @@ static int GetIndex(Tcl_Interp *interp, Element* elemPtr,
   return TCL_OK;
 }
 
-int Blt_GetElement(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 		   Element **elemPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -1460,7 +1460,7 @@ void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
   }
 }
 
-void Blt_ActiveElementsToPostScript( Graph* graphPtr, Blt_Ps ps)
+void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Blt_ChainLink link;
 

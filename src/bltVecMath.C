@@ -163,7 +163,7 @@ static int precTable[] =
  * Forward declarations.
  */
 
-static int NextValue(Tcl_Interp *interp, ParseInfo *piPtr, int prec, 
+static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr, int prec, 
 	Value *valuePtr);
 
 /*
@@ -595,7 +595,7 @@ Fmod(double x, double y)
  */
 static void
 MathError(
-    Tcl_Interp *interp,		/* Where to store error message. */
+    Tcl_Interp* interp,		/* Where to store error message. */
     double value)		/* Value returned after error; used to
 				 * distinguish underflows from
 				 * overflows. */
@@ -651,7 +651,7 @@ MathError(
 
 static int
 ParseString(
-    Tcl_Interp *interp,		/* Where to store error message. */
+    Tcl_Interp* interp,		/* Where to store error message. */
     const char *string,		/* String to turn into value. */
     Value *valuePtr)		/* Where to store value information.
 				 * Caller must have initialized pv field. */
@@ -729,7 +729,7 @@ ParseString(
  */
 static int
 ParseMathFunction(
-    Tcl_Interp *interp,		/* Interpreter to use for error reporting. */
+    Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
     const char *start,		/* Start of string to parse */
     ParseInfo *piPtr,		/* Describes the state of the parse.
 				 * piPtr->nextPtr must point to the
@@ -814,7 +814,7 @@ ParseMathFunction(
  */
 static int
 NextToken(
-    Tcl_Interp *interp,		/* Interpreter to use for error reporting. */
+    Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
     ParseInfo *piPtr,		/* Describes the state of the parse. */
     Value *valuePtr)		/* Where to store value, if that is
 				 * what's parsed from string.  Caller
@@ -1060,7 +1060,7 @@ NextToken(
  */
 static int
 NextValue(
-    Tcl_Interp *interp,		/* Interpreter to use for error reporting. */
+    Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
     ParseInfo *piPtr,	/* Describes the state of the parse
 				 * just before the value (i.e. NextToken will
 				 * be called to get first token of value). */
@@ -1606,7 +1606,7 @@ NextValue(
  */
 static int
 EvaluateExpression(
-    Tcl_Interp *interp,		/* Context in which to evaluate the
+    Tcl_Interp* interp,		/* Context in which to evaluate the
 				 * expression. */
     char *string,		/* Expression to evaluate. */
     Value *valuePtr)		/* Where to store result.  Should
@@ -1670,7 +1670,7 @@ ComponentFunc(
     ClientData clientData,	/* Contains address of procedure that
 				 * takes one double argument and
 				 * returns a double result. */
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Vector *vPtr)
 {
     ComponentProc *procPtr = (ComponentProc *) clientData;
@@ -1696,7 +1696,7 @@ ComponentFunc(
 }
 
 static int
-ScalarFunc(ClientData clientData, Tcl_Interp *interp, Vector *vPtr)
+ScalarFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
 {
     double value;
     ScalarProc *procPtr = (ScalarProc *) clientData;
@@ -1716,7 +1716,7 @@ ScalarFunc(ClientData clientData, Tcl_Interp *interp, Vector *vPtr)
 
 /*ARGSUSED*/
 static int
-VectorFunc(ClientData clientData, Tcl_Interp *interp, Vector *vPtr)
+VectorFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
 {
     VectorProc *procPtr = (VectorProc *) clientData;
 
@@ -1850,7 +1850,7 @@ Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
  */
 int
 Blt_ExprVector(
-    Tcl_Interp *interp,		/* Context in which to evaluate the
+    Tcl_Interp* interp,		/* Context in which to evaluate the
 				 * expression. */
     char *string,		/* Expression to evaluate. */
     Blt_Vector *vector)		/* Where to store result. */

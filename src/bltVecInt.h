@@ -57,7 +57,7 @@ typedef struct {
     Tcl_HashTable vectorTable;	/* Table of vectors */
     Tcl_HashTable mathProcTable; /* Table of vector math functions */
     Tcl_HashTable indexProcTable;
-    Tcl_Interp *interp;
+    Tcl_Interp* interp;
     unsigned int nextId;
 } VectorInterpData;
 
@@ -105,7 +105,7 @@ typedef struct {
 				 * entry in the vector hash table. */
 
     VectorInterpData *dataPtr;
-    Tcl_Interp *interp;		/* Interpreter associated with the
+    Tcl_Interp* interp;		/* Interpreter associated with the
 				 * vector */
 
     Tcl_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
@@ -188,7 +188,7 @@ extern void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr);
 
 extern void Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr);
 
-extern VectorInterpData *Blt_Vec_GetInterpData (Tcl_Interp *interp);
+extern VectorInterpData *Blt_Vec_GetInterpData (Tcl_Interp* interp);
 
 extern double Blt_Vec_Max(Vector *vecObjPtr);
 extern double Blt_Vec_Min(Vector *vecObjPtr);
@@ -197,16 +197,16 @@ extern Vector *Blt_Vec_New(VectorInterpData *dataPtr);
 
 extern int Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr);
 
-extern int Blt_Vec_SetLength(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_SetLength(Tcl_Interp* interp, Vector *vPtr, 
 	int length);
 
-extern int Blt_Vec_SetSize(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_SetSize(Tcl_Interp* interp, Vector *vPtr, 
 	int size);
 
-extern int Blt_Vec_ChangeLength(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector *vPtr, 
 	int length);
 
-extern Vector *Blt_Vec_ParseElement(Tcl_Interp *interp, 
+extern Vector *Blt_Vec_ParseElement(Tcl_Interp* interp, 
 	VectorInterpData *dataPtr, const char *start, const char **endPtr, 
 	int flags);
 
@@ -230,21 +230,21 @@ extern void Blt_Vec_FlushCache(Vector *vPtr);
 extern int Blt_Vec_Reset(Vector *vPtr, double *dataArr,
 	int nValues, int arraySize, Tcl_FreeProc *freeProc);
 
-extern int  Blt_Vec_GetIndex(Tcl_Interp *interp, Vector *vPtr, 
+extern int  Blt_Vec_GetIndex(Tcl_Interp* interp, Vector *vPtr, 
 	const char *string, int *indexPtr, int flags, 
 	Blt_VectorIndexProc **procPtrPtr);
 
-extern int  Blt_Vec_GetIndexRange(Tcl_Interp *interp, Vector *vPtr, 
+extern int  Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector *vPtr, 
 	const char *string, int flags, Blt_VectorIndexProc **procPtrPtr);
 
-extern int Blt_Vec_MapVariable(Tcl_Interp *interp, Vector *vPtr, 
+extern int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector *vPtr, 
 	const char *name);
 
-extern int Blt_Vec_FFT(Tcl_Interp *interp, Vector *realPtr,
+extern int Blt_Vec_FFT(Tcl_Interp* interp, Vector *realPtr,
 	Vector *phasesPtr, Vector *freqPtr, double delta, 
 	int flags, Vector *srcPtr);
 
-extern int Blt_Vec_InverseFFT(Tcl_Interp *interp, Vector *iSrcPtr, 
+extern int Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector *iSrcPtr, 
 	Vector *rDestPtr, Vector *iDestPtr, Vector *srcPtr);
 
 extern Tcl_ObjCmdProc Blt_Vec_InstCmd;

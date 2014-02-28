@@ -228,7 +228,7 @@ typedef struct {
  *---------------------------------------------------------------------------
  */
 struct _Graph {
-  Tcl_Interp *interp;			/* Interpreter associated with graph */
+  Tcl_Interp* interp;			/* Interpreter associated with graph */
   Tk_Window tkwin;			/* Window that embodies the graph.
 					 * NULL means that the window has been
 					 * destroyed but the data structures
@@ -522,7 +522,7 @@ extern void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
 extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
 			       Segment2d *segments, int nSegments);
 
-extern int Blt_GetCoordinate(Tcl_Interp *interp, const char *string, 
+extern int Blt_GetCoordinate(Tcl_Interp* interp, const char *string, 
 			     double *valuePtr);
 
 extern void Blt_InitBarSetTable(Graph* graphPtr);
@@ -551,7 +551,7 @@ extern void Blt_MapMarkers(Graph* graphPtr);
 
 extern void Blt_DestroyPens(Graph* graphPtr);
 
-extern int Blt_GetPenFromObj(Tcl_Interp *interp, Graph* graphPtr, 
+extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 
 extern Pen* Blt_BarPen(Graph* graphPtr, const char* penName);
@@ -568,22 +568,22 @@ extern int Blt_InitBarPens(Graph* graphPtr);
 
 extern void Blt_FreePen(Pen* penPtr);
 
-extern int Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp *interp, 
+extern int Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp* interp, 
 			     int objc, Tcl_Obj *const *objv);
 
-extern int Blt_AxisOp(Tcl_Interp *interp, Graph* graphPtr, int margin, 
+extern int Blt_AxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
 		      int objc, Tcl_Obj *const *objv);
 
-extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj *const *objv, ClassId classId);
 
-extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 				Tcl_Obj *const *objv);
 
-extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			Tcl_Obj *const *objv);
 
-extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj *const *objv);
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
@@ -595,7 +595,7 @@ extern int Blt_RegionInPolygon(Region2d *extsPtr, Point2d *points,
 extern int Blt_PointInSegments(Point2d *samplePtr, Segment2d *segments, 
 			       int nSegments, double halo);
 
-extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj *const *objv);
 
 extern int Blt_GraphUpdateNeeded(Graph* graphPtr);

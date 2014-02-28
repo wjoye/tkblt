@@ -462,7 +462,7 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
  * 	valid.
  *---------------------------------------------------------------------------
  */
-void Blt_UpdateScrollbar(Tcl_Interp *interp, Tcl_Obj *scrollCmdObjPtr,
+void Blt_UpdateScrollbar(Tcl_Interp* interp, Tcl_Obj *scrollCmdObjPtr,
 			 int first, int last, int width)
 {
   Tcl_Obj *cmdObjPtr;

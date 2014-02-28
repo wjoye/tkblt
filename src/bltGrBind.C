@@ -461,7 +461,7 @@ BindProc(
 
 int
 Blt_ConfigureBindings(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     BindTable *bindPtr,
     ClientData item,
     int argc,
@@ -519,7 +519,7 @@ Blt_ConfigureBindings(
 
 int
 Blt_ConfigureBindingsFromObj(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     BindTable *bindPtr,
     ClientData item,
     int objc,
@@ -577,7 +577,7 @@ Blt_ConfigureBindingsFromObj(
 
 Blt_BindTable
 Blt_CreateBindingTable(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Tk_Window tkwin,
     ClientData clientData,
     Blt_BindPickProc *pickProc,

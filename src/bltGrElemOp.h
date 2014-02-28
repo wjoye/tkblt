@@ -260,7 +260,7 @@ extern PenStyle **Blt_StyleMap (Element* elemPtr);
 extern void Blt_MapErrorBars(Graph *graphPtr, Element* elemPtr, 
 			     PenStyle **dataToStyle);
 extern void Blt_FreeDataValues(ElemValues *evPtr);
-extern int Blt_GetElement(Tcl_Interp *interp, Graph *graphPtr, 
+extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
 			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 
 #endif /* _BLT_GR_ELEM_H */

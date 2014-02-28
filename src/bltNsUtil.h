@@ -51,12 +51,12 @@ typedef struct {
 /* 
  * Auxillary procedures 
  */
-extern Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp *interp, 
+extern Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp* interp, 
 	const char *varName);
 
 extern Tcl_Namespace *Blt_GetCommandNamespace(Tcl_Command cmdToken);
 
-extern int Blt_ParseObjectName(Tcl_Interp *interp, const char *name, 
+extern int Blt_ParseObjectName(Tcl_Interp* interp, const char *name, 
 	Blt_ObjectName *objNamePtr, unsigned int flags);
 
 extern char *Blt_MakeQualifiedName(Blt_ObjectName *objNamePtr, 

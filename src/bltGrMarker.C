@@ -41,7 +41,7 @@
 #include "bltBitmap.h"
 #include "bltConfig.h"
 
-typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj *const *objv);
 
 #define GETBITMAP(b)							\
@@ -901,7 +901,7 @@ BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
  */
 static int
 GetCoordinate(
-	      Tcl_Interp *interp,			/* Interpreter to return results */
+	      Tcl_Interp* interp,			/* Interpreter to return results */
 	      Tcl_Obj *objPtr,			/* Numeric expression string to
 						 * parse */
 	      double *valuePtr)			/* Real-valued result of expression */
@@ -973,7 +973,7 @@ PrintCoordinate(double x)
  */
 static int
 ParseCoordinates(
-		 Tcl_Interp *interp,
+		 Tcl_Interp* interp,
 		 Marker *markerPtr,
 		 int objc,
 		 Tcl_Obj *const *objv)
@@ -1094,7 +1094,7 @@ FreeCoordsProc(
 static int
 ObjToCoordsProc(
 		ClientData clientData,	/* Not used. */
-		Tcl_Interp *interp,		/* Interpreter to return results */
+		Tcl_Interp* interp,		/* Interpreter to return results */
 		Tk_Window tkwin,		/* Not used. */
 		Tcl_Obj *objPtr,		/* TCL list of numeric expressions */
 		char* widgRec,		/* Marker record */
@@ -1130,7 +1130,7 @@ ObjToCoordsProc(
 static Tcl_Obj *
 CoordsToObjProc(
 		ClientData clientData,	/* Not used. */
-		Tcl_Interp *interp,
+		Tcl_Interp* interp,
 		Tk_Window tkwin,		/* Not used. */
 		char* widgRec,		/* Marker record */
 		int offset,			/* Not used. */
@@ -1152,7 +1152,7 @@ CoordsToObjProc(
 /*LINTLIBRARY*/
 static int
 GetColorPair(
-	     Tcl_Interp *interp,
+	     Tcl_Interp* interp,
 	     Tk_Window tkwin,
 	     Tcl_Obj *fgObjPtr, Tcl_Obj *bgObjPtr,
 	     ColorPair *pairPtr,
@@ -1246,7 +1246,7 @@ FreeColorPairProc(
 static int
 ObjToColorPairProc(
 		   ClientData clientData,		/* Not used. */
-		   Tcl_Interp *interp,			/* Interpreter to return results */
+		   Tcl_Interp* interp,			/* Interpreter to return results */
 		   Tk_Window tkwin,			/* Not used. */
 		   Tcl_Obj *objPtr,			/* String representing color */
 		   char* widgRec,			/* Widget record */
@@ -1300,7 +1300,7 @@ static const char* NameOfColor(XColor* colorPtr)
 static Tcl_Obj *
 ColorPairToObjProc(
 		   ClientData clientData,		/* Not used. */
-		   Tcl_Interp *interp,
+		   Tcl_Interp* interp,
 		   Tk_Window tkwin,			/* Not used. */
 		   char* widgRec,			/* Element information record */
 		   int offset,				/* Offset to field in structure */
@@ -3468,7 +3468,7 @@ CreatePolygonProc(void)
 }
 
 static int
-GetMarkerFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
+GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 		 Marker **markerPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -3528,7 +3528,7 @@ RenameMarker(Graph* graphPtr, Marker *markerPtr, const char* oldName,
  *---------------------------------------------------------------------------
  */
 static int
-NamesOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+NamesOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
 
@@ -3580,7 +3580,7 @@ NamesOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-BindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+BindOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   if (objc == 3) {
     Tcl_HashEntry *hp;
@@ -3614,7 +3614,7 @@ BindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-CgetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+CgetOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
 
@@ -3642,7 +3642,7 @@ CgetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   Tcl_Obj *const *options;
@@ -3726,7 +3726,7 @@ ConfigureOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+CreateOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   Tcl_HashEntry *hPtr;
@@ -3830,7 +3830,7 @@ CreateOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-DeleteOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+DeleteOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   int i;
 
@@ -3866,7 +3866,7 @@ DeleteOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-GetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+GetOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   const char* string;
@@ -3907,7 +3907,7 @@ GetOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-RelinkOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+RelinkOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link, place;
   Marker *markerPtr;
@@ -3959,7 +3959,7 @@ RelinkOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-FindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+FindOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Blt_ChainLink link;
   Region2d extents;
@@ -4039,7 +4039,7 @@ FindOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-ExistsOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+ExistsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Tcl_HashEntry *hPtr;
 
@@ -4063,7 +4063,7 @@ ExistsOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-TypeOp(Graph* graphPtr, Tcl_Interp *interp, int objc, Tcl_Obj *const *objv)
+TypeOp(Graph* graphPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 {
   Marker *markerPtr;
   const char* type;
@@ -4123,7 +4123,7 @@ static int nMarkerOps = sizeof(markerOps) / sizeof(Blt_OpSpec);
 
 /*ARGSUSED*/
 int
-Blt_MarkerOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 	     Tcl_Obj *const *objv)
 {
   GraphMarkerProc *proc;

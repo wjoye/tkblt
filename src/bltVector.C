@@ -117,7 +117,7 @@ static Blt_SwitchSpec createSwitches[] =
     {BLT_SWITCH_END}
 };
 
-typedef int (VectorCmdProc)(Vector *vecObjPtr, Tcl_Interp *interp, 
+typedef int (VectorCmdProc)(Vector *vecObjPtr, Tcl_Interp* interp, 
 	int objc, Tcl_Obj *const *objv);
 
 static Vector *
@@ -159,7 +159,7 @@ GetVectorObject(
 {
     Blt_ObjectName objName;
     Vector *vPtr;
-    Tcl_Interp *interp;
+    Tcl_Interp* interp;
 
     interp = dataPtr->interp;
     if (!Blt_ParseObjectName(interp, name, &objName, 
@@ -221,7 +221,7 @@ Blt_Vec_UpdateRange(Vector *vPtr)
  */
 int
 Blt_Vec_GetIndex(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Vector *vPtr,
     const char *string,
     int *indexPtr,
@@ -312,7 +312,7 @@ Blt_Vec_GetIndex(
  */
 int
 Blt_Vec_GetIndexRange(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Vector *vPtr,
     const char *string,
     int flags,
@@ -369,7 +369,7 @@ Blt_Vec_GetIndexRange(
 
 Vector *
 Blt_Vec_ParseElement(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     VectorInterpData *dataPtr,	/* Interpreter-specific data. */
     const char *start,
     const char **endPtr,
@@ -556,7 +556,7 @@ Blt_Vec_UpdateClients(Vector *vPtr)
 void
 Blt_Vec_FlushCache(Vector *vPtr)
 {
-    Tcl_Interp *interp = vPtr->interp;
+    Tcl_Interp* interp = vPtr->interp;
 
     if (vPtr->arrayName == NULL) {
 	return;			/* Doesn't use the variable API */
@@ -667,7 +667,7 @@ Blt_Vec_Max(Vector *vecObjPtr)
 static void
 DeleteCommand(Vector *vPtr) /* Vector associated with the TCL command. */
 {
-    Tcl_Interp *interp = vPtr->interp;
+    Tcl_Interp* interp = vPtr->interp;
     char *qualName;		/* Name of TCL command. */
     Tcl_CmdInfo cmdInfo;
     Tcl_DString dString;
@@ -703,7 +703,7 @@ DeleteCommand(Vector *vPtr) /* Vector associated with the TCL command. */
 static void
 UnmapVariable(Vector *vPtr)
 {
-    Tcl_Interp *interp = vPtr->interp;
+    Tcl_Interp* interp = vPtr->interp;
 
     /* Unset the entire array */
     Tcl_UntraceVar2(interp, vPtr->arrayName, (char *)NULL,
@@ -740,7 +740,7 @@ UnmapVariable(Vector *vPtr)
  */
 int
 Blt_Vec_MapVariable(
-    Tcl_Interp *interp, 
+    Tcl_Interp* interp, 
     Vector *vPtr, 
     const char *path)
 {
@@ -825,7 +825,7 @@ Blt_Vec_MapVariable(
  */
 int
 Blt_Vec_SetSize(
-    Tcl_Interp *interp, 
+    Tcl_Interp* interp, 
     Vector *vPtr, 
     int newSize)		/* Size of array in elements */
 {
@@ -927,7 +927,7 @@ Blt_Vec_SetSize(
  */
 int
 Blt_Vec_SetLength(
-    Tcl_Interp *interp, 
+    Tcl_Interp* interp, 
     Vector *vPtr, 
     int newLength)		/* Size of array in elements */
 {
@@ -973,7 +973,7 @@ Blt_Vec_SetLength(
 
 int
 Blt_Vec_ChangeLength(
-    Tcl_Interp *interp, 
+    Tcl_Interp* interp, 
     Vector *vPtr, 
     int newLength)
 {
@@ -1242,7 +1242,7 @@ Blt_Vec_Create(
     Blt_ObjectName objName;
     char *qualName;
     Tcl_HashEntry *hPtr;
-    Tcl_Interp *interp = dataPtr->interp;
+    Tcl_Interp* interp = dataPtr->interp;
 
     isNew = 0;
     vPtr = NULL;
@@ -1383,7 +1383,7 @@ Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr)
 static int
 VectorNamesOp(
     ClientData clientData,	/* Interpreter-specific data. */
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     int objc,
     Tcl_Obj *const *objv)
 {
@@ -1454,7 +1454,7 @@ VectorNamesOp(
 static int
 VectorCreate2(
     ClientData clientData,	/* Interpreter-specific data. */
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     int argStart,
     int objc,
     Tcl_Obj *const *objv)
@@ -1619,7 +1619,7 @@ VectorCreate2(
 static int
 VectorCreateOp(
     ClientData clientData,
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     int objc,
     Tcl_Obj *const *objv)
 {
@@ -1646,7 +1646,7 @@ VectorCreateOp(
 static int
 VectorDestroyOp(
     ClientData clientData,	/* Interpreter-specific data. */
-    Tcl_Interp *interp,		/* Not used. */
+    Tcl_Interp* interp,		/* Not used. */
     int objc,
     Tcl_Obj *const *objv)
 {
@@ -1681,7 +1681,7 @@ VectorDestroyOp(
 static int
 VectorExprOp(
     ClientData clientData,	/* Not Used. */
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     int objc,			/* Not used. */
     Tcl_Obj *const *objv)
 {
@@ -1704,7 +1704,7 @@ static int nCmdOps = sizeof(vectorCmdOps) / sizeof(Blt_OpSpec);
 static int
 VectorCmd(
     ClientData clientData,	/* Interpreter-specific data. */
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     int objc,
     Tcl_Obj *const *objv)
 {
@@ -1763,7 +1763,7 @@ VectorCmd(
 static void
 VectorInterpDeleteProc(
     ClientData clientData,	/* Interpreter-specific data. */
-    Tcl_Interp *interp)
+    Tcl_Interp* interp)
 {
     VectorInterpData *dataPtr = clientData;
     Tcl_HashEntry *hPtr;
@@ -1789,7 +1789,7 @@ VectorInterpDeleteProc(
 }
 
 VectorInterpData *
-Blt_Vec_GetInterpData(Tcl_Interp *interp)
+Blt_Vec_GetInterpData(Tcl_Interp* interp)
 {
     VectorInterpData *dataPtr;
     Tcl_InterpDeleteProc *proc;
@@ -1830,7 +1830,7 @@ Blt_Vec_GetInterpData(Tcl_Interp *interp)
  */
 
 int
-Blt_VectorCmdInitProc(Tcl_Interp *interp)
+Blt_VectorCmdInitProc(Tcl_Interp* interp)
 {
     static Blt_InitCmdSpec cmdSpec = {"vector", VectorCmd, };
     
@@ -1862,7 +1862,7 @@ Blt_VectorCmdInitProc(Tcl_Interp *interp)
 /*LINTLIBRARY*/
 int
 Blt_CreateVector2(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     const char *vecName, const char *cmdName, const char *varName,
     int initialSize,
     Blt_Vector **vecPtrPtr)
@@ -1899,7 +1899,7 @@ Blt_CreateVector2(
 
 int
 Blt_CreateVector(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     const char *name,
     int size,
     Blt_Vector **vecPtrPtr)
@@ -1957,7 +1957,7 @@ Blt_DeleteVector(Blt_Vector *vecPtr)
  */
 /*LINTLIBRARY*/
 int
-Blt_DeleteVectorByName(Tcl_Interp *interp, const char *name)
+Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
     Vector *vPtr;
@@ -1996,7 +1996,7 @@ Blt_DeleteVectorByName(Tcl_Interp *interp, const char *name)
  *---------------------------------------------------------------------------
  */
 int
-Blt_VectorExists2(Tcl_Interp *interp, const char *vecName)
+Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
 
@@ -2021,7 +2021,7 @@ Blt_VectorExists2(Tcl_Interp *interp, const char *vecName)
  *---------------------------------------------------------------------------
  */
 int
-Blt_VectorExists(Tcl_Interp *interp, const char *vecName)
+Blt_VectorExists(Tcl_Interp* interp, const char *vecName)
 {
     char *nameCopy;
     int result;
@@ -2053,7 +2053,7 @@ Blt_VectorExists(Tcl_Interp *interp, const char *vecName)
  *---------------------------------------------------------------------------
  */
 int
-Blt_GetVector(Tcl_Interp *interp, const char *name, Blt_Vector **vecPtrPtr)
+Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector **vecPtrPtr)
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
     Vector *vPtr;
@@ -2094,7 +2094,7 @@ Blt_GetVector(Tcl_Interp *interp, const char *name, Blt_Vector **vecPtrPtr)
  */
 int
 Blt_GetVectorFromObj(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Tcl_Obj *objPtr,
     Blt_Vector **vecPtrPtr)
 {
@@ -2206,7 +2206,7 @@ Blt_ResizeVector(Blt_Vector *vecPtr, int length)
  *---------------------------------------------------------------------------
  */
 Blt_VectorId
-Blt_AllocVectorId(Tcl_Interp *interp, const char *name)
+Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
     Vector *vPtr;
@@ -2381,7 +2381,7 @@ Blt_VectorNotifyPending(Blt_VectorId clientId)
  */
 int
 Blt_GetVectorById(
-    Tcl_Interp *interp,
+    Tcl_Interp* interp,
     Blt_VectorId clientId,	/* Client token identifying the vector */
     Blt_Vector **vecPtrPtr)
 {
@@ -2402,7 +2402,7 @@ Blt_GetVectorById(
 
 /*LINTLIBRARY*/
 void
-Blt_InstallIndexProc(Tcl_Interp *interp, const char *string, 
+Blt_InstallIndexProc(Tcl_Interp* interp, const char *string, 
 		     Blt_VectorIndexProc *procPtr) 
 {
     VectorInterpData *dataPtr;	/* Interpreter-specific data. */
@@ -2491,7 +2491,7 @@ smallest_power_of_2_not_less_than(int x)
 
 int
 Blt_Vec_FFT(
-    Tcl_Interp *interp,		/* Interpreter to report errors to */
+    Tcl_Interp* interp,		/* Interpreter to report errors to */
     Vector *realPtr,	/* If non-NULL, indicates to compute and
 				   store the real values in this vector.  */
     Vector *phasesPtr,	/* If non-NULL, indicates to compute
@@ -2646,7 +2646,7 @@ Blt_Vec_FFT(
 
 
 int
-Blt_Vec_InverseFFT(Tcl_Interp *interp, Vector *srcImagPtr, Vector *destRealPtr, 
+Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector *srcImagPtr, Vector *destRealPtr, 
     Vector *destImagPtr, Vector *srcPtr)
 {
     int length;

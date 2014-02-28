@@ -39,7 +39,7 @@
 #include "bltSwitch.h"
 
 static void
-DoHelp(Tcl_Interp *interp, Blt_SwitchSpec *specs)
+DoHelp(Tcl_Interp* interp, Blt_SwitchSpec *specs)
 {
     Tcl_DString ds;
     Blt_SwitchSpec *sp;
@@ -76,7 +76,7 @@ DoHelp(Tcl_Interp *interp, Blt_SwitchSpec *specs)
  */
 static Blt_SwitchSpec *
 FindSwitchSpec(
-    Tcl_Interp *interp,		/* Used for reporting errors. */
+    Tcl_Interp* interp,		/* Used for reporting errors. */
     Blt_SwitchSpec *specs,	/* Pointer to table of configuration
 				 * specifications for a widget. */
     const char *name,		/* Name identifying a particular switch. */
@@ -146,7 +146,7 @@ FindSwitchSpec(
  */
 static int
 DoSwitch(
-    Tcl_Interp *interp,		/* Interpreter for error reporting. */
+    Tcl_Interp* interp,		/* Interpreter for error reporting. */
     Blt_SwitchSpec *sp,		/* Specifier to apply. */
     Tcl_Obj *objPtr,		/* Value to use to fill in widgRec. */
     void *record)		/* Record whose fields are to be modified.
@@ -322,7 +322,7 @@ DoSwitch(
  */
 int
 Blt_ParseSwitches(
-    Tcl_Interp *interp,		/* Interpreter for error reporting. */
+    Tcl_Interp* interp,		/* Interpreter for error reporting. */
     Blt_SwitchSpec *specs,	/* Describes legal switches. */
     int objc,			/* Number of elements in argv. */
     Tcl_Obj *const *objv,	/* Command-line switches. */
@@ -473,7 +473,7 @@ Blt_FreeSwitches(
 }
 
 int 
-Blt_ExprDoubleFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, double *valuePtr)
+Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
 {
     /* First try to extract the value as a double precision number. */
     if (Tcl_GetDoubleFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK) {
@@ -488,7 +488,7 @@ Blt_ExprDoubleFromObj(Tcl_Interp *interp, Tcl_Obj *objPtr, double *valuePtr)
 
 int 
 Blt_ExprIntFromObj(
-    Tcl_Interp *interp, 
+    Tcl_Interp* interp, 
     Tcl_Obj *objPtr, 
     int *valuePtr)
 {

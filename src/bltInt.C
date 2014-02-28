@@ -40,7 +40,7 @@ extern Tcl_AppInitProc Blt_VectorCmdInitProc;
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
 
-int Tkblt_Init(Tcl_Interp *interp)
+int Tkblt_Init(Tcl_Interp* interp)
 {
   Tcl_Namespace *nsPtr;
 
@@ -84,12 +84,12 @@ int Tkblt_Init(Tcl_Interp *interp)
   return TCL_OK;
 }
 
-int Tkblt_SafeInit(Tcl_Interp *interp)
+int Tkblt_SafeInit(Tcl_Interp* interp)
 {
   return Tkblt_Init(interp);
 }
 
-int Blt_InitCmd(Tcl_Interp *interp, const char *nsName, 
+int Blt_InitCmd(Tcl_Interp* interp, const char *nsName, 
 		Blt_InitCmdSpec *specPtr)
 {
   Tcl_DString dString;

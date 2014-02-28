@@ -37,7 +37,7 @@
 
 #  include <stddef.h>
 
-typedef int (Blt_SwitchParseProc)(ClientData clientData, Tcl_Interp *interp, 
+typedef int (Blt_SwitchParseProc)(ClientData clientData, Tcl_Interp* interp, 
 	const char *switchName, Tcl_Obj *valueObjPtr, char *record, int offset,
 	int flags);
 typedef void (Blt_SwitchFreeProc)(char *record, int offset, int flags);
@@ -121,7 +121,7 @@ typedef struct {
 #define BLT_SWITCH_SPECIFIED		(1<<4)
 #define BLT_SWITCH_USER_BIT		(1<<8)
 
-extern int Blt_ParseSwitches(Tcl_Interp *interp, Blt_SwitchSpec *specPtr, 
+extern int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specPtr, 
 	int objc, Tcl_Obj *const *objv, void *rec, int flags);
 
 extern void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *rec, int flags);

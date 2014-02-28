@@ -47,7 +47,7 @@ Blt_GetCommandNamespace(Tcl_Command cmdToken)
 }
 
 int
-Blt_ParseObjectName(Tcl_Interp *interp, const char *path, 
+Blt_ParseObjectName(Tcl_Interp* interp, const char *path, 
 		    Blt_ObjectName *namePtr, unsigned int flags)
 {
   char *last, *colon;
@@ -131,7 +131,7 @@ static Tcl_Namespace* NamespaceOfVariable(Var *varPtr)
  */
 
 Tcl_Namespace *
-Blt_GetVariableNamespace(Tcl_Interp *interp, const char *path)
+Blt_GetVariableNamespace(Tcl_Interp* interp, const char *path)
 {
   Blt_ObjectName objName;
 

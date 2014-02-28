@@ -44,11 +44,11 @@
 // Defs
 
 static void DestroyPen(Pen* penPtr);
-static int GetPenFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr);
-static int PenObjConfigure(Tcl_Interp *interp, Graph* graphPtr, Pen* penPtr, 
+static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 			   int objc, Tcl_Obj* const objv[]);
-typedef int (GraphPenProc)(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 			   Tcl_Obj *const *objv);
 
 // OptionSpecs
@@ -64,7 +64,7 @@ Tk_ObjCustomOption linePenObjOption =
     "linePen", PenSetProc, PenGetProc, NULL, NULL, (ClientData)CID_ELEM_LINE
   };
 
-static int PenSetProc(ClientData clientData, Tcl_Interp *interp,
+static int PenSetProc(ClientData clientData, Tcl_Interp* interp,
 		      Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		      int offset, char* save, int flags)
 {
@@ -190,7 +190,7 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int ConfigureOp(Tcl_Interp *interp, Graph* graphPtr, 
+static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr, 
 		       int objc, Tcl_Obj *const *objv)
 {
   Pen* penPtr;
@@ -212,7 +212,7 @@ static int ConfigureOp(Tcl_Interp *interp, Graph* graphPtr,
     return PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4);
 }
 
-static int PenObjConfigure(Tcl_Interp *interp, Graph* graphPtr, Pen* penPtr, 
+static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 			   int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
@@ -255,7 +255,7 @@ static int PenObjConfigure(Tcl_Interp *interp, Graph* graphPtr, Pen* penPtr,
 
 // Ops
 
-static int CreateOp(Tcl_Interp *interp, Graph* graphPtr, 
+static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj *const *objv)
 {
   if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]), graphPtr->classId, objc, objv) != TCL_OK)
@@ -264,7 +264,7 @@ static int CreateOp(Tcl_Interp *interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int DeleteOp(Tcl_Interp *interp, Graph* graphPtr, 
+static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj *const *objv)
 {
   int i;
@@ -289,7 +289,7 @@ static int DeleteOp(Tcl_Interp *interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int NamesOp(Tcl_Interp *interp, Graph* graphPtr, 
+static int NamesOp(Tcl_Interp* interp, Graph* graphPtr, 
 		   int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
@@ -338,7 +338,7 @@ static int NamesOp(Tcl_Interp *interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int TypeOp(Tcl_Interp *interp, Graph* graphPtr, 
+static int TypeOp(Tcl_Interp* interp, Graph* graphPtr, 
 		  int objc, Tcl_Obj *const *objv)
 {
   Pen* penPtr;
@@ -364,7 +364,7 @@ static int nPenOps = sizeof(penOps) / sizeof(Blt_OpSpec);
 
 // Extern
 
-int Blt_PenOp(Graph* graphPtr, Tcl_Interp *interp, 
+int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, 
 	      int objc, Tcl_Obj *const *objv)
 {
   GraphPenProc *proc = Blt_GetOpFromObj(interp, nPenOps, penOps, BLT_OP_ARG2, 
@@ -401,7 +401,7 @@ void Blt_FreePen(Pen* penPtr)
   }
 }
 
-int Blt_GetPenFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
+int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 		      ClassId classId, Pen **penPtrPtr)
 {
   Pen* penPtr = NULL;
@@ -434,7 +434,7 @@ int Blt_GetPenFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
 // Support
 
-static int GetPenFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr)
 {
   Tcl_HashEntry *hPtr;

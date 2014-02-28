@@ -160,7 +160,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return CrosshairsObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
-static int CrosshairsObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[])
 {
   Crosshairs* chPtr = graphPtr->crosshairs;
@@ -262,7 +262,7 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Widget commands
 
-static int OnOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int OnOp(Graph* graphPtr, Tcl_Interp* interp, 
 		int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
@@ -274,7 +274,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int OffOp(Graph* graphPtr, Tcl_Interp *interp,
+static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
@@ -286,7 +286,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int ToggleOp(Graph* graphPtr, Tcl_Interp *interp,
+static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj *const *objv)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;

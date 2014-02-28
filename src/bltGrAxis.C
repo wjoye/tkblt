@@ -104,16 +104,16 @@ static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 // Defs
 
 static void ReleaseAxis(Axis *axisPtr);
-static int GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
+static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
 static void DestroyAxis(Axis *axisPtr);
 static Tcl_FreeProc FreeAxis;
 static void TimeScaleAxis(Axis *axisPtr, double min, double max);
 
 static int lastMargin;
-typedef int (GraphAxisProc)(Tcl_Interp *interp, Axis *axisPtr, int objc, 
+typedef int (GraphAxisProc)(Tcl_Interp* interp, Axis *axisPtr, int objc, 
 			    Tcl_Obj *const *objv);
-typedef int (GraphVirtualAxisProc)(Tcl_Interp *interp, Graph* graphPtr, 
+typedef int (GraphVirtualAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
 				   int objc, Tcl_Obj *const *objv);
 
 INLINE static double
@@ -141,7 +141,7 @@ Tk_ObjCustomOption yAxisObjOption =
     "yaxis", AxisSetProc, AxisGetProc, NULL, NULL, (ClientData)CID_AXIS_Y
   };
 
-static int AxisSetProc(ClientData clientData, Tcl_Interp *interp,
+static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
 			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			int offset, char* save, int flags)
 {
@@ -610,7 +610,7 @@ static void FreeAxisProc(ClientData clientData, Display *display,
   }
 }
 
-static int ObjToAxisProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToAxisProc(ClientData clientData, Tcl_Interp* interp,
 			 Tk_Window tkwin, Tcl_Obj *objPtr,
 			 char *widgRec, int offset, int flags)	
 {
@@ -640,7 +640,7 @@ static int ObjToAxisProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp* interp,
 			      Tk_Window tkwin, char *widgRec, 
 			      int offset, int flags)
 {
@@ -663,7 +663,7 @@ static void FreeFormatProc(ClientData clientData, Display *display,
   axisPtr->nFormats = 0;
 }
 
-static int ObjToFormatProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToFormatProc(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 			   int offset, int flags)
 {
@@ -688,7 +688,7 @@ static int ObjToFormatProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *FormatToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *FormatToObjProc(ClientData clientData, Tcl_Interp* interp,
 				Tk_Window tkwin, char *widgRec,
 				int offset, int flags)
 {
@@ -707,7 +707,7 @@ static Tcl_Obj *FormatToObjProc(ClientData clientData, Tcl_Interp *interp,
   return objPtr;
 }
 
-static int ObjToLimitProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToLimitProc(ClientData clientData, Tcl_Interp* interp,
 			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 			  int offset, int flags)
 {
@@ -723,7 +723,7 @@ static int ObjToLimitProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *LimitToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *LimitToObjProc(ClientData clientData, Tcl_Interp* interp,
 			       Tk_Window tkwin, char *widgRec,
 			       int offset, int flags)
 {
@@ -738,7 +738,7 @@ static Tcl_Obj *LimitToObjProc(ClientData clientData, Tcl_Interp *interp,
   return objPtr;
 }
 
-static int ObjToUseProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToUseProc(ClientData clientData, Tcl_Interp* interp,
 			Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 			int offset, int flags)
 {
@@ -802,7 +802,7 @@ static int ObjToUseProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *UseToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *UseToObjProc(ClientData clientData, Tcl_Interp* interp,
 			     Tk_Window tkwin, char *widgRec,
 			     int offset, int flags)
 {
@@ -828,7 +828,7 @@ static void FreeTicksProc(ClientData clientData, Display *display,
   *ticksPtrPtr = NULL;
 }
 
-static int ObjToTicksProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToTicksProc(ClientData clientData, Tcl_Interp* interp,
 			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 			  int offset, int flags)
 {
@@ -865,7 +865,7 @@ static int ObjToTicksProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *TicksToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *TicksToObjProc(ClientData clientData, Tcl_Interp* interp,
 			       Tk_Window tkwin, char *widgRec,
 			       int offset, int flags)
 {
@@ -891,7 +891,7 @@ static Tcl_Obj *TicksToObjProc(ClientData clientData, Tcl_Interp *interp,
   return listObjPtr;
 }
 
-static int ObjToLooseProc(ClientData clientData, Tcl_Interp *interp,
+static int ObjToLooseProc(ClientData clientData, Tcl_Interp* interp,
 			  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
 			  int offset, int flags)
 {
@@ -931,7 +931,7 @@ static int ObjToLooseProc(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static Tcl_Obj *LooseToObjProc(ClientData clientData, Tcl_Interp *interp,
+static Tcl_Obj *LooseToObjProc(ClientData clientData, Tcl_Interp* interp,
 			       Tk_Window tkwin, char *widgRec,
 			       int offset, int flags)
 {
@@ -991,7 +991,7 @@ static TickLabel *MakeLabel(Axis *axisPtr, double value)
 
   if (axisPtr->formatCmd != NULL) {
     Graph* graphPtr;
-    Tcl_Interp *interp;
+    Tcl_Interp* interp;
     Tk_Window tkwin;
 	
     graphPtr = axisPtr->obj.graphPtr;
@@ -2156,7 +2156,7 @@ static double AdjustViewport(double offset, double windowSize)
   return offset;
 }
 
-static int GetAxisScrollInfo(Tcl_Interp *interp, int objc, Tcl_Obj *const *objv,
+static int GetAxisScrollInfo(Tcl_Interp* interp, int objc, Tcl_Obj *const *objv,
 			     double *offsetPtr, double windowSize,
 			     double scrollUnits, double scale)
 {
@@ -3192,7 +3192,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
   return axisPtr;
 }
 
-static int GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+static int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 	       Axis **axisPtrPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -3217,7 +3217,7 @@ static int GetAxisFromObj(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
   return TCL_ERROR;
 }
 
-static int GetAxisByClass(Tcl_Interp *interp, Graph* graphPtr, Tcl_Obj *objPtr,
+static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr)
 {
   Axis *axisPtr;
@@ -3327,7 +3327,7 @@ int Blt_DefaultAxes(Graph* graphPtr)
   return TCL_OK;
 }
 
-static int ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   const char *string;
@@ -3345,7 +3345,7 @@ static int ActivateOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *cons
   return TCL_OK;
 }
 
-static int BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int BindOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -3353,7 +3353,7 @@ static int BindOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *o
 				      Blt_MakeAxisTag(graphPtr, axisPtr->obj.name), objc, objv);
 }
           
-static int CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int CgetOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -3361,7 +3361,7 @@ static int CgetOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *o
 				   (char*)axisPtr, objv[0], Blt_GraphType(graphPtr));
 }
 
-static int ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   int flags;
@@ -3391,7 +3391,7 @@ static int ConfigureOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *con
   return TCL_OK;
 }
 
-static int LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int LimitsOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   Tcl_Obj *listObjPtr;
@@ -3414,7 +3414,7 @@ static int LimitsOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const 
   return TCL_OK;
 }
 
-static int InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, 
+static int InvTransformOp(Tcl_Interp* interp, Axis *axisPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
@@ -3443,7 +3443,7 @@ static int InvTransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc,
   return TCL_OK;
 }
 
-static int MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int MarginOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   const char *marginName;
 
@@ -3455,7 +3455,7 @@ static int MarginOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const 
   return TCL_OK;
 }
 
-static int TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int TransformOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
   double x;
@@ -3475,7 +3475,7 @@ static int TransformOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *con
   return TCL_OK;
 }
 
-static int TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int TypeOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   const char *typeName;
 
@@ -3491,7 +3491,7 @@ static int TypeOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *o
   return TCL_OK;
 }
 
-static int UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int UseOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr = (Graph *)axisPtr;
   Blt_Chain chain;
@@ -3570,7 +3570,7 @@ static int UseOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *ob
   return TCL_OK;
 }
 
-static int ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
+static int ViewOp(Tcl_Interp* interp, Axis *axisPtr, int objc, Tcl_Obj *const *objv)
 {
   Graph* graphPtr;
   double axisOffset, axisScale;
@@ -3649,7 +3649,7 @@ static int ViewOp(Tcl_Interp *interp, Axis *axisPtr, int objc, Tcl_Obj *const *o
   return TCL_OK;
 }
 
-static int AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisCreateOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 			Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3671,7 +3671,7 @@ static int AxisCreateOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TCL_OK;
 }
 
-static int AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisActivateOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 	       Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3682,7 +3682,7 @@ static int AxisActivateOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return ActivateOp(interp, axisPtr, objc, objv);
 }
 
-static int AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisBindOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 		      Tcl_Obj *const *objv)
 {
   if (objc == 3) {
@@ -3707,7 +3707,7 @@ static int AxisBindOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
 				      Blt_MakeAxisTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-static int AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisCgetOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -3717,7 +3717,7 @@ static int AxisCgetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *co
   return CgetOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-static int AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisConfigureOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Tcl_Obj *const *options;
@@ -3759,7 +3759,7 @@ static int AxisConfigureOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TCL_OK;
 }
 
-static int AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   int i;
@@ -3778,7 +3778,7 @@ static int AxisDeleteOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TCL_OK;
 }
 
-static int AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   if (objc > 3) {
     Axis *axisPtr;
@@ -3805,7 +3805,7 @@ static int AxisFocusOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *c
   return TCL_OK;
 }
 
-static int AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisGetOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -3829,7 +3829,7 @@ static int AxisGetOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *con
   return TCL_OK;
 }
 
-static int AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisInvTransformOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 		   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3840,7 +3840,7 @@ static int AxisInvTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return InvTransformOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-static int AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisLimitsOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3851,7 +3851,7 @@ static int AxisLimitsOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return LimitsOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-static int AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisMarginOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 	     Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3862,7 +3862,7 @@ static int AxisMarginOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return MarginOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-static int AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+static int AxisNamesOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Tcl_Obj *listObjPtr;
 
@@ -3908,7 +3908,7 @@ static int AxisNamesOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *c
   return TCL_OK;
 }
 
-static int AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisTransformOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 		Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3919,7 +3919,7 @@ static int AxisTransformOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
   return TransformOp(interp, axisPtr, objc - 4, objv + 4);
 }
 
-static int AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc, 
+static int AxisTypeOp(Tcl_Interp* interp, Graph* graphPtr, int objc, 
 	   Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
@@ -3931,7 +3931,7 @@ static int AxisTypeOp(Tcl_Interp *interp, Graph* graphPtr, int objc,
 }
 
 static int
-AxisViewOp(Tcl_Interp *interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
+AxisViewOp(Tcl_Interp* interp, Graph* graphPtr, int objc, Tcl_Obj *const *objv)
 {
   Axis *axisPtr;
 
@@ -3964,7 +3964,7 @@ static Blt_OpSpec virtAxisOps[] = {
 static int nVirtAxisOps = sizeof(virtAxisOps) / sizeof(Blt_OpSpec);
 
 int
-Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp *interp, int objc, 
+Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		  Tcl_Obj *const *objv)
 {
   GraphVirtualAxisProc *proc;
@@ -3995,7 +3995,7 @@ static Blt_OpSpec axisOps[] = {
 static int nAxisOps = sizeof(axisOps) / sizeof(Blt_OpSpec);
 
 int
-Blt_AxisOp(Tcl_Interp *interp, Graph* graphPtr, int margin, int objc,
+Blt_AxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, int objc,
 	   Tcl_Obj *const *objv)
 {
   int result;

@@ -208,7 +208,7 @@ static unsigned char tclTypeTable[] =
  *---------------------------------------------------------------------------
  */
 int Blt_ParseNestedCmd(
-    Tcl_Interp *interp,		/* Interpreter to use for nested command
+    Tcl_Interp* interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening bracket. */
     int flags,			/* Flags to pass to nested Tcl_Eval. */
@@ -247,7 +247,7 @@ int Blt_ParseNestedCmd(
  */
 
 int Blt_ParseBraces(
-    Tcl_Interp *interp,		/* Interpreter to use for nested command
+    Tcl_Interp* interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening bracket. */
     const char **termPtr,	/* Store address of terminating character
@@ -423,7 +423,7 @@ void Blt_ExpandParseValue(
  *---------------------------------------------------------------------------
  */
 int Blt_ParseQuotes(
-    Tcl_Interp *interp,		/* Interpreter to use for nested command
+    Tcl_Interp* interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */
     const char *string,		/* Character just after opening double-
 				 * quote. */

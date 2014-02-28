@@ -189,7 +189,7 @@ struct _Legend {
 
 // Defs
 
-static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
 static void ConfigureLegend(Graph* graphPtr);
 static int EntryIsSelected(Legend *legendPtr, Element* elemPtr);
@@ -200,7 +200,7 @@ static void DeselectElement(Legend *legendPtr, Element* elemPtr);
 static int SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr);
 static void EventuallyInvokeSelectCmd(Legend *legendPtr);
 static void SelectEntry(Legend *legendPtr, Element* elemPtr);
-static int CreateLegendWindow(Tcl_Interp *interp, Legend *legendPtr, 
+static int CreateLegendWindow(Tcl_Interp* interp, Legend *legendPtr, 
 			      const char *pathName);
 
 static Tcl_IdleProc DisplayLegend;
@@ -227,7 +227,7 @@ Tk_ObjCustomOption positionObjOption =
     "position", PositionSetProc, PositionGetProc, NULL, NULL, NULL
   };
 
-static int PositionSetProc(ClientData clientData, Tcl_Interp *interp,
+static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			   int offset, char* save, int flags)
 {
@@ -588,7 +588,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return LegendObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
-static int LegendObjConfigure(Tcl_Interp *interp, Graph* graphPtr,
+static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
@@ -666,7 +666,7 @@ int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp,
     return (*proc) (graphPtr, interp, objc, objv);
 }
 
-static int ActivateOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -746,7 +746,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int BindOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int BindOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj *const *objv)
 {
   if (objc == 3) {
@@ -770,7 +770,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp *interp,
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend->bindTable, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-static int CurselectionOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -811,7 +811,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int FocusOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int FocusOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -838,7 +838,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int GetOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -859,7 +859,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp *interp,
 static Blt_OpSpec selectionOps[];
 static int nSelectionOps;
 
-static int SelectionOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj *const *objv)
 {
     GraphLegendProc *proc;
@@ -890,7 +890,7 @@ static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
 
 // Selection Widget Ops
 
-static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp, 
 			     int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -910,7 +910,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -919,7 +919,7 @@ static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -934,7 +934,7 @@ static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp, 
 			   int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -977,7 +977,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -988,7 +988,7 @@ static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-static int SelectionSetOp(Graph* graphPtr, Tcl_Interp *interp, 
+static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj *const *objv)
 {
   Legend *legendPtr = graphPtr->legend;
@@ -1105,7 +1105,7 @@ static void SelectCmdProc(ClientData clientData)
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
   if (legendPtr->selectCmd != NULL) {
-    Tcl_Interp *interp;
+    Tcl_Interp* interp;
 
     interp = legendPtr->graphPtr->interp;
     if (Tcl_GlobalEval(interp, legendPtr->selectCmd) != TCL_OK) {
@@ -1142,7 +1142,7 @@ static void LostSelectionProc(ClientData clientData)
     ClearSelection(legendPtr);
 }
 
-static int CreateLegendWindow(Tcl_Interp *interp, Legend *legendPtr, 
+static int CreateLegendWindow(Tcl_Interp* interp, Legend *legendPtr, 
 			      const char *pathName)
 {
   Graph* graphPtr;
@@ -1947,7 +1947,7 @@ static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
 {
   Element* elemPtr;
   Legend *legendPtr;
-  Tcl_Interp *interp;
+  Tcl_Interp* interp;
   char c;
   const char *string;
   int last;

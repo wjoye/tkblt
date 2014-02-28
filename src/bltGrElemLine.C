@@ -388,7 +388,7 @@ Tk_ObjCustomOption symbolObjOption =
     "symbol", SymbolSetProc, SymbolGetProc, NULL, NULL, NULL
   };
 
-static int SymbolSetProc(ClientData clientData, Tcl_Interp *interp,
+static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		       int offset, char* save, int flags)
 {
