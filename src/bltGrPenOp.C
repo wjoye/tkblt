@@ -49,7 +49,7 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 			   int objc, Tcl_Obj* const objv[]);
 typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc, 
-			   Tcl_Obj *const *objv);
+			   Tcl_Obj* const objv[]);
 
 // OptionSpecs
 
@@ -191,7 +191,7 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
 }
 
 static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr, 
-		       int objc, Tcl_Obj *const *objv)
+		       int objc, Tcl_Obj* const objv[])
 {
   Pen* penPtr;
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
@@ -256,7 +256,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 // Ops
 
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
-		    int objc, Tcl_Obj *const *objv)
+		    int objc, Tcl_Obj* const objv[])
 {
   if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]), graphPtr->classId, objc, objv) != TCL_OK)
     return TCL_ERROR;
@@ -265,32 +265,27 @@ static int CreateOp(Tcl_Interp* interp, Graph* graphPtr,
 }
 
 static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr, 
-		    int objc, Tcl_Obj *const *objv)
+		    int objc, Tcl_Obj* const objv[])
 {
-  int i;
+  Pen* penPtr;
+  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
+    return TCL_ERROR;
 
-  for (i = 3; i < objc; i++) {
-    Pen* penPtr;
-
-    if (GetPenFromObj(interp, graphPtr, objv[i], &penPtr) != TCL_OK) {
-      return TCL_ERROR;
-    }
-    if (penPtr->flags & DELETE_PENDING) {
-      Tcl_AppendResult(interp, "can't find pen \"", 
-		       Tcl_GetString(objv[i]), "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
-      return TCL_ERROR;
-    }
-    penPtr->flags |= DELETE_PENDING;
-    if (penPtr->refCount == 0) {
-      DestroyPen(penPtr);
-    }
+  if (penPtr->flags & DELETE_PENDING) {
+    Tcl_AppendResult(interp, "can't find pen \"", 
+		     Tcl_GetString(objv[i]), "\" in \"", 
+		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
+    return TCL_ERROR;
   }
+  penPtr->flags |= DELETE_PENDING;
+  if (penPtr->refCount == 0)
+    DestroyPen(penPtr);
+
   return TCL_OK;
 }
 
 static int NamesOp(Tcl_Interp* interp, Graph* graphPtr, 
-		   int objc, Tcl_Obj *const *objv)
+		   int objc, Tcl_Obj* const objv[])
 {
   Tcl_Obj *listObjPtr;
 
@@ -339,10 +334,9 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
 }
 
 static int TypeOp(Tcl_Interp* interp, Graph* graphPtr, 
-		  int objc, Tcl_Obj *const *objv)
+		  int objc, Tcl_Obj* const objv[])
 {
   Pen* penPtr;
-
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
@@ -362,18 +356,18 @@ static Blt_OpSpec penOps[] =
   };
 static int nPenOps = sizeof(penOps) / sizeof(Blt_OpSpec);
 
-// Extern
-
 int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, 
-	      int objc, Tcl_Obj *const *objv)
+	      int objc, Tcl_Obj* const objv[])
 {
   GraphPenProc *proc = Blt_GetOpFromObj(interp, nPenOps, penOps, BLT_OP_ARG2, 
 					objc, objv, 0);
-  if (proc == NULL) {
+  if (proc == NULL)
     return TCL_ERROR;
-  }
-  return (*proc) (interp, graphPtr, objc, objv);
+
+  return (*proc)(interp, graphPtr, objc, objv);
 }
+
+// Support
 
 void Blt_DestroyPens(Graph* graphPtr)
 {

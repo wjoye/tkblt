@@ -118,7 +118,7 @@ static Blt_SwitchSpec createSwitches[] =
 };
 
 typedef int (VectorCmdProc)(Vector *vecObjPtr, Tcl_Interp* interp, 
-	int objc, Tcl_Obj *const *objv);
+	int objc, Tcl_Obj* const objv[]);
 
 static Vector *
 FindVectorInNamespace(
@@ -1385,7 +1385,7 @@ VectorNamesOp(
     ClientData clientData,	/* Interpreter-specific data. */
     Tcl_Interp* interp,
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     VectorInterpData *dataPtr = clientData;
     Tcl_Obj *listObjPtr;
@@ -1457,7 +1457,7 @@ VectorCreate2(
     Tcl_Interp* interp,
     int argStart,
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     VectorInterpData *dataPtr = clientData;
     Vector *vPtr;
@@ -1621,7 +1621,7 @@ VectorCreateOp(
     ClientData clientData,
     Tcl_Interp* interp,
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     return VectorCreate2(clientData, interp, 2, objc, objv);
 }
@@ -1648,7 +1648,7 @@ VectorDestroyOp(
     ClientData clientData,	/* Interpreter-specific data. */
     Tcl_Interp* interp,		/* Not used. */
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     VectorInterpData *dataPtr = clientData;
     Vector *vPtr;
@@ -1683,7 +1683,7 @@ VectorExprOp(
     ClientData clientData,	/* Not Used. */
     Tcl_Interp* interp,
     int objc,			/* Not used. */
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     return Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector *)NULL);
 }
@@ -1706,7 +1706,7 @@ VectorCmd(
     ClientData clientData,	/* Interpreter-specific data. */
     Tcl_Interp* interp,
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     VectorCmdProc *proc;
     /*

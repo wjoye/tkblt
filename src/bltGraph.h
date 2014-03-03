@@ -568,23 +568,23 @@ extern int Blt_InitBarPens(Graph* graphPtr);
 
 extern void Blt_FreePen(Pen* penPtr);
 
-extern int Blt_VirtualAxisOp(Graph* graphPtr, Tcl_Interp* interp, 
-			     int objc, Tcl_Obj *const *objv);
+extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
 
-extern int Blt_AxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
-		      int objc, Tcl_Obj *const *objv);
+extern int Blt_DefAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
+			 int objc, Tcl_Obj* const objv[]);
 
 extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			 Tcl_Obj *const *objv, ClassId classId);
+			 Tcl_Obj* const objv[], ClassId classId);
 
 extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-				Tcl_Obj *const *objv);
+				Tcl_Obj* const objv[]);
 
 extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			Tcl_Obj *const *objv);
+			Tcl_Obj* const objv[]);
 
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		     Tcl_Obj *const *objv);
+		     Tcl_Obj* const objv[]);
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
@@ -596,11 +596,11 @@ extern int Blt_PointInSegments(Point2d *samplePtr, Segment2d *segments,
 			       int nSegments, double halo);
 
 extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			    Tcl_Obj *const *objv);
+			    Tcl_Obj* const objv[]);
 
 extern int Blt_GraphUpdateNeeded(Graph* graphPtr);
 
-extern int Blt_DefaultAxes(Graph* graphPtr);
+extern int Blt_CreateAxes(Graph* graphPtr);
 
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 

@@ -523,7 +523,7 @@ Blt_ConfigureBindingsFromObj(
     BindTable *bindPtr,
     ClientData item,
     int objc,
-    Tcl_Obj *const *objv)
+    Tcl_Obj* const objv[])
 {
     const char *command;
     unsigned long mask;

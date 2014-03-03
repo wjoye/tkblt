@@ -83,6 +83,7 @@ typedef struct {
   int checkLimits;
   unsigned int flags;		
 
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   Tcl_HashEntry *hashPtr;
 
   /* Fields specific to axes. */

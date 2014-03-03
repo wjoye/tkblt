@@ -81,6 +81,9 @@ static void ConfigureGraph(Graph* graphPtr);
 static void DrawPlot(Graph* graphPtr, Drawable drawable);
 static void UpdateMarginTraces(Graph* graphPtr);
 
+typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+			   Tcl_Obj* const objv[]);
+
 // OptionSpecs
 
 static char* barmodeObjOption[] = 
@@ -300,6 +303,8 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   if (Blt_CreatePen(graphPtr, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
       TCL_OK)
     goto error;
+  if (Blt_CreateAxes(graphPtr) != TCL_OK)
+    goto error;
   if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
     goto error;
 
@@ -322,8 +327,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   
   if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
-  if (Blt_DefaultAxes(graphPtr) != TCL_OK)
-    goto error;
+
   AdjustAxisPointers(graphPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), 
@@ -333,26 +337,6 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
  error:
   DestroyGraph((char*)graphPtr);
   return TCL_ERROR;
-}
-
-static Blt_OpSpec graphOps[];
-static int nGraphOps;
-typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			   Tcl_Obj* const objv[]);
-
-int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
-			 int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = clientData;
-  GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
-					BLT_OP_ARG1, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  Tcl_Preserve(graphPtr);
-  int result = (*proc)(graphPtr, interp, objc, objv);
-  Tcl_Release(graphPtr);
-  return result;
 }
 
 // called by Tcl_DeleteCommand
@@ -663,28 +647,28 @@ static int XAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 		   Tcl_Obj* const objv[])
 {
   int margin = (graphPtr->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
-  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  return Blt_DefAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int X2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
   int margin = (graphPtr->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
-  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  return Blt_DefAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int YAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
   int margin = (graphPtr->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
-  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  return Blt_DefAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int Y2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
   int margin = (graphPtr->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
-  return Blt_AxisOp(interp, graphPtr, margin, objc, objv);
+  return Blt_DefAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int BarOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
@@ -878,7 +862,7 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static Blt_OpSpec graphOps[] =
   {
-    {"axis",         1, Blt_VirtualAxisOp, 2, 0, "oper ?args?",},
+    {"axis",         1, Blt_AxisOp,        2, 0, "oper ?args?",},
     {"bar",          2, BarOp,             2, 0, "oper ?args?",},
     {"cget",         2, CgetOp,            3, 3, "option",},
     {"configure",    2, ConfigureOp,       2, 0, "?option value?...",},
@@ -899,6 +883,21 @@ static Blt_OpSpec graphOps[] =
     {"yaxis",        2, YAxisOp,           2, 0, "oper ?args?",},
   };
 static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
+
+int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
+			 int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = clientData;
+  GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
+					BLT_OP_ARG1, objc, objv, 0);
+  if (proc == NULL)
+    return TCL_ERROR;
+
+  Tcl_Preserve(graphPtr);
+  int result = (*proc)(graphPtr, interp, objc, objv);
+  Tcl_Release(graphPtr);
+  return result;
+}
 
 // Support
 

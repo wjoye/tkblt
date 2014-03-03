@@ -67,6 +67,8 @@ static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 static void ConfigureCrosshairs(Graph* graphPtr);
 static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr);
 static void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr);
+typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
+	int objc, Tcl_Obj* const objv[]);
 
 // OptionSpecs
 
@@ -244,26 +246,8 @@ static void ConfigureCrosshairs(Graph* graphPtr)
 
 // Ops
 
-static Blt_OpSpec xhairOps[];
-static int nXhairOps;
-typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
-	int objc, Tcl_Obj* const objv[]);
-
-int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
-		     int objc, Tcl_Obj* const objv[])
-{
-  GraphCrosshairProc* proc = Blt_GetOpFromObj(interp, nXhairOps, xhairOps, 
-					      BLT_OP_ARG2, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
-}
-
-// Widget commands
-
 static int OnOp(Graph* graphPtr, Tcl_Interp* interp, 
-		int objc, Tcl_Obj *const *objv)
+		int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
@@ -275,7 +259,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
-		 int objc, Tcl_Obj *const *objv)
+		 int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
@@ -287,7 +271,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
-		    int objc, Tcl_Obj *const *objv)
+		    int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
 
@@ -309,6 +293,17 @@ static Blt_OpSpec xhairOps[] =
     {"toggle", 1, ToggleOp, 3, 3, "",},
 };
 static int nXhairOps = sizeof(xhairOps) / sizeof(Blt_OpSpec);
+
+int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
+		     int objc, Tcl_Obj* const objv[])
+{
+  GraphCrosshairProc* proc = Blt_GetOpFromObj(interp, nXhairOps, xhairOps, 
+					      BLT_OP_ARG2, objc, objv, 0);
+  if (proc == NULL)
+    return TCL_ERROR;
+
+  return (*proc)(graphPtr, interp, objc, objv);
+}
 
 // Support
 

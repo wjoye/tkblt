@@ -61,7 +61,7 @@
 #include "bltSwitch.h"
 
 typedef int (VectorCmdProc)(Vector *vPtr, Tcl_Interp* interp, int objc, 
-	Tcl_Obj *const *objv);
+	Tcl_Obj* const objv[]);
 
 static Blt_SwitchParseProc ObjToFFTVector;
 static Blt_SwitchCustom fftVectorSwitch = {
@@ -236,7 +236,7 @@ ReplicateValue(Vector *vPtr, int first, int last, double value)
 }
 
 static int
-CopyList(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+CopyList(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int i;
 
@@ -274,7 +274,7 @@ AppendVector(Vector *destPtr, Vector *srcPtr)
 }
 
 static int
-AppendList(Vector *vPtr, int objc, Tcl_Obj *const *objv)
+AppendList(Vector *vPtr, int objc, Tcl_Obj* const objv[])
 {
     Tcl_Interp* interp = vPtr->interp;
     int count;
@@ -319,7 +319,7 @@ AppendList(Vector *vPtr, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-AppendOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+AppendOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int i;
     int result;
@@ -372,7 +372,7 @@ AppendOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-ClearOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+ClearOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Blt_Vec_FlushCache(vPtr);
     return TCL_OK;
@@ -398,7 +398,7 @@ ClearOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-DeleteOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+DeleteOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     unsigned char *unsetArr;
     int i, j;
@@ -467,7 +467,7 @@ DeleteOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-DupOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+DupOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int i;
 
@@ -503,7 +503,7 @@ DupOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 /* fft implementation */
 /*ARGSUSED*/
 static int
-FFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+FFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Vector *v2Ptr = NULL;
     int isNew;
@@ -556,7 +556,7 @@ FFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
 
 /*ARGSUSED*/
 static int
-InverseFFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+InverseFFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int isNew;
     char *name;
@@ -606,7 +606,7 @@ InverseFFTOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-IndexOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+IndexOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int first, last;
     char *string;
@@ -671,7 +671,7 @@ IndexOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-LengthOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+LengthOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     if (objc == 3) {
 	int nElem;
@@ -714,7 +714,7 @@ LengthOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-MapOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+MapOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     if (objc > 2) {
 	if (Blt_Vec_MapVariable(interp, vPtr, Tcl_GetString(objv[2])) 
@@ -742,7 +742,7 @@ MapOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-MaxOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+MaxOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Tcl_SetDoubleObj(Tcl_GetObjResult(interp), Blt_Vec_Max(vPtr));
     return TCL_OK;
@@ -764,7 +764,7 @@ MaxOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-MergeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+MergeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Vector **vecArr;
     int refSize, nElem;
@@ -839,7 +839,7 @@ MergeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-MinOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+MinOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Tcl_SetDoubleObj(Tcl_GetObjResult(interp), Blt_Vec_Min(vPtr));
     return TCL_OK;
@@ -860,7 +860,7 @@ MinOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-NormalizeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+NormalizeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int i;
     double range;
@@ -928,7 +928,7 @@ NormalizeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-NotifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+NotifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int option;
     int bool;
@@ -990,7 +990,7 @@ NotifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-PopulateOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+PopulateOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Vector *v2Ptr;
     int size, density;
@@ -1059,7 +1059,7 @@ PopulateOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-ValuesOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+ValuesOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     PrintSwitches switches;
 
@@ -1122,7 +1122,7 @@ ValuesOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-RangeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+RangeOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Tcl_Obj *listObjPtr;
     int first, last;
@@ -1389,7 +1389,7 @@ CopyValues(Vector *vPtr, char *byteArr, enum NativeFormats fmt, int size,
  */
 /*ARGSUSED*/
 static int
-BinreadOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+BinreadOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Tcl_Channel channel;
     char *byteArr;
@@ -1537,7 +1537,7 @@ BinreadOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-SearchOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SearchOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     double min, max;
     int i;
@@ -1605,7 +1605,7 @@ SearchOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-OffsetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+OffsetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     if (objc == 3) {
 	int newOffset;
@@ -1633,7 +1633,7 @@ OffsetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-RandomOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+RandomOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int i;
 
@@ -1661,7 +1661,7 @@ RandomOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-SeqOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SeqOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int n;
     double start, stop;
@@ -1715,7 +1715,7 @@ SeqOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-SetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int result;
     Vector *v2Ptr;
@@ -1783,7 +1783,7 @@ SetOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-SimplifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SimplifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     size_t i, n;
     int length, nPoints;
@@ -1828,7 +1828,7 @@ SimplifyOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-SplitOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SplitOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     int nVectors;
 
@@ -1936,7 +1936,7 @@ Blt_Vec_SortMap(Vector **vectors, int nVectors)
 }
 
 static size_t *
-SortVectors(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SortVectors(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Vector **vectors, *v2Ptr;
     size_t *map;
@@ -1985,7 +1985,7 @@ SortVectors(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  *---------------------------------------------------------------------------
  */
 static int
-SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     Vector *v2Ptr;
     double *copy;
@@ -2091,7 +2091,7 @@ SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-InstExprOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+InstExprOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
 
     if (Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector *)vPtr) 
@@ -2123,7 +2123,7 @@ InstExprOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
  */
 /*ARGSUSED*/
 static int
-ArithOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj *const *objv)
+ArithOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
 {
     double value;
     int i;
@@ -2276,7 +2276,7 @@ static int nInstOps = sizeof(vectorInstOps) / sizeof(Blt_OpSpec);
 
 int
 Blt_Vec_InstCmd(ClientData clientData, Tcl_Interp* interp, int objc,
-		Tcl_Obj *const *objv)
+		Tcl_Obj* const objv[])
 {
     VectorCmdProc *proc;
     Vector *vPtr = clientData;

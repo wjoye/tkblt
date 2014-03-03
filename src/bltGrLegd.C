@@ -650,22 +650,8 @@ static void ConfigureLegend(Graph* graphPtr)
 
 // Ops
 
-static Blt_OpSpec legendOps[];
-static int nLegendOps;
-
-int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-    GraphLegendProc *proc = Blt_GetOpFromObj(interp, nLegendOps, legendOps, 
-					     BLT_OP_ARG2, objc, objv,0);
-    if (proc == NULL)
-	return TCL_ERROR;
-
-    return (*proc) (graphPtr, interp, objc, objv);
-}
-
 static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp, 
-		      int objc, Tcl_Obj *const *objv)
+		      int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   unsigned int active, redraw;
@@ -745,7 +731,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int BindOp(Graph* graphPtr, Tcl_Interp* interp, 
-		  int objc, Tcl_Obj *const *objv)
+		  int objc, Tcl_Obj* const objv[])
 {
   if (objc == 3) {
     Tcl_HashEntry *hPtr;
@@ -769,7 +755,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj *const *objv)
+			  int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   Tcl_Obj *listObjPtr;
@@ -810,7 +796,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int FocusOp(Graph* graphPtr, Tcl_Interp* interp, 
-		   int objc, Tcl_Obj *const *objv)
+		   int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
 
@@ -837,7 +823,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj *const *objv)
+		 int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
 
@@ -854,24 +840,6 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static Blt_OpSpec selectionOps[];
-static int nSelectionOps;
-
-static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
-		       int objc, Tcl_Obj *const *objv)
-{
-    GraphLegendProc *proc;
-    int result;
-
-    proc = Blt_GetOpFromObj(interp, nSelectionOps, selectionOps, BLT_OP_ARG3, 
-	objc, objv, 0);
-    if (proc == NULL) {
-	return TCL_ERROR;
-    }
-    result = (*proc) (graphPtr, interp, objc, objv);
-    return result;
-}
-
 static Blt_OpSpec legendOps[] =
 {
     {"activate",     1, ActivateOp,      3, 0, "?pattern?...",},
@@ -886,10 +854,21 @@ static Blt_OpSpec legendOps[] =
 };
 static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
 
+int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
+		 int objc, Tcl_Obj* const objv[])
+{
+    GraphLegendProc *proc = Blt_GetOpFromObj(interp, nLegendOps, legendOps, 
+					     BLT_OP_ARG2, objc, objv,0);
+    if (proc == NULL)
+	return TCL_ERROR;
+
+    return (*proc)(graphPtr, interp, objc, objv);
+}
+
 // Selection Widget Ops
 
 static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp, 
-			     int objc, Tcl_Obj *const *objv)
+			     int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   Element* elemPtr;
@@ -909,7 +888,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
-			       int objc, Tcl_Obj *const *objv)
+			       int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
 
@@ -918,7 +897,7 @@ static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp, 
-			       int objc, Tcl_Obj *const *objv)
+			       int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   Element* elemPtr;
@@ -933,7 +912,7 @@ static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp, 
-			   int objc, Tcl_Obj *const *objv)
+			   int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   Element* elemPtr;
@@ -976,7 +955,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp, 
-			      int objc, Tcl_Obj *const *objv)
+			      int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   int bool;
@@ -987,7 +966,7 @@ static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj *const *objv)
+			  int objc, Tcl_Obj* const objv[])
 {
   Legend *legendPtr = graphPtr->legend;
   Element *firstPtr, *lastPtr;
@@ -1058,6 +1037,18 @@ static Blt_OpSpec selectionOps[] =
     {"toggle",   1, SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
 };
 static int nSelectionOps = sizeof(selectionOps) / sizeof(Blt_OpSpec);
+
+static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
+		       int objc, Tcl_Obj* const objv[])
+{
+    GraphLegendProc* proc = Blt_GetOpFromObj(interp, nSelectionOps, 
+					     selectionOps, BLT_OP_ARG3, 
+					     objc, objv, 0);
+    if (proc == NULL)
+	return TCL_ERROR;
+
+    return (*proc)(graphPtr, interp, objc, objv);
+}
 
 // Support
 

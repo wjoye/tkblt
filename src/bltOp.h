@@ -37,6 +37,6 @@ typedef enum {
 #define BLT_OP_LINEAR_SEARCH	1
 
 extern void *Blt_GetOpFromObj(Tcl_Interp* interp, int nSpecs, 
-	Blt_OpSpec *specs, int operPos, int objc, Tcl_Obj *const *objv, 
+	Blt_OpSpec *specs, int operPos, int objc, Tcl_Obj* const objv[], 
 	int flags);
 

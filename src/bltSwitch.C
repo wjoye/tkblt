@@ -325,7 +325,7 @@ Blt_ParseSwitches(
     Tcl_Interp* interp,		/* Interpreter for error reporting. */
     Blt_SwitchSpec *specs,	/* Describes legal switches. */
     int objc,			/* Number of elements in argv. */
-    Tcl_Obj *const *objv,	/* Command-line switches. */
+    Tcl_Obj* const objv[],	/* Command-line switches. */
     void *record,		/* Record whose fields are to be modified.
 				 * Values must be properly initialized. */
     int flags)			/* Used to specify additional flags that must
