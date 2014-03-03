@@ -75,6 +75,7 @@ typedef struct {
 typedef struct {
   GraphObj obj;			/* Must be first field in axis. */
 
+  int use;
   int hide;
   int showTicks;
   int showGrid;
