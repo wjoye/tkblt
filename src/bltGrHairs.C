@@ -93,12 +93,13 @@ static Tk_OptionSpec optionSpecs[] = {
 int Blt_CreateCrosshairs(Graph* graphPtr)
 {
   Crosshairs* chPtr = calloc(1, sizeof(Crosshairs));
-  chPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
   chPtr->hide = TRUE;
   chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
   graphPtr->crosshairs = chPtr;
 
-  return TCL_OK;
+  chPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  return Tk_InitOptions(graphPtr->interp, (char*)chPtr, chPtr->optionTable, 
+			graphPtr->tkwin);
 }
 
 void Blt_DestroyCrosshairs(Graph* graphPtr)
@@ -115,14 +116,6 @@ void Blt_DestroyCrosshairs(Graph* graphPtr)
 }
 
 // Configure
-
-int Blt_ConfigureObjCrosshairs(Graph* graphPtr,
-			       int objc, Tcl_Obj* const objv[])
-{
-  Crosshairs* chPtr = graphPtr->crosshairs;
-  return Tk_InitOptions(graphPtr->interp, (char*)chPtr, chPtr->optionTable, 
-			graphPtr->tkwin);
-}
 
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])

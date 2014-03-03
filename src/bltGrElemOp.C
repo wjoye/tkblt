@@ -1012,7 +1012,7 @@ int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (ptr == CreateOp)
-    retur CreateOp(graphPtr, interp, objc, objv, classId);
+    return CreateOp(graphPtr, interp, objc, objv, classId);
   else {
     GraphElementProc* proc = ptr;
     return (*proc)(graphPtr, interp, objc, objv);

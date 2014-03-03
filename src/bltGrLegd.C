@@ -187,6 +187,8 @@ struct _Legend {
 
 // Defs
 
+static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
+		       int objc, Tcl_Obj* const objv[]);
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
 static void ConfigureLegend(Graph* graphPtr);
@@ -409,7 +411,6 @@ int Blt_CreateLegend(Graph* graphPtr)
 {
   Legend *legendPtr = calloc(1, sizeof(Legend));
   graphPtr->legend = legendPtr;
-  legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
   legendPtr->graphPtr = graphPtr;
   legendPtr->tkwin = graphPtr->tkwin;
   legendPtr->xReq = -SHRT_MAX;
@@ -430,7 +431,9 @@ int Blt_CreateLegend(Graph* graphPtr)
   legendPtr->onTime = 600;
   legendPtr->offTime = 300;
 
-  return TCL_OK;
+  legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr, 
+			legendPtr->optionTable, graphPtr->tkwin);
 }
 
 void Blt_DestroyLegend(Graph* graphPtr)
@@ -540,13 +543,6 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
 }
 
 // Configure
-
-int Blt_ConfigureObjLegend(Graph* graphPtr, int objc, Tcl_Obj* const objv[])
-{
-  Legend* legendPtr = graphPtr->legend;
-  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr, 
-			legendPtr->optionTable, graphPtr->tkwin);
-}
 
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])

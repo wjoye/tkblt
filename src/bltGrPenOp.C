@@ -273,7 +273,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 
   if (penPtr->flags & DELETE_PENDING) {
     Tcl_AppendResult(interp, "can't find pen \"", 
-		     Tcl_GetString(objv[i]), "\" in \"", 
+		     Tcl_GetString(objv[3]), "\" in \"", 
 		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
     return TCL_ERROR;
   }

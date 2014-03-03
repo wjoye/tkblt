@@ -320,18 +320,12 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     goto error;
 
-  if (Blt_ConfigureObjCrosshairs(graphPtr, objc, objv) != TCL_OK)
-    goto error;
-  if (Blt_ConfigureObjLegend(graphPtr, objc, objv) != TCL_OK)
-    goto error;
-  
   if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
 
   AdjustAxisPointers(graphPtr);
 
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		   Tk_PathName(graphPtr->tkwin), -1);
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_PathName(graphPtr->tkwin), -1);
   return TCL_OK;
 
  error:
@@ -1321,6 +1315,6 @@ void Blt_ReconfigureGraph(Graph* graphPtr)
   ConfigureGraph(graphPtr);
   //  Blt_ConfigureLegend(graphPtr);
   //  Blt_ConfigureElements(graphPtr);
-  //  Blt_ConfigureAxes(graphPtr);
+  Blt_ConfigureAxes(graphPtr);
   //  Blt_ConfigureMarkers(graphPtr);
 }
