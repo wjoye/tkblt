@@ -52,11 +52,6 @@
 
 #define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
 #define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
-#define AXIS_GRID		(1<<19)
-#define AXIS_GRID_MINOR		(1<<20)
-#define AXIS_SHOWTICKS		(1<<21)
-#define AXIS_EXTERIOR   	(1<<22)
-#define AXIS_CHECK_LIMITS	(1<<23)
 
 #define FCLAMP(x)	((((x) < 0.0) ? 0.0 : ((x) > 1.0) ? 1.0 : (x)))
 #define UROUND(x,u)		(Round((x)/(u))*(u))
@@ -105,8 +100,6 @@ static int AxisIsHorizontal(Axis *axisPtr);
 static void FreeTickLabels(Blt_Chain chain);
 static int ConfigureAxis(Axis *axisPtr);
 static Axis *NewAxis(Graph* graphPtr, const char *name, int margin);
-static void FreeTicksProc(ClientData clientData, Display *display,
-			  char *widgRec, int offset);
 static void ReleaseAxis(Axis *axisPtr);
 static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
@@ -367,7 +360,9 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
     ticksPtr->nTicks = objc;
     axisPtr->flags &= ~mask;
   }
-  FreeTicksProc(clientData, Tk_Display(tkwin), widgRec, offset);
+
+  if (*ticksPtrPtr)
+    free(*ticksPtrPtr);
   *ticksPtrPtr = ticksPtr;
 
   return TCL_OK;
@@ -1370,20 +1365,6 @@ static void ReleaseAxis(Axis *axisPtr)
       Tcl_EventuallyFree(axisPtr, FreeAxis);
     }
   }
-}
-
-static void FreeTicksProc(ClientData clientData, Display *display,
-			  char *widgRec, int offset)
-{
-  Axis *axisPtr = (Axis *)widgRec;
-  Ticks **ticksPtrPtr = (Ticks **) (widgRec + offset);
-  unsigned long mask = (unsigned long)clientData;
-
-  axisPtr->flags |= mask;
-  if (*ticksPtrPtr)
-    free(*ticksPtrPtr);
-
-  *ticksPtrPtr = NULL;
 }
 
 static void FreeTickLabels(Blt_Chain chain)
@@ -2828,9 +2809,9 @@ static void MapGridlines(Axis *axisPtr)
   if (axisPtr->showGridMinor)
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
 
-  if (needed == 0) {
+  if (needed == 0)
     return;			
-  }
+
   needed = t1Ptr->nTicks;
   if (needed != axisPtr->major.nAllocated) {
     if (axisPtr->major.segments != NULL) {
@@ -3665,8 +3646,7 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
 void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = Blt_Chain_GetValue(link);
       if (axisPtr->hide || !axisPtr->showGrid || !axisPtr->use || 
 	  (axisPtr->flags & DELETE_PENDING))
@@ -3952,7 +3932,6 @@ static void TimeScaleAxis(Axis *axisPtr, double min, double max)
 {
 }
 
-static Blt_OptionFreeProc  FreeTicksProc;
 static Blt_OptionFreeProc  FreeAxisProc;
 static Blt_OptionPrintProc AxisToObjProc;
 static Blt_OptionParseProc ObjToAxisProc;
