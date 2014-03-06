@@ -520,7 +520,7 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
     Graph* graphPtr = legendPtr->graphPtr;
 
     if (legendPtr->site == LEGEND_WINDOW) {
-      if (legendPtr->cmdToken != NULL) {
+      if (legendPtr->cmdToken) {
 	Tcl_DeleteCommandFromToken(graphPtr->interp, 
 				   legendPtr->cmdToken);
 	legendPtr->cmdToken = NULL;
@@ -638,7 +638,7 @@ static void ConfigureLegend(Graph* graphPtr)
     legendPtr->focusDashes.offset = 2;
     Blt_SetDashes(graphPtr->display, newGC, &legendPtr->focusDashes);
   }
-  if (legendPtr->focusGC != NULL)
+  if (legendPtr->focusGC)
     Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
 
   legendPtr->focusGC = newGC;
@@ -811,7 +811,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 		     CID_LEGEND_ENTRY);
     Blt_Legend_EventuallyRedraw(graphPtr);
   }
-  if (legendPtr->focusPtr != NULL) {
+  if (legendPtr->focusPtr) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), 
 		     legendPtr->focusPtr->obj.name, -1);
   }
@@ -829,7 +829,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK) {
       return TCL_ERROR;
     }
-    if (elemPtr != NULL) {
+    if (elemPtr) {
       Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name,-1);
     }
   }
@@ -876,7 +876,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
    * is selected. */
   legendPtr->selAnchorPtr = elemPtr;
   legendPtr->selMarkPtr = NULL;
-  if (elemPtr != NULL) {
+  if (elemPtr) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name, -1);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);
@@ -943,7 +943,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->selMarkPtr = elemPtr;
 
     Blt_Legend_EventuallyRedraw(graphPtr);
-    if (legendPtr->selectCmd != NULL) {
+    if (legendPtr->selectCmd) {
       EventuallyInvokeSelectCmd(legendPtr);
     }
   }
@@ -1015,7 +1015,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 		    legendPtr);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);
-  if (legendPtr->selectCmd != NULL) {
+  if (legendPtr->selectCmd) {
     EventuallyInvokeSelectCmd(legendPtr);
   }
   return TCL_OK;
@@ -1076,7 +1076,7 @@ void Blt_Legend_EventuallyRedraw(Graph* graphPtr)
 {
   Legend *legendPtr = graphPtr->legend;
 
-  if ((legendPtr->tkwin != NULL) && !(legendPtr->flags & REDRAW_PENDING)) {
+  if ((legendPtr->tkwin) && !(legendPtr->flags & REDRAW_PENDING)) {
     Tcl_DoWhenIdle(DisplayLegend, legendPtr);
     legendPtr->flags |= REDRAW_PENDING;
   }
@@ -1088,7 +1088,7 @@ static void SelectCmdProc(ClientData clientData)
 
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
-  if (legendPtr->selectCmd != NULL) {
+  if (legendPtr->selectCmd) {
     Tcl_Interp* interp;
 
     interp = legendPtr->graphPtr->interp;
@@ -1113,7 +1113,7 @@ static void ClearSelection(Legend *legendPtr)
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
   Blt_Chain_Reset(legendPtr->selected);
   Blt_Legend_EventuallyRedraw(legendPtr->graphPtr);
-  if (legendPtr->selectCmd != NULL) {
+  if (legendPtr->selectCmd) {
     EventuallyInvokeSelectCmd(legendPtr);
   }
 }
@@ -1181,12 +1181,12 @@ static void SetLegendOrigin(Legend *legendPtr)
   case LEGEND_TOP:
     w = graphPtr->right - graphPtr->left;
     h = graphPtr->topMargin.height - graphPtr->topMargin.axesOffset;
-    if (graphPtr->title != NULL) {
+    if (graphPtr->title) {
       h -= graphPtr->titleHeight;
     }
     x = graphPtr->left;
     y = graphPtr->inset;
-    if (graphPtr->title != NULL) {
+    if (graphPtr->title) {
       y += graphPtr->titleHeight;
     }
     break;
@@ -1286,35 +1286,28 @@ static void SetLegendOrigin(Legend *legendPtr)
 
 static int EntryIsSelected(Legend *legendPtr, Element* elemPtr)
 {
-  Tcl_HashEntry *hPtr;
-
-  hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+  Tcl_HashEntry*hPtr = 
+    Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
   return (hPtr != NULL);
 }
 
 static void SelectElement(Legend *legendPtr, Element* elemPtr)
 {
   int isNew;
-  Tcl_HashEntry *hPtr;
-
-  hPtr = Tcl_CreateHashEntry(&legendPtr->selectTable, (char *)elemPtr,&isNew);
+  Tcl_HashEntry *hPtr = 
+    Tcl_CreateHashEntry(&legendPtr->selectTable, (char *)elemPtr,&isNew);
   if (isNew) {
-    Blt_ChainLink link;
-
-    link = Blt_Chain_Append(legendPtr->selected, elemPtr);
+    Blt_ChainLink link = Blt_Chain_Append(legendPtr->selected, elemPtr);
     Tcl_SetHashValue(hPtr, link);
   }
 }
 
 static void DeselectElement(Legend *legendPtr, Element* elemPtr)
 {
-  Tcl_HashEntry *hPtr;
-
-  hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
-  if (hPtr != NULL) {
-    Blt_ChainLink link;
-
-    link = Tcl_GetHashValue(hPtr);
+  Tcl_HashEntry* hPtr = 
+    Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+  if (hPtr) {
+    Blt_ChainLink link = Tcl_GetHashValue(hPtr);
     Blt_Chain_DeleteLink(legendPtr->selected, link);
     Tcl_DeleteHashEntry(hPtr);
   }
@@ -1335,7 +1328,7 @@ static void SelectEntry(Legend *legendPtr, Element* elemPtr)
 
   case SELECT_TOGGLE:
     hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
-    if (hPtr != NULL) {
+    if (hPtr) {
       DeselectElement(legendPtr, elemPtr);
     } else {
       SelectElement(legendPtr, elemPtr);
@@ -1384,14 +1377,14 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 	Element* elemPtr;
 
 	elemPtr = Blt_Chain_GetValue(link);
-	if (elemPtr->label != NULL) {
+	if (elemPtr->label) {
 	  if (count == n) {
 	    return elemPtr;
 	  }
 	  count++;
 	}
       }	      
-      if (link != NULL) {
+      if (link) {
 	return Blt_Chain_GetValue(link);
       }	
     }
@@ -1593,7 +1586,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   pixmap = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), w, h, 
 			Tk_Depth(tkwin));
 
-  if (legendPtr->normalBg != NULL) {
+  if (legendPtr->normalBg) {
     Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
   }
@@ -1746,7 +1739,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   Blt_Ps_Append(ps, "% Legend\n");
   graphPtr = legendPtr->graphPtr;
   if (graphPtr->pageSetup->flags & PS_DECORATIONS) {
-    if (legendPtr->normalBg != NULL)
+    if (legendPtr->normalBg)
       Blt_Ps_Fill3DRectangle(ps, legendPtr->normalBg, x, y, width, height, 
 			     legendPtr->borderWidth, legendPtr->relief);
     else
@@ -1903,7 +1896,7 @@ static Element *GetFirstElement(Graph* graphPtr)
     Element* elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label != NULL) {
+    if (elemPtr->label) {
       return elemPtr;
     }
   }
@@ -1919,7 +1912,7 @@ static Element *GetLastElement(Graph* graphPtr)
     Element* elemPtr;
 
     elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label != NULL) {
+    if (elemPtr->label) {
       return elemPtr;
     }
   }

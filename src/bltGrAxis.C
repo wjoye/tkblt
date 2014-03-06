@@ -2585,7 +2585,6 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     else
       Blt_Ts_SetForeground(ts, axisPtr->titleColor);
 
-    Blt_Ts_SetForeground(ts, axisPtr->titleColor);
     if ((axisPtr->titleAngle == 90.0) || (axisPtr->titleAngle == 270.0))
       Blt_Ts_SetMaxLength(ts, axisPtr->height);
     else
@@ -2682,14 +2681,9 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     }
   }
   if ((axisPtr->nSegments > 0) && (axisPtr->lineWidth > 0)) {	
-    GC gc;
+    GC gc = (axisPtr->flags & ACTIVE) ? axisPtr->activeTickGC : axisPtr->tickGC;
 
-    if (axisPtr->flags & ACTIVE)
-      gc = axisPtr->activeTickGC;
-    else
-      gc = axisPtr->tickGC;
-
-    /* Draw the tick marks and axis line. */
+    // Draw the tick marks and axis line.
     Blt_Draw2DSegments(graphPtr->display, drawable, gc, axisPtr->segments, 
 		       axisPtr->nSegments);
   }
@@ -2698,13 +2692,13 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
 static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
   Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->obj.name);
-  if (axisPtr->normalBg) {
+  if (axisPtr->normalBg)
     Blt_Ps_Fill3DRectangle(ps, axisPtr->normalBg, 
 			   (double)axisPtr->left, (double)axisPtr->top, 
 			   axisPtr->right - axisPtr->left, 
 			   axisPtr->bottom - axisPtr->top, 
 			   axisPtr->borderWidth, axisPtr->relief);
-  }
+
   if (axisPtr->title) {
     TextStyle ts;
 

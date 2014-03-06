@@ -193,7 +193,7 @@ void Blt_GetBoundingBox(int width, int height, float angle,
       rotHeight = (double)height;
       break;
     }
-    if (bbox != NULL) {
+    if (bbox) {
       x = rotWidth * 0.5;
       y = rotHeight * 0.5;
       bbox[ll].x = bbox[ul].x = -x;
@@ -226,7 +226,7 @@ void Blt_GetBoundingBox(int width, int height, float angle,
     if (y > yMax) {
       yMax = y;
     }
-    if (bbox != NULL) {
+    if (bbox) {
       bbox[i].x = x;
       bbox[i].y = y;
     }
@@ -399,10 +399,10 @@ void Blt_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
   int w1, h1;
   Point2d rr;
 
-  if ((text == NULL) || (*text == '\0'))
+  if (!text || (*text == '\0'))
     return;
 
-  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+  if (!stylePtr->gc || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
@@ -420,12 +420,12 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
 
   gcMask = GCFont;
   gcValues.font = Tk_FontId(stylePtr->font);
-  if (stylePtr->color != NULL) {
+  if (stylePtr->color) {
     gcMask |= GCForeground;
     gcValues.foreground = stylePtr->color->pixel;
   }
   newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
-  if (stylePtr->gc != NULL)
+  if (stylePtr->gc)
     Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
 
   stylePtr->gc = newGC;
@@ -434,6 +434,6 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
 
 void Blt_Ts_FreeStyle(Display *display, TextStyle *stylePtr)
 {
-  if (stylePtr->gc != NULL)
+  if (stylePtr->gc)
     Tk_FreeGC(display, stylePtr->gc);
 }
