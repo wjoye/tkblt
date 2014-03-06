@@ -95,9 +95,6 @@ typedef struct {
 				 * axis. */
   int logScale;			/* If non-zero, generate log scale
 				 * ticks for the axis. */
-  int timeScale;			/* If non-zero, generate time scale
-					 * ticks for the axis. This option is
-					 * overridden by -logscale. */
   int descending;			/* If non-zero, display the range of
 					 * values on the axis in descending
 					 * order, from high to low. */
