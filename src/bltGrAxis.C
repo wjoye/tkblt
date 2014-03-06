@@ -1851,15 +1851,15 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
 static void SweepTicks(Axis *axisPtr)
 {
   if (axisPtr->flags & AXIS_AUTO_MAJOR) {
-    if (axisPtr->t1Ptr != NULL) {
+    if (axisPtr->t1Ptr)
       free(axisPtr->t1Ptr);
-    }
+
     axisPtr->t1Ptr = GenerateTicks(&axisPtr->majorSweep);
   }
   if (axisPtr->flags & AXIS_AUTO_MINOR) {
-    if (axisPtr->t2Ptr != NULL) {
+    if (axisPtr->t2Ptr)
       free(axisPtr->t2Ptr);
-    }
+
     axisPtr->t2Ptr = GenerateTicks(&axisPtr->minorSweep);
   }
 }
