@@ -525,6 +525,9 @@ int Blt_CreateAxes(Graph* graphPtr)
     if (!axisPtr)
       return TCL_ERROR;
 
+    axisPtr->hashPtr = hPtr;
+    Tcl_SetHashValue(hPtr, axisPtr);
+
     axisPtr->refCount = 1;	/* Default axes are assumed in use. */
     axisPtr->margin = ii;
     axisPtr->use =1;
@@ -542,9 +545,6 @@ int Blt_CreateAxes(Graph* graphPtr)
     } 
     if ((axisPtr->margin == MARGIN_RIGHT) || (axisPtr->margin == MARGIN_TOP))
       axisPtr->hide = 1;
-
-    axisPtr->hashPtr = hPtr;
-    Tcl_SetHashValue(hPtr, axisPtr);
 
     graphPtr->axisChain[ii] = chain;
     axisPtr->link = Blt_Chain_Append(chain, axisPtr);

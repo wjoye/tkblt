@@ -318,13 +318,13 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
   if (!elemPtr)
     return TCL_ERROR;
 
+  elemPtr->hashPtr = hPtr;
+  Tcl_SetHashValue(hPtr, elemPtr);
+
   if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp,graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
   }
-
-  elemPtr->hashPtr = hPtr;
-  Tcl_SetHashValue(hPtr, elemPtr);
 
   elemPtr->link = Blt_Chain_Append(graphPtr->elements.displayList, elemPtr);
   elemPtr->flags |= MAP_ITEM;
@@ -513,7 +513,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       activePtr++;
     }
   }
-  if (elemPtr->activeIndices != NULL) {
+  if (elemPtr->activeIndices) {
     free(elemPtr->activeIndices);
   }
   elemPtr->nActiveIndices = nIndices;
@@ -732,7 +732,7 @@ static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_ERROR;	/* Can't find named element */
     }
     elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
-    if (elemPtr->activeIndices != NULL) {
+    if (elemPtr->activeIndices) {
       free(elemPtr->activeIndices);
       elemPtr->activeIndices = NULL;
     }
@@ -781,7 +781,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 
     elemPtr = Blt_GetCurrentItem(graphPtr->bindTable);
     /* Report only on elements. */
-    if ((elemPtr != NULL) && ((elemPtr->flags & DELETE_PENDING) == 0) &&
+    if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0) &&
 	(elemPtr->obj.classId >= CID_ELEM_BAR) &&
 	(elemPtr->obj.classId <= CID_ELEM_LINE)) {
       Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name,-1);
@@ -1039,7 +1039,7 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
   }
   if ((objc != 1) && (objc != 3)) {
-    if (interp != NULL) {
+    if (interp) {
       Tcl_AppendResult(interp, "bad style entry \"", 
 		       Tcl_GetString(objPtr), 
 		       "\": should be \"penName\" or \"penName min max\"", 
@@ -1065,7 +1065,7 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 
 static void FreeVectorSource(ElemValues *valuesPtr)
 {
-  if (valuesPtr->vectorSource.vector != NULL) { 
+  if (valuesPtr->vectorSource.vector) { 
     Blt_SetVectorChangedProc(valuesPtr->vectorSource.vector, NULL, NULL);
     Blt_FreeVectorId(valuesPtr->vectorSource.vector); 
     valuesPtr->vectorSource.vector = NULL;
@@ -1084,7 +1084,7 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
 		    Blt_VecLength(vector) * sizeof(double));
   }
   if (array == NULL) {
-    if (interp != NULL) {
+    if (interp) {
       Tcl_AppendResult(interp, "can't allocate new vector", (char *)NULL);
     }
     return TCL_ERROR;
@@ -1189,7 +1189,7 @@ static void FreeDataValues(ElemValues *valuesPtr)
   case ELEM_SOURCE_VALUES:
     break;
   }
-  if (valuesPtr->values != NULL) {
+  if (valuesPtr->values) {
     free(valuesPtr->values);
   }
   valuesPtr->values = NULL;
@@ -1260,7 +1260,7 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
   /* Skip the first slot. It contains the built-in "normal" pen of
    * the element.  */
   link = Blt_Chain_FirstLink(stylePalette);
-  if (link != NULL) {
+  if (link) {
     Blt_ChainLink next;
 
     for (link = Blt_Chain_NextLink(link); link != NULL; link = next) {
@@ -1349,7 +1349,7 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   name = Tcl_GetString(objPtr);
   hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, name);
   if (hPtr == NULL) {
-    if (interp != NULL) {
+    if (interp) {
       Tcl_AppendResult(interp, "can't find element \"", name,
 		       "\" in \"", Tk_PathName(graphPtr->tkwin), "\"", 
 		       (char *)NULL);
@@ -1369,8 +1369,10 @@ void Blt_DestroyElements(Graph* graphPtr)
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
     elemPtr = Tcl_GetHashValue(hPtr);
-    elemPtr->hashPtr = NULL;
-    DestroyElement(elemPtr);
+    if (elemPtr) {
+      elemPtr->hashPtr = NULL;
+      DestroyElement(elemPtr);
+    }
   }
   Tcl_DeleteHashTable(&graphPtr->elements.table);
   Tcl_DeleteHashTable(&graphPtr->elements.tagTable);

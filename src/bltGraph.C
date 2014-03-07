@@ -232,9 +232,8 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   }
 
   Tk_Window tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
-					    Tcl_GetString(objv[1]), 
-					    (char*)NULL);
-  if (tkwin == NULL)
+					    Tcl_GetString(objv[1]), NULL);
+  if (!tkwin)
     return TCL_ERROR;
 
   Tk_OptionTable optionTable = Tk_CreateOptionTable(interp, optionSpecs);
@@ -318,7 +317,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 
   if ((Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK) ||
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
-    goto error;
+    return TCL_ERROR;
 
   if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
     goto error;
