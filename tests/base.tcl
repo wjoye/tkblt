@@ -22,6 +22,7 @@ proc bltTest {graph option value} {
     set org [$graph cget $option]
     $graph configure $option $value
     update
+#    read stdin
     after $sleep
     $graph configure $option $org
     update
@@ -35,6 +36,7 @@ proc bltTest2 {graph which option value} {
     set org [$graph $which cget $option]
     $graph $which configure $option $value
     update
+#    read stdin
     after $sleep
     $graph $which configure $option $org
     update
