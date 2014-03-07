@@ -533,16 +533,13 @@ int Blt_CreateAxes(Graph* graphPtr)
     axisPtr->use =1;
     Blt_GraphSetObjectClass(&axisPtr->obj, axisNames[ii].classId);
 
-    if (Tk_InitOptions(graphPtr->interp, (char*)axisPtr, axisPtr->optionTable, graphPtr->tkwin) != TCL_OK)
+    if (Tk_InitOptions(graphPtr->interp, (char*)axisPtr, 
+		       axisPtr->optionTable, graphPtr->tkwin) != TCL_OK)
       return TCL_ERROR;
 
     if (ConfigureAxis(axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (graphPtr->classId == CID_ELEM_BAR) {
-      axisPtr->reqStep = 1.0;
-      axisPtr->reqNumMinorTicks = 0;
-    } 
     if ((axisPtr->margin == MARGIN_RIGHT) || (axisPtr->margin == MARGIN_TOP))
       axisPtr->hide = 1;
 
