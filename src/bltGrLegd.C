@@ -421,8 +421,9 @@ int Blt_CreateLegend(Graph* graphPtr)
   legendPtr->style.anchor = TK_ANCHOR_NW;
   legendPtr->titleStyle.justify = TK_JUSTIFY_LEFT;
   legendPtr->titleStyle.anchor = TK_ANCHOR_NW;
-  legendPtr->bindTable = Blt_CreateBindingTable(graphPtr->interp,
-						graphPtr->tkwin, graphPtr, PickEntryProc, Blt_GraphTags);
+  legendPtr->bindTable = 
+    Blt_CreateBindingTable(graphPtr->interp, graphPtr->tkwin, 
+			   graphPtr, PickEntryProc, Blt_GraphTags);
 
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
   legendPtr->selected = Blt_Chain_Create();
