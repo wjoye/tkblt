@@ -57,10 +57,6 @@
 #define UFLOOR(x,u)		(floor((x)/(u))*(u))
 #define HORIZMARGIN(m)	(!((m)->site & 0x1)) /* Even sites are horizontal */
 
-enum TickRange {
-  AXIS_TIGHT, AXIS_LOOSE, AXIS_ALWAYS_LOOSE
-};
-
 typedef struct {
   int axis;				/* Length of the axis.  */
   int t1;			        /* Length of a major tick (in
@@ -450,10 +446,10 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
    "no", -1, Tk_Offset(Axis, logScale), 0, NULL, 0},
-  /*
-    {TK_OPTION_CUSTOM, "-loose", "loose", "Loose", 
-    "0", 0, ALL_GRAPHS | TK_OPTION_DONT_SET_DEFAULT, &looseOption},
-  */
+  {TK_OPTION_BOOLEAN, "-loosemin", "looseMin", "LooseMin", 
+   "yes", -1, Tk_Offset(Axis, looseMin), 0, NULL, 0},
+  {TK_OPTION_BOOLEAN, "-loosemax", "looseMax", "LooseMax", 
+   "yes", -1, Tk_Offset(Axis, looseMax), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
    NULL, -1, Tk_Offset(Axis, t1Ptr), 
    TK_OPTION_NULL_OK, &majorTicksObjOption, 0},
@@ -599,8 +595,6 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
   axisPtr->obj.name = Blt_Strdup(name);
   Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
   axisPtr->obj.graphPtr = graphPtr;
-  axisPtr->looseMin =AXIS_TIGHT;
-  axisPtr->looseMax =AXIS_TIGHT;
   axisPtr->reqMin =NAN;
   axisPtr->reqMax =NAN;
   axisPtr->reqScrollMin =NAN;
@@ -1738,15 +1732,11 @@ static void LogScaleAxis(Axis *axisPtr, double min, double max)
 				 * is log scale. */
       nMinor = 10;
     }
-    if ((axisPtr->looseMin == AXIS_TIGHT) || 
-	((axisPtr->looseMin == AXIS_LOOSE) && 
-	 (!isnan(axisPtr->reqMin)))) {
+    if (axisPtr->looseMin && !isnan(axisPtr->reqMin)) {
       tickMin = min;
       nMajor++;
     }
-    if ((axisPtr->looseMax == AXIS_TIGHT) || 
-	((axisPtr->looseMax == AXIS_LOOSE) &&
-	 (!isnan(axisPtr->reqMax)))) {
+    if (axisPtr->looseMax && !isnan(axisPtr->reqMax)) {
       tickMax = max;
     }
   }
@@ -1805,16 +1795,12 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
    * option).  The axis limit is always at the selected limit (otherwise we
    * assume that user would have picked a different number).
    */
-  if ((axisPtr->looseMin == AXIS_TIGHT) || 
-      ((axisPtr->looseMin == AXIS_LOOSE) &&
-       (!isnan(axisPtr->reqMin)))) {
+  if (axisPtr->looseMin && !isnan(axisPtr->reqMin))
     axisMin = min;
-  }
-  if ((axisPtr->looseMax == AXIS_TIGHT) || 
-      ((axisPtr->looseMax == AXIS_LOOSE) &&
-       (!isnan(axisPtr->reqMax)))) {
+
+  if (axisPtr->looseMax && !isnan(axisPtr->reqMax))
     axisMax = max;
-  }
+
   SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
 
   /* Now calculate the minor tick step and number. */
@@ -3957,76 +3943,3 @@ static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp* interp,
   const char* name = axisPtr ? axisPtr->obj.name : "";
   return Tcl_NewStringObj(name, -1);
 }
-
-/*
-  static int ObjToLooseProc(ClientData clientData, Tcl_Interp* interp,
-  Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-  int offset, int flags)
-  {
-  Axis *axisPtr = (Axis *)(widgRec);
-  Tcl_Obj **objv;
-  int i;
-  int objc;
-  int values[2];
-
-  if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
-  return TCL_ERROR;
-  }
-  if ((objc < 1) || (objc > 2)) {
-  Tcl_AppendResult(interp, "wrong # elements in loose value \"",
-  Tcl_GetString(objPtr), "\"", NULL);
-  return TCL_ERROR;
-  }
-  for (i = 0; i < objc; i++) {
-  const char *string;
-
-  string = Tcl_GetString(objv[i]);
-  if ((string[0] == 'a') && (strcmp(string, "always") == 0)) {
-  values[i] = AXIS_ALWAYS_LOOSE;
-  } else {
-  int bool;
-
-  if (Tcl_GetBooleanFromObj(interp, objv[i], &bool) != TCL_OK) {
-  return TCL_ERROR;
-  }
-  values[i] = bool;
-  }
-  }
-  axisPtr->looseMin = axisPtr->looseMax = values[0];
-  if (objc > 1) {
-  axisPtr->looseMax = values[1];
-  }
-  return TCL_OK;
-  }
-
-  static Tcl_Obj *LooseToObjProc(ClientData clientData, Tcl_Interp* interp,
-  Tk_Window tkwin, char *widgRec,
-  int offset, int flags)
-  {
-  Axis *axisPtr = (Axis *)widgRec;
-  Tcl_Obj *listObjPtr;
-
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  if (axisPtr->looseMin == AXIS_TIGHT) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewBooleanObj(FALSE));
-  } else if (axisPtr->looseMin == AXIS_LOOSE) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewBooleanObj(TRUE));
-  } else if (axisPtr->looseMin == AXIS_ALWAYS_LOOSE) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, 
-  Tcl_NewStringObj("always", 6));
-  }
-  if (axisPtr->looseMin != axisPtr->looseMax) {
-  if (axisPtr->looseMax == AXIS_TIGHT) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, 
-  Tcl_NewBooleanObj(FALSE));
-  } else if (axisPtr->looseMax == AXIS_LOOSE) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, 
-  Tcl_NewBooleanObj(TRUE));
-  } else if (axisPtr->looseMax == AXIS_ALWAYS_LOOSE) {
-  Tcl_ListObjAppendElement(interp, listObjPtr, 
-  Tcl_NewStringObj("always", 6));
-  }
-  }
-  return listObjPtr;
-  }
-*/

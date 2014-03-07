@@ -32,8 +32,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -1131,7 +1129,6 @@ static void GenerateSpline(Graph* graphPtr, LineElement* elemPtr,
 
   nOrigPts = mapPtr->nScreenPts;
   origPts = mapPtr->screenPts;
-  assert(mapPtr->nScreenPts > 0);
   for (i = 0, j = 1; j < nOrigPts; i++, j++) {
     if (origPts[j].x <= origPts[i].x) {
       return;			/* Points are not monotonically
@@ -1231,8 +1228,6 @@ static void GenerateParametricSpline(Graph* graphPtr, LineElement* elemPtr,
 
   nOrigPts = mapPtr->nScreenPts;
   origPts = mapPtr->screenPts;
-  assert(mapPtr->nScreenPts > 0);
-
   Blt_GraphExtents(graphPtr, &exts);
 
   /* 

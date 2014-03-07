@@ -33,8 +33,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -996,7 +994,6 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
     tagProc = NULL;
     break;
   }
-  assert(graphObjPtr->name != NULL);
 
   /* Always add the name of the object to the tag array. */
   Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->name), 0);

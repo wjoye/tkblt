@@ -31,8 +31,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
