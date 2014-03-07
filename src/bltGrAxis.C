@@ -904,7 +904,7 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
   Graph* graphPtr = (Graph *)axisPtr;
 
   Blt_Chain chain = graphPtr->margins[lastMargin].axes;
-  if (objc == 0) {
+  if (objc == 3) {
     Tcl_Obj *listObjPtr;
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
