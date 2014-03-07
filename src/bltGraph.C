@@ -1203,7 +1203,6 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   }
   Blt_DrawAxisLimits(graphPtr, drawable);
   Blt_DrawElements(graphPtr, drawable);
-  /* Blt_DrawAxes(graphPtr, drawable); */
 }
 
 void Blt_MapGraph(Graph* graphPtr)

@@ -99,7 +99,7 @@ typedef struct {
 					 * values on the axis in descending
 					 * order, from high to low. */
 
-  int looseMin, looseMax;		/* If non-zero, axis range extends to
+  int looseMin, looseMax;		/* If zero, axis range extends to
 					 * the outer major ticks, otherwise at
 					 * the limits of the data values. This
 					 * is overriddened by setting the -min

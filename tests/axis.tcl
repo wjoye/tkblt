@@ -36,7 +36,8 @@ bltTest2 $graph xaxis -labeloffset yes
 #bltTest2 $graph xaxis -limitsformat
 bltTest2 $graph xaxis -linewidth 2
 bltTest2 $graph xaxis -logscale yes
-#bltTest2 $graph xaxis -loose
+#bltTest2 $graph xaxis -loosemin
+#bltTest2 $graph xaxis -loosemax
 #bltTest2 $graph xaxis -majorticks
 #bltTest2 $graph xaxis -max
 #bltTest2 $graph xaxis -min

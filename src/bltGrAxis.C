@@ -182,9 +182,10 @@ static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_CustomOptionSetProc FormatSetProc;
 static Tk_CustomOptionGetProc FormatGetProc;
+static Tk_CustomOptionFreeProc FormatFreeProc;
 Tk_ObjCustomOption formatObjOption =
   {
-    "format", FormatSetProc, FormatGetProc, NULL, NULL, NULL
+    "format", FormatSetProc, FormatGetProc, NULL, FormatFreeProc, NULL
   };
 
 static int FormatSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -205,7 +206,7 @@ static int FormatSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
   if (axisPtr->limitsFormats)
-    free(axisPtr->limitsFormats);
+    Tcl_Free((char*)axisPtr->limitsFormats);
 
   axisPtr->limitsFormats = argv;
   axisPtr->nFormats = argc;
@@ -227,6 +228,12 @@ static Tcl_Obj* FormatGetProc(ClientData clientData, Tk_Window tkwin,
     free(string);
   }
   return objPtr;
+}
+
+static void FormatFreeProc(ClientData clientData, Tk_Window tkwin, char* ptr)
+{
+  //  if (ptr && *ptr)
+  //    Tcl_Free(*(char**)ptr);
 }
 
 static Tk_CustomOptionSetProc UseSetProc;
@@ -382,6 +389,41 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
     return Tcl_NewListObj(0, NULL);
 }
 
+static Tk_CustomOptionSetProc ObjectSetProc;
+static Tk_CustomOptionGetProc ObjectGetProc;
+static Tk_CustomOptionFreeProc ObjectFreeProc;
+Tk_ObjCustomOption objectObjOption =
+  {
+    "object", ObjectSetProc, ObjectGetProc, NULL, ObjectFreeProc, NULL,
+  };
+
+static int ObjectSetProc(ClientData clientData, Tcl_Interp* interp,
+			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			int offset, char* save, int flags)
+{
+  Tcl_Obj** objectPtr = (Tcl_Obj**)(widgRec + offset);
+  Tcl_IncrRefCount(*objPtr);
+  if (*objectPtr)
+    Tcl_DecrRefCount(*objectPtr);
+  *objectPtr = *objPtr;
+
+  return TCL_OK;
+}
+    
+static Tcl_Obj* ObjectGetProc(ClientData clientData, Tk_Window tkwin, 
+			     char *widgRec, int offset)
+{
+  Tcl_Obj** objectPtr = (Tcl_Obj**)(widgRec + offset);
+  return *objectPtr;
+}
+
+static void ObjectFreeProc(ClientData clientData, Tk_Window tkwin, char* ptr)
+{
+  Tcl_Obj** objectPtr = (Tcl_Obj**)ptr;
+  if (*objectPtr)
+    Tcl_DecrRefCount(*objectPtr);
+}
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
    STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Axis, activeFgColor), 0, NULL, 0}, 
@@ -447,9 +489,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
    "no", -1, Tk_Offset(Axis, logScale), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-loosemin", "looseMin", "LooseMin", 
-   "yes", -1, Tk_Offset(Axis, looseMin), 0, NULL, 0},
+   "no", -1, Tk_Offset(Axis, looseMin), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-loosemax", "looseMax", "LooseMax", 
-   "yes", -1, Tk_Offset(Axis, looseMax), 0, NULL, 0},
+   "no", -1, Tk_Offset(Axis, looseMax), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
    NULL, -1, Tk_Offset(Axis, t1Ptr), 
    TK_OPTION_NULL_OK, &majorTicksObjOption, 0},
@@ -464,12 +506,9 @@ static Tk_OptionSpec optionSpecs[] = {
    "flat", -1, Tk_Offset(Axis, relief), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
    "0", -1, Tk_Offset(Axis, tickAngle), 0, NULL, 0},
-  /*
-    {TK_OPTION_CUSTOM, "-scrollcommand", "scrollCommand", "ScrollCommand",
-    NULL, Tk_Offset(Axis, scrollCmdObjPtr),
-    ALL_GRAPHS | TK_OPTION_NULL_OK,
-    &objectOption},
-  */
+  {TK_OPTION_CUSTOM, "-scrollcommand", "scrollCommand", "ScrollCommand",
+   NULL, -1, Tk_Offset(Axis, scrollCmdObjPtr), 
+   TK_OPTION_NULL_OK, &objectObjOption, 0},
   {TK_OPTION_PIXELS, "-scrollincrement", "scrollIncrement", "ScrollIncrement",
    "10", -1, Tk_Offset(Axis, scrollUnits), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-scrollmax", "scrollMax", "ScrollMax", 
@@ -1732,11 +1771,11 @@ static void LogScaleAxis(Axis *axisPtr, double min, double max)
 				 * is log scale. */
       nMinor = 10;
     }
-    if (axisPtr->looseMin && !isnan(axisPtr->reqMin)) {
+    if (!axisPtr->looseMin || (axisPtr->looseMin && !isnan(axisPtr->reqMin))) {
       tickMin = min;
       nMajor++;
     }
-    if (axisPtr->looseMax && !isnan(axisPtr->reqMax)) {
+    if (!axisPtr->looseMax || (axisPtr->looseMax && !isnan(axisPtr->reqMax))) {
       tickMax = max;
     }
   }
@@ -1795,10 +1834,10 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
    * option).  The axis limit is always at the selected limit (otherwise we
    * assume that user would have picked a different number).
    */
-  if (axisPtr->looseMin && !isnan(axisPtr->reqMin))
+  if (!axisPtr->looseMin || (axisPtr->looseMin && !isnan(axisPtr->reqMin)))
     axisMin = min;
 
-  if (axisPtr->looseMax && !isnan(axisPtr->reqMax))
+  if (!axisPtr->looseMax || (axisPtr->looseMax && !isnan(axisPtr->reqMax)))
     axisMax = max;
 
   SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
@@ -3943,3 +3982,4 @@ static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp* interp,
   const char* name = axisPtr ? axisPtr->obj.name : "";
   return Tcl_NewStringObj(name, -1);
 }
+

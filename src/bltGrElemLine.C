@@ -673,7 +673,7 @@ Element * Blt_LineElement(Graph* graphPtr, const char* name, ClassId classId)
   elemPtr->obj.graphPtr = graphPtr;
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
-  elemPtr->label = ckalloc(strlen(name)+1);
+  elemPtr->label = Tcl_Alloc(strlen(name)+1);
   if (name)
     strcpy((char*)elemPtr->label,(char*)name);
 
