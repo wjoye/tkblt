@@ -32,6 +32,8 @@
 #ifndef _BLT_PS_H
 #define _BLT_PS_H
 
+#include "bltConfig.h"
+
 /*
  * PageSetup --
  *

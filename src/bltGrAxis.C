@@ -43,7 +43,6 @@
 #include "bltConfig.h"
 
 #define AXIS_PAD_TITLE 2
-#define MAXTICKS 10001
 #define NUMDIGITS 15	/* Specifies the number of digits of
 			 * accuracy used when outputting axis
 			 * tick labels. */
@@ -51,7 +50,6 @@
 #define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
 #define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
 
-#define FCLAMP(x)	((((x) < 0.0) ? 0.0 : ((x) > 1.0) ? 1.0 : (x)))
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
 #define UFLOOR(x,u)		(floor((x)/(u))*(u))
@@ -84,7 +82,8 @@ static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 
 static int AxisObjConfigure(Tcl_Interp* interp, Axis* axis,
 			    int objc, Tcl_Obj* const objv[]);
-static int GetAxisScrollInfo(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
+static int GetAxisScrollInfo(Tcl_Interp* interp, 
+			     int objc, Tcl_Obj* const objv[],
 			     double *offsetPtr, double windowSize,
 			     double scrollUnits, double scale);
 static double Clamp(double x);
@@ -2308,25 +2307,22 @@ static void MakeTick(Axis *axisPtr, double value, int tick, int line,
 
 static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 {
-  int arraySize;
-  int nMajorTicks, nMinorTicks;
-  Segment2d *segments;
-  Segment2d *sp;
-
   if (axisPtr->segments) {
     free(axisPtr->segments);
     axisPtr->segments = NULL;	
   }
-  nMajorTicks = nMinorTicks = 0;
+
+  int nMajorTicks =0;
   if (axisPtr->t1Ptr)
     nMajorTicks = axisPtr->t1Ptr->nTicks;
 
+  int nMinorTicks =0;
   if (axisPtr->t2Ptr)
     nMinorTicks = axisPtr->t2Ptr->nTicks;
 
-  arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
-  segments = malloc(arraySize * sizeof(Segment2d));
-  sp = segments;
+  int arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
+  Segment2d* segments = malloc(arraySize * sizeof(Segment2d));
+  Segment2d* sp = segments;
   if (axisPtr->lineWidth > 0) {
     /* Axis baseline */
     MakeAxisLine(axisPtr, infoPtr->axis, sp);
@@ -2449,7 +2445,8 @@ static double AdjustViewport(double offset, double windowSize)
   return offset;
 }
 
-static int GetAxisScrollInfo(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[],
+static int GetAxisScrollInfo(Tcl_Interp* interp, 
+			     int objc, Tcl_Obj* const objv[],
 			     double *offsetPtr, double windowSize,
 			     double scrollUnits, double scale)
 {
@@ -2467,25 +2464,26 @@ static int GetAxisScrollInfo(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[]
     double fract;
 
     /* Scroll number unit/page */
-    if (Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK)
       return TCL_ERROR;
-    }
+
     string = Tcl_GetStringFromObj(objv[2], &length);
     c = string[0];
-    if ((c == 'u') && (strncmp(string, "units", length) == 0)) {
+    if ((c == 'u') && (strncmp(string, "units", length) == 0))
       fract = count * scrollUnits;
-    } else if ((c == 'p') && (strncmp(string, "pages", length) == 0)) {
+    else if ((c == 'p') && (strncmp(string, "pages", length) == 0))
       /* A page is 90% of the view-able window. */
       fract = (int)(count * windowSize * 0.9 + 0.5);
-    } else if ((c == 'p') && (strncmp(string, "pixels", length) == 0)) {
+    else if ((c == 'p') && (strncmp(string, "pixels", length) == 0))
       fract = count * scale;
-    } else {
+    else {
       Tcl_AppendResult(interp, "unknown \"scroll\" units \"", string,
 		       "\"", NULL);
       return TCL_ERROR;
     }
     offset += fract;
-  } else if ((c == 'm') && (strncmp(string, "moveto", length) == 0)) {
+  } 
+  else if ((c == 'm') && (strncmp(string, "moveto", length) == 0)) {
     double fract;
 
     /* moveto fraction */
@@ -2493,7 +2491,8 @@ static int GetAxisScrollInfo(Tcl_Interp* interp, int objc, Tcl_Obj* const objv[]
       return TCL_ERROR;
     }
     offset = fract;
-  } else {
+  } 
+  else {
     int count;
     double fract;
 
@@ -2788,179 +2787,161 @@ static void MapGridlines(Axis *axisPtr)
 
 static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
-  unsigned int y;
-
   FreeTickLabels(axisPtr->tickLabels);
-  y = 0;
 
   // Leave room for axis baseline and padding
+  unsigned int y =0;
   if (axisPtr->exterior && (graphPtr->plotRelief != TK_RELIEF_SOLID))
     y += axisPtr->lineWidth + 2;
 
   axisPtr->maxTickHeight = axisPtr->maxTickWidth = 0;
   if (axisPtr->showTicks) {
-    unsigned int pad;
-    unsigned int i, nLabels, nTicks;
-
     SweepTicks(axisPtr);
 	
-    nTicks = 0;
+    unsigned int nTicks =0;
     if (axisPtr->t1Ptr)
       nTicks = axisPtr->t1Ptr->nTicks;
 	
-    nLabels = 0;
-    for (i = 0; i < nTicks; i++) {
-      TickLabel *labelPtr;
-      double x, x2;
-      unsigned int lw, lh;	/* Label width and height. */
-
-      x2 = x = axisPtr->t1Ptr->values[i];
-      if (axisPtr->labelOffset) {
+    unsigned int nLabels =0;
+    for (int ii=0; ii<nTicks; ii++) {
+      double x = axisPtr->t1Ptr->values[ii];
+      double x2 = axisPtr->t1Ptr->values[ii];
+      if (axisPtr->labelOffset)
 	x2 += axisPtr->majorSweep.step * 0.5;
-      }
+
       if (!InRange(x2, &axisPtr->axisRange))
 	continue;
 
-      labelPtr = MakeLabel(axisPtr, x);
+      TickLabel* labelPtr = MakeLabel(axisPtr, x);
       Blt_Chain_Append(axisPtr->tickLabels, labelPtr);
       nLabels++;
       /* 
        * Get the dimensions of each tick label.  Remember tick labels
        * can be multi-lined and/or rotated.
        */
-      Blt_GetTextExtents(axisPtr->tickFont, 0, labelPtr->string, -1, 
-			 &lw, &lh);
+      unsigned int lw, lh;	/* Label width and height. */
+      Blt_GetTextExtents(axisPtr->tickFont, 0, labelPtr->string, -1, &lw, &lh);
       labelPtr->width  = lw;
       labelPtr->height = lh;
 
       if (axisPtr->tickAngle != 0.0f) {
 	double rlw, rlh;	/* Rotated label width and height. */
-	Blt_GetBoundingBox(lw, lh, axisPtr->tickAngle, &rlw, &rlh,NULL);
+	Blt_GetBoundingBox(lw, lh, axisPtr->tickAngle, &rlw, &rlh, NULL);
 	lw = ROUND(rlw), lh = ROUND(rlh);
       }
-      if (axisPtr->maxTickWidth < lw) {
+      if (axisPtr->maxTickWidth < lw)
 	axisPtr->maxTickWidth = lw;
-      }
-      if (axisPtr->maxTickHeight < lh) {
+
+      if (axisPtr->maxTickHeight < lh)
 	axisPtr->maxTickHeight = lh;
-      }
     }
 	
-    pad = 0;
+    unsigned int pad =0;
     if (axisPtr->exterior) {
       /* Because the axis cap style is "CapProjecting", we need to
        * account for an extra 1.5 linewidth at the end of each line.  */
       pad = ((axisPtr->lineWidth * 12) / 8);
     }
-    if (AxisIsHorizontal(axisPtr)) {
+    if (AxisIsHorizontal(axisPtr))
       y += axisPtr->maxTickHeight + pad;
-    } else {
+    else {
       y += axisPtr->maxTickWidth + pad;
-      if (axisPtr->maxTickWidth > 0) {
-	y += 5;			/* Pad either size of label. */
-      }  
+      if (axisPtr->maxTickWidth > 0)
+	// Pad either size of label.
+	y += 5;
     }
     y += 2 * AXIS_PAD_TITLE;
-    if ((axisPtr->lineWidth > 0) && axisPtr->exterior) {
-      /* Distance from axis line to tick label. */
+    if ((axisPtr->lineWidth > 0) && axisPtr->exterior)
+      // Distance from axis line to tick label.
       y += axisPtr->tickLength;
-    }
   }
 
   if (axisPtr->title) {
     if (axisPtr->titleAlternate) {
-      if (y < axisPtr->titleHeight) {
+      if (y < axisPtr->titleHeight)
 	y = axisPtr->titleHeight;
-      }
-    } else {
+    } 
+    else
       y += axisPtr->titleHeight + AXIS_PAD_TITLE;
-    }
   }
 
-  /* Correct for orientation of the axis. */
-  if (AxisIsHorizontal(axisPtr)) {
+  // Correct for orientation of the axis
+  if (AxisIsHorizontal(axisPtr))
     axisPtr->height = y;
-  } else {
+  else
     axisPtr->width = y;
-  }
 }
 
 static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 {
-  Blt_ChainLink link;
-  unsigned int l, w, h;		/* Length, width, and height. */
-  int isHoriz;
-  unsigned int nVisible;
+  int isHoriz = HORIZMARGIN(marginPtr);
 
-  isHoriz = HORIZMARGIN(marginPtr);
+  // Count the visible axes.
+  unsigned int nVisible = 0;
+  unsigned int l =0;
+  unsigned int w =0;
+  unsigned int h =0;
 
-  /* Count the visible axes. */
-  nVisible = 0;
-  l = w = h = 0;
-  marginPtr->maxTickWidth = marginPtr->maxTickHeight = 0;
+  marginPtr->maxTickWidth =0;
+  marginPtr->maxTickHeight =0;
+
   if (graphPtr->stackAxes) {
-    for (link = Blt_Chain_FirstLink(marginPtr->axes); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr;
-	    
-      axisPtr = Blt_Chain_GetValue(link);
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
+	 link != NULL; link = Blt_Chain_NextLink(link)) {
+      Axis* axisPtr = Blt_Chain_GetValue(link);
       if (!axisPtr->hide && axisPtr->use) {
 	nVisible++;
-	if (graphPtr->flags & GET_AXIS_GEOMETRY) {
+	if (graphPtr->flags & GET_AXIS_GEOMETRY)
 	  GetAxisGeometry(graphPtr, axisPtr);
-	}
+
 	if (isHoriz) {
-	  if (h < axisPtr->height) {
+	  if (h < axisPtr->height)
 	    h = axisPtr->height;
-	  }
-	} else {
-	  if (w < axisPtr->width) {
+	}
+	else {
+	  if (w < axisPtr->width)
 	    w = axisPtr->width;
-	  }
 	}
-	if (axisPtr->maxTickWidth > marginPtr->maxTickWidth) {
+	if (axisPtr->maxTickWidth > marginPtr->maxTickWidth)
 	  marginPtr->maxTickWidth = axisPtr->maxTickWidth;
-	}
-	if (axisPtr->maxTickHeight > marginPtr->maxTickHeight) {
+
+	if (axisPtr->maxTickHeight > marginPtr->maxTickHeight)
 	  marginPtr->maxTickHeight = axisPtr->maxTickHeight;
-	}
       }
     }
-  } else {
-    for (link = Blt_Chain_FirstLink(marginPtr->axes); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr;
-	    
-      axisPtr = Blt_Chain_GetValue(link);
+  }
+  else {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
+	 link != NULL; link = Blt_Chain_NextLink(link)) {
+      Axis* axisPtr = Blt_Chain_GetValue(link);
       if (!axisPtr->hide && axisPtr->use) {
 	nVisible++;
-	if (graphPtr->flags & GET_AXIS_GEOMETRY) {
+	if (graphPtr->flags & GET_AXIS_GEOMETRY)
 	  GetAxisGeometry(graphPtr, axisPtr);
-	}
-	if ((axisPtr->titleAlternate) && (l < axisPtr->titleWidth)) {
+
+	if ((axisPtr->titleAlternate) && (l < axisPtr->titleWidth))
 	  l = axisPtr->titleWidth;
-	}
-	if (isHoriz) {
+
+	if (isHoriz)
 	  h += axisPtr->height;
-	} else {
+	else
 	  w += axisPtr->width;
-	}
-	if (axisPtr->maxTickWidth > marginPtr->maxTickWidth) {
+
+	if (axisPtr->maxTickWidth > marginPtr->maxTickWidth)
 	  marginPtr->maxTickWidth = axisPtr->maxTickWidth;
-	}
-	if (axisPtr->maxTickHeight > marginPtr->maxTickHeight) {
+
+	if (axisPtr->maxTickHeight > marginPtr->maxTickHeight)
 	  marginPtr->maxTickHeight = axisPtr->maxTickHeight;
-	}
       }
     }
   }
-  /* Enforce a minimum size for margins. */
-  if (w < 3) {
+  // Enforce a minimum size for margins.
+  if (w < 3)
     w = 3;
-  }
-  if (h < 3) {
+
+  if (h < 3)
     h = 3;
-  }
+
   marginPtr->nAxes = nVisible;
   marginPtr->axesTitleLength = l;
   marginPtr->width = w;

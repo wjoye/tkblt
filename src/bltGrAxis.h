@@ -36,6 +36,7 @@
 #define _BLT_GR_AXIS_H
 
 #include "bltList.h"
+#include "bltConfig.h"
 
 typedef struct {
   Blt_Dashes dashes;		/* Dash style of the grid. This represents an

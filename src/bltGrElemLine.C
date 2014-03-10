@@ -43,8 +43,6 @@
 #include "bltBitmap.h"
 #include "bltConfig.h"
 
-#define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
-
 typedef enum {
   PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
 } PenDirection;
@@ -52,14 +50,11 @@ typedef enum {
 /* Lines will be drawn between points regardless of the ordering of the
  * abscissas */
 
+#define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
+
 #define BROKEN_TRACE(dir,last,next) \
   (((dir == PEN_INCREASING) && (next < last)) || \
    ((dir == PEN_DECREASING) && (next > last)))
-/*
-#define BROKEN_TRACE(dir,last,next)				\
-  (((((dir) & PEN_DECREASING) == 0) && ((next) < (last))) ||	\
-   ((((dir) & PEN_INCREASING) == 0) && ((next) > (last))))
-*/
 
 #define DRAW_SYMBOL(linePtr)					\
   (((linePtr)->symbolCounter % (linePtr)->symbolInterval) == 0)

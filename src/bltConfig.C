@@ -82,6 +82,7 @@
 #include <stdarg.h>
 
 #include "bltInt.h"
+#include "bltConfig.h"
 
 // State
 char* stateObjOption[] = {"normal", "active", "disabled", NULL};
