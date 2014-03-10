@@ -27,13 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltInt.h"
-#include "bltMath.h"
 #include "bltGraph.h"
-#include "bltOp.h"
-#include "bltGrElem.h"
 #include "bltBitmap.h"
-#include "bltConfig.h"
 #include "bltGrMarkerBitmap.h"
 
 #define GETBITMAP(b) (((b)->destBitmap == None) ? (b)->srcBitmap : (b)->destBitmap)
@@ -84,8 +79,8 @@ static Blt_ConfigSpec bitmapConfigSpecs[] = {
   {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
-static MarkerConfigProc ConfigureBitmapProc;
 MarkerCreateProc Blt_CreateBitmapProc;
+static MarkerConfigProc ConfigureBitmapProc;
 static MarkerDrawProc DrawBitmapProc;
 static MarkerFreeProc FreeBitmapProc;
 static MarkerMapProc MapBitmapProc;
