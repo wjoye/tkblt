@@ -5,10 +5,6 @@
  */
 
 /*
- * bltGrMarkerBitmap.c --
- *
- * This module implements markers for the BLT graph widget.
- *
  *	Copyright 1993-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

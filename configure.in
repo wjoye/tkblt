@@ -82,6 +82,7 @@ TEA_ADD_SOURCES([
 	bltGrLegd.c
 	bltGrLine.c
 	bltGrMarker.c
+	bltGrMarkerBitmap.c
 	bltGrMisc.c
 	bltGrPen.c
 	bltGrPs.c
