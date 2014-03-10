@@ -248,7 +248,7 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
   if (Tcl_SplitList(interp, Tcl_GetString(*objPtr), &argc, &argv) != TCL_OK)
     return TCL_ERROR;
 
-  if (*listPtr != NULL) {
+  if (*listPtr) {
     Tcl_Free((void*)(*listPtr));
     *listPtr = NULL;
   }
@@ -531,55 +531,6 @@ static void ListFreeProc(ClientData clientData, Display* display,
   if (*listPtr != NULL) {
     Tcl_Free((void*)(*listPtr));
     *listPtr = NULL;
-  }
-}
-
-/* OBJECT */
-
-static Blt_OptionParseProc ObjToObjectProc;
-static Blt_OptionPrintProc ObjectToObjProc;
-static Blt_OptionFreeProc ObjectFreeProc;
-Blt_CustomOption objectOption =
-{
-    ObjToObjectProc, ObjectToObjProc, ObjectFreeProc, (ClientData)0
-};
-
-static int ObjToObjectProc(ClientData clientData, Tcl_Interp *interp,
-			   Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-			   int offset, int flags)
-{
-  Tcl_Obj** objectPtr;
-
-  objectPtr = (Tcl_Obj**)(widgRec + offset);
-
-  Tcl_IncrRefCount(objPtr);
-  if (*objectPtr != NULL)
-    Tcl_DecrRefCount(*objectPtr);
-  *objectPtr = objPtr;
-
-  return TCL_OK;
-}
-    
-static Tcl_Obj* ObjectToObjProc(ClientData clientData, Tcl_Interp *interp,
-			       Tk_Window tkwin, char *widgRec, 
-			       int offset, int flags)
-{
-  Tcl_Obj** objectPtr;
-
-  objectPtr = (Tcl_Obj**)(widgRec + offset);
-
-  return *objectPtr;
-}
-
-static void ObjectFreeProc(ClientData clientData, Display* display,
-			 char *widgRec, int offset)
-{
-  Tcl_Obj** objectPtr;
-
-  objectPtr = (Tcl_Obj**)(widgRec + offset);
-  if (*objectPtr != NULL) {
-    Tcl_DecrRefCount(*objectPtr);
-    *objectPtr = NULL;
   }
 }
 

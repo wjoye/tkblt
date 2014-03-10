@@ -161,11 +161,6 @@ typedef enum {
 #define BLT_STATE_ACTIVE		(1<<0)
 #define BLT_STATE_DISABLED		(1<<1)
 
-#define BLT_FILL_NONE	0
-#define BLT_FILL_X	1
-#define BLT_FILL_Y	2
-#define BLT_FILL_BOTH	3
-
 typedef struct {
     unsigned char values[12];
     int offset;
@@ -175,19 +170,15 @@ typedef struct {
 
 extern char* stateObjOption[];
 
-extern Tk_ObjCustomOption backgroundObjOption;
 extern Tk_ObjCustomOption pointObjOption;
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
 
 extern Blt_CustomOption stateOption;
 extern Blt_CustomOption dashesOption;
-extern Blt_CustomOption fillOption;
 extern Blt_OptionParseProc ObjToBitmaskProc;
 extern Blt_OptionPrintProc BitmaskToObjProc;
 extern Blt_CustomOption listOption;
-extern Blt_CustomOption backgroundOption;
-extern Blt_CustomOption objectOption;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 

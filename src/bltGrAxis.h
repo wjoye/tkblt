@@ -120,11 +120,10 @@ typedef struct {
 					 * no axis lines or ticks are
 					 * drawn. */
 
-  const char **limitsFormats;		/* One or two strings of sprintf-like
+  const char *limitsFormat;		/* String of sprintf-like
 					 * formats describing how to display
 					 * virtual axis limits. If NULL,
 					 * display no limits. */
-  int nFormats;
 
   TextStyle limitsTextStyle;		/* Text attributes (color, font,
 					 * rotation, etc.)  of the limits. */

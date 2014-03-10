@@ -180,62 +180,6 @@ static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin,
   return objPtr;
 }
 
-static Tk_CustomOptionSetProc FormatSetProc;
-static Tk_CustomOptionGetProc FormatGetProc;
-static Tk_CustomOptionFreeProc FormatFreeProc;
-Tk_ObjCustomOption formatObjOption =
-  {
-    "format", FormatSetProc, FormatGetProc, NULL, FormatFreeProc, NULL
-  };
-
-static int FormatSetProc(ClientData clientData, Tcl_Interp* interp,
-			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			 int offset, char* save, int flags)
-{
-  Axis *axisPtr = (Axis*)(widgRec);
-
-  const char **argv;
-  int argc;
-  if (Tcl_SplitList(interp, Tcl_GetString(*objPtr), &argc, &argv) != TCL_OK)
-    return TCL_ERROR;
-
-  if (argc > 2) {
-    Tcl_AppendResult(interp, "too many elements in limits format list \"",
-		     Tcl_GetString(*objPtr), "\"", NULL);
-    free(argv);
-    return TCL_ERROR;
-  }
-  if (axisPtr->limitsFormats)
-    Tcl_Free((char*)axisPtr->limitsFormats);
-
-  axisPtr->limitsFormats = argv;
-  axisPtr->nFormats = argc;
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* FormatGetProc(ClientData clientData, Tk_Window tkwin, 
-			      char *widgRec, int offset)
-{
-  Axis *axisPtr = (Axis*)(widgRec);
-  Tcl_Obj* objPtr;
-
-  if (axisPtr->nFormats == 0)
-    objPtr = Tcl_NewStringObj("", -1);
-  else {
-    char *string = Tcl_Merge(axisPtr->nFormats, axisPtr->limitsFormats); 
-    objPtr = Tcl_NewStringObj(string, -1);
-    free(string);
-  }
-  return objPtr;
-}
-
-static void FormatFreeProc(ClientData clientData, Tk_Window tkwin, char* ptr)
-{
-  //  if (ptr && *ptr)
-  //    Tcl_Free(*(char**)ptr);
-}
-
 static Tk_CustomOptionSetProc UseSetProc;
 static Tk_CustomOptionGetProc UseGetProc;
 Tk_ObjCustomOption useObjOption =
@@ -481,9 +425,8 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_FONT, "-limitsfont", "limitsFont", "LimitsFont",
    STD_FONT_SMALL, -1, Tk_Offset(Axis, limitsTextStyle.font), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-limitsformat", "limitsFormat", "LimitsFormat",
-   NULL, -1, Tk_Offset(Axis, limitsFormats), 
-   TK_OPTION_NULL_OK, &formatObjOption, 0},
+  {TK_OPTION_STRING, "-limitsformat", "limitsFormat", "LimitsFormat",
+   NULL, -1, Tk_Offset(Axis, limitsFormat), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(Axis, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-logscale", "logScale", "LogScale",
@@ -1684,10 +1627,7 @@ double NiceNum(double x, int round)
 
 static Ticks *GenerateTicks(TickSweep *sweepPtr)
 {
-  Ticks *ticksPtr;
-
-  ticksPtr = malloc(sizeof(Ticks) + 
-		    (sweepPtr->nSteps * sizeof(double)));
+  Ticks* ticksPtr = malloc(sizeof(Ticks) + (sweepPtr->nSteps * sizeof(double)));
   ticksPtr->nTicks = 0;
 
   if (sweepPtr->step == 0.0) { 
@@ -1706,17 +1646,14 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
       0.954242509439325, 
       1.0
     };
-    for (i = 0; i < sweepPtr->nSteps; i++) {
+    for (i = 0; i < sweepPtr->nSteps; i++)
       ticksPtr->values[i] = logTable[i];
-    }
-  } else {
-    double value;
-    int i;
-    
-    value = sweepPtr->initial;	/* Start from smallest axis tick */
-    for (i = 0; i < sweepPtr->nSteps; i++) {
+  }
+  else {
+    double value = sweepPtr->initial;	/* Start from smallest axis tick */
+    for (int ii=0; ii<sweepPtr->nSteps; ii++) {
       value = UROUND(value, sweepPtr->step);
-      ticksPtr->values[i] = value;
+      ticksPtr->values[ii] = value;
       value += sweepPtr->step;
     }
   }
@@ -1847,7 +1784,8 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
   if ((axisPtr->reqNumMinorTicks > 0) && (axisPtr->flags & AXIS_AUTO_MAJOR)) {
     nTicks = axisPtr->reqNumMinorTicks - 1;
     step = 1.0 / (nTicks + 1);
-  } else {
+  } 
+  else {
     nTicks = 0;			/* No minor ticks. */
     step = 0.5;			/* Don't set the minor tick interval to
 				 * 0.0. It makes the GenerateTicks
@@ -2395,51 +2333,39 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     sp++;
   }
   if (axisPtr->showTicks) {
-    Blt_ChainLink link;
-    double labelPos;
-    int i;
-    int isHoriz;
-
-    isHoriz = AxisIsHorizontal(axisPtr);
-    for (i = 0; i < nMajorTicks; i++) {
-      double t1, t2;
-      int j;
-
-      t1 = axisPtr->t1Ptr->values[i];
+    int isHoriz = AxisIsHorizontal(axisPtr);
+    for (int ii=0; ii<nMajorTicks; ii++) {
+      double t1 = axisPtr->t1Ptr->values[ii];
       /* Minor ticks */
-      for (j = 0; j < nMinorTicks; j++) {
-	t2 = t1 + (axisPtr->majorSweep.step * 
-		   axisPtr->t2Ptr->values[j]);
+      for (int jj=0; jj<nMinorTicks; jj++) {
+	double t2 = t1 + (axisPtr->majorSweep.step*axisPtr->t2Ptr->values[jj]);
 	if (InRange(t2, &axisPtr->axisRange)) {
 	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
 	}
       }
-      if (!InRange(t1, &axisPtr->axisRange)) {
+      if (!InRange(t1, &axisPtr->axisRange))
 	continue;
-      }
+
       /* Major tick */
       MakeTick(axisPtr, t1, infoPtr->t1, infoPtr->axis, sp);
       sp++;
     }
 
-    link = Blt_Chain_FirstLink(axisPtr->tickLabels);
-    labelPos = (double)infoPtr->label;
+    Blt_ChainLink link = Blt_Chain_FirstLink(axisPtr->tickLabels);
+    double labelPos = (double)infoPtr->label;
 
-    for (i = 0; i < nMajorTicks; i++) {
-      double t1;
-      TickLabel *labelPtr;
-      Segment2d seg;
-
-      t1 = axisPtr->t1Ptr->values[i];
-      if (axisPtr->labelOffset) {
+    for (int ii=0; ii< nMajorTicks; ii++) {
+      double t1 = axisPtr->t1Ptr->values[ii];
+      if (axisPtr->labelOffset)
 	t1 += axisPtr->majorSweep.step * 0.5;
-      }
-      if (!InRange(t1, &axisPtr->axisRange)) {
+
+      if (!InRange(t1, &axisPtr->axisRange))
 	continue;
-      }
-      labelPtr = Blt_Chain_GetValue(link);
+
+      TickLabel* labelPtr = Blt_Chain_GetValue(link);
       link = Blt_Chain_NextLink(link);
+      Segment2d seg;
       MakeTick(axisPtr, t1, infoPtr->t1, infoPtr->axis, &seg);
       /* Save tick label X-Y position. */
       if (isHoriz) {
@@ -2464,7 +2390,8 @@ static void MapAxis(Axis *axisPtr, int offset, int margin)
     axisPtr->screenMin = graphPtr->hOffset;
     axisPtr->width = graphPtr->right - graphPtr->left;
     axisPtr->screenRange = graphPtr->hRange;
-  } else {
+  }
+  else {
     axisPtr->screenMin = graphPtr->vOffset;
     axisPtr->height = graphPtr->bottom - graphPtr->top;
     axisPtr->screenRange = graphPtr->vRange;
@@ -2493,10 +2420,10 @@ static void MapStackedAxis(Axis *axisPtr, int count, int margin)
     axisPtr->screenMin = graphPtr->vOffset;
     axisPtr->height = slice;
   }
-#define AXIS_PAD 2
+
   Blt_GetTextExtents(axisPtr->tickFont, 0, "0", 1, &w, &h);
-  axisPtr->screenMin += (slice * count) + AXIS_PAD + h / 2;
-  axisPtr->screenRange = slice - 2 * AXIS_PAD - h;
+  axisPtr->screenMin += (slice * count) + 2 + h / 2;
+  axisPtr->screenRange = slice - 2 * 2 - h;
   axisPtr->screenScale = 1.0f / axisPtr->screenRange;
   AxisOffsets(axisPtr, margin, 0, &info);
   MakeSegments(axisPtr, &info);
@@ -2504,23 +2431,20 @@ static void MapStackedAxis(Axis *axisPtr, int count, int margin)
 
 static double AdjustViewport(double offset, double windowSize)
 {
-  /*
-   * Canvas-style scrolling allows the world to be scrolled within the window.
-   */
+  // Canvas-style scrolling allows the world to be scrolled within the window.
   if (windowSize > 1.0) {
-    if (windowSize < (1.0 - offset)) {
+    if (windowSize < (1.0 - offset))
       offset = 1.0 - windowSize;
-    }
-    if (offset > 0.0) {
+
+    if (offset > 0.0)
       offset = 0.0;
-    }
-  } else {
-    if ((offset + windowSize) > 1.0) {
+  }
+  else {
+    if ((offset + windowSize) > 1.0)
       offset = 1.0 - windowSize;
-    }
-    if (offset < 0.0) {
+
+    if (offset < 0.0)
       offset = 0.0;
-    }
   }
   return offset;
 }
@@ -2852,12 +2776,12 @@ static void MapGridlines(Axis *axisPtr)
       s1++;
     }
   }
-  if (t1Ptr != axisPtr->t1Ptr) {
+  if (t1Ptr != axisPtr->t1Ptr)
     free(t1Ptr);		/* Free generated ticks. */
-  }
-  if (t2Ptr != axisPtr->t2Ptr) {
+
+  if (t2Ptr != axisPtr->t2Ptr)
     free(t2Ptr);		/* Free generated ticks. */
-  }
+
   axisPtr->major.nUsed = s1 - axisPtr->major.segments;
   axisPtr->minor.nUsed = s2 - axisPtr->minor.segments;
 }
@@ -2881,9 +2805,8 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
     SweepTicks(axisPtr);
 	
     nTicks = 0;
-    if (axisPtr->t1Ptr) {
+    if (axisPtr->t1Ptr)
       nTicks = axisPtr->t1Ptr->nTicks;
-    }
 	
     nLabels = 0;
     for (i = 0; i < nTicks; i++) {
@@ -2895,9 +2818,9 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
       if (axisPtr->labelOffset) {
 	x2 += axisPtr->majorSweep.step * 0.5;
       }
-      if (!InRange(x2, &axisPtr->axisRange)) {
+      if (!InRange(x2, &axisPtr->axisRange))
 	continue;
-      }
+
       labelPtr = MakeLabel(axisPtr, x);
       Blt_Chain_Append(axisPtr->tickLabels, labelPtr);
       nLabels++;
@@ -3710,18 +3633,15 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
     int isHoriz;
 
     axisPtr = Tcl_GetHashValue(hPtr);
-    if (axisPtr->flags & DELETE_PENDING) {
+    if (axisPtr->flags & DELETE_PENDING)
       continue;
-    } 
-    if (axisPtr->nFormats == 0) {
+
+    if (!axisPtr->limitsFormat)
       continue;
-    }
+
     isHoriz = AxisIsHorizontal(axisPtr);
     minPtr = maxPtr = NULL;
-    minFmt = maxFmt = axisPtr->limitsFormats[0];
-    if (axisPtr->nFormats > 1) {
-      maxFmt = axisPtr->limitsFormats[1];
-    }
+    minFmt = maxFmt = axisPtr->limitsFormat;
     if (minFmt[0] != '\0') {
       minPtr = minString;
       sprintf_s(minString, 200, minFmt, axisPtr->axisRange.min);
@@ -3784,16 +3704,13 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
     unsigned int textWidth, textHeight;
 
     axisPtr = Tcl_GetHashValue(hPtr);
-    if (axisPtr->flags & DELETE_PENDING) {
+    if (axisPtr->flags & DELETE_PENDING)
       continue;
-    } 
-    if (axisPtr->nFormats == 0) {
+
+    if (!axisPtr->limitsFormat)
       continue;
-    }
-    minFmt = maxFmt = axisPtr->limitsFormats[0];
-    if (axisPtr->nFormats > 1) {
-      maxFmt = axisPtr->limitsFormats[1];
-    }
+
+    minFmt = maxFmt = axisPtr->limitsFormat;
     if (*maxFmt != '\0') {
       sprintf_s(string, 200, maxFmt, axisPtr->axisRange.max);
       Blt_GetTextExtents(axisPtr->tickFont, 0, string, -1, &textWidth,

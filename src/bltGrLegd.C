@@ -236,19 +236,19 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
   const char* string = Tcl_GetStringFromObj(*objPtr, &length);
   char c;
   c = string[0];
-  if (c == '\0') {
+  if (c == '\0')
     legendPtr->site = LEGEND_RIGHT;
-  } else if ((c == 'l') && (strncmp(string, "leftmargin", length) == 0)) {
+  else if ((c == 'l') && (strncmp(string, "leftmargin", length) == 0))
     legendPtr->site = LEGEND_LEFT;
-  } else if ((c == 'r') && (strncmp(string, "rightmargin", length) == 0)) {
+  else if ((c == 'r') && (strncmp(string, "rightmargin", length) == 0))
     legendPtr->site = LEGEND_RIGHT;
-  } else if ((c == 't') && (strncmp(string, "topmargin", length) == 0)) {
+  else if ((c == 't') && (strncmp(string, "topmargin", length) == 0))
     legendPtr->site = LEGEND_TOP;
-  } else if ((c == 'b') && (strncmp(string, "bottommargin", length) == 0)) {
+  else if ((c == 'b') && (strncmp(string, "bottommargin", length) == 0))
     legendPtr->site = LEGEND_BOTTOM;
-  } else if ((c == 'p') && (strncmp(string, "plotarea", length) == 0)) {
+  else if ((c == 'p') && (strncmp(string, "plotarea", length) == 0))
     legendPtr->site = LEGEND_PLOT;
-  } else if (c == '@') {
+  else if (c == '@') {
     char *comma;
     long x, y;
     int result;
@@ -270,11 +270,13 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
     legendPtr->xReq = x;
     legendPtr->yReq = y;
     legendPtr->site = LEGEND_XY;
-  } else if (c == '.') {
+  }
+  else if (c == '.') {
     if (CreateLegendWindow(interp, legendPtr, string) != TCL_OK) {
       return TCL_ERROR;
     }
-  } else {
+  }
+  else {
     Tcl_AppendResult(interp, "bad position \"", string, "\": should be  \
 \"leftmargin\", \"rightmargin\", \"topmargin\", \"bottommargin\", \
 \"plotarea\", windowName or @x,y", (char *)NULL);

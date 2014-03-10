@@ -3,7 +3,7 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-$graph xaxis configure -title "X Axis"
+$graph xaxis configure -title "X Axis" -limitsformat "%g"
 
 #bltTest2 $graph xaxis -activeforeground red
 #bltTest2 $graph xaxis -activerelief grooved
@@ -31,9 +31,9 @@ bltTest2 $graph xaxis -gridminorlinewidth 2
 bltTest2 $graph xaxis -hide yes
 ##bltTest2 $graph xaxis -justify left
 bltTest2 $graph xaxis -labeloffset yes
-#bltTest2 $graph xaxis -limitscolor
-#bltTest2 $graph xaxis -limitsfont
-#bltTest2 $graph xaxis -limitsformat
+bltTest2 $graph xaxis -limitscolor red
+bltTest2 $graph xaxis -limitsfont "times 18 bold italic"
+bltTest2 $graph xaxis -limitsformat "%e"
 bltTest2 $graph xaxis -linewidth 2
 bltTest2 $graph xaxis -logscale yes
 #bltTest2 $graph xaxis -loosemin
