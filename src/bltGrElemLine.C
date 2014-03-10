@@ -810,18 +810,15 @@ static int ConfigureLineProc(Graph* graphPtr, Element *basePtr)
 static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
 {
   LinePen* lpPtr = (LinePen*)basePtr;
-  unsigned long gcMask;
-  GC newGC;
-  XGCValues gcValues;
-  XColor* colorPtr;
 
   // Set the outline GC for this pen: GCForeground is outline color.
   // GCBackground is the fill color (only used for bitmap symbols).
-  gcMask = (GCLineWidth | GCForeground);
-  colorPtr = lpPtr->symbol.outlineColor;
+  unsigned long gcMask = (GCLineWidth | GCForeground);
+  XColor* colorPtr = lpPtr->symbol.outlineColor;
   if (!colorPtr)
     colorPtr = lpPtr->traceColor;
 
+  XGCValues gcValues;
   gcValues.foreground = colorPtr->pixel;
   if (lpPtr->symbol.type == SYMBOL_BITMAP) {
     colorPtr = lpPtr->symbol.fillColor;
@@ -850,7 +847,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
     }
   }
   gcValues.line_width = LineWidth(lpPtr->symbol.outlineWidth);
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   if (lpPtr->symbol.outlineGC) {
     Tk_FreeGC(graphPtr->display, lpPtr->symbol.outlineGC);
   }
