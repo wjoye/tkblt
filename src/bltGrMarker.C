@@ -38,220 +38,31 @@
 #include "bltGrElem.h"
 #include "bltBitmap.h"
 #include "bltConfig.h"
+#include "bltGrMarker.h"
+#include "bltGrMarkerBitmap.h"
 
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
 
-#define GETBITMAP(b) (((b)->destBitmap == None) ? (b)->srcBitmap : (b)->destBitmap)
-#define MAX_OUTLINE_POINTS	12
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 
 static Blt_OptionParseProc ObjToCoordsProc;
 static Blt_OptionPrintProc CoordsToObjProc;
 static Blt_OptionFreeProc FreeCoordsProc;
-static Blt_CustomOption coordsOption =
+Blt_CustomOption coordsOption =
   {
-    ObjToCoordsProc, CoordsToObjProc, FreeCoordsProc, (ClientData)0
+    ObjToCoordsProc, CoordsToObjProc, FreeCoordsProc, NULL
   };
+
 static Blt_OptionFreeProc FreeColorPairProc;
 static Blt_OptionParseProc ObjToColorPairProc;
 static Blt_OptionPrintProc ColorPairToObjProc;
-static Blt_CustomOption colorPairOption =
+Blt_CustomOption colorPairOption =
   {
     ObjToColorPairProc, ColorPairToObjProc, FreeColorPairProc, (ClientData)0
   };
 
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-
-typedef Marker *(MarkerCreateProc)(void);
-typedef void    (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
-typedef void    (MarkerFreeProc)(Marker *markerPtr);
-typedef int     (MarkerConfigProc)(Marker *markerPtr);
-typedef void    (MarkerMapProc)(Marker *markerPtr);
-typedef void    (MarkerPostscriptProc)(Marker *markerPtr, Blt_Ps ps);
-typedef int     (MarkerPointProc)(Marker *markerPtr, Point2d *samplePtr);
-typedef int     (MarkerRegionProc)(Marker *markerPtr, Region2d *extsPtr, 
-				   int enclosed);
-
 static Tcl_FreeProc FreeMarker;
-
-typedef struct {
-  Blt_ConfigSpec *configSpecs;	/* Marker configuration
-				 * specifications */
-  MarkerConfigProc *configProc;
-  MarkerDrawProc *drawProc;
-  MarkerFreeProc *freeProc;
-  MarkerMapProc *mapProc;
-  MarkerPointProc *pointProc;
-  MarkerRegionProc *regionProc;
-  MarkerPostscriptProc *postscriptProc;
-
-}  MarkerClass;
-
-struct _Marker {
-  GraphObj obj;			/* Must be first field in marker. */
-
-  MarkerClass *classPtr;
-
-  Tcl_HashEntry *hashPtr;
-
-  Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
-  Axis2d axes;
-  Point2d *worldPts;		        /* Coordinate array to position
-					 * marker */
-  int nWorldPts;			/* Number of points in above array */
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
-  int hide;
-  unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
-  int state;
-};
-
-typedef struct {
-  GraphObj obj;			/* Must be first field in marker. */
-
-  MarkerClass *classPtr;
-
-  Tcl_HashEntry *hashPtr;
-
-  Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
-  Axis2d axes;
-
-  Point2d *worldPts;			/* Coordinate array to position
-					 * marker. */
-  int nWorldPts;			/* # of points in above array. */
-
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
-  int hide;
-  unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
-  int state;
-
-  /* Fields specific to bitmap markers. */
-
-  Pixmap srcBitmap;			/* Original bitmap. May be further
-					 * scaled or rotated. */
-  double reqAngle;			/* Requested rotation of the bitmap */
-  float angle;			/* Normalized rotation (0..360
-				 * degrees) */
-  Tk_Anchor anchor;			/* If only one X-Y coordinate is given,
-					 * indicates how to translate the given
-					 * marker position.  Otherwise, if there
-					 * are two X-Y coordinates, then this
-					 * value is ignored. */
-  Point2d anchorPt;			/* Translated anchor point. */
-
-  XColor *outlineColor;		/* Foreground color */
-  XColor* fillColor;			/* Background color */
-
-  GC gc;				/* Private graphic context */
-  GC fillGC;				/* Shared graphic context */
-  Pixmap destBitmap;			/* Bitmap to be drawn. */
-  int destWidth, destHeight;		/* Dimensions of the final bitmap */
-
-  Point2d outline[MAX_OUTLINE_POINTS];/* Polygon representing the background
-				       * of the bitmap. */
-  int nOutlinePts;
-} BitmapMarker;
-
-static Blt_ConfigSpec bitmapConfigSpecs[] = {
-  {BLT_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor", "center", 
-   Tk_Offset(BitmapMarker, anchor), 0},
-  {BLT_CONFIG_COLOR, "-background", "background", "Background",
-   "white", Tk_Offset(BitmapMarker, fillColor),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char*)NULL, (char*)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "Bitmap all", 
-   Tk_Offset(BitmapMarker, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_BITMAP, "-bitmap", "bitmap", "Bitmap", NULL, 
-   Tk_Offset(BitmapMarker, srcBitmap), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", NULL, 
-   Tk_Offset(BitmapMarker, worldPts), BLT_CONFIG_NULL_OK, 
-   &coordsOption},
-  {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
-   Tk_Offset(BitmapMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char*)NULL, (char*)NULL, 0, 0},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char*)NULL, (char*)NULL, 
-   0, 0},
-  {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   "black", Tk_Offset(BitmapMarker, outlineColor),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(BitmapMarker, hide), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(BitmapMarker, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(BitmapMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
-   Tk_Offset(BitmapMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char*)NULL, (char*)NULL, 
-   0, 0},
-  {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", "0", 
-   Tk_Offset(BitmapMarker, reqAngle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(BitmapMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", "no", 
-   Tk_Offset(BitmapMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", "0", 
-   Tk_Offset(BitmapMarker, xOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-yoffset", "yOffset", "YOffset", "0", 
-   Tk_Offset(BitmapMarker, yOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-
-static MarkerConfigProc ConfigureBitmapProc;
-static MarkerCreateProc CreateBitmapProc;
-static MarkerDrawProc DrawBitmapProc;
-static MarkerFreeProc FreeBitmapProc;
-static MarkerMapProc MapBitmapProc;
-static MarkerPointProc PointInBitmapProc;
-static MarkerPostscriptProc BitmapToPostscriptProc;
-static MarkerRegionProc RegionInBitmapProc;
-
-static MarkerClass bitmapMarkerClass = {
-  bitmapConfigSpecs,
-  ConfigureBitmapProc,
-  DrawBitmapProc,
-  FreeBitmapProc,
-  MapBitmapProc,
-  PointInBitmapProc,
-  RegionInBitmapProc,
-  BitmapToPostscriptProc,
-};
 
 typedef struct {
   GraphObj obj;			/* Must be first field in marker. */
@@ -750,7 +561,7 @@ static MarkerClass windowMarkerClass = {
   WindowToPostscriptProc,
 };
 
-static int BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
+int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
 {
   return (((double)graphPtr->right < extsPtr->left) ||
 	  ((double)graphPtr->bottom < extsPtr->top) ||
@@ -1111,7 +922,7 @@ static double VMap(Axis *axisPtr, double y)
   return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
 }
 
-static Point2d MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
+Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
 {
   Point2d result;
   Graph* graphPtr = axesPtr->y->obj.graphPtr;
@@ -1131,7 +942,7 @@ static Marker* CreateMarker(Graph* graphPtr, const char* name, ClassId classId)
   Marker *markerPtr;
   switch (classId) {
   case CID_MARKER_BITMAP:
-    markerPtr = CreateBitmapProc(); /* bitmap */
+    markerPtr = Blt_CreateBitmapProc(); /* bitmap */
     break;
   case CID_MARKER_LINE:
     markerPtr = CreateLineProc();	/* line */
@@ -1199,378 +1010,6 @@ static void FreeMarker(char* dataPtr)
   DestroyMarker(markerPtr);
 }
 
-static int ConfigureBitmapProc(Marker *markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  GC newGC;
-  XGCValues gcValues;
-  unsigned long gcMask;
-
-  if (bmPtr->srcBitmap == None) {
-    return TCL_OK;
-  }
-  bmPtr->angle = fmod(bmPtr->reqAngle, 360.0);
-  if (bmPtr->angle < 0.0) {
-    bmPtr->angle += 360.0;
-  }
-  gcMask = 0;
-
-  if (bmPtr->outlineColor != NULL) {
-    gcMask |= GCForeground;
-    gcValues.foreground = bmPtr->outlineColor->pixel;
-  }
-
-  if (bmPtr->fillColor != NULL) {
-    /* Opaque bitmap: both foreground and background (fill) colors
-     * are used. */
-    gcValues.background = bmPtr->fillColor->pixel;
-    gcMask |= GCBackground;
-  } else {
-    /* Transparent bitmap: set the clip mask to the current bitmap. */
-    gcValues.clip_mask = bmPtr->srcBitmap;
-    gcMask |= GCClipMask;
-  }
-
-  /* 
-   * This is technically a shared GC, but we're going to set/change the clip
-   * origin anyways before we draw the bitmap.  This relies on the fact that
-   * no other client will be allocated this GC with the GCClipMask set to
-   * this particular bitmap.
-   */
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (bmPtr->gc != NULL) {
-    Tk_FreeGC(graphPtr->display, bmPtr->gc);
-  }
-  bmPtr->gc = newGC;
-
-  /* Create the background GC containing the fill color. */
-
-  if (bmPtr->fillColor != NULL) {
-    gcValues.foreground = bmPtr->fillColor->pixel;
-    newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (bmPtr->fillGC != NULL) {
-      Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
-    }
-    bmPtr->fillGC = newGC;
-  }
-
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->drawUnder) {
-    graphPtr->flags |= CACHE_DIRTY;
-  }
-
-  Blt_EventuallyRedrawGraph(graphPtr);
-  return TCL_OK;
-}
-
-static void MapBitmapProc(Marker *markerPtr)
-{
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  Region2d extents;
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  Point2d anchorPt;
-  Point2d corner1, corner2;
-  int destWidth, destHeight;
-  int srcWidth, srcHeight;
-  int i;
-
-  if (bmPtr->srcBitmap == None) {
-    return;
-  }
-  if (bmPtr->destBitmap != None) {
-    Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
-    bmPtr->destBitmap = None;
-  }
-  /* 
-   * Collect the coordinates.  The number of coordinates will determine the
-   * calculations to be made.
-   * 
-   *	   x1 y1	A single pair of X-Y coordinates.  They represent
-   *			the anchor position of the bitmap.  
-   *
-   *	x1 y1 x2 y2	Two pairs of X-Y coordinates.  They represent
-   *			two opposite corners of a bounding rectangle. The
-   *			bitmap is possibly rotated and scaled to fit into
-   *			this box.
-   *
-   */   
-  Tk_SizeOfBitmap(graphPtr->display, bmPtr->srcBitmap, &srcWidth, 
-		  &srcHeight);
-  corner1 = MapPoint(markerPtr->worldPts, &markerPtr->axes);
-  if (markerPtr->nWorldPts > 1) {
-    double hold;
-
-    corner2 = MapPoint(markerPtr->worldPts + 1, &markerPtr->axes);
-    /* Flip the corners if necessary */
-    if (corner1.x > corner2.x) {
-      hold = corner1.x, corner1.x = corner2.x, corner2.x = hold;
-    }
-    if (corner1.y > corner2.y) {
-      hold = corner1.y, corner1.y = corner2.y, corner2.y = hold;
-    }
-  } else {
-    corner2.x = corner1.x + srcWidth - 1;
-    corner2.y = corner1.y + srcHeight - 1;
-  }
-  destWidth = (int)(corner2.x - corner1.x) + 1;
-  destHeight = (int)(corner2.y - corner1.y) + 1;
-
-  if (markerPtr->nWorldPts == 1) {
-    anchorPt = Blt_AnchorPoint(corner1.x, corner1.y, (double)destWidth, 
-			       (double)destHeight, bmPtr->anchor);
-  } else {
-    anchorPt = corner1;
-  }
-  anchorPt.x += markerPtr->xOffset;
-  anchorPt.y += markerPtr->yOffset;
-
-  /* Check if the bitmap sits at least partially in the plot area. */
-  extents.left   = anchorPt.x;
-  extents.top    = anchorPt.y;
-  extents.right  = anchorPt.x + destWidth - 1;
-  extents.bottom = anchorPt.y + destHeight - 1;
-  markerPtr->clipped = BoxesDontOverlap(graphPtr, &extents);
-  if (markerPtr->clipped) {
-    return;				/* Bitmap is offscreen. Don't generate
-					 * rotated or scaled bitmaps. */
-  }
-
-  /*  
-   * Scale the bitmap if necessary. It's a little tricky because we only
-   * want to scale what's visible on the screen, not the entire bitmap.
-   */
-  if ((bmPtr->angle != 0.0f) || (destWidth != srcWidth) || 
-      (destHeight != srcHeight)) {
-    int regionX, regionY, regionWidth, regionHeight; 
-    double left, right, top, bottom;
-
-    /* Ignore parts of the bitmap outside of the plot area. */
-    left   = MAX(graphPtr->left, extents.left);
-    right  = MIN(graphPtr->right, extents.right);
-    top    = MAX(graphPtr->top, extents.top);
-    bottom = MIN(graphPtr->bottom, extents.bottom);
-
-    /* Determine the portion of the scaled bitmap to display. */
-    regionX = regionY = 0;
-    if (graphPtr->left > extents.left) {
-      regionX = (int)(graphPtr->left - extents.left);
-    }
-    if (graphPtr->top > extents.top) {
-      regionY = (int)(graphPtr->top - extents.top);
-    }	    
-    regionWidth = (int)(right - left) + 1;
-    regionHeight = (int)(bottom - top) + 1;
-	
-    anchorPt.x = left;
-    anchorPt.y = top;
-    bmPtr->destBitmap = Blt_ScaleRotateBitmapArea(graphPtr->tkwin, 
-						  bmPtr->srcBitmap, srcWidth, srcHeight, regionX, regionY, 
-						  regionWidth, regionHeight, destWidth, destHeight, bmPtr->angle);
-    bmPtr->destWidth = regionWidth;
-    bmPtr->destHeight = regionHeight;
-  } else {
-    bmPtr->destWidth = srcWidth;
-    bmPtr->destHeight = srcHeight;
-    bmPtr->destBitmap = None;
-  }
-  bmPtr->anchorPt = anchorPt;
-  {
-    double xScale, yScale;
-    double tx, ty;
-    double rotWidth, rotHeight;
-    Point2d polygon[5];
-    int n;
-
-    /* 
-     * Compute a polygon to represent the background area of the bitmap.
-     * This is needed for backgrounds of arbitrarily rotated bitmaps.  We
-     * also use it to print a background in PostScript.
-     */
-    Blt_GetBoundingBox(srcWidth, srcHeight, bmPtr->angle, &rotWidth, 
-		       &rotHeight, polygon);
-    xScale = (double)destWidth / rotWidth;
-    yScale = (double)destHeight / rotHeight;
-	
-    /* 
-     * Adjust each point of the polygon. Both scale it to the new size and
-     * translate it to the actual screen position of the bitmap.
-     */
-    tx = extents.left + destWidth * 0.5;
-    ty = extents.top + destHeight * 0.5;
-    for (i = 0; i < 4; i++) {
-      polygon[i].x = (polygon[i].x * xScale) + tx;
-      polygon[i].y = (polygon[i].y * yScale) + ty;
-    }
-    Blt_GraphExtents(graphPtr, &extents);
-    n = Blt_PolyRectClip(&extents, polygon, 4, bmPtr->outline); 
-    if (n < 3) { 
-      memcpy(&bmPtr->outline, polygon, sizeof(Point2d) * 4);
-      bmPtr->nOutlinePts = 4;
-    } else {
-      bmPtr->nOutlinePts = n;
-    }
-  }
-}
-
-static int PointInBitmapProc(Marker *markerPtr, Point2d *samplePtr)
-{
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-
-  if (bmPtr->srcBitmap == None) {
-    return 0;
-  }
-  if (bmPtr->angle != 0.0f) {
-    Point2d points[MAX_OUTLINE_POINTS];
-    int i;
-
-    /*  
-     * Generate the bounding polygon (isolateral) for the bitmap and see
-     * if the point is inside of it.
-     */
-    for (i = 0; i < bmPtr->nOutlinePts; i++) {
-      points[i].x = bmPtr->outline[i].x + bmPtr->anchorPt.x;
-      points[i].y = bmPtr->outline[i].y + bmPtr->anchorPt.y;
-    }
-    return Blt_PointInPolygon(samplePtr, points, bmPtr->nOutlinePts);
-  }
-  return ((samplePtr->x >= bmPtr->anchorPt.x) && 
-	  (samplePtr->x < (bmPtr->anchorPt.x + bmPtr->destWidth)) &&
-	  (samplePtr->y >= bmPtr->anchorPt.y) && 
-	  (samplePtr->y < (bmPtr->anchorPt.y + bmPtr->destHeight)));
-}
-
-static int RegionInBitmapProc(Marker *markerPtr, Region2d *extsPtr, 
-			      int enclosed)
-{
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-
-  if (markerPtr->nWorldPts < 1) {
-    return FALSE;
-  }
-  if (bmPtr->angle != 0.0f) {
-    Point2d points[MAX_OUTLINE_POINTS];
-    int i;
-	
-    /*  
-     * Generate the bounding polygon (isolateral) for the bitmap and see
-     * if the point is inside of it.
-     */
-    for (i = 0; i < bmPtr->nOutlinePts; i++) {
-      points[i].x = bmPtr->outline[i].x + bmPtr->anchorPt.x;
-      points[i].y = bmPtr->outline[i].y + bmPtr->anchorPt.y;
-    }
-    return Blt_RegionInPolygon(extsPtr, points, bmPtr->nOutlinePts, 
-			       enclosed);
-  }
-  if (enclosed) {
-    return ((bmPtr->anchorPt.x >= extsPtr->left) &&
-	    (bmPtr->anchorPt.y >= extsPtr->top) && 
-	    ((bmPtr->anchorPt.x + bmPtr->destWidth) <= extsPtr->right) &&
-	    ((bmPtr->anchorPt.y + bmPtr->destHeight) <= extsPtr->bottom));
-  }
-  return !((bmPtr->anchorPt.x >= extsPtr->right) ||
-	   (bmPtr->anchorPt.y >= extsPtr->bottom) ||
-	   ((bmPtr->anchorPt.x + bmPtr->destWidth) <= extsPtr->left) ||
-	   ((bmPtr->anchorPt.y + bmPtr->destHeight) <= extsPtr->top));
-}
-
-static void DrawBitmapProc(Marker *markerPtr, Drawable drawable)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  double rangle;
-  Pixmap bitmap;
-
-  bitmap = GETBITMAP(bmPtr);
-  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
-    return;
-  }
-  rangle = fmod(bmPtr->angle, 90.0);
-  if ((bmPtr->fillColor == NULL) || (rangle != 0.0)) {
-
-    /* 
-     * If the bitmap is rotated and a filled background is required, then
-     * a filled polygon is drawn before the bitmap.
-     */
-    if (bmPtr->fillColor != NULL) {
-      int i;
-      XPoint polygon[MAX_OUTLINE_POINTS];
-
-      for (i = 0; i < bmPtr->nOutlinePts; i++) {
-	polygon[i].x = (short int)bmPtr->outline[i].x;
-	polygon[i].y = (short int)bmPtr->outline[i].y;
-      }
-      XFillPolygon(graphPtr->display, drawable, bmPtr->fillGC,
-		   polygon, bmPtr->nOutlinePts, Convex, CoordModeOrigin);
-    }
-    XSetClipMask(graphPtr->display, bmPtr->gc, bitmap);
-    XSetClipOrigin(graphPtr->display, bmPtr->gc, (int)bmPtr->anchorPt.x, 
-		   (int)bmPtr->anchorPt.y);
-  } else {
-    XSetClipMask(graphPtr->display, bmPtr->gc, None);
-    XSetClipOrigin(graphPtr->display, bmPtr->gc, 0, 0);
-  }
-  XCopyPlane(graphPtr->display, bitmap, drawable, bmPtr->gc, 0, 0,
-	     bmPtr->destWidth, bmPtr->destHeight, (int)bmPtr->anchorPt.x, 
-	     (int)bmPtr->anchorPt.y, 1);
-}
-
-static void BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  Pixmap bitmap;
-
-  bitmap = GETBITMAP(bmPtr);
-  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
-    return;				/* No bitmap to display. */
-  }
-  if (bmPtr->fillColor != NULL) {
-    Blt_Ps_XSetBackground(ps, bmPtr->fillColor);
-    Blt_Ps_XFillPolygon(ps, bmPtr->outline, 4);
-  }
-  Blt_Ps_XSetForeground(ps, bmPtr->outlineColor);
-
-  Blt_Ps_Format(ps,
-		"  gsave\n    %g %g translate\n    %d %d scale\n", 
-		bmPtr->anchorPt.x, bmPtr->anchorPt.y + bmPtr->destHeight, 
-		bmPtr->destWidth, -bmPtr->destHeight);
-  Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
-		bmPtr->destWidth, bmPtr->destHeight, bmPtr->destWidth, 
-		-bmPtr->destHeight, bmPtr->destHeight);
-  Blt_Ps_XSetBitmapData(ps, graphPtr->display, bitmap,
-			bmPtr->destWidth, bmPtr->destHeight);
-  Blt_Ps_VarAppend(ps, 
-		   "    } imagemask\n",
-		   "grestore\n", (char*)NULL);
-}
-
-static void FreeBitmapProc(Marker *markerPtr)
-{
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-
-  if (bmPtr->gc != NULL) {
-    Tk_FreeGC(graphPtr->display, bmPtr->gc);
-  }
-  if (bmPtr->fillGC != NULL) {
-    Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
-  }
-  if (bmPtr->destBitmap != None) {
-    Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
-  }
-}
-
-static Marker* CreateBitmapProc(void)
-{
-  BitmapMarker *bmPtr;
-
-  bmPtr = calloc(1, sizeof(BitmapMarker));
-  bmPtr->classPtr = &bitmapMarkerClass;
-  return (Marker *)bmPtr;
-}
-
 static int ConfigureTextProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
@@ -1626,7 +1065,7 @@ static void MapTextProc(Marker *markerPtr)
   }
   tmPtr->outline[4].x = tmPtr->outline[0].x;
   tmPtr->outline[4].y = tmPtr->outline[0].y;
-  anchorPt = MapPoint(markerPtr->worldPts, &markerPtr->axes);
+  anchorPt = Blt_MapPoint(markerPtr->worldPts, &markerPtr->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, (double)(tmPtr->width), 
 			     (double)(tmPtr->height), tmPtr->anchor);
   anchorPt.x += markerPtr->xOffset;
@@ -1639,7 +1078,7 @@ static void MapTextProc(Marker *markerPtr)
   extents.top = anchorPt.y;
   extents.right = anchorPt.x + tmPtr->width - 1;
   extents.bottom = anchorPt.y + tmPtr->height - 1;
-  markerPtr->clipped = BoxesDontOverlap(graphPtr, &extents);
+  markerPtr->clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
   tmPtr->anchorPt = anchorPt;
 
 }
@@ -1844,7 +1283,7 @@ static void MapWindowProc(Marker *markerPtr)
   if (wmPtr->child == (Tk_Window)NULL) {
     return;
   }
-  anchorPt = MapPoint(markerPtr->worldPts, &markerPtr->axes);
+  anchorPt = Blt_MapPoint(markerPtr->worldPts, &markerPtr->axes);
 
   width = Tk_ReqWidth(wmPtr->child);
   height = Tk_ReqHeight(wmPtr->child);
@@ -1869,7 +1308,7 @@ static void MapWindowProc(Marker *markerPtr)
   extents.top = wmPtr->anchorPt.y;
   extents.right = wmPtr->anchorPt.x + wmPtr->width - 1;
   extents.bottom = wmPtr->anchorPt.y + wmPtr->height - 1;
-  markerPtr->clipped = BoxesDontOverlap(graphPtr, &extents);
+  markerPtr->clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
 }
 
 static int PointInWindowProc(Marker *markerPtr, Point2d *samplePtr)
@@ -2017,7 +1456,7 @@ static void MapLineProc(Marker *markerPtr)
    */
   segments = malloc(markerPtr->nWorldPts * sizeof(Segment2d));
   srcPtr = markerPtr->worldPts;
-  p = MapPoint(srcPtr, &markerPtr->axes);
+  p = Blt_MapPoint(srcPtr, &markerPtr->axes);
   p.x += markerPtr->xOffset;
   p.y += markerPtr->yOffset;
 
@@ -2026,7 +1465,7 @@ static void MapLineProc(Marker *markerPtr)
        srcPtr < pend; srcPtr++) {
     Point2d next;
 
-    next = MapPoint(srcPtr, &markerPtr->axes);
+    next = Blt_MapPoint(srcPtr, &markerPtr->axes);
     next.x += markerPtr->xOffset;
     next.y += markerPtr->yOffset;
     q = next;
@@ -2063,7 +1502,7 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 	 pp < pend; pp++) {
       Point2d p;
 
-      p = MapPoint(pp, &markerPtr->axes);
+      p = Blt_MapPoint(pp, &markerPtr->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
@@ -2079,8 +1518,8 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 	 pp < pend; pp++) {
       Point2d p, q;
 
-      p = MapPoint(pp, &markerPtr->axes);
-      q = MapPoint(pp + 1, &markerPtr->axes);
+      p = Blt_MapPoint(pp, &markerPtr->axes);
+      q = Blt_MapPoint(pp + 1, &markerPtr->axes);
       if (Blt_LineRectClip(extsPtr, &p, &q)) {
 	count++;
       }
@@ -2256,7 +1695,7 @@ static void MapPolygonProc(Marker *markerPtr)
     dp = screenPts;
     for (sp = markerPtr->worldPts, send = sp + markerPtr->nWorldPts; 
 	 sp < send; sp++) {
-      *dp = MapPoint(sp, &markerPtr->axes);
+      *dp = Blt_MapPoint(sp, &markerPtr->axes);
       dp->x += markerPtr->xOffset;
       dp->y += markerPtr->yOffset;
       dp++;
