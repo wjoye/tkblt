@@ -2192,8 +2192,10 @@ static double DistanceToYProc(int x, int y, Point2d *p, Point2d *q, Point2d *t)
 }
 
 static int ClosestTrace(Graph* graphPtr, LineElement* elemPtr,
-			ClosestSearch *searchPtr, DistanceProc *distProc)
+			DistanceProc *distProc)
 {
+  ClosestSearch* searchPtr = &graphPtr->search;
+
   Blt_ChainLink link;
   Point2d closest;
   double dMin;
@@ -2394,9 +2396,9 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
   }
 }
 
-static void ClosestLineProc(Graph* graphPtr, Element *basePtr, 
-			    ClosestSearch *searchPtr)
+static void ClosestLineProc(Graph* graphPtr, Element *basePtr)
 {
+  ClosestSearch* searchPtr = &graphPtr->search;
   LineElement* elemPtr = (LineElement *)basePtr;
   int mode;
 
@@ -2423,7 +2425,7 @@ static void ClosestLineProc(Graph* graphPtr, Element *basePtr,
     } else {
       distProc = DistanceToLineProc;
     }
-    found = ClosestTrace(graphPtr, elemPtr, searchPtr, distProc);
+    found = ClosestTrace(graphPtr, elemPtr, distProc);
     if ((!found) && (searchPtr->along != SEARCH_BOTH)) {
       ClosestPoint(elemPtr, searchPtr);
     }

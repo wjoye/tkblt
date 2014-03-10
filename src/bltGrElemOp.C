@@ -544,178 +544,75 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-static Blt_OptionParseProc ObjToAlong;
-static Blt_OptionPrintProc AlongToObj;
-static Blt_CustomOption alongOption =
-  {
-    ObjToAlong, AlongToObj, NULL, (ClientData)0
-  };
-
-static int ObjToAlong(ClientData clientData, Tcl_Interp* interp,
-		      Tk_Window tkwin, Tcl_Obj *objPtr, char *widgRec,
-		      int offset, int flags)
-{
-  int *intPtr = (int *)(widgRec + offset);
-  char *string;
-
-  string = Tcl_GetString(objPtr);
-  if ((string[0] == 'x') && (string[1] == '\0')) {
-    *intPtr = SEARCH_X;
-  } else if ((string[0] == 'y') && (string[1] == '\0')) { 
-    *intPtr = SEARCH_Y;
-  } else if ((string[0] == 'b') && (strcmp(string, "both") == 0)) {
-    *intPtr = SEARCH_BOTH;
-  } else {
-    Tcl_AppendResult(interp, "bad along value \"", string, "\"",
-		     (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-static Tcl_Obj *AlongToObj(ClientData clientData, Tcl_Interp* interp,
-			   Tk_Window tkwin, char *widgRec, int offset,
-			   int flags)
-{
-  int along = *(int *)(widgRec + offset);
-  Tcl_Obj *objPtr;
-
-  switch (along) {
-  case SEARCH_X:
-    objPtr = Tcl_NewStringObj("x", 1);
-    break;
-  case SEARCH_Y:
-    objPtr = Tcl_NewStringObj("y", 1);
-    break;
-  case SEARCH_BOTH:
-    objPtr = Tcl_NewStringObj("both", 4);
-    break;
-  default:
-    objPtr = Tcl_NewStringObj("unknown along value", 4);
-    break;
-  }
-  return objPtr;
-}
-
-static Blt_ConfigSpec closestSpecs[] = {
-  {BLT_CONFIG_PIXELS, "-halo", (char *)NULL, (char *)NULL,
-   (char *)NULL, Tk_Offset(ClosestSearch, halo), 0},
-  {BLT_CONFIG_BOOLEAN, "-interpolate", (char *)NULL, (char *)NULL,
-   (char *)NULL, Tk_Offset(ClosestSearch, mode), 0 }, 
-  {BLT_CONFIG_CUSTOM, "-along", (char *)NULL, (char *)NULL,
-   (char *)NULL, Tk_Offset(ClosestSearch, along), 0, &alongOption},
-  {BLT_CONFIG_END, (char *)NULL, (char *)NULL, (char *)NULL,
-   (char *)NULL, 0, 0}
-};
-
 static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
-  Element* elemPtr;
-  ClosestSearch search;
-  int i, x, y;
-  char *string;
+  ClosestSearch* searchPtr = &graphPtr->search;
 
-  if (graphPtr->flags & RESET_AXES) {
+  if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
-  }
+
+  int x;
   if (Tcl_GetIntFromObj(interp, objv[3], &x) != TCL_OK) {
     Tcl_AppendResult(interp, ": bad window x-coordinate", (char *)NULL);
     return TCL_ERROR;
   }
+  int y;
   if (Tcl_GetIntFromObj(interp, objv[4], &y) != TCL_OK) {
     Tcl_AppendResult(interp, ": bad window y-coordinate", (char *)NULL);
     return TCL_ERROR;
   }
-  for (i = 5; i < objc; i += 2) {	/* Count switches-value pairs */
-    string = Tcl_GetString(objv[i]);
-    if ((string[0] != '-') || 
-	((string[1] == '-') && (string[2] == '\0'))) {
-      break;
-    }
-  }
-  if (i > objc) {
-    i = objc;
-  }
 
-  search.mode = SEARCH_POINTS;
-  search.halo = graphPtr->halo;
-  search.index = -1;
-  search.along = SEARCH_BOTH;
-  search.x = x;
-  search.y = y;
+  searchPtr->x = x;
+  searchPtr->y = y;
+  searchPtr->index = -1;
+  searchPtr->dist = (double)(searchPtr->halo + 1);
 
-  if (Blt_ConfigureWidgetFromObj(interp, graphPtr->tkwin, closestSpecs, i - 5,
-				 objv + 5, (char *)&search, BLT_CONFIG_OBJV_ONLY) != TCL_OK) {
-    return TCL_ERROR;	/* Error occurred processing an option. */
+  char* string = Tcl_GetString(objv[5]);
+  if (string && string[0] != '\0') {
+    Element* elemPtr;
+    if (Blt_GetElement(interp, graphPtr, objv[5], &elemPtr) != TCL_OK)
+      return TCL_ERROR; /* Can't find named element */
+
+    if (elemPtr && !elemPtr->hide && 
+	!(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
+      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
   }
-  if (i < objc) {
-    string = Tcl_GetString(objv[i]);
-    if (string[0] == '-') {
-      i++;			/* Skip "--" */
-    }
-  }
-  search.dist = (double)(search.halo + 1);
-
-  if (i < objc) {
-    for ( /* empty */ ; i < objc; i++) {
-      if (Blt_GetElement(interp, graphPtr, objv[i], &elemPtr) != TCL_OK) {
-	return TCL_ERROR; /* Can't find named element */
-      }
-      if (IGNORE_ELEMENT(elemPtr)) {
-	continue;
-      }
-      if ((elemPtr->flags & MAP_ITEM) && elemPtr->hide) {
-	continue;
-      }
-      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
-    }
-  } else {
-    Blt_ChainLink link;
-
+  else {
     /* 
      * Find the closest point from the set of displayed elements,
      * searching the display list from back to front.  That way if
      * the points from two different elements overlay each other
      * exactly, the last one picked will be the topmost.  
      */
-    for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
+    for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
-      elemPtr = Blt_Chain_GetValue(link);
-      if ((elemPtr->flags & (MAP_ITEM|DELETE_PENDING)) && elemPtr->hide) {
-	continue;
-      }
-      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
+      Element* elemPtr = Blt_Chain_GetValue(link);
+      if (elemPtr && !elemPtr->hide && 
+	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
+	(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
     }
   }
-  if (search.dist < (double)search.halo) {
-    Tcl_Obj *listObjPtr;
-    /*
-     *  Return a list of name value pairs.
-     */
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+
+  if (searchPtr->dist < (double)searchPtr->halo) {
+    //  Return a list of name value pairs.
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("name", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj("name", -1));
+			     Tcl_NewStringObj(searchPtr->elemPtr->obj.name, -1)); 
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("index", -1));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(searchPtr->index));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("x", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj(search.elemPtr->obj.name, -1)); 
+			     Tcl_NewDoubleObj(searchPtr->point.x));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("y", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj("index", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(search.index));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj("x", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(search.point.x));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj("y", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(search.point.y));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj("dist", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(search.dist));
+			     Tcl_NewDoubleObj(searchPtr->point.y));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("dist", -1));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(searchPtr->dist));
     Tcl_SetObjResult(interp, listObjPtr);
   }
+
   return TCL_OK;
 }
 

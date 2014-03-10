@@ -86,6 +86,8 @@ typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static char* barmodeObjOption[] = 
   {"normal", "stacked", "aligned", "overlap", NULL};
+char* searchModeObjOption[] = {"points", "traces", "auto", NULL};
+char* searchAlongObjOption[] = {"x", "y", "both", NULL};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
@@ -124,8 +126,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(Graph, titleTextStyle.color), 0, NULL, 
    CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-halo", "halo", "Halo", 
-   "2m", -1, Tk_Offset(Graph, halo), 0, NULL, 0},
+  {TK_OPTION_SYNONYM, "-halo", NULL, NULL, NULL, -1, 0, 0, "-searchhalo", 0},
   {TK_OPTION_PIXELS, "-height", "height", "Height", 
    "4i", -1, Tk_Offset(Graph, reqHeight), 0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
@@ -169,6 +170,12 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
    NULL, -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL, -1, 0, 0, "-rightmargin", 0},
+  {TK_OPTION_PIXELS, "-searchhalo", "searchhalo", "SearchHalo", 
+   "2m", -1, Tk_Offset(Graph, search.halo), 0, NULL, 0},
+  {TK_OPTION_STRING_TABLE, "-searchmode", "searchMode", "SearchMode",
+   "points", -1, Tk_Offset(Graph, search.mode), 0, &searchModeObjOption, 0}, 
+  {TK_OPTION_STRING_TABLE, "-searchalong", "searchAlong", "SearchAlong",
+   "both", -1, Tk_Offset(Graph, search.along), 0, &searchAlongObjOption, 0},
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
    "no", -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
@@ -1041,31 +1048,26 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return markerPtr;		/* Found a marker (-under false). */
   }
 
-  ClosestSearch search;
-
-  search.along = SEARCH_BOTH;
-  search.halo = graphPtr->halo;
-  search.index = -1;
-  search.x = x;
-  search.y = y;
-  search.dist = (double)(search.halo + 1);
-  search.mode = SEARCH_AUTO;
+  ClosestSearch* searchPtr = &graphPtr->search;
+  searchPtr->index = -1;
+  searchPtr->x = x;
+  searchPtr->y = y;
+  searchPtr->dist = (double)(searchPtr->halo + 1);
 	
   Blt_ChainLink link;
   Element* elemPtr;
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->flags & (HIDE|MAP_ITEM)) {
+    if (elemPtr->flags & (HIDE|MAP_ITEM))
       continue;
-    }
-    if (elemPtr->state == BLT_STATE_NORMAL) {
-      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
-    }
+
+    if (elemPtr->state == BLT_STATE_NORMAL)
+      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
   }
-  if (search.dist <= (double)search.halo) {
-    return search.elemPtr;// Found an element within the minimum halo distance.
-  }
+  // Found an element within the minimum halo distance.
+  if (searchPtr->dist <= (double)searchPtr->halo)
+    return searchPtr->elemPtr;
 
   markerPtr = Blt_NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr != NULL) {

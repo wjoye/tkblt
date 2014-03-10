@@ -117,33 +117,6 @@ typedef struct {
   int show;			/* Flags for errorbars: none, x, y, or both */
 } ErrorBarAttributes;
 
-typedef struct {
-  /* Inputs */
-  int halo;			/* Maximal screen distance a candidate point
-				 * can be from the sample window coordinate */
-
-  int mode;			/* Indicates whether to find the closest data
-				 * point or the closest point on the trace by
-				 * interpolating the line segments.  Can also
-				 * be SEARCH_AUTO, indicating to choose how to
-				 * search.*/
-
-  int x, y;			/* Screen coordinates of test point */
-
-  int along;			/* Indicates to let search run along a
-				 * particular axis: x, y, or both. */
-
-  /* Outputs */
-  Element* elemPtr;		/* Name of the closest element */
-
-  Point2d point;		/* Graph coordinates of closest point */
-
-  int index;			/* Index of closest data point */
-
-  double dist;		/* Distance in screen coordinates */
-
-} ClosestSearch;
-
 typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
 				Element* elemPtr);
 
@@ -158,8 +131,7 @@ typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
 
 typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
 
-typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr, 
-				   ClosestSearch *searchPtr);
+typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr);
 
 typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
 				      Element* elemPtr, int x, int y, int symbolSize);

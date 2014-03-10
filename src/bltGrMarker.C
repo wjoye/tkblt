@@ -2793,7 +2793,7 @@ PointInLineProc(Marker *markerPtr, Point2d *samplePtr)
   LineMarker *lmPtr = (LineMarker *)markerPtr;
 
   return Blt_PointInSegments(samplePtr, lmPtr->segments, lmPtr->nSegments, 
-			     (double)markerPtr->obj.graphPtr->halo);
+			     (double)markerPtr->obj.graphPtr->search.halo);
 }
 
 /*

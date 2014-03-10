@@ -37,9 +37,9 @@
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
+#include "bltGrElem.h"
 #include "bltOp.h"
 #include "bltGrAxis.h"
-#include "bltGrElem.h"
 #include "bltConfig.h"
 
 #define AXIS_PAD_TITLE 2

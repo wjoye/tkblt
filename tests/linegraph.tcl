@@ -39,6 +39,9 @@ bltTest $graph -relief groove
 bltTest $graph -rightmargin 50
 #bltTest $graph -rightvariable
 bltTest $graph -rm 50
+#bltTest $graph -searchhalo
+#bltTest $graph -searchmode
+#bltTest $graph -searchalong
 #bltTest $graph -stackaxes
 #bltTest $graph -takefocus
 bltTest $graph -title "This is a Title"

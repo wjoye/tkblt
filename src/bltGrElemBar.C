@@ -732,9 +732,10 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
 }
 
-static void ClosestBarProc(Graph* graphPtr, Element *basePtr,
-			   ClosestSearch *searchPtr)
+static void ClosestBarProc(Graph* graphPtr, Element *basePtr)
 {
+  ClosestSearch* searchPtr = &graphPtr->search;
+
   BarElement* elemPtr = (BarElement *)basePtr;
   XRectangle *bp;
   double minDist;
