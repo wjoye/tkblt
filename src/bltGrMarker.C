@@ -37,6 +37,7 @@
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerPolygon.h"
 #include "bltGrMarkerText.h"
+#include "bltGrMarkerWindow.h"
 
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
@@ -58,123 +59,6 @@ Blt_CustomOption colorPairOption =
   {
     ObjToColorPairProc, ColorPairToObjProc, FreeColorPairProc, (ClientData)0
   };
-
-static Tcl_FreeProc FreeMarker;
-typedef struct {
-  GraphObj obj;			/* Must be first field in marker. */
-
-  MarkerClass *classPtr;
-
-  Tcl_HashEntry *hashPtr;
-
-  Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
-  Axis2d axes;
-
-  Point2d *worldPts;			/* Coordinate array to position
-					 * marker */
-
-  int nWorldPts;			/* # of points in above array */
-
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
-  int hide;
-  unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
-  int state;
-
-  /* Fields specific to window markers. */
-
-  const char* childName;		/* Name of child widget. */
-  Tk_Window child;			/* Window to display. */
-  int reqWidth, reqHeight;		/* If non-zero, this overrides the size
-					 * requested by the child widget. */
-
-  Tk_Anchor anchor;			/* Indicates how to translate the given
-					 * marker position. */
-
-  Point2d anchorPt;			/* Translated anchor point. */
-  int width, height;			/* Current size of the child window. */
-
-} WindowMarker;
-
-static Blt_ConfigSpec windowConfigSpecs[] = {
-  {BLT_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor", "center", 
-   Tk_Offset(WindowMarker, anchor), 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "Window all", 
-   Tk_Offset(WindowMarker, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", NULL, 
-   Tk_Offset(WindowMarker, worldPts), BLT_CONFIG_NULL_OK, 
-   &coordsOption},
-  {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
-   Tk_Offset(WindowMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_PIXELS, "-height", "height", "Height", "0", 
-   Tk_Offset(WindowMarker, reqHeight), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(WindowMarker, hide), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(WindowMarker, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(WindowMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
-   Tk_Offset(WindowMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(WindowMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", "no", 
-   Tk_Offset(WindowMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-width", "width", "Width", "0", 
-   Tk_Offset(WindowMarker, reqWidth), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_STRING, "-window", "window", "Window", NULL, 
-   Tk_Offset(WindowMarker, childName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", "0", 
-   Tk_Offset(WindowMarker, xOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-yoffset", "yOffset", "YOffset", "0", 
-   Tk_Offset(WindowMarker, yOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-
-static MarkerConfigProc ConfigureWindowProc;
-static MarkerCreateProc CreateWindowProc;
-static MarkerDrawProc DrawWindowProc;
-static MarkerFreeProc FreeWindowProc;
-static MarkerMapProc MapWindowProc;
-static MarkerPointProc PointInWindowProc;
-static MarkerPostscriptProc WindowToPostscriptProc;
-static MarkerRegionProc RegionInWindowProc;
-
-static MarkerClass windowMarkerClass = {
-  windowConfigSpecs,
-  ConfigureWindowProc,
-  DrawWindowProc,
-  FreeWindowProc,
-  MapWindowProc,
-  PointInWindowProc,
-  RegionInWindowProc,
-  WindowToPostscriptProc,
-};
-
-int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
-{
-  return (((double)graphPtr->right < extsPtr->left) ||
-	  ((double)graphPtr->bottom < extsPtr->top) ||
-	  (extsPtr->right < (double)graphPtr->left) ||
-	  (extsPtr->bottom < (double)graphPtr->top));
-}
 
 static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
 {
@@ -564,7 +448,7 @@ static Marker* CreateMarker(Graph* graphPtr, const char* name, ClassId classId)
     markerPtr = Blt_CreatePolygonProc(); /* polygon */
     break;
   case CID_MARKER_WINDOW:
-    markerPtr = CreateWindowProc(); /* window */
+    markerPtr = Blt_CreateWindowProc(); /* window */
     break;
   default:
     return NULL;
@@ -609,223 +493,6 @@ static void DestroyMarker(Marker *markerPtr)
     free((void*)(markerPtr->obj.name));
   }
   free(markerPtr);
-}
-
-static void FreeMarker(char* dataPtr) 
-{
-  Marker *markerPtr = (Marker *)dataPtr;
-  DestroyMarker(markerPtr);
-}
-
-static Tk_EventProc ChildEventProc;
-static Tk_GeomRequestProc ChildGeometryProc;
-static Tk_GeomLostSlaveProc ChildCustodyProc;
-static Tk_GeomMgr winMarkerMgrInfo =
-  {
-    (char*)"graph",			/* Name of geometry manager used by
-					 * winfo */
-    ChildGeometryProc,			/* Procedure to for new geometry
-					 * requests. */
-    ChildCustodyProc,			/* Procedure when window is taken
-					 * away. */
-  };
-
-static int ConfigureWindowProc(Marker *markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-  Tk_Window tkwin;
-
-  if (wmPtr->childName == NULL) {
-    return TCL_OK;
-  }
-  tkwin = Tk_NameToWindow(graphPtr->interp, wmPtr->childName, 
-			  graphPtr->tkwin);
-  if (tkwin == NULL) {
-    return TCL_ERROR;
-  }
-  if (Tk_Parent(tkwin) != graphPtr->tkwin) {
-    Tcl_AppendResult(graphPtr->interp, "\"", wmPtr->childName,
-		     "\" is not a child of \"", Tk_PathName(graphPtr->tkwin), "\"",
-		     (char*)NULL);
-    return TCL_ERROR;
-  }
-  if (tkwin != wmPtr->child) {
-    if (wmPtr->child != NULL) {
-      Tk_DeleteEventHandler(wmPtr->child, StructureNotifyMask,
-			    ChildEventProc, wmPtr);
-      Tk_ManageGeometry(wmPtr->child, (Tk_GeomMgr *) 0, (ClientData)0);
-      Tk_UnmapWindow(wmPtr->child);
-    }
-    Tk_CreateEventHandler(tkwin, StructureNotifyMask, ChildEventProc, 
-			  wmPtr);
-    Tk_ManageGeometry(tkwin, &winMarkerMgrInfo, wmPtr);
-  }
-  wmPtr->child = tkwin;
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->drawUnder) {
-    graphPtr->flags |= CACHE_DIRTY;
-  }
-  Blt_EventuallyRedrawGraph(graphPtr);
-  return TCL_OK;
-}
-
-static void MapWindowProc(Marker *markerPtr)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  Point2d anchorPt;
-  Region2d extents;
-  int width, height;
-
-  if (wmPtr->child == (Tk_Window)NULL) {
-    return;
-  }
-  anchorPt = Blt_MapPoint(markerPtr->worldPts, &markerPtr->axes);
-
-  width = Tk_ReqWidth(wmPtr->child);
-  height = Tk_ReqHeight(wmPtr->child);
-  if (wmPtr->reqWidth > 0) {
-    width = wmPtr->reqWidth;
-  }
-  if (wmPtr->reqHeight > 0) {
-    height = wmPtr->reqHeight;
-  }
-  wmPtr->anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, (double)width, 
-				    (double)height, wmPtr->anchor);
-  wmPtr->anchorPt.x += markerPtr->xOffset;
-  wmPtr->anchorPt.y += markerPtr->yOffset;
-  wmPtr->width = width;
-  wmPtr->height = height;
-
-  /*
-   * Determine the bounding box of the window and test to see if it is at
-   * least partially contained within the plotting area.
-   */
-  extents.left = wmPtr->anchorPt.x;
-  extents.top = wmPtr->anchorPt.y;
-  extents.right = wmPtr->anchorPt.x + wmPtr->width - 1;
-  extents.bottom = wmPtr->anchorPt.y + wmPtr->height - 1;
-  markerPtr->clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
-}
-
-static int PointInWindowProc(Marker *markerPtr, Point2d *samplePtr)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-
-  return ((samplePtr->x >= wmPtr->anchorPt.x) && 
-	  (samplePtr->x < (wmPtr->anchorPt.x + wmPtr->width)) &&
-	  (samplePtr->y >= wmPtr->anchorPt.y) && 
-	  (samplePtr->y < (wmPtr->anchorPt.y + wmPtr->height)));
-}
-
-static int RegionInWindowProc(Marker *markerPtr, Region2d *extsPtr, 
-			      int enclosed)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-
-  if (markerPtr->nWorldPts < 1) {
-    return FALSE;
-  }
-  if (enclosed) {
-    return ((wmPtr->anchorPt.x >= extsPtr->left) &&
-	    (wmPtr->anchorPt.y >= extsPtr->top) && 
-	    ((wmPtr->anchorPt.x + wmPtr->width) <= extsPtr->right) &&
-	    ((wmPtr->anchorPt.y + wmPtr->height) <= extsPtr->bottom));
-  }
-  return !((wmPtr->anchorPt.x >= extsPtr->right) ||
-	   (wmPtr->anchorPt.y >= extsPtr->bottom) ||
-	   ((wmPtr->anchorPt.x + wmPtr->width) <= extsPtr->left) ||
-	   ((wmPtr->anchorPt.y + wmPtr->height) <= extsPtr->top));
-}
-
-static void DrawWindowProc(Marker *markerPtr, Drawable drawable)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-
-  if (wmPtr->child == NULL) {
-    return;
-  }
-  if ((wmPtr->height != Tk_Height(wmPtr->child)) ||
-      (wmPtr->width != Tk_Width(wmPtr->child)) ||
-      ((int)wmPtr->anchorPt.x != Tk_X(wmPtr->child)) ||
-      ((int)wmPtr->anchorPt.y != Tk_Y(wmPtr->child))) {
-    Tk_MoveResizeWindow(wmPtr->child, (int)wmPtr->anchorPt.x, 
-			(int)wmPtr->anchorPt.y, wmPtr->width, wmPtr->height);
-  }
-  if (!Tk_IsMapped(wmPtr->child)) {
-    Tk_MapWindow(wmPtr->child);
-  }
-}
-
-static void WindowToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-
-  if (wmPtr->child == NULL) {
-    return;
-  }
-  if (Tk_IsMapped(wmPtr->child)) {
-    //	Blt_Ps_XDrawWindow(ps, wmPtr->child, wmPtr->anchorPt.x, wmPtr->anchorPt.y);
-  }
-}
-
-static void FreeWindowProc(Marker *markerPtr)
-{
-  WindowMarker *wmPtr = (WindowMarker *)markerPtr;
-
-  if (wmPtr->child != NULL) {
-    Tk_DeleteEventHandler(wmPtr->child, StructureNotifyMask,
-			  ChildEventProc, wmPtr);
-    Tk_ManageGeometry(wmPtr->child, (Tk_GeomMgr *) 0, (ClientData)0);
-    Tk_DestroyWindow(wmPtr->child);
-  }
-}
-
-static Marker * CreateWindowProc(void)
-{
-  WindowMarker *wmPtr;
-
-  wmPtr = calloc(1, sizeof(WindowMarker));
-  wmPtr->classPtr = &windowMarkerClass;
-  return (Marker *)wmPtr;
-}
-
-static void ChildEventProc(ClientData clientData, XEvent *eventPtr)
-{
-  WindowMarker *wmPtr = clientData;
-
-  if (eventPtr->type == DestroyNotify) {
-    wmPtr->child = NULL;
-  }
-}
-
-static void
-ChildGeometryProc(ClientData clientData, Tk_Window tkwin)
-{
-  WindowMarker *wmPtr = clientData;
-
-  if (wmPtr->reqWidth == 0) {
-    wmPtr->width = Tk_ReqWidth(tkwin);
-  }
-  if (wmPtr->reqHeight == 0) {
-    wmPtr->height = Tk_ReqHeight(tkwin);
-  }
-}
-
-static void ChildCustodyProc(ClientData clientData, Tk_Window tkwin)
-{
-  Marker *markerPtr = clientData;
-  Graph* graphPtr;
-
-  graphPtr = markerPtr->obj.graphPtr;
-  markerPtr->flags |= DELETE_PENDING;
-  Tcl_EventuallyFree(markerPtr, FreeMarker);
-  /*
-   * Not really needed. We should get an Expose event when the child window
-   * is unmapped.
-   */
-  Blt_EventuallyRedrawGraph(graphPtr);
 }
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
@@ -1122,7 +789,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 
     if (GetMarkerFromObj(NULL, graphPtr, objv[i], &markerPtr) == TCL_OK) {
       markerPtr->flags |= DELETE_PENDING;
-      Tcl_EventuallyFree(markerPtr, FreeMarker);
+      Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);
     }
   }
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -1474,3 +1141,18 @@ ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName)
   hPtr = Tcl_CreateHashEntry(&graphPtr->markers.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&graphPtr->markers.tagTable, hPtr);
 }
+
+void Blt_FreeMarker(char* dataPtr) 
+{
+  Marker *markerPtr = (Marker *)dataPtr;
+  DestroyMarker(markerPtr);
+}
+
+int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
+{
+  return (((double)graphPtr->right < extsPtr->left) ||
+	  ((double)graphPtr->bottom < extsPtr->top) ||
+	  (extsPtr->right < (double)graphPtr->left) ||
+	  (extsPtr->bottom < (double)graphPtr->top));
+}
+

@@ -97,5 +97,6 @@ struct _Marker {
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
 int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
+void Blt_FreeMarker(char*);
 
 #endif

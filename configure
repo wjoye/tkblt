@@ -5541,6 +5541,7 @@ done
 	bltGrMarkerLine.c
 	bltGrMarkerPolygon.c
 	bltGrMarkerText.c
+	bltGrMarkerWindow.c
 	bltGrMisc.c
 	bltGrPen.c
 	bltGrPs.c
