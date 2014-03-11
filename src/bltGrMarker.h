@@ -33,7 +33,6 @@
 #define MAX_OUTLINE_POINTS	12
 
 extern Blt_CustomOption coordsOption;
-extern Blt_CustomOption colorPairOption;
 extern Blt_CustomOption bltXAxisOption;
 extern Blt_CustomOption bltYAxisOption;
 

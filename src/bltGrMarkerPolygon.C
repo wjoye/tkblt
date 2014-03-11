@@ -44,8 +44,10 @@ static Tk_OptionSpec polygonOptionSpecs[] = {
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(PolygonMarker, elemName), TK_OPTION_NULL_OK, NULL, 0},
-  //  {BLT_CONFIG_CUSTOM, "-fill", "fill", "Fill", "rred", 
-  //   Tk_Offset(PolygonMarker, fill), BLT_CONFIG_NULL_OK, &colorPairOption},
+  {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
+   "red", -1, Tk_Offset(PolygonMarker, fill), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_COLOR, "-fillbg", "fillbg", "FillBg", 
+   NULL, -1, Tk_Offset(PolygonMarker, fillBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-join", "join", "Join", 
    "miter", -1, Tk_Offset(PolygonMarker, joinStyle), 0, &capStyleObjOption, 0},
   {TK_OPTION_PIXELS, "-polygonwidth", "polygonWidth", "PolygonWidth",
@@ -58,9 +60,12 @@ static Tk_OptionSpec polygonOptionSpecs[] = {
    "y", -1, Tk_Offset(PolygonMarker, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_STRING, "-name", "name", "Name",
    NULL, -1, Tk_Offset(PolygonMarker, obj.name), TK_OPTION_NULL_OK, NULL, 0},
-  //  {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", 
-  //   "black", Tk_Offset(PolygonMarker, outline),
-  //   BLT_CONFIG_NULL_OK, &colorPairOption},
+  {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
+   "black", -1, Tk_Offset(PolygonMarker, outline), 
+   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_COLOR, "-outlinebg", "outlinebg", "OutlineBg", 
+   NULL, -1, Tk_Offset(PolygonMarker, outlineBg), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-state", "state", "State", 
    "normal", -1, Tk_Offset(PolygonMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
@@ -88,8 +93,10 @@ static Blt_ConfigSpec polygonConfigSpecs[] = {
    Tk_Offset(PolygonMarker, dashes), BLT_CONFIG_NULL_OK, &dashesOption},
   {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
    Tk_Offset(PolygonMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-fill", "fill", "Fill", "rred", 
-   Tk_Offset(PolygonMarker, fill), BLT_CONFIG_NULL_OK, &colorPairOption},
+  {BLT_CONFIG_COLOR, "-fill", "fill", "Fill", "rred", 
+   Tk_Offset(PolygonMarker, fill), BLT_CONFIG_NULL_OK, NULL},
+  {BLT_CONFIG_COLOR, "-fillbg", "fillbg", "FillBg", NULL,
+   Tk_Offset(PolygonMarker, fillBg), BLT_CONFIG_NULL_OK, NULL},
   {BLT_CONFIG_JOIN_STYLE, "-join", "join", "Join", "miter", 
    Tk_Offset(PolygonMarker, joinStyle), BLT_CONFIG_DONT_SET_DEFAULT},
   {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
@@ -103,9 +110,10 @@ static Blt_ConfigSpec polygonConfigSpecs[] = {
    Tk_Offset(PolygonMarker, axes.y), 0, &bltYAxisOption},
   {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
    Tk_Offset(PolygonMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-outline", "outline", "Outline", 
-   "black", Tk_Offset(PolygonMarker, outline),
-   BLT_CONFIG_NULL_OK, &colorPairOption},
+  {BLT_CONFIG_COLOR, "-outline", "outline", "Outline", 
+   "black", Tk_Offset(PolygonMarker, outline), BLT_CONFIG_NULL_OK, NULL},
+  {BLT_CONFIG_COLOR, "-outlinebg", "outlinebg", "OutlineBg", NULL,
+   Tk_Offset(PolygonMarker, outlineBg), BLT_CONFIG_NULL_OK, NULL},
   {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
    Tk_Offset(PolygonMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
   {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", NULL, 
@@ -182,7 +190,7 @@ static void DrawPolygonProc(Marker *markerPtr, Drawable drawable)
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
 
   /* Draw polygon fill region */
-  if ((pmPtr->nFillPts > 0) && (pmPtr->fill.fgColor != NULL)) {
+  if ((pmPtr->nFillPts > 0) && (pmPtr->fill != NULL)) {
     XPoint *dp, *points;
     Point2d *sp, *send;
 	
@@ -204,7 +212,7 @@ static void DrawPolygonProc(Marker *markerPtr, Drawable drawable)
   }
   /* and then the outline */
   if ((pmPtr->nOutlinePts > 0) && (pmPtr->lineWidth > 0) && 
-      (pmPtr->outline.fgColor != NULL)) {
+      (pmPtr->outline != NULL)) {
     Blt_Draw2DSegments(graphPtr->display, drawable, pmPtr->outlineGC,
 		       pmPtr->outlinePts, pmPtr->nOutlinePts);
   }
@@ -215,7 +223,7 @@ static void PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
 
-  if (pmPtr->fill.fgColor != NULL) {
+  if (pmPtr->fill != NULL) {
 
     /*
      * Options:  fg bg
@@ -229,14 +237,14 @@ static void PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 
     /* If the background fill color was specified, draw the polygon in a
      * solid fashion with that color.  */
-    if (pmPtr->fill.bgColor != NULL) {
+    if (pmPtr->fillBg != NULL) {
       /* Draw the solid background as the background layer of the opaque
        * stipple  */
-      Blt_Ps_XSetBackground(ps, pmPtr->fill.bgColor);
+      Blt_Ps_XSetBackground(ps, pmPtr->fillBg);
       /* Retain the path. We'll need it for the foreground layer. */
       Blt_Ps_Append(ps, "gsave fill grestore\n");
     }
-    Blt_Ps_XSetForeground(ps, pmPtr->fill.fgColor);
+    Blt_Ps_XSetForeground(ps, pmPtr->fill);
     if (pmPtr->stipple != None) {
       /* Draw the stipple in the foreground color. */
       Blt_Ps_XSetStipple(ps, graphPtr->display, pmPtr->stipple);
@@ -246,10 +254,10 @@ static void PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
   }
 
   /* Draw the outline in the foreground color.  */
-  if ((pmPtr->lineWidth > 0) && (pmPtr->outline.fgColor != NULL)) {
+  if ((pmPtr->lineWidth > 0) && (pmPtr->outline != NULL)) {
 
     /*  Set up the line attributes.  */
-    Blt_Ps_XSetLineAttributes(ps, pmPtr->outline.fgColor,
+    Blt_Ps_XSetLineAttributes(ps, pmPtr->outline,
 			      pmPtr->lineWidth, &pmPtr->dashes, pmPtr->capStyle,
 			      pmPtr->joinStyle);
 
@@ -258,9 +266,9 @@ static void PolygonToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
      * executed for each call to the Polygon drawing routine.  If the line
      * isn't dashed, simply make this an empty definition.
      */
-    if ((pmPtr->outline.bgColor != NULL) && (LineIsDashed(pmPtr->dashes))) {
+    if ((pmPtr->outlineBg != NULL) && (LineIsDashed(pmPtr->dashes))) {
       Blt_Ps_Append(ps, "/DashesProc {\ngsave\n    ");
-      Blt_Ps_XSetBackground(ps, pmPtr->outline.bgColor);
+      Blt_Ps_XSetBackground(ps, pmPtr->outlineBg);
       Blt_Ps_Append(ps, "    ");
       Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
       Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
@@ -282,13 +290,13 @@ static int ConfigurePolygonProc(Marker *markerPtr)
 
   drawable = Tk_WindowId(graphPtr->tkwin);
   gcMask = (GCLineWidth | GCLineStyle);
-  if (pmPtr->outline.fgColor != NULL) {
+  if (pmPtr->outline != NULL) {
     gcMask |= GCForeground;
-    gcValues.foreground = pmPtr->outline.fgColor->pixel;
+    gcValues.foreground = pmPtr->outline->pixel;
   }
-  if (pmPtr->outline.bgColor != NULL) {
+  if (pmPtr->outlineBg != NULL) {
     gcMask |= GCBackground;
-    gcValues.background = pmPtr->outline.bgColor->pixel;
+    gcValues.background = pmPtr->outlineBg->pixel;
   }
   gcMask |= (GCCapStyle | GCJoinStyle);
   gcValues.cap_style = pmPtr->capStyle;
@@ -297,7 +305,7 @@ static int ConfigurePolygonProc(Marker *markerPtr)
   gcValues.dash_offset = 0;
   gcValues.line_width = LineWidth(pmPtr->lineWidth);
   if (LineIsDashed(pmPtr->dashes)) {
-    gcValues.line_style = (pmPtr->outline.bgColor == NULL)
+    gcValues.line_style = (pmPtr->outlineBg == NULL)
       ? LineOnOffDash : LineDoubleDash;
   }
   if (pmPtr->xor) {
@@ -324,17 +332,17 @@ static int ConfigurePolygonProc(Marker *markerPtr)
   pmPtr->outlineGC = newGC;
 
   gcMask = 0;
-  if (pmPtr->fill.fgColor != NULL) {
+  if (pmPtr->fill != NULL) {
     gcMask |= GCForeground;
-    gcValues.foreground = pmPtr->fill.fgColor->pixel;
+    gcValues.foreground = pmPtr->fill->pixel;
   }
-  if (pmPtr->fill.bgColor != NULL) {
+  if (pmPtr->fillBg != NULL) {
     gcMask |= GCBackground;
-    gcValues.background = pmPtr->fill.bgColor->pixel;
+    gcValues.background = pmPtr->fillBg->pixel;
   }
   if (pmPtr->stipple != None) {
     gcValues.stipple = pmPtr->stipple;
-    gcValues.fill_style = (pmPtr->fill.bgColor != NULL)
+    gcValues.fill_style = (pmPtr->fillBg != NULL)
       ? FillOpaqueStippled : FillStippled;
     gcMask |= (GCStipple | GCFillStyle);
   }
@@ -429,7 +437,7 @@ static void MapPolygonProc(Marker *markerPtr)
   }
   Blt_GraphExtents(graphPtr, &extents);
   markerPtr->clipped = TRUE;
-  if (pmPtr->fill.fgColor != NULL) {	/* Polygon fill required. */
+  if (pmPtr->fill != NULL) {	/* Polygon fill required. */
     Point2d *fillPts;
     int n;
 
@@ -443,7 +451,7 @@ static void MapPolygonProc(Marker *markerPtr)
       markerPtr->clipped = FALSE;
     }
   }
-  if ((pmPtr->outline.fgColor != NULL) && (pmPtr->lineWidth > 0)) { 
+  if ((pmPtr->outline != NULL) && (pmPtr->lineWidth > 0)) { 
     Segment2d *outlinePts;
     Segment2d *segPtr;
     Point2d *sp, *send;

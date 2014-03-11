@@ -77,8 +77,10 @@ typedef struct {
 					 * possibly clipped outline and filled
 					 * polygon. */
 
-  ColorPair outline;
-  ColorPair fill;
+  XColor* outline;
+  XColor* outlineBg;
+  XColor* fill;
+  XColor* fillBg;
 
   Pixmap stipple;			/* Stipple pattern to fill the
 					 * polygon. */
