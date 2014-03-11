@@ -69,10 +69,10 @@ static Tk_OptionSpec lineOptionSpecs[] = {
    "no", -1, Tk_Offset(LineMarker, drawUnder), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(LineMarker, xOffset), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
-   "0", -1, Tk_Offset(LineMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
    "no", -1, Tk_Offset(LineMarker, xor), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
+   "0", -1, Tk_Offset(LineMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
