@@ -39,10 +39,90 @@
 #include "bltGrMarkerText.h"
 #include "bltGrMarkerWindow.h"
 
+#define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
+
+// Defs
+
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
 
-#define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
+static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
+			    int objc, Tcl_Obj* const objv[]);
+static Tcl_Obj* PrintCoordinate(double x);
+
+// OptionSpecs
+
+static Tk_CustomOptionSetProc CoordsSetProc;
+static Tk_CustomOptionGetProc CoordsGetProc;
+Tk_ObjCustomOption coordsObjOption =
+  {
+    "coords", CoordsSetProc, CoordsGetProc, NULL, NULL, NULL
+  };
+
+static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
+			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			 int offset, char* save, int flags)
+{
+  Marker *markerPtr = (Marker *)widgRec;
+
+  int objc;
+  Tcl_Obj **objv;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  return ParseCoordinates(interp, markerPtr, objc, objv);
+}
+
+static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  Marker* markerPtr = (Marker*)widgRec;
+
+  int cnt = markerPtr->nWorldPts*2;
+  Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+
+  Point2d* pp = markerPtr->worldPts;
+  for (int ii=0; ii < markerPtr->nWorldPts*2; pp++) {
+    ll[ii++] = PrintCoordinate(pp->x);
+    ll[ii++] = PrintCoordinate(pp->y);
+  }
+
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+  return listObjPtr;
+}
+
+static Tk_CustomOptionSetProc CapStyleSetProc;
+static Tk_CustomOptionGetProc CapStyleGetProc;
+Tk_ObjCustomOption capStyleObjOption =
+  {
+    "capStyle", CapStyleSetProc, CapStyleGetProc, NULL, NULL, NULL
+  };
+
+static int CapStyleSetProc(ClientData clientData, Tcl_Interp* interp,
+			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			   int offset, char* save, int flags)
+{
+  int* ptr = (int*)(widgRec + offset);
+
+  Tk_Uid uid = Tk_GetUid(Tcl_GetString(*objPtr));
+  int cap;
+  if (Tk_GetCapStyle(interp, uid, &cap) != TCL_OK)
+    return TCL_ERROR;
+  *ptr = cap;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* CapStyleGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  int* ptr = (int*)(widgRec + offset);
+  return Tcl_NewStringObj(Tk_NameOfCapStyle(*ptr), -1);
+}
 
 static Blt_OptionParseProc ObjToCoordsProc;
 static Blt_OptionPrintProc CoordsToObjProc;
@@ -81,13 +161,12 @@ static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
 
 static Tcl_Obj* PrintCoordinate(double x)
 {
-  if (x == DBL_MAX) {
+  if (x == DBL_MAX)
     return Tcl_NewStringObj("+Inf", -1);
-  } else if (x == -DBL_MAX) {
+  else if (x == -DBL_MAX)
     return Tcl_NewStringObj("-Inf", -1);
-  } else {
+  else
     return Tcl_NewDoubleObj(x);
-  }
 }
 
 static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,

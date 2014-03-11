@@ -138,7 +138,7 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin, 
 			    char *widgRec, int offset)
 {
-  Axis*axisPtr = *(Axis**)(widgRec + offset);
+  Axis* axisPtr = *(Axis**)(widgRec + offset);
   const char* name = (axisPtr ? axisPtr->obj.name : "");
 
   return Tcl_NewStringObj(name, -1);
