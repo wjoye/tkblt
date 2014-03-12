@@ -5,10 +5,6 @@
  */
 
 /*
- * bltText.c --
- *
- * This module implements multi-line, rotate-able text for the BLT toolkit.
- *
  *	Copyright 1993-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

@@ -5,11 +5,6 @@
  */
 
 /*
- * bltVecMath.c --
- *
- * This module implements mathematical expressions with vector data
- * objects.
- *
  *	Copyright 1995-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person

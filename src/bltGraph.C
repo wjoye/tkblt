@@ -5,12 +5,6 @@
  */
 
 /*
- * bltGraph.c --
- *
- * This module implements a graph widget for the BLT toolkit.
- *
- * The graph widget was created by Sani Nassif and George Howlett.
- *
  *	Copyright 1991-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

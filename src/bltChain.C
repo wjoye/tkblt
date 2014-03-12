@@ -5,10 +5,6 @@
  */
 
 /*
- * bltChain.c --
- *
- * The module implements a generic linked list package.
- *
  *	Copyright 1991-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

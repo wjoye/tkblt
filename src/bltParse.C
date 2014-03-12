@@ -5,11 +5,6 @@
  */
 
 /*
- * bltParse.c --
- *
- * Contains a collection of procedures that are used to parse Tcl
- * commands or parts of commands (like quoted strings or nested 
- * sub-commands).
  *
  * This file is copied from tclParse.c in the TCL library distribution.
  *

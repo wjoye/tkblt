@@ -5,11 +5,6 @@
  */
 
 /* 
- * bltConfig.c --
- *
- * This file contains a Tcl_Obj based replacement for the widget
- * configuration functions in Tk.
- *
  *	Copyright (c) 1990-1994 The Regents of the University of California.
  *	Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *

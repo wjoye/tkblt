@@ -5,11 +5,6 @@
  */
 
 /*
- * bltCoreInit.c --
- *
- * This module initials the non-Tk command of the BLT toolkit, registering the
- * commands with the TCL interpreter.
- *
  *	Copyright 1991-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

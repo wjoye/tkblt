@@ -5,8 +5,6 @@
  */
 
 /*
- * bltNsUtil.c --
- *
  * This module implements utility namespace procedures for the BLT toolkit.
  *
  *	Copyright 1997-2008 George A Howlett.

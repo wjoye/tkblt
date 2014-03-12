@@ -5,11 +5,6 @@
  */
 
 /*
- * bltGrLine.c --
- *
- * This module implements line graph and stripchart elements for the BLT graph
- * widget.
- *
  *	Copyright (c) 1993 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

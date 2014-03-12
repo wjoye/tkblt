@@ -5,10 +5,6 @@
  */
 
 /*
- * bltVecCmd.c --
- *
- * This module implements vector data objects.
- *
  *	Copyright 1995-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

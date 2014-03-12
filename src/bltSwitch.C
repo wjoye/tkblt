@@ -5,11 +5,6 @@
  */
 
 /*
- * bltSwitch.c --
- *
- * This module implements command/argument switch parsing procedures for the
- * BLT toolkit.
- *
  *	Copyright 1991-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining

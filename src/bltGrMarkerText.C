@@ -50,7 +50,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_FONT, "-font", "font", "Font", 
    STD_FONT_NORMAL, -1, Tk_Offset(TextMarker, style.font), 0, NULL, 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   "black", -1, Tk_Offset(TextMarker, style.color), 
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(TextMarker, style.color), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
    "left", -1, Tk_Offset(TextMarker, style.justify), 0, NULL, 0},

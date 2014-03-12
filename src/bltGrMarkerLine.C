@@ -59,7 +59,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(LineMarker, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
-   "black", -1, Tk_Offset(LineMarker, outlineColor), 
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LineMarker, outlineColor), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(LineMarker, state), 0, &stateObjOption, 0},

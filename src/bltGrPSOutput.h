@@ -5,8 +5,6 @@
  */
 
 /*
- * bltPs.h --
- *
  *	Copyright 1993-2004 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining
@@ -34,47 +32,38 @@
 
 #include "bltConfig.h"
 
-/*
- * PageSetup --
- *
- * 	Structure contains information specific to the layout of the page for
- * 	printing the graph.
- *
- */
 typedef struct  {
-    /* User configurable fields */
-
-    int reqWidth, reqHeight;	/* If greater than zero, represents the
+  int reqWidth, reqHeight;	/* If greater than zero, represents the
 				 * requested dimensions of the printed graph */
-    int reqPaperWidth;
-    int reqPaperHeight;		/* Requested dimensions for the PostScript
+  int reqPaperWidth;
+  int reqPaperHeight;		/* Requested dimensions for the PostScript
 				 * page. Can constrain the size of the graph
 				 * if the graph (plus padding) is larger than
 				 * the size of the page. */
-    int xPad, yPad;		/* Requested padding on the exterior of the
+  int xPad, yPad;		/* Requested padding on the exterior of the
 				 * graph. This forms the bounding box for
 				 * the page. */
-    const char *colorVarName;	/* If non-NULL, is the name of a TCL array
+  const char *colorVarName;	/* If non-NULL, is the name of a TCL array
 				 * variable containing X to output device color
 				 * translations */
-    const char *fontVarName;	/* If non-NULL, is the name of a TCL array
+  const char *fontVarName;	/* If non-NULL, is the name of a TCL array
 				 * variable containing X to output device font
 				 * translations */
-    int level;			/* PostScript Language level 1-3 */
-    unsigned int flags;
+  int level;			/* PostScript Language level 1-3 */
+  unsigned int flags;
 
-    const char **comments;	/* User supplied comments to be added. */
+  const char **comments;	/* User supplied comments to be added. */
 
-    /* Computed fields */
+  /* Computed fields */
 
-    short int left, bottom;	/* Bounding box of the plot in the page. */
-    short int right, top;
+  short int left, bottom;	/* Bounding box of the plot in the page. */
+  short int right, top;
 
-    float scale;		/* Scale of page. Set if "-maxpect" option
-				 * is set, otherwise 1.0. */
+  float scale;		/* Scale of page. Set if "-maxpect" option
+			 * is set, otherwise 1.0. */
 
-    int paperHeight;
-    int paperWidth;
+  int paperHeight;
+  int paperWidth;
     
 } PageSetup;
 
@@ -117,10 +106,10 @@ extern void Blt_Ps_Format TCL_VARARGS(Blt_Ps, ps);
 extern void Blt_Ps_SetClearBackground(Blt_Ps ps);
 
 extern int Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, 
-	const char *fileName);
+			      const char *fileName);
 
 extern int Blt_Ps_GetPicaFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
-	int *picaPtr);
+				 int *picaPtr);
 
 extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 
@@ -128,7 +117,7 @@ extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
 
 
 extern int Blt_Ps_SaveFile(Tcl_Interp* interp, Blt_Ps ps, 
-	const char *fileName);
+			   const char *fileName);
 
 #ifdef _TK
 
@@ -139,7 +128,7 @@ extern void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
 extern void Blt_Ps_XSetBackground(Blt_Ps ps, XColor* colorPtr);
 
 extern void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, 
-	Pixmap bitmap, int width, int height);
+				  Pixmap bitmap, int width, int height);
 
 extern void Blt_Ps_XSetForeground(Blt_Ps ps, XColor* colorPtr);
 
@@ -148,7 +137,7 @@ extern void Blt_Ps_XSetFont(Blt_Ps ps, Tk_Font font);
 extern void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr);
 
 extern void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,
-	int lineWidth, Blt_Dashes *dashesPtr, int capStyle, int joinStyle);
+				      int lineWidth, Blt_Dashes *dashesPtr, int capStyle, int joinStyle);
 
 extern void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
 
@@ -157,38 +146,38 @@ extern void Blt_Ps_Polyline(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 extern void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n);
 
 extern void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments, 
-	int nSegments);
+				 int nSegments);
 
 extern void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int n);
 
 extern void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments,
-	int nSegments);
+				  int nSegments);
 
 extern void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
-	double x, double y, int width, int height, int borderWidth, int relief);
+				   double x, double y, int width, int height, int borderWidth, int relief);
 
 extern void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x,
-	 double y, int width, int height, int borderWidth, int relief);
+				   double y, int width, int height, int borderWidth, int relief);
 
 extern void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, 
-	int width, int height);
+				  int width, int height);
 
 extern void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rects, int n);
 
 extern void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, 
-	int nScreenPts);
+				int nScreenPts);
 
 extern void Blt_Ps_DrawPhoto(Blt_Ps ps, Tk_PhotoHandle photoToken,
-	double x, double y);
+			     double x, double y);
 
 extern void Blt_Ps_XDrawWindow(Blt_Ps ps, Tk_Window tkwin, 
-	double x, double y);
+			       double x, double y);
 
 extern void Blt_Ps_DrawText(Blt_Ps ps, const char *string, 
-	TextStyle *attrPtr, double x, double y);
+			    TextStyle *attrPtr, double x, double y);
 
 extern void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap, 
-	double scaleX, double scaleY);
+			      double scaleX, double scaleY);
 
 extern void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle);
 
@@ -206,7 +195,7 @@ extern int Blt_Ps_TextWidth(Tk_Font font, const char *string, int nBytes);
 extern int Blt_Ps_GetFontMetrics(Tk_Font font, Tk_FontMetrics *fmPtr);
 
 extern void Blt_Ps_FontName(const char *family, int flags, 
-	Tcl_DString *resultPtr);
+			    Tcl_DString *resultPtr);
 
 #endif /* _TK */
 

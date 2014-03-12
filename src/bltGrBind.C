@@ -5,10 +5,6 @@
  */
 
 /*
- * bltBind.c --
- *
- *	This module implements object binding procedures for the BLT toolkit.
- *
  *	Copyright 1998 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining
