@@ -30,7 +30,7 @@
 #include "bltGraph.h"
 #include "bltGrMarkerLine.h"
 
-static Tk_OptionSpec lineOptionSpecs[] = {
+static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Line all", -1, Tk_Offset(LineMarker, obj.tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
@@ -49,7 +49,7 @@ static Tk_OptionSpec lineOptionSpecs[] = {
   {TK_OPTION_COLOR, "-fill", "fill", "Fill",
    NULL, -1, Tk_Offset(LineMarker, fillColor), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-join", "join", "Join", 
-   "miter", -1, Tk_Offset(LineMarker, joinStyle), 0, &capStyleObjOption, 0},
+   "miter", -1, Tk_Offset(LineMarker, joinStyle), 0, &joinStyleObjOption, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LineMarker, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
@@ -58,12 +58,10 @@ static Tk_OptionSpec lineOptionSpecs[] = {
    "x", -1, Tk_Offset(LineMarker, axes.x), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(LineMarker, axes.y), 0, &yAxisObjOption, 0},
-  {TK_OPTION_STRING, "-name", "name", "Name",
-   NULL, -1, Tk_Offset(LineMarker, obj.name), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
    "black", -1, Tk_Offset(LineMarker, outlineColor), 
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_CUSTOM, "-state", "state", "State", 
+  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(LineMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(LineMarker, drawUnder), 0, NULL, 0},
@@ -76,52 +74,6 @@ static Tk_OptionSpec lineOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static Blt_ConfigSpec lineConfigSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "Line all", 
-   Tk_Offset(LineMarker, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_CAP_STYLE, "-cap", "cap", "Cap", "butt", 
-   Tk_Offset(LineMarker, capStyle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", NULL, 
-   Tk_Offset(LineMarker, worldPts), BLT_CONFIG_NULL_OK, &coordsOption},
-  {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", NULL, 
-   Tk_Offset(LineMarker, dashes), BLT_CONFIG_NULL_OK, &dashesOption},
-  {BLT_CONFIG_PIXELS, "-dashoffset", "dashOffset", "DashOffset",
-   "0", Tk_Offset(LineMarker, dashes.offset),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
-   Tk_Offset(LineMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-fill", "fill", "Fill", (char*)NULL, 
-   Tk_Offset(LineMarker, fillColor), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_JOIN_STYLE, "-join", "join", "Join", "miter", 
-   Tk_Offset(LineMarker, joinStyle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   "1", Tk_Offset(LineMarker, lineWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(LineMarker, hide), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(LineMarker, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(LineMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
-   Tk_Offset(LineMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-outline", "outline", "Outline",
-   "black", Tk_Offset(LineMarker, outlineColor),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(LineMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", "no", 
-   Tk_Offset(LineMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", "0", 
-   Tk_Offset(LineMarker, xOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-xor", "xor", "Xor", "no", 
-   Tk_Offset(LineMarker, xor), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-yoffset", "yOffset", "YOffset", "0", 
-   Tk_Offset(LineMarker, yOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-
 MarkerCreateProc Blt_CreateLineProc;
 static MarkerConfigProc ConfigureLineProc;
 static MarkerDrawProc DrawLineProc;
@@ -132,7 +84,7 @@ static MarkerPostscriptProc LineToPostscriptProc;
 static MarkerRegionProc RegionInLineProc;
 
 static MarkerClass lineMarkerClass = {
-  lineConfigSpecs,
+  optionSpecs,
   ConfigureLineProc,
   DrawLineProc,
   FreeLineProc,
@@ -142,16 +94,16 @@ static MarkerClass lineMarkerClass = {
   LineToPostscriptProc,
 };
 
-Marker* Blt_CreateLineProc(void)
+Marker* Blt_CreateLineProc(Graph* graphPtr)
 {
-  LineMarker *lmPtr;
-
-  lmPtr = calloc(1, sizeof(LineMarker));
+  LineMarker* lmPtr = calloc(1, sizeof(LineMarker));
   lmPtr->classPtr = &lineMarkerClass;
   lmPtr->xor = FALSE;
   lmPtr->capStyle = CapButt;
   lmPtr->joinStyle = JoinMiter;
-  return (Marker *)lmPtr;
+  lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
+  return (Marker*)lmPtr;
 }
 
 static int PointInLineProc(Marker *markerPtr, Point2d *samplePtr)

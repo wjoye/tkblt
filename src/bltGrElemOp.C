@@ -165,7 +165,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (nValues & 1) {
-    Tcl_AppendResult(interp, "odd number of data points", (char *)NULL);
+    Tcl_AppendResult(interp, "odd number of data points", NULL);
     free(values);
     return TCL_ERROR;
   }
@@ -286,36 +286,46 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
 static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj *const *objv, ClassId classId)
 {
-  char *string = Tcl_GetString(objv[3]);
-  if (string[0] == '-') {
-    Tcl_AppendResult(graphPtr->interp, "name of element \"", string, 
+  char *name = Tcl_GetString(objv[3]);
+  if (name[0] == '-') {
+    Tcl_AppendResult(graphPtr->interp, "name of element \"", name, 
 		     "\" can't start with a '-'", NULL);
     return TCL_ERROR;
   }
 
   int isNew;
   Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->elements.table, string, &isNew);
+    Tcl_CreateHashEntry(&graphPtr->elements.table, name, &isNew);
   if (!isNew) {
-    Tcl_AppendResult(interp, "element \"", string, 
+    Tcl_AppendResult(interp, "element \"", name, 
 		     "\" already exists in \"", Tcl_GetString(objv[0]), 
-		     "\"", (char *)NULL);
+		     "\"", NULL);
     return TCL_ERROR;
   }
 
   Element* elemPtr;
   switch (classId) {
   case CID_ELEM_BAR:
-    elemPtr = Blt_BarElement(graphPtr, string, classId);
+    elemPtr = Blt_BarElement(graphPtr);
     break;
   case CID_ELEM_LINE:
-    elemPtr = Blt_LineElement(graphPtr, string, classId);
+    elemPtr = Blt_LineElement(graphPtr);
     break;
   default:
     return TCL_ERROR;
   }
   if (!elemPtr)
     return TCL_ERROR;
+
+  elemPtr->obj.graphPtr = graphPtr;
+  elemPtr->obj.name = Blt_Strdup(name);
+  // this is an option and will be freed via Tk_FreeConfigOptions
+  // By default an element's name and label are the same
+  elemPtr->label = Tcl_Alloc(strlen(name)+1);
+  if (name)
+    strcpy((char*)elemPtr->label,(char*)name);
+  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
+  elemPtr->stylePalette = Blt_Chain_Create();
 
   elemPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, elemPtr);
@@ -326,10 +336,6 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
   }
 
   elemPtr->link = Blt_Chain_Append(graphPtr->elements.displayList, elemPtr);
-  elemPtr->flags |= MAP_ITEM;
-  graphPtr->flags |= CACHE_DIRTY;
-  graphPtr->flags |= RESET_AXES;
-  Blt_EventuallyRedrawGraph(graphPtr);
 
   return TCL_OK;
 }
@@ -361,9 +367,11 @@ static void DestroyElement(Element* elemPtr)
   if (elemPtr->obj.name)
     free((void*)(elemPtr->obj.name));
 
-  // should already been freed via Tk_FreeConfigOptions
+  //  to be freed via Tk_FreeConfigOptions
   //  if (elemPtr->label)
   //    free((void*)(elemPtr->label));
+
+  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 
   free(elemPtr);
 }
@@ -414,15 +422,6 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
 }
 
-static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
-		    int objc, Tcl_Obj* const objv[], ClassId classId)
-{
-  if (CreateElement(graphPtr, interp, objc, objv, classId) != TCL_OK)
-    return TCL_ERROR;
-  Tcl_SetObjResult(interp, objv[3]);
-  return TCL_OK;
-}
-
 static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			       Element* elemPtr, 
 			       int objc, Tcl_Obj* const objv[])
@@ -446,8 +445,9 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     }
 
     elemPtr->flags |= mask;
-    graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
-    if ((*elemPtr->procsPtr->configProc) (graphPtr, elemPtr) != TCL_OK)
+    elemPtr->flags |= MAP_ITEM;
+    graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
+    if ((*elemPtr->procsPtr->configProc)(graphPtr, elemPtr) != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -554,12 +554,12 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 
   int x;
   if (Tcl_GetIntFromObj(interp, objv[3], &x) != TCL_OK) {
-    Tcl_AppendResult(interp, ": bad window x-coordinate", (char *)NULL);
+    Tcl_AppendResult(interp, ": bad window x-coordinate", NULL);
     return TCL_ERROR;
   }
   int y;
   if (Tcl_GetIntFromObj(interp, objv[4], &y) != TCL_OK) {
-    Tcl_AppendResult(interp, ": bad window y-coordinate", (char *)NULL);
+    Tcl_AppendResult(interp, ": bad window y-coordinate", NULL);
     return TCL_ERROR;
   }
 
@@ -619,40 +619,42 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
 			int objc, Tcl_Obj* const objv[])
 {
-  int i;
+  Element* elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
 
-  for (i = 3; i < objc; i++) {
-    Element* elemPtr;
-
-    if (Blt_GetElement(interp, graphPtr, objv[i], &elemPtr) != TCL_OK) {
-      return TCL_ERROR;	/* Can't find named element */
-    }
-    elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
-    if (elemPtr->activeIndices) {
-      free(elemPtr->activeIndices);
-      elemPtr->activeIndices = NULL;
-    }
-    elemPtr->nActiveIndices = 0;
+  elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
+  if (elemPtr->activeIndices) {
+    free(elemPtr->activeIndices);
+    elemPtr->activeIndices = NULL;
   }
+  elemPtr->nActiveIndices = 0;
   Blt_EventuallyRedrawGraph(graphPtr);
+
+  return TCL_OK;
+}
+
+static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
+		    int objc, Tcl_Obj* const objv[], ClassId classId)
+{
+  if (CreateElement(graphPtr, interp, objc, objv, classId) != TCL_OK)
+    return TCL_ERROR;
+  Tcl_SetObjResult(interp, objv[3]);
+
   return TCL_OK;
 }
 
 static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
-  int i;
+  Element* elemPtr;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+      return TCL_ERROR;
 
-  for (i = 3; i < objc; i++) {
-    Element* elemPtr;
-
-    if (Blt_GetElement(interp, graphPtr, objv[i], &elemPtr) != TCL_OK) {
-      return TCL_ERROR;	/* Can't find named element */
-    }
-    elemPtr->flags |= DELETE_PENDING;
-    Tcl_EventuallyFree(elemPtr, FreeElement);
-  }
+  elemPtr->flags |= DELETE_PENDING;
+  Tcl_EventuallyFree(elemPtr, FreeElement);
   Blt_EventuallyRedrawGraph(graphPtr);
+
   return TCL_OK;
 }
 
@@ -755,7 +757,8 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
       objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
-  } else {
+  }
+  else {
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch iter;
 
@@ -939,7 +942,7 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
       Tcl_AppendResult(interp, "bad style entry \"", 
 		       Tcl_GetString(objPtr), 
 		       "\": should be \"penName\" or \"penName min max\"", 
-		       (char *)NULL);
+		       NULL);
     }
     return TCL_ERROR;
   }
@@ -981,7 +984,7 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
   }
   if (array == NULL) {
     if (interp) {
-      Tcl_AppendResult(interp, "can't allocate new vector", (char *)NULL);
+      Tcl_AppendResult(interp, "can't allocate new vector", NULL);
     }
     return TCL_ERROR;
   }
@@ -1061,7 +1064,7 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 
     array = malloc(sizeof(double) * objc);
     if (array == NULL) {
-      Tcl_AppendResult(interp, "can't allocate new vector", (char *)NULL);
+      Tcl_AppendResult(interp, "can't allocate new vector", NULL);
       return TCL_ERROR;
     }
     for (p = array, i = 0; i < objc; i++, p++) {
@@ -1248,7 +1251,7 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
     if (interp) {
       Tcl_AppendResult(interp, "can't find element \"", name,
 		       "\" in \"", Tk_PathName(graphPtr->tkwin), "\"", 
-		       (char *)NULL);
+		       NULL);
     }
     return TCL_ERROR;
   }

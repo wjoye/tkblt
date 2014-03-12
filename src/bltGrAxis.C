@@ -537,35 +537,26 @@ static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
   }
 
-  Axis* axisPtr;
   int isNew;
   Tcl_HashEntry* hPtr = 
     Tcl_CreateHashEntry(&graphPtr->axes.table, string, &isNew);
   if (!isNew) {
-    axisPtr = Tcl_GetHashValue(hPtr);
-    if ((axisPtr->flags & DELETE_PENDING) == 0) {
-      Tcl_AppendResult(graphPtr->interp, "axis \"", string,
-		       "\" already exists in \"", Tcl_GetString(objv[0]),
-		       "\"", NULL);
-      return TCL_ERROR;
-    }
-    axisPtr->flags &= ~DELETE_PENDING;
+    Tcl_AppendResult(graphPtr->interp, "axis \"", string,
+		     "\" already exists in \"", Tcl_GetString(objv[0]),
+		     "\"", NULL);
+    return TCL_ERROR;
   }
-  else {
-    axisPtr = NewAxis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
-    if (!axisPtr)
-      return TCL_ERROR;
-    axisPtr->hashPtr = hPtr;
-    Tcl_SetHashValue(hPtr, axisPtr);
-  }
+
+  Axis* axisPtr = NewAxis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
+  if (!axisPtr)
+    return TCL_ERROR;
+  axisPtr->hashPtr = hPtr;
+  Tcl_SetHashValue(hPtr, axisPtr);
 
   if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr, axisPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyAxis(axisPtr);
     return TCL_ERROR;
   }
-
-  graphPtr->flags |= CACHE_DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
 
   return TCL_OK;
 }
@@ -1088,6 +1079,7 @@ static int AxisCreateOp(Tcl_Interp* interp, Graph* graphPtr,
   if (CreateAxis(interp, graphPtr, objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
+
   return TCL_OK;
 }
 
@@ -1099,8 +1091,10 @@ static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
 
   axisPtr->flags |= DELETE_PENDING;
-  if (axisPtr->refCount == 0)
+  if (axisPtr->refCount == 0) {
     Tcl_EventuallyFree(axisPtr, FreeAxis);
+    Blt_EventuallyRedrawGraph(graphPtr);
+  }
 
   return TCL_OK;
 }

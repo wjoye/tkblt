@@ -32,23 +32,20 @@
 
 #define MAX_OUTLINE_POINTS	12
 
-extern Blt_CustomOption coordsOption;
 extern Blt_CustomOption bltXAxisOption;
 extern Blt_CustomOption bltYAxisOption;
 
-typedef Marker *(MarkerCreateProc)(void);
-typedef void    (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
-typedef void    (MarkerFreeProc)(Marker *markerPtr);
-typedef int     (MarkerConfigProc)(Marker *markerPtr);
-typedef void    (MarkerMapProc)(Marker *markerPtr);
-typedef void    (MarkerPostscriptProc)(Marker *markerPtr, Blt_Ps ps);
-typedef int     (MarkerPointProc)(Marker *markerPtr, Point2d *samplePtr);
-typedef int     (MarkerRegionProc)(Marker *markerPtr, Region2d *extsPtr, 
-				   int enclosed);
+typedef Marker *(MarkerCreateProc)(Graph*);
+typedef void (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
+typedef void (MarkerFreeProc)(Marker *markerPtr);
+typedef int (MarkerConfigProc)(Marker *markerPtr);
+typedef void (MarkerMapProc)(Marker *markerPtr);
+typedef void (MarkerPostscriptProc)(Marker *markerPtr, Blt_Ps ps);
+typedef int (MarkerPointProc)(Marker *markerPtr, Point2d *samplePtr);
+typedef int (MarkerRegionProc)(Marker *markerPtr, Region2d *extsPtr, int enclosed);
 
 typedef struct {
-  Blt_ConfigSpec *configSpecs;	/* Marker configuration
-				 * specifications */
+  Tk_OptionSpec *optionSpecs;
   MarkerConfigProc *configProc;
   MarkerDrawProc *drawProc;
   MarkerFreeProc *freeProc;
@@ -56,7 +53,6 @@ typedef struct {
   MarkerPointProc *pointProc;
   MarkerRegionProc *regionProc;
   MarkerPostscriptProc *postscriptProc;
-
 }  MarkerClass;
 
 struct _Marker {
@@ -64,6 +60,7 @@ struct _Marker {
 
   MarkerClass *classPtr;
 
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   Tcl_HashEntry *hashPtr;
 
   Blt_ChainLink link;
@@ -96,6 +93,7 @@ struct _Marker {
 
 extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;
+extern Tk_ObjCustomOption joinStyleObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
 

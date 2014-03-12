@@ -107,7 +107,6 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
 		  const char* penName, ClassId classId,
 		  int objc, Tcl_Obj* const objv[])
 {
-  Pen* penPtr;
   int isNew;
   Tcl_HashEntry *hPtr = 
     Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
@@ -118,6 +117,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
   }
 
+  Pen* penPtr;
   switch (classId) {
   case CID_ELEM_BAR:
     penPtr = Blt_BarPen(graphPtr, penName);
@@ -232,7 +232,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 
     graphPtr->flags |= mask;
     graphPtr->flags |= CACHE_DIRTY;
-    if ((*penPtr->configProc) (graphPtr, penPtr) != TCL_OK)
+    if ((*penPtr->configProc)(graphPtr, penPtr) != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -255,9 +255,11 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]), graphPtr->classId, objc, objv) != TCL_OK)
+  if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]),
+		    graphPtr->classId, objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
+
   return TCL_OK;
 }
 

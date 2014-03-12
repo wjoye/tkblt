@@ -1616,12 +1616,8 @@ VectorCreate2(
  *---------------------------------------------------------------------------
  */
 /*ARGSUSED*/
-static int
-VectorCreateOp(
-    ClientData clientData,
-    Tcl_Interp* interp,
-    int objc,
-    Tcl_Obj* const objv[])
+static int VectorCreateOp(ClientData clientData, Tcl_Interp* interp,
+			  int objc, Tcl_Obj* const objv[])
 {
     return VectorCreate2(clientData, interp, 2, objc, objv);
 }

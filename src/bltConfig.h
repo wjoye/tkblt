@@ -161,14 +161,14 @@ typedef enum {
 #define BLT_STATE_ACTIVE		(1<<0)
 #define BLT_STATE_DISABLED		(1<<1)
 
+extern char* stateObjOption[];
+
 typedef struct {
     unsigned char values[12];
     int offset;
 } Blt_Dashes;
 
 #define LineIsDashed(d) ((d).values[0] != 0)
-
-extern char* stateObjOption[];
 
 extern Tk_ObjCustomOption pointObjOption;
 extern Tk_ObjCustomOption dashesObjOption;

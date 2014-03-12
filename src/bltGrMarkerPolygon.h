@@ -37,6 +37,7 @@ typedef struct {
 
   MarkerClass *classPtr;
 
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   Tcl_HashEntry *hashPtr;
 
   Blt_ChainLink link;

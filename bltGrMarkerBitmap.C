@@ -33,7 +33,7 @@
 
 #define GETBITMAP(b) (((b)->destBitmap == None) ? (b)->srcBitmap : (b)->destBitmap)
 
-static Tk_OptionSpec bitmapOptionSpecs[] = {
+static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
    "center", -1, Tk_Offset(BitmapMarker, anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-background", "background", "Background",
@@ -60,12 +60,10 @@ static Tk_OptionSpec bitmapOptionSpecs[] = {
    "x", -1, Tk_Offset(BitmapMarker, axes.x), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(BitmapMarker, axes.y), 0, &yAxisObjOption, 0},
-  {TK_OPTION_STRING, "-name", "name", "Name",
-   NULL, -1, Tk_Offset(BitmapMarker, obj.name), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
    "0", -1, Tk_Offset(BitmapMarker, reqAngle), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-state", "state", "State", 
+  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(BitmapMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(BitmapMarker, drawUnder), 0, NULL, 0},
@@ -74,52 +72,6 @@ static Tk_OptionSpec bitmapOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(BitmapMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
-};
-
-static Blt_ConfigSpec bitmapConfigSpecs[] = {
-  {BLT_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor", "center", 
-   Tk_Offset(BitmapMarker, anchor), 0},
-  {BLT_CONFIG_COLOR, "-background", "background", "Background",
-   "white", Tk_Offset(BitmapMarker, fillColor),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-bg", "background", (char*)NULL, (char*)NULL, 0, 0},
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "Bitmap all", 
-   Tk_Offset(BitmapMarker, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_BITMAP, "-bitmap", "bitmap", "Bitmap", NULL, 
-   Tk_Offset(BitmapMarker, srcBitmap), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", NULL, 
-   Tk_Offset(BitmapMarker, worldPts), BLT_CONFIG_NULL_OK, 
-   &coordsOption},
-  {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
-   Tk_Offset(BitmapMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-fg", "foreground", (char*)NULL, (char*)NULL, 0, 0},
-  {BLT_CONFIG_SYNONYM, "-fill", "background", (char*)NULL, (char*)NULL, 
-   0, 0},
-  {BLT_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
-   "black", Tk_Offset(BitmapMarker, outlineColor),
-   BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(BitmapMarker, hide), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(BitmapMarker, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(BitmapMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
-   Tk_Offset(BitmapMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_SYNONYM, "-outline", "foreground", (char*)NULL, (char*)NULL, 
-   0, 0},
-  {BLT_CONFIG_DOUBLE, "-rotate", "rotate", "Rotate", "0", 
-   Tk_Offset(BitmapMarker, reqAngle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(BitmapMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", "no", 
-   Tk_Offset(BitmapMarker, drawUnder), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", "0", 
-   Tk_Offset(BitmapMarker, xOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-yoffset", "yOffset", "YOffset", "0", 
-   Tk_Offset(BitmapMarker, yOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
 MarkerCreateProc Blt_CreateBitmapProc;
@@ -132,7 +84,7 @@ static MarkerPostscriptProc BitmapToPostscriptProc;
 static MarkerRegionProc RegionInBitmapProc;
 
 static MarkerClass bitmapMarkerClass = {
-  bitmapConfigSpecs,
+  optionSpecs,
   ConfigureBitmapProc,
   DrawBitmapProc,
   FreeBitmapProc,
@@ -142,13 +94,13 @@ static MarkerClass bitmapMarkerClass = {
   BitmapToPostscriptProc,
 };
 
-Marker* Blt_CreateBitmapProc(void)
+Marker* Blt_CreateBitmapProc(Graph* graphPtr)
 {
-  BitmapMarker *bmPtr;
-
-  bmPtr = calloc(1, sizeof(BitmapMarker));
+  BitmapMarker* bmPtr = calloc(1, sizeof(BitmapMarker));
   bmPtr->classPtr = &bitmapMarkerClass;
-  return (Marker *)bmPtr;
+  bmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
+  return (Marker*)bmPtr;
 }
 
 static int ConfigureBitmapProc(Marker *markerPtr)

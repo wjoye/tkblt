@@ -30,7 +30,7 @@
 #include "bltGraph.h"
 #include "bltGrMarkerPolygon.h"
 
-static Tk_OptionSpec polygonOptionSpecs[] = {
+static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Polygon all", -1, Tk_Offset(PolygonMarker, obj.tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
@@ -49,7 +49,7 @@ static Tk_OptionSpec polygonOptionSpecs[] = {
   {TK_OPTION_COLOR, "-fillbg", "fillbg", "FillBg", 
    NULL, -1, Tk_Offset(PolygonMarker, fillBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-join", "join", "Join", 
-   "miter", -1, Tk_Offset(PolygonMarker, joinStyle), 0, &capStyleObjOption, 0},
+   "miter", -1, Tk_Offset(PolygonMarker, joinStyle), 0, &joinStyleObjOption, 0},
   {TK_OPTION_PIXELS, "-polygonwidth", "polygonWidth", "PolygonWidth",
    "1", -1, Tk_Offset(PolygonMarker, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
@@ -58,15 +58,13 @@ static Tk_OptionSpec polygonOptionSpecs[] = {
    "x", -1, Tk_Offset(PolygonMarker, axes.x), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(PolygonMarker, axes.y), 0, &yAxisObjOption, 0},
-  {TK_OPTION_STRING, "-name", "name", "Name",
-   NULL, -1, Tk_Offset(PolygonMarker, obj.name), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
    "black", -1, Tk_Offset(PolygonMarker, outline), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-outlinebg", "outlinebg", "OutlineBg", 
    NULL, -1, Tk_Offset(PolygonMarker, outlineBg), 
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_CUSTOM, "-state", "state", "State", 
+  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(PolygonMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
    NULL, -1, Tk_Offset(PolygonMarker, stipple), TK_OPTION_NULL_OK, NULL, 0},
@@ -81,55 +79,6 @@ static Tk_OptionSpec polygonOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static Blt_ConfigSpec polygonConfigSpecs[] = {
-  {BLT_CONFIG_CUSTOM, "-bindtags", "bindTags", "BindTags", "Polygon all", 
-   Tk_Offset(PolygonMarker, obj.tags), BLT_CONFIG_NULL_OK,
-   &listOption},
-  {BLT_CONFIG_CAP_STYLE, "-cap", "cap", "Cap", "butt", 
-   Tk_Offset(PolygonMarker, capStyle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-coords", "coords", "Coords", NULL, 
-   Tk_Offset(PolygonMarker, worldPts), BLT_CONFIG_NULL_OK, &coordsOption},
-  {BLT_CONFIG_CUSTOM, "-dashes", "dashes", "Dashes", NULL, 
-   Tk_Offset(PolygonMarker, dashes), BLT_CONFIG_NULL_OK, &dashesOption},
-  {BLT_CONFIG_STRING, "-element", "element", "Element", NULL, 
-   Tk_Offset(PolygonMarker, elemName), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-fill", "fill", "Fill", "rred", 
-   Tk_Offset(PolygonMarker, fill), BLT_CONFIG_NULL_OK, NULL},
-  {BLT_CONFIG_COLOR, "-fillbg", "fillbg", "FillBg", NULL,
-   Tk_Offset(PolygonMarker, fillBg), BLT_CONFIG_NULL_OK, NULL},
-  {BLT_CONFIG_JOIN_STYLE, "-join", "join", "Join", "miter", 
-   Tk_Offset(PolygonMarker, joinStyle), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   "1", Tk_Offset(PolygonMarker, lineWidth),
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-hide", "hide", "Hide", "no", 
-   Tk_Offset(PolygonMarker, hide), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_CUSTOM, "-mapx", "mapX", "MapX", "x", 
-   Tk_Offset(PolygonMarker, axes.x), 0, &bltXAxisOption},
-  {BLT_CONFIG_CUSTOM, "-mapy", "mapY", "MapY", "y", 
-   Tk_Offset(PolygonMarker, axes.y), 0, &bltYAxisOption},
-  {BLT_CONFIG_STRING, "-name", (char*)NULL, (char*)NULL, NULL, 
-   Tk_Offset(PolygonMarker, obj.name), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_COLOR, "-outline", "outline", "Outline", 
-   "black", Tk_Offset(PolygonMarker, outline), BLT_CONFIG_NULL_OK, NULL},
-  {BLT_CONFIG_COLOR, "-outlinebg", "outlinebg", "OutlineBg", NULL,
-   Tk_Offset(PolygonMarker, outlineBg), BLT_CONFIG_NULL_OK, NULL},
-  {BLT_CONFIG_CUSTOM, "-state", "state", "State", "normal", 
-   Tk_Offset(PolygonMarker, state), BLT_CONFIG_DONT_SET_DEFAULT, &stateOption},
-  {BLT_CONFIG_BITMAP, "-stipple", "stipple", "Stipple", NULL, 
-   Tk_Offset(PolygonMarker, stipple), BLT_CONFIG_NULL_OK},
-  {BLT_CONFIG_BOOLEAN, "-under", "under", "Under", "no", 
-   Tk_Offset(PolygonMarker, drawUnder), 
-   BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-xoffset", "xOffset", "XOffset", "0", 
-   Tk_Offset(PolygonMarker, xOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_BOOLEAN, "-xor", "xor", "Xor", "no", 
-   Tk_Offset(PolygonMarker, xor), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_PIXELS, "-yoffset", "yOffset", "YOffset", "0", 
-   Tk_Offset(PolygonMarker, yOffset), BLT_CONFIG_DONT_SET_DEFAULT},
-  {BLT_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
-};
-
 MarkerCreateProc Blt_CreatePolygonProc;
 static MarkerConfigProc ConfigurePolygonProc;
 static MarkerDrawProc DrawPolygonProc;
@@ -140,7 +89,7 @@ static MarkerPostscriptProc PolygonToPostscriptProc;
 static MarkerRegionProc RegionInPolygonProc;
 
 static MarkerClass polygonMarkerClass = {
-  polygonConfigSpecs,
+  optionSpecs,
   ConfigurePolygonProc,
   DrawPolygonProc,
   FreePolygonProc,
@@ -150,15 +99,15 @@ static MarkerClass polygonMarkerClass = {
   PolygonToPostscriptProc,
 };
 
-Marker* Blt_CreatePolygonProc(void)
+Marker* Blt_CreatePolygonProc(Graph* graphPtr)
 {
-  PolygonMarker *pmPtr;
-
-  pmPtr = calloc(1, sizeof(PolygonMarker));
+  PolygonMarker* pmPtr = calloc(1, sizeof(PolygonMarker));
   pmPtr->classPtr = &polygonMarkerClass;
   pmPtr->capStyle = CapButt;
   pmPtr->joinStyle = JoinMiter;
-  return (Marker *)pmPtr;
+  pmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
+  return (Marker*)pmPtr;
 }
 
 static int PointInPolygonProc(Marker *markerPtr, Point2d *samplePtr)

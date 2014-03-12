@@ -490,7 +490,7 @@ extern Tk_ObjCustomOption valuesObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
 
-static Tk_OptionSpec lineElemOptionSpecs[] = {
+static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeLine", -1, Tk_Offset(LineElement, activePenPtr), 
    TK_OPTION_NULL_OK, &linePenObjOption, 0},
@@ -658,28 +658,17 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 
 // Create
 
-Element * Blt_LineElement(Graph* graphPtr, const char* name, ClassId classId)
+Element * Blt_LineElement(Graph* graphPtr)
 {
   LineElement* elemPtr = calloc(1, sizeof(LineElement));
   elemPtr->procsPtr = &lineProcs;
-  elemPtr->obj.name = Blt_Strdup(name);
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
   elemPtr->flags = SCALE_SYMBOL;
-  elemPtr->obj.graphPtr = graphPtr;
-  // this is an option and will be freed via Tk_FreeConfigOptions
-  // By default an element's name and label are the same
-  elemPtr->label = Tcl_Alloc(strlen(name)+1);
-  if (name)
-    strcpy((char*)elemPtr->label,(char*)name);
-
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitLinePen(graphPtr, elemPtr->builtinPenPtr);
   Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
 		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
-  elemPtr->stylePalette = Blt_Chain_Create();
 
-  elemPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, lineElemOptionSpecs);
+  elemPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Element*)elemPtr;
 }
@@ -734,8 +723,6 @@ static void DestroyLineProc(Graph* graphPtr, Element* basePtr)
 
   if (elemPtr->fillGC)
     Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
-
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 }
 
 static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)

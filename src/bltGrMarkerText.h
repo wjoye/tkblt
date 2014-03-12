@@ -35,6 +35,8 @@
 typedef struct {
   GraphObj obj;			/* Must be first field in marker. */
   MarkerClass *classPtr;
+
+  Tk_OptionTable optionTable;	/* Configuration specifications */
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
   const char* elemName;		/* Element associated with marker. Let's

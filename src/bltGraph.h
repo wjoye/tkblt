@@ -607,7 +607,7 @@ extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 			 Tcl_Obj* const objv[], ClassId classId);
 
 extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-				Tcl_Obj* const objv[]);
+			    Tcl_Obj* const objv[]);
 
 extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			Tcl_Obj* const objv[]);
@@ -640,6 +640,7 @@ extern Marker *Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 extern Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y);
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
+
 extern MakeTagProc Blt_MakeElementTag;
 extern MakeTagProc Blt_MakeMarkerTag;
 extern MakeTagProc Blt_MakeAxisTag;
@@ -656,11 +657,8 @@ extern void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps);
-
-extern Element *Blt_LineElement(Graph* graphPtr, const char *name, 
-				ClassId classId);
-extern Element *Blt_BarElement(Graph* graphPtr, const char *name, 
-			       ClassId classId);
+extern Element *Blt_LineElement(Graph* graphPtr);
+extern Element *Blt_BarElement(Graph* graphPtr);
 
 extern void Blt_DrawGrids(Graph* graphPtr, Drawable drawable);
 
@@ -668,9 +666,6 @@ extern void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_InitBarSetTable(Graph* graphPtr);
 extern void Blt_DestroyBarSets(Graph* graphPtr);
 
-/* ---------------------- Global declarations ------------------------ */
-
 extern const char *Blt_GraphClassName(ClassId classId);
-
 
 #endif

@@ -235,7 +235,7 @@ extern Tk_ObjCustomOption valuesObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
 
-static Tk_OptionSpec barElemOptionSpecs[] = {
+static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "activeBar", -1, Tk_Offset(BarElement, activePenPtr), 
    TK_OPTION_NULL_OK, &barPenObjOption, 0},
@@ -379,27 +379,16 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 
 // Create
 
-Element* Blt_BarElement(Graph* graphPtr, const char* name, ClassId classId)
+Element* Blt_BarElement(Graph* graphPtr)
 {
   BarElement* elemPtr = calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
-  elemPtr->obj.name = Blt_Strdup(name);
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-  elemPtr->obj.graphPtr = graphPtr;
-  // this is an option and will be freed via Tk_FreeConfigOptions
-  // By default an element's name and label are the same
-  elemPtr->label = ckalloc(strlen(name)+1);
-  if (name)
-    strcpy((char*)elemPtr->label,(char*)name);
-
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitBarPen(graphPtr, elemPtr->builtinPenPtr);
   Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
 		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
-  elemPtr->stylePalette = Blt_Chain_Create();
 
-  elemPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barElemOptionSpecs);
+  elemPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Element*)elemPtr;
 }
@@ -432,21 +421,21 @@ static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
   BarElement* elemPtr = (BarElement*)basePtr;
 
   DestroyPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
+
   if (elemPtr->activePenPtr)
     Blt_FreePen((Pen *)elemPtr->activePenPtr);
   if (elemPtr->normalPenPtr)
     Blt_FreePen((Pen *)elemPtr->normalPenPtr);
 
   ResetBar(elemPtr);
+
   if (elemPtr->stylePalette) {
     Blt_FreeStylePalette(elemPtr->stylePalette);
     Blt_Chain_Destroy(elemPtr->stylePalette);
   }
-  if (elemPtr->activeIndices) {
-    free(elemPtr->activeIndices);
-  }
 
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
+  if (elemPtr->activeIndices)
+    free(elemPtr->activeIndices);
 }
 
 static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
