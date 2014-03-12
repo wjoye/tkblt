@@ -39,6 +39,8 @@
 #include "bltOp.h"
 #include "bltConfig.h"
 
+#define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
+
 struct _Crosshairs {
   Tk_OptionTable optionTable;
   XPoint hotSpot;		/* Hot spot for crosshairs */

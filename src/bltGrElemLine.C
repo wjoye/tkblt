@@ -679,8 +679,6 @@ Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
   InitLinePen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
   penPtr->classId = CID_ELEM_LINE;
-  if (!strcmp(penName, "activeLine"))
-    penPtr->flags = ACTIVE_PEN;
 
   return (Pen*)penPtr;
 }
@@ -689,7 +687,6 @@ static void InitLinePen(Graph* graphPtr, LinePen* penPtr)
 {
   penPtr->configProc = ConfigurePenProc;
   penPtr->destroyProc = DestroyPenProc;
-  penPtr->flags = NORMAL_PEN;
 
   Blt_Ts_InitStyle(penPtr->valueStyle);
   penPtr->symbol.bitmap = None;

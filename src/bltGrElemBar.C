@@ -398,8 +398,6 @@ Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
   BarPen* penPtr = calloc(1, sizeof(BarPen));
   InitBarPen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
-  if (!strcmp(penName, "activeBar"))
-    penPtr->flags = ACTIVE_PEN;
 
   return (Pen*)penPtr;
 }
@@ -408,7 +406,6 @@ static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
 {
   penPtr->configProc = ConfigurePenProc;
   penPtr->destroyProc = DestroyPenProc;
-  penPtr->flags = NORMAL_PEN;
 
   Blt_Ts_InitStyle(penPtr->valueStyle);
 

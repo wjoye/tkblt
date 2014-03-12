@@ -40,6 +40,8 @@
 #include "bltInt.h"
 #include "bltGraph.h"
 
+#define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
+
 // Converts a string in the form "@x,y" into an XPoint structure of the x
 // and y coordinates.
 int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 

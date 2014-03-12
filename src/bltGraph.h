@@ -37,6 +37,17 @@
 #include "bltChain.h"
 #include "bltPs.h"
 
+#define MARGIN_NONE	-1
+#define MARGIN_BOTTOM	0		/* x */
+#define MARGIN_LEFT	1 		/* y */
+#define MARGIN_TOP	2		/* x2 */
+#define MARGIN_RIGHT	3		/* y2 */
+
+#define rightMargin	margins[MARGIN_RIGHT]
+#define leftMargin	margins[MARGIN_LEFT]
+#define topMargin	margins[MARGIN_TOP]
+#define bottomMargin	margins[MARGIN_BOTTOM]
+
 typedef struct _Graph Graph;
 typedef struct _Element Element;
 typedef struct _Legend Legend;
@@ -88,42 +99,6 @@ typedef struct {
 #include "bltGrAxis.h"
 #include "bltGrLegd.h"
 
-#define MARKER_UNDER	1	/* Draw markers designated to lie underneath
-				 * elements, grids, legend, etc. */
-#define MARKER_ABOVE	0	/* Draw markers designated to rest above
-				 * elements, grids, legend, etc. */
-
-#define PADX		2	/* Padding between labels/titles */
-#define PADY    	2	/* Padding between labels */
-
-#define MINIMUM_MARGIN	20	/* Minimum margin size */
-
-
-#define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
-
-/*
- *---------------------------------------------------------------------------
- *
- * 	Graph component structure definitions
- *
- *---------------------------------------------------------------------------
- */
-#define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
-
-/*
- * Mask values used to selectively enable GRAPH or BARCHART entries in the
- * various configuration specs.
- */
-#define GRAPH			(BLT_CONFIG_USER_BIT << 1)
-#define STRIPCHART		(BLT_CONFIG_USER_BIT << 2)
-#define BARCHART		(BLT_CONFIG_USER_BIT << 3)
-#define LINE_GRAPHS		(GRAPH | STRIPCHART)
-#define ALL_GRAPHS		(GRAPH | BARCHART | STRIPCHART)
-
-#define ACTIVE_PEN		(BLT_CONFIG_USER_BIT << 16)
-#define NORMAL_PEN		(BLT_CONFIG_USER_BIT << 17)
-#define ALL_PENS		(NORMAL_PEN | ACTIVE_PEN)
-
 typedef struct {
   Segment2d *segments;
   int length;
@@ -136,21 +111,6 @@ typedef struct {
   int *map;
 } GraphPoints;
 
-/*
- *---------------------------------------------------------------------------
- *
- * BarGroup --
- *
- *	Represents a sets of bars with the same abscissa. This structure is
- *	used to track the display of the bars in the group.  
- *
- *	Each unique abscissa has at least one group.  Groups can be
- *	defined by the bar element's -group option.  Multiple groups are
- *	needed when you are displaying/comparing similar sets of data (same
- *	abscissas) but belong to a separate group.
- *	
- *---------------------------------------------------------------------------
- */
 typedef struct {
   int nSegments;			/* Number of occurrences of
 					 * x-coordinate */
@@ -169,28 +129,10 @@ typedef struct {
 				 * group). */
 } BarGroup;
 
-/*
- *---------------------------------------------------------------------------
- *
- * BarSetKey --
- *
- *	Key for hash table of set of bars.  The bar set is defined by
- *	coordinates with the same abscissa (x-coordinate).
- *
- *---------------------------------------------------------------------------
- */
 typedef struct {
   float value;			/* Duplicated abscissa */
   Axis2d axes;			/* Axis mapping of element */
 } BarSetKey;
-
-/*
- * BarModes --
- *
- *	Bar elements are displayed according to their x-y coordinates.  If two
- *	bars have the same abscissa (x-coordinate), the bar segments will be
- *	drawn according to one of the following modes:
- */
 
 typedef enum BarModes {
   BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
@@ -203,16 +145,6 @@ typedef Pen *(PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
 typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
 
-/*
- *---------------------------------------------------------------------------
- *
- * Crosshairs
- *
- *	Contains the line segments positions and graphics context used to
- *	simulate crosshairs (by XOR-ing) on the graph.
- *
- *---------------------------------------------------------------------------
- */
 typedef struct _Crosshairs Crosshairs;
 
 typedef struct {
@@ -234,26 +166,6 @@ typedef struct {
 					 * left, right, top, or bottom. */
 } Margin;
 
-#define MARGIN_NONE	-1
-#define MARGIN_BOTTOM	0		/* x */
-#define MARGIN_LEFT	1 		/* y */
-#define MARGIN_TOP	2		/* x2 */
-#define MARGIN_RIGHT	3		/* y2 */
-
-#define rightMargin	margins[MARGIN_RIGHT]
-#define leftMargin	margins[MARGIN_LEFT]
-#define topMargin	margins[MARGIN_TOP]
-#define bottomMargin	margins[MARGIN_BOTTOM]
-
-/*
- *---------------------------------------------------------------------------
- *
- * Graph --
- *
- *	Top level structure containing everything pertaining to the graph.
- *
- *---------------------------------------------------------------------------
- */
 struct _Graph {
   Tcl_Interp* interp;			/* Interpreter associated with graph */
   Tk_Window tkwin;			/* Window that embodies the graph.
@@ -646,8 +558,6 @@ extern MakeTagProc Blt_MakeMarkerTag;
 extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
-
-extern int Blt_GraphType(Graph* graphPtr);
 
 extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
 

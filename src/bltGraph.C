@@ -42,6 +42,11 @@
 #include "bltOp.h"
 #include "bltGrElem.h"
 
+#define MARKER_UNDER	1	/* Draw markers designated to lie underneath
+				 * elements, grids, legend, etc. */
+#define MARKER_ABOVE	0	/* Draw markers designated to rest above
+				 * elements, grids, legend, etc. */
+
 static const char* objectClassNames[] = {
   "none",
   "XAxis", 
@@ -1291,20 +1296,6 @@ Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
     tkwin = Tk_Parent(tkwin);
   }
   return NULL;
-}
-
-int Blt_GraphType(Graph* graphPtr)
-{
-  switch (graphPtr->classId) {
-  case CID_ELEM_LINE:
-    return GRAPH;
-  case CID_ELEM_BAR:
-    return BARCHART;
-  default:
-    return 0;
-  }
-
-  return 0;
 }
 
 void Blt_ReconfigureGraph(Graph* graphPtr)	
