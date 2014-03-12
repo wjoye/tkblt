@@ -323,9 +323,6 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     return TCL_ERROR;
 
-  if (Blt_ConfigurePageSetup(graphPtr) != TCL_OK)
-    goto error;
-
   AdjustAxisPointers(graphPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_PathName(graphPtr->tkwin), -1);

@@ -392,14 +392,9 @@ struct _Graph {
 #define REDRAW_WORLD		(DRAW_LEGEND)
 #define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
 
-/*
- * ---------------------- Forward declarations ------------------------
- */
-
 extern int Blt_CreateCrosshairs(Graph* graphPtr);
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 
-extern int Blt_ConfigurePageSetup(Graph* graphPtr);
 extern void Blt_ConfigureAxes(Graph* graphPtr);
 
 extern void Blt_DestroyCrosshairs(Graph* graphPtr);

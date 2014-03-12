@@ -3805,69 +3805,8 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
  
 ClientData Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
 {
-  Tcl_HashEntry *hPtr;
   int isNew;
-
-  hPtr = Tcl_CreateHashEntry(&graphPtr->axes.tagTable, tagName, &isNew);
+  Tcl_HashEntry *hPtr = 
+    Tcl_CreateHashEntry(&graphPtr->axes.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&graphPtr->axes.tagTable, hPtr);
 }
-
-static Blt_OptionFreeProc  FreeAxisProc;
-static Blt_OptionPrintProc AxisToObjProc;
-static Blt_OptionParseProc ObjToAxisProc;
-Blt_CustomOption bltXAxisOption = {
-  ObjToAxisProc, AxisToObjProc, FreeAxisProc, (ClientData)CID_AXIS_X
-};
-Blt_CustomOption bltYAxisOption = {
-  ObjToAxisProc, AxisToObjProc, FreeAxisProc, (ClientData)CID_AXIS_Y
-};
-
-static void FreeAxisProc(ClientData clientData, Display *display,
-			 char *widgRec, int offset)
-{
-  Axis **axisPtrPtr = (Axis **)(widgRec + offset);
-
-  if (*axisPtrPtr) {
-    ReleaseAxis(*axisPtrPtr);
-    *axisPtrPtr = NULL;
-  }
-}
-
-static int ObjToAxisProc(ClientData clientData, Tcl_Interp* interp,
-			 Tk_Window tkwin, Tcl_Obj *objPtr,
-			 char *widgRec, int offset, int flags)	
-{
-  ClassId classId = (ClassId)clientData;
-  Axis **axisPtrPtr = (Axis **)(widgRec + offset);
-  Axis *axisPtr;
-  Graph* graphPtr;
-
-  if (flags & BLT_CONFIG_NULL_OK) {
-    const char *string;
-
-    string  = Tcl_GetString(objPtr);
-    if (string[0] == '\0') {
-      ReleaseAxis(*axisPtrPtr);
-      *axisPtrPtr = NULL;
-      return TCL_OK;
-    }
-  }
-  graphPtr = Blt_GetGraphFromWindowData(tkwin);
-  if (GetAxisByClass(interp, graphPtr, objPtr, classId, &axisPtr) 
-      != TCL_OK) {
-    return TCL_ERROR;
-  }
-  ReleaseAxis(*axisPtrPtr);
-  *axisPtrPtr = axisPtr;
-  return TCL_OK;
-}
-
-static Tcl_Obj *AxisToObjProc(ClientData clientData, Tcl_Interp* interp,
-			      Tk_Window tkwin, char *widgRec, 
-			      int offset, int flags)
-{
-  Axis* axisPtr = *(Axis **)(widgRec + offset);
-  const char* name = axisPtr ? axisPtr->obj.name : "";
-  return Tcl_NewStringObj(name, -1);
-}
-

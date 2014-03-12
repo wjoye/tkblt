@@ -172,32 +172,9 @@ extern Tk_ObjCustomOption pointObjOption;
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
 
-extern Blt_CustomOption stateOption;
-extern Blt_CustomOption dashesOption;
 extern Blt_OptionParseProc ObjToBitmaskProc;
 extern Blt_OptionPrintProc BitmaskToObjProc;
-extern Blt_CustomOption listOption;
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
-
-extern int Blt_ConfigureInfoFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Blt_ConfigSpec *specs, char *widgRec, Tcl_Obj *objPtr, int flags);
-
-extern int Blt_ConfigureValueFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Blt_ConfigSpec *specs, char *widgRec, Tcl_Obj *objPtr, int flags);
-
-extern int Blt_ConfigureWidgetFromObj(Tcl_Interp *interp, Tk_Window tkwin, 
-	Blt_ConfigSpec *specs, int objc, Tcl_Obj *const *objv, char *widgRec, 
-	int flags);
-
-extern int Blt_ConfigureComponentFromObj(Tcl_Interp *interp, 
-	Tk_Window tkwin, const char *name, const char *className, 
-	Blt_ConfigSpec *specs, int objc, Tcl_Obj *const *objv, char *widgRec, 
-	int flags);
-
-extern int Blt_ConfigModified TCL_VARARGS(Blt_ConfigSpec *, specs);
-
-extern void Blt_FreeOptions(Blt_ConfigSpec *specs, char *widgRec, 
-	Display *display, int needFlags);
 
 #endif /* BLT_CONFIG_H */

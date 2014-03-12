@@ -33,6 +33,7 @@
 #include "bltConfig.h"
 
 typedef struct  {
+  Tk_OptionTable optionTable;
   int reqWidth, reqHeight;	/* If greater than zero, represents the
 				 * requested dimensions of the printed graph */
   int reqPaperWidth;
