@@ -1737,7 +1737,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 
   Blt_Ps_Append(ps, "% Legend\n");
   graphPtr = legendPtr->graphPtr;
-  if (graphPtr->pageSetup->flags & PS_DECORATIONS) {
+  if (graphPtr->pageSetup->decorations) {
     if (legendPtr->normalBg)
       Blt_Ps_Fill3DRectangle(ps, legendPtr->normalBg, x, y, width, height, 
 			     legendPtr->borderWidth, legendPtr->relief);

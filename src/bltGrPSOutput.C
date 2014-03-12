@@ -48,49 +48,7 @@
 #define PS_MAXPATH	1500		/* Maximum number of components in a
 					 * PostScript (level 1) path. */
 
-#define PICA_MM		2.83464566929
-#define PICA_INCH	72.0
-#define PICA_CM		28.3464566929
-
 static Tcl_Interp *psInterp = NULL;
-
-int Blt_Ps_GetPicaFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int *picaPtr)
-{
-  char *p;
-  double pica;
-  const char *string;
-    
-  string = Tcl_GetString(objPtr);
-  pica = strtod((char *)string, &p);
-  if (p == string) {
-    goto error;
-  }
-  if (pica < 0.0) {
-    goto error;
-  }
-  while ((*p != '\0') && isspace((unsigned char)(*p))) {
-    p++;
-  }
-  switch (*p) {
-  case '\0':			     break;
-  case 'c': pica *= PICA_CM;   p++;    break;
-  case 'i': pica *= PICA_INCH; p++;    break;
-  case 'm': pica *= PICA_MM;   p++;    break;
-  case 'p': p++;                       break;
-  default:  goto error;
-  }
-  while ((*p != '\0') && isspace((unsigned char)(*p))) {
-    p++;
-  }
-  if (*p == '\0') {
-    *picaPtr = ROUND(pica);
-    return TCL_OK;
-  }
- error:
-  Tcl_AppendResult(interp, "bad screen distance \"", string, "\"", 
-		   (char *) NULL);
-  return TCL_ERROR;
-}
 
 int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
 {
@@ -104,7 +62,7 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
   hBorder = 2*setupPtr->xPad;
   vBorder = 2*setupPtr->yPad;
 
-  if (setupPtr->flags & PS_LANDSCAPE) {
+  if (setupPtr->landscape) {
     hSize = height;
     vSize = width;
   } else {
@@ -137,7 +95,7 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
     vSize = (int)((vSize * scale) + 0.5f);
   }
   setupPtr->scale = scale;
-  if (setupPtr->flags & PS_CENTER) {
+  if (setupPtr->center) {
     if (paperWidth > hSize) {
       x = (paperWidth - hSize) / 2;
     }
@@ -335,40 +293,18 @@ static void XColorToPostScript(Blt_Ps ps, XColor* colorPtr)
 
 void Blt_Ps_XSetBackground(PostScript *psPtr, XColor* colorPtr)
 {
-  /* If the color name exists in TCL array variable, use that translation */
-  if ((psPtr->setupPtr != NULL) && (psPtr->setupPtr->colorVarName != NULL)) {
-    const char *psColor;
-
-    psColor = Tcl_GetVar2(psPtr->interp, psPtr->setupPtr->colorVarName,
-			  Tk_NameOfColor(colorPtr), 0);
-    if (psColor != NULL) {
-      Blt_Ps_VarAppend(psPtr, " ", psColor, "\n", (char *)NULL);
-      return;
-    }
-  }
   XColorToPostScript(psPtr, colorPtr);
   Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (psPtr->setupPtr->flags & PS_GREYSCALE) {
+  if (psPtr->setupPtr->greyscale) {
     Blt_Ps_Append(psPtr, " currentgray setgray\n");
   }
 }
 
 void Blt_Ps_XSetForeground(PostScript *psPtr, XColor* colorPtr)
 {
-  /* If the color name exists in TCL array variable, use that translation */
-  if ((psPtr->setupPtr != NULL) && (psPtr->setupPtr->colorVarName != NULL)) {
-    const char *psColor;
-
-    psColor = Tcl_GetVar2(psPtr->interp, psPtr->setupPtr->colorVarName,
-			  Tk_NameOfColor(colorPtr), 0);
-    if (psColor != NULL) {
-      Blt_Ps_VarAppend(psPtr, " ", psColor, "\n", (char *)NULL);
-      return;
-    }
-  }
   XColorToPostScript(psPtr, colorPtr);
   Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (psPtr->setupPtr->flags & PS_GREYSCALE) {
+  if (psPtr->setupPtr->greyscale) {
     Blt_Ps_Append(psPtr, " currentgray setgray\n");
   }
 }
@@ -755,37 +691,6 @@ void Blt_Ps_XSetFont(PostScript *psPtr, Tk_Font font)
 #if 0
   Tcl_Interp* interp = psPtr->interp;
   const char *family;
-
-  /* Use the font variable information if it exists. */
-  if ((psPtr->setupPtr != NULL) && (psPtr->setupPtr->fontVarName != NULL)) {
-    char *value;
-
-    value = (char *)Tcl_GetVar2(interp, psPtr->setupPtr->fontVarName, 
-				Tk_NameOfFont(font), 0);
-    if (value != NULL) {
-      const char **argv = NULL;
-      int argc;
-      int newSize;
-      double pointSize;
-      const char *fontName;
-
-      if (Tcl_SplitList(NULL, value, &argc, &argv) != TCL_OK) {
-	return;
-      }
-      fontName = argv[0];
-      if ((argc != 2) || 
-	  (Tcl_GetInt(interp, argv[1], &newSize) != TCL_OK)) {
-	free(argv);
-	return;
-      }
-      pointSize = (double)newSize;
-      Blt_Ps_Format(psPtr, "%g /%s SetFont\n", pointSize, 
-		    fontName);
-      free(argv);
-      return;
-    }
-    /*FallThru*/
-  }
 
   /*
    * Check to see if it's a PostScript font. Tk_PostScriptFontName silently

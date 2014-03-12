@@ -43,13 +43,16 @@ typedef struct  {
   int xPad, yPad;		/* Requested padding on the exterior of the
 				 * graph. This forms the bounding box for
 				 * the page. */
-  const char *colorVarName;	/* If non-NULL, is the name of a TCL array
-				 * variable containing X to output device color
-				 * translations */
   const char *fontVarName;	/* If non-NULL, is the name of a TCL array
 				 * variable containing X to output device font
 				 * translations */
   int level;			/* PostScript Language level 1-3 */
+
+  int decorations;
+  int center;
+  int footer;
+  int greyscale;
+  int landscape;
   unsigned int flags;
 
   const char **comments;	/* User supplied comments to be added. */
@@ -67,12 +70,8 @@ typedef struct  {
     
 } PageSetup;
 
-#define PS_GREYSCALE	(1<<0)
-#define PS_LANDSCAPE	(1<<2)
-#define PS_CENTER	(1<<3)
 #define PS_MAXPECT	(1<<4)
-#define PS_DECORATIONS	(1<<5)
-#define PS_FOOTER	(1<<6)
+
 #define PS_FMT_NONE	0
 #define PS_FMT_MASK	(PS_FMT_WMF|PS_FMT_EPSI|PS_FMT_TIFF)
 #define PS_FMT_WMF	(1<<8)
@@ -107,9 +106,6 @@ extern void Blt_Ps_SetClearBackground(Blt_Ps ps);
 
 extern int Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, 
 			      const char *fileName);
-
-extern int Blt_Ps_GetPicaFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
-				 int *picaPtr);
 
 extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 
