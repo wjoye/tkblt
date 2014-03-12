@@ -437,32 +437,30 @@ static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp,
 static int FindOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  Blt_ChainLink link;
-  Region2d extents;
-  const char* string;
-  int enclosed;
-  int left, right, top, bottom;
-  int mode;
-
 #define FIND_ENCLOSED	 (1<<0)
 #define FIND_OVERLAPPING (1<<1)
-  string = Tcl_GetString(objv[3]);
-  if (strcmp(string, "enclosed") == 0) {
+  const char* string = Tcl_GetString(objv[3]);
+  int mode;
+  if (strcmp(string, "enclosed") == 0)
     mode = FIND_ENCLOSED;
-  } else if (strcmp(string, "overlapping") == 0) {
+  else if (strcmp(string, "overlapping") == 0)
     mode = FIND_OVERLAPPING;
-  } else {
+  else {
     Tcl_AppendResult(interp, "bad search type \"", string, 
-		     ": should be \"enclosed\", or \"overlapping\"", (char*)NULL);
+		     ": should be \"enclosed\", or \"overlapping\"",
+		     NULL);
     return TCL_ERROR;
   }
 
+  int left, right, top, bottom;
   if ((Tcl_GetIntFromObj(interp, objv[4], &left) != TCL_OK) ||
       (Tcl_GetIntFromObj(interp, objv[5], &top) != TCL_OK) ||
       (Tcl_GetIntFromObj(interp, objv[6], &right) != TCL_OK) ||
       (Tcl_GetIntFromObj(interp, objv[7], &bottom) != TCL_OK)) {
     return TCL_ERROR;
   }
+
+  Region2d extents;
   if (left < right) {
     extents.left = (double)left;
     extents.right = (double)right;
@@ -477,8 +475,9 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
     extents.top = (double)bottom;
     extents.bottom = (double)top;
   }
-  enclosed = (mode == FIND_ENCLOSED);
-  for (link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
+
+  int enclosed = (mode == FIND_ENCLOSED);
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker *markerPtr;
 
@@ -497,6 +496,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_OK;
     }
   }
+
   Tcl_SetStringObj(Tcl_GetObjResult(interp), "", -1);
   return TCL_OK;
 }
@@ -504,33 +504,21 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
 static int NamesOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
-  Tcl_Obj *listObjPtr;
-
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
-    Blt_ChainLink link;
-
-    for (link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      Marker *markerPtr;
-
-      markerPtr = Blt_Chain_GetValue(link);
+      Marker* markerPtr = Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
 			       Tcl_NewStringObj(markerPtr->obj.name, -1));
     }
-  } else {
-    Blt_ChainLink link;
-
-    for (link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+  } 
+  else {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      Marker *markerPtr;
-      int i;
-
-      markerPtr = Blt_Chain_GetValue(link);
-      for (i = 3; i < objc; i++) {
-	const char* pattern;
-
-	pattern = Tcl_GetString(objv[i]);
+      Marker* markerPtr = Blt_Chain_GetValue(link);
+      for (int ii = 3; ii<objc; ii++) {
+	const char* pattern = Tcl_GetString(objv[ii]);
 	if (Tcl_StringMatch(markerPtr->obj.name, pattern)) {
 	  Tcl_ListObjAppendElement(interp, listObjPtr,
 				   Tcl_NewStringObj(markerPtr->obj.name, -1));
@@ -539,6 +527,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
       }
     }
   }
+
   Tcl_SetObjResult(interp, listObjPtr);
   return TCL_OK;
 }
@@ -546,37 +535,31 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  Blt_ChainLink link, place;
   Marker *markerPtr;
-  const char* string;
-
-  /* Find the marker to be raised or lowered. */
-  if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK) {
+  if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
-  }
-  /* Right now it's assumed that all markers are always in the display
-     list. */
-  link = markerPtr->link;
+
+  // Right now it's assumed that all markers are always in the display list
+  Blt_ChainLink link = markerPtr->link;
   Blt_Chain_UnlinkLink(graphPtr->markers.displayList, markerPtr->link);
 
-  place = NULL;
+  Blt_ChainLink place = NULL;
   if (objc == 5) {
-    if (GetMarkerFromObj(interp, graphPtr, objv[4], &markerPtr) != TCL_OK) {
+    if (GetMarkerFromObj(interp, graphPtr, objv[4], &markerPtr) != TCL_OK)
       return TCL_ERROR;
-    }
     place = markerPtr->link;
   }
 
-  /* Link the marker at its new position. */
-  string = Tcl_GetString(objv[2]);
-  if (string[0] == 'l') {
+  // Link the marker at its new position
+  const char* string = Tcl_GetString(objv[2]);
+  if (string[0] == 'l')
     Blt_Chain_LinkAfter(graphPtr->markers.displayList, link, place);
-  } else {
+  else
     Blt_Chain_LinkBefore(graphPtr->markers.displayList, link, place);
-  }
-  if (markerPtr->drawUnder) {
+
+  if (markerPtr->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
-  }
+
   Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
@@ -642,20 +625,17 @@ int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp,
 
 static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
 {
-  char c;
-  const char* expr;
-    
-  expr = Tcl_GetString(objPtr);
-  c = expr[0];
-  if ((c == 'I') && (strcmp(expr, "Inf") == 0)) {
+  const char* expr = Tcl_GetString(objPtr);
+  char c = expr[0];
+  if ((c == 'I') && (strcmp(expr, "Inf") == 0))
     *valuePtr = DBL_MAX;		/* Elastic upper bound */
-  } else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0)) {
+  else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0))
     *valuePtr = -DBL_MAX;		/* Elastic lower bound */
-  } else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0)) {
+  else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
     *valuePtr = DBL_MAX;		/* Elastic upper bound */
-  } else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK) {
+  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
     return TCL_ERROR;
-  }
+
   return TCL_OK;
 }
 
@@ -672,19 +652,16 @@ static Tcl_Obj* PrintCoordinate(double x)
 static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
 			    int objc, Tcl_Obj* const objv[])
 {
-  int nWorldPts;
-  int minArgs, maxArgs;
-  Point2d *worldPts;
-  int i;
-
-  if (objc == 0) {
+  if (objc == 0)
     return TCL_OK;
-  }
+
   if (objc & 1) {
     Tcl_AppendResult(interp, "odd number of marker coordinates specified",
 		     (char*)NULL);
     return TCL_ERROR;
   }
+
+  int minArgs, maxArgs;
   switch (markerPtr->obj.classId) {
   case CID_MARKER_LINE:
     minArgs = 4, maxArgs = 0;
@@ -715,8 +692,8 @@ static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
 		     (char*)NULL);
     return TCL_ERROR;
   }
-  nWorldPts = objc / 2;
-  worldPts = malloc(nWorldPts * sizeof(Point2d));
+  int nWorldPts = objc / 2;
+  Point2d* worldPts = malloc(nWorldPts * sizeof(Point2d));
   if (worldPts == NULL) {
     Tcl_AppendResult(interp, "can't allocate new coordinate array",
 		     (char*)NULL);
@@ -727,11 +704,10 @@ static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
     Point2d *pp;
 
     pp = worldPts;
-    for (i = 0; i < objc; i += 2) {
+    for (int ii=0; ii<objc; ii+=2) {
       double x, y;
-	    
-      if ((GetCoordinate(interp, objv[i], &x) != TCL_OK) ||
-	  (GetCoordinate(interp, objv[i + 1], &y) != TCL_OK)) {
+      if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
+	  (GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
 	free(worldPts);
 	return TCL_ERROR;
       }
@@ -740,12 +716,13 @@ static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
   }
   /* Don't free the old coordinate array until we've parsed the new
    * coordinates without errors.  */
-  if (markerPtr->worldPts) {
+  if (markerPtr->worldPts)
     free(markerPtr->worldPts);
-  }
+
   markerPtr->worldPts = worldPts;
   markerPtr->nWorldPts = nWorldPts;
   markerPtr->flags |= MAP_ITEM;
+
   return TCL_OK;
 }
 
@@ -783,7 +760,7 @@ static double HMap(Axis *axisPtr, double x)
   if (axisPtr->descending)
     x = 1.0 - x;
 
-  /* Horizontal transformation */
+  // Horizontal transformation
   return (x * axisPtr->screenRange + axisPtr->screenMin);
 }
 
@@ -805,15 +782,16 @@ static double VMap(Axis *axisPtr, double y)
   if (axisPtr->descending) {
     y = 1.0 - y;
   }
-  /* Vertical transformation. */
+
+  // Vertical transformation
   return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
 }
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
 {
-  Point2d result;
   Graph* graphPtr = axesPtr->y->obj.graphPtr;
 
+  Point2d result;
   if (graphPtr->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
     result.y = VMap(axesPtr->x, pointPtr->x);
@@ -827,19 +805,17 @@ Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj *objPtr, Marker **markerPtrPtr)
 {
-  Tcl_HashEntry *hPtr;
-  const char* string;
-
-  string = Tcl_GetString(objPtr);
-  hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, string);
+  const char* string = Tcl_GetString(objPtr);
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, string);
   if (hPtr) {
     *markerPtrPtr = Tcl_GetHashValue(hPtr);
     return TCL_OK;
   }
   if (interp) {
     Tcl_AppendResult(interp, "can't find marker \"", string, 
-		     "\" in \"", Tk_PathName(graphPtr->tkwin), (char*)NULL);
+		     "\" in \"", Tk_PathName(graphPtr->tkwin), NULL);
   }
+
   return TCL_ERROR;
 }
 
@@ -920,10 +896,9 @@ void Blt_DestroyMarkers(Graph* graphPtr)
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->markers.table, &iter); 
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
     Marker* markerPtr = Tcl_GetHashValue(hPtr);
-    /*
-     * Dereferencing the pointer to the hash table prevents the hash table
-     * entry from being automatically deleted.
-     */
+
+    // Dereferencing the pointer to the hash table prevents the hash table
+    // entry from being automatically deleted.
     markerPtr->hashPtr = NULL;
     DestroyMarker(markerPtr);
   }
