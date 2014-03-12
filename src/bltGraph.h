@@ -49,8 +49,11 @@
 #define bottomMargin	margins[MARGIN_BOTTOM]
 
 typedef struct _Graph Graph;
-typedef struct _Element Element;
 typedef struct _Legend Legend;
+typedef struct _Crosshairs Crosshairs;
+typedef struct _Element Element;
+typedef struct _Pen Pen;
+typedef struct _Marker Marker;
 
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
@@ -106,12 +109,6 @@ typedef struct {
 } GraphSegments;
 
 typedef struct {
-  Point2d *points;
-  int length;
-  int *map;
-} GraphPoints;
-
-typedef struct {
   int nSegments;			/* Number of occurrences of
 					 * x-coordinate */
   Axis2d axes;			/* The axes associated with this
@@ -138,14 +135,9 @@ typedef enum BarModes {
   BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
 } BarMode;
 
-typedef struct _Pen Pen;
-typedef struct _Marker Marker;
-
 typedef Pen *(PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
 typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
-
-typedef struct _Crosshairs Crosshairs;
 
 typedef struct {
   short int width, height;		/* Dimensions of the margin */
