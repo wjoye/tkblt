@@ -57,7 +57,7 @@ static int PointSetProc(ClientData clientData, Tcl_Interp *interp,
 			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			int offset, char* save, int flags)
 {
-  XPoint *pointPtr = (XPoint *)(widgRec + offset);
+  XPoint* pointPtr = (XPoint*)(widgRec+offset);
   int x, y;
 
   if (Blt_GetXY(interp, tkwin, Tcl_GetString(*objPtr), &x, &y) != TCL_OK)
@@ -72,7 +72,7 @@ static int PointSetProc(ClientData clientData, Tcl_Interp *interp,
 static Tcl_Obj* PointGetProc(ClientData clientData, Tk_Window tkwin, 
 			     char *widgRec, int offset)
 {
-  XPoint *pointPtr = (XPoint *)(widgRec + offset);
+  XPoint* pointPtr = (XPoint*)(widgRec+offset);
 
   if ((pointPtr->x != -SHRT_MAX) && (pointPtr->y != -SHRT_MAX)) {
     char string[200];
@@ -95,40 +95,44 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
 			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			 int offset, char* save, int flags)
 {
-  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
+  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec+offset);
 
   int length;
   const char* string = Tcl_GetStringFromObj(*objPtr, &length);
-  if (string == NULL) {
+  if (!string) {
     dashesPtr->values[0] = 0;
     return TCL_OK;
   }
 
-  if (!string[0]) {
+  if (!string[0])
     dashesPtr->values[0] = 0;
-  } else if (!strncmp(string, "dot", length)) {	
+  else if (!strncmp(string, "dot", length)) {	
     /* 1 */
     dashesPtr->values[0] = 1;
     dashesPtr->values[1] = 0;
-  } else if (!strncmp(string, "dash", length)) {	
+  }
+  else if (!strncmp(string, "dash", length)) {	
     /* 5 2 */
     dashesPtr->values[0] = 5;
     dashesPtr->values[1] = 2;
     dashesPtr->values[2] = 0;
-  } else if (!strncmp(string, "dashdot", length)) { 
+  }
+  else if (!strncmp(string, "dashdot", length)) { 
     /* 2 4 2 */
     dashesPtr->values[0] = 2;
     dashesPtr->values[1] = 4;
     dashesPtr->values[2] = 2;
     dashesPtr->values[3] = 0;
-  } else if (!strncmp(string, "dashdotdot", length)) { 
+  }
+  else if (!strncmp(string, "dashdotdot", length)) { 
     /* 2 4 2 2 */
     dashesPtr->values[0] = 2;
     dashesPtr->values[1] = 4;
     dashesPtr->values[2] = 2;
     dashesPtr->values[3] = 2;
     dashesPtr->values[4] = 0;
-  } else {
+  }
+  else {
     int objc;
     Tcl_Obj** objv;
     if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
@@ -139,6 +143,7 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
 		       string, "\"", (char *)NULL);
       return TCL_ERROR;
     }
+
     int ii;
     for (ii=0; ii<objc; ii++) {
       int value;
@@ -160,16 +165,18 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
       }
       dashesPtr->values[ii] = (unsigned char)value;
     }
-    /* Make sure the array ends with a NUL byte  */
+
+    // Make sure the array ends with a NUL byte
     dashesPtr->values[ii] = 0;
   }
+
   return TCL_OK;
 };
 
 static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin, 
 			     char *widgRec, int offset)
 {
-  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
+  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec+offset);
 
   // count how many
   int cnt =0;
@@ -200,7 +207,7 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		       int offset, char* save, int flags)
 {
-  const char*** listPtr = (const char***)(widgRec + offset);
+  const char*** listPtr = (const char***)(widgRec+offset);
 
   const char** argv;
   int argc;
@@ -219,7 +226,7 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
 static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin, 
 			    char *widgRec, int offset)
 {
-  const char*** listPtr = (const char***)(widgRec + offset);
+  const char*** listPtr = (const char***)(widgRec+offset);
 
   // count how many
   int cnt=0;
