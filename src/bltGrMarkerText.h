@@ -75,6 +75,4 @@ typedef struct {
   GC fillGC;
 } TextMarker;
 
-extern MarkerCreateProc Blt_CreateTextProc;
-
 #endif

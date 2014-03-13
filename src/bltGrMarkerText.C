@@ -27,13 +27,15 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltGraph.h"
-#include "bltGrMarkerText.h"
 #include "bltMath.h"
+Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
+int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
+void Blt_FreeMarker(char*);
+};
 
-extern Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
-extern int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
-extern void Blt_FreeMarker(char*);
+#include "bltGrMarkerText.h"
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
@@ -106,7 +108,7 @@ static MarkerClass textMarkerClass = {
 
 Marker* Blt_CreateTextProc(Graph* graphPtr)
 {
-  TextMarker* tmPtr = calloc(1, sizeof(TextMarker));
+  TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
   Blt_Ts_InitStyle(tmPtr->style);
   tmPtr->style.anchor = TK_ANCHOR_NW;
