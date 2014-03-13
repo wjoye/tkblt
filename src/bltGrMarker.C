@@ -85,10 +85,10 @@ static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
 			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			 int offset, char* save, int flags)
 {
-  Marker *markerPtr = (Marker *)widgRec;
+  Marker* markerPtr = (Marker*)widgRec;
 
   int objc;
-  Tcl_Obj **objv;
+  Tcl_Obj** objv;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
 
@@ -675,18 +675,22 @@ static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
   int minArgs, maxArgs;
   switch (markerPtr->obj.classId) {
   case CID_MARKER_LINE:
-    minArgs = 4, maxArgs = 0;
+    minArgs = 4;
+    maxArgs = 0;
     break;
   case CID_MARKER_POLYGON:
-    minArgs = 6, maxArgs = 0;
+    minArgs = 6;
+    maxArgs = 0;
     break;
   case CID_MARKER_WINDOW:
   case CID_MARKER_TEXT:
-    minArgs = 2, maxArgs = 2;
+    minArgs = 2;
+    maxArgs = 2;
     break;
   case CID_MARKER_IMAGE:
   case CID_MARKER_BITMAP:
-    minArgs = 2, maxArgs = 4;
+    minArgs = 2;
+    maxArgs = 4;
     break;
   default:
     Tcl_AppendResult(interp, "unknown marker type", (char*)NULL);
@@ -711,22 +715,19 @@ static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
     return TCL_ERROR;
   }
 
-  {
-    Point2d *pp;
-
-    pp = worldPts;
-    for (int ii=0; ii<objc; ii+=2) {
-      double x, y;
-      if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
-	  (GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
-	free(worldPts);
-	return TCL_ERROR;
-      }
-      pp->x = x, pp->y = y, pp++;
+  Point2d* pp = worldPts;
+  for (int ii=0; ii<objc; ii+=2) {
+    double x, y;
+    if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
+	(GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
+      free(worldPts);
+      return TCL_ERROR;
     }
+    pp->x = x, pp->y = y, pp++;
   }
-  /* Don't free the old coordinate array until we've parsed the new
-   * coordinates without errors.  */
+
+  // Don't free the old coordinate array until we've parsed the new
+  // coordinates without errors.
   if (markerPtr->worldPts)
     free(markerPtr->worldPts);
 
