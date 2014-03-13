@@ -76,10 +76,9 @@ extern "C" {
 
 static Tk_CustomOptionSetProc CoordsSetProc;
 static Tk_CustomOptionGetProc CoordsGetProc;
-static Tk_CustomOptionFreeProc CoordsFreeProc;
 Tk_ObjCustomOption coordsObjOption =
   {
-    "coords", CoordsSetProc, CoordsGetProc, NULL, CoordsFreeProc, NULL
+    "coords", CoordsSetProc, CoordsGetProc, NULL, NULL, NULL
   };
 
 static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -118,12 +117,6 @@ static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin,
   return listObjPtr;
 }
 
-static void CoordsFreeProc(ClientData clientData, Tk_Window tkwin, char* ptr)
-{
-  int i =0;
-  i++;
-}
-
 static Tk_CustomOptionSetProc CapStyleSetProc;
 static Tk_CustomOptionGetProc CapStyleGetProc;
 Tk_ObjCustomOption capStyleObjOption =
@@ -135,7 +128,7 @@ static int CapStyleSetProc(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			   int offset, char* save, int flags)
 {
-  int* ptr = (int*)(widgRec+offset);
+  int* ptr = (int*)(widgRec + offset);
 
   Tk_Uid uid = Tk_GetUid(Tcl_GetString(*objPtr));
   int cap;
@@ -149,7 +142,7 @@ static int CapStyleSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* CapStyleGetProc(ClientData clientData, Tk_Window tkwin, 
 			      char *widgRec, int offset)
 {
-  int* ptr = (int*)(widgRec+offset);
+  int* ptr = (int*)(widgRec + offset);
   return Tcl_NewStringObj(Tk_NameOfCapStyle(*ptr), -1);
 }
 
@@ -164,7 +157,7 @@ static int JoinStyleSetProc(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			   int offset, char* save, int flags)
 {
-  int* ptr = (int*)(widgRec+offset);
+  int* ptr = (int*)(widgRec + offset);
 
   Tk_Uid uid = Tk_GetUid(Tcl_GetString(*objPtr));
   int join;
@@ -178,7 +171,7 @@ static int JoinStyleSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* JoinStyleGetProc(ClientData clientData, Tk_Window tkwin, 
 			      char *widgRec, int offset)
 {
-  int* ptr = (int*)(widgRec+offset);
+  int* ptr = (int*)(widgRec + offset);
   return Tcl_NewStringObj(Tk_NameOfJoinStyle(*ptr), -1);
 }
 
@@ -274,6 +267,12 @@ static void DestroyMarker(Marker *markerPtr)
 
   if (markerPtr->link)
     Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
+
+  //  if (markerPtr->axes)
+    //    ReleaseAxis(markerPtr->axes);
+
+  if (markerPtr->worldPts)
+    free(markerPtr->worldPts);
 
   // will be freed via Tk_FreeConfigOptions
   //  if (markerPtr->obj.name)
