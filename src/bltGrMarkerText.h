@@ -32,7 +32,8 @@
 
 #include "bltGrMarker.h"
 
-typedef struct {
+class TextMarker {
+ public:
   GraphObj obj;			/* Must be first field in marker. */
   MarkerClass *classPtr;
 
@@ -73,6 +74,6 @@ typedef struct {
   Point2d outline[5];
   XColor* fillColor;
   GC fillGC;
-} TextMarker;
+};
 
 #endif

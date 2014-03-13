@@ -32,7 +32,8 @@
 
 #include "bltGrMarker.h"
 
-typedef struct {
+class PolygonMarker {
+ public:
   GraphObj obj;			/* Must be first field in marker. */
 
   MarkerClass *classPtr;
@@ -115,6 +116,6 @@ typedef struct {
   int xorState;			/* State of the XOR drawing. Indicates
 				 * if the marker is visible. We have to
 				 * drawn it again to erase it. */
-} PolygonMarker;
+};
 
 #endif

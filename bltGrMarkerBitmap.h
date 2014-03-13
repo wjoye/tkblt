@@ -32,7 +32,8 @@
 
 #include "bltGrMarker.h"
 
-typedef struct {
+class BitmapMarker {
+ public:
   GraphObj obj;			/* Must be first field in marker. */
 
   MarkerClass *classPtr;
@@ -94,6 +95,6 @@ typedef struct {
   Point2d outline[MAX_OUTLINE_POINTS];/* Polygon representing the background
 				       * of the bitmap. */
   int nOutlinePts;
-} BitmapMarker;
+};
 
 #endif

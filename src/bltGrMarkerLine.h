@@ -32,7 +32,8 @@
 
 #include "bltGrMarker.h"
 
-typedef struct {
+class LineMarker {
+ public:
   GraphObj obj;			/* Must be first field in marker. */
 
   MarkerClass *classPtr;
@@ -70,6 +71,9 @@ typedef struct {
 
   int state;
 
+  struct {
+  } opts;
+
   XColor* fillColor;
   XColor* outlineColor;		/* Foreground and background colors */
 
@@ -90,6 +94,6 @@ typedef struct {
   int xorr;
   int xorState;			/* State of the XOR drawing. Indicates
 				 * if the marker is currently drawn. */
-} LineMarker;
+};
 
 #endif
