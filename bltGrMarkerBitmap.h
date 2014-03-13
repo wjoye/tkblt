@@ -96,6 +96,4 @@ typedef struct {
   int nOutlinePts;
 } BitmapMarker;
 
-extern MarkerCreateProc Blt_CreateBitmapProc;
-
 #endif

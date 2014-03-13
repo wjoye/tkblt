@@ -27,15 +27,16 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltGraph.h"
 #include "bltBitmap.h"
+  Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
+  int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
+};
+
 #include "bltGrMarkerBitmap.h"
 
 #define GETBITMAP(b) (((b)->destBitmap == None) ? (b)->srcBitmap : (b)->destBitmap)
-
-extern Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
-extern int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
-extern void Blt_FreeMarker(char*);
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
@@ -100,7 +101,7 @@ static MarkerClass bitmapMarkerClass = {
 
 Marker* Blt_CreateBitmapProc(Graph* graphPtr)
 {
-  BitmapMarker* bmPtr = calloc(1, sizeof(BitmapMarker));
+  BitmapMarker* bmPtr = (BitmapMarker*)calloc(1, sizeof(BitmapMarker));
   bmPtr->classPtr = &bitmapMarkerClass;
   bmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
