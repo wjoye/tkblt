@@ -38,13 +38,13 @@ extern "C" {
 #include "bltGrMarker.h"
 
 extern "C" {
-#include "bltGrMarkerPolygon.h"
 #include "bltGrMarkerText.h"
 #include "bltGrMarkerWindow.h"
 };
 
 extern MarkerCreateProc Blt_CreateBitmapProc;
 extern MarkerCreateProc Blt_CreateLineProc;
+extern MarkerCreateProc Blt_CreatePolygonProc;
 
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 

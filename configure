@@ -5537,9 +5537,9 @@ done
 	bltGrLegd.c
 	bltGrLine.c
 	bltGrMarker.C
-	bltGrMarkerBitmap.c
+	bltGrMarkerBitmap.C
 	bltGrMarkerLine.C
-	bltGrMarkerPolygon.c
+	bltGrMarkerPolygon.C
 	bltGrMarkerText.c
 	bltGrMarkerWindow.c
 	bltGrMisc.c

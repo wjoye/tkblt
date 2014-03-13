@@ -117,6 +117,4 @@ typedef struct {
 				 * drawn it again to erase it. */
 } PolygonMarker;
 
-extern MarkerCreateProc Blt_CreatePolygonProc;
-
 #endif
