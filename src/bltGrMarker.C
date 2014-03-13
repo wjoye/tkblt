@@ -62,10 +62,6 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
 static int IsElementHidden(Marker *markerPtr);
 
 extern "C" {
-  void Blt_FreeMarker(char*);
-  Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
-  int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
-
   void Blt_DestroyMarkers(Graph* graphPtr);
   void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
   ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName);

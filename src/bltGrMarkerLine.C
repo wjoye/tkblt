@@ -29,7 +29,6 @@
 
 extern "C" {
 #include "bltGraph.h"
-  Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
 };
 
 #include "bltGrMarkerLine.h"
