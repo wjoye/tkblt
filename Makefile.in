@@ -299,6 +299,9 @@ VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win:$(srcdir)/macos
 .c.@OBJEXT@:
 	$(COMPILE) -c `@CYGPATH@ $<` -o $@
 
+.C.@OBJEXT@:
+	$(COMPILE) -c `@CYGPATH@ $<` -o $@
+
 #========================================================================
 # Distribution creation
 # You may need to tweak this target to make it work correctly.
