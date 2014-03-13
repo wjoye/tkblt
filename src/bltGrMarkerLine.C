@@ -102,8 +102,6 @@ Marker* Blt_CreateLineProc(Graph* graphPtr)
   LineMarker* lmPtr = (LineMarker*)calloc(1, sizeof(LineMarker));
   lmPtr->classPtr = &lineMarkerClass;
   lmPtr->xorr = FALSE;
-  lmPtr->capStyle = CapButt;
-  lmPtr->joinStyle = JoinMiter;
   lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker*)lmPtr;
@@ -182,11 +180,11 @@ static int ConfigureLineProc(Marker *markerPtr)
 
   drawable = Tk_WindowId(graphPtr->tkwin);
   gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
-  if (lmPtr->outlineColor != NULL) {
+  if (lmPtr->outlineColor) {
     gcMask |= GCForeground;
     gcValues.foreground = lmPtr->outlineColor->pixel;
   }
-  if (lmPtr->fillColor != NULL) {
+  if (lmPtr->fillColor) {
     gcMask |= GCBackground;
     gcValues.background = lmPtr->fillColor->pixel;
   }
@@ -213,7 +211,7 @@ static int ConfigureLineProc(Marker *markerPtr)
     }
   }
   newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lmPtr->gc != NULL) {
+  if (lmPtr->gc) {
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
   }
   if (LineIsDashed(lmPtr->dashes)) {
@@ -243,7 +241,7 @@ static void LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
     Blt_Ps_XSetLineAttributes(ps, lmPtr->outlineColor, 
 			      lmPtr->lineWidth, &lmPtr->dashes, lmPtr->capStyle,
 			      lmPtr->joinStyle);
-    if ((LineIsDashed(lmPtr->dashes)) && (lmPtr->fillColor != NULL)) {
+    if ((LineIsDashed(lmPtr->dashes)) && (lmPtr->fillColor)) {
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
       Blt_Ps_XSetBackground(ps, lmPtr->fillColor);
       Blt_Ps_Append(ps, "    ");
@@ -264,10 +262,10 @@ static void FreeLineProc(Marker *markerPtr)
   LineMarker *lmPtr = (LineMarker *)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (lmPtr->gc != NULL) {
+  if (lmPtr->gc) {
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
   }
-  if (lmPtr->segments != NULL) {
+  if (lmPtr->segments) {
     free(lmPtr->segments);
   }
 }
@@ -278,7 +276,7 @@ static void MapLineProc(Marker *markerPtr)
   LineMarker *lmPtr = (LineMarker *)markerPtr;
 
   lmPtr->nSegments = 0;
-  if (lmPtr->segments != NULL)
+  if (lmPtr->segments)
     free(lmPtr->segments);
 
   if (markerPtr->nWorldPts < 2)

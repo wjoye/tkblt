@@ -89,7 +89,6 @@ static int AxisIsHorizontal(Axis *axisPtr);
 static void FreeTickLabels(Blt_Chain chain);
 static int ConfigureAxis(Axis *axisPtr);
 static Axis *NewAxis(Graph* graphPtr, const char *name, int margin);
-static void ReleaseAxis(Axis *axisPtr);
 static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
 static void DestroyAxis(Axis *axisPtr);
@@ -125,7 +124,7 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
   if (GetAxisByClass(interp, graphPtr, *objPtr, classId, &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  ReleaseAxis(*axisPtrPtr);
+  Blt_ReleaseAxis(*axisPtrPtr);
   *axisPtrPtr = axisPtr;
 
   return TCL_OK;
@@ -1306,7 +1305,7 @@ static int AxisIsHorizontal(Axis *axisPtr)
   return ((axisPtr->obj.classId == CID_AXIS_Y) == graphPtr->inverted);
 }
 
-static void ReleaseAxis(Axis *axisPtr)
+void Blt_ReleaseAxis(Axis *axisPtr)
 {
   if (axisPtr) {
     axisPtr->refCount--;

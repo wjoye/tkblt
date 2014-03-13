@@ -123,12 +123,12 @@ static int ConfigureBitmapProc(Marker *markerPtr)
   }
   gcMask = 0;
 
-  if (bmPtr->outlineColor != NULL) {
+  if (bmPtr->outlineColor) {
     gcMask |= GCForeground;
     gcValues.foreground = bmPtr->outlineColor->pixel;
   }
 
-  if (bmPtr->fillColor != NULL) {
+  if (bmPtr->fillColor) {
     /* Opaque bitmap: both foreground and background (fill) colors
      * are used. */
     gcValues.background = bmPtr->fillColor->pixel;
@@ -146,17 +146,17 @@ static int ConfigureBitmapProc(Marker *markerPtr)
    * this particular bitmap.
    */
   newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (bmPtr->gc != NULL) {
+  if (bmPtr->gc) {
     Tk_FreeGC(graphPtr->display, bmPtr->gc);
   }
   bmPtr->gc = newGC;
 
   /* Create the background GC containing the fill color. */
 
-  if (bmPtr->fillColor != NULL) {
+  if (bmPtr->fillColor) {
     gcValues.foreground = bmPtr->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (bmPtr->fillGC != NULL) {
+    if (bmPtr->fillGC) {
       Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
     }
     bmPtr->fillGC = newGC;
@@ -400,7 +400,7 @@ static void DrawBitmapProc(Marker *markerPtr, Drawable drawable)
      * If the bitmap is rotated and a filled background is required, then
      * a filled polygon is drawn before the bitmap.
      */
-    if (bmPtr->fillColor != NULL) {
+    if (bmPtr->fillColor) {
       int i;
       XPoint polygon[MAX_OUTLINE_POINTS];
 
@@ -433,7 +433,7 @@ static void BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
   if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
     return;				/* No bitmap to display. */
   }
-  if (bmPtr->fillColor != NULL) {
+  if (bmPtr->fillColor) {
     Blt_Ps_XSetBackground(ps, bmPtr->fillColor);
     Blt_Ps_XFillPolygon(ps, bmPtr->outline, 4);
   }
@@ -458,10 +458,10 @@ static void FreeBitmapProc(Marker *markerPtr)
   BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (bmPtr->gc != NULL) {
+  if (bmPtr->gc) {
     Tk_FreeGC(graphPtr->display, bmPtr->gc);
   }
-  if (bmPtr->fillGC != NULL) {
+  if (bmPtr->fillGC) {
     Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
   }
   if (bmPtr->destBitmap != None) {

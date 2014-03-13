@@ -108,9 +108,6 @@ Marker* Blt_CreateTextProc(Graph* graphPtr)
   TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
   Blt_Ts_InitStyle(tmPtr->style);
-  tmPtr->style.anchor = TK_ANCHOR_NW;
-  tmPtr->style.xPad = 4;
-  tmPtr->style.yPad = 4;
   tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker *)tmPtr;
@@ -129,12 +126,12 @@ static int ConfigureTextProc(Marker *markerPtr)
     tmPtr->style.angle += 360.0f;
   }
   newGC = NULL;
-  if (tmPtr->fillColor != NULL) {
+  if (tmPtr->fillColor) {
     gcMask = GCForeground;
     gcValues.foreground = tmPtr->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
-  if (tmPtr->fillGC != NULL) {
+  if (tmPtr->fillGC) {
     Tk_FreeGC(graphPtr->display, tmPtr->fillGC);
   }
   tmPtr->fillGC = newGC;
@@ -257,7 +254,7 @@ static void DrawTextProc(Marker *markerPtr, Drawable drawable)
   if (tmPtr->string == NULL) {
     return;
   }
-  if (tmPtr->fillGC != NULL) {
+  if (tmPtr->fillGC) {
     XPoint points[4];
     int i;
 
@@ -272,7 +269,7 @@ static void DrawTextProc(Marker *markerPtr, Drawable drawable)
     XFillPolygon(graphPtr->display, drawable, tmPtr->fillGC, points, 4,
 		 Convex, CoordModeOrigin);
   }
-  if (tmPtr->style.color != NULL) {
+  if (tmPtr->style.color) {
     Blt_Ts_DrawText(graphPtr->tkwin, drawable, tmPtr->string, -1,
 		    &tmPtr->style, (int)tmPtr->anchorPt.x, (int)tmPtr->anchorPt.y);
   }
@@ -285,7 +282,7 @@ static void TextToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
   if (tmPtr->string == NULL) {
     return;
   }
-  if (tmPtr->fillGC != NULL) {
+  if (tmPtr->fillGC) {
     Point2d points[4];
     int i;
 

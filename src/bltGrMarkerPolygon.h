@@ -71,6 +71,8 @@ class PolygonMarker {
 
   int state;
 
+  // derived
+
   Point2d *screenPts;			/* Array of points representing the
 					 * polygon in screen coordinates. It's
 					 * not used for drawing, but to generate

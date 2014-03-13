@@ -106,8 +106,6 @@ Marker* Blt_CreatePolygonProc(Graph* graphPtr)
 {
   PolygonMarker* pmPtr = (PolygonMarker*)calloc(1, sizeof(PolygonMarker));
   pmPtr->classPtr = &polygonMarkerClass;
-  pmPtr->capStyle = CapButt;
-  pmPtr->joinStyle = JoinMiter;
   pmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker*)pmPtr;

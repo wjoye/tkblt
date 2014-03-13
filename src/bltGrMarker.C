@@ -262,21 +262,22 @@ static void DestroyMarker(Marker *markerPtr)
 
   Blt_DeleteBindings(graphPtr->bindTable, markerPtr);
 
+  if (markerPtr->obj.name)
+    free((void*)markerPtr->obj.name);
+
   if (markerPtr->hashPtr)
     Tcl_DeleteHashEntry(markerPtr->hashPtr);
 
   if (markerPtr->link)
     Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
 
-  //  if (markerPtr->axes)
-    //    ReleaseAxis(markerPtr->axes);
+  if (markerPtr->axes.x)
+    Blt_ReleaseAxis(markerPtr->axes.x);
+  if (markerPtr->axes.y)
+    Blt_ReleaseAxis(markerPtr->axes.y);
 
   if (markerPtr->worldPts)
     free(markerPtr->worldPts);
-
-  // will be freed via Tk_FreeConfigOptions
-  //  if (markerPtr->obj.name)
-  //    free((void*)(markerPtr->obj.name));
 
   Tk_FreeConfigOptions((char*)markerPtr, markerPtr->optionTable,
 		       graphPtr->tkwin);

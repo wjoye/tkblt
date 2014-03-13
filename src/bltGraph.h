@@ -494,6 +494,8 @@ extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 extern int Blt_DefAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
 			 int objc, Tcl_Obj* const objv[]);
 
+extern void Blt_ReleaseAxis(Axis *axisPtr);
+
 extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj* const objv[], ClassId classId);
 

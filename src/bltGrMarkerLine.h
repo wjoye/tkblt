@@ -71,9 +71,6 @@ class LineMarker {
 
   int state;
 
-  struct {
-  } opts;
-
   XColor* fillColor;
   XColor* outlineColor;		/* Foreground and background colors */
 
