@@ -111,7 +111,7 @@ typedef struct {
 					 * may not necessarily be closed or
 					 * connected after clipping. */
   int nOutlinePts;			/* # points in the above array. */
-  int xor;
+  int xorr;
   int xorState;			/* State of the XOR drawing. Indicates
 				 * if the marker is visible. We have to
 				 * drawn it again to erase it. */

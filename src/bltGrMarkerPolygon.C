@@ -30,6 +30,10 @@
 #include "bltGraph.h"
 #include "bltGrMarkerPolygon.h"
 
+extern Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
+extern int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
+extern void Blt_FreeMarker(char*);
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Polygon all", -1, Tk_Offset(PolygonMarker, obj.tags), 
@@ -73,7 +77,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(PolygonMarker, xOffset), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
-   "no", -1, Tk_Offset(PolygonMarker, xor), 0, NULL, 0},
+   "no", -1, Tk_Offset(PolygonMarker, xorr), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(PolygonMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -257,7 +261,7 @@ static int ConfigurePolygonProc(Marker *markerPtr)
     gcValues.line_style = (pmPtr->outlineBg == NULL)
       ? LineOnOffDash : LineDoubleDash;
   }
-  if (pmPtr->xor) {
+  if (pmPtr->xorr) {
     unsigned long pixel;
     gcValues.function = GXxor;
 
@@ -301,7 +305,7 @@ static int ConfigurePolygonProc(Marker *markerPtr)
   }
   pmPtr->fillGC = newGC;
 
-  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (pmPtr->xor)) {
+  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (pmPtr->xorr)) {
     if (drawable != None) {
       MapPolygonProc(markerPtr);
       DrawPolygonProc(markerPtr, drawable);

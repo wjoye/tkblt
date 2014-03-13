@@ -32,9 +32,6 @@
 
 #define MAX_OUTLINE_POINTS	12
 
-extern Blt_CustomOption bltXAxisOption;
-extern Blt_CustomOption bltYAxisOption;
-
 typedef Marker *(MarkerCreateProc)(Graph*);
 typedef void (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
 typedef void (MarkerFreeProc)(Marker *markerPtr);
@@ -96,9 +93,5 @@ extern Tk_ObjCustomOption capStyleObjOption;
 extern Tk_ObjCustomOption joinStyleObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
-
-Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
-int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
-void Blt_FreeMarker(char*);
 
 #endif

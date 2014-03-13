@@ -87,11 +87,9 @@ typedef struct {
 				 * necessarily be connected after
 				 * clipping. */
   int nSegments;			/* # segments in the above array. */
-  int xor;
+  int xorr;
   int xorState;			/* State of the XOR drawing. Indicates
 				 * if the marker is currently drawn. */
 } LineMarker;
-
-extern MarkerCreateProc Blt_CreateLineProc;
 
 #endif

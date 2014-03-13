@@ -31,6 +31,10 @@
 #include "bltGrMarkerText.h"
 #include "bltMath.h"
 
+extern Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
+extern int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
+extern void Blt_FreeMarker(char*);
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
    "center", -1, Tk_Offset(TextMarker, anchor), 0, NULL, 0},

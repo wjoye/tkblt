@@ -27,7 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltGraph.h"
+  Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
+};
+
 #include "bltGrMarkerLine.h"
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -68,7 +72,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(LineMarker, xOffset), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
-   "no", -1, Tk_Offset(LineMarker, xor), 0, NULL, 0},
+   "no", -1, Tk_Offset(LineMarker, xorr), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(LineMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -96,9 +100,9 @@ static MarkerClass lineMarkerClass = {
 
 Marker* Blt_CreateLineProc(Graph* graphPtr)
 {
-  LineMarker* lmPtr = calloc(1, sizeof(LineMarker));
+  LineMarker* lmPtr = (LineMarker*)calloc(1, sizeof(LineMarker));
   lmPtr->classPtr = &lineMarkerClass;
-  lmPtr->xor = FALSE;
+  lmPtr->xorr = FALSE;
   lmPtr->capStyle = CapButt;
   lmPtr->joinStyle = JoinMiter;
   lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
@@ -162,7 +166,7 @@ static void DrawLineProc(Marker *markerPtr, Drawable drawable)
 
     Blt_Draw2DSegments(graphPtr->display, drawable, lmPtr->gc, 
 		       lmPtr->segments, lmPtr->nSegments);
-    if (lmPtr->xor) {		/* Toggle the drawing state */
+    if (lmPtr->xorr) {		/* Toggle the drawing state */
       lmPtr->xorState = (lmPtr->xorState == 0);
     }
   }
@@ -195,7 +199,7 @@ static int ConfigureLineProc(Marker *markerPtr)
     gcValues.line_style = 
       (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
   }
-  if (lmPtr->xor) {
+  if (lmPtr->xorr) {
     unsigned long pixel;
     gcValues.function = GXxor;
 
@@ -217,7 +221,7 @@ static int ConfigureLineProc(Marker *markerPtr)
     Blt_SetDashes(graphPtr->display, newGC, &lmPtr->dashes);
   }
   lmPtr->gc = newGC;
-  if (lmPtr->xor) {
+  if (lmPtr->xorr) {
     if (drawable != None) {
       MapLineProc(markerPtr);
       DrawLineProc(markerPtr, drawable);
@@ -273,18 +277,15 @@ static void MapLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker *)markerPtr;
-  Point2d *srcPtr, *pend;
-  Segment2d *segments, *segPtr;
-  Point2d p, q;
-  Region2d extents;
 
   lmPtr->nSegments = 0;
-  if (lmPtr->segments != NULL) {
+  if (lmPtr->segments != NULL)
     free(lmPtr->segments);
-  }
-  if (markerPtr->nWorldPts < 2) {
-    return;				/* Too few points */
-  }
+
+  if (markerPtr->nWorldPts < 2)
+    return;
+
+  Region2d extents;
   Blt_GraphExtents(graphPtr, &extents);
 
   /* 
@@ -293,21 +294,22 @@ static void MapLineProc(Marker *markerPtr)
    * because clipping against the plot area may chop the line into several
    * disconnected segments.
    */
-  segments = malloc(markerPtr->nWorldPts * sizeof(Segment2d));
-  srcPtr = markerPtr->worldPts;
-  p = Blt_MapPoint(srcPtr, &markerPtr->axes);
+  Segment2d* segments = 
+    (Segment2d*)malloc(markerPtr->nWorldPts * sizeof(Segment2d));
+  Point2d* srcPtr = markerPtr->worldPts;
+  Point2d p = Blt_MapPoint(srcPtr, &markerPtr->axes);
   p.x += markerPtr->xOffset;
   p.y += markerPtr->yOffset;
 
-  segPtr = segments;
+  Segment2d* segPtr = segments;
+  Point2d* pend;
   for (srcPtr++, pend = markerPtr->worldPts + markerPtr->nWorldPts; 
        srcPtr < pend; srcPtr++) {
-    Point2d next;
-
-    next = Blt_MapPoint(srcPtr, &markerPtr->axes);
+    Point2d next = Blt_MapPoint(srcPtr, &markerPtr->axes);
     next.x += markerPtr->xOffset;
     next.y += markerPtr->yOffset;
-    q = next;
+    Point2d q = next;
+
     if (Blt_LineRectClip(&extents, &p, &q)) {
       segPtr->p = p;
       segPtr->q = q;

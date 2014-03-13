@@ -429,8 +429,6 @@ extern void Blt_DestroyAxes(Graph* graphPtr);
 
 extern void Blt_DestroyElements(Graph* graphPtr);
 
-extern void Blt_DestroyMarkers(Graph* graphPtr);
-
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
 
 extern void Blt_DrawAxes(Graph* graphPtr, Drawable drawable);
@@ -442,8 +440,6 @@ extern void Blt_DrawElements(Graph* graphPtr, Drawable drawable);
 extern void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable);
 
 extern void Blt_DrawGraph(Graph* graphPtr, Drawable drawable);
-
-extern void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
 
 extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
 			       Segment2d *segments, int nSegments);
@@ -472,8 +468,6 @@ extern void Blt_MapGraph(Graph* graphPtr);
 extern void Blt_MapAxes(Graph* graphPtr);
 
 extern void Blt_MapElements(Graph* graphPtr);
-
-extern void Blt_MapMarkers(Graph* graphPtr);
 
 extern void Blt_DestroyPens(Graph* graphPtr);
 
@@ -506,9 +500,6 @@ extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj* const objv[]);
 
-extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			Tcl_Obj* const objv[]);
-
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[]);
 
@@ -532,21 +523,17 @@ extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 
 extern void Blt_UpdateAxisBackgrounds(Graph* graphPtr);
 
-extern Marker *Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
-
 extern Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y);
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 
 extern MakeTagProc Blt_MakeElementTag;
-extern MakeTagProc Blt_MakeMarkerTag;
 extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
 extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
 
-extern void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
 extern void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps);
@@ -562,5 +549,14 @@ extern void Blt_InitBarSetTable(Graph* graphPtr);
 extern void Blt_DestroyBarSets(Graph* graphPtr);
 
 extern const char *Blt_GraphClassName(ClassId classId);
+
+extern void Blt_DestroyMarkers(Graph* graphPtr);
+extern void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
+extern ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName);
+extern void Blt_MapMarkers(Graph* graphPtr);
+extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
+			 int objc, Tcl_Obj* const objv[]);
+extern void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
+extern Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 
 #endif
