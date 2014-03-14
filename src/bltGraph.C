@@ -30,11 +30,14 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include "bltInt.h"
+#include "bltList.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
+}
 
 #define MARKER_UNDER	1	/* Draw markers designated to lie underneath
 				 * elements, grids, legend, etc. */
@@ -58,10 +61,14 @@ static const char* objectClassNames[] = {
 
 // Defs
 
+extern "C" {
+  int Blt_GraphCmdInitProc(Tcl_Interp* interp);
+  Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+};
+
 static Tcl_IdleProc DisplayGraph;
 static Tcl_FreeProc DestroyGraph;
 static Tk_EventProc GraphEventProc;
-Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
@@ -83,10 +90,10 @@ typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 // OptionSpecs
 
-static char* barmodeObjOption[] = 
+static const char* barmodeObjOption[] = 
   {"normal", "stacked", "aligned", "overlap", NULL};
-char* searchModeObjOption[] = {"points", "traces", "auto", NULL};
-char* searchAlongObjOption[] = {"x", "y", "both", NULL};
+const char* searchModeObjOption[] = {"points", "traces", "auto", NULL};
+const char* searchAlongObjOption[] = {"x", "y", "both", NULL};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
@@ -253,7 +260,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
     break;
   }
 
-  Graph* graphPtr = calloc(1, sizeof(Graph));
+  Graph* graphPtr = (Graph*)calloc(1, sizeof(Graph));
   ((TkWindow*)tkwin)->instanceData = graphPtr;
 
   graphPtr->tkwin = tkwin;
@@ -336,7 +343,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 // called by Tcl_DeleteCommand
 static void GraphInstCmdDeleteProc(ClientData clientData)
 {
-  Graph* graphPtr = clientData;
+  Graph* graphPtr = (Graph*)clientData;
   if (!(graphPtr->flags & GRAPH_DELETED))
     Tk_DestroyWindow(graphPtr->tkwin);
 }
@@ -373,7 +380,7 @@ static void DestroyGraph(char* dataPtr)
 
 static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 {
-  Graph* graphPtr = clientData;
+  Graph* graphPtr = (Graph*)clientData;
 
   if (eventPtr->type == Expose) {
     if (eventPtr->xexpose.count == 0) {
@@ -534,7 +541,7 @@ static void ConfigureGraph(Graph* graphPtr)
 
 static void DisplayGraph(ClientData clientData)
 {
-  Graph* graphPtr = clientData;
+  Graph* graphPtr = (Graph*)clientData;
   Tk_Window tkwin = graphPtr->tkwin;
 
   graphPtr->flags &= ~REDRAW_PENDING;
@@ -856,35 +863,34 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static Blt_OpSpec graphOps[] =
   {
-    {"axis",         1, Blt_AxisOp,        2, 0, "oper ?args?",},
-    {"bar",          2, BarOp,             2, 0, "oper ?args?",},
-    {"cget",         2, CgetOp,            3, 3, "option",},
-    {"configure",    2, ConfigureOp,       2, 0, "?option value?...",},
-    {"crosshairs",   2, Blt_CrosshairsOp,  2, 0, "oper ?args?",},
-    {"element",      2, ElementOp,         2, 0, "oper ?args?",},
-    {"extents",      2, ExtentsOp,         3, 3, "item",},
-    {"inside",       3, InsideOp,          4, 4, "winX winY",},
-    {"invtransform", 3, InvtransformOp,    4, 4, "winX winY",},
-    {"legend",       2, Blt_LegendOp,      2, 0, "oper ?args?",},
-    {"line",         2, LineOp,            2, 0, "oper ?args?",},
-    {"marker",       2, Blt_MarkerOp,      2, 0, "oper ?args?",},
-    {"pen",          2, Blt_PenOp,         2, 0, "oper ?args?",},
-    {"postscript",   2, Blt_PostScriptOp,  2, 0, "oper ?args?",},
-    {"transform",    1, TransformOp,       4, 4, "x y",},
-    {"x2axis",       2, X2AxisOp,          2, 0, "oper ?args?",},
-    {"xaxis",        2, XAxisOp,           2, 0, "oper ?args?",},
-    {"y2axis",       2, Y2AxisOp,          2, 0, "oper ?args?",},
-    {"yaxis",        2, YAxisOp,           2, 0, "oper ?args?",},
+    {"axis",         1, (void*)Blt_AxisOp,        2, 0, "oper ?args?",},
+    {"bar",          2, (void*)BarOp,             2, 0, "oper ?args?",},
+    {"cget",         2, (void*)CgetOp,            3, 3, "option",},
+    {"configure",    2, (void*)ConfigureOp,       2, 0, "?option value?...",},
+    {"crosshairs",   2, (void*)Blt_CrosshairsOp,  2, 0, "oper ?args?",},
+    {"element",      2, (void*)ElementOp,         2, 0, "oper ?args?",},
+    {"extents",      2, (void*)ExtentsOp,         3, 3, "item",},
+    {"inside",       3, (void*)InsideOp,          4, 4, "winX winY",},
+    {"invtransform", 3, (void*)InvtransformOp,    4, 4, "winX winY",},
+    {"legend",       2, (void*)Blt_LegendOp,      2, 0, "oper ?args?",},
+    {"line",         2, (void*)LineOp,            2, 0, "oper ?args?",},
+    {"marker",       2, (void*)Blt_MarkerOp,      2, 0, "oper ?args?",},
+    {"pen",          2, (void*)Blt_PenOp,         2, 0, "oper ?args?",},
+    {"postscript",   2, (void*)Blt_PostScriptOp,  2, 0, "oper ?args?",},
+    {"transform",    1, (void*)TransformOp,       4, 4, "x y",},
+    {"x2axis",       2, (void*)X2AxisOp,          2, 0, "oper ?args?",},
+    {"xaxis",        2, (void*)XAxisOp,           2, 0, "oper ?args?",},
+    {"y2axis",       2, (void*)Y2AxisOp,          2, 0, "oper ?args?",},
+    {"yaxis",        2, (void*)YAxisOp,           2, 0, "oper ?args?",},
   };
 static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
 
 int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
 			 int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = clientData;
-  GraphCmdProc* proc = Blt_GetOpFromObj(interp, nGraphOps, graphOps, 
-					BLT_OP_ARG1, objc, objv, 0);
-  if (proc == NULL)
+  Graph* graphPtr = (Graph*)clientData;
+  GraphCmdProc* proc = (GraphCmdProc*)Blt_GetOpFromObj(interp, nGraphOps, graphOps, BLT_OP_ARG1, objc, objv, 0);
+  if (!proc)
     return TCL_ERROR;
 
   Tcl_Preserve(graphPtr);
@@ -999,11 +1005,13 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   }
 
   /* Always add the name of the object to the tag array. */
-  Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->name), 0);
-  Blt_List_Append(list, (*tagProc)(graphPtr, graphObjPtr->className), 0);
+  Blt_List_Append(list, 
+		  (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
+  Blt_List_Append(list, 
+		  (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
   if (graphObjPtr->tags)
     for (const char** p = graphObjPtr->tags; *p != NULL; p++)
-      Blt_List_Append(list, (*tagProc) (graphPtr, *p), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
 }
 
 /*
@@ -1016,7 +1024,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 static ClientData PickEntry(ClientData clientData, int x, int y, 
 			    ClientData* contextPtr)
 {
-  Graph* graphPtr = clientData;
+  Graph* graphPtr = (Graph*)clientData;
 
   if (graphPtr->flags & MAP_ALL) {
     return NULL;			/* Don't pick anything until the next
@@ -1054,7 +1062,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   Element* elemPtr;
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    elemPtr = Blt_Chain_GetValue(link);
+    elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->flags & (HIDE|MAP_ITEM))
       continue;
 
@@ -1280,7 +1288,7 @@ Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
   while (tkwin) {
     TkWindow* winPtr = (TkWindow*)tkwin;
     if (winPtr->instanceData != NULL) {
-      Graph* graphPtr = (ClientData)winPtr->instanceData;
+      Graph* graphPtr = (Graph*)winPtr->instanceData;
       if (graphPtr)
 	return graphPtr;
     }

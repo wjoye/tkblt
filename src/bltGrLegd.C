@@ -185,6 +185,10 @@ struct _Legend {
 
 // Defs
 
+extern "C" {
+  Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+};
+
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[]);
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
@@ -207,10 +211,6 @@ static Tk_EventProc LegendEventProc;
 static Tcl_TimerProc BlinkCursorProc;
 static Tk_LostSelProc LostSelectionProc;
 static Tk_SelectionProc SelectionProc;
-
-extern "C" {
-extern Tcl_ObjCmdProc Blt_GraphInstCmdProc;
-};
 
 typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[]);

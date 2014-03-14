@@ -33,8 +33,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
+};
 
 #define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
 
@@ -524,14 +526,13 @@ void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc,
 			Segment2d *segments, int nSegments)
 {
-  XSegment *dp, *xsegments;
   Segment2d *sp, *send;
 
-  xsegments = malloc(nSegments * sizeof(XSegment));
-  if (xsegments == NULL) {
+  XSegment* xsegments = (XSegment*)malloc(nSegments * sizeof(XSegment));
+  if (xsegments == NULL)
     return;
-  }
-  dp = xsegments;
+
+  XSegment* dp = xsegments;
   for (sp = segments, send = sp + nSegments; sp < send; sp++) {
     dp->x1 = (short int)sp->p.x;
     dp->y1 = (short int)sp->p.y;
