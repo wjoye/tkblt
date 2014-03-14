@@ -36,14 +36,15 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdarg.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltConfig.h"
+};
 
 // State
-char* stateObjOption[] = {"normal", "active", "disabled", NULL};
+const char* stateObjOption[] = {"normal", "active", "disabled", NULL};
 
 // Point
 static Tk_CustomOptionSetProc PointSetProc;
@@ -186,7 +187,7 @@ static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
   for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewIntObj(dashesPtr->values[ii]);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
@@ -215,7 +216,7 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
 
   if (*listPtr) {
-    Tcl_Free((void*)(*listPtr));
+    Tcl_Free(*(char**)listPtr);
     *listPtr = NULL;
   }
   *listPtr = argv;
@@ -234,7 +235,7 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
   for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewStringObj(*listPtr[ii], -1);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
