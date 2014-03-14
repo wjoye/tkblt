@@ -271,6 +271,7 @@ static void DestroyMarker(Marker *markerPtr)
   if (markerPtr->link)
     Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
 
+  /*
   if (markerPtr->axes.x)
     Blt_ReleaseAxis(markerPtr->axes.x);
   if (markerPtr->axes.y)
@@ -278,6 +279,7 @@ static void DestroyMarker(Marker *markerPtr)
 
   if (markerPtr->worldPts)
     free(markerPtr->worldPts);
+  */
 
   Tk_FreeConfigOptions((char*)markerPtr, markerPtr->optionTable,
 		       graphPtr->tkwin);

@@ -88,6 +88,7 @@ static int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 static int AxisIsHorizontal(Axis *axisPtr);
 static void FreeTickLabels(Blt_Chain chain);
 static int ConfigureAxis(Axis *axisPtr);
+static void ReleaseAxis(Axis* axisPtr);
 static Axis *NewAxis(Graph* graphPtr, const char *name, int margin);
 static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
@@ -104,18 +105,22 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr,
 
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
+static Tk_CustomOptionRestoreProc AxisRestoreProc;
+static Tk_CustomOptionFreeProc AxisFreeProc;
 Tk_ObjCustomOption xAxisObjOption =
   {
-    "xaxis", AxisSetProc, AxisGetProc, NULL, NULL, (ClientData)CID_AXIS_X
+    "xaxis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc,
+    (ClientData)CID_AXIS_X
   };
 Tk_ObjCustomOption yAxisObjOption =
   {
-    "yaxis", AxisSetProc, AxisGetProc, NULL, NULL, (ClientData)CID_AXIS_Y
+    "yaxis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc,
+    (ClientData)CID_AXIS_Y
   };
 
 static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		       int offset, char* save, int flags)
+		       int offset, char* savePtr, int flags)
 {
   Axis** axisPtrPtr = (Axis**)(widgRec + offset);
   Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
@@ -124,7 +129,8 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
   if (GetAxisByClass(interp, graphPtr, *objPtr, classId, &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Blt_ReleaseAxis(*axisPtrPtr);
+  *(double*)savePtr = *(double*)axisPtrPtr;
+  
   *axisPtrPtr = axisPtr;
 
   return TCL_OK;
@@ -138,6 +144,20 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
 
   return Tcl_NewStringObj(name, -1);
 };
+
+static void AxisRestoreProc(ClientData clientData, Tk_Window tkwin,
+			    char *ptr, char *savePtr)
+{
+  *(double*)ptr = *(double*)savePtr;
+}
+
+static void AxisFreeProc(ClientData clientData, Tk_Window tkwin,
+			 char *ptr)
+{
+  Axis* axisPtr = *(Axis**)ptr;
+  if (axisPtr)
+    ReleaseAxis(axisPtr);
+}
 
 static Tk_CustomOptionSetProc LimitSetProc;
 static Tk_CustomOptionGetProc LimitGetProc;
@@ -329,10 +349,9 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_CustomOptionSetProc ObjectSetProc;
 static Tk_CustomOptionGetProc ObjectGetProc;
-static Tk_CustomOptionFreeProc ObjectFreeProc;
 Tk_ObjCustomOption objectObjOption =
   {
-    "object", ObjectSetProc, ObjectGetProc, NULL, ObjectFreeProc, NULL,
+    "object", ObjectSetProc, ObjectGetProc, NULL, NULL, NULL,
   };
 
 static int ObjectSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -353,13 +372,6 @@ static Tcl_Obj* ObjectGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Tcl_Obj** objectPtr = (Tcl_Obj**)(widgRec + offset);
   return *objectPtr;
-}
-
-static void ObjectFreeProc(ClientData clientData, Tk_Window tkwin, char* ptr)
-{
-  Tcl_Obj** objectPtr = (Tcl_Obj**)ptr;
-  if (*objectPtr)
-    Tcl_DecrRefCount(*objectPtr);
 }
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -1305,7 +1317,7 @@ static int AxisIsHorizontal(Axis *axisPtr)
   return ((axisPtr->obj.classId == CID_AXIS_Y) == graphPtr->inverted);
 }
 
-void Blt_ReleaseAxis(Axis *axisPtr)
+static void ReleaseAxis(Axis *axisPtr)
 {
   if (axisPtr) {
     axisPtr->refCount--;
