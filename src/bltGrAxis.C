@@ -123,14 +123,14 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
 		       int offset, char* savePtr, int flags)
 {
   Axis** axisPtrPtr = (Axis**)(widgRec + offset);
+  *(double*)savePtr = *(double*)axisPtrPtr;
+  
   Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
   ClassId classId = (ClassId)clientData;
   Axis* axisPtr;
   if (GetAxisByClass(interp, graphPtr, *objPtr, classId, &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  *(double*)savePtr = *(double*)axisPtrPtr;
-  
   *axisPtrPtr = axisPtr;
 
   return TCL_OK;
@@ -279,24 +279,27 @@ static Tcl_Obj* UseGetProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_CustomOptionSetProc TicksSetProc;
 static Tk_CustomOptionGetProc TicksGetProc;
+static Tk_CustomOptionRestoreProc TicksRestoreProc;
+static Tk_CustomOptionFreeProc TicksFreeProc;
 Tk_ObjCustomOption majorTicksObjOption =
   {
-    "majorTicks", TicksSetProc, TicksGetProc, NULL, NULL, 
+    "majorTicks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc,
     (ClientData)AXIS_AUTO_MAJOR,
   };
 Tk_ObjCustomOption minorTicksObjOption =
   {
-    "minorTicks", TicksSetProc, TicksGetProc, NULL, NULL, 
+    "minorTicks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc,
     (ClientData)AXIS_AUTO_MINOR,
   };
 
 static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
 			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* save, int flags)
+			int offset, char* savePtr, int flags)
 {
   Axis* axisPtr = (Axis*)widgRec;
   Ticks** ticksPtrPtr = (Ticks**)(widgRec + offset);
   unsigned long mask = (unsigned long)clientData;
+  *(double*)savePtr = *(double*)ticksPtrPtr;
 
   int objc;
   Tcl_Obj** objv;
@@ -319,8 +322,6 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
     axisPtr->flags &= ~mask;
   }
 
-  if (*ticksPtrPtr)
-    free(*ticksPtrPtr);
   *ticksPtrPtr = ticksPtr;
 
   return TCL_OK;
@@ -345,6 +346,20 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
   }
   else
     return Tcl_NewListObj(0, NULL);
+}
+
+static void TicksRestoreProc(ClientData clientData, Tk_Window tkwin,
+			    char *ptr, char *savePtr)
+{
+  *(double*)ptr = *(double*)savePtr;
+}
+
+static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
+			 char *ptr)
+{
+  Ticks* ticksPtr = *(Ticks**)ptr;
+  if (ticksPtr)
+    free(ticksPtr);
 }
 
 static Tk_CustomOptionSetProc ObjectSetProc;
