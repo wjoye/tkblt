@@ -27,8 +27,10 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltInt.h"
 #include "bltBind.h"
+};
 
 static Tk_EventProc BindProc;
 
@@ -130,7 +132,7 @@ DoEvent(
     tagArray = staticTags;
     nTags = Blt_List_GetLength(tagList);
     if (nTags >= MAX_STATIC_TAGS) {
-      tagArray = malloc(sizeof(ClientData) * nTags);
+      tagArray = (ClientData*)malloc(sizeof(ClientData) * nTags);
 	    
     } 
     nTags = 0;
@@ -357,7 +359,7 @@ PickCurrentItem(
 
 static void BindProc(ClientData clientData, XEvent *eventPtr)
 {
-  BindTable *bindPtr = clientData;
+  BindTable *bindPtr = (BindTable*)clientData;
   int mask;
 
   Tcl_Preserve(bindPtr->clientData);
@@ -559,7 +561,7 @@ Blt_BindTable Blt_CreateBindingTable(
   unsigned int mask;
   BindTable *bindPtr;
 
-  bindPtr = calloc(1, sizeof(BindTable));
+  bindPtr = (BindTable*)calloc(1, sizeof(BindTable));
   bindPtr->bindingTable = Tk_CreateBindingTable(interp);
   bindPtr->clientData = clientData;
   bindPtr->tkwin = tkwin;

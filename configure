@@ -5526,7 +5526,7 @@ done
 #-----------------------------------------------------------------------
 
     vars="
-	bltBind.c
+	bltBind.C
 	bltBitmap.c
 	bltChain.c
 	bltConfig.c

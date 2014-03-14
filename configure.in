@@ -71,7 +71,7 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
-	bltBind.c
+	bltBind.C
 	bltBitmap.c
 	bltChain.c 
 	bltConfig.c
