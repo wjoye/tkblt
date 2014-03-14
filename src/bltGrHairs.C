@@ -30,10 +30,12 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltConfig.h"
+}
 
 #define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
 
@@ -66,7 +68,7 @@ static void ConfigureCrosshairs(Graph* graphPtr);
 static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr);
 static void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr);
 typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
-	int objc, Tcl_Obj* const objv[]);
+				 int objc, Tcl_Obj* const objv[]);
 
 // OptionSpecs
 
@@ -90,7 +92,7 @@ static Tk_OptionSpec optionSpecs[] = {
 
 int Blt_CreateCrosshairs(Graph* graphPtr)
 {
-  Crosshairs* chPtr = calloc(1, sizeof(Crosshairs));
+  Crosshairs* chPtr = (Crosshairs*)calloc(1, sizeof(Crosshairs));
   chPtr->hide = TRUE;
   chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
   graphPtr->crosshairs = chPtr;
@@ -276,20 +278,19 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static Blt_OpSpec xhairOps[] =
-{
-    {"cget", 2, CgetOp, 4, 4, "option",},
-    {"configure", 2, ConfigureOp, 3, 0, "?options...?",},
-    {"off", 2, OffOp, 3, 3, "",},
-    {"on", 2, OnOp, 3, 3, "",},
-    {"toggle", 1, ToggleOp, 3, 3, "",},
-};
+  {
+    {"cget", 2, (void*)CgetOp, 4, 4, "option",},
+    {"configure", 2, (void*)ConfigureOp, 3, 0, "?options...?",},
+    {"off", 2, (void*)OffOp, 3, 3, "",},
+    {"on", 2, (void*)OnOp, 3, 3, "",},
+    {"toggle", 1, (void*)ToggleOp, 3, 3, "",},
+  };
 static int nXhairOps = sizeof(xhairOps) / sizeof(Blt_OpSpec);
 
 int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
-  GraphCrosshairProc* proc = Blt_GetOpFromObj(interp, nXhairOps, xhairOps, 
-					      BLT_OP_ARG2, objc, objv, 0);
+  GraphCrosshairProc* proc = (GraphCrosshairProc*)Blt_GetOpFromObj(interp, nXhairOps, xhairOps, BLT_OP_ARG2, objc, objv, 0);
   if (proc == NULL)
     return TCL_ERROR;
 

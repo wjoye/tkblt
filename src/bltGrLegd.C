@@ -31,11 +31,13 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
 #include "bltConfig.h"
+};
 
 /*
  *  Selection related flags:
@@ -188,15 +190,15 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
 static void ConfigureLegend(Graph* graphPtr);
-static int EntryIsSelected(Legend *legendPtr, Element* elemPtr);
+static int EntryIsSelected(Legend* legendPtr, Element* elemPtr);
 static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, 
 			     Element **elemPtrPtr);
-static void ClearSelection(Legend *legendPtr);
-static void DeselectElement(Legend *legendPtr, Element* elemPtr);
-static int SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr);
-static void EventuallyInvokeSelectCmd(Legend *legendPtr);
-static void SelectEntry(Legend *legendPtr, Element* elemPtr);
-static int CreateLegendWindow(Tcl_Interp* interp, Legend *legendPtr, 
+static void ClearSelection(Legend* legendPtr);
+static void DeselectElement(Legend* legendPtr, Element* elemPtr);
+static int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr);
+static void EventuallyInvokeSelectCmd(Legend* legendPtr);
+static void SelectEntry(Legend* legendPtr, Element* elemPtr);
+static int CreateLegendWindow(Tcl_Interp* interp, Legend* legendPtr, 
 			      const char *pathName);
 
 static Tcl_IdleProc DisplayLegend;
@@ -206,15 +208,16 @@ static Tcl_TimerProc BlinkCursorProc;
 static Tk_LostSelProc LostSelectionProc;
 static Tk_SelectionProc SelectionProc;
 
+extern "C" {
 extern Tcl_ObjCmdProc Blt_GraphInstCmdProc;
+};
 
 typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[]);
 
 // OptionSpecs
 
-static char* selectmodeObjOption[] = 
-  {"single", "multiple", NULL};
+static const char* selectmodeObjOption[] = {"single", "multiple", NULL};
 
 static Tk_CustomOptionSetProc PositionSetProc;
 static Tk_CustomOptionGetProc PositionGetProc;
@@ -284,7 +287,7 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin, 
 				char *widgRec, int offset)
 {
-  Legend *legendPtr = (Legend *)widgRec;
+  Legend* legendPtr = (Legend* )widgRec;
   Tcl_Obj *objPtr;
 
   switch (legendPtr->site) {
@@ -407,7 +410,7 @@ static Tk_OptionSpec optionSpecs[] = {
 
 int Blt_CreateLegend(Graph* graphPtr)
 {
-  Legend *legendPtr = calloc(1, sizeof(Legend));
+  Legend* legendPtr = (Legend*)calloc(1, sizeof(Legend));
   graphPtr->legend = legendPtr;
   legendPtr->graphPtr = graphPtr;
   legendPtr->tkwin = graphPtr->tkwin;
@@ -482,8 +485,8 @@ void Blt_DestroyLegend(Graph* graphPtr)
 
 static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
 {
-  Graph* graphPtr = clientData;
-  Legend *legendPtr;
+  Graph* graphPtr = (Graph*)clientData;
+  Legend* legendPtr;
 
   legendPtr = graphPtr->legend;
   if (eventPtr->type == Expose) {
@@ -648,7 +651,7 @@ static void ConfigureLegend(Graph* graphPtr)
 static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   unsigned int active, redraw;
   const char *string;
   int i;
@@ -663,9 +666,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     pattern = Tcl_GetString(objv[i]);
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (Tcl_StringMatch(elemPtr->obj.name, pattern)) {
 	fprintf(stderr, "legend %s(%s) %s is currently %d\n",
 		string, pattern, elemPtr->obj.name, 
@@ -710,9 +711,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     /* List active elements in stacking order. */
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (elemPtr->flags & LABEL_ACTIVE) {
 	Tcl_Obj *objPtr;
 
@@ -736,11 +735,9 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      const char *tagName;
-      Tcl_Obj *objPtr;
-
-      tagName = Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
-      objPtr = Tcl_NewStringObj(tagName, -1);
+      const char *tagName = 
+	(const char*)Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(tagName, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
     Tcl_SetObjResult(interp, listObjPtr);
@@ -752,20 +749,15 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
 static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
-  Tcl_Obj *listObjPtr;
-
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  Legend* legendPtr = graphPtr->legend;
+  Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (legendPtr->flags & SELECT_SORTED) {
     Blt_ChainLink link;
 
     for (link = Blt_Chain_FirstLink(legendPtr->selected); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-      Tcl_Obj *objPtr;
-
-      elemPtr = Blt_Chain_GetValue(link);
-      objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
   } else {
@@ -774,9 +766,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
     /* List of selected entries is in stacking order. */
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
       if (EntryIsSelected(legendPtr, elemPtr)) {
 	Tcl_Obj *objPtr;
@@ -793,7 +783,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
 static int FocusOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
 
   if (objc == 4) {
     Element* elemPtr;
@@ -820,7 +810,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
 
   if (((legendPtr->hide) == 0) && (legendPtr->nEntries > 0)) {
     Element* elemPtr;
@@ -836,28 +826,27 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static Blt_OpSpec legendOps[] =
-{
-    {"activate",     1, ActivateOp,      3, 0, "?pattern?...",},
-    {"bind",         1, BindOp,          3, 6, "elem sequence command",},
-    {"cget",         2, CgetOp,          4, 4, "option",},
-    {"configure",    2, ConfigureOp,     3, 0, "?option value?...",},
-    {"curselection", 2, CurselectionOp,  3, 3, "",},
-    {"deactivate",   1, ActivateOp,      3, 0, "?pattern?...",},
-    {"focus",        1, FocusOp,         4, 4, "elem",},
-    {"get",          1, GetOp,           4, 4, "elem",},
-    {"selection",    1, SelectionOp,     3, 0, "args"},
-};
+  {
+    {"activate",     1, (void*)ActivateOp,      3, 0, "?pattern?...",},
+    {"bind",         1, (void*)BindOp,          3, 6, "elem sequence command",},
+    {"cget",         2, (void*)CgetOp,          4, 4, "option",},
+    {"configure",    2, (void*)ConfigureOp,     3, 0, "?option value?...",},
+    {"curselection", 2, (void*)CurselectionOp,  3, 3, "",},
+    {"deactivate",   1, (void*)ActivateOp,      3, 0, "?pattern?...",},
+    {"focus",        1, (void*)FocusOp,         4, 4, "elem",},
+    {"get",          1, (void*)GetOp,           4, 4, "elem",},
+    {"selection",    1, (void*)SelectionOp,     3, 0, "args"},
+  };
 static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
 
 int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-    GraphLegendProc *proc = Blt_GetOpFromObj(interp, nLegendOps, legendOps, 
-					     BLT_OP_ARG2, objc, objv,0);
-    if (proc == NULL)
-	return TCL_ERROR;
+  GraphLegendProc *proc = (GraphLegendProc*)Blt_GetOpFromObj(interp, nLegendOps, legendOps, BLT_OP_ARG2, objc, objv,0);
+  if (proc == NULL)
+    return TCL_ERROR;
 
-    return (*proc)(graphPtr, interp, objc, objv);
+  return (*proc)(graphPtr, interp, objc, objv);
 }
 
 // Selection Widget Ops
@@ -865,7 +854,7 @@ int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Element* elemPtr;
 
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
@@ -885,7 +874,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
 
   ClearSelection(legendPtr);
   return TCL_OK;
@@ -894,22 +883,20 @@ static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Element* elemPtr;
-  int bool;
-
-  if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
+  if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK)
     return TCL_ERROR;
-  }
-  bool = EntryIsSelected(legendPtr, elemPtr);
-  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), bool);
+
+  int boo = EntryIsSelected(legendPtr, elemPtr);
+  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }
 
 static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp, 
 			   int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Element* elemPtr;
 
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
@@ -926,10 +913,8 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     /* Deselect entry from the list all the way back to the anchor. */
     for (link = Blt_Chain_LastLink(legendPtr->selected); link != NULL; 
 	 link = next) {
-      Element *selectPtr;
-
       next = Blt_Chain_PrevLink(link);
-      selectPtr = Blt_Chain_GetValue(link);
+      Element *selectPtr = (Element*)Blt_Chain_GetValue(link);
       if (selectPtr == legendPtr->selAnchorPtr) {
 	break;
       }
@@ -952,18 +937,16 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
-  int bool;
-
-  bool = (Blt_Chain_GetLength(legendPtr->selected) > 0);
-  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), bool);
+  Legend* legendPtr = graphPtr->legend;
+  int boo = (Blt_Chain_GetLength(legendPtr->selected) > 0);
+  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }
 
 static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Element *firstPtr, *lastPtr;
   const char *string;
 
@@ -1021,35 +1004,33 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static Blt_OpSpec selectionOps[] =
-{
-    {"anchor",   1, SelectionAnchorOp,   5, 5, "elem",},
-    {"clear",    5, SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-    {"clearall", 6, SelectionClearallOp, 4, 4, "",},
-    {"includes", 1, SelectionIncludesOp, 5, 5, "elem",},
-    {"mark",     1, SelectionMarkOp,     5, 5, "elem",},
-    {"present",  1, SelectionPresentOp,  4, 4, "",},
-    {"set",      1, SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-    {"toggle",   1, SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-};
+  {
+    {"anchor",   1, (void*)SelectionAnchorOp,   5, 5, "elem",},
+    {"clear",    5, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
+    {"clearall", 6, (void*)SelectionClearallOp, 4, 4, "",},
+    {"includes", 1, (void*)SelectionIncludesOp, 5, 5, "elem",},
+    {"mark",     1, (void*)SelectionMarkOp,     5, 5, "elem",},
+    {"present",  1, (void*)SelectionPresentOp,  4, 4, "",},
+    {"set",      1, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
+    {"toggle",   1, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
+  };
 static int nSelectionOps = sizeof(selectionOps) / sizeof(Blt_OpSpec);
 
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
-    GraphLegendProc* proc = Blt_GetOpFromObj(interp, nSelectionOps, 
-					     selectionOps, BLT_OP_ARG3, 
-					     objc, objv, 0);
-    if (proc == NULL)
-	return TCL_ERROR;
+  GraphLegendProc* proc = (GraphLegendProc*)Blt_GetOpFromObj(interp, nSelectionOps, selectionOps, BLT_OP_ARG3, objc, objv, 0);
+  if (proc == NULL)
+    return TCL_ERROR;
 
-    return (*proc)(graphPtr, interp, objc, objv);
+  return (*proc)(graphPtr, interp, objc, objv);
 }
 
 // Support
 
 static void DisplayLegend(ClientData clientData)
 {
-  Legend *legendPtr = clientData;
+  Legend* legendPtr = (Legend*)clientData;
   Graph* graphPtr;
 
   legendPtr->flags &= ~REDRAW_PENDING;
@@ -1073,7 +1054,7 @@ static void DisplayLegend(ClientData clientData)
 
 void Blt_Legend_EventuallyRedraw(Graph* graphPtr) 
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
 
   if ((legendPtr->tkwin) && !(legendPtr->flags & REDRAW_PENDING)) {
     Tcl_DoWhenIdle(DisplayLegend, legendPtr);
@@ -1083,7 +1064,7 @@ void Blt_Legend_EventuallyRedraw(Graph* graphPtr)
 
 static void SelectCmdProc(ClientData clientData) 
 {
-  Legend *legendPtr = clientData;
+  Legend* legendPtr = (Legend*)clientData;
 
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
@@ -1098,7 +1079,7 @@ static void SelectCmdProc(ClientData clientData)
   Tcl_Release(legendPtr);
 }
 
-static void EventuallyInvokeSelectCmd(Legend *legendPtr)
+static void EventuallyInvokeSelectCmd(Legend* legendPtr)
 {
   if ((legendPtr->flags & SELECT_PENDING) == 0) {
     legendPtr->flags |= SELECT_PENDING;
@@ -1106,7 +1087,7 @@ static void EventuallyInvokeSelectCmd(Legend *legendPtr)
   }
 }
 
-static void ClearSelection(Legend *legendPtr)
+static void ClearSelection(Legend* legendPtr)
 {
   Tcl_DeleteHashTable(&legendPtr->selectTable);
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
@@ -1119,13 +1100,13 @@ static void ClearSelection(Legend *legendPtr)
 
 static void LostSelectionProc(ClientData clientData)
 {
-  Legend *legendPtr = clientData;
+  Legend* legendPtr = (Legend*)clientData;
 
   if (legendPtr->exportSelection)
     ClearSelection(legendPtr);
 }
 
-static int CreateLegendWindow(Tcl_Interp* interp, Legend *legendPtr, 
+static int CreateLegendWindow(Tcl_Interp* interp, Legend* legendPtr, 
 			      const char *pathName)
 {
   Graph* graphPtr;
@@ -1155,7 +1136,7 @@ static int CreateLegendWindow(Tcl_Interp* interp, Legend *legendPtr,
   return TCL_OK;
 }
 
-static void SetLegendOrigin(Legend *legendPtr)
+static void SetLegendOrigin(Legend* legendPtr)
 {
   Graph* graphPtr;
   int x, y, w, h;
@@ -1283,14 +1264,14 @@ static void SetLegendOrigin(Legend *legendPtr)
   legendPtr->y = y + legendPtr->yPad;
 }
 
-static int EntryIsSelected(Legend *legendPtr, Element* elemPtr)
+static int EntryIsSelected(Legend* legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry*hPtr = 
     Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
   return (hPtr != NULL);
 }
 
-static void SelectElement(Legend *legendPtr, Element* elemPtr)
+static void SelectElement(Legend* legendPtr, Element* elemPtr)
 {
   int isNew;
   Tcl_HashEntry *hPtr = 
@@ -1301,18 +1282,18 @@ static void SelectElement(Legend *legendPtr, Element* elemPtr)
   }
 }
 
-static void DeselectElement(Legend *legendPtr, Element* elemPtr)
+static void DeselectElement(Legend* legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry* hPtr = 
     Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
   if (hPtr) {
-    Blt_ChainLink link = Tcl_GetHashValue(hPtr);
+    Blt_ChainLink link = (Blt_ChainLink)Tcl_GetHashValue(hPtr);
     Blt_Chain_DeleteLink(legendPtr->selected, link);
     Tcl_DeleteHashEntry(hPtr);
   }
 }
 
-static void SelectEntry(Legend *legendPtr, Element* elemPtr)
+static void SelectEntry(Legend* legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry *hPtr;
 
@@ -1339,8 +1320,8 @@ static void SelectEntry(Legend *legendPtr, Element* elemPtr)
 static ClientData PickEntryProc(ClientData clientData, int x, int y, 
 				ClientData *contextPtr)
 {
-  Graph* graphPtr = clientData;
-  Legend *legendPtr;
+  Graph* graphPtr = (Graph*)clientData;
+  Legend* legendPtr;
   int w, h;
 
   legendPtr = graphPtr->legend;
@@ -1373,9 +1354,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
       count = 0;
       for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	   link != NULL; link = Blt_Chain_NextLink(link)) {
-	Element* elemPtr;
-
-	elemPtr = Blt_Chain_GetValue(link);
+	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 	if (elemPtr->label) {
 	  if (count == n) {
 	    return elemPtr;
@@ -1393,7 +1372,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 
 void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Blt_ChainLink link;
   int nRows, nColumns, nEntries;
   int lw, lh;
@@ -1426,9 +1405,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
     unsigned int w, h;
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->label == NULL) {
       continue;			/* Element has no legend entry. */
     }
@@ -1535,9 +1512,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
     row = col = count = 0;
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       count++;
       elemPtr->row = row;
       elemPtr->col = col;
@@ -1559,7 +1534,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 {
   Blt_ChainLink link;
   Tk_FontMetrics fontMetrics;
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   Pixmap pixmap;
   Tk_Window tkwin;
   int count;
@@ -1631,10 +1606,9 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   yStart = y;
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
     int isSelected;
 
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->label == NULL) {
       continue;			/* Skip this entry */
     }
@@ -1717,7 +1691,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 
 void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
-  Legend *legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend;
   double x, y, yStart;
   int xLabel, xSymbol, ySymbol;
   int count;
@@ -1768,9 +1742,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   yStart = y;
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->label == NULL) {
       continue;			/* Skip this label */
     }
@@ -1810,9 +1782,7 @@ static Element *GetNextRow(Graph* graphPtr, Element *focusPtr)
   col = focusPtr->col;
   row = focusPtr->row + 1;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->label == NULL) {
       continue;
     }
@@ -1831,9 +1801,7 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
   col = focusPtr->col + 1;
   row = focusPtr->row;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->label == NULL) {
       continue;
     }
@@ -1846,74 +1814,53 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
 
 static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
 {
-  Blt_ChainLink link;
-  int row, col;
-
-  col = focusPtr->col;
-  row = focusPtr->row - 1;
-  for (link = focusPtr->link; link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
+  int col = focusPtr->col;
+  int row = focusPtr->row - 1;
+  for (Blt_ChainLink link = focusPtr->link; link != NULL; 
+       link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->label == NULL)
       continue;
-    }
-    if ((elemPtr->col == col) && (elemPtr->row == row)) {
+
+    if ((elemPtr->col == col) && (elemPtr->row == row))
       return elemPtr;	
-    }
   }
   return NULL;
 }
 
 static Element *GetPreviousColumn(Graph* graphPtr, Element *focusPtr)
 {
-  Blt_ChainLink link;
-  int row, col;
-
-  col = focusPtr->col - 1;
-  row = focusPtr->row;
-  for (link = focusPtr->link; link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
+  int col = focusPtr->col - 1;
+  int row = focusPtr->row;
+  for (Blt_ChainLink link = focusPtr->link; link != NULL;
+       link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->label == NULL)
       continue;
-    }
-    if ((elemPtr->col == col) && (elemPtr->row == row)) {
+
+    if ((elemPtr->col == col) && (elemPtr->row == row))
       return elemPtr;	
-    }
   }
   return NULL;
 }
 
 static Element *GetFirstElement(Graph* graphPtr)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label) {
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);link != NULL; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->label)
       return elemPtr;
-    }
   }
   return NULL;
 }
 
 static Element *GetLastElement(Graph* graphPtr)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
+  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
-    if (elemPtr->label) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->label)
       return elemPtr;
-    }
   }
   return NULL;
 }
@@ -1922,7 +1869,7 @@ static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
 			     Element **elemPtrPtr)
 {
   Element* elemPtr;
-  Legend *legendPtr;
+  Legend* legendPtr;
   Tcl_Interp* interp;
   char c;
   const char *string;
@@ -1983,30 +1930,22 @@ static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-static int SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr)
+static int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr)
 {
-
   if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
-    Blt_ChainLink link;
-
-    for (link = fromPtr->link; link != NULL; 
+    for (Blt_ChainLink link = fromPtr->link; link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       SelectEntry(legendPtr, elemPtr);
       if (link == toPtr->link) {
 	break;
       }
     }
-  } else {
-    Blt_ChainLink link;
-
-    for (link = fromPtr->link; link != NULL;
+  } 
+  else {
+    for (Blt_ChainLink link = fromPtr->link; link != NULL;
 	 link = Blt_Chain_PrevLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       SelectEntry(legendPtr, elemPtr);
       if (link == toPtr->link) {
 	break;
@@ -2018,22 +1957,22 @@ static int SelectRange(Legend *legendPtr, Element *fromPtr, Element *toPtr)
 
 int Blt_Legend_Site(Graph* graphPtr)
 {
-    return graphPtr->legend->site;
+  return graphPtr->legend->site;
 }
 
 int Blt_Legend_Width(Graph* graphPtr)
 {
-    return graphPtr->legend->width;
+  return graphPtr->legend->width;
 }
 
 int Blt_Legend_Height(Graph* graphPtr)
 {
-    return graphPtr->legend->height;
+  return graphPtr->legend->height;
 }
 
 int Blt_Legend_IsHidden(Graph* graphPtr)
 {
-    return (graphPtr->legend->hide);
+  return (graphPtr->legend->hide);
 }
 
 int Blt_Legend_IsRaised(Graph* graphPtr)
@@ -2043,23 +1982,23 @@ int Blt_Legend_IsRaised(Graph* graphPtr)
 
 int Blt_Legend_X(Graph* graphPtr)
 {
-    return graphPtr->legend->x;
+  return graphPtr->legend->x;
 }
 
 int Blt_Legend_Y(Graph* graphPtr)
 {
-    return graphPtr->legend->y;
+  return graphPtr->legend->y;
 }
 
 void Blt_Legend_RemoveElement(Graph* graphPtr, Element* elemPtr)
 {
-    Blt_DeleteBindings(graphPtr->legend->bindTable, elemPtr);
+  Blt_DeleteBindings(graphPtr->legend->bindTable, elemPtr);
 }
 
 static int SelectionProc(ClientData clientData, int offset, 
 			 char *buffer, int maxBytes)
 {
-  Legend *legendPtr = clientData;
+  Legend* legendPtr = (Legend*)clientData;
   int nBytes;
   Tcl_DString dString;
 
@@ -2073,9 +2012,7 @@ static int SelectionProc(ClientData clientData, int offset,
 
     for (link = Blt_Chain_FirstLink(legendPtr->selected); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       Tcl_DStringAppend(&dString, elemPtr->obj.name, -1);
       Tcl_DStringAppend(&dString, "\n", -1);
     }
@@ -2087,9 +2024,7 @@ static int SelectionProc(ClientData clientData, int offset,
     /* List of selected entries is in stacking order. */
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (EntryIsSelected(legendPtr, elemPtr)) {
 	Tcl_DStringAppend(&dString, elemPtr->obj.name, -1);
 	Tcl_DStringAppend(&dString, "\n", -1);
@@ -2105,20 +2040,18 @@ static int SelectionProc(ClientData clientData, int offset,
 
 static void BlinkCursorProc(ClientData clientData)
 {
-  Graph* graphPtr = clientData;
-  Legend *legendPtr;
-
-  legendPtr = graphPtr->legend;
-  if (!(legendPtr->flags & FOCUS) || (legendPtr->offTime == 0)) {
+  Graph* graphPtr = (Graph*)clientData;
+  Legend* legendPtr = graphPtr->legend;
+  if (!(legendPtr->flags & FOCUS) || (legendPtr->offTime == 0))
     return;
-  }
+
   if (legendPtr->active) {
     int time;
 
     legendPtr->cursorOn ^= 1;
     time = (legendPtr->cursorOn) ? legendPtr->onTime : legendPtr->offTime;
-    legendPtr->timerToken = Tcl_CreateTimerHandler(time, BlinkCursorProc, 
-						   graphPtr);
+    legendPtr->timerToken = 
+      Tcl_CreateTimerHandler(time, BlinkCursorProc, graphPtr);
     Blt_Legend_EventuallyRedraw(graphPtr);
   }
 }
