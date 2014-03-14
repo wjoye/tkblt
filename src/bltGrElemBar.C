@@ -30,11 +30,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltConfig.h"
+};
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 
@@ -377,7 +379,7 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 
 Element* Blt_BarElement(Graph* graphPtr)
 {
-  BarElement* elemPtr = calloc(1, sizeof(BarElement));
+  BarElement* elemPtr = (BarElement*)calloc(1, sizeof(BarElement));
   elemPtr->procsPtr = &barProcs;
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
   InitBarPen(graphPtr, elemPtr->builtinPenPtr);
@@ -391,7 +393,7 @@ Element* Blt_BarElement(Graph* graphPtr)
 
 Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
 {
-  BarPen* penPtr = calloc(1, sizeof(BarPen));
+  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
   InitBarPen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
 
@@ -466,7 +468,7 @@ static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
     link = Blt_Chain_AllocLink(sizeof(BarStyle));
     Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
   }
-  stylePtr = Blt_Chain_GetValue(link);
+  stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
 
   return TCL_OK;
@@ -536,9 +538,7 @@ static void ResetStylePalette(Blt_Chain stylePalette)
 
   for (link = Blt_Chain_FirstLink(stylePalette); link; 
        link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr;
-
-    stylePtr = Blt_Chain_GetValue(link);
+    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     stylePtr->xeb.length = stylePtr->yeb.length = 0;
     stylePtr->nBars = 0;
   }
@@ -784,7 +784,7 @@ static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
 
     link = Blt_Chain_FirstLink(elemPtr->stylePalette);
 
-    stylePtr = Blt_Chain_GetValue(link);
+    stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     stylePtr->nBars = elemPtr->nBars;
     stylePtr->bars = elemPtr->bars;
     stylePtr->symbolSize = elemPtr->bars->width / 2;
@@ -802,15 +802,14 @@ static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
     XRectangle *bars, *bp;
     int *ip, *barToData;
 
-    bars = malloc(elemPtr->nBars * sizeof(XRectangle));
-    barToData = malloc(elemPtr->nBars * sizeof(int));
+    bars = (XRectangle*)malloc(elemPtr->nBars * sizeof(XRectangle));
+    barToData = (int*)malloc(elemPtr->nBars * sizeof(int));
     bp = bars, ip = barToData;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr;
       int i;
 
-      stylePtr = Blt_Chain_GetValue(link);
+      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->symbolSize = bp->width / 2;
       stylePtr->bars = bp;
       for (i = 0; i < elemPtr->nBars; i++) {
@@ -832,18 +831,18 @@ static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
 
   if (elemPtr->xeb.length > 0) {
     Blt_ChainLink link;
-    Segment2d *bars, *sp;
-    int *map, *ip;
+    Segment2d *sp;
+    int *ip;
 
-    bars = malloc(elemPtr->xeb.length * sizeof(Segment2d));
-    map = malloc(elemPtr->xeb.length * sizeof(int));
+    Segment2d* bars = 
+      (Segment2d*)malloc(elemPtr->xeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(elemPtr->xeb.length * sizeof(int));
     sp = bars, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr;
       int i;
 
-      stylePtr = Blt_Chain_GetValue(link);
+      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
       for (i = 0; i < elemPtr->xeb.length; i++) {
 	int iData;
@@ -863,18 +862,18 @@ static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
   }
   if (elemPtr->yeb.length > 0) {
     Blt_ChainLink link;
-    Segment2d *bars, *sp;
-    int *map, *ip;
+    Segment2d *sp;
+    int *ip;
 
-    bars = malloc(elemPtr->yeb.length * sizeof(Segment2d));
-    map = malloc(elemPtr->yeb.length * sizeof(int));
+    Segment2d* bars = 
+      (Segment2d*)malloc(elemPtr->yeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(elemPtr->yeb.length * sizeof(int));
     sp = bars, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr;
       int i;
 
-      stylePtr = Blt_Chain_GetValue(link);
+      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->yeb.segments = sp;
       for (i = 0; i < elemPtr->yeb.length; i++) {
 	int iData;
@@ -907,15 +906,12 @@ static void MapActiveBars(BarElement* elemPtr)
   elemPtr->nActive = 0;
 
   if (elemPtr->nActiveIndices > 0) {
-    XRectangle *activeRects;
-    int *activeToData;
     int i;
     int count;
 
-    activeRects = malloc(sizeof(XRectangle) * 
-			 elemPtr->nActiveIndices);
-    activeToData = malloc(sizeof(int) * 
-			  elemPtr->nActiveIndices);
+    XRectangle *activeRects = 
+      (XRectangle*)malloc(sizeof(XRectangle) * elemPtr->nActiveIndices);
+    int* activeToData = (int*)malloc(sizeof(int) * elemPtr->nActiveIndices);
     count = 0;
     for (i = 0; i < elemPtr->nBars; i++) {
       int *ip, *iend;
@@ -992,8 +988,8 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
     int *indexPtr;
     int i;
 		
-    segPtr = bars = malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = map = malloc(n * 3 * sizeof(int));
+    segPtr = bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    indexPtr = map = (int*)malloc(n * 3 * sizeof(int));
     for (i = 0; i < n; i++) {
       double x, y;
       double high, low;
@@ -1056,8 +1052,8 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
     int *indexPtr;
     int i;
 		
-    segPtr = bars = malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = map = malloc(n * 3 * sizeof(int));
+    segPtr = bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    indexPtr = map = (int*)malloc(n * 3 * sizeof(int));
     for (i = 0; i < n; i++) {
       double x, y;
       double high, low;
@@ -1138,8 +1134,8 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
    * Create an array of bars representing the screen coordinates of all the
    * segments in the bar.
    */
-  bars = calloc(nPoints, sizeof(XRectangle));
-  barToData = calloc(nPoints, sizeof(int));
+  bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
+  barToData = (int*)calloc(nPoints, sizeof(int));
 
   x = elemPtr->x.values, y = elemPtr->y.values;
   count = 0;
@@ -1175,18 +1171,15 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
       key.axes.y = NULL;
       hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
       if (hPtr) {
-	Tcl_HashTable *tablePtr;
-	const char *name;
 
-	tablePtr = Tcl_GetHashValue(hPtr);
-	name = (elemPtr->groupName) ? elemPtr->groupName : 
+	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+	const char *name = (elemPtr->groupName) ? elemPtr->groupName : 
 	  elemPtr->axes.y->obj.name;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
-	  BarGroup *groupPtr;
 	  double slice, width, offset;
 		    
-	  groupPtr = Tcl_GetHashValue(hPtr);
+	  BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
 	  slice = barWidth / (double)graphPtr->maxBarSetSize;
 	  offset = (slice * groupPtr->index);
 	  if (graphPtr->maxBarSetSize > 1) {
@@ -1322,9 +1315,7 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
     /* Set the symbol size of all the pen styles. */
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
 	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr;
-	    
-      stylePtr = Blt_Chain_GetValue(link);
+      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->symbolSize = size;
       stylePtr->errorBarCapWidth = 
 	(stylePtr->penPtr->errorBarCapWidth > 0) 
@@ -1525,11 +1516,9 @@ static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable,
   count = 0;
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr;
-    BarPen* penPtr;
 
-    stylePtr = Blt_Chain_GetValue(link);
-    penPtr = stylePtr->penPtr;
+    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     if (stylePtr->nBars > 0) {
       DrawBarSegments(graphPtr, drawable, penPtr, stylePtr->bars,
 		      stylePtr->nBars);
@@ -1743,12 +1732,10 @@ static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   count = 0;
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr;
-    BarPen* penPtr;
     XColor* colorPtr;
 
-    stylePtr = Blt_Chain_GetValue(link);
-    penPtr = stylePtr->penPtr;
+    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     if (stylePtr->nBars > 0) {
       SegmentsToPostScript(graphPtr, ps, penPtr, stylePtr->bars, 
 			   stylePtr->nBars);
@@ -1807,11 +1794,10 @@ void Blt_InitBarSetTable(Graph* graphPtr)
   nSegs = nStacks = 0;
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link; link = Blt_Chain_NextLink(link)) {
-    BarElement* elemPtr;
     double *x, *xend;
     int nPoints;
 
-    elemPtr = Blt_Chain_GetValue(link);
+    BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
     if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
       continue;
     }
@@ -1819,7 +1805,6 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     nPoints = NUMBEROFPOINTS(elemPtr);
     for (x = elemPtr->x.values, xend = x + nPoints; x < xend; x++) {
       Tcl_HashEntry *hPtr;
-      Tcl_HashTable *tablePtr;
       BarSetKey key;
       int isNew;
       size_t count;
@@ -1829,12 +1814,13 @@ void Blt_InitBarSetTable(Graph* graphPtr)
       key.axes = elemPtr->axes;
       key.axes.y = NULL;
       hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
+      Tcl_HashTable *tablePtr;
       if (isNew) {
-	tablePtr = malloc(sizeof(Tcl_HashTable));
+	tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
 	Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
 	Tcl_SetHashValue(hPtr, tablePtr);
       } else {
-	tablePtr = Tcl_GetHashValue(hPtr);
+	tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
       }
       name = (elemPtr->groupName) ? elemPtr->groupName : 
 	elemPtr->axes.y->obj.name;
@@ -1854,14 +1840,13 @@ void Blt_InitBarSetTable(Graph* graphPtr)
   sum = max = 0;
   for (hPtr = Tcl_FirstHashEntry(&setTable, &iter); hPtr;
        hPtr = Tcl_NextHashEntry(&iter)) {
-    Tcl_HashTable *tablePtr;
     Tcl_HashEntry *hPtr2;
     BarSetKey *keyPtr;
     int isNew;
 
     keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
     hPtr2 = Tcl_CreateHashEntry(&graphPtr->setTable, (char *)keyPtr,&isNew);
-    tablePtr = Tcl_GetHashValue(hPtr);
+    Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
     Tcl_SetHashValue(hPtr2, tablePtr);
     if (max < tablePtr->numEntries) {
       max = tablePtr->numEntries;	/* # of stacks in group. */
@@ -1870,21 +1855,19 @@ void Blt_InitBarSetTable(Graph* graphPtr)
   }
   Tcl_DeleteHashTable(&setTable);
   if (sum > 0) {
-    BarGroup *groupPtr;
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch iter;
 
-    graphPtr->barGroups = calloc(sum, sizeof(BarGroup));
-    groupPtr = graphPtr->barGroups;
+    graphPtr->barGroups = (BarGroup*)calloc(sum, sizeof(BarGroup));
+    BarGroup *groupPtr = graphPtr->barGroups;
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->setTable, &iter); 
 	 hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
       BarSetKey *keyPtr;
-      Tcl_HashTable *tablePtr;
       Tcl_HashEntry *hPtr2;
       Tcl_HashSearch iter2;
       size_t xcount;
 
-      tablePtr = Tcl_GetHashValue(hPtr);
+      Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
       keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
       xcount = 0;
       for (hPtr2 = Tcl_FirstHashEntry(tablePtr, &iter2); hPtr2!=NULL;
@@ -1926,19 +1909,16 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
-    BarElement* elemPtr;
     double *x, *y, *xend;
 
-    elemPtr = Blt_Chain_GetValue(link);
+    BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
     if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
       continue;
     }
     for (x = elemPtr->x.values, y = elemPtr->y.values, 
 	   xend = x + NUMBEROFPOINTS(elemPtr); x < xend; x++, y++) {
       BarSetKey key;
-      BarGroup *groupPtr;
       Tcl_HashEntry *hPtr;
-      Tcl_HashTable *tablePtr;
       const char *name;
 
       key.value = *x;
@@ -1948,14 +1928,14 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
       if (!hPtr)
 	continue;
 
-      tablePtr = Tcl_GetHashValue(hPtr);
+      Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
       name = (elemPtr->groupName) ? elemPtr->groupName : 
 	elemPtr->axes.y->obj.name;
       hPtr = Tcl_FindHashEntry(tablePtr, name);
       if (!hPtr)
 	continue;
 
-      groupPtr = Tcl_GetHashValue(hPtr);
+      BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
       groupPtr->sum += *y;
     }
   }
@@ -1983,7 +1963,7 @@ void Blt_DestroyBarSets(Graph* graphPtr)
   Tcl_HashSearch iter;
   for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->setTable, &iter); 
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
-    Tcl_HashTable* tablePtr = Tcl_GetHashValue(hPtr);
+    Tcl_HashTable* tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
     Tcl_DeleteHashTable(tablePtr);
     free(tablePtr);
   }

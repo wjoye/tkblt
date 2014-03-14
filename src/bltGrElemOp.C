@@ -32,10 +32,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
+};
 
 /* Ignore elements that aren't in the display list or have been deleted. */
 #define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
@@ -63,7 +65,7 @@ typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 // OptionSpecs
 
-char* fillObjOption[] = {"none", "x", "y", "both", NULL};
+const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
 static Tk_CustomOptionSetProc ValuesSetProc;
 static Tk_CustomOptionGetProc ValuesGetProc;
@@ -131,7 +133,7 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
       if (!cnt)
 	return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-      Tcl_Obj** ll = calloc(cnt, sizeof(Tcl_Obj*));
+      Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
       for (int ii=0; ii<cnt; ii++)
 	ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
       Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
@@ -174,8 +176,8 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   FreeDataValues(&elemPtr->y);
 
   if (newSize > 0) {
-    elemPtr->x.values = malloc(newSize);
-    elemPtr->y.values = malloc(newSize);
+    elemPtr->x.values = (double*)malloc(newSize);
+    elemPtr->y.values = (double*)malloc(newSize);
     elemPtr->x.nValues = elemPtr->y.nValues = nValues;
     int ii=0;
     for (double* p = values; ii<nValues; ii++) {
@@ -198,7 +200,7 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(2*cnt,sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(2*cnt,sizeof(Tcl_Obj*));
   for (int ii=0, jj=0; ii<cnt; ii++) {
     ll[jj++] = Tcl_NewDoubleObj(elemPtr->x.values[ii]);
     ll[jj++] = Tcl_NewDoubleObj(elemPtr->y.values[ii]);
@@ -230,11 +232,11 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
     link = Blt_Chain_AllocLink(size);
     Blt_Chain_LinkAfter(stylePalette, link, NULL);
   }
-  PenStyle* stylePtr = Blt_Chain_GetValue(link);
+  PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
   for (int ii = 0; ii<objc; ii++) {
     link = Blt_Chain_AllocLink(size);
-    stylePtr = Blt_Chain_GetValue(link);
+    stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
     stylePtr->weight.min = (double)ii;
     stylePtr->weight.max = (double)ii + 1.0;
     stylePtr->weight.range = 1.0;
@@ -262,11 +264,11 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = calloc(3*cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(3*cnt, sizeof(Tcl_Obj*));
   int ii=0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
        link = Blt_Chain_NextLink(link)) {
-    PenStyle *stylePtr = Blt_Chain_GetValue(link);
+    PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
     ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name, -1);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.min);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.max);
@@ -480,7 +482,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     /* List all the currently active elements */
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      elemPtr = Tcl_GetHashValue(hPtr);
+      elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (elemPtr->flags & ACTIVE) {
 	Tcl_ListObjAppendElement(interp, listObjPtr, 
 				 Tcl_NewStringObj(elemPtr->obj.name, -1));
@@ -500,7 +502,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     int *activePtr;
 
     nIndices = objc - 4;
-    activePtr = indices = malloc(sizeof(int) * nIndices);
+    activePtr = indices = (int*)malloc(sizeof(int) * nIndices);
     for (i = 4; i < objc; i++) {
       if (GetIndex(interp, elemPtr, objv[i], activePtr) != TCL_OK) {
 	return TCL_ERROR;
@@ -523,13 +525,12 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   if (objc == 3) {
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch iter;
-    char *tagName;
     Tcl_Obj *listObjPtr;
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      tagName = Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+      char *tagName = (char*)Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
       Tcl_ListObjAppendElement(interp, listObjPtr, 
 			       Tcl_NewStringObj(tagName, -1));
     }
@@ -583,7 +584,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
      */
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
-      Element* elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (elemPtr && !elemPtr->hide && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
 	(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
@@ -671,9 +672,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_GetCurrentItem(graphPtr->bindTable);
+    Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable);
     /* Report only on elements. */
     if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0) &&
 	(elemPtr->obj.classId >= CID_ELEM_BAR) &&
@@ -692,11 +691,8 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
   listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr;
-    Tcl_Obj *objPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
-    objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
     Tcl_ListObjAppendElement(graphPtr->interp, listObjPtr, objPtr);
   }
   return listObjPtr;
@@ -746,11 +742,8 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      Element* elemPtr;
-      Tcl_Obj *objPtr;
-
-      elemPtr = Tcl_GetHashValue(hPtr);
-      objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+      Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
   }
@@ -760,10 +753,9 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 
     for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      Element* elemPtr;
       int i;
 
-      elemPtr = Tcl_GetHashValue(hPtr);
+      Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       for (i = 3; i < objc; i++) {
 	if (Tcl_StringMatch(elemPtr->obj.name,Tcl_GetString(objv[i]))) {
 	  Tcl_Obj *objPtr;
@@ -837,9 +829,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
     /* Clear the links from the currently displayed elements.  */
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       elemPtr->link = NULL;
     }
     Blt_Chain_Destroy(graphPtr->elements.displayList);
@@ -847,9 +837,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
     /* Set links on all the displayed elements.  */
     for (link = Blt_Chain_FirstLink(chain); link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr;
-	    
-      elemPtr = Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       elemPtr->link = link;
     }
     graphPtr->flags |= RESET_WORLD;
@@ -878,23 +866,23 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static Blt_OpSpec elemOps[] = {
-  {"activate",   1, ActivateOp,   3, 0, "?elemName? ?index...?",},
-  {"bind",       1, BindOp,       3, 6, "elemName sequence command",},
-  {"cget",       2, CgetOp,       5, 5, "elemName option",},
-  {"closest",    2, ClosestOp,    5, 0,
+  {"activate",   1, (void*)ActivateOp,   3, 0, "?elemName? ?index...?",},
+  {"bind",       1, (void*)BindOp,       3, 6, "elemName sequence command",},
+  {"cget",       2, (void*)CgetOp,       5, 5, "elemName option",},
+  {"closest",    2, (void*)ClosestOp,    5, 0,
    "x y ?option value?... ?elemName?...",},
-  {"configure",  2, ConfigureOp,  4, 0,
+  {"configure",  2, (void*)ConfigureOp,  4, 0,
    "elemName ?elemName?... ?option value?...",},
-  {"create",     2, CreateOp,     4, 0, "elemName ?option value?...",},
-  {"deactivate", 3, DeactivateOp, 3, 0, "?elemName?...",},
-  {"delete",     3, DeleteOp,     3, 0, "?elemName?...",},
-  {"exists",     1, ExistsOp,     4, 4, "elemName",},
-  {"get",        1, GetOp,        4, 4, "name",},
-  {"lower",      1, LowerOp,      3, 0, "?elemName?...",},
-  {"names",      1, NamesOp,      3, 0, "?pattern?...",},
-  {"raise",      1, RaiseOp,      3, 0, "?elemName?...",},
-  {"show",       1, ShowOp,       3, 4, "?elemList?",},
-  {"type",       1, TypeOp,       4, 4, "elemName",},
+  {"create",     2, (void*)CreateOp,     4, 0, "elemName ?option value?...",},
+  {"deactivate", 3, (void*)DeactivateOp, 3, 0, "?elemName?...",},
+  {"delete",     3, (void*)DeleteOp,     3, 0, "?elemName?...",},
+  {"exists",     1, (void*)ExistsOp,     4, 4, "elemName",},
+  {"get",        1, (void*)GetOp,        4, 4, "name",},
+  {"lower",      1, (void*)LowerOp,      3, 0, "?elemName?...",},
+  {"names",      1, (void*)NamesOp,      3, 0, "?pattern?...",},
+  {"raise",      1, (void*)RaiseOp,      3, 0, "?elemName?...",},
+  {"show",       1, (void*)ShowOp,       3, 4, "?elemList?",},
+  {"type",       1, (void*)TypeOp,       4, 4, "elemName",},
 };
 static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);
 
@@ -909,7 +897,7 @@ int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
   if (ptr == CreateOp)
     return CreateOp(graphPtr, interp, objc, objv, classId);
   else {
-    GraphElementProc* proc = ptr;
+    GraphElementProc* proc = (GraphElementProc*)ptr;
     return (*proc)(graphPtr, interp, objc, objv);
   }
 }
@@ -971,12 +959,10 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
 			     Blt_Vector *vector)
 {
   double *array;
-    
   if (valuesPtr->values == NULL) {
-    array = malloc(Blt_VecLength(vector) * sizeof(double));
+    array = (double*)malloc(Blt_VecLength(vector) * sizeof(double));
   } else {
-    array = realloc(valuesPtr->values, 
-		    Blt_VecLength(vector) * sizeof(double));
+    array = (double*)realloc(valuesPtr->values, Blt_VecLength(vector) * sizeof(double));
   }
   if (array == NULL) {
     if (interp) {
@@ -996,11 +982,12 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
 static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
 			      Blt_VectorNotify notify)
 {
-  ElemValues *valuesPtr = clientData;
+  ElemValues *valuesPtr = (ElemValues*)clientData;
 
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
     FreeDataValues(valuesPtr);
-  } else {
+  }
+  else {
     Blt_Vector *vector;
 	
     Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
@@ -1054,12 +1041,11 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
   *arrayPtr = NULL;
   *nValuesPtr = 0;
   if (objc > 0) {
-    double *array;
     double *p;
     int i;
 
-    array = malloc(sizeof(double) * objc);
-    if (array == NULL) {
+    double *array = (double*)malloc(sizeof(double) * objc);
+    if (!array) {
       Tcl_AppendResult(interp, "can't allocate new vector", NULL);
       return TCL_ERROR;
     }
@@ -1159,10 +1145,9 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
     Blt_ChainLink next;
 
     for (link = Blt_Chain_NextLink(link); link != NULL; link = next) {
-      PenStyle *stylePtr;
 
       next = Blt_Chain_NextLink(link);
-      stylePtr = Blt_Chain_GetValue(link);
+      PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
       Blt_FreePen(stylePtr->penPtr);
       Blt_Chain_DeleteLink(stylePalette, link);
     }
@@ -1176,12 +1161,7 @@ PenStyle **Blt_StyleMap(Element* elemPtr)
 			 * If there are more data points than
 			 * weights, they will default to the
 			 * normal pen. */
-
-  PenStyle **dataToStyle;	/* Directory of styles.  Each array
-				 * element represents the style for
-				 * the data point at that index */
   Blt_ChainLink link;
-  PenStyle *stylePtr;
   double *w;			/* Weight vector */
   int nPoints;
 
@@ -1189,21 +1169,20 @@ PenStyle **Blt_StyleMap(Element* elemPtr)
   nWeights = MIN(elemPtr->w.nValues, nPoints);
   w = elemPtr->w.values;
   link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-  stylePtr = Blt_Chain_GetValue(link);
+  PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
   /* 
    * Create a style mapping array (data point index to style), 
    * initialized to the default style.
    */
-  dataToStyle = malloc(nPoints * sizeof(PenStyle *));
-  for (i = 0; i < nPoints; i++) {
+  PenStyle **dataToStyle = (PenStyle**)malloc(nPoints * sizeof(PenStyle *));
+  for (i = 0; i < nPoints; i++)
     dataToStyle[i] = stylePtr;
-  }
 
   for (i = 0; i < nWeights; i++) {
     for (link = Blt_Chain_LastLink(elemPtr->stylePalette); link != NULL; 
 	 link = Blt_Chain_PrevLink(link)) {
-      stylePtr = Blt_Chain_GetValue(link);
+      stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
       if (stylePtr->weight.range > 0.0) {
 	double norm;
@@ -1251,7 +1230,7 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
     }
     return TCL_ERROR;
   }
-  *elemPtrPtr = Tcl_GetHashValue(hPtr);
+  *elemPtrPtr = (Element*)Tcl_GetHashValue(hPtr);
   return TCL_OK;
 }
 
@@ -1259,11 +1238,10 @@ void Blt_DestroyElements(Graph* graphPtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch iter;
-  Element* elemPtr;
 
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-    elemPtr = Tcl_GetHashValue(hPtr);
+    Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
     if (elemPtr) {
       elemPtr->hashPtr = NULL;
       DestroyElement(elemPtr);
@@ -1278,7 +1256,7 @@ void Blt_ConfigureElements(Graph* graphPtr)
 {
   for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     (*elemPtr->procsPtr->configProc) (graphPtr, elemPtr);
   }
 }
@@ -1290,7 +1268,7 @@ void Blt_MapElements(Graph* graphPtr)
 
   for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (IGNORE_ELEMENT(elemPtr))
       continue;
 
@@ -1308,9 +1286,7 @@ void Blt_DrawElements(Graph* graphPtr, Drawable drawable)
   /* Draw with respect to the stacking order. */
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
       (*elemPtr->procsPtr->drawNormalProc)(graphPtr, drawable, elemPtr);
     }
@@ -1323,9 +1299,7 @@ void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
 
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 
 	!elemPtr->hide) {
@@ -1340,9 +1314,7 @@ void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
 
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
       continue;
     }
@@ -1358,9 +1330,7 @@ void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
 
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr;
-
-    elemPtr = Blt_Chain_GetValue(link);
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 
 	!elemPtr->hide) {

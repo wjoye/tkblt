@@ -30,6 +30,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltSpline.h"
 #include "bltMath.h"
@@ -37,6 +38,7 @@
 #include "bltGrElem.h"
 #include "bltBitmap.h"
 #include "bltConfig.h"
+}
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
@@ -339,10 +341,10 @@ INLINE static int Round(double x)
 
 // OptionSpecs
 
-static char* smoothObjOption[] = 
+static const char* smoothObjOption[] = 
   {"linear", "step", "natural", "quadratic", "catrom", NULL};
 
-static char* penDirObjOption[] = 
+static const char* penDirObjOption[] = 
   {"increasing", "decreasing", "both", NULL};
 
 static Tk_ObjCustomOption styleObjOption =
@@ -369,7 +371,7 @@ static GraphSymbolType graphSymbols[] = {
   { "splus",	  2, SYMBOL_SPLUS,	}, 
   { "square",	  2, SYMBOL_SQUARE,	}, 
   { "triangle", 1, SYMBOL_TRIANGLE,	}, 
-  { NULL,       0, 0			}, 
+  { NULL,       0, SYMBOL_NONE,		}, 
 };
 
 static Tk_CustomOptionSetProc SymbolSetProc;
@@ -658,7 +660,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 
 Element * Blt_LineElement(Graph* graphPtr)
 {
-  LineElement* elemPtr = calloc(1, sizeof(LineElement));
+  LineElement* elemPtr = (LineElement*)calloc(1, sizeof(LineElement));
   elemPtr->procsPtr = &lineProcs;
   elemPtr->flags = SCALE_SYMBOL;
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
@@ -673,7 +675,7 @@ Element * Blt_LineElement(Graph* graphPtr)
 
 Pen* Blt_LinePen(Graph* graphPtr, const char* penName)
 {
-  LinePen* penPtr = calloc(1, sizeof(LinePen));
+  LinePen* penPtr = (LinePen*)calloc(1, sizeof(LinePen));
   InitLinePen(graphPtr, penPtr);
   penPtr->name = Blt_Strdup(penName);
   penPtr->classId = CID_ELEM_LINE;
@@ -765,7 +767,7 @@ static int ConfigureLineProc(Graph* graphPtr, Element *basePtr)
     link = Blt_Chain_AllocLink(sizeof(LineStyle));
     Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
   } 
-  LineStyle* stylePtr = Blt_Chain_GetValue(link);
+  LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
 
   // Set the outline GC for this pen: GCForeground is outline color.
@@ -922,12 +924,9 @@ static void ImageChangedProc(ClientData clientData,
 			     int x, int y, int w, int h,
 			     int imageWidth, int imageHeight)
 {
-  Element* elemPtr;
-  Graph* graphPtr;
-
-  elemPtr = clientData;
+  Element* elemPtr = (Element*)clientData;
+  Graph* graphPtr = elemPtr->obj.graphPtr;
   elemPtr->flags |= MAP_ITEM;
-  graphPtr = elemPtr->obj.graphPtr;
   graphPtr->flags |= CACHE_DIRTY;
   Blt_EventuallyRedrawGraph(graphPtr);
 }
@@ -942,9 +941,7 @@ static void ResetStylePalette(Blt_Chain styles)
 
   for (link = Blt_Chain_FirstLink(styles); link;
        link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr;
-
-    stylePtr = Blt_Chain_GetValue(link);
+    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     stylePtr->lines.length = stylePtr->symbolPts.length = 0;
     stylePtr->xeb.length = stylePtr->yeb.length = 0;
   }
@@ -996,21 +993,16 @@ static int ScaleSymbol(LineElement* elemPtr, int normalSize)
 static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr, 
 			    MapInfo *mapPtr)
 {
-  double *x, *y;
-  int i, np;
-  int count;
-  Point2d *points;
-  int *map;
 
-  np = NUMBEROFPOINTS(elemPtr);
-  x = elemPtr->x.values;
-  y = elemPtr->y.values;
-  points = malloc(sizeof(Point2d) * np);
-  map = malloc(sizeof(int) * np);
+  int np = NUMBEROFPOINTS(elemPtr);
+  double* x = elemPtr->x.values;
+  double* y = elemPtr->y.values;
+  Point2d *points = (Point2d*)malloc(sizeof(Point2d) * np);
+  int* map = (int*)malloc(sizeof(int) * np);
 
-  count = 0;			      /* Count the valid screen coordinates */
+  int count = 0;
   if (graphPtr->inverted) {
-    for (i = 0; i < np; i++) {
+    for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
 	points[count].x = Blt_HMap(elemPtr->axes.y, y[i]);
 	points[count].y = Blt_VMap(elemPtr->axes.x, x[i]);
@@ -1019,7 +1011,7 @@ static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr,
       }
     }
   } else {
-    for (i = 0; i < np; i++) {
+    for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
 	points[count].x = Blt_HMap(elemPtr->axes.x, x[i]);
 	points[count].y = Blt_VMap(elemPtr->axes.y, y[i]);
@@ -1035,16 +1027,12 @@ static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr,
 
 static void ReducePoints(MapInfo *mapPtr, double tolerance)
 {
-  int i, np;
-  Point2d *screenPts;
-  int *map, *simple;
-
-  simple    = malloc(mapPtr->nScreenPts * sizeof(int));
-  map	      = malloc(mapPtr->nScreenPts * sizeof(int));
-  screenPts = malloc(mapPtr->nScreenPts * sizeof(Point2d));
-  np = Blt_SimplifyLine(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
+  int* simple = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
+  int* map = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
+  Point2d *screenPts = (Point2d*)malloc(mapPtr->nScreenPts * sizeof(Point2d));
+  int np = Blt_SimplifyLine(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
 			tolerance, simple);
-  for (i = 0; i < np; i++) {
+  for (int i = 0; i < np; i++) {
     int k;
 
     k = simple[i];
@@ -1061,19 +1049,14 @@ static void ReducePoints(MapInfo *mapPtr, double tolerance)
 
 static void GenerateSteps(MapInfo *mapPtr)
 {
-  int newSize;
-  int i, count;
-  Point2d *screenPts;
-  int *map;
-
-  newSize = ((mapPtr->nScreenPts - 1) * 2) + 1;
-  screenPts = malloc(newSize * sizeof(Point2d));
-  map = malloc(sizeof(int) * newSize);
+  int newSize = ((mapPtr->nScreenPts - 1) * 2) + 1;
+  Point2d *screenPts = (Point2d*)malloc(newSize * sizeof(Point2d));
+  int* map = (int*)malloc(sizeof(int) * newSize);
   screenPts[0] = mapPtr->screenPts[0];
   map[0] = 0;
 
-  count = 1;
-  for (i = 1; i < mapPtr->nScreenPts; i++) {
+  int count = 1;
+  for (int i = 1; i < mapPtr->nScreenPts; i++) {
     screenPts[count + 1] = mapPtr->screenPts[i];
 
     /* Hold last y-coordinate, use new x-coordinate */
@@ -1124,8 +1107,8 @@ static void GenerateSpline(Graph* graphPtr, LineElement* elemPtr,
     return;
   }
   niPts = nOrigPts + extra + 1;
-  iPts = malloc(niPts * sizeof(Point2d));
-  map = malloc(sizeof(int) * niPts);
+  iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
+  map = (int*)malloc(sizeof(int) * niPts);
   /* Populate the x2 array with both the original X-coordinates and extra
    * X-coordinates for each horizontal pixel that the line segment
    * contains. */
@@ -1220,8 +1203,8 @@ static void GenerateParametricSpline(Graph* graphPtr, LineElement* elemPtr,
     }
   }
   niPts = count;
-  iPts = malloc(niPts * sizeof(Point2d));
-  map = malloc(sizeof(int) * niPts);
+  iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
+  map = (int*)malloc(sizeof(int) * niPts);
 
   /* 
    * FIXME: This is just plain wrong.  The spline should be computed
@@ -1301,15 +1284,14 @@ static void GenerateParametricSpline(Graph* graphPtr, LineElement* elemPtr,
 static void MapSymbols(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
 {
   Region2d exts;
-  Point2d *pp, *points;
-  int *map;
-  int i, count;
+  Point2d *pp;
+  int i;
 
-  points = malloc(sizeof(Point2d) * mapPtr->nScreenPts);
-  map    = malloc(sizeof(int)     * mapPtr->nScreenPts);
+  Point2d* points = (Point2d*)malloc(sizeof(Point2d) * mapPtr->nScreenPts);
+  int *map = (int*)malloc(sizeof(int) * mapPtr->nScreenPts);
 
   Blt_GraphExtents(graphPtr, &exts);
-  count = 0;			/* Count the number of visible points */
+  int count = 0;
 
   for (pp = mapPtr->screenPts, i = 0; i < mapPtr->nScreenPts; i++, pp++) {
     if (PointInRegion(&exts, pp->x, pp->y)) {
@@ -1326,10 +1308,7 @@ static void MapSymbols(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
 
 static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
 {
-  Point2d *points;
   Region2d exts;
-  int *map;
-  int count, i, np;
 
   if (elemPtr->activePts.points) {
     free(elemPtr->activePts.points);
@@ -1340,11 +1319,11 @@ static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
     elemPtr->activePts.map = NULL;
   }
   Blt_GraphExtents(graphPtr, &exts);
-  points = malloc(sizeof(Point2d) * elemPtr->nActiveIndices);
-  map    = malloc(sizeof(int)     * elemPtr->nActiveIndices);
-  np = NUMBEROFPOINTS(elemPtr);
-  count = 0;				/* Count the visible active points */
-  for (i = 0; i < elemPtr->nActiveIndices; i++) {
+  Point2d *points = (Point2d*)malloc(sizeof(Point2d) * elemPtr->nActiveIndices);
+  int* map = (int*)malloc(sizeof(int) * elemPtr->nActiveIndices);
+  int np = NUMBEROFPOINTS(elemPtr);
+  int count = 0;
+  for (int i = 0; i < elemPtr->nActiveIndices; i++) {
     double x, y;
     int iPoint;
 
@@ -1375,11 +1354,8 @@ static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
 static void MergePens(LineElement* elemPtr, LineStyle **styleMap)
 {
   if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
-    Blt_ChainLink link;
-    LineStyle *stylePtr;
-
-    link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-    stylePtr = Blt_Chain_GetValue(link);
+    Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     stylePtr->errorBarCapWidth = elemPtr->errorBarCapWidth;
     stylePtr->lines.length = elemPtr->lines.length;
     stylePtr->lines.segments = elemPtr->lines.segments;
@@ -1396,21 +1372,18 @@ static void MergePens(LineElement* elemPtr, LineStyle **styleMap)
    * styles.  */
   if (elemPtr->lines.length > 0) {
     Blt_ChainLink link;
-    Segment2d *sp, *segments;
+    Segment2d *sp;
     int *ip;
-    int *map;
 
-    segments = malloc(elemPtr->lines.length * sizeof(Segment2d));
-    map = malloc(elemPtr->lines.length * sizeof(int));
+    Segment2d* segments = 
+      (Segment2d*)malloc(elemPtr->lines.length * sizeof(Segment2d));
+    int* map = (int*)malloc(elemPtr->lines.length * sizeof(int));
     sp = segments, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      int i;
-
-      stylePtr = Blt_Chain_GetValue(link);
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       stylePtr->lines.segments = sp;
-      for (i = 0; i < elemPtr->lines.length; i++) {
+      for (int i = 0; i < elemPtr->lines.length; i++) {
 	int iData;
 
 	iData = elemPtr->lines.map[i];
@@ -1429,20 +1402,17 @@ static void MergePens(LineElement* elemPtr, LineStyle **styleMap)
   if (elemPtr->symbolPts.length > 0) {
     Blt_ChainLink link;
     int *ip;
-    Point2d *points, *pp;
-    int *map;
+    Point2d *pp;
 
-    points = malloc(elemPtr->symbolPts.length * sizeof(Point2d));
-    map = malloc(elemPtr->symbolPts.length * sizeof(int));
+    Point2d* points = 
+      (Point2d*)malloc(elemPtr->symbolPts.length * sizeof(Point2d));
+    int* map = (int*)malloc(elemPtr->symbolPts.length * sizeof(int));
     pp = points, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      int i;
-
-      stylePtr = Blt_Chain_GetValue(link);
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       stylePtr->symbolPts.points = pp;
-      for (i = 0; i < elemPtr->symbolPts.length; i++) {
+      for (int i = 0; i < elemPtr->symbolPts.length; i++) {
 	int iData;
 
 	iData = elemPtr->symbolPts.map[i];
@@ -1459,21 +1429,19 @@ static void MergePens(LineElement* elemPtr, LineStyle **styleMap)
     elemPtr->symbolPts.map = map;
   }
   if (elemPtr->xeb.length > 0) {
-    Segment2d *segments, *sp;
-    int *map, *ip;
+    Segment2d *sp;
+    int *ip;
     Blt_ChainLink link;
 
-    segments = malloc(elemPtr->xeb.length * sizeof(Segment2d));
-    map = malloc(elemPtr->xeb.length * sizeof(int));
+    Segment2d *segments = 
+      (Segment2d*)malloc(elemPtr->xeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(elemPtr->xeb.length * sizeof(int));
     sp = segments, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      int i;
-
-      stylePtr = Blt_Chain_GetValue(link);
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
-      for (i = 0; i < elemPtr->xeb.length; i++) {
+      for (int i = 0; i < elemPtr->xeb.length; i++) {
 	int iData;
 
 	iData = elemPtr->xeb.map[i];
@@ -1490,21 +1458,19 @@ static void MergePens(LineElement* elemPtr, LineStyle **styleMap)
     elemPtr->xeb.map = map;
   }
   if (elemPtr->yeb.length > 0) {
-    Segment2d *segments, *sp;
-    int *map, *ip;
+    Segment2d *sp;
+    int *ip;
     Blt_ChainLink link;
 
-    segments = malloc(elemPtr->yeb.length * sizeof(Segment2d));
-    map = malloc(elemPtr->yeb.length * sizeof(int));
+    Segment2d *segments = 
+      (Segment2d*)malloc(elemPtr->yeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(elemPtr->yeb.length * sizeof(int));
     sp = segments, ip = map;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      int i;
-
-      stylePtr = Blt_Chain_GetValue(link);
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       stylePtr->yeb.segments = sp;
-      for (i = 0; i < elemPtr->yeb.length; i++) {
+      for (int i = 0; i < elemPtr->yeb.length; i++) {
 	int iData;
 
 	iData = elemPtr->yeb.map[i];
@@ -1594,14 +1560,11 @@ static int ClipSegment(Region2d *extsPtr, int code1, int code2,
 static void SaveTrace(LineElement* elemPtr, int start, int length,
 		      MapInfo *mapPtr)
 {
-  bltTrace *tracePtr;
-  Point2d *screenPts;
-  int *map;
   int i, j;
 
-  tracePtr  = malloc(sizeof(bltTrace));
-  screenPts = malloc(sizeof(Point2d) * length);
-  map       = malloc(sizeof(int) * length);
+  bltTrace *tracePtr  = (bltTrace*)malloc(sizeof(bltTrace));
+  Point2d *screenPts = (Point2d*)malloc(sizeof(Point2d) * length);
+  int* map = (int*)malloc(sizeof(int) * length);
 
   /* Copy the screen coordinates of the trace into the point array */
 
@@ -1634,9 +1597,7 @@ static void FreeTraces(LineElement* elemPtr)
 
   for (link = Blt_Chain_FirstLink(elemPtr->traces); link;
        link = Blt_Chain_NextLink(link)) {
-    bltTrace *tracePtr;
-
-    tracePtr = Blt_Chain_GetValue(link);
+    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     free(tracePtr->screenPts.map);
     free(tracePtr->screenPts.points);
     free(tracePtr);
@@ -1711,7 +1672,6 @@ static void MapTraces(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
 
 static void MapFillArea(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
 {
-  Point2d *origPts, *clipPts;
   Region2d exts;
   int np;
 
@@ -1726,7 +1686,7 @@ static void MapFillArea(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
   np = mapPtr->nScreenPts + 3;
   Blt_GraphExtents(graphPtr, &exts);
 
-  origPts = malloc(sizeof(Point2d) * np);
+  Point2d* origPts = (Point2d*)malloc(sizeof(Point2d) * np);
   if (graphPtr->inverted) {
     double minX;
     int i;
@@ -1771,7 +1731,7 @@ static void MapFillArea(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
     origPts[i] = origPts[0];
   }
 
-  clipPts = malloc(sizeof(Point2d) * np * 3);
+  Point2d *clipPts = (Point2d*)malloc(sizeof(Point2d) * np * 3);
   np = Blt_PolyRectClip(&exts, origPts, np - 1, clipPts);
 
   free(origPts);
@@ -1839,14 +1799,14 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
     n = MIN3(elemPtr->xHigh.nValues, elemPtr->xLow.nValues, np);
   }
   if (n > 0) {
-    Segment2d *errorBars;
     Segment2d *segPtr;
+    Segment2d *errorBars;
     int *errorToData;
     int *indexPtr;
     int i;
 		
-    segPtr = errorBars = malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = errorToData = malloc(n * 3 * sizeof(int));
+    segPtr = errorBars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    indexPtr = errorToData = (int*)malloc(n * 3 * sizeof(int));
     for (i = 0; i < n; i++) {
       double x, y;
       double high, low;
@@ -1909,8 +1869,8 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
     int *indexPtr;
     int i;
 		
-    segPtr = errorBars = malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = errorToData = malloc(n * 3 * sizeof(int));
+    segPtr = errorBars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    indexPtr = errorToData = (int*)malloc(n * 3 * sizeof(int));
     for (i = 0; i < n; i++) {
       double x, y;
       double high, low;
@@ -2032,11 +1992,8 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
   /* Set the symbol size of all the pen styles. */
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr;
-    LinePen* penPtr;
-
-    stylePtr = Blt_Chain_GetValue(link);
-    penPtr = (LinePen *)stylePtr->penPtr;
+    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+    LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     size = ScaleSymbol(elemPtr, penPtr->symbol.size);
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penPtr->errorBarCapWidth > 0) 
@@ -2185,10 +2142,9 @@ static int ClosestTrace(Graph* graphPtr, LineElement* elemPtr,
   closest.x = closest.y = 0;		/* Suppress compiler warning. */
   for (link = Blt_Chain_FirstLink(elemPtr->traces); link;
        link = Blt_Chain_NextLink(link)) {
-    bltTrace *tracePtr;
     Point2d *p, *pend;
 
-    tracePtr = Blt_Chain_GetValue(link);
+    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     for (p = tracePtr->screenPts.points, 
 	   pend = p + (tracePtr->screenPts.length - 1); p < pend; p++) {
       Point2d b;
@@ -2431,13 +2387,12 @@ static void DrawCircles(Display *display, Drawable drawable,
 			int nSymbolPts, Point2d *symbolPts, int radius)
 {
   int i;
-  XArc *arcs;				/* Array of arcs (circle) */
   int reqSize;
   int s;
   int count;
 
   s = radius + radius;
-  arcs = malloc(nSymbolPts * sizeof(XArc));
+  XArc *arcs = (XArc*)malloc(nSymbolPts * sizeof(XArc));
 
   if (elemPtr->symbolInterval > 0) {
     Point2d *pp, *pend;
@@ -2490,13 +2445,12 @@ static void DrawSquares(Display *display, Drawable drawable,
 			LineElement* elemPtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int r)
 {
-  XRectangle *rectangles;
   XRectangle *rp, *rend;
   int reqSize;
   int s, count;
 
   s = r + r;
-  rectangles = malloc(nSymbolPts * sizeof(XRectangle));
+  XRectangle *rectangles = (XRectangle*)malloc(nSymbolPts * sizeof(XRectangle));
   if (elemPtr->symbolInterval > 0) {
     Point2d *pp, *pend;
     XRectangle *rp;
@@ -2558,7 +2512,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
       Point2d *pp, *endp;
       XPoint *points, *xpp;
 	    
-      xpp = points = malloc(nSymbolPts * sizeof(XPoint));
+      xpp = points = (XPoint*)malloc(nSymbolPts * sizeof(XPoint));
       for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	xpp->x = Round(pp->x);
 	xpp->y = Round(pp->y);
@@ -2604,7 +2558,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	pattern[0].x = pattern[2].y = -r2;
 	pattern[1].x = pattern[3].y = r2;
       }
-      segments = malloc(nSymbolPts * 2 * sizeof(XSegment));
+      segments = (XSegment*)malloc(nSymbolPts * 2 * sizeof(XSegment));
       if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *endp;
 	XSegment *sp;
@@ -2708,7 +2662,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	}
 	pattern[12] = pattern[0];
       }
-      polygon = malloc(nSymbolPts * 13 * sizeof(XPoint));
+      polygon = (XPoint*)malloc(nSymbolPts * 13 * sizeof(XPoint));
       if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *endp;
 	XPoint *xpp;
@@ -2790,7 +2744,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
       pattern[3].y = pattern[2].x = r1;
       pattern[4] = pattern[0];
 
-      polygon = malloc(nSymbolPts * 5 * sizeof(XPoint));
+      polygon = (XPoint*)malloc(nSymbolPts * 5 * sizeof(XPoint));
       if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *endp;
 	XPoint *xpp;
@@ -2893,7 +2847,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	pattern[2].y = pattern[1].y = h2;
 	pattern[2].x = -b2;
       }
-      polygon = malloc(nSymbolPts * 4 * sizeof(XPoint));
+      polygon = (XPoint*)malloc(nSymbolPts * 4 * sizeof(XPoint));
       if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *endp;
 	XPoint *xpp;
@@ -3103,20 +3057,18 @@ static void DrawTraces(Graph* graphPtr, Drawable drawable,
 		       LineElement* elemPtr, LinePen* penPtr)
 {
   Blt_ChainLink link;
-  XPoint *points;
   int np;
 
   np = Blt_MaxRequestSize(graphPtr->display, sizeof(XPoint)) - 1;
-  points = malloc((np + 1) * sizeof(XPoint));
+  XPoint *points = (XPoint*)malloc((np + 1) * sizeof(XPoint));
 	    
   for (link = Blt_Chain_FirstLink(elemPtr->traces); link;
        link = Blt_Chain_NextLink(link)) {
     XPoint *xpp;
-    bltTrace *tracePtr;
     int remaining, count;
     int n;
 
-    tracePtr = Blt_Chain_GetValue(link);
+    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
 
     /*
      * If the trace has to be split into separate XDrawLines calls, then the
@@ -3272,10 +3224,9 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
 
   /* Fill area under the curve */
   if (elemPtr->fillPts) {
-    XPoint *points;
     Point2d *endp, *pp;
 
-    points = malloc(sizeof(XPoint) * elemPtr->nFillPts);
+    XPoint *points = (XPoint*)malloc(sizeof(XPoint) * elemPtr->nFillPts);
     count = 0;
     for (pp = elemPtr->fillPts, endp = pp + elemPtr->nFillPts; 
 	 pp < endp; pp++) {
@@ -3295,11 +3246,9 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
   if (elemPtr->lines.length > 0) {
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      LinePen* penPtr;
 
-      stylePtr = Blt_Chain_GetValue(link);
-      penPtr = (LinePen *)stylePtr->penPtr;
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+      LinePen* penPtr = (LinePen *)stylePtr->penPtr;
       if ((stylePtr->lines.length > 0) && 
 	  (penPtr->errorBarLineWidth > 0)) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->traceGC,
@@ -3317,14 +3266,10 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
   }
 
   if (elemPtr->reqMaxSymbols > 0) {
-    int total;
-
-    total = 0;
+    int total = 0;
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-
-      stylePtr = Blt_Chain_GetValue(link);
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       total += stylePtr->symbolPts.length;
     }
     elemPtr->symbolInterval = total / elemPtr->reqMaxSymbols;
@@ -3336,11 +3281,8 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
   count = 0;
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr;
-    LinePen* penPtr;
-
-    stylePtr = Blt_Chain_GetValue(link);
-    penPtr = (LinePen *)stylePtr->penPtr;
+    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+    LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X)) {
       Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
@@ -3529,9 +3471,7 @@ static void TracesToPostScript(Blt_Ps ps, LineElement* elemPtr, LinePen* penPtr)
   SetLineAttributes(ps, penPtr);
   for (link = Blt_Chain_FirstLink(elemPtr->traces); link;
        link = Blt_Chain_NextLink(link)) {
-    bltTrace *tracePtr;
-
-    tracePtr = Blt_Chain_GetValue(link);
+    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     if (tracePtr->screenPts.length > 0) {
       Blt_Ps_Append(ps, "% start trace\n");
       Blt_Ps_DrawPolyline(ps, tracePtr->screenPts.points, 
@@ -3652,11 +3592,8 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   if (elemPtr->lines.length > 0) {
     for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr;
-      LinePen* penPtr;
-
-      stylePtr = Blt_Chain_GetValue(link);
-      penPtr = (LinePen *)stylePtr->penPtr;
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+      LinePen* penPtr = (LinePen *)stylePtr->penPtr;
       if ((stylePtr->lines.length > 0) && (penPtr->traceWidth > 0)) {
 	SetLineAttributes(ps, penPtr);
 	Blt_Ps_Append(ps, "% start segments\n");
@@ -3680,13 +3617,10 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   count = 0;
   for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr;
-    LinePen* penPtr;
-    XColor* colorPtr;
 
-    stylePtr = Blt_Chain_GetValue(link);
-    penPtr = (LinePen *)stylePtr->penPtr;
-    colorPtr = penPtr->errorBarColor;
+    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+    LinePen* penPtr = (LinePen *)stylePtr->penPtr;
+    XColor* colorPtr = penPtr->errorBarColor;
     if (!colorPtr)
       colorPtr = penPtr->traceColor;
 

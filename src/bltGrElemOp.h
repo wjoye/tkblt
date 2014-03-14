@@ -217,7 +217,7 @@ struct _Element {
   Blt_ChainLink link;			/* Element's link in display list. */
 };
 
-extern char* fillObjOption[];
+extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
 extern Tk_CustomOptionGetProc StyleGetProc;
 
