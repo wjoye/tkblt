@@ -27,13 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include "bltInt.h"
 
-extern Tcl_AppInitProc Blt_GraphCmdInitProc;
-extern Tcl_AppInitProc Blt_VectorCmdInitProc;
-
+Tcl_AppInitProc Blt_GraphCmdInitProc;
+Tcl_AppInitProc Blt_VectorCmdInitProc;
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
+};
 
 int Tkblt_Init(Tcl_Interp* interp)
 {
