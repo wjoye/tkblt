@@ -72,35 +72,35 @@ TEA_SETUP_COMPILER
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
 	bltBind.C
-	bltBitmap.c
-	bltChain.c 
-	bltConfig.c
-	bltGrAxis.c
-	bltGrBar.c
-	bltGrElem.c
-	bltGrHairs.c
-	bltGrLegd.c
-	bltGrLine.c
+	bltBitmap.C
+	bltChain.C
+	bltConfig.C
+	bltGrAxis.C
+	bltGrBar.C
+	bltGrElem.C
+	bltGrHairs.C
+	bltGrLegd.C
+	bltGrLine.C
 	bltGrMarker.C
 	bltGrMarkerBitmap.C
 	bltGrMarkerLine.C
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C
 	bltGrMarkerWindow.C
-	bltGrMisc.c
-	bltGrPen.c
-	bltGrPs.c
-	bltGraph.c
-	bltInt.c 
-	bltList.c
-	bltNsUtil.c
-	bltParse.c
-	bltPs.c
-	bltPsAfm.c
-	bltSpline.c
-	bltSwitch.c
-	bltText.c
-	bltUtil.c
+	bltGrMisc.C
+	bltGrPen.C
+	bltGrPs.C
+	bltGraph.C
+	bltInt.C
+	bltList.C
+	bltNsUtil.C
+	bltParse.C
+	bltPs.C
+	bltPsAfm.C
+	bltSpline.C
+	bltSwitch.C
+	bltText.C
+	bltUtil.C
 	bltVecCmd.c
 	bltVecMath.c
 	bltVector.c

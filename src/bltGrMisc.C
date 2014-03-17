@@ -55,7 +55,7 @@ int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string,
   if (*string != '@') {
     goto badFormat;
   }
-  comma = strchr(string + 1, ',');
+  comma = (char*)strchr(string + 1, ',');
   if (comma == NULL) {
     goto badFormat;
   }

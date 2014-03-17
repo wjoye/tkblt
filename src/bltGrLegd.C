@@ -252,7 +252,7 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
     long x, y;
     int result;
 	
-    comma = strchr(string + 1, ',');
+    comma = (char*)strchr(string + 1, ',');
     if (comma == NULL) {
       Tcl_AppendResult(interp, "bad screen position \"", string,
 		       "\": should be @x,y", (char *)NULL);
@@ -1410,10 +1410,10 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
       continue;			/* Element has no legend entry. */
     }
     Blt_Ts_GetExtents(&legendPtr->style, elemPtr->label, &w, &h);
-    if (maxWidth < w) {
+    if (maxWidth < (int)w) {
       maxWidth = w;
     }
-    if (maxHeight < h) {
+    if (maxHeight < (int)h) {
       maxHeight = h;
     }
     nEntries++;
@@ -1493,7 +1493,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
     lh += legendPtr->titleHeight + legendPtr->yPad;
   }
   lw = nColumns * maxWidth;
-  if (lw < legendPtr->titleWidth) {
+  if (lw < (int)(legendPtr->titleWidth)) {
     lw = legendPtr->titleWidth;
   }
   legendPtr->width = lw + 2 * legendPtr->borderWidth + 
