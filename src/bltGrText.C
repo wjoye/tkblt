@@ -27,12 +27,10 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include <assert.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+extern "C" {
 #include <tk.h>
 #include <tkPort.h>
 #include <tkInt.h>

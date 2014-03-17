@@ -27,10 +27,9 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include <assert.h>
 #include <stdarg.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltSwitch.h"
 };
@@ -229,7 +228,6 @@ static int DoSwitch(Tcl_Interp* interp, Blt_SwitchSpec *sp,
       break;
 
     case BLT_SWITCH_CUSTOM:
-      assert(sp->customPtr != NULL);
       if ((*sp->customPtr->parseProc)(sp->customPtr->clientData, interp,
 				      sp->switchName, objPtr, (char *)record, sp->offset, sp->flags) 
 	  != TCL_OK) {
@@ -348,7 +346,6 @@ void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *record, int needFlags)
 	break;
 
       case BLT_SWITCH_CUSTOM:
-	assert(sp->customPtr != NULL);
 	if ((*(char **)ptr != NULL) && 
 	    (sp->customPtr->freeProc != NULL)) {
 	  (*sp->customPtr->freeProc)((char *)record, sp->offset, 

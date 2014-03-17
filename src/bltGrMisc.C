@@ -27,7 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdarg.h>
 
 #include <X11/Xlib.h>

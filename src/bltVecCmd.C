@@ -46,7 +46,6 @@
  *		x notify reorder #1 #2
  */
 
-#include <assert.h>
 #include <math.h>
 #include <float.h>
 
@@ -1031,7 +1030,6 @@ PopulateOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
     }
     count++;
     *valuePtr = vPtr->valueArr[i];
-    assert(count == v2Ptr->length);
     if (!isNew) {
 	if (v2Ptr->flush) {
 	    Blt_Vec_FlushCache(v2Ptr);

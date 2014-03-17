@@ -28,11 +28,10 @@
  *
  */
 
-extern "C" {
-#include <assert.h>
 #include <float.h>
 #include <math.h>
 
+extern "C" {
 #include "bltInt.h"
 #include "bltSpline.h"
 #include "bltOp.h"
@@ -1274,7 +1273,6 @@ Blt_CatromParametricSpline(Point2d *points, int nPoints, Point2d *intpPts,
     for (i = 0; i < nIntpPts; i++) {
 	interval = (int)intpPts[i].x;
 	t = intpPts[i].y;
-	assert(interval < nPoints);
 	CatromCoeffs(origPts + interval, &a, &b, &c, &d);
 	intpPts[i].x = (d.x + t * (c.x + t * (b.x + t * a.x))) / 2.0;
 	intpPts[i].y = (d.y + t * (c.y + t * (b.y + t * a.y))) / 2.0;

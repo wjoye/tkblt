@@ -43,7 +43,6 @@
  *		x notify reorder #1 #2
  */
 
-#include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <time.h>
@@ -880,8 +879,6 @@ Blt_Vec_SetSize(
 		memcpy(newArr, vPtr->valueArr, used * sizeof(double));
 	    }
 	}
-	
-	assert(vPtr->valueArr != NULL);
 	
 	/* 
 	 * We're not using the old storage anymore, so free it if it's not

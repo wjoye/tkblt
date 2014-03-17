@@ -995,11 +995,9 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
     tagProc = Blt_MakeMarkerTag;
     break;
   case CID_NONE:
-    Blt_Panic("unknown object type");
     tagProc = NULL;
     break;
   default:
-    Blt_Panic("bogus object type");
     tagProc = NULL;
     break;
   }
