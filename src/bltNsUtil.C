@@ -5,8 +5,6 @@
  */
 
 /*
- * This module implements utility namespace procedures for the BLT toolkit.
- *
  *	Copyright 1997-2008 George A Howlett.
  *
  *	Permission is hereby granted, free of charge, to any person obtaining
@@ -29,33 +27,29 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
 #include <tclPort.h>
 #include <tclInt.h>
 
 #include "bltInt.h"
 #include "bltNsUtil.h"
+};
 
-/*ARGSUSED*/
-Tcl_Namespace *
-Blt_GetCommandNamespace(Tcl_Command cmdToken)
+Tcl_Namespace* Blt_GetCommandNamespace(Tcl_Command cmdToken)
 {
-  Command *cmdPtr = (Command *)cmdToken;
-
+  Command* cmdPtr = (Command*)cmdToken;
   return (Tcl_Namespace *)cmdPtr->nsPtr;
 }
 
-int
-Blt_ParseObjectName(Tcl_Interp* interp, const char *path, 
-		    Blt_ObjectName *namePtr, unsigned int flags)
+int Blt_ParseObjectName(Tcl_Interp* interp, const char *path, 
+			Blt_ObjectName *namePtr, unsigned int flags)
 {
-  char *last, *colon;
-
   namePtr->nsPtr = NULL;
   namePtr->name = NULL;
-  colon = NULL;
+  char* colon = NULL;
 
   /* Find the last namespace separator in the qualified name. */
-  last = (char *)(path + strlen(path));
+  char* last = (char *)(path + strlen(path));
   while (--last > path) {
     if ((*last == ':') && (*(last - 1) == ':')) {
       last++;		/* just after the last "::" */
@@ -88,8 +82,7 @@ Blt_ParseObjectName(Tcl_Interp* interp, const char *path,
   return TRUE;
 }
 
-char *
-Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
+char* Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
 {
   Tcl_DStringInit(resultPtr);
   if ((namePtr->nsPtr->fullName[0] != ':') || 
@@ -114,37 +107,19 @@ static Tcl_Namespace* NamespaceOfVariable(Var *varPtr)
   return NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetVariableNamespace --
- *
- *	Returns the namespace context of the variable.  If NULL, this
- *	indicates that the variable is local to the call frame.
- *
- * Results:
- *	Returns the context of the namespace in an opaque type.
- *
- *---------------------------------------------------------------------------
- */
-
-Tcl_Namespace *
-Blt_GetVariableNamespace(Tcl_Interp* interp, const char *path)
+Tcl_Namespace* Blt_GetVariableNamespace(Tcl_Interp* interp, const char *path)
 {
   Blt_ObjectName objName;
-
-  if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
+  if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS))
     return NULL;
-  }
-  if (objName.nsPtr == NULL) {
-    Var *varPtr;
 
-    varPtr = (Var *)Tcl_FindNamespaceVar(interp, (char *)path, 
-					 (Tcl_Namespace *)NULL, 
-					 TCL_GLOBAL_ONLY);
-    if (varPtr != NULL) {
+  if (objName.nsPtr == NULL) {
+    Var*varPtr = (Var*)Tcl_FindNamespaceVar(interp, (char *)path, 
+					    (Tcl_Namespace *)NULL, 
+					    TCL_GLOBAL_ONLY);
+    if (varPtr)
       return NamespaceOfVariable(varPtr);
-    }
+
   }
   return objName.nsPtr;    
 }
