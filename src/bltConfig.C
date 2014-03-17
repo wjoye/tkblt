@@ -43,6 +43,12 @@ extern "C" {
 #include "bltConfig.h"
 };
 
+void RestoreProc(ClientData clientData, Tk_Window tkwin,
+		 char *ptr, char *savePtr)
+{
+  *(double*)ptr = *(double*)savePtr;
+}
+
 // State
 const char* stateObjOption[] = {"normal", "active", "disabled", NULL};
 
@@ -199,11 +205,10 @@ static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin,
 // List
 static Tk_CustomOptionSetProc ListSetProc;
 static Tk_CustomOptionGetProc ListGetProc;
-static Tk_CustomOptionRestoreProc ListRestoreProc;
 static Tk_CustomOptionFreeProc ListFreeProc;
 Tk_ObjCustomOption listObjOption =
   {
-    "list", ListSetProc, ListGetProc, ListRestoreProc, ListFreeProc, NULL
+    "list", ListSetProc, ListGetProc, RestoreProc, ListFreeProc, NULL
   };
 
 static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
@@ -243,12 +248,6 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
   return listObjPtr;
 };
 
-static void ListRestoreProc(ClientData clientData, Tk_Window tkwin,
-			    char *ptr, char *savePtr)
-{
-  *(double*)ptr = *(double*)savePtr;
-}
-
 static void ListFreeProc(ClientData clientData, Tk_Window tkwin,
 			 char *ptr)
 {
@@ -256,4 +255,3 @@ static void ListFreeProc(ClientData clientData, Tk_Window tkwin,
   if (argv)
     Tcl_Free((char*)argv);
 }
-

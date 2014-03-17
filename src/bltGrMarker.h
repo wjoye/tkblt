@@ -95,6 +95,7 @@ int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
 extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;
 extern Tk_ObjCustomOption joinStyleObjOption;
-extern Tk_ObjCustomOption axisObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
 #endif

@@ -487,7 +487,8 @@ static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin,
 extern Tk_ObjCustomOption linePenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 extern Tk_ObjCustomOption valuesObjOption;
-extern Tk_ObjCustomOption axisObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -529,9 +530,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LineElement, builtinPen.traceWidth), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(LineElement, axes.x), 0, &axisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(LineElement, axes.x), 0, &xAxisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(LineElement, axes.y), 0, &axisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(LineElement, axes.y), 0, &yAxisObjOption, MAP_ITEM},
   {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
    "0", -1, Tk_Offset(LineElement, reqMaxSymbols), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 

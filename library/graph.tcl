@@ -393,8 +393,8 @@ proc blt::FindElement { g x y } {
     # --------------------------------------------------------------
     set markerName "bltClosest_$info(name)"
     catch { $g marker delete $markerName }
-    $g marker create text -coords { $info(x) $info(y) } \
-	-name $markerName \
+    $g marker create text $markerName \
+	-coords { $info(x) $info(y) } \
 	-text "$info(name): $info(dist)\nindex $info(index)" \
 	-font "Arial 6" \
 	-anchor center -justify left \
@@ -404,8 +404,7 @@ proc blt::FindElement { g x y } {
     set nx [lindex $coords 0]
     set ny [lindex $coords 1]
 
-    $g marker create line -coords "$nx $ny $info(x) $info(y)" \
-	-name line.$markerName 
+    $g marker create line line.$markerName -coords "$nx $ny $info(x) $info(y)"
 
     blt::FlashPoint $g $info(name) $info(index) 10
     blt::FlashPoint $g $info(name) [expr $info(index) + 1] 10
@@ -502,7 +501,8 @@ proc blt::ZoomStack::MarkPoint { g index } {
     if [$g marker exists $marker] {
      	$g marker configure $marker -coords { $x $y } -text $text 
     } else {
-    	$g marker create text -coords { $x $y } -name $marker \
+    	$g marker create text $marker \
+	    -coords { $x $y } \
    	    -font "mathmatica1 10" \
 	    -text $text -anchor center -bg {} -justify left
     }
@@ -637,7 +637,7 @@ proc blt::ZoomStack::TitleNext { g } {
     } else {
 	set coords "-Inf Inf"
     }
-    $g marker create text -name "zoomTitle" -text "Zoom #$level" \
+    $g marker create text "zoomTitle" -text "Zoom #$level" \
 	-coords $coords -bindtags "" -anchor nw
 }
 
@@ -646,8 +646,7 @@ proc blt::ZoomStack::TitleLast { g } {
 
     set level [llength $_private($g,stack)]
     if { $level > 0 } {
-     	$g marker create text -name "zoomTitle" -anchor nw \
-	    -text "Zoom #$level" 
+     	$g marker create text "zoomTitle" -anchor nw -text "Zoom #$level" 
     }
 }
 
@@ -758,14 +757,13 @@ proc blt::ZoomStack::Box { g } {
     } else {
 	set X [lindex [$g xaxis use] 0]
 	set Y [lindex [$g yaxis use] 0]
-	$g marker create line -coords $coords -name "zoomOutline" \
-	    -mapx $X -mapy $Y
+	$g marker create line "zoomOutline" \
+	    -coords $coords -mapx $X -mapy $Y
 	set interval $_private($g,interval)
 	set id [after $interval [list blt::ZoomStack::MarchingAnts $g 0]]
 	set _private($g,afterId) $id
     }
 }
-
 
 proc Blt_PostScriptDialog { g } {
     set top $g.top

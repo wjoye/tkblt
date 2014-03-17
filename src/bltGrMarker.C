@@ -180,14 +180,21 @@ static Tcl_Obj* JoinStyleGetProc(ClientData clientData, Tk_Window tkwin,
 static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp, 
 			int objc, Tcl_Obj* const objv[])
 {
-  char* name = Tcl_GetString(objv[4]);
   int offset = 5;
+  char* name =NULL;
   char ident[128];
-  // name given?
-  if (name[0] == '-') {
+  if (objc == 4) {
+    offset = 4;
     sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId++);
     name = ident;
-    offset = 4;
+  }
+  else {
+    name = Tcl_GetString(objv[4]);
+    if (name[0] == '-') {
+      offset = 4;
+      sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId++);
+      name = ident;
+    }
   }
 
   int isNew;
@@ -270,16 +277,6 @@ static void DestroyMarker(Marker *markerPtr)
 
   if (markerPtr->link)
     Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
-
-  /*
-  if (markerPtr->axes.x)
-    Blt_ReleaseAxis(markerPtr->axes.x);
-  if (markerPtr->axes.y)
-    Blt_ReleaseAxis(markerPtr->axes.y);
-
-  if (markerPtr->worldPts)
-    free(markerPtr->worldPts);
-  */
 
   Tk_FreeConfigOptions((char*)markerPtr, markerPtr->optionTable,
 		       graphPtr->tkwin);

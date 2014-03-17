@@ -106,11 +106,16 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr,
 
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
-static Tk_CustomOptionRestoreProc AxisRestoreProc;
 static Tk_CustomOptionFreeProc AxisFreeProc;
-Tk_ObjCustomOption axisObjOption =
+Tk_ObjCustomOption xAxisObjOption =
   {
-    "axis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc, NULL
+    "xaxis", AxisSetProc, AxisGetProc, RestoreProc, AxisFreeProc,
+    (ClientData)CID_AXIS_X
+  };
+Tk_ObjCustomOption yAxisObjOption =
+  {
+    "yaxis", AxisSetProc, AxisGetProc, RestoreProc, AxisFreeProc,
+    (ClientData)CID_AXIS_Y
   };
 
 static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -139,12 +144,6 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
 
   return Tcl_NewStringObj(name, -1);
 };
-
-static void AxisRestoreProc(ClientData clientData, Tk_Window tkwin,
-			    char *ptr, char *savePtr)
-{
-  *(double*)ptr = *(double*)savePtr;
-}
 
 static void AxisFreeProc(ClientData clientData, Tk_Window tkwin,
 			 char *ptr)
@@ -191,11 +190,10 @@ static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_CustomOptionSetProc TicksSetProc;
 static Tk_CustomOptionGetProc TicksGetProc;
-static Tk_CustomOptionRestoreProc TicksRestoreProc;
 static Tk_CustomOptionFreeProc TicksFreeProc;
 Tk_ObjCustomOption ticksObjOption =
   {
-    "ticks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc, NULL
+    "ticks", TicksSetProc, TicksGetProc, RestoreProc, TicksFreeProc, NULL
   };
 
 static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -232,7 +230,7 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin, 
 			     char *widgRec, int offset)
 {
-  Ticks* ticksPtr = *(Ticks**) (widgRec + offset);
+  Ticks* ticksPtr = *(Ticks**)(widgRec + offset);
 
   if (ticksPtr) {
     int cnt = ticksPtr->nTicks;
@@ -248,12 +246,6 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
     return Tcl_NewListObj(0, NULL);
 }
 
-static void TicksRestoreProc(ClientData clientData, Tk_Window tkwin,
-			    char *ptr, char *savePtr)
-{
-  *(double*)ptr = *(double*)savePtr;
-}
-
 static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
 			 char *ptr)
 {
@@ -264,29 +256,38 @@ static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_CustomOptionSetProc ObjectSetProc;
 static Tk_CustomOptionGetProc ObjectGetProc;
+static Tk_CustomOptionFreeProc ObjectFreeProc;
 Tk_ObjCustomOption objectObjOption =
   {
-    "object", ObjectSetProc, ObjectGetProc, NULL, NULL, NULL,
+    "object", ObjectSetProc, ObjectGetProc, RestoreProc, ObjectFreeProc, NULL,
   };
 
 static int ObjectSetProc(ClientData clientData, Tcl_Interp* interp,
 			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* save, int flags)
+			int offset, char* savePtr, int flags)
 {
-  Tcl_Obj** objectPtr = (Tcl_Obj**)(widgRec + offset);
+  Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
+  *(double*)savePtr = *(double*)objectPtrPtr;
+
   Tcl_IncrRefCount(*objPtr);
-  if (*objectPtr)
-    Tcl_DecrRefCount(*objectPtr);
-  *objectPtr = *objPtr;
+  *objectPtrPtr = *objPtr;
 
   return TCL_OK;
 }
     
 static Tcl_Obj* ObjectGetProc(ClientData clientData, Tk_Window tkwin, 
-			     char *widgRec, int offset)
+			      char *widgRec, int offset)
 {
-  Tcl_Obj** objectPtr = (Tcl_Obj**)(widgRec + offset);
-  return *objectPtr;
+  Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
+  return *objectPtrPtr;
+}
+
+static void ObjectFreeProc(ClientData clientData, Tk_Window tkwin,
+			   char *ptr)
+{
+  Tcl_Obj* objectPtr = *(Tcl_Obj**)ptr;
+  if (objectPtr)
+    Tcl_DecrRefCount(objectPtr);
 }
 
 static Tk_OptionSpec optionSpecs[] = {
