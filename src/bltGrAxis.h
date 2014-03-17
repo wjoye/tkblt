@@ -182,13 +182,15 @@ typedef struct {
 				 * upon the range of elements mapped to the 
 				 * axis. The default value is 0.0. */
 
-  Ticks *t1Ptr;		/* Array of major tick positions. May be
+  Ticks* t1Ptr;		/* Array of major tick positions. May be
 			 * set by the user or generated from the 
 			 * major sweep below. */
+  Ticks* t1UPtr;
 
-  Ticks *t2Ptr;		/* Array of minor tick positions. May be
+  Ticks* t2Ptr;		/* Array of minor tick positions. May be
 			 * set by the user or generated from the
 			 * minor sweep below. */
+  Ticks* t2UPtr;
 
   TickSweep minorSweep, majorSweep;
 

@@ -1220,9 +1220,9 @@ void Blt_MapGraph(Graph* graphPtr)
   }
   /* Compute coordinate transformations for graph components */
   if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
-    if (graphPtr->flags & MAP_WORLD) {
+    if (graphPtr->flags & MAP_WORLD)
       Blt_MapAxes(graphPtr);
-    }
+
     Blt_MapElements(graphPtr);
     Blt_MapMarkers(graphPtr);
     graphPtr->flags &= ~(MAP_ALL);

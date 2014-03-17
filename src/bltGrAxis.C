@@ -30,6 +30,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include <iostream>
+using namespace std;
+
 extern "C" {
 #include "bltInt.h"
 #include "bltMath.h"
@@ -44,9 +47,6 @@ extern "C" {
 #define NUMDIGITS 15	/* Specifies the number of digits of
 			 * accuracy used when outputting axis
 			 * tick labels. */
-
-#define AXIS_AUTO_MAJOR		(1<<16) /* Auto-generate major ticks. */
-#define AXIS_AUTO_MINOR		(1<<17) /* Auto-generate minor ticks. */
 
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
@@ -288,24 +288,16 @@ static Tk_CustomOptionSetProc TicksSetProc;
 static Tk_CustomOptionGetProc TicksGetProc;
 static Tk_CustomOptionRestoreProc TicksRestoreProc;
 static Tk_CustomOptionFreeProc TicksFreeProc;
-Tk_ObjCustomOption majorTicksObjOption =
+Tk_ObjCustomOption ticksObjOption =
   {
-    "majorTicks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc,
-    (ClientData)AXIS_AUTO_MAJOR,
-  };
-Tk_ObjCustomOption minorTicksObjOption =
-  {
-    "minorTicks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc,
-    (ClientData)AXIS_AUTO_MINOR,
+    "ticks", TicksSetProc, TicksGetProc, TicksRestoreProc, TicksFreeProc, NULL
   };
 
 static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
 			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			int offset, char* savePtr, int flags)
 {
-  Axis* axisPtr = (Axis*)widgRec;
   Ticks** ticksPtrPtr = (Ticks**)(widgRec + offset);
-  unsigned long mask = (unsigned long)clientData;
   *(double*)savePtr = *(double*)ticksPtrPtr;
 
   int objc;
@@ -313,7 +305,6 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
 
-  axisPtr->flags |= mask;
   Ticks* ticksPtr = NULL;
   if (objc > 0) {
     ticksPtr = (Ticks*)malloc(sizeof(Ticks) + (objc*sizeof(double)));
@@ -326,7 +317,6 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
       ticksPtr->values[ii] = value;
     }
     ticksPtr->nTicks = objc;
-    axisPtr->flags &= ~mask;
   }
 
   *ticksPtrPtr = ticksPtr;
@@ -337,11 +327,9 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin, 
 			     char *widgRec, int offset)
 {
-  Axis* axisPtr = (Axis*)widgRec;
   Ticks* ticksPtr = *(Ticks**) (widgRec + offset);
-  unsigned long mask = (unsigned long)clientData;
 
-  if (ticksPtr && !(axisPtr->flags & mask)) {
+  if (ticksPtr) {
     int cnt = ticksPtr->nTicks;
     Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
     for (int ii = 0; ii<cnt; ii++)
@@ -464,15 +452,13 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-loosemax", "looseMax", "LooseMax", 
    "no", -1, Tk_Offset(Axis, looseMax), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-majorticks", "majorTicks", "MajorTicks",
-   NULL, -1, Tk_Offset(Axis, t1Ptr), 
-   TK_OPTION_NULL_OK, &majorTicksObjOption, 0},
+   NULL, -1, Tk_Offset(Axis, t1UPtr), TK_OPTION_NULL_OK, &ticksObjOption, 0},
   {TK_OPTION_CUSTOM, "-max", "max", "Max", 
    NULL, -1, Tk_Offset(Axis, reqMax), TK_OPTION_NULL_OK, &limitObjOption, 0},
   {TK_OPTION_CUSTOM, "-min", "min", "Min", 
    NULL, -1, Tk_Offset(Axis, reqMin), TK_OPTION_NULL_OK, &limitObjOption, 0},
   {TK_OPTION_CUSTOM, "-minorticks", "minorTicks", "MinorTicks",
-   NULL, -1, Tk_Offset(Axis, t2Ptr), 
-   TK_OPTION_NULL_OK, &minorTicksObjOption, 0},
+   NULL, -1, Tk_Offset(Axis, t2UPtr), TK_OPTION_NULL_OK, &ticksObjOption, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "flat", -1, Tk_Offset(Axis, relief), 0, NULL, 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
@@ -602,7 +588,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
   axisPtr->reqScrollMax =NAN;
   axisPtr->margin =margin;
   axisPtr->use =0;
-  axisPtr->flags = (AXIS_AUTO_MAJOR|AXIS_AUTO_MINOR);
+  axisPtr->flags = 0;
 
   Blt_Ts_InitStyle(axisPtr->limitsTextStyle);
   axisPtr->tickLabels = Blt_Chain_Create();
@@ -1801,7 +1787,7 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
 
   /* Now calculate the minor tick step and number. */
 
-  if ((axisPtr->reqNumMinorTicks > 0) && (axisPtr->flags & AXIS_AUTO_MAJOR)) {
+  if (axisPtr->reqNumMinorTicks > 0) {
     nTicks = axisPtr->reqNumMinorTicks - 1;
     step = 1.0 / (nTicks + 1);
   } 
@@ -1814,22 +1800,6 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
   }
   axisPtr->minorSweep.initial = axisPtr->minorSweep.step = step;
   axisPtr->minorSweep.nSteps = nTicks;
-}
-
-static void SweepTicks(Axis *axisPtr)
-{
-  if (axisPtr->flags & AXIS_AUTO_MAJOR) {
-    if (axisPtr->t1Ptr)
-      free(axisPtr->t1Ptr);
-
-    axisPtr->t1Ptr = GenerateTicks(&axisPtr->majorSweep);
-  }
-  if (axisPtr->flags & AXIS_AUTO_MINOR) {
-    if (axisPtr->t2Ptr)
-      free(axisPtr->t2Ptr);
-
-    axisPtr->t2Ptr = GenerateTicks(&axisPtr->minorSweep);
-  }
 }
 
 void Blt_ResetAxes(Graph* graphPtr)
@@ -2329,13 +2299,11 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     axisPtr->segments = NULL;	
   }
 
-  int nMajorTicks =0;
-  if (axisPtr->t1Ptr)
-    nMajorTicks = axisPtr->t1Ptr->nTicks;
+  Ticks* t1Ptr = axisPtr->t1UPtr ? axisPtr->t1UPtr : axisPtr->t1Ptr;
+  Ticks* t2Ptr = axisPtr->t2UPtr ? axisPtr->t2UPtr : axisPtr->t2Ptr;
 
-  int nMinorTicks =0;
-  if (axisPtr->t2Ptr)
-    nMinorTicks = axisPtr->t2Ptr->nTicks;
+  int nMajorTicks= t1Ptr ? t1Ptr->nTicks : 0;
+  int nMinorTicks= t2Ptr ? t2Ptr->nTicks : 0;
 
   int arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
   Segment2d* segments = (Segment2d*)malloc(arraySize * sizeof(Segment2d));
@@ -2345,13 +2313,14 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     MakeAxisLine(axisPtr, infoPtr->axis, sp);
     sp++;
   }
+
   if (axisPtr->showTicks) {
     int isHoriz = AxisIsHorizontal(axisPtr);
     for (int ii=0; ii<nMajorTicks; ii++) {
-      double t1 = axisPtr->t1Ptr->values[ii];
+      double t1 = t1Ptr->values[ii];
       /* Minor ticks */
       for (int jj=0; jj<nMinorTicks; jj++) {
-	double t2 = t1 + (axisPtr->majorSweep.step*axisPtr->t2Ptr->values[jj]);
+	double t2 = t1 + (axisPtr->majorSweep.step*t2Ptr->values[jj]);
 	if (InRange(t2, &axisPtr->axisRange)) {
 	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
@@ -2369,7 +2338,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     double labelPos = (double)infoPtr->label;
 
     for (int ii=0; ii< nMajorTicks; ii++) {
-      double t1 = axisPtr->t1Ptr->values[ii];
+      double t1 = t1Ptr->values[ii];
       if (axisPtr->labelOffset)
 	t1 += axisPtr->majorSweep.step * 0.5;
 
@@ -2734,7 +2703,7 @@ static void MapGridlines(Axis *axisPtr)
   t1Ptr = axisPtr->t1Ptr;
   if (!t1Ptr)
     t1Ptr = GenerateTicks(&axisPtr->majorSweep);
-
+ 
   t2Ptr = axisPtr->t2Ptr;
   if (!t2Ptr)
     t2Ptr = GenerateTicks(&axisPtr->minorSweep);
@@ -2788,9 +2757,10 @@ static void MapGridlines(Axis *axisPtr)
       s1++;
     }
   }
+
   if (t1Ptr != axisPtr->t1Ptr)
     free(t1Ptr);		/* Free generated ticks. */
-
+ 
   if (t2Ptr != axisPtr->t2Ptr)
     free(t2Ptr);		/* Free generated ticks. */
 
@@ -2808,17 +2778,25 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
     y += axisPtr->lineWidth + 2;
 
   axisPtr->maxTickHeight = axisPtr->maxTickWidth = 0;
+
+  if (axisPtr->t1Ptr)
+    free(axisPtr->t1Ptr);
+  axisPtr->t1Ptr = GenerateTicks(&axisPtr->majorSweep);
+  if (axisPtr->t2Ptr)
+    free(axisPtr->t2Ptr);
+  axisPtr->t2Ptr = GenerateTicks(&axisPtr->minorSweep);
+
   if (axisPtr->showTicks) {
-    SweepTicks(axisPtr);
+    Ticks* t1Ptr = axisPtr->t1UPtr ? axisPtr->t1UPtr : axisPtr->t1Ptr;
 	
     unsigned int nTicks =0;
-    if (axisPtr->t1Ptr)
-      nTicks = axisPtr->t1Ptr->nTicks;
+    if (t1Ptr)
+      nTicks = t1Ptr->nTicks;
 	
     unsigned int nLabels =0;
     for (int ii=0; ii<nTicks; ii++) {
-      double x = axisPtr->t1Ptr->values[ii];
-      double x2 = axisPtr->t1Ptr->values[ii];
+      double x = t1Ptr->values[ii];
+      double x2 = t1Ptr->values[ii];
       if (axisPtr->labelOffset)
 	x2 += axisPtr->majorSweep.step * 0.5;
 
@@ -2867,7 +2845,8 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
     if ((axisPtr->lineWidth > 0) && axisPtr->exterior)
       // Distance from axis line to tick label.
       y += axisPtr->tickLength;
-  }
+
+  } // showTicks
 
   if (axisPtr->title) {
     if (axisPtr->titleAlternate) {
@@ -3497,16 +3476,18 @@ void Blt_MapAxes(Graph* graphPtr)
 	continue;
 
       if (graphPtr->stackAxes) {
-	if (axisPtr->reqNumMajorTicks <= 0) {
+	if (axisPtr->reqNumMajorTicks <= 0)
 	  axisPtr->reqNumMajorTicks = 4;
-	}
+
 	MapStackedAxis(axisPtr, count, margin);
-      } else {
-	if (axisPtr->reqNumMajorTicks <= 0) {
+      } 
+      else {
+	if (axisPtr->reqNumMajorTicks <= 0)
 	  axisPtr->reqNumMajorTicks = 4;
-	}
+
 	MapAxis(axisPtr, offset, margin);
       }
+
       if (axisPtr->showGrid)
 	MapGridlines(axisPtr);
 
