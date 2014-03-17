@@ -28,6 +28,7 @@
  *
  */
 
+extern "C" {
 #include <stdarg.h>
 
 #include <X11/Xlib.h>
@@ -41,6 +42,7 @@
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltPsInt.h"
+};
 
 #define FONT_ITALIC	(1<<0)
 #define FONT_BOLD	(1<<1)
@@ -114,9 +116,7 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
 
 PostScript *Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr)
 {
-  PostScript *psPtr;
-
-  psPtr = malloc(sizeof(PostScript));
+  PostScript* psPtr = (PostScript*)malloc(sizeof(PostScript));
   psPtr->setupPtr = setupPtr;
   psPtr->interp = interp;
   Tcl_DStringInit(&psPtr->dString);

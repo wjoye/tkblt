@@ -23,8 +23,10 @@
  * since the compiled code typically runs only one time.
  */
 
+extern "C" {
 #include "bltInt.h"
 #include "bltParse.h"
+};
 
 /*
  * A table used to classify input characters to assist in parsing
@@ -358,20 +360,17 @@ void Blt_ExpandParseValue(
     int needed)			/* Minimum amount of additional space
 				 * to allocate. */
 {
-    int size;
-    char *buffer;
-
     /*
      * Either double the size of the buffer or add enough new space
      * to meet the demand, whichever produces a larger new buffer.
      */
-    size = (parsePtr->end - parsePtr->buffer) + 1;
-    if (size < needed) {
+    int size = (parsePtr->end - parsePtr->buffer) + 1;
+    if (size < needed)
 	size += needed;
-    } else {
+    else
 	size += size;
-    }
-    buffer = malloc((unsigned int)size);
+
+    char* buffer = (char*)malloc((unsigned int)size);
 
     /*
      * Copy from old buffer to new, free old buffer if needed, and
