@@ -412,9 +412,16 @@ static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
 static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  if (objc<4)
+    return TCL_OK;
+    
   Marker *markerPtr;
-  if (GetMarkerFromObj(NULL, graphPtr, objv[3], &markerPtr) != TCL_OK)
+  if (GetMarkerFromObj(NULL, graphPtr, objv[3], &markerPtr) != TCL_OK) {
+    Tcl_AppendResult(interp, "can't find marker \"", 
+		     Tcl_GetString(objv[3]), "\" in \"", 
+		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
     return TCL_ERROR;
+  }
 
   markerPtr->flags |= DELETE_PENDING;
   Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);

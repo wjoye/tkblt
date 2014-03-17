@@ -637,16 +637,24 @@ proc blt::ZoomStack::TitleNext { g } {
     } else {
 	set coords "-Inf Inf"
     }
-    $g marker create text "zoomTitle" -text "Zoom #$level" \
-	-coords $coords -bindtags "" -anchor nw
+    set marker "zoomTitle"
+    if {![$g marker exists $marker]} {
+	$g marker create text $marker -bindtags "" -anchor nw
+    }
+    $g marker configure $marker -text "Zoom #$level" \
+	-coords $coords
 }
 
 proc blt::ZoomStack::TitleLast { g } {
     variable _private
 
+    set marker "zoomTitle"
     set level [llength $_private($g,stack)]
     if { $level > 0 } {
-     	$g marker create text "zoomTitle" -anchor nw -text "Zoom #$level" 
+	if {![$g marker exists $marker]} {
+	    $g marker create text "zoomTitle" -anchor nw
+	}
+     	$g marker configure $marker -text "Zoom #$level" 
     }
 }
 

@@ -264,16 +264,17 @@ static int CreateOp(Tcl_Interp* interp, Graph* graphPtr,
 static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  if (objc<4)
+    return TCL_OK;
+    
   Pen* penPtr;
-  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (penPtr->flags & DELETE_PENDING) {
+  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK) {
     Tcl_AppendResult(interp, "can't find pen \"", 
 		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
+		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
     return TCL_ERROR;
   }
+
   penPtr->flags |= DELETE_PENDING;
   if (penPtr->refCount == 0)
     DestroyPen(penPtr);
@@ -331,8 +332,7 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
 static Blt_OpSpec penOps[] =
   {
     {"cget", 2, (void*)CgetOp, 5, 5, "penName option",},
-    {"configure", 2, (void*)ConfigureOp, 4, 0,
-     "penName ?penName?... ?option value?...",},
+    {"configure", 2, (void*)ConfigureOp, 4, 0, "penName ?penName?... ?option value?...",},
     {"create", 2, (void*)CreateOp, 4, 0, "penName ?option value?...",},
     {"delete", 2, (void*)DeleteOp, 3, 0, "?penName?...",},
     {"names", 1, (void*)NamesOp, 3, 0, "?pattern?...",},

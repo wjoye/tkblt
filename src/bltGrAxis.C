@@ -1005,9 +1005,16 @@ static int AxisCreateOp(Tcl_Interp* interp, Graph* graphPtr,
 static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr, 
 			int objc, Tcl_Obj* const objv[])
 {
+  if (objc<4)
+    return TCL_OK;
+    
   Axis *axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK) {
+    Tcl_AppendResult(interp, "can't find axis \"", 
+		     Tcl_GetString(objv[3]), "\" in \"", 
+		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
     return TCL_ERROR;
+  }
 
   axisPtr->flags |= DELETE_PENDING;
   if (axisPtr->refCount == 0) {
