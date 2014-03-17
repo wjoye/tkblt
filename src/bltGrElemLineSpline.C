@@ -28,6 +28,7 @@
  *
  */
 
+extern "C" {
 #include <assert.h>
 #include <float.h>
 #include <math.h>
@@ -35,6 +36,7 @@
 #include "bltInt.h"
 #include "bltSpline.h"
 #include "bltOp.h"
+};
 
 typedef int (SplineProc)(Point2d origPts[], int nOrigPts, Point2d intpPts[],
 			 int nIntpPts);
@@ -777,15 +779,11 @@ int
 Blt_QuadraticSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts, 
 		    int nIntpPts)
 {
-    double epsilon;
-    double *work;
-    int result;
-
-    work = malloc(nOrigPts * sizeof(double));
-    epsilon = 0.0;		/* TBA: adjust error via command-line option */
+    double* work = (double*)malloc(nOrigPts * sizeof(double));
+    double epsilon = 0.0;
     /* allocate space for vectors used in calculation */
     QuadSlopes(origPts, work, nOrigPts);
-    result = QuadEval(origPts, nOrigPts, intpPts, nIntpPts, work, epsilon);
+    int result = QuadEval(origPts, nOrigPts, intpPts, nIntpPts, work, epsilon);
     free(work);
     if (result > 1) {
 	return FALSE;
@@ -810,15 +808,12 @@ int
 Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts, 
 		  int nIntpPts)
 {
-    Cubic2D *eq;
     Point2d *ip, *iend;
-    TriDiagonalMatrix *A;
-    double *dx;		/* vector of deltas in x */
     double x, dy, alpha;
     int isKnot;
     int i, j, n;
 
-    dx = malloc(sizeof(double) * nOrigPts);
+    double* dx = (double*)malloc(sizeof(double) * nOrigPts);
     /* Calculate vector of differences */
     for (i = 0, j = 1; j < nOrigPts; i++, j++) {
 	dx[i] = origPts[j].x - origPts[i].x;
@@ -827,8 +822,9 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	}
     }
     n = nOrigPts - 1;		/* Number of intervals. */
-    A = malloc(sizeof(TriDiagonalMatrix) * nOrigPts);
-    if (A == NULL) {
+    TriDiagonalMatrix* A = 
+      (TriDiagonalMatrix*)malloc(sizeof(TriDiagonalMatrix) * nOrigPts);
+    if (!A) {
 	free(dx);
 	return 0;
     }
@@ -846,8 +842,8 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	A[j][2] = (alpha - dx[i] * A[i][2]) / A[j][0];
     }
 
-    eq = malloc(sizeof(Cubic2D) * nOrigPts);
-    if (eq == NULL) {
+    Cubic2D* eq = (Cubic2D*)malloc(sizeof(Cubic2D) * nOrigPts);
+    if (!eq) {
 	free(A);
 	free(dx);
 	return FALSE;
@@ -1010,18 +1006,17 @@ CubicSlopes(
     double unitX, 
     double unitY)		/* Unit length in x and y (norm=1) */
 {
-    CubicSpline *spline;
     CubicSpline *s1, *s2;
     int n, i;
     double norm, dx, dy;
-    TriDiagonalMatrix *A;	/* The tri-diagonal matrix is saved here. */
     
-    spline = malloc(sizeof(CubicSpline) * nPoints);
-    if (spline == NULL) {
+    CubicSpline* spline = (CubicSpline*)malloc(sizeof(CubicSpline) * nPoints);
+    if (!spline)
 	return NULL;
-    }
-    A = malloc(sizeof(TriDiagonalMatrix) * nPoints);
-    if (A == NULL) {
+
+    TriDiagonalMatrix *A 
+      = (TriDiagonalMatrix*)malloc(sizeof(TriDiagonalMatrix) * nPoints);
+    if (!A) {
 	free(spline);
 	return NULL;
     }
@@ -1261,19 +1256,16 @@ Blt_CatromParametricSpline(Point2d *points, int nPoints, Point2d *intpPts,
 			   int nIntpPts)
 {
     int i;
-    Point2d *origPts;
     double t;
     int interval;
     Point2d a, b, c, d;
-
-    assert(nPoints > 0);
 
     /*
      * The spline is computed in screen coordinates instead of data points so
      * that we can select the abscissas of the interpolated points from each
      * pixel horizontally across the plotting area.
      */
-    origPts = malloc((nPoints + 4) * sizeof(Point2d));
+    Point2d* origPts = (Point2d*)malloc((nPoints + 4) * sizeof(Point2d));
     memcpy(origPts + 1, points, sizeof(Point2d) * nPoints);
 
     origPts[0] = origPts[1];
