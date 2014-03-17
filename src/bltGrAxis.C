@@ -74,7 +74,6 @@ static AxisName axisNames[] = {
   { "x2", CID_AXIS_X, MARGIN_TOP,    MARGIN_RIGHT  },
   { "y2", CID_AXIS_Y, MARGIN_RIGHT,  MARGIN_TOP    }
 } ;
-static int nAxisNames = sizeof(axisNames) / sizeof(AxisName);
 
 // Defs
 
@@ -109,15 +108,9 @@ static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
 static Tk_CustomOptionRestoreProc AxisRestoreProc;
 static Tk_CustomOptionFreeProc AxisFreeProc;
-Tk_ObjCustomOption xAxisObjOption =
+Tk_ObjCustomOption axisObjOption =
   {
-    "xaxis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc,
-    (ClientData)CID_AXIS_X
-  };
-Tk_ObjCustomOption yAxisObjOption =
-  {
-    "yaxis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc,
-    (ClientData)CID_AXIS_Y
+    "axis", AxisSetProc, AxisGetProc, AxisRestoreProc, AxisFreeProc, NULL
   };
 
 static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
@@ -194,94 +187,6 @@ static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin,
     objPtr = Tcl_NewStringObj("", -1);
 
   return objPtr;
-}
-
-static Tk_CustomOptionSetProc UseSetProc;
-static Tk_CustomOptionGetProc UseGetProc;
-Tk_ObjCustomOption useObjOption =
-  {
-    "use", UseSetProc, UseGetProc, NULL, NULL, NULL
-  };
-
-static int UseSetProc(ClientData clientData, Tcl_Interp* interp,
-		      Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		      int offset, char* save, int flags)
-{
-  Axis* axisPtr = (Axis*)(widgRec);
-
-  Graph* graphPtr = axisPtr->obj.graphPtr;
-
-  // Clear the axis class if it's not currently used by an element
-  if (axisPtr->refCount == 0)
-    Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
-
-  // Remove the axis from the margin's use list and clear its use flag.
-  if (axisPtr->link)
-    Blt_Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
-
-  axisPtr->use =0;
-  const char *string = Tcl_GetString(*objPtr);
-  if (!string || (string[0] == '\0')) {
-    graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
-    // When any axis changes, we need to layout the entire graph.
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_EventuallyRedrawGraph(graphPtr);
-    
-    return TCL_OK;
-  }
-
-  AxisName *p, *pend;
-  for (p = axisNames, pend = axisNames + nAxisNames; p < pend; p++) {
-    if (strcmp(p->name, string) == 0) {
-      break;			/* Found the axis name. */
-    }
-  }
-  if (p == pend) {
-    Tcl_AppendResult(interp, "unknown axis type \"", string, "\": "
-		     "should be x, y, x1, y2, or \"\".", NULL);
-    return TCL_ERROR;
-  }
-
-  // Check the axis class
-  // Can't use the axis if it's already being used as another type.
-  if (axisPtr->obj.classId == CID_NONE)
-    Blt_GraphSetObjectClass(&axisPtr->obj, p->classId);
-  else if (axisPtr->obj.classId != p->classId) {
-    Tcl_AppendResult(interp, "wrong type for axis \"", 
-		     axisPtr->obj.name, "\": can't use ", 
-		     axisPtr->obj.className, " type axis.", NULL); 
-    return TCL_ERROR;
-  }
-
-  int margin = (graphPtr->inverted) ? p->invertMargin : p->margin;
-  Blt_Chain chain = graphPtr->margins[margin].axes;
-  // Move the axis from the old margin's "use" list to the new.
-  if (axisPtr->link)
-    Blt_Chain_AppendLink(chain, axisPtr->link);
-  else
-    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
-
-  axisPtr->chain = chain;
-  axisPtr->use =1;
-  axisPtr->margin = margin;
-
-  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
-  // When any axis changes, we need to layout the entire graph.
-  graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-  Blt_EventuallyRedrawGraph(graphPtr);
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* UseGetProc(ClientData clientData, Tk_Window tkwin, 
-			   char *widgRec, int offset)
-{
-  Axis* axisPtr = (Axis*)(widgRec);
-    
-  if (axisPtr->margin == MARGIN_NONE)
-    return Tcl_NewStringObj("", -1);
-
-  return Tcl_NewStringObj(axisNames[axisPtr->margin].name, -1);
 }
 
 static Tk_CustomOptionSetProc TicksSetProc;
@@ -498,8 +403,6 @@ static Tk_OptionSpec optionSpecs[] = {
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(Axis, titleColor), 0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    STD_FONT_NORMAL, -1, Tk_Offset(Axis, titleFont), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-use", "use", "Use", 
-   NULL, -1, 0, TK_OPTION_NULL_OK, &useObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 

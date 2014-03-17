@@ -230,8 +230,7 @@ static Tk_ObjCustomOption styleObjOption =
 extern Tk_ObjCustomOption barPenObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 extern Tk_ObjCustomOption valuesObjOption;
-extern Tk_ObjCustomOption xAxisObjOption;
-extern Tk_ObjCustomOption yAxisObjOption;
+extern Tk_ObjCustomOption axisObjOption;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
@@ -272,9 +271,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
-   "x", -1, Tk_Offset(BarElement, axes.x), 0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(BarElement, axes.x), 0, &axisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(BarElement, axes.y), 0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(BarElement, axes.y), 0, &axisObjOption, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
    NULL, -1, Tk_Offset(BarElement, normalPenPtr), 
