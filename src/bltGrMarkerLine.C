@@ -117,37 +117,31 @@ static int PointInLineProc(Marker *markerPtr, Point2d *samplePtr)
 
 static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 {
-  if (markerPtr->nWorldPts < 2) {
+  if (markerPtr->nWorldPts < 2)
     return FALSE;
-  }
+
   if (enclosed) {
     Point2d *pp, *pend;
 
     for (pp = markerPtr->worldPts, pend = pp + markerPtr->nWorldPts; 
 	 pp < pend; pp++) {
-      Point2d p;
-
-      p = Blt_MapPoint(pp, &markerPtr->axes);
+      Point2d p = Blt_MapPoint(pp, &markerPtr->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
       }
     }
     return TRUE;			/* All points inside bounding box. */
-  } else {
-    int count;
+  }
+  else {
     Point2d *pp, *pend;
-
-    count = 0;
+    int count = 0;
     for (pp = markerPtr->worldPts, pend = pp + (markerPtr->nWorldPts - 1); 
 	 pp < pend; pp++) {
-      Point2d p, q;
-
-      p = Blt_MapPoint(pp, &markerPtr->axes);
-      q = Blt_MapPoint(pp + 1, &markerPtr->axes);
-      if (Blt_LineRectClip(extsPtr, &p, &q)) {
+      Point2d p = Blt_MapPoint(pp, &markerPtr->axes);
+      Point2d q = Blt_MapPoint(pp + 1, &markerPtr->axes);
+      if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
-      }
     }
     return (count > 0);		/* At least 1 segment passes through
 				 * region. */
@@ -172,13 +166,10 @@ static int ConfigureLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker *)markerPtr;
-  GC newGC;
-  XGCValues gcValues;
-  unsigned long gcMask;
-  Drawable drawable;
 
-  drawable = Tk_WindowId(graphPtr->tkwin);
-  gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
+  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
+  unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
+  XGCValues gcValues;
   if (lmPtr->outlineColor) {
     gcMask |= GCForeground;
     gcValues.foreground = lmPtr->outlineColor->pixel;
@@ -201,21 +192,21 @@ static int ConfigureLineProc(Marker *markerPtr)
 
     gcMask |= GCFunction;
     pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
-    if (gcMask & GCBackground) {
+    if (gcMask & GCBackground)
       gcValues.background ^= pixel;
-    }
+
     gcValues.foreground ^= pixel;
-    if (drawable != None) {
+    if (drawable != None)
       DrawLineProc(markerPtr, drawable);
-    }
   }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lmPtr->gc) {
+
+  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (lmPtr->gc)
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
-  }
-  if (LineIsDashed(lmPtr->dashes)) {
+
+  if (LineIsDashed(lmPtr->dashes))
     Blt_SetDashes(graphPtr->display, newGC, &lmPtr->dashes);
-  }
+
   lmPtr->gc = newGC;
   if (lmPtr->xorr) {
     if (drawable != None) {
@@ -225,9 +216,9 @@ static int ConfigureLineProc(Marker *markerPtr)
     return TCL_OK;
   }
   markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->drawUnder) {
+  if (markerPtr->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
-  }
+
   Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }

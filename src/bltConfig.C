@@ -241,7 +241,7 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
 
   Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
   for (int ii=0; ii<cnt; ii++)
-    ll[ii] = Tcl_NewStringObj(*listPtr[ii], -1);
+    ll[ii] = Tcl_NewStringObj((*listPtr)[ii], -1);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
   free(ll);
 

@@ -3309,10 +3309,10 @@ static int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
       return TCL_OK;
     }
   }
-  if (interp) {
+  if (interp)
     Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
 		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
-  }
+
   return TCL_ERROR;
 }
 
@@ -3330,11 +3330,10 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
       Blt_GraphSetObjectClass(&axisPtr->obj, classId);
 
     else if (axisPtr->obj.classId != classId) {
-      if (!interp)
-	Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
-			 "\" is already in use on an opposite ", 
-			 axisPtr->obj.className, "-axis", 
-			 NULL);
+      Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
+		       "\" is already in use on an opposite ", 
+		       axisPtr->obj.className, "-axis", 
+		       NULL);
       return TCL_ERROR;
     }
     axisPtr->refCount++;

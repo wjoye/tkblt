@@ -433,22 +433,19 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  Marker *markerPtr;
-  const char* string;
+  const char* string = Tcl_GetString(objv[3]);
+  if (!strcmp(string, "current")) {
+    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable);
 
-  string = Tcl_GetString(objv[3]);
-  if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
-    markerPtr = (Marker *)Blt_GetCurrentItem(graphPtr->bindTable);
-    if (markerPtr == NULL) {
-      return TCL_OK;		/* Report only on markers. */
+    if (markerPtr == NULL)
+      return TCL_OK;
 
-    }
+    // Report only on markers
     if ((markerPtr->obj.classId >= CID_MARKER_BITMAP) &&
-	(markerPtr->obj.classId <= CID_MARKER_WINDOW))	    {
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		       markerPtr->obj.name, -1);
-    }
+	(markerPtr->obj.classId <= CID_MARKER_WINDOW))
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->obj.name, -1);
   }
+
   return TCL_OK;
 }
 
@@ -458,6 +455,7 @@ static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_HashEntry* hPtr =
     Tcl_FindHashEntry(&graphPtr->markers.table, Tcl_GetString(objv[3]));
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr));
+
   return TCL_OK;
 }
 
@@ -491,14 +489,16 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   if (left < right) {
     extents.left = (double)left;
     extents.right = (double)right;
-  } else {
+  }
+  else {
     extents.left = (double)right;
     extents.right = (double)left;
   }
   if (top < bottom) {
     extents.top = (double)top;
     extents.bottom = (double)bottom;
-  } else {
+  }
+  else {
     extents.top = (double)bottom;
     extents.bottom = (double)top;
   }
@@ -514,9 +514,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
       continue;
 
     if ((*markerPtr->classPtr->regionProc)(markerPtr, &extents, enclosed)) {
-      Tcl_Obj *objPtr;
-
-      objPtr = Tcl_GetObjResult(interp);
+      Tcl_Obj* objPtr = Tcl_GetObjResult(interp);
       Tcl_SetStringObj(objPtr, markerPtr->obj.name, -1);
       return TCL_OK;
     }
