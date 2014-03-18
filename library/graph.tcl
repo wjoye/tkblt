@@ -24,221 +24,6 @@ namespace eval ::blt::ZoomStack {
     }
 }
 
-option add *zoomOutline.dashes		4	
-option add *zoomOutline.lineWidth	2
-option add *zoomOutline.xor		yes
-option add *zoomTitle.anchor		nw
-option add *zoomTitle.coords		"-Inf Inf"
-option add *zoomTitle.font		"Arial 14"
-option add *zoomTitle.foreground	yellow3
-option add *zoomTitle.shadow		yellow4
-
-# ----------------------------------------------------------------------
-#
-# Initialize --
-#
-#	Invoked by internally by Treeview_Init routine.  Initializes
-#	the default bindings for the treeview widget entries.  These
-#	are local to the widget, so they can't be set through the
-#	widget's class bind tags.
-#
-# ----------------------------------------------------------------------
-proc blt::LegendSelections { w } {
-    if 0 {
-    #
-    # Active entry bindings
-    #
-    $w legend bind all <Enter> { 
-	%W entry highlight current 
-    }
-    $w legend bind all <Leave> { 
-	%W entry highlight "" 
-    }
-    }
-
-    #
-    # ButtonPress-1
-    #
-    #	Performs the following operations:
-    #
-    #	1. Clears the previous selection.
-    #	2. Selects the current entry.
-    #	3. Sets the focus to this entry.
-    #	4. Scrolls the entry into view.
-    #	5. Sets the selection anchor to this entry, just in case
-    #	   this is "multiple" mode.
-    #
-    
-    $w legend bind all <ButtonPress-1> { 	
-	blt::legend::SetSelectionAnchor %W current
-	set blt::legend::_private(scroll) 1
-    }
-
-    #
-    # B1-Motion
-    #
-    #	For "multiple" mode only.  Saves the current location of the
-    #	pointer for auto-scrolling.  Resets the selection mark.  
-    #
-    $w legend bind all <B1-Motion> { 
-	set blt::legend::_private(x) %x
-	set blt::legend::_private(y) %y
-	set elem [%W legend get @%x,%y]
-	if { $elem != "" } {
-	    if { [%W legend cget -selectmode] == "multiple" } {
-		%W legend selection mark $elem
-	    } else {
-		blt::legend::SetSelectionAnchor %W $elem
-	    }
-	}
-    }
-
-    #
-    # ButtonRelease-1
-    #
-    #	For "multiple" mode only.  
-    #
-    $w legend bind all <ButtonRelease-1> { 
-	if { [%W legend cget -selectmode] == "multiple" } {
-	    %W legend selection anchor current
-	}
-	after cancel $blt::legend::_private(afterId)
-	set blt::legend::_private(scroll) 0
-    }
-
-    #
-    # Shift-ButtonPress-1
-    #
-    #	For "multiple" mode only.
-    #
-
-    $w legend bind all <Shift-ButtonPress-1> { 
-	if { [%W legend cget -selectmode] == "multiple" && 
-	     [%W legend selection present] } {
-	    if { [%W legend get anchor] == "" } {
-		%W legend selection anchor current
-	    }
-	    set elem [%W legend get anchor]
-	    %W legend selection clearall
-	    %W legend selection set $elem current
-	} else {
-	    blt::legend::SetSelectionAnchor %W current
-	}
-    }
-    $w legend bind all <Shift-Double-ButtonPress-1> {
-	# do nothing
-    }
-    $w legend bind all <Shift-B1-Motion> { 
-	# do nothing
-    }
-    $w legend bind all <Shift-ButtonRelease-1> { 
-	after cancel $blt::legend::_private(afterId)
-	set blt::legend::_private(scroll) 0
-    }
-
-    #
-    # Control-ButtonPress-1
-    #
-    #	For "multiple" mode only.  
-    #
-    $w legend bind all <Control-ButtonPress-1> { 
-	if { [%W legend cget -selectmode] == "multiple" } {
-	    set elem [%W legend get current]
-	    %W legend selection toggle $elem
-	    %W legend selection anchor $elem
-	} else {
-	    blt::legend::SetSelectionAnchor %W current
-	}
-    }
-    $w legend bind all <Control-Double-ButtonPress-1> {
-	# do nothing
-    }
-    $w legend bind all <Control-B1-Motion> { 
-	# do nothing
-    }
-    $w legend bind all <Control-ButtonRelease-1> { 
-	after cancel $blt::legend::_private(afterId)
-	set blt::legend::_private(scroll) 0
-    }
-
-    $w legend bind all <Control-Shift-ButtonPress-1> { 
-	if { [%W legend cget -selectmode] == "multiple" && 
-	     [%W legend selection present] } {
-	    if { [%W legend get anchor] == "" } {
-		%W selection anchor current
-	    }
-	    if { [%W legend selection includes anchor] } {
-		%W legend selection set anchor current
-	    } else {
-		%W legend selection clear anchor current
-		%W legend selection set current
-	    }
-	} else {
-	    blt::legend::SetSelectionAnchor %W current
-	}
-    }
-    $w legend bind all <Control-Shift-Double-ButtonPress-1> {
-	# do nothing
-    }
-    $w legend bind all <Control-Shift-B1-Motion> { 
-	# do nothing
-    }
-    $w legend bind all <KeyPress-Up> {
-	blt::legend::MoveFocus %W previous.row
-	if { $blt::legend::_private(space) } {
-	    %W legend selection toggle focus
-	}
-    }
-    $w legend bind all <KeyPress-Down> {
-	blt::legend::MoveFocus %W next.row
-	if { $blt::legend::_private(space) } {
-	    %W legend selection toggle focus
-	}
-    }
-    $w legend bind all <KeyPress-Left> {
-	blt::legend::MoveFocus %W previous.column
-	if { $blt::legend::_private(space) } {
-	    %W legend selection toggle focus
-	}
-    }
-    $w legend bind all <KeyPress-Right> {
-	blt::legend::MoveFocus %W next.column
-	if { $blt::legend::_private(space) } {
-	    %W legend selection toggle focus
-	}
-    }
-    $w legend bind all <KeyPress-space> {
-	if { [%W legend cget -selectmode] == "single" } {
-	    if { [%W legend selection includes focus] } {
-		%W legend selection clearall
-	    } else {
-		%W legend selection clearall
-		%W legend selection set focus
-	    }
-	} else {
-	    %W legend selection toggle focus
-	}
-	set blt::legend::_private(space) on
-    }
-
-    $w legend bind all <KeyRelease-space> { 
-	set blt::legend::_private(space) off
-    }
-    $w legend bind all <KeyPress-Return> {
-	blt::legend::MoveFocus %W focus
-	set blt::legend::_private(space) on
-    }
-    $w legend bind all <KeyRelease-Return> { 
-	set blt::legend::_private(space) off
-    }
-    $w legend bind all <KeyPress-Home> {
-	blt::legend::MoveFocus %W first
-    }
-    $w legend bind all <KeyPress-End> {
-	blt::tv::MoveFocus %W last
-    }
-}
-
 proc blt::legend::SetSelectionAnchor { w tagOrId } {
     set elem [$w legend get $tagOrId]
     # If the anchor hasn't changed, don't do anything
@@ -296,10 +81,6 @@ proc Blt_ZoomStack { g args } {
     }	
 }
 
-proc Blt_PrintKey { g } {
-    blt::PrintKey $g
-}
-
 proc Blt_ClosestPoint { g } {
     blt::ClosestPoint $g
 }
@@ -351,11 +132,6 @@ proc blt::Crosshairs { g {event "Any-Motion"} {state "on"}} {
     }
 }
 
-proc blt::PrintKey { g {event "Shift-ButtonRelease-3"} } {
-    bind print-$g <$event>  { Blt_PostScriptDialog %W }
-    blt::AddBindTag $g print-$g
-}
-
 proc blt::ClosestPoint { g {event "Control-ButtonPress-2"} } {
     bind closest-point-$g <$event>  {
 	blt::FindElement %W %x %y
@@ -396,7 +172,6 @@ proc blt::FindElement { g x y } {
     $g marker create text $markerName \
 	-coords { $info(x) $info(y) } \
 	-text "$info(name): $info(dist)\nindex $info(index)" \
-	-font "Arial 6" \
 	-anchor center -justify left \
 	-yoffset 0 -bg {} 
 
@@ -503,7 +278,6 @@ proc blt::ZoomStack::MarkPoint { g index } {
     } else {
     	$g marker create text $marker \
 	    -coords { $x $y } \
-   	    -font "mathmatica1 10" \
 	    -text $text -anchor center -bg {} -justify left
     }
 }
@@ -766,82 +540,11 @@ proc blt::ZoomStack::Box { g } {
 	set X [lindex [$g xaxis use] 0]
 	set Y [lindex [$g yaxis use] 0]
 	$g marker create line "zoomOutline" \
-	    -coords $coords -mapx $X -mapy $Y
+	    -coords $coords -mapx $X -mapy $Y \
+	    -dashes 4 -linewidth 1 -xor yes
 	set interval $_private($g,interval)
 	set id [after $interval [list blt::ZoomStack::MarchingAnts $g 0]]
 	set _private($g,afterId) $id
     }
 }
 
-proc Blt_PostScriptDialog { g } {
-    set top $g.top
-    toplevel $top
-
-    foreach var { center landscape maxpect preview decorations padx 
-	pady paperwidth paperheight width height colormode } {
-	global $g.$var
-	set $g.$var [$g postscript cget -$var]
-    }
-    set row 1
-    set col 0
-    label $top.title -text "PostScript Options"
-    blt::table $top $top.title -cspan 7
-    foreach bool { center landscape maxpect preview decorations } {
-	set w $top.$bool-label
-	label $w -text "-$bool" -font "courier 12"
-	blt::table $top $row,$col $w -anchor e -pady { 2 0 } -padx { 0 4 }
-	set w $top.$bool-yes
-	global $g.$bool
-	radiobutton $w -text "yes" -variable $g.$bool -value 1
-	blt::table $top $row,$col+1 $w -anchor w
-	set w $top.$bool-no
-	radiobutton $w -text "no" -variable $g.$bool -value 0
-	blt::table $top $row,$col+2 $w -anchor w
-	incr row
-    }
-    label $top.modes -text "-colormode" -font "courier 12"
-    blt::table $top $row,0 $top.modes -anchor e  -pady { 2 0 } -padx { 0 4 }
-    set col 1
-    foreach m { color greyscale } {
-	set w $top.$m
-	radiobutton $w -text $m -variable $g.colormode -value $m
-	blt::table $top $row,$col $w -anchor w
-	incr col
-    }
-    set row 1
-    frame $top.sep -width 2 -bd 1 -relief sunken
-    blt::table $top $row,3 $top.sep -fill y -rspan 6
-    set col 4
-    foreach value { padx pady paperwidth paperheight width height } {
-	set w $top.$value-label
-	label $w -text "-$value" -font "courier 12"
-	blt::table $top $row,$col $w -anchor e  -pady { 2 0 } -padx { 0 4 }
-	set w $top.$value-entry
-	global $g.$value
-	entry $w -textvariable $g.$value -width 8
-	blt::table $top $row,$col+1 $w -cspan 2 -anchor w -padx 8
-	incr row
-    }
-    blt::table configure $top c3 -width .125i
-    button $top.cancel -text "Cancel" -command "destroy $top"
-    blt::table $top $row,0 $top.cancel  -width 1i -pady 2 -cspan 3
-    button $top.reset -text "Reset" -command "destroy $top"
-    #blt::table $top $row,1 $top.reset  -width 1i
-    button $top.print -text "Print" -command "blt::ResetPostScript $g"
-    blt::table $top $row,4 $top.print  -width 1i -pady 2 -cspan 2
-}
-
-proc blt::ResetPostScript { g } {
-    foreach var { center landscape maxpect preview decorations padx 
-	pady paperwidth paperheight width height colormode } {
-	global $g.$var
-	set old [$g postscript cget -$var]
-	if { [catch {$g postscript configure -$var [set $g.$var]}] != 0 } {
-	    $g postscript configure -$var $old
-	    set $g.$var $old
-	}
-    }
-    $g postscript output "out.ps"
-    puts stdout "wrote file \"out.ps\"."
-    flush stdout
-}
