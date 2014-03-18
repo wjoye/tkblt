@@ -265,7 +265,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 		    int objc, Tcl_Obj* const objv[])
 {
   if (objc<4)
-    return TCL_OK;
+    return TCL_ERROR;
     
   Pen* penPtr;
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK) {

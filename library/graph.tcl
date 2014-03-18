@@ -421,7 +421,7 @@ proc blt::FlashPoint { g name index count } {
 	after 200 blt::FlashPoint $g $name $index $count
 	update
     } else {
-	eval $g marker delete [$g marker names "bltClosest_*"]
+	catch {eval $g marker delete [$g marker names "bltClosest_*"]}
     }
 }
 
@@ -537,7 +537,7 @@ proc blt::ZoomStack::Pop { g } {
 proc blt::ZoomStack::Push { g } {
     variable _private
 
-    eval $g marker delete [$g marker names "zoom*"]
+    catch {eval $g marker delete [$g marker names "zoom*"]}
     if { [info exists _private($g,afterId)] } {
 	after cancel $_private($g,afterId)
     }
@@ -617,7 +617,7 @@ proc blt::ZoomStack::Reset { g } {
     if { ![info exists _private($g,corner)] } {
 	Init $g 
     }
-    eval $g marker delete [$g marker names "zoom*"]
+    catch {eval $g marker delete [$g marker names "zoom*"]}
 
     if { $_private($g,corner) == "A" } {
 	# Reset the whole axis
@@ -722,7 +722,7 @@ proc blt::ZoomStack::DragFinish { g x y } {
     if { [DragMotion $g $x $y] } {
 	Push $g 
     } else {
-	eval $g marker delete [$g marker names "zoom*"]
+	catch {eval $g marker delete [$g marker names "zoom*"]}
 	if { [info exists _private($g,afterId)] } {
 	    after cancel $_private($g,afterId)
 	}

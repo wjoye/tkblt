@@ -1006,7 +1006,7 @@ static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 			int objc, Tcl_Obj* const objv[])
 {
   if (objc<4)
-    return TCL_OK;
+    return TCL_ERROR;
     
   Axis *axisPtr;
   if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK) {

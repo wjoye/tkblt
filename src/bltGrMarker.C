@@ -413,7 +413,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   if (objc<4)
-    return TCL_OK;
+    return TCL_ERROR;
     
   Marker *markerPtr;
   if (GetMarkerFromObj(NULL, graphPtr, objv[3], &markerPtr) != TCL_OK) {
