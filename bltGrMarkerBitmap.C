@@ -64,8 +64,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(BitmapMarker, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
-   "0", -1, Tk_Offset(BitmapMarker, reqAngle), 0, NULL, 0},
+  //  {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
+  //   "0", -1, Tk_Offset(BitmapMarker, reqAngle), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(BitmapMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
@@ -109,18 +109,18 @@ Marker* Blt_CreateBitmapProc(Graph* graphPtr)
 static int ConfigureBitmapProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   GC newGC;
   XGCValues gcValues;
   unsigned long gcMask;
 
-  if (bmPtr->srcBitmap == None) {
+  if (bmPtr->srcBitmap == None)
     return TCL_OK;
-  }
+
   bmPtr->angle = fmod(bmPtr->reqAngle, 360.0);
-  if (bmPtr->angle < 0.0) {
+  if (bmPtr->angle < 0.0)
     bmPtr->angle += 360.0;
-  }
+
   gcMask = 0;
 
   if (bmPtr->outlineColor) {
@@ -173,7 +173,7 @@ static int ConfigureBitmapProc(Marker *markerPtr)
 
 static void MapBitmapProc(Marker *markerPtr)
 {
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   Region2d extents;
   Graph* graphPtr = markerPtr->obj.graphPtr;
   Point2d anchorPt;
@@ -182,9 +182,9 @@ static void MapBitmapProc(Marker *markerPtr)
   int srcWidth, srcHeight;
   int i;
 
-  if (bmPtr->srcBitmap == None) {
+  if (bmPtr->srcBitmap == None)
     return;
-  }
+
   if (bmPtr->destBitmap != None) {
     Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
     bmPtr->destBitmap = None;
@@ -226,9 +226,10 @@ static void MapBitmapProc(Marker *markerPtr)
   if (markerPtr->nWorldPts == 1) {
     anchorPt = Blt_AnchorPoint(corner1.x, corner1.y, (double)destWidth, 
 			       (double)destHeight, bmPtr->anchor);
-  } else {
-    anchorPt = corner1;
   }
+  else
+    anchorPt = corner1;
+
   anchorPt.x += markerPtr->xOffset;
   anchorPt.y += markerPtr->yOffset;
 
@@ -271,9 +272,7 @@ static void MapBitmapProc(Marker *markerPtr)
 	
     anchorPt.x = left;
     anchorPt.y = top;
-    bmPtr->destBitmap = Blt_ScaleRotateBitmapArea(graphPtr->tkwin, 
-						  bmPtr->srcBitmap, srcWidth, srcHeight, regionX, regionY, 
-						  regionWidth, regionHeight, destWidth, destHeight, bmPtr->angle);
+    bmPtr->destBitmap = Blt_ScaleRotateBitmapArea(graphPtr->tkwin, bmPtr->srcBitmap, srcWidth, srcHeight, regionX, regionY, regionWidth, regionHeight, destWidth, destHeight, bmPtr->angle);
     bmPtr->destWidth = regionWidth;
     bmPtr->destHeight = regionHeight;
   } else {
@@ -322,11 +321,11 @@ static void MapBitmapProc(Marker *markerPtr)
 
 static int PointInBitmapProc(Marker *markerPtr, Point2d *samplePtr)
 {
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
 
-  if (bmPtr->srcBitmap == None) {
+  if (bmPtr->srcBitmap == None)
     return 0;
-  }
+
   if (bmPtr->angle != 0.0f) {
     Point2d points[MAX_OUTLINE_POINTS];
     int i;
@@ -350,11 +349,11 @@ static int PointInBitmapProc(Marker *markerPtr, Point2d *samplePtr)
 static int RegionInBitmapProc(Marker *markerPtr, Region2d *extsPtr, 
 			      int enclosed)
 {
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
 
-  if (markerPtr->nWorldPts < 1) {
+  if (markerPtr->nWorldPts < 1)
     return FALSE;
-  }
+
   if (bmPtr->angle != 0.0f) {
     Point2d points[MAX_OUTLINE_POINTS];
     int i;
@@ -385,15 +384,12 @@ static int RegionInBitmapProc(Marker *markerPtr, Region2d *extsPtr,
 static void DrawBitmapProc(Marker *markerPtr, Drawable drawable)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  double rangle;
-  Pixmap bitmap;
-
-  bitmap = GETBITMAP(bmPtr);
-  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  Pixmap bitmap = GETBITMAP(bmPtr);
+  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1))
     return;
-  }
-  rangle = fmod(bmPtr->angle, 90.0);
+
+  double rangle = fmod(bmPtr->angle, 90.0);
   if ((bmPtr->fillColor == NULL) || (rangle != 0.0)) {
 
     /* 
@@ -426,13 +422,11 @@ static void DrawBitmapProc(Marker *markerPtr, Drawable drawable)
 static void BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
-  Pixmap bitmap;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  Pixmap bitmap = GETBITMAP(bmPtr);
+  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1))
+    return;
 
-  bitmap = GETBITMAP(bmPtr);
-  if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
-    return;				/* No bitmap to display. */
-  }
   if (bmPtr->fillColor) {
     Blt_Ps_XSetBackground(ps, bmPtr->fillColor);
     Blt_Ps_XFillPolygon(ps, bmPtr->outline, 4);
@@ -455,17 +449,16 @@ static void BitmapToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 
 static void FreeBitmapProc(Marker *markerPtr)
 {
-  BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (bmPtr->gc) {
+  if (bmPtr->gc)
     Tk_FreeGC(graphPtr->display, bmPtr->gc);
-  }
-  if (bmPtr->fillGC) {
+
+  if (bmPtr->fillGC)
     Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
-  }
-  if (bmPtr->destBitmap != None) {
+
+  if (bmPtr->destBitmap != None)
     Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
-  }
 }
 
