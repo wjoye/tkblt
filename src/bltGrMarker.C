@@ -247,8 +247,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   // Unlike elements, new markers are drawn on top of old markers
-  markerPtr->link = 
-    Blt_Chain_Prepend(graphPtr->markers.displayList,markerPtr);
+  markerPtr->link = Blt_Chain_Prepend(graphPtr->markers.displayList, markerPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
   return TCL_OK;
@@ -289,11 +288,6 @@ static void DestroyMarker(Marker *markerPtr)
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  if (objc != 5) {
-    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
-    return TCL_ERROR;
-  }
-
   Marker *markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
@@ -379,13 +373,9 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   if (objc == 3) {
-    Tcl_HashEntry *hp;
+    Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_HashSearch iter;
-    Tcl_Obj *listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    for (hp = Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter);
-	 hp; hp = Tcl_NextHashEntry(&iter)) {
+    for (Tcl_HashEntry* hp = Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter); hp; hp = Tcl_NextHashEntry(&iter)) {
 
       const char* tag = 
 	(const char*)Tcl_GetHashKey(&graphPtr->markers.tagTable, hp);
@@ -412,9 +402,6 @@ static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
 static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  if (objc<4)
-    return TCL_ERROR;
-    
   Marker *markerPtr;
   if (GetMarkerFromObj(NULL, graphPtr, objv[3], &markerPtr) != TCL_OK) {
     Tcl_AppendResult(interp, "can't find marker \"", 
@@ -426,25 +413,6 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
   markerPtr->flags |= DELETE_PENDING;
   Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);
   Blt_EventuallyRedrawGraph(graphPtr);
-
-  return TCL_OK;
-}
-
-static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  const char* string = Tcl_GetString(objv[3]);
-  if (!strcmp(string, "current")) {
-    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable);
-
-    if (markerPtr == NULL)
-      return TCL_OK;
-
-    // Report only on markers
-    if ((markerPtr->obj.classId >= CID_MARKER_BITMAP) &&
-	(markerPtr->obj.classId <= CID_MARKER_WINDOW))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->obj.name, -1);
-  }
 
   return TCL_OK;
 }
@@ -524,6 +492,25 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
+		 int objc, Tcl_Obj* const objv[])
+{
+  const char* string = Tcl_GetString(objv[3]);
+  if (!strcmp(string, "current")) {
+    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable);
+
+    if (markerPtr == NULL)
+      return TCL_OK;
+
+    // Report only on markers
+    if ((markerPtr->obj.classId >= CID_MARKER_BITMAP) &&
+	(markerPtr->obj.classId <= CID_MARKER_WINDOW))
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->obj.name, -1);
+  }
+
+  return TCL_OK;
+}
+
 static int NamesOp(Graph* graphPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
@@ -562,18 +549,16 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
 
-  // Right now it's assumed that all markers are always in the display list
+  Marker* placePtr =NULL;
+  if (objc == 5)
+    if (GetMarkerFromObj(interp, graphPtr, objv[4], &placePtr) != TCL_OK)
+      return TCL_ERROR;
+
   Blt_ChainLink link = markerPtr->link;
   Blt_Chain_UnlinkLink(graphPtr->markers.displayList, markerPtr->link);
 
-  Blt_ChainLink place = NULL;
-  if (objc == 5) {
-    if (GetMarkerFromObj(interp, graphPtr, objv[4], &markerPtr) != TCL_OK)
-      return TCL_ERROR;
-    place = markerPtr->link;
-  }
+  Blt_ChainLink place = placePtr ? placePtr->link : NULL;
 
-  // Link the marker at its new position
   const char* string = Tcl_GetString(objv[2]);
   if (string[0] == 'l')
     Blt_Chain_LinkAfter(graphPtr->markers.displayList, link, place);
@@ -620,14 +605,14 @@ static Blt_OpSpec markerOps[] =
   {
     {"bind",      1, (void*)BindOp,   3, 6, "marker sequence command",},
     {"cget",      2, (void*)CgetOp,   5, 5, "marker option",},
-    {"configure", 2, (void*)ConfigureOp, 4, 0,"marker ?marker?... ?option value?...",},
+    {"configure", 2, (void*)ConfigureOp, 4, 0,"marker ?option value?...",},
     {"create",    2, (void*)CreateOp, 4, 0, "type ?option value?...",},
-    {"delete",    1, (void*)DeleteOp, 3, 0, "?marker?...",},
+    {"delete",    1, (void*)DeleteOp, 4, 4, "marker",},
     {"exists",    1, (void*)ExistsOp, 4, 4, "marker",},
     {"find",      1, (void*)FindOp,   8, 8, "enclosed|overlapping x1 y1 x2 y2",},
-    {"get",       1, (void*)GetOp,    4, 4, "name",},
+    {"get",       1, (void*)GetOp,    4, 4, "current",},
     {"lower",     1, (void*)RelinkOp, 4, 5, "marker ?afterMarker?",},
-    {"names",     1, (void*)NamesOp,  3, 0, "?pattern?...",},
+    {"names",     1, (void*)NamesOp,  3, 0, "?pattern?",},
     {"raise",     1, (void*)RelinkOp, 4, 5, "marker ?beforeMarker?",},
     {"type",      1, (void*)TypeOp,   4, 4, "marker",},
   };

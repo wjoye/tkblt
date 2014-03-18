@@ -40,8 +40,10 @@ bltCmd $graph marker exists $mm
 bltCmd $graph marker find enclosed 0 0 2 200
 bltCmd $graph marker get name current
 bltCmd $graph marker lower $mm
+bltCmd $graph marker lower $mm $nn
 bltCmd $graph marker names
 bltCmd $graph marker raise $mm
+bltCmd $graph marker raise $mm $nn
 bltCmd $graph marker type $mm
 
 echo "done"
