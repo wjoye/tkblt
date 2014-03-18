@@ -163,9 +163,8 @@ static void DrawLineProc(Marker *markerPtr, Drawable drawable)
 
     Blt_Draw2DSegments(graphPtr->display, drawable, lmPtr->gc, 
 		       lmPtr->segments, lmPtr->nSegments);
-    if (lmPtr->xorr) {		/* Toggle the drawing state */
+    if (lmPtr->xorr)
       lmPtr->xorState = (lmPtr->xorState == 0);
-    }
   }
 }
 
