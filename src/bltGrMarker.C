@@ -610,7 +610,7 @@ static Blt_OpSpec markerOps[] =
     {"delete",    1, (void*)DeleteOp, 4, 4, "marker",},
     {"exists",    1, (void*)ExistsOp, 4, 4, "marker",},
     {"find",      1, (void*)FindOp,   8, 8, "enclosed|overlapping x1 y1 x2 y2",},
-    {"get",       1, (void*)GetOp,    4, 4, "current",},
+    {"get",       1, (void*)GetOp,    5, 5, "current",},
     {"lower",     1, (void*)RelinkOp, 4, 5, "marker ?afterMarker?",},
     {"names",     1, (void*)NamesOp,  3, 0, "?pattern?",},
     {"raise",     1, (void*)RelinkOp, 4, 5, "marker ?beforeMarker?",},

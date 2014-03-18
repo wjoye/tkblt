@@ -28,24 +28,6 @@ bltTest3 $graph marker $mm -xoffset 20
 bltTest3 $graph marker $mm -xor yes
 bltTest3 $graph marker $mm -yoffset 20
 
-#bltCmd $graph marker bind marker ?sequence command?
-bltCmd $graph marker cget $mm -cap
-bltCmd $graph marker configure $mm
-bltCmd $graph marker configure $mm -cap
-set foo [$graph marker create line]
-bltCmd $graph marker delete $foo
-set foo [$graph marker create line foo]
-bltCmd $graph marker delete $foo
-bltCmd $graph marker exists $mm
-bltCmd $graph marker find enclosed 0 0 2 200
-bltCmd $graph marker get name current
-bltCmd $graph marker lower $mm
-bltCmd $graph marker lower $mm $nn
-bltCmd $graph marker names
-bltCmd $graph marker raise $mm
-bltCmd $graph marker raise $mm $nn
-bltCmd $graph marker type $mm
-
 echo "done"
 bltPlotDestroy $w
 

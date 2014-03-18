@@ -18,9 +18,9 @@ bltTest $graph -bottommargin 50
 #bltTest $graph -bufferelements
 #bltTest $graph -buffergraph
 bltTest $graph -cursor cross
-#bltTest $graph -fg
-bltTest $graph -font "times 36 bold italic"
-#bltTest $graph -foreground
+bltTest $graph -fg blue
+bltTest $graph -font {times 36 bold italic}
+bltTest $graph -foreground cyan
 #bltTest $graph -halo
 bltTest $graph -height 300
 #bltTest $graph -highlightbackground
@@ -40,6 +40,9 @@ bltTest $graph -relief groove
 bltTest $graph -rightmargin 50
 #bltTest $graph -rightvariable
 bltTest $graph -rm 50
+#bltTest $graph -searchhalo
+#bltTest $graph -searchmode
+#bltTest $graph -searchalong
 #bltTest $graph -stackaxes
 #bltTest $graph -takefocus
 bltTest $graph -title "This is a Title"
@@ -49,26 +52,6 @@ bltTest $graph -topmargin 50
 bltTest $graph -width 300
 bltTest $graph -plotwidth 300
 bltTest $graph -plotheight 300
-
-#bltCmd $graph axis
-#bltCmd $graph bar (elem)
-#bltCmd $graph cget
-#bltCmd $graph configure
-#bltCmd $graph crosshairs (Blt_CrosshairsOp)
-#bltCmd $graph element (elem)
-#bltCmd $graph extents
-#bltCmd $graph inside
-#bltCmd $graph invtransform
-#bltCmd $graph legend (Blt_LegendOp)
-#bltCmd $graph line (elem)
-#bltCmd $graph marker (Blt_MarkerOp)
-#bltCmd $graph pen (Blt_PenOp)
-#bltCmd $graph postscript (Blt_PostscriptOp)
-#bltCmd $graph transform
-#bltCmd $graph x2axis (axis)
-#bltCmd $graph xaxis (axis)
-#bltCmd $graph y2axis (axis)
-#bltCmd $graph yaxis (axis)
 
 echo "done"
 bltPlotDestroy $w
