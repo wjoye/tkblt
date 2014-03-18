@@ -42,8 +42,8 @@ extern "C" {
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
-#define BROKEN_TRACE(dir,last,next) \
-  (((dir == PEN_INCREASING) && (next < last)) || \
+#define BROKEN_TRACE(dir,last,next)			\
+  (((dir == PEN_INCREASING) && (next < last)) ||	\
    ((dir == PEN_DECREASING) && (next > last)))
 
 #define DRAW_SYMBOL(linePtr)					\
@@ -382,8 +382,8 @@ Tk_ObjCustomOption symbolObjOption =
   };
 
 static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
-		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		       int offset, char* save, int flags)
+			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			 int offset, char* save, int flags)
 {
   Symbol* symbolPtr = (Symbol*)(widgRec + offset);
   const char* string;
@@ -1031,7 +1031,7 @@ static void ReducePoints(MapInfo *mapPtr, double tolerance)
   int* map = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
   Point2d *screenPts = (Point2d*)malloc(mapPtr->nScreenPts * sizeof(Point2d));
   int np = Blt_SimplifyLine(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
-			tolerance, simple);
+			    tolerance, simple);
   for (int i = 0; i < np; i++) {
     int k;
 
@@ -3363,13 +3363,13 @@ static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
 		       "\"\n\n  ", NULL);
       Blt_Ps_XSetForeground(ps, outlineColor);
       Blt_Ps_DrawBitmap(ps, graphPtr->display, penPtr->symbol.bitmap, 
-			  scale, scale);
+			scale, scale);
     }
     break;
   default:
-      Blt_Ps_Append(ps, "  ");
-      Blt_Ps_XSetBackground(ps, fillColor);
-      Blt_Ps_Append(ps, "  gsave fill grestore\n");
+    Blt_Ps_Append(ps, "  ");
+    Blt_Ps_XSetBackground(ps, fillColor);
+    Blt_Ps_Append(ps, "  gsave fill grestore\n");
 
     if (penPtr->symbol.outlineWidth > 0) {
       Blt_Ps_Append(ps, "  ");
@@ -3537,7 +3537,8 @@ static void ActiveLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
       ValuesToPostScript(ps, elemPtr, penPtr, elemPtr->activePts.length,
 			 elemPtr->activePts.points, elemPtr->activePts.map);
     }
-  } else if (elemPtr->nActiveIndices < 0) {
+  }
+  else if (elemPtr->nActiveIndices < 0) {
     if (penPtr->traceWidth > 0) {
       if (elemPtr->lines.length > 0) {
 	SetLineAttributes(ps, penPtr);
@@ -3602,10 +3603,9 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 	Blt_Ps_Append(ps, "% end segments\n");
       }
     }
-  } else {
-    LinePen* penPtr;
-
-    penPtr = NORMALPEN(elemPtr);
+  }
+  else {
+    LinePen* penPtr = NORMALPEN(elemPtr);
     if ((Blt_Chain_GetLength(elemPtr->traces) > 0) && 
 	(penPtr->traceWidth > 0)) {
       TracesToPostScript(ps, elemPtr, penPtr);
