@@ -34,66 +34,34 @@
 
 class BitmapMarker {
  public:
-  GraphObj obj;			/* Must be first field in marker. */
-
+  GraphObj obj;
   MarkerClass *classPtr;
-
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
-
   Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
+  const char* elemName;
   Axis2d axes;
-
-  Point2d *worldPts;			/* Coordinate array to position
-					 * marker. */
-  int nWorldPts;			/* # of points in above array. */
-
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
+  int drawUnder;
+  int clipped;
   int hide;
   unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
+  int xOffset;
+  int yOffset;
   int state;
 
-  /* Fields specific to bitmap markers. */
+  // Fields specific to bitmap
 
-  Pixmap srcBitmap;			/* Original bitmap. May be further
-					 * scaled or rotated. */
-  double reqAngle;			/* Requested rotation of the bitmap */
-  float angle;			/* Normalized rotation (0..360
-				 * degrees) */
-  Tk_Anchor anchor;			/* If only one X-Y coordinate is given,
-					 * indicates how to translate the given
-					 * marker position.  Otherwise, if there
-					 * are two X-Y coordinates, then this
-					 * value is ignored. */
-  Point2d anchorPt;			/* Translated anchor point. */
-
-  XColor *outlineColor;		/* Foreground color */
-  XColor* fillColor;			/* Background color */
-
-  GC gc;				/* Private graphic context */
-  GC fillGC;				/* Shared graphic context */
-  Pixmap destBitmap;			/* Bitmap to be drawn. */
-  int destWidth, destHeight;		/* Dimensions of the final bitmap */
-
-  Point2d outline[MAX_OUTLINE_POINTS];/* Polygon representing the background
-				       * of the bitmap. */
+  Point2d world;
+  Pixmap bitmap;
+  Tk_Anchor anchor;
+  Point2d anchorPt;
+  XColor* outlineColor;
+  XColor* fillColor;
+  GC gc;
+  GC fillGC;
+  int width;
+  int height;
+  Point2d outline[MAX_OUTLINE_POINTS];
   int nOutlinePts;
 };
 

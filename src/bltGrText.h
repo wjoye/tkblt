@@ -30,18 +30,8 @@
 #ifndef _BLT_TEXT_H
 #define _BLT_TEXT_H
 
-#define DEF_TEXT_FLAGS (TK_PARTIAL_OK | TK_IGNORE_NEWLINES)
 #define UPDATE_GC	1
 
-/*
- * TextStyle --
- *
- * 	A somewhat convenient structure to hold text attributes that determine
- * 	how a text string is to be displayed on the screen or drawn with
- * 	PostScript commands.  The alternative is to pass lots of parameters to
- * 	the drawing and printing routines. This seems like a more efficient
- * 	and less cumbersome way of passing parameters.
- */
 typedef struct {
     unsigned int state;			/* If non-zero, indicates to draw text
 					 * in the active color */

@@ -48,73 +48,58 @@ extern "C" {
 void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, int textLen,
 			unsigned int *widthPtr, unsigned int *heightPtr)
 {
-  unsigned int lineHeight;
-
-  if (text == NULL)
+  if (!text) {
+    *widthPtr =0;
+    *heightPtr =0;
     return;
-
-  {
-    Tk_FontMetrics fm;
-
-    Tk_GetFontMetrics(font, &fm);
-    lineHeight = fm.linespace;
   }
-  if (textLen < 0) {
+
+  Tk_FontMetrics fm;
+  Tk_GetFontMetrics(font, &fm);
+  unsigned int lineHeight = fm.linespace;
+
+  if (textLen < 0)
     textLen = strlen(text);
-  }
-  { 
-    unsigned int lineLen;		/* # of characters on each line */
-    const char *p, *pend;
-    const char *line;
-    unsigned int maxWidth, maxHeight;
 
-    maxWidth = maxHeight = 0;
-    lineLen = 0;
-    for (p = line = text, pend = text + textLen; p < pend; p++) {
-      if (*p == '\n') {
-	if (lineLen > 0) {
-	  unsigned int lineWidth;
-		    
-	  lineWidth = Tk_TextWidth(font, line, lineLen);
-	  if (lineWidth > maxWidth) {
-	    maxWidth = lineWidth;
-	  }
-	}
-	maxHeight += lineHeight;
-	line = p + 1;	/* Point to the start of the next line. */
-	lineLen = 0;	/* Reset counter to indicate the start of a
-			 * new line. */
-	continue;
+  unsigned int maxWidth =0;
+  unsigned int maxHeight =0;
+  unsigned int lineLen =0;
+  const char *line =NULL;
+  const char *p, *pend;
+  for (p = line = text, pend = text + textLen; p < pend; p++) {
+    if (*p == '\n') {
+      if (lineLen > 0) {
+	unsigned int lineWidth = Tk_TextWidth(font, line, lineLen);
+	if (lineWidth > maxWidth)
+	  maxWidth = lineWidth;
       }
-      lineLen++;
-    }
-    if ((lineLen > 0) && (*(p - 1) != '\n')) {
-      unsigned int lineWidth;
-	    
       maxHeight += lineHeight;
-      lineWidth = Tk_TextWidth(font, line, lineLen);
-      if (lineWidth > maxWidth) {
-	maxWidth = lineWidth;
-      }
+      line = p + 1;	/* Point to the start of the next line. */
+      lineLen = 0;	/* Reset counter to indicate the start of a
+			 * new line. */
+      continue;
     }
-    *widthPtr = maxWidth;
-    *heightPtr = maxHeight;
+    lineLen++;
   }
+
+  if ((lineLen > 0) && (*(p - 1) != '\n')) {
+    maxHeight += lineHeight;
+    unsigned int lineWidth = Tk_TextWidth(font, line, lineLen);
+    if (lineWidth > maxWidth)
+      maxWidth = lineWidth;
+  }
+
+  *widthPtr = maxWidth;
+  *heightPtr = maxHeight;
 }
 
 void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
 		       unsigned int *widthPtr, unsigned int *heightPtr)
 {
-
-  if (text == NULL)
-    *widthPtr = *heightPtr = 0;
-  else {
-    unsigned int w, h;
-
-    Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
-    *widthPtr = w + 2*tsPtr->xPad;
-    *heightPtr = h + 2*tsPtr->yPad;
-  } 
+  unsigned int w, h;
+  Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
+  *widthPtr = w + 2*tsPtr->xPad;
+  *heightPtr = h + 2*tsPtr->yPad;
 }
 
 /*
@@ -161,11 +146,10 @@ void Blt_GetBoundingBox(int width, int height, float angle,
   if (fmod(angle, (double)90.0) == 0.0) {
     int ll, ur, ul, lr;
     double rotWidth, rotHeight;
-    int quadrant;
 
     /* Handle right-angle rotations specially. */
 
-    quadrant = (int)(angle / 90.0);
+    int quadrant = (int)(angle / 90.0);
     switch (quadrant) {
     case ROTATE_270:	/* 270 degrees */
       ul = 3, ur = 0, lr = 1, ll = 2;
@@ -216,12 +200,12 @@ void Blt_GetBoundingBox(int width, int height, float angle,
   for (i = 0; i < 4; i++) {
     x = (corner[i].x * cosTheta) - (corner[i].y * sinTheta);
     y = (corner[i].x * sinTheta) + (corner[i].y * cosTheta);
-    if (x > xMax) {
+    if (x > xMax)
       xMax = x;
-    }
-    if (y > yMax) {
+
+    if (y > yMax)
       yMax = y;
-    }
+
     if (bbox) {
       bbox[i].x = x;
       bbox[i].y = y;
@@ -335,19 +319,16 @@ static Point2d Rotate_Text(int x, int y, int w1, int h1, TextStyle* stylePtr)
 void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
 		     int textLen, TextStyle *stylePtr,int x, int y)
 {
-  Tk_TextLayout layout;
-  int w1, h1;
-  Point2d rr;
-
-  if ((text == NULL) || (*text == '\0'))
+  if (!text || !(*text))
     return;
 
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
-				stylePtr->justify, 0, &w1, &h1);
-  rr = Rotate_Text(x, y, w1, h1, stylePtr);
+  int w1, h1;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
+					      stylePtr->justify, 0, &w1, &h1);
+  Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, textLen);
 }
@@ -355,19 +336,16 @@ void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
 void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
 		   TextStyle *stylePtr, int x, int y, Dim2D *areaPtr)
 {
-  Tk_TextLayout layout;
-  int w1, h1;
-  Point2d rr;
-
-  if ((text == NULL) || (*text == '\0'))
+  if (!text || !(*text))
     return;
 
   if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+  int w1, h1;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 				stylePtr->justify, 0, &w1, &h1);
-  rr = Rotate_Text(x, y, w1, h1, stylePtr);
+  Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, -1);
 
@@ -377,7 +355,6 @@ void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
 
   if (angle != 0.0) {
     double rotWidth, rotHeight;
-
     Blt_GetBoundingBox(w1, h1, angle, &rotWidth, &rotHeight, 
 		       (Point2d *)NULL);
     w1 = ROUND(rotWidth);
@@ -391,19 +368,16 @@ void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
 void Blt_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
 		  TextStyle *stylePtr, int x, int y)
 {
-  Tk_TextLayout layout;
-  int w1, h1;
-  Point2d rr;
-
   if (!text || (*text == '\0'))
     return;
 
   if (!stylePtr->gc || (stylePtr->flags & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
-  layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
+  int w1, h1;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 				stylePtr->justify, 0, &w1, &h1);
-  rr = Rotate_Text(x, y, w1, h1, stylePtr);
+  Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
   TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, -1);
 }

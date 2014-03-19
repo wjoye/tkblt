@@ -33,6 +33,55 @@ extern "C" {
 
 #include "bltGrMarkerPolygon.h"
 
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
+static Tcl_Obj* PrintCoordinate(double x);
+static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
+			    int objc, Tcl_Obj* const objv[]);
+// OptionSpecs
+
+static Tk_CustomOptionSetProc CoordsSetProc;
+static Tk_CustomOptionGetProc CoordsGetProc;
+static Tk_ObjCustomOption coordsObjOption =
+  {
+    "coords", CoordsSetProc, CoordsGetProc, NULL, NULL, NULL
+  };
+
+static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
+			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			 int offset, char* save, int flags)
+{
+  Marker* markerPtr = (Marker*)widgRec;
+
+  int objc;
+  Tcl_Obj** objv;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  return ParseCoordinates(interp, markerPtr, objc, objv);
+}
+
+static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  PolygonMarker* pmPtr = (PolygonMarker*)widgRec;
+
+  int cnt = pmPtr->nWorldPts*2;
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+
+  Point2d* pp = pmPtr->worldPts;
+  for (int ii=0; ii < pmPtr->nWorldPts*2; pp++) {
+    ll[ii++] = PrintCoordinate(pp->x);
+    ll[ii++] = PrintCoordinate(pp->y);
+  }
+
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+  return listObjPtr;
+}
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Polygon all", -1, Tk_Offset(PolygonMarker, obj.tags), 
@@ -115,9 +164,9 @@ static int PointInPolygonProc(Marker *markerPtr, Point2d *samplePtr)
 {
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
 
-  if ((markerPtr->nWorldPts >= 3) && (pmPtr->screenPts)) {
+  if ((pmPtr->nWorldPts >= 3) && (pmPtr->screenPts)) {
     return Blt_PointInPolygon(samplePtr, pmPtr->screenPts, 
-			      markerPtr->nWorldPts + 1);
+			      pmPtr->nWorldPts + 1);
   }
   return FALSE;
 }
@@ -127,9 +176,9 @@ static int RegionInPolygonProc(Marker *markerPtr, Region2d *extsPtr,
 {
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
     
-  if ((markerPtr->nWorldPts >= 3) && (pmPtr->screenPts)) {
+  if ((pmPtr->nWorldPts >= 3) && (pmPtr->screenPts)) {
     return Blt_RegionInPolygon(extsPtr, pmPtr->screenPts, 
-			       markerPtr->nWorldPts, enclosed);
+			       pmPtr->nWorldPts, enclosed);
   }
   return FALSE;
 }
@@ -357,7 +406,7 @@ static void MapPolygonProc(Marker *markerPtr)
     free(pmPtr->screenPts);
     pmPtr->screenPts = NULL;
   }
-  if (markerPtr->nWorldPts < 3) {
+  if (pmPtr->nWorldPts < 3) {
     return;				/* Too few points */
   }
 
@@ -365,33 +414,33 @@ static void MapPolygonProc(Marker *markerPtr)
    * Allocate and fill a temporary array to hold the screen coordinates of
    * the polygon.
    */
-  int nScreenPts = markerPtr->nWorldPts + 1;
+  int nScreenPts = pmPtr->nWorldPts + 1;
   Point2d* screenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
   {
     Point2d *sp, *dp, *send;
 
     dp = screenPts;
-    for (sp = markerPtr->worldPts, send = sp + markerPtr->nWorldPts; 
+    for (sp = pmPtr->worldPts, send = sp + pmPtr->nWorldPts; 
 	 sp < send; sp++) {
-      *dp = Blt_MapPoint(sp, &markerPtr->axes);
-      dp->x += markerPtr->xOffset;
-      dp->y += markerPtr->yOffset;
+      *dp = Blt_MapPoint(sp, &pmPtr->axes);
+      dp->x += pmPtr->xOffset;
+      dp->y += pmPtr->yOffset;
       dp++;
     }
     *dp = screenPts[0];
   }
   Region2d extents;
   Blt_GraphExtents(graphPtr, &extents);
-  markerPtr->clipped = TRUE;
+  pmPtr->clipped = TRUE;
   if (pmPtr->fill) {	/* Polygon fill required. */
     Point2d* fillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
-    int n = Blt_PolyRectClip(&extents, screenPts, markerPtr->nWorldPts,fillPts);
+    int n = Blt_PolyRectClip(&extents, screenPts, pmPtr->nWorldPts,fillPts);
     if (n < 3) { 
       free(fillPts);
     } else {
       pmPtr->nFillPts = n;
       pmPtr->fillPts = fillPts;
-      markerPtr->clipped = FALSE;
+      pmPtr->clipped = FALSE;
     }
   }
   if ((pmPtr->outline) && (pmPtr->lineWidth > 0)) { 
@@ -421,9 +470,92 @@ static void MapPolygonProc(Marker *markerPtr)
     pmPtr->nOutlinePts = segPtr - outlinePts;
     pmPtr->outlinePts = outlinePts;
     if (pmPtr->nOutlinePts > 0) {
-      markerPtr->clipped = FALSE;
+      pmPtr->clipped = FALSE;
     }
   }
   pmPtr->screenPts = screenPts;
+}
+
+static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
+			    int objc, Tcl_Obj* const objv[])
+{
+  PolygonMarker* pmPtr = (PolygonMarker*)markerPtr;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  if (objc & 1) {
+    Tcl_AppendResult(interp, "odd number of marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+
+  int minArgs = 6;
+  int maxArgs = 0;
+  if (objc < minArgs) {
+    Tcl_AppendResult(interp, "too few marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+  if ((maxArgs > 0) && (objc > maxArgs)) {
+    Tcl_AppendResult(interp, "too many marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+  int nWorldPts = objc / 2;
+  Point2d* worldPts = (Point2d*)malloc(nWorldPts * sizeof(Point2d));
+  if (worldPts == NULL) {
+    Tcl_AppendResult(interp, "can't allocate new coordinate array",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+
+  Point2d* pp = worldPts;
+  for (int ii=0; ii<objc; ii+=2) {
+    double x, y;
+    if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
+	(GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
+      free(worldPts);
+      return TCL_ERROR;
+    }
+    pp->x = x, pp->y = y, pp++;
+  }
+
+  // Don't free the old coordinate array until we've parsed the new
+  // coordinates without errors.
+  if (pmPtr->worldPts)
+    free(pmPtr->worldPts);
+
+  pmPtr->worldPts = worldPts;
+  pmPtr->nWorldPts = nWorldPts;
+  pmPtr->flags |= MAP_ITEM;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* PrintCoordinate(double x)
+{
+  if (x == DBL_MAX)
+    return Tcl_NewStringObj("+Inf", -1);
+  else if (x == -DBL_MAX)
+    return Tcl_NewStringObj("-Inf", -1);
+  else
+    return Tcl_NewDoubleObj(x);
+}
+
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
+{
+  const char* expr = Tcl_GetString(objPtr);
+  char c = expr[0];
+  if ((c == 'I') && (strcmp(expr, "Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0))
+    *valuePtr = -DBL_MAX;		/* Elastic lower bound */
+  else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
 }
 

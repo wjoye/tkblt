@@ -34,43 +34,30 @@
 
 class TextMarker {
  public:
-  GraphObj obj;			/* Must be first field in marker. */
+  GraphObj obj;
   MarkerClass *classPtr;
-
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
+  const char* elemName;
   Axis2d axes;
-  Point2d *worldPts;			/* Coordinate array to position
-					 * marker. */
-  int nWorldPts;			/* # of points in above array */
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
+  int drawUnder;
+  int clipped;
   int hide;
   unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
+  int xOffset;
+  int yOffset;
   int state;
 
-  /* Fields specific to text markers. */
-  const char* string;			/* Text string to be display.  The
-					 * string make contain newlines. */
-  Tk_Anchor anchor;			/* Indicates how to translate the given
-					 * marker position. */
-  Point2d anchorPt;			/* Translated anchor point. */
-  int width, height;			/* Dimension of bounding box. */
-  TextStyle style;			/* Text attributes (font, fg, anchor,
-					 * etc) */
+  // Fields specific to text
+
+  Point2d world;
+  const char* string;
+  Tk_Anchor anchor;
+  Point2d anchorPt;
+  int width;
+  int height;
+  TextStyle style;
   Point2d outline[5];
   XColor* fillColor;
   GC fillGC;

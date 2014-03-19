@@ -33,6 +33,58 @@ extern "C" {
 
 #include "bltGrMarkerLine.h"
 
+// Defs
+
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
+static Tcl_Obj* PrintCoordinate(double x);
+static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
+			    int objc, Tcl_Obj* const objv[]);
+
+// OptionSpecs
+
+static Tk_CustomOptionSetProc CoordsSetProc;
+static Tk_CustomOptionGetProc CoordsGetProc;
+static Tk_ObjCustomOption coordsObjOption =
+  {
+    "coords", CoordsSetProc, CoordsGetProc, NULL, NULL, NULL
+  };
+
+static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
+			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			 int offset, char* save, int flags)
+{
+  Marker* markerPtr = (Marker*)widgRec;
+
+  int objc;
+  Tcl_Obj** objv;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  return ParseCoordinates(interp, markerPtr, objc, objv);
+}
+
+static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  LineMarker* lmPtr = (LineMarker*)widgRec;
+
+  int cnt = lmPtr->nWorldPts*2;
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+
+  Point2d* pp = lmPtr->worldPts;
+  for (int ii=0; ii < lmPtr->nWorldPts*2; pp++) {
+    ll[ii++] = PrintCoordinate(pp->x);
+    ll[ii++] = PrintCoordinate(pp->y);
+  }
+
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+  return listObjPtr;
+}
+
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Line all", -1, Tk_Offset(LineMarker, obj.tags), 
@@ -109,7 +161,7 @@ Marker* Blt_CreateLineProc(Graph* graphPtr)
 
 static int PointInLineProc(Marker *markerPtr, Point2d *samplePtr)
 {
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
 
   return Blt_PointInSegments(samplePtr, lmPtr->segments, lmPtr->nSegments, 
 			     (double)markerPtr->obj.graphPtr->search.halo);
@@ -117,13 +169,15 @@ static int PointInLineProc(Marker *markerPtr, Point2d *samplePtr)
 
 static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 {
-  if (markerPtr->nWorldPts < 2)
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
+
+  if (lmPtr->nWorldPts < 2)
     return FALSE;
 
   if (enclosed) {
     Point2d *pp, *pend;
 
-    for (pp = markerPtr->worldPts, pend = pp + markerPtr->nWorldPts; 
+    for (pp = lmPtr->worldPts, pend = pp + lmPtr->nWorldPts; 
 	 pp < pend; pp++) {
       Point2d p = Blt_MapPoint(pp, &markerPtr->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
@@ -136,7 +190,7 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
   else {
     Point2d *pp, *pend;
     int count = 0;
-    for (pp = markerPtr->worldPts, pend = pp + (markerPtr->nWorldPts - 1); 
+    for (pp = lmPtr->worldPts, pend = pp + (lmPtr->nWorldPts - 1); 
 	 pp < pend; pp++) {
       Point2d p = Blt_MapPoint(pp, &markerPtr->axes);
       Point2d q = Blt_MapPoint(pp + 1, &markerPtr->axes);
@@ -150,7 +204,7 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 
 static void DrawLineProc(Marker *markerPtr, Drawable drawable)
 {
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
 
   if (lmPtr->nSegments > 0) {
     Graph* graphPtr = markerPtr->obj.graphPtr;
@@ -165,7 +219,7 @@ static void DrawLineProc(Marker *markerPtr, Drawable drawable)
 static int ConfigureLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
 
   Drawable drawable = Tk_WindowId(graphPtr->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
@@ -225,7 +279,7 @@ static int ConfigureLineProc(Marker *markerPtr)
 
 static void LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
 
   if (lmPtr->nSegments > 0) {
     Blt_Ps_XSetLineAttributes(ps, lmPtr->outlineColor, 
@@ -235,7 +289,7 @@ static void LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
       Blt_Ps_XSetBackground(ps, lmPtr->fillColor);
       Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
+      Blt_Ps_XSetDashes(ps, (Blt_Dashes*)NULL);
       Blt_Ps_VarAppend(ps,
 		       "stroke\n",
 		       "  grestore\n",
@@ -249,27 +303,26 @@ static void LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 
 static void FreeLineProc(Marker *markerPtr)
 {
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (lmPtr->gc) {
+  if (lmPtr->gc)
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
-  }
-  if (lmPtr->segments) {
+
+  if (lmPtr->segments)
     free(lmPtr->segments);
-  }
 }
 
 static void MapLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
-  LineMarker *lmPtr = (LineMarker *)markerPtr;
+  LineMarker *lmPtr = (LineMarker*)markerPtr;
 
   lmPtr->nSegments = 0;
   if (lmPtr->segments)
     free(lmPtr->segments);
 
-  if (markerPtr->nWorldPts < 2)
+  if (lmPtr->nWorldPts < 2)
     return;
 
   Region2d extents;
@@ -282,19 +335,19 @@ static void MapLineProc(Marker *markerPtr)
    * disconnected segments.
    */
   Segment2d* segments = 
-    (Segment2d*)malloc(markerPtr->nWorldPts * sizeof(Segment2d));
-  Point2d* srcPtr = markerPtr->worldPts;
+    (Segment2d*)malloc(lmPtr->nWorldPts * sizeof(Segment2d));
+  Point2d* srcPtr = lmPtr->worldPts;
   Point2d p = Blt_MapPoint(srcPtr, &markerPtr->axes);
   p.x += markerPtr->xOffset;
   p.y += markerPtr->yOffset;
 
   Segment2d* segPtr = segments;
   Point2d* pend;
-  for (srcPtr++, pend = markerPtr->worldPts + markerPtr->nWorldPts; 
+  for (srcPtr++, pend = lmPtr->worldPts + lmPtr->nWorldPts; 
        srcPtr < pend; srcPtr++) {
     Point2d next = Blt_MapPoint(srcPtr, &markerPtr->axes);
-    next.x += markerPtr->xOffset;
-    next.y += markerPtr->yOffset;
+    next.x += lmPtr->xOffset;
+    next.y += lmPtr->yOffset;
     Point2d q = next;
 
     if (Blt_LineRectClip(&extents, &p, &q)) {
@@ -306,6 +359,89 @@ static void MapLineProc(Marker *markerPtr)
   }
   lmPtr->nSegments = segPtr - segments;
   lmPtr->segments = segments;
-  markerPtr->clipped = (lmPtr->nSegments == 0);
+  lmPtr->clipped = (lmPtr->nSegments == 0);
+}
+
+static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
+			    int objc, Tcl_Obj* const objv[])
+{
+  LineMarker* lmPtr = (LineMarker*)markerPtr;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  if (objc & 1) {
+    Tcl_AppendResult(interp, "odd number of marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+
+  int minArgs = 4;
+  int maxArgs = 0;
+  if (objc < minArgs) {
+    Tcl_AppendResult(interp, "too few marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+  if ((maxArgs > 0) && (objc > maxArgs)) {
+    Tcl_AppendResult(interp, "too many marker coordinates specified",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+  int nWorldPts = objc / 2;
+  Point2d* worldPts = (Point2d*)malloc(nWorldPts * sizeof(Point2d));
+  if (worldPts == NULL) {
+    Tcl_AppendResult(interp, "can't allocate new coordinate array",
+		     (char*)NULL);
+    return TCL_ERROR;
+  }
+
+  Point2d* pp = worldPts;
+  for (int ii=0; ii<objc; ii+=2) {
+    double x, y;
+    if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
+	(GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
+      free(worldPts);
+      return TCL_ERROR;
+    }
+    pp->x = x, pp->y = y, pp++;
+  }
+
+  // Don't free the old coordinate array until we've parsed the new
+  // coordinates without errors.
+  if (lmPtr->worldPts)
+    free(lmPtr->worldPts);
+
+  lmPtr->worldPts = worldPts;
+  lmPtr->nWorldPts = nWorldPts;
+  markerPtr->flags |= MAP_ITEM;
+
+  return TCL_OK;
+}
+
+static Tcl_Obj* PrintCoordinate(double x)
+{
+  if (x == DBL_MAX)
+    return Tcl_NewStringObj("+Inf", -1);
+  else if (x == -DBL_MAX)
+    return Tcl_NewStringObj("-Inf", -1);
+  else
+    return Tcl_NewDoubleObj(x);
+}
+
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
+{
+  const char* expr = Tcl_GetString(objPtr);
+  char c = expr[0];
+  if ((c == 'I') && (strcmp(expr, "Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0))
+    *valuePtr = -DBL_MAX;		/* Elastic lower bound */
+  else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
 }
 

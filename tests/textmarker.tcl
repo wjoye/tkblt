@@ -5,7 +5,7 @@ set graph [bltLineGraph $w]
 
 set mm [$graph marker create text tt -element data1 \
 	    -x 1.5 -y 100 -text {Text Marker} -font {24}]
-return
+
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background blue
 bltTest3 $graph marker $mm -bg red

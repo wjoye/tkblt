@@ -50,9 +50,6 @@ extern MarkerCreateProc Blt_CreateWindowProc;
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
 
-static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
-			    int objc, Tcl_Obj* const objv[]);
-static Tcl_Obj* PrintCoordinate(double x);
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[]);
@@ -71,51 +68,6 @@ extern "C" {
   void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
   Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
-
-// OptionSpecs
-
-static Tk_CustomOptionSetProc CoordsSetProc;
-static Tk_CustomOptionGetProc CoordsGetProc;
-Tk_ObjCustomOption coordsObjOption =
-  {
-    "coords", CoordsSetProc, CoordsGetProc, NULL, NULL, NULL
-  };
-
-static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
-			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			 int offset, char* save, int flags)
-{
-  Marker* markerPtr = (Marker*)widgRec;
-
-  int objc;
-  Tcl_Obj** objv;
-  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
-    return TCL_ERROR;
-
-  if (objc == 0)
-    return TCL_OK;
-
-  return ParseCoordinates(interp, markerPtr, objc, objv);
-}
-
-static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin, 
-			      char *widgRec, int offset)
-{
-  Marker* markerPtr = (Marker*)widgRec;
-
-  int cnt = markerPtr->nWorldPts*2;
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
-
-  Point2d* pp = markerPtr->worldPts;
-  for (int ii=0; ii < markerPtr->nWorldPts*2; pp++) {
-    ll[ii++] = PrintCoordinate(pp->x);
-    ll[ii++] = PrintCoordinate(pp->y);
-  }
-
-  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
-  return listObjPtr;
-}
 
 static Tk_CustomOptionSetProc CapStyleSetProc;
 static Tk_CustomOptionGetProc CapStyleGetProc;
@@ -630,110 +582,6 @@ int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
-{
-  const char* expr = Tcl_GetString(objPtr);
-  char c = expr[0];
-  if ((c == 'I') && (strcmp(expr, "Inf") == 0))
-    *valuePtr = DBL_MAX;		/* Elastic upper bound */
-  else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0))
-    *valuePtr = -DBL_MAX;		/* Elastic lower bound */
-  else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
-    *valuePtr = DBL_MAX;		/* Elastic upper bound */
-  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* PrintCoordinate(double x)
-{
-  if (x == DBL_MAX)
-    return Tcl_NewStringObj("+Inf", -1);
-  else if (x == -DBL_MAX)
-    return Tcl_NewStringObj("-Inf", -1);
-  else
-    return Tcl_NewDoubleObj(x);
-}
-
-static int ParseCoordinates(Tcl_Interp* interp, Marker *markerPtr,
-			    int objc, Tcl_Obj* const objv[])
-{
-  if (objc == 0)
-    return TCL_OK;
-
-  if (objc & 1) {
-    Tcl_AppendResult(interp, "odd number of marker coordinates specified",
-		     (char*)NULL);
-    return TCL_ERROR;
-  }
-
-  int minArgs, maxArgs;
-  switch (markerPtr->obj.classId) {
-  case CID_MARKER_LINE:
-    minArgs = 4;
-    maxArgs = 0;
-    break;
-  case CID_MARKER_POLYGON:
-    minArgs = 6;
-    maxArgs = 0;
-    break;
-  case CID_MARKER_WINDOW:
-  case CID_MARKER_TEXT:
-    minArgs = 2;
-    maxArgs = 2;
-    break;
-  case CID_MARKER_IMAGE:
-  case CID_MARKER_BITMAP:
-    minArgs = 2;
-    maxArgs = 4;
-    break;
-  default:
-    Tcl_AppendResult(interp, "unknown marker type", (char*)NULL);
-    return TCL_ERROR;
-  }
-
-  if (objc < minArgs) {
-    Tcl_AppendResult(interp, "too few marker coordinates specified",
-		     (char*)NULL);
-    return TCL_ERROR;
-  }
-  if ((maxArgs > 0) && (objc > maxArgs)) {
-    Tcl_AppendResult(interp, "too many marker coordinates specified",
-		     (char*)NULL);
-    return TCL_ERROR;
-  }
-  int nWorldPts = objc / 2;
-  Point2d* worldPts = (Point2d*)malloc(nWorldPts * sizeof(Point2d));
-  if (worldPts == NULL) {
-    Tcl_AppendResult(interp, "can't allocate new coordinate array",
-		     (char*)NULL);
-    return TCL_ERROR;
-  }
-
-  Point2d* pp = worldPts;
-  for (int ii=0; ii<objc; ii+=2) {
-    double x, y;
-    if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
-	(GetCoordinate(interp, objv[ii + 1], &y) != TCL_OK)) {
-      free(worldPts);
-      return TCL_ERROR;
-    }
-    pp->x = x, pp->y = y, pp++;
-  }
-
-  // Don't free the old coordinate array until we've parsed the new
-  // coordinates without errors.
-  if (markerPtr->worldPts)
-    free(markerPtr->worldPts);
-
-  markerPtr->worldPts = worldPts;
-  markerPtr->nWorldPts = nWorldPts;
-  markerPtr->flags |= MAP_ITEM;
-
-  return TCL_OK;
-}
-
 static int IsElementHidden(Marker *markerPtr)
 {
   Tcl_HashEntry *hPtr;
@@ -832,8 +680,7 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if ((markerPtr->classPtr->postscriptProc == NULL) || 
-	(markerPtr->nWorldPts == 0))
+    if (markerPtr->classPtr->postscriptProc == NULL)
       continue;
 
     if (markerPtr->drawUnder != under)
@@ -857,8 +704,7 @@ void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
 
-    if ((markerPtr->nWorldPts == 0) || 
-	(markerPtr->drawUnder != under) ||
+    if ((markerPtr->drawUnder != under) ||
 	(markerPtr->clipped) ||
 	(markerPtr->flags & DELETE_PENDING) ||
 	(markerPtr->hide))
@@ -885,8 +731,6 @@ void Blt_MapMarkers(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker *markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if (markerPtr->nWorldPts == 0)
-      continue;
 
     if ((markerPtr->flags & DELETE_PENDING) || markerPtr->hide)
       continue;
@@ -923,9 +767,7 @@ Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if ((markerPtr->nWorldPts == 0) ||
-	(markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) ||
-	(markerPtr->hide))
+    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (markerPtr->hide))
       continue;			/* Don't consider markers that are
 				 * pending to be mapped. Even if the
 				 * marker has already been mapped, the

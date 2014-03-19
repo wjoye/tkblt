@@ -76,7 +76,7 @@ typedef struct {
 typedef enum {
   SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
   SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
-  SYMBOL_BITMAP, SYMBOL_IMAGE
+  SYMBOL_BITMAP
 } SymbolType;
 
 typedef struct {
@@ -293,8 +293,6 @@ typedef struct {
 // Defs
 
 static void DestroySymbol(Display *display, Symbol *symbolPtr);
-static void ImageChangedProc(ClientData clientData, int x, int y, int w, int h,
-			     int imageWidth, int imageHeight);
 typedef double (DistanceProc)(int x, int y, Point2d *p, Point2d *q, Point2d *t);
 static void InitLinePen(Graph* graphPtr, LinePen* penPtr);
 static void ResetLine(LineElement* elemPtr);
@@ -408,20 +406,6 @@ static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
 	symbolPtr->type = p->type;
 	return TCL_OK;
       }
-    }
-  }
-
-  // image
-  {
-    Element* elemPtr = (Element*)widgRec;
-
-    Tk_Image tkImage = 
-      Tk_GetImage(interp, tkwin, string, ImageChangedProc, elemPtr);
-    if (tkImage) {
-      DestroySymbol(Tk_Display(tkwin), symbolPtr);
-      symbolPtr->image = tkImage;
-      symbolPtr->type = SYMBOL_IMAGE;
-      return TCL_OK;
     }
   }
 
@@ -918,17 +902,6 @@ static void DestroySymbol(Display *display, Symbol *symbolPtr)
     symbolPtr->mask = None;
   }
   symbolPtr->type = SYMBOL_NONE;
-}
-
-static void ImageChangedProc(ClientData clientData,
-			     int x, int y, int w, int h,
-			     int imageWidth, int imageHeight)
-{
-  Element* elemPtr = (Element*)clientData;
-  Graph* graphPtr = elemPtr->obj.graphPtr;
-  elemPtr->flags |= MAP_ITEM;
-  graphPtr->flags |= CACHE_DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
 }
 
 /*
@@ -2909,44 +2882,6 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	}
       }
       free(polygon);
-    }
-    break;
-
-  case SYMBOL_IMAGE:
-    {
-      int w, h;
-      int dx, dy;
-
-      Tk_SizeOfImage(penPtr->symbol.image, &w, &h);
-
-      dx = w / 2;
-      dy = h / 2;
-      if (elemPtr->symbolInterval > 0) {
-	Point2d *pp, *endp;
-
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL(elemPtr)) {
-	    int x, y;
-	    
-	    x = Round(pp->x) - dx;
-	    y = Round(pp->y) - dy;
-	    Tk_RedrawImage(penPtr->symbol.image, 0, 0, w, h, 
-			   drawable, x, y);
-	  }
-	  elemPtr->symbolCounter++;
-	}
-      } else {
-	Point2d *pp, *endp;
-
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int x, y;
-
-	  x = Round(pp->x) - dx;
-	  y = Round(pp->y) - dy;
-	  Tk_RedrawImage(penPtr->symbol.image, 0, 0, w, h, 
-			 drawable, x, y);
-	}
-      }
     }
     break;
 

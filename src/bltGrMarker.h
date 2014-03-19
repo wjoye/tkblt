@@ -52,39 +52,25 @@ typedef struct {
   MarkerPostscriptProc *postscriptProc;
 }  MarkerClass;
 
+typedef struct {
+  Point2d* points;
+  int num;
+} WorldPts;
+
 struct _Marker {
-  GraphObj obj;			/* Must be first field in marker. */
-
+  GraphObj obj;
   MarkerClass *classPtr;
-
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
-
   Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
+  const char* elemName;
   Axis2d axes;
-  Point2d *worldPts;		        /* Coordinate array to position
-					 * marker */
-  int nWorldPts;			/* Number of points in above array */
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
+  int drawUnder;
+  int clipped;
   int hide;
   unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
+  int xOffset;
+  int yOffset;
   int state;
 };
 
@@ -92,7 +78,6 @@ Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
 void Blt_FreeMarker(char*);
 int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
 
-extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;
 extern Tk_ObjCustomOption joinStyleObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;

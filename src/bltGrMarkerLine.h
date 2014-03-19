@@ -34,63 +34,36 @@
 
 class LineMarker {
  public:
-  GraphObj obj;			/* Must be first field in marker. */
-
+  GraphObj obj;
   MarkerClass *classPtr;
-
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
-
   Blt_ChainLink link;
-
-  const char* elemName;		/* Element associated with marker. Let's
-				 * you link a marker to an element. The
-				 * marker is drawn only if the element
-				 * is also visible. */
+  const char* elemName;
   Axis2d axes;
-
-  Point2d *worldPts;			/* Coordinate array to position
-					 * marker. */
-
-  int nWorldPts;			/* Number of points in above array */
-
-  int drawUnder;			/* If non-zero, draw the marker
-					 * underneath any elements. This can be
-					 * a performance penalty because the
-					 * graph must be redraw entirely each
-					 * time the marker is redrawn. */
-
-  int clipped;			/* Indicates if the marker is totally
-				 * clipped by the plotting area. */
-
+  int drawUnder;
+  int clipped;
   int hide;
   unsigned int flags;		
-
-
-  int xOffset, yOffset;		/* Pixel offset from graph position */
-
+  int xOffset;
+  int yOffset;
   int state;
 
+  // Fields specific to line
+
+  Point2d *worldPts;
+  int nWorldPts;
   XColor* fillColor;
-  XColor* outlineColor;		/* Foreground and background colors */
-
-  int lineWidth;			/* Line width. */
-  int capStyle;			/* Cap style. */
-  int joinStyle;			/* Join style.*/
-  Blt_Dashes dashes;			/* Dash list values (max 11) */
-
-  GC gc;				/* Private graphic context */
-
-  Segment2d *segments;		/* Malloc'ed array of points.
-				 * Represents individual line segments
-				 * (2 points per segment) comprising the
-				 * mapped line.  The segments may not
-				 * necessarily be connected after
-				 * clipping. */
-  int nSegments;			/* # segments in the above array. */
+  XColor* outlineColor;
+  int lineWidth;
+  int capStyle;
+  int joinStyle;
+  Blt_Dashes dashes;
+  GC gc;
+  Segment2d *segments;
+  int nSegments;
   int xorr;
-  int xorState;			/* State of the XOR drawing. Indicates
-				 * if the marker is currently drawn. */
+  int xorState;
 };
 
 #endif
