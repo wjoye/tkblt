@@ -4,12 +4,13 @@ set w .line
 set graph [bltLineGraph $w]
 
 set mm [$graph marker create text tt -element data1 \
-	    -x 1.5 -y 100 -text {Text Marker} -font {24}]
+	    -coords {1.5 100} -text {Text Marker} -font {24}]
 
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background blue
 bltTest3 $graph marker $mm -bg red
 bltTest3 $graph marker $mm -bindtags {aa}
+bltTest3 $graph marker $mm -coords {1 50}
 bltTest3 $graph marker $mm -element data2
 bltTest3 $graph marker $mm -fg cyan
 bltTest3 $graph marker $mm -fill yellow
@@ -24,9 +25,7 @@ bltTest3 $graph marker $mm -rotate 45
 bltTest3 $graph marker $mm -state disabled
 bltTest3 $graph marker $mm -text {Hello World}
 bltTest3 $graph marker $mm -under yes
-bltTest3 $graph marker $mm -x 1
 bltTest3 $graph marker $mm -xoffset 20
-bltTest3 $graph marker $mm -y 50
 bltTest3 $graph marker $mm -yoffset 20
 
 echo "done"

@@ -48,10 +48,10 @@ class PolygonMarker {
   int xOffset;
   int yOffset;
   int state;
+  Coords* worldPts;
 
   // Fields specific to polygon
 
-  Coords* worldPts;
   Point2d *screenPts;
   XColor* outline;
   XColor* outlineBg;

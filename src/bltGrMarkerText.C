@@ -43,6 +43,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Text all", -1, Tk_Offset(TextMarker, obj.tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
+  {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
+   NULL, -1, Tk_Offset(TextMarker, worldPts), 
+   TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(TextMarker, elemName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
@@ -68,12 +71,8 @@ static Tk_OptionSpec optionSpecs[] = {
    NULL, -1, Tk_Offset(TextMarker, string), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(TextMarker, drawUnder), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-x", "x", "X",
-   "0", -1, Tk_Offset(TextMarker, world.x), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(TextMarker, xOffset), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-y", "y", "Y",
-   "0", -1, Tk_Offset(TextMarker, world.y), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(TextMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -147,6 +146,9 @@ static void MapTextProc(Marker* markerPtr)
   if (!tmPtr->string)
     return;
 
+  if (!tmPtr->worldPts || (tmPtr->worldPts->num < 1))
+    return;
+
   tmPtr->width =0;
   tmPtr->height =0;
 
@@ -164,7 +166,7 @@ static void MapTextProc(Marker* markerPtr)
   tmPtr->outline[4].x = tmPtr->outline[0].x;
   tmPtr->outline[4].y = tmPtr->outline[0].y;
 
-  Point2d anchorPt = Blt_MapPoint(&tmPtr->world, &markerPtr->axes);
+  Point2d anchorPt = Blt_MapPoint(tmPtr->worldPts->points, &markerPtr->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, tmPtr->width, 
 			     tmPtr->height, tmPtr->anchor);
   anchorPt.x += markerPtr->xOffset;

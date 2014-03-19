@@ -1,14 +1,14 @@
-graph.tcl
-xaxis.tcl
-axis.tcl
-line.tcl
-bar.tcl
-element.tcl
-pen.tcl
-crosshairs.tcl
-legend.tcl
-marker.tcl
-bitmapmarker.tcl
-linemarker.tcl
-polygonmarker.tcl
-textmarker.tcl
+source graph.tcl
+source xaxis.tcl
+source axis.tcl
+source line.tcl
+source bar.tcl
+source element.tcl
+source pen.tcl
+source crosshairs.tcl
+source legend.tcl
+source marker.tcl
+source bitmapmarker.tcl
+source linemarker.tcl
+source polygonmarker.tcl
+source textmarker.tcl

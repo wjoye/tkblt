@@ -48,10 +48,10 @@ class TextMarker {
   int xOffset;
   int yOffset;
   int state;
+  Coords* worldPts;
 
   // Fields specific to text
 
-  Point2d world;
   const char* string;
   Tk_Anchor anchor;
   Point2d anchorPt;

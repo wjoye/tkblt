@@ -48,10 +48,10 @@ class BitmapMarker {
   int xOffset;
   int yOffset;
   int state;
+  Coords* worldPts;
 
   // Fields specific to bitmap
 
-  Point2d world;
   Pixmap bitmap;
   Tk_Anchor anchor;
   Point2d anchorPt;

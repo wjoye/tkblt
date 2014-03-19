@@ -48,10 +48,10 @@ class LineMarker {
   int xOffset;
   int yOffset;
   int state;
+  Coords* worldPts;
 
   // Fields specific to line
 
-  Coords* worldPts;
   XColor* fillColor;
   XColor* outlineColor;
   int lineWidth;

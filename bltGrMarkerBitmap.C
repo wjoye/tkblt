@@ -45,6 +45,9 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_BITMAP, "-bitmap", "bitmap", "Bitmap", 
    NULL, -1, Tk_Offset(BitmapMarker, bitmap), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
+   NULL, -1, Tk_Offset(BitmapMarker, worldPts), 
+   TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(BitmapMarker, elemName), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
@@ -63,12 +66,8 @@ static Tk_OptionSpec optionSpecs[] = {
    "normal", -1, Tk_Offset(BitmapMarker, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(BitmapMarker, drawUnder), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-x", "x", "X",
-   "0", -1, Tk_Offset(BitmapMarker, world.x), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(BitmapMarker, xOffset), 0, NULL, 0},
-  {TK_OPTION_DOUBLE, "-y", "y", "Y",
-   "0", -1, Tk_Offset(BitmapMarker, world.y), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(BitmapMarker, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -163,10 +162,13 @@ static void MapBitmapProc(Marker* markerPtr)
   if (bmPtr->bitmap == None)
     return;
  
+  if (!bmPtr->worldPts || (bmPtr->worldPts->num < 1))
+    return;
+
   int width, height;
   Tk_SizeOfBitmap(graphPtr->display, bmPtr->bitmap, &width, &height);
 
-  Point2d anchorPt = Blt_MapPoint(&bmPtr->world, &markerPtr->axes);
+  Point2d anchorPt = Blt_MapPoint(bmPtr->worldPts->points, &markerPtr->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, width, height,
 			     bmPtr->anchor);
   anchorPt.x += markerPtr->xOffset;
