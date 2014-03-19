@@ -51,8 +51,7 @@ class PolygonMarker {
 
   // Fields specific to polygon
 
-  Point2d *worldPts;
-  int nWorldPts;
+  Coords* worldPts;
   Point2d *screenPts;
   XColor* outline;
   XColor* outlineBg;

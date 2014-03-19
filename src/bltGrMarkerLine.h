@@ -51,8 +51,7 @@ class LineMarker {
 
   // Fields specific to line
 
-  Point2d *worldPts;
-  int nWorldPts;
+  Coords* worldPts;
   XColor* fillColor;
   XColor* outlineColor;
   int lineWidth;

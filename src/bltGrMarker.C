@@ -47,6 +47,9 @@ extern MarkerCreateProc Blt_CreateWindowProc;
 
 // Defs
 
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
+static Tcl_Obj* PrintCoordinate(double x);
+
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
 
@@ -68,6 +71,88 @@ extern "C" {
   void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
   Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
+
+// OptionSpecs
+
+static Tk_CustomOptionSetProc CoordsSetProc;
+static Tk_CustomOptionGetProc CoordsGetProc;
+static Tk_CustomOptionFreeProc CoordsFreeProc;
+Tk_ObjCustomOption coordsObjOption =
+  {
+    "coords", CoordsSetProc, CoordsGetProc, RestoreProc, CoordsFreeProc, NULL
+  };
+
+static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
+			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
+			 int offset, char* savePtr, int flags)
+{
+  Coords** coordsPtrPtr = (Coords**)(widgRec + offset);
+  *(double*)savePtr = *(double*)coordsPtrPtr;
+  *coordsPtrPtr = NULL;
+
+  int objc;
+  Tcl_Obj** objv;
+  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
+    return TCL_ERROR;
+
+  if (objc == 0)
+    return TCL_OK;
+
+  if (objc & 1) {
+    Tcl_AppendResult(interp, "odd number of marker coordinates specified",NULL);
+    return TCL_ERROR;
+  }
+
+  Coords* coordsPtr = (Coords*)calloc(1,sizeof(Coords));
+  coordsPtr->num = objc/2;
+  coordsPtr->points = (Point2d*)calloc(coordsPtr->num, sizeof(Point2d));
+
+  Point2d* pp = coordsPtr->points;
+  for (int ii=0; ii<objc; ii+=2) {
+    double x, y;
+    if ((GetCoordinate(interp, objv[ii], &x) != TCL_OK) ||
+	(GetCoordinate(interp, objv[ii+1], &y) != TCL_OK))
+      return TCL_ERROR;
+    pp->x = x;
+    pp->y = y;
+    pp++;
+  }
+
+  *coordsPtrPtr = coordsPtr;
+  return TCL_OK;
+}
+
+static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin, 
+			      char *widgRec, int offset)
+{
+  Coords* coordsPtr = *(Coords**)(widgRec + offset);
+  if (!coordsPtr)
+    return Tcl_NewListObj(0, NULL);
+
+  int cnt = coordsPtr->num*2;
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+
+  Point2d* pp = coordsPtr->points;
+  for (int ii=0; ii<cnt; pp++) {
+    ll[ii++] = PrintCoordinate(pp->x);
+    ll[ii++] = PrintCoordinate(pp->y);
+  }
+
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+  return listObjPtr;
+}
+
+static void CoordsFreeProc(ClientData clientData, Tk_Window tkwin,
+			   char *ptr)
+{
+  Coords* coordsPtr = *(Coords**)ptr;
+  if (coordsPtr) {
+    if (coordsPtr->points)
+      free(coordsPtr->points);
+    free(coordsPtr);
+  }
+}
 
 static Tk_CustomOptionSetProc CapStyleSetProc;
 static Tk_CustomOptionGetProc CapStyleGetProc;
@@ -635,9 +720,8 @@ static double VMap(Axis *axisPtr, double y)
     }
     y = NORMALIZE(axisPtr, y);
   }
-  if (axisPtr->descending) {
+  if (axisPtr->descending)
     y = 1.0 - y;
-  }
 
   // Vertical transformation
   return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
@@ -651,10 +735,12 @@ Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
   if (graphPtr->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
     result.y = VMap(axesPtr->x, pointPtr->x);
-  } else {
+  }
+  else {
     result.x = HMap(axesPtr->x, pointPtr->x);
     result.y = VMap(axesPtr->y, pointPtr->y);
   }
+
   return result;
 }
 
@@ -808,3 +894,29 @@ int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
 	  (extsPtr->bottom < (double)graphPtr->top));
 }
 
+
+static Tcl_Obj* PrintCoordinate(double x)
+{
+  if (x == DBL_MAX)
+    return Tcl_NewStringObj("+Inf", -1);
+  else if (x == -DBL_MAX)
+    return Tcl_NewStringObj("-Inf", -1);
+  else
+    return Tcl_NewDoubleObj(x);
+}
+
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
+{
+  const char* expr = Tcl_GetString(objPtr);
+  char c = expr[0];
+  if ((c == 'I') && (strcmp(expr, "Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if ((c == '-') && (expr[1] == 'I') && (strcmp(expr, "-Inf") == 0))
+    *valuePtr = -DBL_MAX;		/* Elastic lower bound */
+  else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
+    *valuePtr = DBL_MAX;		/* Elastic upper bound */
+  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
+}

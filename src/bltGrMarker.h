@@ -55,7 +55,7 @@ typedef struct {
 typedef struct {
   Point2d* points;
   int num;
-} WorldPts;
+} Coords;
 
 struct _Marker {
   GraphObj obj;
@@ -78,6 +78,7 @@ Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
 void Blt_FreeMarker(char*);
 int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
 
+extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;
 extern Tk_ObjCustomOption joinStyleObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
