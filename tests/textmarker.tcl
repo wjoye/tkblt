@@ -9,7 +9,7 @@ set mm [$graph marker create text tt -element data1 \
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background blue
 bltTest3 $graph marker $mm -bg red
-#bltTest3 $graph marker $mm -bindtags
+bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -coords {1 50}
 bltTest3 $graph marker $mm -element data2
 bltTest3 $graph marker $mm -fg cyan

@@ -6,7 +6,7 @@ set graph [bltLineGraph $w]
 set mm [$graph marker create polygon tt -element data1 \
 	    -coords {1 50 1.5 100 1 150} -polygonwidth 5]
 
-#bltTest3 $graph marker $mm -bindtags
+bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
 bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
 bltTest3 $graph marker $mm -dashes dashdot

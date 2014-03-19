@@ -9,7 +9,7 @@ set nn [$graph marker create line ss -element data1 \
 	    -coords {1 150 .5 100 1 50} -linewidth 1 \
 	    -outline green -dashes 4]
 
-#bltTest3 $graph marker $mm -bindtags
+bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
 bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
 bltTest3 $graph marker $mm -dashes dashdot
