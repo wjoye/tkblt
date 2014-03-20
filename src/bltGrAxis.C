@@ -2702,7 +2702,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
   if (axisPtr->showTicks) {
     Ticks* t1Ptr = axisPtr->t1UPtr ? axisPtr->t1UPtr : axisPtr->t1Ptr;
 	
-    unsigned int nTicks =0;
+    int nTicks =0;
     if (t1Ptr)
       nTicks = t1Ptr->nTicks;
 	
@@ -2733,10 +2733,10 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 	Blt_GetBoundingBox(lw, lh, axisPtr->tickAngle, &rlw, &rlh, NULL);
 	lw = ROUND(rlw), lh = ROUND(rlh);
       }
-      if (axisPtr->maxTickWidth < lw)
+      if (axisPtr->maxTickWidth < int(lw))
 	axisPtr->maxTickWidth = lw;
 
-      if (axisPtr->maxTickHeight < lh)
+      if (axisPtr->maxTickHeight < int(lh))
 	axisPtr->maxTickHeight = lh;
     }
 	
@@ -2784,8 +2784,8 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
   // Count the visible axes.
   unsigned int nVisible = 0;
   unsigned int l =0;
-  unsigned int w =0;
-  unsigned int h =0;
+  int w =0;
+  int h =0;
 
   marginPtr->maxTickWidth =0;
   marginPtr->maxTickHeight =0;
@@ -2941,15 +2941,12 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 
 void Blt_LayoutGraph(Graph* graphPtr)
 {
-  unsigned int titleY;
-  unsigned int left, right, top, bottom;
-  unsigned int plotWidth, plotHeight;
-  unsigned int inset, inset2;
-  int width, height;
-  int pad;
+  int titleY;
+  int plotWidth, plotHeight;
+  int inset, inset2;
 
-  width = graphPtr->width;
-  height = graphPtr->height;
+  int width = graphPtr->width;
+  int height = graphPtr->height;
 
   /* 
    * Step 1:  Compute the amount of space needed to display the axes
@@ -2957,12 +2954,12 @@ void Blt_LayoutGraph(Graph* graphPtr)
    *		-leftmargin, -rightmargin, -bottommargin, and -topmargin
    *		graph options, respectively.
    */
-  left   = GetMarginGeometry(graphPtr, &graphPtr->leftMargin);
-  right  = GetMarginGeometry(graphPtr, &graphPtr->rightMargin);
-  top    = GetMarginGeometry(graphPtr, &graphPtr->topMargin);
-  bottom = GetMarginGeometry(graphPtr, &graphPtr->bottomMargin);
+  int left   = GetMarginGeometry(graphPtr, &graphPtr->leftMargin);
+  int right  = GetMarginGeometry(graphPtr, &graphPtr->rightMargin);
+  int top    = GetMarginGeometry(graphPtr, &graphPtr->topMargin);
+  int bottom = GetMarginGeometry(graphPtr, &graphPtr->bottomMargin);
 
-  pad = graphPtr->bottomMargin.maxTickWidth;
+  int pad = graphPtr->bottomMargin.maxTickWidth;
   if (pad < graphPtr->topMargin.maxTickWidth)
     pad = graphPtr->topMargin.maxTickWidth;
 

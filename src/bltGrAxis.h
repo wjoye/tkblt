@@ -61,14 +61,14 @@ typedef struct {
 } TickLabel;
 
 typedef struct {
-  unsigned int nTicks;	/* # of ticks on axis */
+  int nTicks;	/* # of ticks on axis */
   double values[1];		/* Array of tick values (malloc-ed). */
 } Ticks;
 
 typedef struct {
   double initial;		/* Initial value */
   double step;		/* Size of interval */
-  unsigned int nSteps;	/* Number of intervals. */
+  int nSteps;	/* Number of intervals. */
 } TickSweep;
 
 typedef struct {
