@@ -349,8 +349,6 @@ static void DestroyElement(Element* elemPtr)
   FreeDataValues(&elemPtr->x);
   FreeDataValues(&elemPtr->y);
 
-  (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
-
   /* Remove it also from the element display list */
   if (elemPtr->link) {
     Blt_Chain_DeleteLink(graphPtr->elements.displayList, elemPtr->link);
@@ -366,12 +364,9 @@ static void DestroyElement(Element* elemPtr)
   if (elemPtr->obj.name)
     free((void*)(elemPtr->obj.name));
 
-  //  to be freed via Tk_FreeConfigOptions
-  //  if (elemPtr->label)
-  //    free((void*)(elemPtr->label));
-
   Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 
+  (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
   free(elemPtr);
 }
 
@@ -1079,7 +1074,7 @@ static void FreeDataValues(ElemValues *valuesPtr)
     break;
   }
   if (valuesPtr->values) {
-    free(valuesPtr->values);
+    //    free(valuesPtr->values);
   }
   valuesPtr->values = NULL;
   valuesPtr->nValues = 0;

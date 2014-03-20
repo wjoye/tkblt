@@ -299,10 +299,6 @@ static void DestroyMarker(Marker *markerPtr)
   if (markerPtr->ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
-  // Call the marker's type-specific deallocation routine. We do it first
-  // while all the marker fields are still valid.
-  (*markerPtr->classPtr->freeProc)(markerPtr);
-
   Blt_DeleteBindings(graphPtr->bindTable, markerPtr);
 
   if (markerPtr->obj.name)
@@ -317,6 +313,7 @@ static void DestroyMarker(Marker *markerPtr)
   Tk_FreeConfigOptions((char*)markerPtr->ops, markerPtr->optionTable,
 		       graphPtr->tkwin);
 
+  (*markerPtr->classPtr->freeProc)(markerPtr);
   free(markerPtr);
 }
 
