@@ -4,7 +4,7 @@ set w .line
 set graph [bltLineGraph $w]
 
 set mm [$graph marker create polygon tt -element data1 \
-	    -coords {1 50 1.5 100 1 150} -polygonwidth 5]
+	    -coords {1 50 1.5 100 1 150} -linewidth 5]
 
 bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
@@ -14,7 +14,7 @@ bltTest3 $graph marker $mm -element data2
 bltTest3 $graph marker $mm -fill yellow
 bltTest3 $graph marker $mm -fillbg blue
 bltTest3 $graph marker $mm -join round
-bltTest3 $graph marker $mm -polygonwidth 1
+bltTest3 $graph marker $mm -linewidth 1
 bltTest3 $graph marker $mm -hide yes
 bltTest3 $graph marker $mm -mapx x
 bltTest3 $graph marker $mm -mapy y

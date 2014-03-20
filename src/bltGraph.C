@@ -1061,7 +1061,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->flags & (HIDE|MAP_ITEM))
+    if (elemPtr->hide || (elemPtr->flags & MAP_ITEM))
       continue;
 
     if (elemPtr->state == BLT_STATE_NORMAL)

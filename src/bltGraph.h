@@ -87,7 +87,6 @@ typedef struct {
 } ClosestSearch;
 
 typedef struct {
-  /* Generic fields common to all graph objects. */
   ClassId classId;		/* Class type of object. */
   const char *name;		/* Identifier to refer the object. */
   const char *className;	/* Class name of object. */
