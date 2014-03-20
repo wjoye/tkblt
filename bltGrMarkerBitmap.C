@@ -29,7 +29,6 @@
 
 extern "C" {
 #include "bltGraph.h"
-#include "bltBitmap.h"
 };
 
 #include "bltGrMarkerBitmap.h"

@@ -34,8 +34,8 @@ extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltConfig.h"
 }
+#include "bltConfig.h"
 
 #define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
 

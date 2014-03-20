@@ -40,8 +40,8 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltConfig.h"
 };
+#include "bltConfig.h"
 
 void RestoreProc(ClientData clientData, Tk_Window tkwin,
 		 char *ptr, char *savePtr)

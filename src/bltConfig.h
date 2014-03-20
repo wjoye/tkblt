@@ -49,7 +49,10 @@ typedef struct {
 extern Tk_ObjCustomOption pointObjOption;
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
-extern Tk_CustomOptionRestoreProc RestoreProc;
+
+extern "C" {
+  Tk_CustomOptionRestoreProc RestoreProc;
+};
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 

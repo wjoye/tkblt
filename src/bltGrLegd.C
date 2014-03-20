@@ -36,8 +36,8 @@ extern "C" {
 #include "bltGraph.h"
 #include "bltOp.h"
 #include "bltGrElem.h"
-#include "bltConfig.h"
 };
+#include "bltConfig.h"
 
 /*
  *  Selection related flags:
