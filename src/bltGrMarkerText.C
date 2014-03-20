@@ -27,9 +27,10 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltMath.h"
+
 extern "C" {
 #include "bltGraph.h"
-#include "bltMath.h"
 };
 
 #include "bltGrMarkerText.h"

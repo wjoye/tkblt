@@ -33,9 +33,10 @@
 #include <iostream>
 using namespace std;
 
+#include "bltMath.h"
+
 extern "C" {
 #include "bltInt.h"
-#include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 }

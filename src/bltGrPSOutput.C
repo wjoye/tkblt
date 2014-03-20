@@ -28,19 +28,22 @@
  *
  */
 
-extern "C" {
 #include <stdarg.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+extern "C" {
 #include <tkPort.h>
 #include <tkInt.h>
 #include <tk3d.h>
+};
 
-#include "bltInt.h"
 #include "bltMath.h"
+
+extern "C" {
+#include "bltInt.h"
 #include "bltPsInt.h"
 };
 

@@ -30,13 +30,14 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "bltMath.h"
+
 extern "C" {
 #include <tk.h>
 #include <tkPort.h>
 #include <tkInt.h>
 
 #include "bltInt.h"
-#include "bltMath.h"
 #include "bltText.h"
 };
 
