@@ -58,6 +58,7 @@ typedef struct {
 } Coords;
 
 typedef struct {
+  const char **tags;
   Coords* worldPts;
   const char* elemName;
   Axis2d axes;

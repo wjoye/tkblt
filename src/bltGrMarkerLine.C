@@ -36,9 +36,9 @@ extern "C" {
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
-  //  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
-  //   "Line all", -1, Tk_Offset(LineMarkerOptions, obj.tags), 
-  //   TK_OPTION_NULL_OK, &listObjOption, 0},
+  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
+   "Line all", -1, Tk_Offset(LineMarkerOptions, tags), 
+   TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_CUSTOM, "-cap", "cap", "Cap", 
    "butt", -1, Tk_Offset(LineMarkerOptions, capStyle),
    0, &capStyleObjOption, 0},

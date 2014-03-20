@@ -30,7 +30,9 @@
 #ifndef _BLT_GR_ELEM_H
 #define _BLT_GR_ELEM_H
 
+extern "C" {
 #include <bltVector.h>
+};
 
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1

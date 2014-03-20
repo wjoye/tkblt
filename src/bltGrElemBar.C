@@ -34,9 +34,10 @@ extern "C" {
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
-#include "bltGrElem.h"
 };
+
 #include "bltConfig.h"
+#include "bltGrElem.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 

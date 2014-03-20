@@ -33,9 +33,10 @@
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
-#include "bltGrElem.h"
 #include "bltOp.h"
 };
+
+#include "bltGrElem.h"
 
 // Defs
 

@@ -35,9 +35,10 @@ extern "C" {
 #include "bltSpline.h"
 #include "bltMath.h"
 #include "bltGraph.h"
-#include "bltGrElem.h"
 }
+
 #include "bltConfig.h"
+#include "bltGrElem.h"
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 

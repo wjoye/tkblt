@@ -31,10 +31,10 @@ extern "C" {
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltGrElem.h"
 };
 
 #include "bltConfig.h"
+#include "bltGrElem.h"
 #include "bltGrMarker.h"
 
 extern MarkerCreateProc Blt_CreateBitmapProc;
@@ -411,7 +411,9 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   if (objc == 3) {
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry* hp = Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter); hp; hp = Tcl_NextHashEntry(&iter)) {
+    for (Tcl_HashEntry* hp = 
+	   Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter); 
+	 hp; hp = Tcl_NextHashEntry(&iter)) {
 
       const char* tag = 
 	(const char*)Tcl_GetHashKey(&graphPtr->markers.tagTable, hp);
@@ -421,6 +423,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
+
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeMarkerTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 

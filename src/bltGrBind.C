@@ -107,12 +107,12 @@ static void DoEvent(BindTable *bindPtr, XEvent *eventPtr,
 
   // Invoke the binding system.
   tagList = Blt_List_Create(BLT_ONE_WORD_KEYS);
-  if (bindPtr->tagProc == NULL) {
+  if (!bindPtr->tagProc) {
     Blt_List_Append(tagList, Tk_GetUid("all"), 0);
     Blt_List_Append(tagList, (char *)item, 0);
   }
   else
-    (*bindPtr->tagProc) (bindPtr, item, context, tagList);
+    (*bindPtr->tagProc)(bindPtr, item, context, tagList);
 
   if (Blt_List_GetLength(tagList) > 0) {
     ClientData staticTags[MAX_STATIC_TAGS];
@@ -406,7 +406,7 @@ int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
   const char *command;
   if (objc == 1) {
     command = Tk_GetBinding(interp, bindPtr->bindingTable, item, string);
-    if (command == NULL) {
+    if (!command) {
       Tcl_ResetResult(interp);
       Tcl_AppendResult(interp, "invalid binding event \"", string, "\"", 
 		       (char *)NULL);
@@ -430,7 +430,7 @@ int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
 			    command, FALSE);
 
-  if (mask == 0)
+  if (!mask)
     return TCL_ERROR;
 
   if (mask & (unsigned)~ALL_VALID_EVENTS_MASK) {

@@ -37,11 +37,11 @@ extern "C" {
 #include "bltInt.h"
 #include "bltMath.h"
 #include "bltGraph.h"
-#include "bltGrElem.h"
 #include "bltOp.h"
 }
 
 #include "bltConfig.h"
+#include "bltGrElem.h"
 #include "bltGrAxis.h"
 
 #define AXIS_PAD_TITLE 2

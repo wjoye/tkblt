@@ -36,8 +36,10 @@ extern "C" {
 #include "bltMath.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltGrElem.h"
 }
+
+#include "bltGrElem.h"
+#include "bltGrMarker.h"
 
 #define MARKER_UNDER	1	/* Draw markers designated to lie underneath
 				 * elements, grids, legend, etc. */
@@ -970,6 +972,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 {
   Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
   GraphObj* graphObjPtr = (GraphObj*)object;
+  Marker* markerPtr = (Marker*)object;
 
   MakeTagProc* tagProc;
   switch (graphObjPtr->classId) {
@@ -997,13 +1000,36 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   }
 
   // Always add the name of the object to the tag array.
-  Blt_List_Append(list, 
-		  (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
-  Blt_List_Append(list, 
-		  (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
-  if (graphObjPtr->tags)
-    for (const char** p = graphObjPtr->tags; *p != NULL; p++)
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
+  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
+
+  switch (graphObjPtr->classId) {
+  case CID_ELEM_BAR:		
+  case CID_ELEM_LINE: 
+    if (graphObjPtr->tags)
+      for (const char** p = graphObjPtr->tags; *p != NULL; p++)
+	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    break;
+  case CID_AXIS_X:
+  case CID_AXIS_Y:
+    if (graphObjPtr->tags)
+      for (const char** p = graphObjPtr->tags; *p != NULL; p++)
+	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    break;
+  case CID_MARKER_BITMAP:
+  case CID_MARKER_LINE:
+  case CID_MARKER_POLYGON:
+  case CID_MARKER_TEXT:
+  case CID_MARKER_WINDOW:
+    if (markerPtr->ops->tags)
+      for (const char** p = markerPtr->ops->tags; *p != NULL; p++)
+	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    break;
+  case CID_NONE:
+    break;
+  default:
+    break;
+  }
 }
 
 // Find the closest point from the set of displayed elements, searching

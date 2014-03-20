@@ -36,9 +36,9 @@ extern "C" {
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
-  //  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
-  //   "Polygon all", -1, Tk_Offset(PolygonMarkerOptions, obj.tags), 
-  //   TK_OPTION_NULL_OK, &listObjOption, 0},
+  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
+   "Polygon all", -1, Tk_Offset(PolygonMarkerOptions, tags), 
+   TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_CUSTOM, "-cap", "cap", "Cap", 
    "butt", -1, Tk_Offset(PolygonMarkerOptions, capStyle),
    0, &capStyleObjOption, 0},

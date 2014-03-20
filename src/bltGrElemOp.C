@@ -36,8 +36,9 @@ extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltGrElem.h"
 };
+
+#include "bltGrElem.h"
 
 /* Ignore elements that aren't in the display list or have been deleted. */
 #define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
