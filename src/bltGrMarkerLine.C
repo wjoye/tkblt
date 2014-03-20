@@ -44,7 +44,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, &capStyleObjOption, 0},
   {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
    NULL, -1, Tk_Offset(LineMarkerOptions, worldPts), 
-   TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &coordsObjOption, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes",
    NULL, -1, Tk_Offset(LineMarkerOptions, dashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
@@ -225,11 +225,7 @@ static int ConfigureLineProc(Marker *markerPtr)
     }
     return TCL_OK;
   }
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->ops->drawUnder)
-    graphPtr->flags |= CACHE_DIRTY;
 
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 

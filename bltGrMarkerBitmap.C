@@ -50,7 +50,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
    NULL, -1, Tk_Offset(BitmapMarkerOptions, worldPts), 
-   TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &coordsObjOption, 0},
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(BitmapMarkerOptions, elemName),
    TK_OPTION_NULL_OK, NULL, 0},
@@ -152,11 +152,6 @@ static int ConfigureBitmapProc(Marker* markerPtr)
     bmPtr->fillGC = newGC;
   }
 
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->ops->drawUnder)
-    graphPtr->flags |= CACHE_DIRTY;
-
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 

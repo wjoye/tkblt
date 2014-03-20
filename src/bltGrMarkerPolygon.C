@@ -60,7 +60,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-join", "join", "Join", 
    "miter", -1, Tk_Offset(PolygonMarkerOptions, joinStyle),
    0, &joinStyleObjOption, 0},
-  {TK_OPTION_PIXELS, "-polygonwidth", "polygonWidth", "PolygonWidth",
+  {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(PolygonMarkerOptions, lineWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(PolygonMarkerOptions, hide), 0, NULL, 0},
@@ -324,12 +324,7 @@ static int ConfigurePolygonProc(Marker *markerPtr)
     }
     return TCL_OK;
   }
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->ops->drawUnder) {
-    graphPtr->flags |= CACHE_DIRTY;
-  }
-  graphPtr->flags |= RESET_WORLD;
-  Blt_EventuallyRedrawGraph(graphPtr);
+
   return TCL_OK;
 }
 

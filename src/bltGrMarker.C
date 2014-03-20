@@ -808,7 +808,7 @@ void Blt_ConfigureMarkers(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    (*markerPtr->classPtr->configProc) (markerPtr);
+    (*markerPtr->classPtr->configProc)(markerPtr);
   }
 }
 

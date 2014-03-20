@@ -33,7 +33,7 @@
 #include "bltGrMarker.h"
 
 typedef struct {
-  const char **tags;
+  const char** tags;
   Coords* worldPts;
   const char* elemName;
   Axis2d axes;

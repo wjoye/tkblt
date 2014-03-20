@@ -47,7 +47,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
    NULL, -1, Tk_Offset(TextMarkerOptions, worldPts), 
-   TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &coordsObjOption, 0},
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(TextMarkerOptions, elemName),
    TK_OPTION_NULL_OK, NULL, 0},
@@ -136,11 +136,6 @@ static int ConfigureTextProc(Marker* markerPtr)
     Tk_FreeGC(graphPtr->display, tmPtr->fillGC);
   tmPtr->fillGC = newGC;
 
-  markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->ops->drawUnder)
-    graphPtr->flags |= CACHE_DIRTY;
-
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 
