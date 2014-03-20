@@ -39,30 +39,32 @@ class BitmapMarker {
   Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  Coords* worldPts;
   const char* elemName;
   Axis2d axes;
-  int drawUnder;
-  int clipped;
   int hide;
-  unsigned int flags;		
+  int state;
+  int drawUnder;
   int xOffset;
   int yOffset;
-  int state;
-  Coords* worldPts;
 
   // Fields specific to bitmap
 
-  Pixmap bitmap;
-  Tk_Anchor anchor;
-  Point2d anchorPt;
-  XColor* outlineColor;
-  XColor* fillColor;
   GC gc;
   GC fillGC;
-  int width;
-  int height;
   Point2d outline[MAX_OUTLINE_POINTS];
   int nOutlinePts;
+  int width;
+  int height;
+
+  Tk_Anchor anchor;
+  Pixmap bitmap;
+  Point2d anchorPt;
+  XColor* fillColor;
+  XColor* outlineColor;
 };
 
 #endif

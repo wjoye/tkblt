@@ -367,7 +367,6 @@ struct _Graph {
  *	GRAPH_FOCUS	
  */
 
-#define HIDE			(1<<0) /* 0x0001 */
 #define DELETE_PENDING		(1<<1) /* 0x0002 */
 #define REDRAW_PENDING		(1<<2) /* 0x0004 */
 #define	ACTIVE_PENDING		(1<<3) /* 0x0008 */

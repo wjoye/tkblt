@@ -63,15 +63,17 @@ struct _Marker {
   Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  Coords* worldPts;
   const char* elemName;
   Axis2d axes;
-  int drawUnder;
-  int clipped;
   int hide;
-  unsigned int flags;		
+  int state;
+  int drawUnder;
   int xOffset;
   int yOffset;
-  int state;
 };
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);

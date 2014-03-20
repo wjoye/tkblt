@@ -676,7 +676,7 @@ static int IsElementHidden(Marker *markerPtr)
     hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      if ((elemPtr->link == NULL) || (elemPtr->flags & HIDE))
+      if (!elemPtr->link || elemPtr->hide)
 	return TRUE;
     }
   }

@@ -39,28 +39,30 @@ class TextMarker {
   Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  Coords* worldPts;
   const char* elemName;
   Axis2d axes;
-  int drawUnder;
-  int clipped;
   int hide;
-  unsigned int flags;		
+  int state;
+  int drawUnder;
   int xOffset;
   int yOffset;
-  int state;
-  Coords* worldPts;
 
   // Fields specific to text
 
-  const char* string;
-  Tk_Anchor anchor;
   Point2d anchorPt;
   int width;
   int height;
-  TextStyle style;
-  Point2d outline[5];
-  XColor* fillColor;
   GC fillGC;
+  Point2d outline[5];
+
+  Tk_Anchor anchor;
+  XColor* fillColor;
+  TextStyle style;
+  const char* string;
 };
 
 #endif

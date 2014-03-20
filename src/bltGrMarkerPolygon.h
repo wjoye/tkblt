@@ -39,37 +39,39 @@ class PolygonMarker {
   Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  Coords* worldPts;
   const char* elemName;
   Axis2d axes;
-  int drawUnder;
-  int clipped;
   int hide;
-  unsigned int flags;		
+  int state;
+  int drawUnder;
   int xOffset;
   int yOffset;
-  int state;
-  Coords* worldPts;
 
   // Fields specific to polygon
 
   Point2d *screenPts;
-  XColor* outline;
-  XColor* outlineBg;
-  XColor* fill;
-  XColor* fillBg;
-  Pixmap stipple;
-  int lineWidth;
-  int capStyle;
-  int joinStyle;
-  Blt_Dashes dashes;
   GC outlineGC;
   GC fillGC;
   Point2d *fillPts;
   int nFillPts;
   Segment2d *outlinePts;
   int nOutlinePts;
-  int xorr;
   int xorState;
+
+  int capStyle;
+  Blt_Dashes dashes;
+  XColor* fill;
+  XColor* fillBg;
+  int joinStyle;
+  int lineWidth;
+  XColor* outline;
+  XColor* outlineBg;
+  Pixmap stipple;
+  int xorr;
 };
 
 #endif

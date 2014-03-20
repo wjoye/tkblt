@@ -39,30 +39,32 @@ class LineMarker {
   Tk_OptionTable optionTable;
   Tcl_HashEntry *hashPtr;
   Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  Coords* worldPts;
   const char* elemName;
   Axis2d axes;
-  int drawUnder;
-  int clipped;
   int hide;
-  unsigned int flags;		
+  int state;
+  int drawUnder;
   int xOffset;
   int yOffset;
-  int state;
-  Coords* worldPts;
 
   // Fields specific to line
 
-  XColor* fillColor;
-  XColor* outlineColor;
-  int lineWidth;
-  int capStyle;
-  int joinStyle;
-  Blt_Dashes dashes;
   GC gc;
   Segment2d *segments;
   int nSegments;
-  int xorr;
   int xorState;
+
+  int capStyle;
+  Blt_Dashes dashes;
+  XColor* fillColor;
+  int joinStyle;
+  int lineWidth;
+  XColor* outlineColor;
+  int xorr;
 };
 
 #endif
