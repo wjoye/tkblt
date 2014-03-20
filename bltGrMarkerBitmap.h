@@ -32,6 +32,22 @@
 
 #include "bltGrMarker.h"
 
+typedef struct {
+  Coords* worldPts;
+  const char* elemName;
+  Axis2d axes;
+  int hide;
+  int state;
+  int drawUnder;
+  int xOffset;
+  int yOffset;
+
+  Tk_Anchor anchor;
+  Pixmap bitmap;
+  XColor* fillColor;
+  XColor* outlineColor;
+} BitmapMarkerOptions;
+
 class BitmapMarker {
  public:
   GraphObj obj;
@@ -42,29 +58,17 @@ class BitmapMarker {
   int clipped;
   unsigned int flags;		
 
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  BitmapMarkerOptions* ops;
 
   // Fields specific to bitmap
 
+  Point2d anchorPt;
   GC gc;
   GC fillGC;
   Point2d outline[MAX_OUTLINE_POINTS];
   int nOutlinePts;
   int width;
   int height;
-
-  Tk_Anchor anchor;
-  Pixmap bitmap;
-  Point2d anchorPt;
-  XColor* fillColor;
-  XColor* outlineColor;
 };
 
 #endif

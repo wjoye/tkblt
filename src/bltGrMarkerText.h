@@ -32,6 +32,22 @@
 
 #include "bltGrMarker.h"
 
+typedef struct {
+  Coords* worldPts;
+  const char* elemName;
+  Axis2d axes;
+  int hide;
+  int state;
+  int drawUnder;
+  int xOffset;
+  int yOffset;
+
+  Tk_Anchor anchor;
+  XColor* fillColor;
+  TextStyle style;
+  const char* string;
+} TextMarkerOptions;
+
 class TextMarker {
  public:
   GraphObj obj;
@@ -42,14 +58,7 @@ class TextMarker {
   int clipped;
   unsigned int flags;		
 
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  TextMarkerOptions* ops;
 
   // Fields specific to text
 
@@ -58,11 +67,6 @@ class TextMarker {
   int height;
   GC fillGC;
   Point2d outline[5];
-
-  Tk_Anchor anchor;
-  XColor* fillColor;
-  TextStyle style;
-  const char* string;
 };
 
 #endif

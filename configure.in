@@ -72,7 +72,6 @@ TEA_SETUP_COMPILER
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
 	bltBind.C
-	bltBitmap.C
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C

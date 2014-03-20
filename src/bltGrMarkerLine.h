@@ -32,6 +32,25 @@
 
 #include "bltGrMarker.h"
 
+typedef struct {
+  Coords* worldPts;
+  const char* elemName;
+  Axis2d axes;
+  int hide;
+  int state;
+  int drawUnder;
+  int xOffset;
+  int yOffset;
+
+  int capStyle;
+  Blt_Dashes dashes;
+  XColor* fillColor;
+  int joinStyle;
+  int lineWidth;
+  XColor* outlineColor;
+  int xorr;
+} LineMarkerOptions;
+
 class LineMarker {
  public:
   GraphObj obj;
@@ -42,14 +61,7 @@ class LineMarker {
   int clipped;
   unsigned int flags;		
 
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  LineMarkerOptions* ops;
 
   // Fields specific to line
 
@@ -57,14 +69,6 @@ class LineMarker {
   Segment2d *segments;
   int nSegments;
   int xorState;
-
-  int capStyle;
-  Blt_Dashes dashes;
-  XColor* fillColor;
-  int joinStyle;
-  int lineWidth;
-  XColor* outlineColor;
-  int xorr;
 };
 
 #endif

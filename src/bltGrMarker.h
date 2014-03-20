@@ -57,6 +57,17 @@ typedef struct {
   int num;
 } Coords;
 
+typedef struct {
+  Coords* worldPts;
+  const char* elemName;
+  Axis2d axes;
+  int hide;
+  int state;
+  int drawUnder;
+  int xOffset;
+  int yOffset;
+} MarkerOptions;
+
 struct _Marker {
   GraphObj obj;
   MarkerClass *classPtr;
@@ -66,14 +77,7 @@ struct _Marker {
   int clipped;
   unsigned int flags;		
 
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  MarkerOptions* ops;
 };
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);

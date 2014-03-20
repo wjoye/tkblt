@@ -273,12 +273,11 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   markerPtr->obj.name = Blt_Strdup(name);
   markerPtr->obj.graphPtr = graphPtr;
-  markerPtr->drawUnder = FALSE;
 
   markerPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, markerPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)markerPtr, markerPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)markerPtr->ops, markerPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
     DestroyMarker(markerPtr);
     return TCL_ERROR;
   }
@@ -296,7 +295,7 @@ static void DestroyMarker(Marker *markerPtr)
 
   // If the marker to be deleted is currently displayed below the
   // elements, then backing store needs to be repaired.
-  if (markerPtr->drawUnder)
+  if (markerPtr->ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
   // Call the marker's type-specific deallocation routine. We do it first
@@ -314,7 +313,7 @@ static void DestroyMarker(Marker *markerPtr)
   if (markerPtr->link)
     Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
 
-  Tk_FreeConfigOptions((char*)markerPtr, markerPtr->optionTable,
+  Tk_FreeConfigOptions((char*)markerPtr->ops, markerPtr->optionTable,
 		       graphPtr->tkwin);
 
   free(markerPtr);
@@ -329,7 +328,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)markerPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)markerPtr->ops, 
 				      markerPtr->optionTable,
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -347,7 +346,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)markerPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)markerPtr->ops, 
 				       markerPtr->optionTable, 
 				       (objc == 5) ? objv[4] : NULL, 
 				       graphPtr->tkwin);
@@ -372,7 +371,7 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)markerPtr, markerPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)markerPtr->ops, markerPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -512,7 +511,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->hide) {
+    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide) {
       continue;
     }
     if (IsElementHidden(markerPtr))
@@ -602,7 +601,7 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
   else
     Blt_Chain_LinkBefore(graphPtr->markers.displayList, link, place);
 
-  if (markerPtr->drawUnder)
+  if (markerPtr->ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -672,8 +671,8 @@ static int IsElementHidden(Marker *markerPtr)
   Tcl_HashEntry *hPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (markerPtr->elemName) {
-    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->elemName);
+  if (markerPtr->ops->elemName) {
+    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->ops->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (!elemPtr->link || elemPtr->hide)
@@ -769,10 +768,10 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
     if (markerPtr->classPtr->postscriptProc == NULL)
       continue;
 
-    if (markerPtr->drawUnder != under)
+    if (markerPtr->ops->drawUnder != under)
       continue;
 
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->hide)
+    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide)
       continue;
 
     if (IsElementHidden(markerPtr))
@@ -790,10 +789,10 @@ void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
 
-    if ((markerPtr->drawUnder != under) ||
+    if ((markerPtr->ops->drawUnder != under) ||
 	(markerPtr->clipped) ||
 	(markerPtr->flags & DELETE_PENDING) ||
-	(markerPtr->hide))
+	(markerPtr->ops->hide))
       continue;
 
     if (IsElementHidden(markerPtr))
@@ -818,7 +817,7 @@ void Blt_MapMarkers(Graph* graphPtr)
        link; link = Blt_Chain_NextLink(link)) {
     Marker *markerPtr = (Marker*)Blt_Chain_GetValue(link);
 
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->hide)
+    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide)
       continue;
 
     if ((graphPtr->flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
@@ -853,19 +852,15 @@ Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (markerPtr->hide))
-      continue;			/* Don't consider markers that are
-				 * pending to be mapped. Even if the
-				 * marker has already been mapped, the
-				 * coordinates could be invalid now.
-				 * Better to pick no marker than the
-				 * wrong marker. */
+    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || 
+	(markerPtr->ops->hide))
+      continue;
 
     if (IsElementHidden(markerPtr))
       continue;
 
-    if ((markerPtr->drawUnder == under) && 
-	(markerPtr->state == BLT_STATE_NORMAL))
+    if ((markerPtr->ops->drawUnder == under) && 
+	(markerPtr->ops->state == BLT_STATE_NORMAL))
       if ((*markerPtr->classPtr->pointProc) (markerPtr, &point))
 	return markerPtr;
   }

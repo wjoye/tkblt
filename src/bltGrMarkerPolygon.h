@@ -32,16 +32,7 @@
 
 #include "bltGrMarker.h"
 
-class PolygonMarker {
- public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
-
+typedef struct {
   Coords* worldPts;
   const char* elemName;
   Axis2d axes;
@@ -50,17 +41,6 @@ class PolygonMarker {
   int drawUnder;
   int xOffset;
   int yOffset;
-
-  // Fields specific to polygon
-
-  Point2d *screenPts;
-  GC outlineGC;
-  GC fillGC;
-  Point2d *fillPts;
-  int nFillPts;
-  Segment2d *outlinePts;
-  int nOutlinePts;
-  int xorState;
 
   int capStyle;
   Blt_Dashes dashes;
@@ -72,6 +52,30 @@ class PolygonMarker {
   XColor* outlineBg;
   Pixmap stipple;
   int xorr;
+} PolygonMarkerOptions;
+
+class PolygonMarker {
+ public:
+  GraphObj obj;
+  MarkerClass *classPtr;
+  Tk_OptionTable optionTable;
+  Tcl_HashEntry *hashPtr;
+  Blt_ChainLink link;
+  int clipped;
+  unsigned int flags;		
+
+  PolygonMarkerOptions* ops;
+
+  // Fields specific to polygon
+
+  Point2d *screenPts;
+  GC outlineGC;
+  GC fillGC;
+  Point2d *fillPts;
+  int nFillPts;
+  Segment2d *outlinePts;
+  int nOutlinePts;
+  int xorState;
 };
 
 #endif

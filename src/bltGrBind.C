@@ -32,6 +32,8 @@ extern "C" {
 #include "bltBind.h"
 };
 
+#define MAX_STATIC_TAGS	64
+
 static Tk_EventProc BindProc;
 
 typedef struct _Blt_BindTable BindTable;
@@ -57,10 +59,7 @@ typedef struct _Blt_BindTable BindTable;
    PointerMotionMask | VirtualEventMask)
 
   static int buttonMasks[] =
-    {
-      0,				/* No buttons pressed */
-      Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask,
-    };
+    {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
 
 
 /*
@@ -91,52 +90,40 @@ typedef struct _Blt_BindTable BindTable;
  *
  *---------------------------------------------------------------------------
  */
-static void
-DoEvent(
-	BindTable *bindPtr,		/* Binding information for widget in which
-					 * event occurred. */
-	XEvent *eventPtr,		/* Real or simulated X event that is to be
-					 * processed. */
-	ClientData item,		/* Item picked. */
-	ClientData context)		/* Context of item.  */
+static void DoEvent(BindTable *bindPtr, XEvent *eventPtr, 
+		    ClientData item, ClientData context)
 {
   Blt_List tagList;
 
-  if ((bindPtr->tkwin == NULL) || (bindPtr->bindingTable == NULL)) {
+  if (!bindPtr->tkwin || !bindPtr->bindingTable)
     return;
-  }
+
   if ((eventPtr->type == KeyPress) || (eventPtr->type == KeyRelease)) {
     item = bindPtr->focusItem;
     context = bindPtr->focusContext;
   }
-  if (item == NULL) {
+  if (!item)
     return;
-  }
-  /*
-   * Invoke the binding system.
-   */
+
+  // Invoke the binding system.
   tagList = Blt_List_Create(BLT_ONE_WORD_KEYS);
   if (bindPtr->tagProc == NULL) {
     Blt_List_Append(tagList, Tk_GetUid("all"), 0);
     Blt_List_Append(tagList, (char *)item, 0);
-  } else {
-    (*bindPtr->tagProc) (bindPtr, item, context, tagList);
   }
+  else
+    (*bindPtr->tagProc) (bindPtr, item, context, tagList);
+
   if (Blt_List_GetLength(tagList) > 0) {
-    int nTags;
-    ClientData *tagArray;
-#define MAX_STATIC_TAGS	64
     ClientData staticTags[MAX_STATIC_TAGS];
-    Blt_ListNode node;
-	
-    tagArray = staticTags;
-    nTags = Blt_List_GetLength(tagList);
+    ClientData *tagArray = staticTags;
+    int nTags = Blt_List_GetLength(tagList);
     if (nTags >= MAX_STATIC_TAGS) {
       tagArray = (ClientData*)malloc(sizeof(ClientData) * nTags);
 	    
     } 
     nTags = 0;
-    for (node = Blt_List_FirstNode(tagList); node != NULL;
+    for (Blt_ListNode node = Blt_List_FirstNode(tagList); node != NULL;
 	 node = Blt_List_NextNode(node)) {
       tagArray[nTags++] = (ClientData)Blt_List_GetKey(node);
     }
@@ -149,48 +136,18 @@ DoEvent(
   Blt_List_Destroy(tagList);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * PickCurrentItem --
- *
- *	Find the topmost item in a legend that contains a given location and
- *	mark the the current item.  If the current item has changed, generate
- *	a fake exit event on the old current item and a fake enter event on
- *	the new current item.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The current item may change.  If it does, then the commands associated
- *	with item entry and exit could do just about anything.  A binding
- *	script could delete the legend, so callers should protect themselves
- *	with Tcl_Preserve and Tcl_Release.
- *
- *---------------------------------------------------------------------------
- */
-static void
-PickCurrentItem(
-		BindTable *bindPtr,		/* Binding table information. */
-		XEvent *eventPtr)		/* Event describing location of mouse cursor.
-						 * Must be EnterWindow, LeaveWindow,
-						 * ButtonRelease, or MotionNotify. */
+static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
 {
-  int buttonDown;
   ClientData newItem, oldItem;
   ClientData newContext;
 
-  /*
-   * Check whether or not a button is down.  If so, we'll log entry and exit
-   * into and out of the current item, but not entry into any other item.
-   * This implements a form of grabbing equivalent to what the X server does
-   * for windows.
-   */
-  buttonDown = (bindPtr->state & ALL_BUTTONS_MASK);
-  if (!buttonDown) {
+  // Check whether or not a button is down.  If so, we'll log entry and exit
+  // into and out of the current item, but not entry into any other item.
+  // This implements a form of grabbing equivalent to what the X server does
+  // for windows.
+  int buttonDown = (bindPtr->state & ALL_BUTTONS_MASK);
+  if (!buttonDown)
     bindPtr->flags &= ~LEFT_GRABBED_ITEM;
-  }
 
   /*
    * Save information about this event in the widget.  The event in the
@@ -238,9 +195,9 @@ PickCurrentItem(
    * handler for the old current item) then just return; the pending call
    * will do everything that's needed.
    */
-  if (bindPtr->flags & REPICK_IN_PROGRESS) {
+  if (bindPtr->flags & REPICK_IN_PROGRESS)
     return;
-  }
+
   /*
    * A LeaveNotify event automatically means that there's no current item,
    * so the check for closest item can be skipped.
@@ -252,17 +209,16 @@ PickCurrentItem(
     x = bindPtr->pickEvent.xcrossing.x;
     y = bindPtr->pickEvent.xcrossing.y;
     newItem = (*bindPtr->pickProc) (bindPtr->clientData, x, y, &newContext);
-  } else {
-    newItem = NULL;
   }
+  else
+    newItem = NULL;
+
+  // Nothing to do:  the current item hasn't changed.
   if (((newItem == bindPtr->currentItem) && 
        (newContext == bindPtr->currentContext)) && 
-      ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0)) {
-    /*
-     * Nothing to do:  the current item hasn't changed.
-     */
+      ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0))
     return;
-  }
+
   /*
    * Simulate a LeaveNotify event on the previous current item and an
    * EnterNotify event on the new current item.  Remove the "current" tag
@@ -437,80 +393,17 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   Tcl_Release(bindPtr->clientData);
 }
 
-int Blt_ConfigureBindings(
-		      Tcl_Interp* interp,
-		      BindTable *bindPtr,
-		      ClientData item,
-		      int argc,
-		      const char **argv)
+int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
+				 ClientData item, int objc,
+				 Tcl_Obj* const objv[])
 {
-  const char *command;
-  unsigned long mask;
-  const char *seq;
-
-  if (argc == 0) {
-    Tk_GetAllBindings(interp, bindPtr->bindingTable, item);
-    return TCL_OK;
-  }
-  if (argc == 1) {
-    command = Tk_GetBinding(interp, bindPtr->bindingTable, item, argv[0]);
-    if (command == NULL) {
-      Tcl_AppendResult(interp, "can't find event \"", argv[0], "\"",
-		       (char *)NULL);
-      return TCL_ERROR;
-    }
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), command, -1);
-    return TCL_OK;
-  }
-
-  seq = argv[0];
-  command = argv[1];
-
-  if (command[0] == '\0') {
-    return Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
-  }
-
-  if (command[0] == '+') {
-    mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command + 1, TRUE);
-  } else {
-    mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command, FALSE);
-  }
-  if (mask == 0) {
-    Tcl_AppendResult(interp, "event mask can't be zero for \"", item, "\"",
-		     (char *)NULL);
-    return TCL_ERROR;
-  }
-  if (mask & (unsigned)~ALL_VALID_EVENTS_MASK) {
-    Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, "requested illegal events; ",
-		     "only key, button, motion, enter, leave, and virtual ",
-		     "events may be used", (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-
-int Blt_ConfigureBindingsFromObj(
-			     Tcl_Interp* interp,
-			     BindTable *bindPtr,
-			     ClientData item,
-			     int objc,
-			     Tcl_Obj* const objv[])
-{
-  const char *command;
-  unsigned long mask;
-  const char *seq;
-  const char *string;
-
   if (objc == 0) {
     Tk_GetAllBindings(interp, bindPtr->bindingTable, item);
     return TCL_OK;
   }
-  string = Tcl_GetString(objv[0]);
+
+  const char *string = Tcl_GetString(objv[0]);
+  const char *command;
   if (objc == 1) {
     command = Tk_GetBinding(interp, bindPtr->bindingTable, item, string);
     if (command == NULL) {
@@ -523,23 +416,23 @@ int Blt_ConfigureBindingsFromObj(
     return TCL_OK;
   }
 
-  seq = string;
+  const char *seq = string;
   command = Tcl_GetString(objv[1]);
 
-  if (command[0] == '\0') {
+  if (command[0] == '\0')
     return Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
-  }
 
-  if (command[0] == '+') {
+  unsigned long mask;
+  if (command[0] == '+')
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
 			    command + 1, TRUE);
-  } else {
+  else
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
 			    command, FALSE);
-  }
-  if (mask == 0) {
+
+  if (mask == 0)
     return TCL_ERROR;
-  }
+
   if (mask & (unsigned)~ALL_VALID_EVENTS_MASK) {
     Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
     Tcl_ResetResult(interp);
@@ -548,40 +441,35 @@ int Blt_ConfigureBindingsFromObj(
 		     "events may be used", (char *)NULL);
     return TCL_ERROR;
   }
+
   return TCL_OK;
 }
 
-Blt_BindTable Blt_CreateBindingTable(
-		       Tcl_Interp* interp,
-		       Tk_Window tkwin,
-		       ClientData clientData,
-		       Blt_BindPickProc *pickProc,
-		       Blt_BindTagProc *tagProc)
+Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp, Tk_Window tkwin,
+				     ClientData clientData,
+				     Blt_BindPickProc *pickProc,
+				     Blt_BindTagProc *tagProc)
 {
-  unsigned int mask;
-  BindTable *bindPtr;
-
-  bindPtr = (BindTable*)calloc(1, sizeof(BindTable));
+  BindTable *bindPtr = (BindTable*)calloc(1, sizeof(BindTable));
   bindPtr->bindingTable = Tk_CreateBindingTable(interp);
   bindPtr->clientData = clientData;
   bindPtr->tkwin = tkwin;
   bindPtr->pickProc = pickProc;
   bindPtr->tagProc = tagProc;
-  mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-	  ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-	  PointerMotionMask);
+  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
+		       PointerMotionMask);
   Tk_CreateEventHandler(tkwin, mask, BindProc, bindPtr);
+
   return bindPtr;
 }
 
 void Blt_DestroyBindingTable(BindTable *bindPtr)
 {
-  unsigned int mask;
-
   Tk_DeleteBindingTable(bindPtr->bindingTable);
-  mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-	  ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-	  PointerMotionMask);
+  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
+		       PointerMotionMask);
   Tk_DeleteEventHandler(bindPtr->tkwin, mask, BindProc, bindPtr);
   free(bindPtr);
   bindPtr = NULL;
@@ -589,9 +477,8 @@ void Blt_DestroyBindingTable(BindTable *bindPtr)
 
 void Blt_PickCurrentItem(BindTable *bindPtr)
 {
-  if (bindPtr->activePick) {
+  if (bindPtr->activePick)
     PickCurrentItem(bindPtr, &bindPtr->pickEvent);
-  }
 }
 
 void Blt_DeleteBindings(BindTable *bindPtr, ClientData object)
@@ -615,14 +502,12 @@ void Blt_DeleteBindings(BindTable *bindPtr, ClientData object)
 
 void Blt_MoveBindingTable(BindTable *bindPtr, Tk_Window tkwin)
 {
-  unsigned int mask;
-
-  mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-	  ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-	  PointerMotionMask);
-  if (bindPtr->tkwin != NULL) {
+  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
+		       PointerMotionMask);
+  if (bindPtr->tkwin != NULL)
     Tk_DeleteEventHandler(bindPtr->tkwin, mask, BindProc, bindPtr);
-  }
+
   Tk_CreateEventHandler(tkwin, mask, BindProc, bindPtr);
   bindPtr->tkwin = tkwin;
 }

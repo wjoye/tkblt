@@ -2887,18 +2887,14 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 
   case SYMBOL_BITMAP:
     {
-      Pixmap bitmap, mask;
       int w, h, bw, bh;
       double scale, sx, sy;
       int dx, dy;
 
       Tk_SizeOfBitmap(graphPtr->display, penPtr->symbol.bitmap, &w, &h);
-      mask = None;
 
-      /*
-       * Compute the size of the scaled bitmap.  Stretch the bitmap to fit
-       * a nxn bounding box.
-       */
+      // Compute the size of the scaled bitmap.  Stretch the bitmap to fit
+      // a nxn bounding box.
       sx = (double)size / (double)w;
       sy = (double)size / (double)h;
       scale = MIN(sx, sy);
@@ -2906,56 +2902,45 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
       bh = (int)(h * scale);
 
       XSetClipMask(graphPtr->display, penPtr->symbol.outlineGC, None);
-      if (penPtr->symbol.mask != None) {
-	mask = Blt_ScaleBitmap(graphPtr->tkwin, penPtr->symbol.mask,
-			       w, h, bw, bh);
-	XSetClipMask(graphPtr->display, penPtr->symbol.outlineGC, mask);
-      }
-      bitmap = Blt_ScaleBitmap(graphPtr->tkwin, penPtr->symbol.bitmap,
-			       w, h, bw, bh);
-      if (penPtr->symbol.fillGC == NULL) {
+      if (penPtr->symbol.mask != None)
+	XSetClipMask(graphPtr->display, penPtr->symbol.outlineGC,
+		     penPtr->symbol.mask);
+
+      if (penPtr->symbol.fillGC == NULL)
 	XSetClipMask(graphPtr->display, penPtr->symbol.outlineGC, 
-		     bitmap);
-      }
+		     penPtr->symbol.bitmap);
+
       dx = bw / 2;
       dy = bh / 2;
+
       if (elemPtr->symbolInterval > 0) {
 	Point2d *pp, *endp;
-
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL(elemPtr)) {
-	    int x, y;
-	    
-	    x = Round(pp->x) - dx;
-	    y = Round(pp->y) - dy;
-	    if ((penPtr->symbol.fillGC == NULL) || (mask != None)) {
+	    int x = Round(pp->x) - dx;
+	    int y = Round(pp->y) - dy;
+	    if ((penPtr->symbol.fillGC == NULL) || 
+		(penPtr->symbol.mask != None))
 	      XSetClipOrigin(graphPtr->display,
 			     penPtr->symbol.outlineGC, x, y);
-	    }
-	    XCopyPlane(graphPtr->display, bitmap, drawable,
+	    XCopyPlane(graphPtr->display, penPtr->symbol.bitmap, drawable,
 		       penPtr->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	  }
 	  elemPtr->symbolCounter++;
 	}
-      } else {
+      }
+      else {
 	Point2d *pp, *endp;
-
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int x, y;
-
-	  x = Round(pp->x) - dx;
-	  y = Round(pp->y) - dy;
-	  if ((penPtr->symbol.fillGC == NULL) || (mask != None)) {
+	  int x = Round(pp->x) - dx;
+	  int y = Round(pp->y) - dy;
+	  if ((penPtr->symbol.fillGC == NULL) || 
+	      (penPtr->symbol.mask != None))
 	    XSetClipOrigin(graphPtr->display, 
 			   penPtr->symbol.outlineGC, x, y);
-	  }
-	  XCopyPlane(graphPtr->display, bitmap, drawable,
+	  XCopyPlane(graphPtr->display, penPtr->symbol.bitmap, drawable,
 		     penPtr->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	}
-      }
-      Tk_FreePixmap(graphPtr->display, bitmap);
-      if (mask != None) {
-	Tk_FreePixmap(graphPtr->display, mask);
       }
     }
     break;

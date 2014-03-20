@@ -5527,7 +5527,6 @@ done
 
     vars="
 	bltBind.C
-	bltBitmap.C
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C

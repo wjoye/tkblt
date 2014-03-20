@@ -36,45 +36,48 @@ extern "C" {
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
-   "center", -1, Tk_Offset(TextMarker, anchor), 0, NULL, 0},
+   "center", -1, Tk_Offset(TextMarkerOptions, anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-background", "background", "Background",
-   NULL, -1, Tk_Offset(TextMarker, fillColor), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(TextMarkerOptions, fillColor),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
-   "Text all", -1, Tk_Offset(TextMarker, obj.tags), 
-   TK_OPTION_NULL_OK, &listObjOption, 0},
+  //  {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
+  //   "Text all", -1, Tk_Offset(TextMarkerOptions, obj.tags), 
+  //   TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_CUSTOM, "-coords", "coords", "Coords",
-   NULL, -1, Tk_Offset(TextMarker, worldPts), 
+   NULL, -1, Tk_Offset(TextMarkerOptions, worldPts), 
    TK_OPTION_NULL_OK, &coordsObjOption, MAP_ITEM},
   {TK_OPTION_STRING, "-element", "element", "Element", 
-   NULL, -1, Tk_Offset(TextMarker, elemName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(TextMarkerOptions, elemName),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
-   STD_FONT_NORMAL, -1, Tk_Offset(TextMarker, style.font), 0, NULL, 0},
+   STD_FONT_NORMAL, -1, Tk_Offset(TextMarkerOptions, style.font), 0, NULL, 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(TextMarker, style.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(TextMarkerOptions, style.color),
+   0, NULL, 0},
   {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
-   "left", -1, Tk_Offset(TextMarker, style.justify), 0, NULL, 0},
+   "left", -1, Tk_Offset(TextMarkerOptions, style.justify), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "no", -1, Tk_Offset(TextMarker, hide), 0, NULL, 0},
+   "no", -1, Tk_Offset(TextMarkerOptions, hide), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(TextMarker, axes.x), 0, &xAxisObjOption, 0},
+   "x", -1, Tk_Offset(TextMarkerOptions, axes.x), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
-   "y", -1, Tk_Offset(TextMarker, axes.y), 0, &yAxisObjOption, 0},
+   "y", -1, Tk_Offset(TextMarkerOptions, axes.y), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
-   "0", -1, Tk_Offset(TextMarker, style.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(TextMarkerOptions, style.angle), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
-   "normal", -1, Tk_Offset(TextMarker, state), 0, &stateObjOption, 0},
+   "normal", -1, Tk_Offset(TextMarkerOptions, state), 0, &stateObjOption, 0},
   {TK_OPTION_STRING, "-text", "text", "Text", 
-   NULL, -1, Tk_Offset(TextMarker, string), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(TextMarkerOptions, string), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
-   "no", -1, Tk_Offset(TextMarker, drawUnder), 0, NULL, 0},
+   "no", -1, Tk_Offset(TextMarkerOptions, drawUnder), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
-   "0", -1, Tk_Offset(TextMarker, xOffset), 0, NULL, 0},
+   "0", -1, Tk_Offset(TextMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
-   "0", -1, Tk_Offset(TextMarker, yOffset), 0, NULL, 0},
+   "0", -1, Tk_Offset(TextMarkerOptions, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -102,7 +105,9 @@ Marker* Blt_CreateTextProc(Graph* graphPtr)
 {
   TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
-  Blt_Ts_InitStyle(tmPtr->style);
+  tmPtr->ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
+
+  Blt_Ts_InitStyle(tmPtr->ops->style);
   tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker*)tmPtr;
@@ -113,17 +118,17 @@ static int ConfigureTextProc(Marker* markerPtr)
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
 
-  tmPtr->style.angle = (float)fmod(tmPtr->style.angle, 360.0);
-  if (tmPtr->style.angle < 0.0f) {
-    tmPtr->style.angle += 360.0f;
+  tmPtr->ops->style.angle = (float)fmod(tmPtr->ops->style.angle, 360.0);
+  if (tmPtr->ops->style.angle < 0.0f) {
+    tmPtr->ops->style.angle += 360.0f;
   }
 
   GC newGC = NULL;
   XGCValues gcValues;
   unsigned long gcMask;
-  if (tmPtr->fillColor) {
+  if (tmPtr->ops->fillColor) {
     gcMask = GCForeground;
-    gcValues.foreground = tmPtr->fillColor->pixel;
+    gcValues.foreground = tmPtr->ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
   if (tmPtr->fillGC)
@@ -131,7 +136,7 @@ static int ConfigureTextProc(Marker* markerPtr)
   tmPtr->fillGC = newGC;
 
   markerPtr->flags |= MAP_ITEM;
-  if (markerPtr->drawUnder)
+  if (markerPtr->ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -143,20 +148,20 @@ static void MapTextProc(Marker* markerPtr)
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
 
-  if (!tmPtr->string)
+  if (!tmPtr->ops->string)
     return;
 
-  if (!tmPtr->worldPts || (tmPtr->worldPts->num < 1))
+  if (!tmPtr->ops->worldPts || (tmPtr->ops->worldPts->num < 1))
     return;
 
   tmPtr->width =0;
   tmPtr->height =0;
 
   unsigned int w, h;
-  Blt_Ts_GetExtents(&tmPtr->style, tmPtr->string, &w, &h);
+  Blt_Ts_GetExtents(&tmPtr->ops->style, tmPtr->ops->string, &w, &h);
 
   double rw, rh;
-  Blt_GetBoundingBox(w, h, tmPtr->style.angle, &rw, &rh, tmPtr->outline);
+  Blt_GetBoundingBox(w, h, tmPtr->ops->style.angle, &rw, &rh, tmPtr->outline);
   tmPtr->width = ROUND(rw);
   tmPtr->height = ROUND(rh);
   for (int ii=0; ii<4; ii++) {
@@ -166,11 +171,12 @@ static void MapTextProc(Marker* markerPtr)
   tmPtr->outline[4].x = tmPtr->outline[0].x;
   tmPtr->outline[4].y = tmPtr->outline[0].y;
 
-  Point2d anchorPt = Blt_MapPoint(tmPtr->worldPts->points, &markerPtr->axes);
+  Point2d anchorPt = 
+    Blt_MapPoint(tmPtr->ops->worldPts->points, &markerPtr->ops->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, tmPtr->width, 
-			     tmPtr->height, tmPtr->anchor);
-  anchorPt.x += markerPtr->xOffset;
-  anchorPt.y += markerPtr->yOffset;
+			     tmPtr->height, tmPtr->ops->anchor);
+  anchorPt.x += markerPtr->ops->xOffset;
+  anchorPt.y += markerPtr->ops->yOffset;
 
   Region2d extents;
   extents.left = anchorPt.x;
@@ -185,10 +191,10 @@ static int PointInTextProc(Marker* markerPtr, Point2d *samplePtr)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
 
-  if (!tmPtr->string)
+  if (!tmPtr->ops->string)
     return 0;
 
-  if (tmPtr->style.angle != 0.0f) {
+  if (tmPtr->ops->style.angle != 0.0f) {
     Point2d points[5];
 
     // Figure out the bounding polygon (isolateral) for the text and see
@@ -210,7 +216,7 @@ static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
 
-  if (tmPtr->style.angle != 0.0f) {
+  if (tmPtr->ops->style.angle != 0.0f) {
     // Generate the bounding polygon (isolateral) for the bitmap and see
     // if the point is inside of it.
     Point2d points[5];
@@ -238,7 +244,7 @@ static void DrawTextProc(Marker* markerPtr, Drawable drawable)
   TextMarker* tmPtr = (TextMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (!tmPtr->string)
+  if (!tmPtr->ops->string)
     return;
 
   if (tmPtr->fillGC) {
@@ -254,16 +260,16 @@ static void DrawTextProc(Marker* markerPtr, Drawable drawable)
   }
 
   // be sure to update style->gc, things might have changed
-  tmPtr->style.flags |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr->tkwin, drawable, tmPtr->string, -1,
-		  &tmPtr->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
+  tmPtr->ops->style.flags |= UPDATE_GC;
+  Blt_Ts_DrawText(graphPtr->tkwin, drawable, tmPtr->ops->string, -1,
+		  &tmPtr->ops->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
 static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
 
-  if (!tmPtr->string)
+  if (!tmPtr->ops->string)
     return;
 
   if (tmPtr->fillGC) {
@@ -274,12 +280,12 @@ static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
       points[ii].x = tmPtr->outline[ii].x + tmPtr->anchorPt.x;
       points[ii].y = tmPtr->outline[ii].y + tmPtr->anchorPt.y;
     }
-    Blt_Ps_XSetBackground(ps, tmPtr->fillColor);
+    Blt_Ps_XSetBackground(ps, tmPtr->ops->fillColor);
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, tmPtr->string, &tmPtr->style, tmPtr->anchorPt.x, 
-		  tmPtr->anchorPt.y);
+  Blt_Ps_DrawText(ps, tmPtr->ops->string, &tmPtr->ops->style,
+		  tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
 static void FreeTextProc(Marker* markerPtr)
@@ -287,6 +293,9 @@ static void FreeTextProc(Marker* markerPtr)
   TextMarker* tmPtr = (TextMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  Blt_Ts_FreeStyle(graphPtr->display, &tmPtr->style);
+  Blt_Ts_FreeStyle(graphPtr->display, &tmPtr->ops->style);
+
+  if (tmPtr->ops)
+    free(tmPtr->ops);
 }
 

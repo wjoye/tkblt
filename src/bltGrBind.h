@@ -95,9 +95,6 @@ extern Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp,
 	Tk_Window tkwin, ClientData clientData, Blt_BindPickProc *pickProc,
 	Blt_BindTagProc *tagProc);
 
-extern int Blt_ConfigureBindings(Tcl_Interp* interp, Blt_BindTable table, 
-	ClientData item, int argc, const char **argv);
-
 extern int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, 
 	Blt_BindTable table, ClientData item, int objc, Tcl_Obj *const *objv);
 

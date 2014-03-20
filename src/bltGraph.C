@@ -914,9 +914,9 @@ void Blt_EventuallyRedrawGraph(Graph* graphPtr)
 
 const char* Blt_GraphClassName(ClassId classId) 
 {
-  if ((classId >= CID_NONE) && (classId <= CID_MARKER_WINDOW)) {
+  if ((classId >= CID_NONE) && (classId <= CID_MARKER_WINDOW))
     return objectClassNames[classId];
-  }
+
   return NULL;
 }
 
@@ -933,7 +933,8 @@ static void AdjustAxisPointers(Graph* graphPtr)
     graphPtr->bottomMargin.axes = graphPtr->axisChain[1];
     graphPtr->rightMargin.axes  = graphPtr->axisChain[2];
     graphPtr->topMargin.axes    = graphPtr->axisChain[3];
-  } else {
+  }
+  else {
     graphPtr->leftMargin.axes   = graphPtr->axisChain[1];
     graphPtr->bottomMargin.axes = graphPtr->axisChain[0];
     graphPtr->rightMargin.axes  = graphPtr->axisChain[3];
@@ -968,12 +969,6 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)
 {
   Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
-
-  /* 
-   * All graph objects (markers, elements, axes, etc) have the same starting
-   * fields in their structures, such as "classId", "name", "className", and
-   * "tags".
-   */
   GraphObj* graphObjPtr = (GraphObj*)object;
 
   MakeTagProc* tagProc;
@@ -987,7 +982,6 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
     tagProc = Blt_MakeAxisTag;
     break;
   case CID_MARKER_BITMAP:
-  case CID_MARKER_IMAGE:
   case CID_MARKER_LINE:
   case CID_MARKER_POLYGON:
   case CID_MARKER_TEXT:
@@ -1002,7 +996,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
     break;
   }
 
-  /* Always add the name of the object to the tag array. */
+  // Always add the name of the object to the tag array.
   Blt_List_Append(list, 
 		  (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
   Blt_List_Append(list, 
@@ -1012,43 +1006,33 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
 }
 
-/*
- *	Find the closest point from the set of displayed elements, searching
- *	the display list from back to front.  That way, if the points from
- *	two different elements overlay each other exactly, the one that's on
- *	top (visible) is picked.
- */
-
+// Find the closest point from the set of displayed elements, searching
+// the display list from back to front.  That way, if the points from
+// two different elements overlay each other exactly, the one that's on
+// top (visible) is picked.
 static ClientData PickEntry(ClientData clientData, int x, int y, 
 			    ClientData* contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
 
-  if (graphPtr->flags & MAP_ALL) {
-    return NULL;			/* Don't pick anything until the next
-					 * redraw occurs. */
-  }
+  if (graphPtr->flags & MAP_ALL)
+    return NULL;
+
   Region2d exts;
   Blt_GraphExtents(graphPtr, &exts);
 
+  // Sample coordinate is in one of the graph margins. Can only pick an axis.
   if ((x >= exts.right) || (x < exts.left) || 
-      (y >= exts.bottom) || (y < exts.top)) {
-    /* 
-     * Sample coordinate is in one of the graph margins.  Can only pick an
-     * axis.
-     */
+      (y >= exts.bottom) || (y < exts.top))
     return Blt_NearestAxis(graphPtr, x, y);
-  }
-  /* 
-   * From top-to-bottom check:
-   *	1. markers drawn on top (-under false).
-   *	2. elements using its display list back to front.
-   *  3. markers drawn under element (-under true).
-   */
+
+  // From top-to-bottom check:
+  // 1. markers drawn on top (-under false).
+  // 2. elements using its display list back to front.
+  // 3. markers drawn under element (-under true).
   Marker* markerPtr = Blt_NearestMarker(graphPtr, x, y, FALSE);
-  if (markerPtr != NULL) {
-    return markerPtr;		/* Found a marker (-under false). */
-  }
+  if (markerPtr)
+    return markerPtr;
 
   ClosestSearch* searchPtr = &graphPtr->search;
   searchPtr->index = -1;
@@ -1072,10 +1056,10 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return searchPtr->elemPtr;
 
   markerPtr = Blt_NearestMarker(graphPtr, x, y, TRUE);
-  if (markerPtr != NULL) {
-    return markerPtr;		/* Found a marker (-under true) */
-  }
-  return NULL;			/* Nothing found. */
+  if (markerPtr)
+    return markerPtr;
+
+  return NULL;
 }
 
 /*
