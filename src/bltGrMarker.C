@@ -33,8 +33,8 @@ extern "C" {
 #include "bltOp.h"
 #include "bltGrElem.h"
 };
-#include "bltConfig.h"
 
+#include "bltConfig.h"
 #include "bltGrMarker.h"
 
 extern MarkerCreateProc Blt_CreateBitmapProc;

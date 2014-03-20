@@ -39,9 +39,10 @@ extern "C" {
 #include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltOp.h"
-#include "bltGrAxis.h"
 }
+
 #include "bltConfig.h"
+#include "bltGrAxis.h"
 
 #define AXIS_PAD_TITLE 2
 #define NUMDIGITS 15	/* Specifies the number of digits of
