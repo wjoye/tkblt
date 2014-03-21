@@ -87,7 +87,6 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   int objc;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
-  elemPtr->flags |= MAP_ITEM;
 
   FreeDataValues(valuesPtr);
   if (objc == 0)
@@ -173,21 +172,21 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   size_t newSize = nValues * sizeof(double);
 
   Element* elemPtr = (Element*)widgRec;
-  FreeDataValues(&elemPtr->x);
-  FreeDataValues(&elemPtr->y);
+  FreeDataValues(&elemPtr->coords.x);
+  FreeDataValues(&elemPtr->coords.y);
 
   if (newSize > 0) {
-    elemPtr->x.values = (double*)malloc(newSize);
-    elemPtr->y.values = (double*)malloc(newSize);
-    elemPtr->x.nValues = elemPtr->y.nValues = nValues;
+    elemPtr->coords.x.values = (double*)malloc(newSize);
+    elemPtr->coords.y.values = (double*)malloc(newSize);
+    elemPtr->coords.x.nValues = elemPtr->coords.y.nValues = nValues;
     int ii=0;
     for (double* p = values; ii<nValues; ii++) {
-      elemPtr->x.values[ii] = *p++;
-      elemPtr->y.values[ii] = *p++;
+      elemPtr->coords.x.values[ii] = *p++;
+      elemPtr->coords.y.values[ii] = *p++;
     }
     free(values);
-    FindRange(&elemPtr->x);
-    FindRange(&elemPtr->y);
+    FindRange(&elemPtr->coords.x);
+    FindRange(&elemPtr->coords.y);
   }
 
   return TCL_OK;
@@ -203,8 +202,8 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
 
   Tcl_Obj** ll = (Tcl_Obj**)calloc(2*cnt,sizeof(Tcl_Obj*));
   for (int ii=0, jj=0; ii<cnt; ii++) {
-    ll[jj++] = Tcl_NewDoubleObj(elemPtr->x.values[ii]);
-    ll[jj++] = Tcl_NewDoubleObj(elemPtr->y.values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(elemPtr->coords.x.values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(elemPtr->coords.y.values[ii]);
   }
   Tcl_Obj* listObjPtr = Tcl_NewListObj(2*cnt, ll);
   free(ll);
@@ -346,8 +345,8 @@ static void DestroyElement(Element* elemPtr)
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
 
-  FreeDataValues(&elemPtr->x);
-  FreeDataValues(&elemPtr->y);
+  FreeDataValues(&elemPtr->coords.x);
+  FreeDataValues(&elemPtr->coords.y);
 
   /* Remove it also from the element display list */
   if (elemPtr->link) {
@@ -561,23 +560,21 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   searchPtr->index = -1;
   searchPtr->dist = (double)(searchPtr->halo + 1);
 
-  char* string = Tcl_GetString(objv[5]);
-  if (string && string[0] != '\0') {
+  if (objc>5) {
     Element* elemPtr;
     if (Blt_GetElement(interp, graphPtr, objv[5], &elemPtr) != TCL_OK)
-      return TCL_ERROR; /* Can't find named element */
+      return TCL_ERROR;
 
     if (elemPtr && !elemPtr->hide && 
 	!(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
       (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
   }
   else {
-    /* 
-     * Find the closest point from the set of displayed elements,
-     * searching the display list from back to front.  That way if
-     * the points from two different elements overlay each other
-     * exactly, the last one picked will be the topmost.  
-     */
+    // Find the closest point from the set of displayed elements,
+    // searching the display list from back to front.  That way if
+    // the points from two different elements overlay each other
+    // exactly, the last one picked will be the topmost.  
+
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -588,19 +585,15 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   if (searchPtr->dist < (double)searchPtr->halo) {
-    //  Return a list of name value pairs.
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("name", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewStringObj(searchPtr->elemPtr->obj.name, -1)); 
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(searchPtr->elemPtr->obj.name, -1)); 
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("index", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(searchPtr->index));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("x", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(searchPtr->point.x));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(searchPtr->point.x));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("y", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewDoubleObj(searchPtr->point.y));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(searchPtr->point.y));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("dist", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(searchPtr->dist));
     Tcl_SetObjResult(interp, listObjPtr);
@@ -987,16 +980,13 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
 {
   ElemValues *valuesPtr = (ElemValues*)clientData;
 
-  if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
+  if (notify == BLT_VECTOR_NOTIFY_DESTROY)
     FreeDataValues(valuesPtr);
-  }
   else {
     Blt_Vector *vector;
-	
     Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
-    if (FetchVectorValues(NULL, valuesPtr, vector) != TCL_OK) {
+    if (FetchVectorValues(NULL, valuesPtr, vector) != TCL_OK)
       return;
-    }
   }
   {
     Element* elemPtr = valuesPtr->elemPtr;
@@ -1224,13 +1214,14 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   char *name;
 
   name = Tcl_GetString(objPtr);
+  if (!name || !name[0])
+    return TCL_ERROR;
   hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, name);
-  if (hPtr == NULL) {
-    if (interp) {
+  if (!hPtr) {
+    if (interp)
       Tcl_AppendResult(interp, "can't find element \"", name,
 		       "\" in \"", Tk_PathName(graphPtr->tkwin), "\"", 
 		       NULL);
-    }
     return TCL_ERROR;
   }
   *elemPtrPtr = (Element*)Tcl_GetHashValue(hPtr);

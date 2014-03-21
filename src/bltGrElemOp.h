@@ -60,11 +60,9 @@ extern "C" {
 				 * foreground and background colors. */
 #define SCALE_SYMBOL	(1<<10)
 
-#define NUMBEROFPOINTS(e)	MIN((e)->x.nValues, (e)->y.nValues)
+#define NUMBEROFPOINTS(e) MIN((e)->coords.x.nValues, (e)->coords.y.nValues)
 
-#define NORMALPEN(e)		((((e)->normalPenPtr == NULL) ?	\
-				  (e)->builtinPenPtr :		\
-				  (e)->normalPenPtr))
+#define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
 
 typedef struct {
   double min, max, range;
@@ -78,66 +76,50 @@ typedef struct {
   ((l).min = (lo), (l).max = (hi), SetRange(l))
 
 typedef struct {
-  Segment2d* segments;	/* Point to start of this pen's X-error bar
-			 * segments in the element's array. */
+  Segment2d* segments;
   int nSegments;
 } ErrorBarSegments;
 
 struct _Pen {
-  const char *name;			/* Pen style identifier.  If NULL pen
-					 * was statically allocated. */
-  ClassId classId;			/* Type element using this pen. */
-  const char *typeId;			/* String token identifying the type of
-					 * pen. */
-  unsigned int flags;			/* Indicates if the pen element is
-					 * active or normal. */
-  int refCount;			/* Reference count for elements using
-				 * this pen. */
+  const char *name;
+  ClassId classId;
+  const char *typeId;
+  unsigned int flags;
+  int refCount;
   Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
-  Graph *graphPtr;			/* Graph that the pen is associated*/
+  Graph *graphPtr;
 };
 
-/* 
- * An element has one or more vectors plus several attributes, such as line
- * style, thickness, color, and symbol type.  It has an identifier which
- * distinguishes it among the list of all elements.
- */
 typedef struct {
-  Weight weight;		/* Weight range where this pen is valid. */
-  Pen* penPtr;		/* Pen to use. */
+  Weight weight;
+  Pen* penPtr;
 } PenStyle;
 
 typedef struct {
-  XColor* color;		/* Color of error bar */
-  int lineWidth;		/* Width of the error bar segments. */
+  XColor* color;
+  int lineWidth;
   GC gc;
-  int show;			/* Flags for errorbars: none, x, y, or both */
+  int show;
 } ErrorBarAttributes;
 
 typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
 				Element* elemPtr);
-
 typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
 					Element* elemPtr);
-
 typedef void (ElementDestroyProc) (Graph *graphPtr, Element* elemPtr);
-
 typedef int (ElementConfigProc) (Graph *graphPtr, Element* elemPtr);
-
 typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
-
 typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
-
 typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr);
-
 typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
-				      Element* elemPtr, int x, int y, int symbolSize);
-
-typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, 
-					      Blt_Ps ps, Element* elemPtr, double x, double y, int symSize);
+				      Element* elemPtr, int x, int y, 
+				      int symbolSize);
+typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
+					      Element* elemPtr, double x, 
+					      double y, int symSize);
 
 typedef struct {
   ElementClosestProc *closestProc;
@@ -157,17 +139,9 @@ typedef struct {
   Blt_VectorId vector;
 } VectorDataSource;
 
-/* 
- * The data structure below contains information pertaining to a line vector.
- * It consists of an array of floating point data values and for convenience,
- * the number and minimum/maximum values.
- */
 typedef struct {
-  int type;			/* Selects the type of data populating this
-				 * vector: ELEM_SOURCE_VECTOR,
-				 * ELEM_SOURCE_TABLE, or ELEM_SOURCE_VALUES
-				 */
-  Element* elemPtr;		/* Element associated with vector. */
+  int type;
+  Element* elemPtr;
   VectorDataSource vectorSource;
   double *values;
   int nValues;
@@ -175,48 +149,38 @@ typedef struct {
   double min, max;
 } ElemValues;
 
+typedef struct {
+  ElemValues x;
+  ElemValues y;
+} ElemCoords;
+
 struct _Element {
-  GraphObj obj;			/* Must be first field in element. */
+  GraphObj obj;
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
 
-  /* Fields specific to elements. */
-  const char *label;			/* Label displayed in legend */
-  unsigned short row, col;		/* Position of the entry in the
-					 * legend. */
-  int legendRelief;			/* Relief of label in legend. */
-  Axis2d axes;			/* X-axis and Y-axis mapping the
-				 * element */
-  ElemValues x, y, w;			/* Contains array of floating point
-					 * graph coordinate values. Also holds
-					 * min/max and the number of
-					 * coordinates */
-  int *activeIndices;			/* Array of indices (malloc-ed) which
-					 * indicate which data points are
-					 * active (drawn with "active"
-					 * colors). */
-  int nActiveIndices;			/* Number of active data points.
-					 * Special case: if nActiveIndices < 0
-					 * and the active bit is set in
-					 * "flags", then all data points are
-					 * drawn active. */
+  // Fields specific to elements
+  const char *label;
+  unsigned short row;
+  unsigned short col;
+  int legendRelief;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues w;
+  int *activeIndices;
+  int nActiveIndices;
   ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications. */
-  Pen *activePenPtr;			/* Standard Pens */
+  Tk_OptionTable optionTable;
+  Pen *activePenPtr;
   Pen *normalPenPtr;
   Pen *builtinPenPtr;
-  Blt_Chain stylePalette;		/* Palette of pens. */
-
-  /* Symbol scaling */
-  int scaleSymbols;			/* If non-zero, the symbols will scale
-					 * in size as the graph is zoomed
-					 * in/out.  */
-  double xRange, yRange;		/* Initial X-axis and Y-axis ranges:
-					 * used to scale the size of element's
-					 * symbol. */
+  Blt_Chain stylePalette;
+  int scaleSymbols;
+  double xRange;
+  double yRange;
   int state;
-  Blt_ChainLink link;			/* Element's link in display list. */
+  Blt_ChainLink link;
 };
 
 extern const char* fillObjOption[];
@@ -235,4 +199,4 @@ extern void Blt_FreeDataValues(ElemValues *evPtr);
 extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
 			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 
-#endif /* _BLT_GR_ELEM_H */
+#endif

@@ -51,140 +51,100 @@ typedef struct {
 } BarRegion;
 
 typedef struct {
-  const char *name;			/* Pen style identifier.  If NULL, pen
-					 * was statically allocated. */
-  ClassId classId;			/* Type of pen */
-  const char *typeId;			/* String token identifying the type of
-					 * pen */
-  unsigned int flags;			/* Indicates if the pen element is
-					 * active or normal */
-  int refCount;			/* Reference count for elements using
-				 * this pen. */
+  const char *name;
+  ClassId classId;
+  const char *typeId;
+  unsigned int flags;
+  int refCount;
   Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
-  Graph* graphPtr;			/* Graph that the pen is associated
-					 * with. */
-  /* Barchart specific pen fields start here. */
-  XColor* outlineColor;		/* Outline (foreground) color of bar */
-  Tk_3DBorder fill;		/* 3D border and fill (background)
-				 * color */
-  int borderWidth;			/* 3D border width of bar */
-  int relief;				/* Relief of the bar */
-  Pixmap stipple;			/* Stipple */
-  GC fillGC;				/* Graphics context */
-  GC outlineGC;			/* GC for outline of bar. */
+  Graph* graphPtr;
 
-  /* Error bar attributes. */
-  int errorBarShow;			/* Describes which error bars to
-					 * display: none, x, y, or * both. */
+  // Barchart specific pen fields start here
+  XColor* outlineColor;
+  Tk_3DBorder fill;
+  int borderWidth;
+  int relief;
+  Pixmap stipple;
+  GC fillGC;
+  GC outlineGC;
 
-  int errorBarLineWidth;		/* Width of the error bar segments. */
-
+  // Error bar attributes
+  int errorBarShow;
+  int errorBarLineWidth;
   int errorBarCapWidth;
-  XColor* errorBarColor;		/* Color of the error bar. */
+  XColor* errorBarColor;
+  GC errorBarGC;
 
-  GC errorBarGC;			/* Error bar graphics context. */
-
-  /* Show value attributes. */
-  int valueShow;			/* Indicates whether to display data
-					 * value.  Values are x, y, or none. */
-
-  const char *valueFormat;		/* A printf format string. */
-  TextStyle valueStyle;		/* Text attributes (color, font,
-				 * rotation, etc.) of the value. */
-    
+  // Show value attributes
+  int valueShow;
+  const char *valueFormat;
+  TextStyle valueStyle;
 } BarPen;
 
 typedef struct {
-  Weight weight;			/* Weight range where this pen is
-					 * valid. */
-  BarPen* penPtr;			/* Pen to use. */
-
-  XRectangle *bars;			/* Indicates starting location in bar
-					 * array for this pen. */
-  int nBars;				/* # of bar segments for this pen. */
-
-  GraphSegments xeb, yeb;		/* X and Y error bars. */
-
-  int symbolSize;			/* Size of the pen's symbol scaled to
-					 * the current graph size. */
-  int errorBarCapWidth;		/* Length of the cap ends on each error
-				 * bar. */
-
+  Weight weight;
+  BarPen* penPtr;
+  XRectangle *bars;
+  int nBars;
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int symbolSize;
+  int errorBarCapWidth;
 } BarStyle;
 
 typedef struct {
-  GraphObj obj;			/* Must be first field in element. */
+  GraphObj obj;
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
 
-  /* Fields specific to elements. */
-  const char *label;			/* Label displayed in legend */
-  unsigned short row, col;		/* Position of the entry in the
-					 * legend. */
-  int legendRelief;			/* Relief of label in legend. */
-  Axis2d axes;			/* X-axis and Y-axis mapping the
-				 * element */
-  ElemValues x, y, w;			/* Contains array of floating point
-					 * graph coordinate values. Also holds
-					 * min/max and the number of
-					 * coordinates */
-  int *activeIndices;			/* Array of indices (malloc-ed) which
-					 * indicate which data points are active
-					 * (drawn * with "active" colors). */
-  int nActiveIndices;			/* Number of active data points.
-					 * Special case: if nActiveIndices < 0
-					 * and the active bit is set in "flags",
-					 * then all data * points are drawn
-					 * active. */
+  // Fields specific to elements
+  const char *label;
+  unsigned short row;
+  unsigned short col;
+  int legendRelief;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues w;
+  int *activeIndices;
+  int nActiveIndices;
   ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications. */
-  BarPen *activePenPtr;		/* Standard Pens */
+  Tk_OptionTable optionTable;
+  BarPen *activePenPtr;
   BarPen *normalPenPtr;
   BarPen *builtinPenPtr;
-  Blt_Chain stylePalette;		/* Palette of pens. */
+  Blt_Chain stylePalette;
 
-  /* Symbol scaling */
-  int scaleSymbols;			/* If non-zero, the symbols will scale
-					 * in size as the graph is zoomed
-					 * in/out.  */
-  double xRange, yRange;		/* Initial X-axis and Y-axis ranges:
-					 * used to scale the size of element's
-					 * symbol. */
+  // Symbol scaling
+  int scaleSymbols;
+  double xRange;
+  double yRange;
   int state;
   Blt_ChainLink link;
 
-  /* Fields specific to the barchart element */
-
+  // Fields specific to the barchart element
   double barWidth;
   const char *groupName;
-
   int *barToData;
-  XRectangle *bars;		       /* Array of rectangles comprising the bar
-					* segments of the element. */
+  XRectangle *bars;
   int *activeToData;
   XRectangle *activeRects;
-
-  int nBars;				/* # of visible bar segments for
-					 * element */
+  int nBars;
   int nActive;
-
-  int xPad;				/* Spacing on either side of bar */
-
-  ElemValues xError;			/* Relative/symmetric X error values. */
-  ElemValues yError;			/* Relative/symmetric Y error values. */
-  ElemValues xHigh, xLow;		/* Absolute/asymmetric X-coordinate
-					 * high/low error values. */
-  ElemValues yHigh, yLow;		/* Absolute/asymmetric Y-coordinate
-					 * high/low error values. */
+  int xPad;
+  ElemValues xError;
+  ElemValues yError;
+  ElemValues xHigh;
+  ElemValues xLow;
+  ElemValues yHigh;
+  ElemValues yLow;
   BarPen builtinPen;
-
-  GraphSegments xeb, yeb;
-
-  int errorBarCapWidth;		/* Length of cap on error bars */
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int errorBarCapWidth;
 } BarElement;
 
 // Defs
@@ -311,20 +271,18 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(BarElement, w), 0, &valuesObjOption, 0},
-  {TK_OPTION_CUSTOM, "-x", "x", "X", 
-   NULL, -1, Tk_Offset(BarElement, x), 0, &valuesObjOption, MAP_ITEM},
+  {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
-   NULL, -1, Tk_Offset(BarElement, x), 0, &valuesObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(BarElement, coords.x), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
    NULL, -1, Tk_Offset(BarElement, xError), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
    NULL, -1, Tk_Offset(BarElement, xHigh), 0, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
    NULL, -1, Tk_Offset(BarElement, xLow), 0, &valuesObjOption, 0},
-  {TK_OPTION_CUSTOM, "-y", "y", "Y",
-   NULL, -1, Tk_Offset(BarElement, y), 0, &valuesObjOption, MAP_ITEM},
+  {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
-   NULL, -1, Tk_Offset(BarElement, y), 0, &valuesObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(BarElement, coords.y), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
    NULL, -1, Tk_Offset(BarElement, yError), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
@@ -594,11 +552,11 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     barWidth = elemPtr->barWidth;
 
   middle = 0.5;
-  regPtr->left = elemPtr->x.min - middle;
-  regPtr->right = elemPtr->x.max + middle;
+  regPtr->left = elemPtr->coords.x.min - middle;
+  regPtr->right = elemPtr->coords.x.max + middle;
 
-  regPtr->top = elemPtr->y.min;
-  regPtr->bottom = elemPtr->y.max;
+  regPtr->top = elemPtr->coords.y.min;
+  regPtr->bottom = elemPtr->coords.y.max;
   if (regPtr->bottom < graphPtr->baseline) {
     regPtr->bottom = graphPtr->baseline;
   }
@@ -613,7 +571,7 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
   /* Warning: You get what you deserve if the x-axis is logScale */
   if (elemPtr->axes.x->logScale) {
-    regPtr->left = Blt_FindElemValuesMinimum(&elemPtr->x, DBL_MIN) + 
+    regPtr->left = Blt_FindElemValuesMinimum(&elemPtr->coords.x, DBL_MIN) + 
       middle;
   }
   /* Fix y-min limits for barchart */
@@ -635,11 +593,11 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     for (i = 0; i < nPoints; i++) {
       double x;
 
-      x = elemPtr->x.values[i] + elemPtr->xError.values[i];
+      x = elemPtr->coords.x.values[i] + elemPtr->xError.values[i];
       if (x > regPtr->right) {
 	regPtr->right = x;
       }
-      x = elemPtr->x.values[i] - elemPtr->xError.values[i];
+      x = elemPtr->coords.x.values[i] - elemPtr->xError.values[i];
       if (elemPtr->axes.x->logScale) {
 	if (x < 0.0) {
 	  x = -x;		/* Mirror negative values, instead of
@@ -678,11 +636,11 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     for (i = 0; i < nPoints; i++) {
       double y;
 
-      y = elemPtr->y.values[i] + elemPtr->yError.values[i];
+      y = elemPtr->coords.y.values[i] + elemPtr->yError.values[i];
       if (y > regPtr->bottom) {
 	regPtr->bottom = y;
       }
-      y = elemPtr->y.values[i] - elemPtr->yError.values[i];
+      y = elemPtr->coords.y.values[i] - elemPtr->yError.values[i];
       if (elemPtr->axes.y->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of
@@ -773,8 +731,8 @@ static void ClosestBarProc(Graph* graphPtr, Element *basePtr)
     searchPtr->elemPtr = (Element *)elemPtr;
     searchPtr->dist = minDist;
     searchPtr->index = imin;
-    searchPtr->point.x = (double)elemPtr->x.values[imin];
-    searchPtr->point.y = (double)elemPtr->y.values[imin];
+    searchPtr->point.x = (double)elemPtr->coords.x.values[imin];
+    searchPtr->point.y = (double)elemPtr->coords.y.values[imin];
   }
 }
 
@@ -997,8 +955,8 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
       double high, low;
       BarStyle *stylePtr;
 
-      x = elemPtr->x.values[i];
-      y = elemPtr->y.values[i];
+      x = elemPtr->coords.x.values[i];
+      y = elemPtr->coords.y.values[i];
       stylePtr = dataToStyle[i];
       if ((isfinite(x)) && (isfinite(y))) {
 	if (elemPtr->xError.nValues > 0) {
@@ -1061,8 +1019,8 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
       double high, low;
       BarStyle *stylePtr;
 
-      x = elemPtr->x.values[i];
-      y = elemPtr->y.values[i];
+      x = elemPtr->coords.x.values[i];
+      y = elemPtr->coords.y.values[i];
       stylePtr = dataToStyle[i];
       if ((isfinite(x)) && (isfinite(y))) {
 	if (elemPtr->yError.nValues > 0) {
@@ -1139,7 +1097,7 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
   bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
   barToData = (int*)calloc(nPoints, sizeof(int));
 
-  x = elemPtr->x.values, y = elemPtr->y.values;
+  x = elemPtr->coords.x.values, y = elemPtr->coords.y.values;
   count = 0;
   for (rp = bars, i = 0; i < nPoints; i++) {
     Point2d c1, c2;			/* Two opposite corners of the rectangle
@@ -1477,8 +1435,8 @@ static void DrawBarValues(Graph* graphPtr, Drawable drawable,
     double x, y;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
-    x = elemPtr->x.values[barToData[count]];
-    y = elemPtr->y.values[barToData[count]];
+    x = elemPtr->coords.x.values[barToData[count]];
+    y = elemPtr->coords.y.values[barToData[count]];
 
     count++;
     if (penPtr->valueShow == SHOW_X) {
@@ -1665,8 +1623,8 @@ static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps,
     fmt = "%g";
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    x = elemPtr->x.values[barToData[count]];
-    y = elemPtr->y.values[barToData[count]];
+    x = elemPtr->coords.x.values[barToData[count]];
+    y = elemPtr->coords.y.values[barToData[count]];
     count++;
     if (penPtr->valueShow == SHOW_X) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
@@ -1805,7 +1763,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     }
     nSegs++;
     nPoints = NUMBEROFPOINTS(elemPtr);
-    for (x = elemPtr->x.values, xend = x + nPoints; x < xend; x++) {
+    for (x = elemPtr->coords.x.values, xend = x + nPoints; x < xend; x++) {
       Tcl_HashEntry *hPtr;
       BarSetKey key;
       int isNew;
@@ -1917,7 +1875,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
     if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
       continue;
     }
-    for (x = elemPtr->x.values, y = elemPtr->y.values, 
+    for (x = elemPtr->coords.x.values, y = elemPtr->coords.y.values, 
 	   xend = x + NUMBEROFPOINTS(elemPtr); x < xend; x++, y++) {
       BarSetKey key;
       Tcl_HashEntry *hPtr;

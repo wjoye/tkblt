@@ -66,14 +66,13 @@ typedef enum {
 } Smoothing;
 
 typedef struct {
-  Point2d *screenPts;			/* Array of transformed coordinates */
-  int nScreenPts;			/* Number of coordinates */
-  int *styleMap;			/* Index of pen styles  */
-  int *map;				/* Maps segments/traces to data
-					 * points */
+  Point2d *screenPts;
+  int nScreenPts;
+  int *styleMap;
+  int *map;
 } MapInfo;
 
-/* Symbol types for line elements */
+// Symbol types for line elements
 typedef enum {
   SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
   SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
@@ -81,214 +80,139 @@ typedef enum {
 } SymbolType;
 
 typedef struct {
-  SymbolType type;			/* Type of symbol to be drawn/printed */
+  SymbolType type;
+  int size;
+  XColor* outlineColor;
+  int outlineWidth;
+  GC outlineGC;
+  XColor* fillColor;
+  GC fillGC;
 
-  int size;				/* Requested size of symbol in pixels */
-
-  XColor* outlineColor;		/* Outline color */
-
-  int outlineWidth;			/* Width of the outline */
-
-  GC outlineGC;			/* Outline graphics context */
-
-  XColor* fillColor;			/* Normal fill color */
-
-  GC fillGC;				/* Fill graphics context */
-
-  Tk_Image image;			/* This is used of image symbols.  */
-
-  /* The last two fields are used only for bitmap symbols. */
-
-  Pixmap bitmap;			/* Bitmap to determine
-					 * foreground/background pixels of the
-					 * symbol */
-  Pixmap mask;			/* Bitmap representing the transparent
-				 * pixels of the symbol */
+  // The last two fields are used only for bitmap symbols
+  Pixmap bitmap;
+  Pixmap mask;
 } Symbol;
 
 typedef struct {
-  int start;				/* Index into the X-Y coordinate arrays
-					 * indicating where trace starts. */
-  GraphPoints screenPts;		/* Array of screen coordinates
-					 * (malloc-ed) representing the
-					 * trace. */
+  int start;
+  GraphPoints screenPts;
 } bltTrace;
 
 typedef struct {
-  const char* name;			/* Pen style identifier.  If NULL pen
-					 * was statically allocated. */
-  ClassId classId;			/* Type of pen */
-  const char* typeId;			/* String token identifying the type of
-					 * pen */
-  unsigned int flags;			/* Indicates if the pen element is
-					 * active or normal */
-  int refCount;			/* Reference count for elements using
-				 * this pen. */
+  const char* name;
+  ClassId classId;
+  const char* typeId;
+  unsigned int flags;
+  int refCount;
   Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications */
+  Tk_OptionTable optionTable;
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
-  Graph* graphPtr;			/* Graph that the pen is associated
-					 * with. */
+  Graph* graphPtr;
 
-  /* Symbol attributes. */
-  Symbol symbol;			/* Element symbol type */
+  // Symbol attributes
+  Symbol symbol;
 
-  /* Trace attributes. */
-  int traceWidth;			/* Width of the line segments. If
-					 * lineWidth is 0, no line will be
-					 * drawn, only symbols. */
-
-  Blt_Dashes traceDashes;		/* Dash on-off list value */
-
-  XColor* traceColor;			/* Line segment color */
-
-  XColor* traceOffColor;		/* Line segment dash gap color */
-
-  GC traceGC;				/* Line segment graphics context */
+  // Trace attributes.
+  int traceWidth;
+  Blt_Dashes traceDashes;
+  XColor* traceColor;
+  XColor* traceOffColor;
+  GC traceGC;
     
-  /* Error bar attributes. */
-  int errorBarShow;		       /* Describes which error bars to display:
-					* none, x, y, or * both. */
+  // Error bar attributes
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+  GC errorBarGC;
 
-  int errorBarLineWidth;		/* Width of the error bar segments. */
-
-  int errorBarCapWidth;		/* Width of the cap on error bars. */
-
-  XColor* errorBarColor;		/* Color of the error bar. */
-
-  GC errorBarGC;			/* Error bar graphics context. */
-
-  /* Show value attributes. */
-  int valueShow;			/* Indicates whether to display data
-					 * value.  Values are x, y, both, or
-					 * none. */
-  const char* valueFormat;		/* A printf format string. */
-
-  TextStyle valueStyle;		/* Text attributes (color, font,
-				 * rotation, etc.) of the value. */
+  // Show value attributes
+  int valueShow;
+  const char* valueFormat;
+  TextStyle valueStyle;
 } LinePen;
 
 typedef struct {
-  Weight weight;			/* Weight range where this pen is
-					 * valid. */
-  LinePen* penPtr;			/* Pen to use. */
+  Weight weight;
+  LinePen* penPtr;
   GraphPoints symbolPts;
-
-  GraphSegments lines;		/* Points to start of the line segments
-				 * for this pen. */
-  GraphSegments xeb, yeb;		/* X and Y axis error bars. */
-
-  int symbolSize;			/* Size of the pen's symbol scaled to
-					 * the current graph size. */
-  int errorBarCapWidth;		/* Length of the cap ends on each error
-				 * bar. */
+  GraphSegments lines;
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int symbolSize;
+  int errorBarCapWidth;
 } LineStyle;
 
 typedef struct {
-  GraphObj obj;			/* Must be first field in element. */
+  GraphObj obj;
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
 
-  /* Fields specific to elements. */
-  const char* label;			/* Label displayed in legend */
-  unsigned short row, col;		/* Position of the entry in the
-					 * legend. */
-  int legendRelief;			/* Relief of label in legend. */
-  Axis2d axes;			/* X-axis and Y-axis mapping the
-				 * element */
-  ElemValues x, y, w;			/* Contains array of floating point
-					 * graph coordinate values. Also holds
-					 * min/max * and the number of
-					 * coordinates */
-  int *activeIndices;			/* Array of indices (malloc-ed) which
-					 * indicate which data points are active
-					 * (drawn * with "active" colors). */
-  int nActiveIndices;			/* Number of active data points.
-					 * Special case: if nActiveIndices < 0
-					 * and the * active bit is set in
-					 * "flags", then all data points are
-					 * drawn active. */
+  // Fields specific to elements
+  const char* label;
+  unsigned short row;
+  unsigned short col;
+  int legendRelief;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues w;
+  int *activeIndices;
+  int nActiveIndices;
   ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;	/* Configuration specifications. */
-  LinePen *activePenPtr;		/* Standard Pens */
+  Tk_OptionTable optionTable;
+  LinePen *activePenPtr;
   LinePen *normalPenPtr;
   LinePen *builtinPenPtr;
-  Blt_Chain stylePalette;			/* Palette of pens. */
-
-  /* Symbol scaling */
-  int scaleSymbols;			/* If non-zero, the symbols will scale
-					 * in size as the graph is zoomed
-					 * in/out.  */
-
-  double xRange, yRange;		/* Initial X-axis and Y-axis ranges:
-					 * used to scale the size of element's
-					 * symbol. */
+  Blt_Chain stylePalette;
+  int scaleSymbols;
+  double xRange;
+  double yRange;
   int state;
-  Blt_ChainLink link;			/* Element's link in display list. */
+  Blt_ChainLink link;
 
-  /* The line element specific fields start here. */
-
-  ElemValues xError;			/* Relative/symmetric X error values. */
-  ElemValues yError;			/* Relative/symmetric Y error values. */
-  ElemValues xHigh, xLow;		/* Absolute/asymmetric X-coordinate
-					 * high/low error values. */
-  ElemValues yHigh, yLow;		/* Absolute/asymmetric Y-coordinate
-					 * high/low error values. */
+  // The line element specific fields start here
+  ElemValues xError;
+  ElemValues yError;
+  ElemValues xHigh;
+  ElemValues xLow;
+  ElemValues yHigh;
+  ElemValues yLow;
   LinePen builtinPen;
-  int errorBarCapWidth;		/* Length of cap on error bars */
+  int errorBarCapWidth;
 
-  /* Line smoothing */
-  Smoothing reqSmooth;		/* Requested smoothing function to use
-				 * for connecting the data points */
-  Smoothing smooth;			/* Smoothing function used. */
-  double rTolerance;			/* Tolerance to reduce the number of
-					 * points displayed. */
+  // Line smoothing
+  Smoothing reqSmooth;
+  Smoothing smooth;
+  double rTolerance;
 
-  /* Drawing-related data structures. */
-
-  /* Area-under-curve fill attributes. */
+  // Area-under-curve fill attributes
   XColor* fillFgColor;
   XColor* fillBgColor;
   GC fillGC;
-
-  Tk_3DBorder fillBg;		/* Background for fill area. */
-
-  Point2d *fillPts;			/* Array of points used to draw polygon
-					 * to fill area under the curve */
+  Tk_3DBorder fillBg;
+  Point2d *fillPts;
   int nFillPts;
 
-  /* Symbol points */
+  // Symbol points
   GraphPoints symbolPts;
 
-  /* Active symbol points */
+  // Active symbol points
   GraphPoints activePts;
-  GraphSegments xeb, yeb;		/* Point to start of this pen's X-error
-					 * bar segments in the element's
-					 * array. */
+  GraphSegments xeb;
+  GraphSegments yeb;
+
   int reqMaxSymbols;
   int symbolInterval;
   int symbolCounter;
 
-  /* X-Y graph-specific fields */
+  // X-Y graph-specific fields
+  int penDir;
+  Blt_Chain traces;
 
-  int penDir;				/* Indicates if a change in the pen
-					 * direction should be considered a
-					 * retrace (line segment is not
-					 * drawn). */
-  Blt_Chain traces;			/* List of traces (a trace is a series
-					 * of contiguous line segments).  New
-					 * traces are generated when either
-					 * the next segment changes the pen
-					 * direction, or the end point is
-					 * clipped by the plotting area. */
-
-  /* Stripchart-specific fields */
-
-  GraphSegments lines;		/* Holds the the line segments of the
-				 * element trace. The segments are
-				 * grouped by pen style. */
+  // Stripchart-specific fields
+  GraphSegments lines;
 } LineElement;
 
 // Defs
@@ -572,20 +496,18 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(LineElement, builtinPen.valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(LineElement, w), 0, &valuesObjOption, 0},
-  {TK_OPTION_CUSTOM, "-x", "x", "X", 
-   NULL, -1, Tk_Offset(LineElement, x), 0, &valuesObjOption, MAP_ITEM},
+  {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
-   NULL, -1, Tk_Offset(LineElement, x), 0, &valuesObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(LineElement, coords.x), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
    NULL, -1, Tk_Offset(LineElement, xError), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
    NULL, -1, Tk_Offset(LineElement, xHigh), 0, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
    NULL, -1, Tk_Offset(LineElement, xLow), 0, &valuesObjOption, 0},
-  {TK_OPTION_CUSTOM, "-y", "y", "Y",
-   NULL, -1, Tk_Offset(LineElement, y), 0, &valuesObjOption, MAP_ITEM},
+  {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
-   NULL, -1, Tk_Offset(LineElement, y), 0, &valuesObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(LineElement, coords.y), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
    NULL, -1, Tk_Offset(LineElement, yError), 0, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
@@ -890,10 +812,6 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
 
 static void DestroySymbol(Display *display, Symbol *symbolPtr)
 {
-  if (symbolPtr->image) {
-    Tk_FreeImage(symbolPtr->image);
-    symbolPtr->image = NULL;
-  }
   if (symbolPtr->bitmap != None) {
     Tk_FreeBitmap(display, symbolPtr->bitmap);
     symbolPtr->bitmap = None;
@@ -969,8 +887,8 @@ static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr,
 {
 
   int np = NUMBEROFPOINTS(elemPtr);
-  double* x = elemPtr->x.values;
-  double* y = elemPtr->y.values;
+  double* x = elemPtr->coords.x.values;
+  double* y = elemPtr->coords.y.values;
   Point2d *points = (Point2d*)malloc(sizeof(Point2d) * np);
   int* map = (int*)malloc(sizeof(int) * np);
 
@@ -1305,8 +1223,8 @@ static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
     if (iPoint >= np) {
       continue;			/* Index not available */
     }
-    x = elemPtr->x.values[iPoint];
-    y = elemPtr->y.values[iPoint];
+    x = elemPtr->coords.x.values[iPoint];
+    y = elemPtr->coords.y.values[iPoint];
     points[count] = Blt_Map2D(graphPtr, x, y, &elemPtr->axes);
     map[count] = iPoint;
     if (PointInRegion(&exts, points[count].x, points[count].y)) {
@@ -1786,8 +1704,8 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
       double high, low;
       LineStyle *stylePtr;
 
-      x = elemPtr->x.values[i];
-      y = elemPtr->y.values[i];
+      x = elemPtr->coords.x.values[i];
+      y = elemPtr->coords.y.values[i];
       stylePtr = styleMap[i];
       if ((isfinite(x)) && (isfinite(y))) {
 	if (elemPtr->xError.nValues > 0) {
@@ -1850,8 +1768,8 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
       double high, low;
       LineStyle *stylePtr;
 
-      x = elemPtr->x.values[i];
-      y = elemPtr->y.values[i];
+      x = elemPtr->coords.x.values[i];
+      y = elemPtr->coords.y.values[i];
       stylePtr = styleMap[i];
       if ((isfinite(x)) && (isfinite(y))) {
 	if (elemPtr->yError.nValues > 0) {
@@ -2184,8 +2102,8 @@ static void ClosestPoint(LineElement* elemPtr, ClosestSearch *searchPtr)
     searchPtr->elemPtr = (Element *)elemPtr;
     searchPtr->dist = dMin;
     searchPtr->index = iClose;
-    searchPtr->point.x = elemPtr->x.values[iClose];
-    searchPtr->point.y = elemPtr->y.values[iClose];
+    searchPtr->point.x = elemPtr->coords.x.values[iClose];
+    searchPtr->point.y = elemPtr->coords.y.values[iClose];
   }
 }
 
@@ -2201,17 +2119,17 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
   if (np < 1) {
     return;
   } 
-  extsPtr->right = elemPtr->x.max;
-  if ((elemPtr->x.min <= 0.0) && (elemPtr->axes.x->logScale)) {
-    extsPtr->left = Blt_FindElemValuesMinimum(&elemPtr->x, DBL_MIN);
+  extsPtr->right = elemPtr->coords.x.max;
+  if ((elemPtr->coords.x.min <= 0.0) && (elemPtr->axes.x->logScale)) {
+    extsPtr->left = Blt_FindElemValuesMinimum(&elemPtr->coords.x, DBL_MIN);
   } else {
-    extsPtr->left = elemPtr->x.min;
+    extsPtr->left = elemPtr->coords.x.min;
   }
-  extsPtr->bottom = elemPtr->y.max;
-  if ((elemPtr->y.min <= 0.0) && (elemPtr->axes.y->logScale)) {
-    extsPtr->top = Blt_FindElemValuesMinimum(&elemPtr->y, DBL_MIN);
+  extsPtr->bottom = elemPtr->coords.y.max;
+  if ((elemPtr->coords.y.min <= 0.0) && (elemPtr->axes.y->logScale)) {
+    extsPtr->top = Blt_FindElemValuesMinimum(&elemPtr->coords.y, DBL_MIN);
   } else {
-    extsPtr->top = elemPtr->y.min;
+    extsPtr->top = elemPtr->coords.y.min;
   }
 
   /* Correct the data limits for error bars */
@@ -2223,11 +2141,11 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
     for (i = 0; i < np; i++) {
       double x;
 
-      x = elemPtr->x.values[i] + elemPtr->xError.values[i];
+      x = elemPtr->coords.x.values[i] + elemPtr->xError.values[i];
       if (x > extsPtr->right) {
 	extsPtr->right = x;
       }
-      x = elemPtr->x.values[i] - elemPtr->xError.values[i];
+      x = elemPtr->coords.x.values[i] - elemPtr->xError.values[i];
       if (elemPtr->axes.x->logScale) {
 	if (x < 0.0) {
 	  x = -x;		/* Mirror negative values, instead of
@@ -2267,11 +2185,11 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
     for (i = 0; i < np; i++) {
       double y;
 
-      y = elemPtr->y.values[i] + elemPtr->yError.values[i];
+      y = elemPtr->coords.y.values[i] + elemPtr->yError.values[i];
       if (y > extsPtr->bottom) {
 	extsPtr->bottom = y;
       }
-      y = elemPtr->y.values[i] - elemPtr->yError.values[i];
+      y = elemPtr->coords.y.values[i] - elemPtr->yError.values[i];
       if (elemPtr->axes.y->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of
@@ -3058,7 +2976,7 @@ static void DrawValues(Graph* graphPtr, Drawable drawable,
     fmt = "%g";
   }
   count = 0;
-  xval = elemPtr->x.values, yval = elemPtr->y.values;
+  xval = elemPtr->coords.x.values, yval = elemPtr->coords.y.values;
 
   // be sure to update style->gc, things might have changed
   penPtr->valueStyle.flags |= UPDATE_GC;
@@ -3419,8 +3337,8 @@ static void ValuesToPostScript(Blt_Ps ps, LineElement* elemPtr, LinePen* penPtr,
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
     double x, y;
 
-    x = elemPtr->x.values[pointToData[count]];
-    y = elemPtr->y.values[pointToData[count]];
+    x = elemPtr->coords.x.values[pointToData[count]];
+    y = elemPtr->coords.y.values[pointToData[count]];
     count++;
     if (penPtr->valueShow == SHOW_X) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
