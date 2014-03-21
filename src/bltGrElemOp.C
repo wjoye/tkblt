@@ -978,45 +978,42 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
 static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
 			      Blt_VectorNotify notify)
 {
-  ElemValues *valuesPtr = (ElemValues*)clientData;
+  ElemValues* valuesPtr = (ElemValues*)clientData;
 
   if (notify == BLT_VECTOR_NOTIFY_DESTROY)
     FreeDataValues(valuesPtr);
   else {
-    Blt_Vector *vector;
+    Blt_Vector* vector;
     Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
     if (FetchVectorValues(NULL, valuesPtr, vector) != TCL_OK)
       return;
   }
-  {
-    Element* elemPtr = valuesPtr->elemPtr;
-    Graph* graphPtr;
-	
-    graphPtr = elemPtr->obj.graphPtr;
-    graphPtr->flags |= RESET_AXES;
-    elemPtr->flags |= MAP_ITEM;
-    if (!IGNORE_ELEMENT(elemPtr)) {
-      graphPtr->flags |= CACHE_DIRTY;
-      Blt_EventuallyRedrawGraph(graphPtr);
-    }
+
+  Element* elemPtr = valuesPtr->elemPtr;
+  Graph* graphPtr = elemPtr->obj.graphPtr;
+  graphPtr->flags |= RESET_AXES;
+  elemPtr->flags |= MAP_ITEM;
+  if (!IGNORE_ELEMENT(elemPtr)) {
+    graphPtr->flags |= CACHE_DIRTY;
+    Blt_EventuallyRedrawGraph(graphPtr);
   }
 }
 
 static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr, 
 			 const char *vecName)
 {
-  Blt_Vector *vecPtr;
-  VectorDataSource *srcPtr;
-
-  srcPtr = &valuesPtr->vectorSource;
+  VectorDataSource *srcPtr = &valuesPtr->vectorSource;
   srcPtr->vector = Blt_AllocVectorId(interp, vecName);
-  if (Blt_GetVectorById(interp, srcPtr->vector, &vecPtr) != TCL_OK) {
+
+  Blt_Vector *vecPtr;
+  if (Blt_GetVectorById(interp, srcPtr->vector, &vecPtr) != TCL_OK)
     return TCL_ERROR;
-  }
+
   if (FetchVectorValues(interp, valuesPtr, vecPtr) != TCL_OK) {
     FreeVectorSource(valuesPtr);
     return TCL_ERROR;
   }
+
   Blt_SetVectorChangedProc(srcPtr->vector, VectorChangedProc, valuesPtr);
   valuesPtr->type = ELEM_SOURCE_VECTOR;
   return TCL_OK;

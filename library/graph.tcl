@@ -196,7 +196,9 @@ proc blt::FlashPoint { g name index count } {
 	after 200 blt::FlashPoint $g $name $index $count
 	update
     } else {
-	catch {eval $g marker delete [$g marker names "bltClosest_*"]}
+	foreach mm [$g marker names "bltClosest_*"] {
+	    catch {eval $g marker delete $mm}
+	}
     }
 }
 
@@ -234,10 +236,10 @@ proc blt::ZoomStack::ClickRelease { g } {
     
     Init $g
     bind zoom-$g <Enter> "focus %W"
-    bind zoom-$g <KeyPress-Escape> { blt::ZoomStack::Reset %W }
-    bind zoom-$g <ButtonPress-1> { blt::ZoomStack::DragStart %W %x %y }
-    bind zoom-$g <B1-Motion> { blt::ZoomStack::DragMotion %W %x %y }
-    bind zoom-$g <ButtonRelease-1> { blt::ZoomStack::DragFinish %W %x %y }
+    bind zoom-$g <KeyPress-Escape> {blt::ZoomStack::Reset %W}
+    bind zoom-$g <ButtonPress-1> {blt::ZoomStack::DragStart %W %x %y}
+    bind zoom-$g <B1-Motion> {blt::ZoomStack::DragMotion %W %x %y}
+    bind zoom-$g <ButtonRelease-1> {blt::ZoomStack::DragFinish %W %x %y}
     bind zoom-$g <ButtonPress-3> { 
 	if { [%W inside %x %y] } { 
 	    blt::ZoomStack::Reset %W 
@@ -311,7 +313,9 @@ proc blt::ZoomStack::Pop { g } {
 proc blt::ZoomStack::Push { g } {
     variable _private
 
-    catch {eval $g marker delete [$g marker names "zoom*"]}
+    foreach mm [$g marker names "zoom*"] {
+	catch {eval $g marker delete $mm}
+    }
     if { [info exists _private($g,afterId)] } {
 	after cancel $_private($g,afterId)
     }
@@ -366,9 +370,7 @@ proc blt::ZoomStack::Push { g } {
 	    return
 	}
     }
-#    blt::busy hold $g 
     update;				# This "update" redraws the graph
-#    blt::busy release $g
 }
 
 proc blt::ZoomStack::SetAxisRanges { g axis min max } {
@@ -391,7 +393,9 @@ proc blt::ZoomStack::Reset { g } {
     if { ![info exists _private($g,corner)] } {
 	Init $g 
     }
-    catch {eval $g marker delete [$g marker names "zoom*"]}
+    foreach mm [$g marker names "zoom*"] {
+	catch {eval $g marker delete $mm}
+    }
 
     if { $_private($g,corner) == "A" } {
 	# Reset the whole axis
@@ -496,7 +500,9 @@ proc blt::ZoomStack::DragFinish { g x y } {
     if { [DragMotion $g $x $y] } {
 	Push $g 
     } else {
-	catch {eval $g marker delete [$g marker names "zoom*"]}
+	foreach mm [$g marker names "zoom*"] {
+	    catch {eval $g marker delete [$g marker names "zoom*"]}
+	}
 	if { [info exists _private($g,afterId)] } {
 	    after cancel $_private($g,afterId)
 	}
