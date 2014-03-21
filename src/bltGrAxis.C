@@ -147,8 +147,7 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
   return Tcl_NewStringObj(name, -1);
 };
 
-static void AxisFreeProc(ClientData clientData, Tk_Window tkwin,
-			 char *ptr)
+static void AxisFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   Axis* axisPtr = *(Axis**)ptr;
   if (axisPtr)

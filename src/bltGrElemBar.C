@@ -108,7 +108,7 @@ typedef struct {
   int legendRelief;
   Axis2d axes;
   ElemCoords coords;
-  ElemValues w;
+  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;
@@ -135,12 +135,12 @@ typedef struct {
   int nBars;
   int nActive;
   int xPad;
-  ElemValues xError;
-  ElemValues yError;
-  ElemValues xHigh;
-  ElemValues xLow;
-  ElemValues yHigh;
-  ElemValues yLow;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
   BarPen builtinPen;
   GraphSegments xeb;
   GraphSegments yeb;
@@ -214,7 +214,8 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
-   NULL, -1, 0, TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(BarElement, coords),
+   TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(BarElement, builtinPen.errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -552,133 +553,125 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   regPtr->top = regPtr->left = DBL_MAX;
   regPtr->bottom = regPtr->right = -DBL_MAX;
 
+  if (!elemPtr->coords.x || !elemPtr->coords.y ||
+      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
+    return;
   nPoints = NUMBEROFPOINTS(elemPtr);
-  if (nPoints < 1) {
-    return;				/* No data points */
-  }
+
   barWidth = graphPtr->barWidth;
   if (elemPtr->barWidth > 0.0f)
     barWidth = elemPtr->barWidth;
 
   middle = 0.5;
-  regPtr->left = elemPtr->coords.x.min - middle;
-  regPtr->right = elemPtr->coords.x.max + middle;
+  regPtr->left = elemPtr->coords.x->min - middle;
+  regPtr->right = elemPtr->coords.x->max + middle;
 
-  regPtr->top = elemPtr->coords.y.min;
-  regPtr->bottom = elemPtr->coords.y.max;
+  regPtr->top = elemPtr->coords.y->min;
+  regPtr->bottom = elemPtr->coords.y->max;
   if (regPtr->bottom < graphPtr->baseline) {
     regPtr->bottom = graphPtr->baseline;
   }
-  /*
-   * Handle stacked bar elements specially.
-   *
-   * If element is stacked, the sum of its ordinates may be outside the
-   * minimum/maximum limits of the element's data points.
-   */
-  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0)) {
+
+  // Handle stacked bar elements specially.
+  // If element is stacked, the sum of its ordinates may be outside the
+  // minimum/maximum limits of the element's data points.
+  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
     CheckBarStacks(graphPtr, &elemPtr->axes, &regPtr->top, &regPtr->bottom);
-  }
-  /* Warning: You get what you deserve if the x-axis is logScale */
+
+  // Warning: You get what you deserve if the x-axis is logScale
   if (elemPtr->axes.x->logScale) {
-    regPtr->left = Blt_FindElemValuesMinimum(&elemPtr->coords.x, DBL_MIN) + 
+    regPtr->left = Blt_FindElemValuesMinimum(elemPtr->coords.x, DBL_MIN) + 
       middle;
   }
-  /* Fix y-min limits for barchart */
+
+  // Fix y-min limits for barchart
   if (elemPtr->axes.y->logScale) {
-    if ((regPtr->top <= 0.0) || (regPtr->top > 1.0)) {
+    if ((regPtr->top <= 0.0) || (regPtr->top > 1.0))
       regPtr->top = 1.0;
-    }
-  } else {
-    if (regPtr->top > 0.0) {
+  }
+  else {
+    if (regPtr->top > 0.0)
       regPtr->top = 0.0;
-    }
   }
-  /* Correct the extents for error bars if they exist. */
-  if (elemPtr->xError.nValues > 0) {
-    int i;
-	
-    /* Correct the data limits for error bars */
-    nPoints = MIN(elemPtr->xError.nValues, nPoints);
-    for (i = 0; i < nPoints; i++) {
-      double x;
 
-      x = elemPtr->coords.x.values[i] + elemPtr->xError.values[i];
-      if (x > regPtr->right) {
+  // Correct the extents for error bars if they exist
+  if (elemPtr->xError && (elemPtr->xError->nValues > 0)) {
+    nPoints = MIN(elemPtr->xError->nValues, nPoints);
+    for (int ii=0; ii<nPoints; ii++) {
+      double x = elemPtr->coords.x->values[ii] + elemPtr->xError->values[ii];
+      if (x > regPtr->right)
 	regPtr->right = x;
-      }
-      x = elemPtr->coords.x.values[i] - elemPtr->xError.values[i];
+
+      x = elemPtr->coords.x->values[ii] - elemPtr->xError->values[ii];
       if (elemPtr->axes.x->logScale) {
-	if (x < 0.0) {
-	  x = -x;		/* Mirror negative values, instead of
-				 * ignoring them. */
-	}
-	if ((x > DBL_MIN) && (x < regPtr->left)) {
+	// Mirror negative values, instead of ignoring them
+	if (x < 0.0)
+	  x = -x;
+
+	if ((x > DBL_MIN) && (x < regPtr->left))
 	  regPtr->left = x;
-	}
-      } else if (x < regPtr->left) {
+
+      } 
+      else if (x < regPtr->left)
 	regPtr->left = x;
-      }
     }		     
-  } else {
-    if ((elemPtr->xHigh.nValues > 0) && 
-	(elemPtr->xHigh.max > regPtr->right)) {
-      regPtr->right = elemPtr->xHigh.max;
-    }
-    if (elemPtr->xLow.nValues > 0) {
+  }
+  else {
+    if ((elemPtr->xHigh) &&
+	(elemPtr->xHigh->nValues > 0) && 
+	(elemPtr->xHigh->max > regPtr->right))
+      regPtr->right = elemPtr->xHigh->max;
+
+    if (elemPtr->xLow && (elemPtr->xLow->nValues > 0)) {
       double left;
-	    
-      if ((elemPtr->xLow.min <= 0.0) && 
-	  (elemPtr->axes.x->logScale)) {
-	left = Blt_FindElemValuesMinimum(&elemPtr->xLow, DBL_MIN);
-      } else {
-	left = elemPtr->xLow.min;
-      }
-      if (left < regPtr->left) {
+      if ((elemPtr->xLow->min <= 0.0) && (elemPtr->axes.x->logScale))
+	left = Blt_FindElemValuesMinimum(elemPtr->xLow, DBL_MIN);
+      else
+	left = elemPtr->xLow->min;
+
+      if (left < regPtr->left)
 	regPtr->left = left;
-      }
     }
   }
-  if (elemPtr->yError.nValues > 0) {
-    int i;
-	
-    nPoints = MIN(elemPtr->yError.nValues, nPoints);
-    for (i = 0; i < nPoints; i++) {
-      double y;
 
-      y = elemPtr->coords.y.values[i] + elemPtr->yError.values[i];
-      if (y > regPtr->bottom) {
+  if (elemPtr->yError && (elemPtr->yError->nValues > 0)) {
+    nPoints = MIN(elemPtr->yError->nValues, nPoints);
+
+    for (int ii=0; ii<nPoints; ii++) {
+      double y = elemPtr->coords.y->values[ii] + elemPtr->yError->values[ii];
+      if (y > regPtr->bottom)
 	regPtr->bottom = y;
-      }
-      y = elemPtr->coords.y.values[i] - elemPtr->yError.values[i];
+
+      y = elemPtr->coords.y->values[ii] - elemPtr->yError->values[ii];
       if (elemPtr->axes.y->logScale) {
-	if (y < 0.0) {
-	  y = -y;		/* Mirror negative values, instead of
-				 * ignoring them. */
-	}
-	if ((y > DBL_MIN) && (y < regPtr->left)) {
+	// Mirror negative values, instead of ignoring them
+	if (y < 0.0) 
+	  y = -y;
+
+	if ((y > DBL_MIN) && (y < regPtr->left))
 	  regPtr->top = y;
-	}
-      } else if (y < regPtr->top) {
+
+      }
+      else if (y < regPtr->top)
 	regPtr->top = y;
-      }
     }		     
-  } else {
-    if ((elemPtr->yHigh.nValues > 0) && 
-	(elemPtr->yHigh.max > regPtr->bottom)) {
-      regPtr->bottom = elemPtr->yHigh.max;
-    }
-    if (elemPtr->yLow.nValues > 0) {
+  }
+  else {
+    if ((elemPtr->yHigh) &&
+	(elemPtr->yHigh->nValues > 0) && 
+	(elemPtr->yHigh->max > regPtr->bottom))
+      regPtr->bottom = elemPtr->yHigh->max;
+
+    if (elemPtr->yLow && elemPtr->yLow->nValues > 0) {
       double top;
-	    
-      if ((elemPtr->yLow.min <= 0.0) && 
-	  (elemPtr->axes.y->logScale)) {
-	top = Blt_FindElemValuesMinimum(&elemPtr->yLow, DBL_MIN);
-      } else {
-	top = elemPtr->yLow.min;
-      }
-      if (top < regPtr->top) {
+      if ((elemPtr->yLow->min <= 0.0) && 
+	  (elemPtr->axes.y->logScale))
+	top = Blt_FindElemValuesMinimum(elemPtr->yLow, DBL_MIN);
+      else
+	top = elemPtr->yLow->min;
+
+      if (top < regPtr->top)
 	regPtr->top = top;
-      }
     }
   }
 }
@@ -740,8 +733,10 @@ static void ClosestBarProc(Graph* graphPtr, Element *basePtr)
     searchPtr->elemPtr = (Element *)elemPtr;
     searchPtr->dist = minDist;
     searchPtr->index = imin;
-    searchPtr->point.x = (double)elemPtr->coords.x.values[imin];
-    searchPtr->point.y = (double)elemPtr->coords.y.values[imin];
+    searchPtr->point.x = 
+      elemPtr->coords.x ? (double)elemPtr->coords.x->values[imin] : 0;
+    searchPtr->point.y = 
+      elemPtr->coords.y ? (double)elemPtr->coords.y->values[imin] : 0;
   }
 }
 
@@ -905,30 +900,30 @@ static void ResetBar(BarElement* elemPtr)
 {
   /* Release any storage associated with the display of the bar */
   ResetStylePalette(elemPtr->stylePalette);
-  if (elemPtr->activeRects) {
+  if (elemPtr->activeRects)
     free(elemPtr->activeRects);
-  }
-  if (elemPtr->activeToData) {
+
+  if (elemPtr->activeToData)
     free(elemPtr->activeToData);
-  }
-  if (elemPtr->xeb.segments) {
+
+  if (elemPtr->xeb.segments)
     free(elemPtr->xeb.segments);
-  }
-  if (elemPtr->xeb.map) {
+
+  if (elemPtr->xeb.map)
     free(elemPtr->xeb.map);
-  }
-  if (elemPtr->yeb.segments) {
+
+  if (elemPtr->yeb.segments)
     free(elemPtr->yeb.segments);
-  }
-  if (elemPtr->yeb.map) {
+
+  if (elemPtr->yeb.map)
     free(elemPtr->yeb.map);
-  }
-  if (elemPtr->bars) {
+
+  if (elemPtr->bars)
     free(elemPtr->bars);
-  }
-  if (elemPtr->barToData) {
+
+  if (elemPtr->barToData)
     free(elemPtr->barToData);
-  }
+
   elemPtr->activeToData = elemPtr->xeb.map = elemPtr->yeb.map = 
     elemPtr->barToData = NULL;
   elemPtr->activeRects = elemPtr->bars = NULL;
@@ -944,12 +939,17 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
   Region2d reg;
 
   Blt_GraphExtents(graphPtr, &reg);
+
   nPoints = NUMBEROFPOINTS(elemPtr);
-  if (elemPtr->xError.nValues > 0) {
-    n = MIN(elemPtr->xError.nValues, nPoints);
-  } else {
-    n = MIN3(elemPtr->xHigh.nValues, elemPtr->xLow.nValues, nPoints);
+  n =0;
+  if (elemPtr->coords.x && elemPtr->coords.y) {
+    if (elemPtr->xError && (elemPtr->xError->nValues > 0))
+      n = MIN(elemPtr->xError->nValues, nPoints);
+    else
+      if (elemPtr->xHigh && elemPtr->xLow)
+	n = MIN3(elemPtr->xHigh->nValues, elemPtr->xLow->nValues, nPoints);
   }
+
   if (n > 0) {
     Segment2d *bars;
     Segment2d *segPtr;
@@ -964,16 +964,17 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
       double high, low;
       BarStyle *stylePtr;
 
-      x = elemPtr->coords.x.values[i];
-      y = elemPtr->coords.y.values[i];
+      x = elemPtr->coords.x->values[i];
+      y = elemPtr->coords.y->values[i];
       stylePtr = dataToStyle[i];
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->xError.nValues > 0) {
-	  high = x + elemPtr->xError.values[i];
-	  low = x - elemPtr->xError.values[i];
-	} else {
-	  high = elemPtr->xHigh.values[i];
-	  low = elemPtr->xLow.values[i];
+	if (elemPtr->xError->nValues > 0) {
+	  high = x + elemPtr->xError->values[i];
+	  low = x - elemPtr->xError->values[i];
+	}
+	else {
+	  high = elemPtr->xHigh ? elemPtr->xHigh->values[i] : 0;
+	  low  = elemPtr->xLow  ? elemPtr->xLow->values[i]  : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
@@ -1009,11 +1010,16 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
     elemPtr->xeb.length = segPtr - bars;
     elemPtr->xeb.map = map;
   }
-  if (elemPtr->yError.nValues > 0) {
-    n = MIN(elemPtr->yError.nValues, nPoints);
-  } else {
-    n = MIN3(elemPtr->yHigh.nValues, elemPtr->yLow.nValues, nPoints);
+
+  n =0;
+  if (elemPtr->coords.x && elemPtr->coords.y) {
+    if (elemPtr->yError && (elemPtr->yError->nValues > 0))
+      n = MIN(elemPtr->yError->nValues, nPoints);
+    else
+      if (elemPtr->yHigh && elemPtr->yLow)
+	n = MIN3(elemPtr->yHigh->nValues, elemPtr->yLow->nValues, nPoints);
   }
+
   if (n > 0) {
     Segment2d *bars;
     Segment2d *segPtr;
@@ -1028,16 +1034,16 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
       double high, low;
       BarStyle *stylePtr;
 
-      x = elemPtr->coords.x.values[i];
-      y = elemPtr->coords.y.values[i];
+      x = elemPtr->coords.x->values[i];
+      y = elemPtr->coords.y->values[i];
       stylePtr = dataToStyle[i];
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->yError.nValues > 0) {
-	  high = y + elemPtr->yError.values[i];
-	  low = y - elemPtr->yError.values[i];
+	if (elemPtr->yError->nValues > 0) {
+	  high = y + elemPtr->yError->values[i];
+	  low = y - elemPtr->yError->values[i];
 	} else {
-	  high = elemPtr->yHigh.values[i];
-	  low = elemPtr->yLow.values[i];
+	  high = elemPtr->yHigh->values[i];
+	  low = elemPtr->yLow->values[i];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
@@ -1090,23 +1096,22 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
   int size;
 
   ResetBar(elemPtr);
+  if (!elemPtr->coords.x || !elemPtr->coords.y ||
+      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
+    return;
   nPoints = NUMBEROFPOINTS(elemPtr);
-  if (nPoints < 1)
-    return;				/* No data points */
 
   barWidth = graphPtr->barWidth;
   barWidth = (elemPtr->barWidth > 0.0f) ? elemPtr->barWidth:graphPtr->barWidth;
   baseline = (elemPtr->axes.y->logScale) ? 0.0 : graphPtr->baseline;
   barOffset = barWidth * 0.5;
 
-  /*
-   * Create an array of bars representing the screen coordinates of all the
-   * segments in the bar.
-   */
+  // Create an array of bars representing the screen coordinates of all the
+  // segments in the bar.
   bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
   barToData = (int*)calloc(nPoints, sizeof(int));
 
-  x = elemPtr->coords.x.values, y = elemPtr->coords.y.values;
+  x = elemPtr->coords.x->values, y = elemPtr->coords.y->values;
   count = 0;
   for (rp = bars, i = 0; i < nPoints; i++) {
     Point2d c1, c2;			/* Two opposite corners of the rectangle
@@ -1292,10 +1297,13 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
       stylePtr->errorBarCapWidth /= 2;
     }
   }
-  dataToStyle = (BarStyle **)Blt_StyleMap((Element *)elemPtr);
-  if (((elemPtr->yHigh.nValues > 0) && (elemPtr->yLow.nValues > 0)) ||
-      ((elemPtr->xHigh.nValues > 0) && (elemPtr->xLow.nValues > 0)) ||
-      (elemPtr->xError.nValues > 0) || (elemPtr->yError.nValues > 0)) {
+  dataToStyle = (BarStyle**)Blt_StyleMap((Element *)elemPtr);
+  if (((elemPtr->yHigh && elemPtr->yHigh->nValues > 0) && 
+       (elemPtr->yLow && elemPtr->yLow->nValues > 0)) ||
+      ((elemPtr->xHigh && elemPtr->xHigh->nValues > 0) &&
+       (elemPtr->xLow && elemPtr->xLow->nValues > 0)) ||
+      (elemPtr->xError && elemPtr->xError->nValues > 0) || 
+      (elemPtr->yError && elemPtr->yError->nValues > 0)) {
     MapErrorBars(graphPtr, elemPtr, dataToStyle);
   }
   MergePens(elemPtr, dataToStyle);
@@ -1444,8 +1452,8 @@ static void DrawBarValues(Graph* graphPtr, Drawable drawable,
     double x, y;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
-    x = elemPtr->coords.x.values[barToData[count]];
-    y = elemPtr->coords.y.values[barToData[count]];
+    x = elemPtr->coords.x->values[barToData[count]];
+    y = elemPtr->coords.y->values[barToData[count]];
 
     count++;
     if (penPtr->valueShow == SHOW_X) {
@@ -1632,8 +1640,8 @@ static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps,
     fmt = "%g";
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    x = elemPtr->coords.x.values[barToData[count]];
-    y = elemPtr->coords.y.values[barToData[count]];
+    x = elemPtr->coords.x->values[barToData[count]];
+    y = elemPtr->coords.y->values[barToData[count]];
     count++;
     if (penPtr->valueShow == SHOW_X) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
@@ -1748,10 +1756,8 @@ void Blt_InitBarSetTable(Graph* graphPtr)
    * the array of frequency information and the table itself
    */
   Blt_DestroyBarSets(graphPtr);
-  if (graphPtr->barMode == BARS_INFRONT) {
-    return;				/* No set table is needed for
-					 * "infront" mode */
-  }
+  if (graphPtr->barMode == BARS_INFRONT)
+    return;
   Tcl_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
 
   /*
@@ -1767,45 +1773,50 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     int nPoints;
 
     BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
-    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
+    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR))
       continue;
-    }
-    nSegs++;
-    nPoints = NUMBEROFPOINTS(elemPtr);
-    for (x = elemPtr->coords.x.values, xend = x + nPoints; x < xend; x++) {
-      Tcl_HashEntry *hPtr;
-      BarSetKey key;
-      int isNew;
-      size_t count;
-      const char *name;
 
-      key.value = *x;
-      key.axes = elemPtr->axes;
-      key.axes.y = NULL;
-      hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
-      Tcl_HashTable *tablePtr;
-      if (isNew) {
-	tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
-	Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
-	Tcl_SetHashValue(hPtr, tablePtr);
-      } else {
-	tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+    nSegs++;
+    
+    if (elemPtr->coords.x) {
+      nPoints = elemPtr->coords.x->nValues;
+      for (x = elemPtr->coords.x->values, xend = x + nPoints; x < xend; x++) {
+	Tcl_HashEntry *hPtr;
+	BarSetKey key;
+	int isNew;
+	size_t count;
+	const char *name;
+
+	key.value = *x;
+	key.axes = elemPtr->axes;
+	key.axes.y = NULL;
+	hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
+	Tcl_HashTable *tablePtr;
+	if (isNew) {
+	  tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
+	  Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
+	  Tcl_SetHashValue(hPtr, tablePtr);
+	}
+	else
+	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+
+	name = (elemPtr->groupName) ? elemPtr->groupName : 
+	  elemPtr->axes.y->obj.name;
+	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
+	if (isNew)
+	  count = 1;
+	else {
+	  count = (size_t)Tcl_GetHashValue(hPtr);
+	  count++;
+	}		
+	Tcl_SetHashValue(hPtr, (ClientData)count);
       }
-      name = (elemPtr->groupName) ? elemPtr->groupName : 
-	elemPtr->axes.y->obj.name;
-      hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
-      if (isNew) {
-	count = 1;
-      } else {
-	count = (size_t)Tcl_GetHashValue(hPtr);
-	count++;
-      }		
-      Tcl_SetHashValue(hPtr, (ClientData)count);
     }
   }
-  if (setTable.numEntries == 0) {
-    return;				/* No bar elements to be displayed */
-  }
+
+  if (setTable.numEntries == 0)
+    return;
+
   sum = max = 0;
   for (hPtr = Tcl_FirstHashEntry(&setTable, &iter); hPtr;
        hPtr = Tcl_NextHashEntry(&iter)) {
@@ -1859,9 +1870,8 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 void Blt_ComputeBarStacks(Graph* graphPtr)
 {
   Blt_ChainLink link;
-  if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0)) {
+  if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
     return;
-  }
 
   /* Initialize the stack sums to zero. */
   {
@@ -1881,31 +1891,33 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
     double *x, *y, *xend;
 
     BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
-    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR)) {
+    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR))
       continue;
-    }
-    for (x = elemPtr->coords.x.values, y = elemPtr->coords.y.values, 
-	   xend = x + NUMBEROFPOINTS(elemPtr); x < xend; x++, y++) {
-      BarSetKey key;
-      Tcl_HashEntry *hPtr;
-      const char *name;
 
-      key.value = *x;
-      key.axes = elemPtr->axes;
-      key.axes.y = NULL;
-      hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
-      if (!hPtr)
-	continue;
+    if (elemPtr->coords.x && elemPtr->coords.y) {
+      for (x = elemPtr->coords.x->values, y = elemPtr->coords.y->values, 
+	     xend = x + elemPtr->coords.x->nValues; x < xend; x++, y++) {
+	BarSetKey key;
+	Tcl_HashEntry *hPtr;
+	const char *name;
 
-      Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-      name = (elemPtr->groupName) ? elemPtr->groupName : 
-	elemPtr->axes.y->obj.name;
-      hPtr = Tcl_FindHashEntry(tablePtr, name);
-      if (!hPtr)
-	continue;
+	key.value = *x;
+	key.axes = elemPtr->axes;
+	key.axes.y = NULL;
+	hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
+	if (!hPtr)
+	  continue;
 
-      BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
-      groupPtr->sum += *y;
+	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+	name = (elemPtr->groupName) ? elemPtr->groupName : 
+	  elemPtr->axes.y->obj.name;
+	hPtr = Tcl_FindHashEntry(tablePtr, name);
+	if (!hPtr)
+	  continue;
+
+	BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
+	groupPtr->sum += *y;
+      }
     }
   }
 }

@@ -60,7 +60,10 @@ extern "C" {
 				 * foreground and background colors. */
 #define SCALE_SYMBOL	(1<<10)
 
-#define NUMBEROFPOINTS(e) MIN((e)->coords.x.nValues, (e)->coords.y.nValues)
+#define NUMBEROFPOINTS(e) MIN( \
+			      (e)->coords.x ? (e)->coords.x->nValues : 0, \
+			      (e)->coords.y ? (e)->coords.y->nValues : 0 \
+			       )
 
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
 
@@ -150,8 +153,8 @@ typedef struct {
 } ElemValues;
 
 typedef struct {
-  ElemValues x;
-  ElemValues y;
+  ElemValues* x;
+  ElemValues* y;
 } ElemCoords;
 
 struct _Element {
@@ -167,7 +170,7 @@ struct _Element {
   int legendRelief;
   Axis2d axes;
   ElemCoords coords;
-  ElemValues w;
+  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;

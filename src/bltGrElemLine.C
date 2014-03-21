@@ -157,7 +157,7 @@ typedef struct {
   int legendRelief;
   Axis2d axes;
   ElemCoords coords;
-  ElemValues w;
+  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;
@@ -173,12 +173,12 @@ typedef struct {
   Blt_ChainLink link;
 
   // The line element specific fields start here
-  ElemValues xError;
-  ElemValues yError;
-  ElemValues xHigh;
-  ElemValues xLow;
-  ElemValues yHigh;
-  ElemValues yLow;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
   LinePen builtinPen;
   int errorBarCapWidth;
 
@@ -418,7 +418,8 @@ static Tk_OptionSpec optionSpecs[] = {
    NULL, -1, Tk_Offset(LineElement, builtinPen.traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
-   NULL, -1, 0, TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
+   NULL, -1, Tk_Offset(LineElement, coords),
+   TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(LineElement, builtinPen.errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -895,9 +896,15 @@ static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr,
 			    MapInfo *mapPtr)
 {
 
+  if (!elemPtr->coords.x || !elemPtr->coords.y) {
+    mapPtr->screenPts = NULL;
+    mapPtr->nScreenPts = 0;
+    mapPtr->map = NULL;
+  }
+
   int np = NUMBEROFPOINTS(elemPtr);
-  double* x = elemPtr->coords.x.values;
-  double* y = elemPtr->coords.y.values;
+  double* x = elemPtr->coords.x->values;
+  double* y = elemPtr->coords.y->values;
   Point2d *points = (Point2d*)malloc(sizeof(Point2d) * np);
   int* map = (int*)malloc(sizeof(int) * np);
 
@@ -911,7 +918,8 @@ static void GetScreenPoints(Graph* graphPtr, LineElement* elemPtr,
 	count++;
       }
     }
-  } else {
+  }
+  else {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
 	points[count].x = Blt_HMap(elemPtr->axes.x, x[i]);
@@ -1209,8 +1217,6 @@ static void MapSymbols(Graph* graphPtr, LineElement* elemPtr, MapInfo *mapPtr)
 
 static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
 {
-  Region2d exts;
-
   if (elemPtr->activePts.points) {
     free(elemPtr->activePts.points);
     elemPtr->activePts.points = NULL;
@@ -1219,32 +1225,35 @@ static void MapActiveSymbols(Graph* graphPtr, LineElement* elemPtr)
     free(elemPtr->activePts.map);
     elemPtr->activePts.map = NULL;
   }
+
+  Region2d exts;
   Blt_GraphExtents(graphPtr, &exts);
+
   Point2d *points = (Point2d*)malloc(sizeof(Point2d) * elemPtr->nActiveIndices);
   int* map = (int*)malloc(sizeof(int) * elemPtr->nActiveIndices);
   int np = NUMBEROFPOINTS(elemPtr);
   int count = 0;
-  for (int i = 0; i < elemPtr->nActiveIndices; i++) {
-    double x, y;
-    int iPoint;
+  if (elemPtr->coords.x && elemPtr->coords.y) {
+    for (int ii=0; ii<elemPtr->nActiveIndices; ii++) {
+      int iPoint = elemPtr->activeIndices[ii];
+      if (iPoint >= np)
+	continue;
 
-    iPoint = elemPtr->activeIndices[i];
-    if (iPoint >= np) {
-      continue;			/* Index not available */
-    }
-    x = elemPtr->coords.x.values[iPoint];
-    y = elemPtr->coords.y.values[iPoint];
-    points[count] = Blt_Map2D(graphPtr, x, y, &elemPtr->axes);
-    map[count] = iPoint;
-    if (PointInRegion(&exts, points[count].x, points[count].y)) {
-      count++;
+      double x = elemPtr->coords.x->values[iPoint];
+      double y = elemPtr->coords.y->values[iPoint];
+      points[count] = Blt_Map2D(graphPtr, x, y, &elemPtr->axes);
+      map[count] = iPoint;
+      if (PointInRegion(&exts, points[count].x, points[count].y)) {
+	count++;
+      }
     }
   }
+
   if (count > 0) {
     elemPtr->activePts.points = points;
     elemPtr->activePts.map = map;
-  } else {
-    /* No active points were visible. */
+  }
+  else {
     free(points);
     free(map);	
   }
@@ -1689,16 +1698,19 @@ static void ResetLine(LineElement* elemPtr)
 static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr, 
 			 LineStyle **styleMap)
 {
-  int n, np;
   Region2d exts;
-
   Blt_GraphExtents(graphPtr, &exts);
-  np = NUMBEROFPOINTS(elemPtr);
-  if (elemPtr->xError.nValues > 0) {
-    n = MIN(elemPtr->xError.nValues, np);
-  } else {
-    n = MIN3(elemPtr->xHigh.nValues, elemPtr->xLow.nValues, np);
+
+  int n =0;
+  int np = NUMBEROFPOINTS(elemPtr);
+  if (elemPtr->coords.x && elemPtr->coords.y) {
+    if (elemPtr->xError && (elemPtr->xError->nValues > 0))
+      n = MIN(elemPtr->xError->nValues, np);
+    else
+      if (elemPtr->xHigh && elemPtr->xLow)
+	n = MIN3(elemPtr->xHigh->nValues, elemPtr->xLow->nValues, np);
   }
+
   if (n > 0) {
     Segment2d *segPtr;
     Segment2d *errorBars;
@@ -1713,16 +1725,16 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
       double high, low;
       LineStyle *stylePtr;
 
-      x = elemPtr->coords.x.values[i];
-      y = elemPtr->coords.y.values[i];
+      x = elemPtr->coords.x->values[i];
+      y = elemPtr->coords.y->values[i];
       stylePtr = styleMap[i];
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->xError.nValues > 0) {
-	  high = x + elemPtr->xError.values[i];
-	  low = x - elemPtr->xError.values[i];
+	if (elemPtr->xError->nValues > 0) {
+	  high = x + elemPtr->xError->values[i];
+	  low = x - elemPtr->xError->values[i];
 	} else {
-	  high = elemPtr->xHigh.values[i];
-	  low = elemPtr->xLow.values[i];
+	  high = elemPtr->xHigh ? elemPtr->xHigh->values[i] : 0;
+	  low  = elemPtr->xLow ? elemPtr->xLow->values[i] : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
@@ -1758,11 +1770,16 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
     elemPtr->xeb.length = segPtr - errorBars;
     elemPtr->xeb.map = errorToData;
   }
-  if (elemPtr->yError.nValues > 0) {
-    n = MIN(elemPtr->yError.nValues, np);
-  } else {
-    n = MIN3(elemPtr->yHigh.nValues, elemPtr->yLow.nValues, np);
+
+  n =0;
+  if (elemPtr->coords.x && elemPtr->coords.y) {
+    if (elemPtr->yError && (elemPtr->yError->nValues > 0))
+      n = MIN(elemPtr->yError->nValues, np);
+    else
+      if (elemPtr->yHigh && elemPtr->yLow)
+	n = MIN3(elemPtr->yHigh->nValues, elemPtr->yLow->nValues, np);
   }
+
   if (n > 0) {
     Segment2d *errorBars;
     Segment2d *segPtr;
@@ -1777,16 +1794,16 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
       double high, low;
       LineStyle *stylePtr;
 
-      x = elemPtr->coords.x.values[i];
-      y = elemPtr->coords.y.values[i];
+      x = elemPtr->coords.x->values[i];
+      y = elemPtr->coords.y->values[i];
       stylePtr = styleMap[i];
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->yError.nValues > 0) {
-	  high = y + elemPtr->yError.values[i];
-	  low = y - elemPtr->yError.values[i];
+	if (elemPtr->yError->nValues > 0) {
+	  high = y + elemPtr->yError->values[i];
+	  low = y - elemPtr->yError->values[i];
 	} else {
-	  high = elemPtr->yHigh.values[i];
-	  low = elemPtr->yLow.values[i];
+	  high = elemPtr->yHigh->values[i];
+	  low = elemPtr->yLow->values[i];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
@@ -1833,10 +1850,11 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
   Blt_ChainLink link;
     
   ResetLine(elemPtr);
+  if (!elemPtr->coords.x || !elemPtr->coords.y ||
+      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
+    return;
   np = NUMBEROFPOINTS(elemPtr);
-  if (np < 1) {
-    return;				/* No data points */
-  }
+
   GetScreenPoints(graphPtr, elemPtr, &mi);
   MapSymbols(graphPtr, elemPtr, &mi);
 
@@ -1902,9 +1920,12 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
     stylePtr->errorBarCapWidth /= 2;
   }
   styleMap = (LineStyle **)Blt_StyleMap((Element *)elemPtr);
-  if (((elemPtr->yHigh.nValues > 0) && (elemPtr->yLow.nValues > 0)) ||
-      ((elemPtr->xHigh.nValues > 0) && (elemPtr->xLow.nValues > 0)) ||
-      (elemPtr->xError.nValues > 0) || (elemPtr->yError.nValues > 0)) {
+  if (((elemPtr->yHigh && elemPtr->yHigh->nValues > 0) &&
+       (elemPtr->yLow && elemPtr->yLow->nValues > 0)) ||
+      ((elemPtr->xHigh && elemPtr->xHigh->nValues > 0) &&
+       (elemPtr->xLow && elemPtr->xLow->nValues > 0)) ||
+      (elemPtr->xError && elemPtr->xError->nValues > 0) ||
+      (elemPtr->yError && elemPtr->yError->nValues > 0)) {
     MapErrorBars(graphPtr, elemPtr, styleMap);
   }
   MergePens(elemPtr, styleMap);
@@ -2111,8 +2132,8 @@ static void ClosestPoint(LineElement* elemPtr, ClosestSearch *searchPtr)
     searchPtr->elemPtr = (Element *)elemPtr;
     searchPtr->dist = dMin;
     searchPtr->index = iClose;
-    searchPtr->point.x = elemPtr->coords.x.values[iClose];
-    searchPtr->point.y = elemPtr->coords.y.values[iClose];
+    searchPtr->point.x = elemPtr->coords.x->values[iClose];
+    searchPtr->point.y = elemPtr->coords.y->values[iClose];
   }
 }
 
@@ -2124,81 +2145,79 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
   extsPtr->top = extsPtr->left = DBL_MAX;
   extsPtr->bottom = extsPtr->right = -DBL_MAX;
 
-  np = NUMBEROFPOINTS(elemPtr);
-  if (np < 1) {
+  if (!elemPtr->coords.x || !elemPtr->coords.y ||
+      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
     return;
-  } 
-  extsPtr->right = elemPtr->coords.x.max;
-  if ((elemPtr->coords.x.min <= 0.0) && (elemPtr->axes.x->logScale)) {
-    extsPtr->left = Blt_FindElemValuesMinimum(&elemPtr->coords.x, DBL_MIN);
-  } else {
-    extsPtr->left = elemPtr->coords.x.min;
-  }
-  extsPtr->bottom = elemPtr->coords.y.max;
-  if ((elemPtr->coords.y.min <= 0.0) && (elemPtr->axes.y->logScale)) {
-    extsPtr->top = Blt_FindElemValuesMinimum(&elemPtr->coords.y, DBL_MIN);
-  } else {
-    extsPtr->top = elemPtr->coords.y.min;
-  }
+  np = NUMBEROFPOINTS(elemPtr);
 
-  /* Correct the data limits for error bars */
+  extsPtr->right = elemPtr->coords.x->max;
+  if ((elemPtr->coords.x->min <= 0.0) && (elemPtr->axes.x->logScale))
+    extsPtr->left = Blt_FindElemValuesMinimum(elemPtr->coords.x, DBL_MIN);
+  else
+    extsPtr->left = elemPtr->coords.x->min;
 
-  if (elemPtr->xError.nValues > 0) {
+  extsPtr->bottom = elemPtr->coords.y->max;
+  if ((elemPtr->coords.y->min <= 0.0) && (elemPtr->axes.y->logScale))
+    extsPtr->top = Blt_FindElemValuesMinimum(elemPtr->coords.y, DBL_MIN);
+  else
+    extsPtr->top = elemPtr->coords.y->min;
+
+  // Correct the data limits for error bars
+  if (elemPtr->xError && elemPtr->xError->nValues > 0) {
     int i;
 	
-    np = MIN(elemPtr->xError.nValues, np);
+    np = MIN(elemPtr->xError->nValues, np);
     for (i = 0; i < np; i++) {
       double x;
 
-      x = elemPtr->coords.x.values[i] + elemPtr->xError.values[i];
+      x = elemPtr->coords.x->values[i] + elemPtr->xError->values[i];
       if (x > extsPtr->right) {
 	extsPtr->right = x;
       }
-      x = elemPtr->coords.x.values[i] - elemPtr->xError.values[i];
+      x = elemPtr->coords.x->values[i] - elemPtr->xError->values[i];
       if (elemPtr->axes.x->logScale) {
-	if (x < 0.0) {
-	  x = -x;		/* Mirror negative values, instead of
-				 * ignoring them. */
-	}
-	if ((x > DBL_MIN) && (x < extsPtr->left)) {
+	// Mirror negative values, instead of ignoring them
+	if (x < 0.0)
+	  x = -x;
+	if ((x > DBL_MIN) && (x < extsPtr->left))
 	  extsPtr->left = x;
-	}
-      } else if (x < extsPtr->left) {
+      } 
+      else if (x < extsPtr->left)
 	extsPtr->left = x;
-      }
     }		     
-  } else {
-    if ((elemPtr->xHigh.nValues > 0) && 
-	(elemPtr->xHigh.max > extsPtr->right)) {
-      extsPtr->right = elemPtr->xHigh.max;
+  }
+  else {
+    if (elemPtr->xHigh && 
+	(elemPtr->xHigh->nValues > 0) && 
+	(elemPtr->xHigh->max > extsPtr->right)) {
+      extsPtr->right = elemPtr->xHigh->max;
     }
-    if (elemPtr->xLow.nValues > 0) {
+    if (elemPtr->xLow && elemPtr->xLow->nValues > 0) {
       double left;
 	    
-      if ((elemPtr->xLow.min <= 0.0) && 
-	  (elemPtr->axes.x->logScale)) {
-	left = Blt_FindElemValuesMinimum(&elemPtr->xLow, DBL_MIN);
-      } else {
-	left = elemPtr->xLow.min;
-      }
-      if (left < extsPtr->left) {
+      if ((elemPtr->xLow->min <= 0.0) && 
+	  (elemPtr->axes.x->logScale))
+	left = Blt_FindElemValuesMinimum(elemPtr->xLow, DBL_MIN);
+      else
+	left = elemPtr->xLow->min;
+
+      if (left < extsPtr->left)
 	extsPtr->left = left;
-      }
     }
   }
     
-  if (elemPtr->yError.nValues > 0) {
+  if (elemPtr->yError && elemPtr->yError->nValues > 0) {
     int i;
 	
-    np = MIN(elemPtr->yError.nValues, np);
+    np = MIN(elemPtr->yError->nValues, np);
     for (i = 0; i < np; i++) {
       double y;
 
-      y = elemPtr->coords.y.values[i] + elemPtr->yError.values[i];
+      y = elemPtr->coords.y->values[i] + elemPtr->yError->values[i];
       if (y > extsPtr->bottom) {
 	extsPtr->bottom = y;
       }
-      y = elemPtr->coords.y.values[i] - elemPtr->yError.values[i];
+      y = elemPtr->coords.y->values[i] - elemPtr->yError->values[i];
       if (elemPtr->axes.y->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of
@@ -2212,22 +2231,22 @@ static void GetLineExtentsProc(Element *basePtr, Region2d *extsPtr)
       }
     }		     
   } else {
-    if ((elemPtr->yHigh.nValues > 0) && 
-	(elemPtr->yHigh.max > extsPtr->bottom)) {
-      extsPtr->bottom = elemPtr->yHigh.max;
+    if (elemPtr->yHigh && 
+	(elemPtr->yHigh->nValues > 0) && 
+	(elemPtr->yHigh->max > extsPtr->bottom)) {
+      extsPtr->bottom = elemPtr->yHigh->max;
     }
-    if (elemPtr->yLow.nValues > 0) {
+    if (elemPtr->yLow && elemPtr->yLow->nValues > 0) {
       double top;
 	    
-      if ((elemPtr->yLow.min <= 0.0) && 
-	  (elemPtr->axes.y->logScale)) {
-	top = Blt_FindElemValuesMinimum(&elemPtr->yLow, DBL_MIN);
-      } else {
-	top = elemPtr->yLow.min;
-      }
-      if (top < extsPtr->top) {
+      if ((elemPtr->yLow->min <= 0.0) && 
+	  (elemPtr->axes.y->logScale))
+	top = Blt_FindElemValuesMinimum(elemPtr->yLow, DBL_MIN);
+      else
+	top = elemPtr->yLow->min;
+
+      if (top < extsPtr->top)
 	extsPtr->top = top;
-      }
     }
   }
 }
@@ -2236,32 +2255,25 @@ static void ClosestLineProc(Graph* graphPtr, Element *basePtr)
 {
   ClosestSearch* searchPtr = &graphPtr->search;
   LineElement* elemPtr = (LineElement *)basePtr;
-  int mode;
-
-  mode = searchPtr->mode;
+  int mode = searchPtr->mode;
   if (mode == SEARCH_AUTO) {
-    LinePen* penPtr;
-
-    penPtr = NORMALPEN(elemPtr);
+    LinePen* penPtr = NORMALPEN(elemPtr);
     mode = SEARCH_POINTS;
-    if ((NUMBEROFPOINTS(elemPtr) > 1) && (penPtr->traceWidth > 0)) {
+    if ((NUMBEROFPOINTS(elemPtr) > 1) && (penPtr->traceWidth > 0))
       mode = SEARCH_TRACES;
-    }
   }
-  if (mode == SEARCH_POINTS) {
+  if (mode == SEARCH_POINTS)
     ClosestPoint(elemPtr, searchPtr);
-  } else {
+  else {
     DistanceProc *distProc;
-    int found;
-
-    if (searchPtr->along == SEARCH_X) {
+    if (searchPtr->along == SEARCH_X)
       distProc = DistanceToXProc;
-    } else if (searchPtr->along == SEARCH_Y) {
+    else if (searchPtr->along == SEARCH_Y)
       distProc = DistanceToYProc;
-    } else {
+    else
       distProc = DistanceToLineProc;
-    }
-    found = ClosestTrace(graphPtr, elemPtr, distProc);
+
+    int found = ClosestTrace(graphPtr, elemPtr, distProc);
     if ((!found) && (searchPtr->along != SEARCH_BOTH)) {
       ClosestPoint(elemPtr, searchPtr);
     }
@@ -2985,7 +2997,7 @@ static void DrawValues(Graph* graphPtr, Drawable drawable,
     fmt = "%g";
   }
   count = 0;
-  xval = elemPtr->coords.x.values, yval = elemPtr->coords.y.values;
+  xval = elemPtr->coords.x->values, yval = elemPtr->coords.y->values;
 
   // be sure to update style->gc, things might have changed
   penPtr->valueStyle.flags |= UPDATE_GC;
@@ -3346,8 +3358,8 @@ static void ValuesToPostScript(Blt_Ps ps, LineElement* elemPtr, LinePen* penPtr,
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
     double x, y;
 
-    x = elemPtr->coords.x.values[pointToData[count]];
-    y = elemPtr->coords.y.values[pointToData[count]];
+    x = elemPtr->coords.x->values[pointToData[count]];
+    y = elemPtr->coords.y->values[pointToData[count]];
     count++;
     if (penPtr->valueShow == SHOW_X) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 

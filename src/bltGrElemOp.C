@@ -1064,10 +1064,9 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 {
   int objc;
   Tcl_Obj **objv;
-
-  if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK) {
+  if (Tcl_ListObjGetElements(interp, objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
-  }
+
   *arrayPtr = NULL;
   *nValuesPtr = 0;
   if (objc > 0) {
