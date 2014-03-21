@@ -47,6 +47,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			       Element* elemPtr, 
 			       int objc, Tcl_Obj* const objv[]);
 static void FreeDataValues(ElemValues *valuesPtr);
+static void FreeVectorSource(ElemValues *valuesPtr);
 static void FreeElement(char* data);
 static void FindRange(ElemValues *valuesPtr);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
@@ -67,55 +68,60 @@ const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
 static Tk_CustomOptionSetProc ValuesSetProc;
 static Tk_CustomOptionGetProc ValuesGetProc;
+static Tk_CustomOptionFreeProc ValuesFreeProc;
 Tk_ObjCustomOption valuesObjOption =
   {
-    "values", ValuesSetProc, ValuesGetProc, NULL, NULL, NULL
+    "values", ValuesSetProc, ValuesGetProc, RestoreProc, ValuesFreeProc, NULL
   };
 
 static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		       int offset, char* save, int flags)
+		       int offset, char* savePtr, int flags)
 {
-  ElemValues* valuesPtr = (ElemValues*)(widgRec + offset);
+  ElemValues** valuesPtrPtr = (ElemValues**)(widgRec + offset);
+  *(double*)savePtr = *(double*)valuesPtrPtr;
   Element* elemPtr = (Element*)widgRec;
 
-  valuesPtr->elemPtr = elemPtr;
   Tcl_Obj** objv;
   int objc;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
 
-  FreeDataValues(valuesPtr);
-  if (objc == 0)
+  if (objc == 0) {
+    *valuesPtrPtr = NULL;
     return TCL_OK;
-
-  const char *string = Tcl_GetString(objv[0]);
-  int result;
-  if ((objc == 1) && (Blt_VectorExists2(interp, string)))
-    result = GetVectorData(interp, valuesPtr, string);
-  else {
-    double *values;
-    int nValues;
-    result = ParseValues(interp, *objPtr, &nValues, &values);
-    if (result != TCL_OK)
-      return TCL_ERROR;
-
-    FreeDataValues(valuesPtr);
-    if (nValues > 0)
-      valuesPtr->values = values;
-
-    valuesPtr->nValues = nValues;
-    FindRange(valuesPtr);
-    valuesPtr->type = ELEM_SOURCE_VALUES;
   }
 
-  return result;
+  ElemValues* valuesPtr = (ElemValues*)calloc(1, sizeof(ElemValues));
+  valuesPtr->elemPtr = elemPtr;
+
+  const char *string = Tcl_GetString(objv[0]);
+  if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
+    valuesPtr->type = ELEM_SOURCE_VECTOR;
+
+    if (GetVectorData(interp, valuesPtr, string) != TCL_OK)
+      return TCL_ERROR;
+  }
+  else {
+    valuesPtr->type = ELEM_SOURCE_VALUES;
+
+    double *values;
+    int nValues;
+    if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
+      return TCL_ERROR;
+    valuesPtr->values = values;
+    valuesPtr->nValues = nValues;
+    FindRange(valuesPtr);
+  }
+
+  *valuesPtrPtr = valuesPtr;
+  return TCL_OK;
 }
 
 static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin, 
 			    char *widgRec, int offset)
 {
-  ElemValues* valuesPtr = (ElemValues*)(widgRec + offset);
+  ElemValues* valuesPtr = *(ElemValues**)(widgRec + offset);
 
   switch (valuesPtr->type) {
   case ELEM_SOURCE_VECTOR:
@@ -143,17 +149,40 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   }
 }
 
+static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin,
+			   char *ptr)
+{
+  ElemValues* valuesPtr = *(ElemValues**)ptr;
+  if (valuesPtr) {
+    switch (valuesPtr->type) {
+    case ELEM_SOURCE_VECTOR: 
+      FreeVectorSource(valuesPtr);
+      break;
+    case ELEM_SOURCE_VALUES:
+      break;
+    }
+
+    FreeDataValues(valuesPtr);
+    free(valuesPtr);
+  }
+}
+
 static Tk_CustomOptionSetProc PairsSetProc;
 static Tk_CustomOptionGetProc PairsGetProc;
+static Tk_CustomOptionRestoreProc PairsRestoreProc;
+static Tk_CustomOptionFreeProc PairsFreeProc;
 Tk_ObjCustomOption pairsObjOption =
   {
-    "pairs", PairsSetProc, PairsGetProc, NULL, NULL, NULL
+    "pairs", PairsSetProc, PairsGetProc, PairsRestoreProc, PairsFreeProc, NULL
   };
 
 static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		       int offset, char* save, int flags)
+		       int offset, char* savePtr, int flags)
 {
+  ElemCoords* coordsPtr = (ElemCoords*)(widgRec + offset);
+  *(double*)savePtr = (double)NULL;
+
   double *values;
   int nValues;
   if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
@@ -167,24 +196,31 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 
   nValues /= 2;
   size_t newSize = nValues * sizeof(double);
+  FreeDataValues(coordsPtr->x);
+  FreeDataValues(coordsPtr->y);
+  coordsPtr->x = NULL;
+  coordsPtr->y = NULL;
 
-  Element* elemPtr = (Element*)widgRec;
-  FreeDataValues(&elemPtr->coords.x);
-  FreeDataValues(&elemPtr->coords.y);
+  if (newSize==0)
+    return TCL_OK;
 
-  if (newSize > 0) {
-    elemPtr->coords.x.values = (double*)malloc(newSize);
-    elemPtr->coords.y.values = (double*)malloc(newSize);
-    elemPtr->coords.x.nValues = elemPtr->coords.y.nValues = nValues;
-    int ii=0;
-    for (double* p = values; ii<nValues; ii++) {
-      elemPtr->coords.x.values[ii] = *p++;
-      elemPtr->coords.y.values[ii] = *p++;
-    }
-    free(values);
-    FindRange(&elemPtr->coords.x);
-    FindRange(&elemPtr->coords.y);
+  coordsPtr->x = (ElemValues*)calloc(1,sizeof(ElemValues));
+  coordsPtr->y = (ElemValues*)calloc(1,sizeof(ElemValues));
+
+  coordsPtr->x->values = (double*)malloc(newSize);
+  coordsPtr->x->nValues = nValues;
+  coordsPtr->y->values = (double*)malloc(newSize);
+  coordsPtr->x->nValues = nValues;
+
+  int ii=0;
+  for (double* p = values; ii<nValues; ii++) {
+    coordsPtr->x->values[ii] = *p++;
+    coordsPtr->y->values[ii] = *p++;
   }
+  free(values);
+
+  FindRange(coordsPtr->x);
+  FindRange(coordsPtr->y);
 
   return TCL_OK;
 };
@@ -192,21 +228,33 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin, 
 			    char *widgRec, int offset)
 {
-  Element* elemPtr = (Element*)widgRec;
-  int cnt = NUMBEROFPOINTS(elemPtr);
-  if (!cnt)
+  ElemCoords* coordsPtr = (ElemCoords*)(widgRec + offset);
+
+  if (!coordsPtr->x || !coordsPtr->x->nValues)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
+  int cnt = coordsPtr->x->nValues;
   Tcl_Obj** ll = (Tcl_Obj**)calloc(2*cnt,sizeof(Tcl_Obj*));
   for (int ii=0, jj=0; ii<cnt; ii++) {
-    ll[jj++] = Tcl_NewDoubleObj(elemPtr->coords.x.values[ii]);
-    ll[jj++] = Tcl_NewDoubleObj(elemPtr->coords.y.values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->y->values[ii]);
   }
   Tcl_Obj* listObjPtr = Tcl_NewListObj(2*cnt, ll);
   free(ll);
 
   return listObjPtr;
 };
+
+static void PairsRestoreProc(ClientData clientData, Tk_Window tkwin,
+			     char *ptr, char *savePtr)
+{
+  // do nothing
+}
+
+static void PairsFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
+{
+  // do nothing
+}
 
 int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 		 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
@@ -948,23 +996,23 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr,
 			     Blt_Vector *vector)
 {
   double *array;
-  if (valuesPtr->values == NULL) {
+  if (!valuesPtr->values)
     array = (double*)malloc(Blt_VecLength(vector) * sizeof(double));
-  } else {
+  else
     array = (double*)realloc(valuesPtr->values, Blt_VecLength(vector) * sizeof(double));
-  }
-  if (array == NULL) {
-    if (interp) {
+
+  if (!array) {
+    if (interp)
       Tcl_AppendResult(interp, "can't allocate new vector", NULL);
-    }
     return TCL_ERROR;
   }
+
   memcpy(array, Blt_VecData(vector), sizeof(double) * Blt_VecLength(vector));
   valuesPtr->min = Blt_VecMin(vector);
   valuesPtr->max = Blt_VecMax(vector);
   valuesPtr->values = array;
   valuesPtr->nValues = Blt_VecLength(vector);
-  /* FindRange(valuesPtr); */
+
   return TCL_OK;
 }
 
@@ -1008,7 +1056,6 @@ static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr,
   }
 
   Blt_SetVectorChangedProc(srcPtr->vector, VectorChangedProc, valuesPtr);
-  valuesPtr->type = ELEM_SOURCE_VECTOR;
   return TCL_OK;
 }
 
@@ -1053,12 +1100,10 @@ static void FreeDataValues(ElemValues *valuesPtr)
   case ELEM_SOURCE_VALUES:
     break;
   }
-  if (valuesPtr->values) {
-    //    free(valuesPtr->values);
-  }
+  if (valuesPtr->values)
+    free(valuesPtr->values);
   valuesPtr->values = NULL;
-  valuesPtr->nValues = 0;
-  valuesPtr->type = ELEM_SOURCE_VALUES;
+  valuesPtr->nValues =0;
 }
 
 static void FindRange(ElemValues *valuesPtr)
@@ -1067,9 +1112,10 @@ static void FindRange(ElemValues *valuesPtr)
   double *x;
   double min, max;
 
-  if ((valuesPtr->nValues < 1) || (valuesPtr->values == NULL)) {
-    return;			/* This shouldn't ever happen. */
-  }
+  if (!valuesPtr || 
+      (valuesPtr->nValues < 1) || 
+      (valuesPtr->values == NULL))
+    return;
   x = valuesPtr->values;
 
   min = DBL_MAX, max = -DBL_MAX;
@@ -1094,14 +1140,12 @@ static void FindRange(ElemValues *valuesPtr)
 
 double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
 {
-  int i;
-  double min;
+  double min = DBL_MAX;
+  if (!valuesPtr)
+    return min;
 
-  min = DBL_MAX;
-  for (i = 0; i < valuesPtr->nValues; i++) {
-    double x;
-
-    x = valuesPtr->values[i];
+  for (int ii=0; ii<valuesPtr->nValues; ii++) {
+    double x = valuesPtr->values[ii];
     if (x < 0.0) {
       /* What do you do about negative values when using log
        * scale values seems like a grey area.  Mirror. */
@@ -1111,9 +1155,9 @@ double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
       min = x;
     }
   }
-  if (min == DBL_MAX) {
+  if (min == DBL_MAX)
     min = minLimit;
-  }
+
   return min;
 }
 
@@ -1137,7 +1181,7 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
   }
 }
 
-PenStyle **Blt_StyleMap(Element* elemPtr)
+PenStyle** Blt_StyleMap(Element* elemPtr)
 {
   int i;
   int nWeights;		/* Number of weights to be examined.
@@ -1149,8 +1193,8 @@ PenStyle **Blt_StyleMap(Element* elemPtr)
   int nPoints;
 
   nPoints = NUMBEROFPOINTS(elemPtr);
-  nWeights = MIN(elemPtr->w.nValues, nPoints);
-  w = elemPtr->w.values;
+  nWeights = MIN(elemPtr->w ? elemPtr->w->nValues : 0, nPoints);
+  w = elemPtr->w ? elemPtr->w->values : NULL;
   link = Blt_Chain_FirstLink(elemPtr->stylePalette);
   PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
@@ -1186,14 +1230,12 @@ PenStyle **Blt_StyleMap(Element* elemPtr)
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr)
 {
-  char *string;
-
-  string = Tcl_GetString(objPtr);
-  if ((*string == 'e') && (strcmp("end", string) == 0)) {
-    *indexPtr = NUMBEROFPOINTS(elemPtr) - 1;
-  } else if (Blt_ExprIntFromObj(interp, objPtr, indexPtr) != TCL_OK) {
+  char *string = Tcl_GetString(objPtr);
+  if ((*string == 'e') && (strcmp("end", string) == 0))
+    *indexPtr = NUMBEROFPOINTS(elemPtr);
+  else if (Blt_ExprIntFromObj(interp, objPtr, indexPtr) != TCL_OK)
     return TCL_ERROR;
-  }
+
   return TCL_OK;
 }
 
