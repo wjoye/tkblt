@@ -40,9 +40,6 @@ extern "C" {
 
 #include "bltGrElem.h"
 
-/* Ignore elements that aren't in the display list or have been deleted. */
-#define IGNORE_ELEMENT(e) (((e)->link == NULL) || ((e)->flags & DELETE_PENDING))
-
 // Defs
 
 static void DestroyElement(Element* elemPtr);
@@ -317,6 +314,7 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
   elemPtr->obj.graphPtr = graphPtr;
   elemPtr->obj.name = Blt_Strdup(name);
+
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
   elemPtr->label = Tcl_Alloc(strlen(name)+1);
@@ -345,18 +343,14 @@ static void DestroyElement(Element* elemPtr)
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
 
-  FreeDataValues(&elemPtr->coords.x);
-  FreeDataValues(&elemPtr->coords.y);
-
-  /* Remove it also from the element display list */
   if (elemPtr->link) {
     Blt_Chain_DeleteLink(graphPtr->elements.displayList, elemPtr->link);
-    if (!IGNORE_ELEMENT(elemPtr)) {
+    if (!(elemPtr->flags & DELETE_PENDING)) {
       graphPtr->flags |= RESET_WORLD;
       Blt_EventuallyRedrawGraph(graphPtr);
     }
   }
-  /* Remove the element for the graph's hash table of elements */
+
   if (elemPtr->hashPtr)
     Tcl_DeleteHashEntry(elemPtr->hashPtr);
 
@@ -699,21 +693,21 @@ static int LowerOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Blt_Chain chain;
   Blt_ChainLink link, next;
-  int i;
 
-  /* Move the links of lowered elements out of the display list into
-   * a temporary list. */
+  // Move the links of lowered elements out of the display list into
+  // a temporary list
   chain = Blt_Chain_Create();
-  for (i = 3; i < objc; i++) {
+  for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
 
-    if (Blt_GetElement(interp, graphPtr, objv[i], &elemPtr) != TCL_OK) {
-      return TCL_ERROR;	/* Can't find named element */
-    }
+    if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
+      return TCL_ERROR;
+
     Blt_Chain_UnlinkLink(graphPtr->elements.displayList, elemPtr->link); 
     Blt_Chain_LinkAfter(chain, elemPtr->link, NULL); 
   }
-  /* Append the links to end of the display list. */
+
+  // Append the links to end of the display list
   for (link = Blt_Chain_FirstLink(chain); link != NULL; link = next) {
     next = Blt_Chain_NextLink(link);
     Blt_Chain_UnlinkLink(chain, link); 
@@ -803,35 +797,32 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   if (objc == 4) {
-    Blt_Chain chain;
-    Blt_ChainLink link;
     Tcl_Obj **elem;
-    int i, n;
-
-    if (Tcl_ListObjGetElements(interp, objv[3], &n, &elem) != TCL_OK) {
+    int n;
+    if (Tcl_ListObjGetElements(interp, objv[3], &n, &elem) != TCL_OK)
       return TCL_ERROR;
-    }
-    /* Collect the named elements into a list. */
-    chain = Blt_Chain_Create();
-    for (i = 0; i < n; i++) {
-      Element* elemPtr;	/* Element information record */
 
-      if (Blt_GetElement(interp, graphPtr, elem[i], &elemPtr) != TCL_OK) {
+    // Collect the named elements into a list
+    Blt_Chain chain = Blt_Chain_Create();
+    for (int ii = 0; ii<n; ii++) {
+      Element* elemPtr;
+      if (Blt_GetElement(interp, graphPtr, elem[ii], &elemPtr) != TCL_OK) {
 	Blt_Chain_Destroy(chain);
 	return TCL_ERROR;
       }
       Blt_Chain_Append(chain, elemPtr);
     }
-    /* Clear the links from the currently displayed elements.  */
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
+
+    // Clear the links from the currently displayed elements
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       elemPtr->link = NULL;
     }
     Blt_Chain_Destroy(graphPtr->elements.displayList);
     graphPtr->elements.displayList = chain;
-    /* Set links on all the displayed elements.  */
-    for (link = Blt_Chain_FirstLink(chain); link != NULL; 
+
+    // Set links on all the displayed elements
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       elemPtr->link = link;
@@ -839,6 +830,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
     graphPtr->flags |= RESET_WORLD;
     Blt_EventuallyRedrawGraph(graphPtr);
   }
+
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
   return TCL_OK;
 }
@@ -847,18 +839,19 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Element* elemPtr;
-  const char *string;
+  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+    return TCL_ERROR;
 
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK) {
-    return TCL_ERROR;	/* Can't find named element */
-  }
   switch (elemPtr->obj.classId) {
-  case CID_ELEM_BAR:		string = "bar";		break;
-  case CID_ELEM_LINE:		string = "line";	break;
-  default:			string = "???";		break;
+  case CID_ELEM_BAR:
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), "bar", -1);
+    return TCL_OK;
+  case CID_ELEM_LINE:
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), "line", -1);
+    return TCL_OK;
+  default:
+    return TCL_ERROR;
   }
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), string, -1);
-  return TCL_OK;
 }
 
 static Blt_OpSpec elemOps[] = {
@@ -887,7 +880,7 @@ int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   void *ptr = Blt_GetOpFromObj(interp, numElemOps, elemOps, BLT_OP_ARG2, 
 			       objc, objv, 0);
-  if (ptr == NULL)
+  if (!ptr)
     return TCL_ERROR;
 
   if (ptr == CreateOp)
@@ -993,7 +986,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   Graph* graphPtr = elemPtr->obj.graphPtr;
   graphPtr->flags |= RESET_AXES;
   elemPtr->flags |= MAP_ITEM;
-  if (!IGNORE_ELEMENT(elemPtr)) {
+  if (elemPtr->link && !(elemPtr->flags & DELETE_PENDING)) {
     graphPtr->flags |= CACHE_DIRTY;
     Blt_EventuallyRedrawGraph(graphPtr);
   }
@@ -1260,7 +1253,7 @@ void Blt_MapElements(Graph* graphPtr)
   for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (IGNORE_ELEMENT(elemPtr))
+    if (!elemPtr->link || (elemPtr->flags & DELETE_PENDING))
       continue;
 
     if ((graphPtr->flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
