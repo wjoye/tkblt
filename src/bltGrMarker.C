@@ -27,6 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
@@ -89,6 +90,10 @@ static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
 {
   Coords** coordsPtrPtr = (Coords**)(widgRec + offset);
   *(double*)savePtr = *(double*)coordsPtrPtr;
+
+  if (!coordsPtrPtr)
+    return TCL_OK;
+
   *coordsPtrPtr = NULL;
 
   int objc;
@@ -127,6 +132,7 @@ static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin,
 			      char *widgRec, int offset)
 {
   Coords* coordsPtr = *(Coords**)(widgRec + offset);
+
   if (!coordsPtr)
     return Tcl_NewListObj(0, NULL);
 

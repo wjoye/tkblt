@@ -30,9 +30,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include <iostream>
-using namespace std;
-
+#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
@@ -127,6 +125,9 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
   Axis** axisPtrPtr = (Axis**)(widgRec + offset);
   *(double*)savePtr = *(double*)axisPtrPtr;
   
+  if (!axisPtrPtr)
+    return TCL_OK;
+
   Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
   ClassId classId = (ClassId)(long(clientData));
   Axis* axisPtr;
@@ -142,9 +143,10 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
 			    char *widgRec, int offset)
 {
   Axis* axisPtr = *(Axis**)(widgRec + offset);
-  const char* name = (axisPtr ? axisPtr->obj.name : "");
+  if (!axisPtr)
+    return Tcl_NewStringObj("", -1);
 
-  return Tcl_NewStringObj(name, -1);
+  return Tcl_NewStringObj(axisPtr->obj.name, -1);
 };
 
 static void AxisFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
@@ -204,6 +206,9 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
   Ticks** ticksPtrPtr = (Ticks**)(widgRec + offset);
   *(double*)savePtr = *(double*)ticksPtrPtr;
 
+  if (!ticksPtrPtr)
+    return TCL_OK;
+
   int objc;
   Tcl_Obj** objv;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
@@ -233,18 +238,17 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Ticks* ticksPtr = *(Ticks**)(widgRec + offset);
 
-  if (ticksPtr) {
-    int cnt = ticksPtr->nTicks;
-    Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
-    for (int ii = 0; ii<cnt; ii++)
-      ll[ii] = Tcl_NewDoubleObj(ticksPtr->values[ii]);
-
-    Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-    free(ll);
-    return listObjPtr;
-  }
-  else
+  if (!ticksPtr)
     return Tcl_NewListObj(0, NULL);
+
+  int cnt = ticksPtr->nTicks;
+  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+  for (int ii = 0; ii<cnt; ii++)
+    ll[ii] = Tcl_NewDoubleObj(ticksPtr->values[ii]);
+
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  free(ll);
+  return listObjPtr;
 }
 
 static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
@@ -270,6 +274,9 @@ static int ObjectSetProc(ClientData clientData, Tcl_Interp* interp,
   Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
   *(double*)savePtr = *(double*)objectPtrPtr;
 
+  if (!objectPtrPtr)
+    return TCL_OK;
+
   Tcl_IncrRefCount(*objPtr);
   *objectPtrPtr = *objPtr;
 
@@ -280,6 +287,10 @@ static Tcl_Obj* ObjectGetProc(ClientData clientData, Tk_Window tkwin,
 			      char *widgRec, int offset)
 {
   Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
+
+  if (!objectPtrPtr)
+    return Tcl_NewObj();
+
   return *objectPtrPtr;
 }
 

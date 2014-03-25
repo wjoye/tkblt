@@ -30,6 +30,8 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"

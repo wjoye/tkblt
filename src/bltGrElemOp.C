@@ -32,6 +32,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
@@ -82,6 +84,9 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   *(double*)savePtr = *(double*)valuesPtrPtr;
   Element* elemPtr = (Element*)widgRec;
 
+  if (!valuesPtrPtr)
+    return TCL_OK;
+
   Tcl_Obj** objv;
   int objc;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
@@ -123,6 +128,9 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
 {
   ElemValues* valuesPtr = *(ElemValues**)(widgRec + offset);
 
+  if (!valuesPtr)
+   return Tcl_NewStringObj("", -1);
+    
   switch (valuesPtr->type) {
   case ELEM_SOURCE_VECTOR:
     {
@@ -145,7 +153,7 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
       return listObjPtr;
     }
  default:
-   return Tcl_NewStringObj("", 0);
+   return Tcl_NewStringObj("", -1);
   }
 }
 
@@ -230,10 +238,12 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
 {
   ElemCoords* coordsPtr = (ElemCoords*)(widgRec + offset);
 
-  if (!coordsPtr->x || !coordsPtr->x->nValues)
+  if (!coordsPtr || 
+      !coordsPtr->x || !coordsPtr->y || 
+      !coordsPtr->x->nValues || !coordsPtr->y->nValues)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  int cnt = coordsPtr->x->nValues;
+  int cnt = MIN(coordsPtr->x->nValues, coordsPtr->y->nValues);
   Tcl_Obj** ll = (Tcl_Obj**)calloc(2*cnt,sizeof(Tcl_Obj*));
   for (int ii=0, jj=0; ii<cnt; ii++) {
     ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values[ii]);

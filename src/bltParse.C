@@ -23,6 +23,8 @@
  * since the compiled code typically runs only one time.
  */
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltParse.h"
@@ -204,6 +206,7 @@ static unsigned char tclTypeTable[] =
  *
  *---------------------------------------------------------------------------
  */
+
 int Blt_ParseNestedCmd(
     Tcl_Interp* interp,		/* Interpreter to use for nested command
 				 * evaluations and error messages. */

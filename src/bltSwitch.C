@@ -29,6 +29,8 @@
 
 #include <stdarg.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltSwitch.h"

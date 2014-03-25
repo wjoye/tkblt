@@ -34,6 +34,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include <tkPort.h>
 #include <tkInt.h>

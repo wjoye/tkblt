@@ -31,6 +31,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"

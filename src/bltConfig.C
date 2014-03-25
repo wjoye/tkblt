@@ -38,9 +38,12 @@
 
 #include <stdarg.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 };
+
 #include "bltConfig.h"
 
 void RestoreProc(ClientData clientData, Tk_Window tkwin,
@@ -218,6 +221,9 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
   const char*** listPtr = (const char***)(widgRec + offset);
   *(double*)savePtr = *(double*)listPtr;
 
+  if (!listPtr)
+    return TCL_OK;
+
   const char** argv;
   int argc;
   if (Tcl_SplitList(interp, Tcl_GetString(*objPtr), &argc, &argv) != TCL_OK)
@@ -232,6 +238,9 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
 			    char *widgRec, int offset)
 {
   const char*** listPtr = (const char***)(widgRec + offset);
+
+  if (!listPtr)
+    return Tcl_NewListObj(0, NULL);
 
   // count how many
   int cnt=0;

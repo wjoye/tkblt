@@ -31,6 +31,8 @@
 #include <float.h>
 #include <math.h>
 
+#include "bltC.h"
+
 extern "C" {
 #include "bltInt.h"
 #include "bltSpline.h"

@@ -30,6 +30,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
@@ -575,7 +576,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 
 // Create
 
-Element * Blt_LineElement(Graph* graphPtr)
+Element* Blt_LineElement(Graph* graphPtr)
 {
   LineElement* elemPtr = (LineElement*)calloc(1, sizeof(LineElement));
   elemPtr->procsPtr = &lineProcs;
@@ -712,8 +713,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
 {
   LinePen* lpPtr = (LinePen*)basePtr;
 
-  // Set the outline GC for this pen: GCForeground is outline color.
-  // GCBackground is the fill color (only used for bitmap symbols).
+  // symbol outline
   unsigned long gcMask = (GCLineWidth | GCForeground);
   XColor* colorPtr = lpPtr->symbol.outlineColor;
   if (!colorPtr)
@@ -726,15 +726,6 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
     if (!colorPtr)
       colorPtr = lpPtr->traceColor;
 
-    /*
-     * Set a clip mask if either
-     *	1) no background color was designated or
-     *	2) a masking bitmap was specified.
-     *
-     * These aren't necessarily the bitmaps we'll be using for clipping. But
-     * this makes it unlikely that anyone else will be sharing this GC when
-     * we set the clip origin (at the time the bitmap is drawn).
-     */
     if (colorPtr) {
       gcValues.background = colorPtr->pixel;
       gcMask |= GCBackground;
@@ -754,7 +745,7 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
   }
   lpPtr->symbol.outlineGC = newGC;
 
-  // Fill GC for symbols: GCForeground is fill color
+  // symbol fill
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->symbol.fillColor;
   if (!colorPtr)
@@ -765,12 +756,11 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
     gcValues.foreground = colorPtr->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
-  if (lpPtr->symbol.fillGC) {
+  if (lpPtr->symbol.fillGC)
     Tk_FreeGC(graphPtr->display, lpPtr->symbol.fillGC);
-  }
   lpPtr->symbol.fillGC = newGC;
 
-  // Line segments
+  // trace
   gcMask = (GCLineWidth | GCForeground | GCLineStyle | GCCapStyle |
 	    GCJoinStyle);
   gcValues.cap_style = CapButt;
@@ -778,30 +768,27 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
   gcValues.line_style = LineSolid;
   gcValues.line_width = LineWidth(lpPtr->traceWidth);
 
+  gcValues.foreground = lpPtr->traceColor->pixel;
   colorPtr = lpPtr->traceOffColor;
-  if (!colorPtr)
-    colorPtr = lpPtr->traceColor;
-
   if (colorPtr) {
     gcMask |= GCBackground;
     gcValues.background = colorPtr->pixel;
   }
-  gcValues.foreground = lpPtr->traceColor->pixel;
   if (LineIsDashed(lpPtr->traceDashes)) {
     gcValues.line_width = lpPtr->traceWidth;
-    gcValues.line_style = 
-      (colorPtr == NULL) ? LineOnOffDash : LineDoubleDash;
+    gcValues.line_style = !colorPtr ? LineOnOffDash : LineDoubleDash;
   }
   newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lpPtr->traceGC) {
+  if (lpPtr->traceGC)
     Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
-  }
+
   if (LineIsDashed(lpPtr->traceDashes)) {
     lpPtr->traceDashes.offset = lpPtr->traceDashes.values[0] / 2;
     Blt_SetDashes(graphPtr->display, newGC, &lpPtr->traceDashes);
   }
   lpPtr->traceGC = newGC;
 
+  // errorbar
   gcMask = (GCLineWidth | GCForeground);
   colorPtr = lpPtr->errorBarColor;
   if (!colorPtr)
@@ -833,15 +820,9 @@ static void DestroySymbol(Display *display, Symbol *symbolPtr)
   symbolPtr->type = SYMBOL_NONE;
 }
 
-/*
- * Reset the number of points and segments, in case there are no segments or
- * points
- */
 static void ResetStylePalette(Blt_Chain styles)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_FirstLink(styles); link;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(styles); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     stylePtr->lines.length = stylePtr->symbolPts.length = 0;
@@ -851,43 +832,32 @@ static void ResetStylePalette(Blt_Chain styles)
 
 static int ScaleSymbol(LineElement* elemPtr, int normalSize)
 {
-  int maxSize;
-  double scale;
-  int newSize;
-
-  scale = 1.0;
+  double scale = 1.0;
   if (elemPtr->scaleSymbols) {
-    double xRange, yRange;
-
-    xRange = (elemPtr->axes.x->max - elemPtr->axes.x->min);
-    yRange = (elemPtr->axes.y->max - elemPtr->axes.y->min);
+    double xRange = (elemPtr->axes.x->max - elemPtr->axes.x->min);
+    double yRange = (elemPtr->axes.y->max - elemPtr->axes.y->min);
     if (elemPtr->flags & SCALE_SYMBOL) {
-      /* Save the ranges as a baseline for future scaling. */
       elemPtr->xRange = xRange;
       elemPtr->yRange = yRange;
       elemPtr->flags &= ~SCALE_SYMBOL;
-    } else {
-      double xScale, yScale;
-
-      /* Scale the symbol by the smallest change in the X or Y axes */
-      xScale = elemPtr->xRange / xRange;
-      yScale = elemPtr->yRange / yRange;
+    }
+    else {
+      // Scale the symbol by the smallest change in the X or Y axes
+      double xScale = elemPtr->xRange / xRange;
+      double yScale = elemPtr->yRange / yRange;
       scale = MIN(xScale, yScale);
     }
   }
-  newSize = Round(normalSize * scale);
+  int newSize = Round(normalSize * scale);
 
-  /*
-   * Don't let the size of symbols go unbounded. Both X and Win32 drawing
-   * routines assume coordinates to be a signed short int.
-   */
-  maxSize = (int)MIN(elemPtr->obj.graphPtr->hRange, 
+  // Don't let the size of symbols go unbounded. Both X and Win32 drawing
+  // routines assume coordinates to be a signed short int.
+  int maxSize = (int)MIN(elemPtr->obj.graphPtr->hRange, 
 		     elemPtr->obj.graphPtr->vRange);
-  if (newSize > maxSize) {
+  if (newSize > maxSize)
     newSize = maxSize;
-  }
 
-  /* Make the symbol size odd so that its center is a single pixel. */
+  // Make the symbol size odd so that its center is a single pixel.
   newSize |= 0x01;
   return newSize;
 }
@@ -1844,32 +1814,25 @@ static void MapErrorBars(Graph* graphPtr, LineElement* elemPtr,
 static void MapLineProc(Graph* graphPtr, Element *basePtr)
 {
   LineElement* elemPtr = (LineElement *)basePtr;
-  MapInfo mi;
-  int size, np;
-  LineStyle **styleMap;
-  Blt_ChainLink link;
     
   ResetLine(elemPtr);
   if (!elemPtr->coords.x || !elemPtr->coords.y ||
       !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
     return;
-  np = NUMBEROFPOINTS(elemPtr);
+  int np = NUMBEROFPOINTS(elemPtr);
 
+  MapInfo mi;
   GetScreenPoints(graphPtr, elemPtr, &mi);
   MapSymbols(graphPtr, elemPtr, &mi);
 
-  if ((elemPtr->flags & ACTIVE_PENDING) && (elemPtr->nActiveIndices > 0)) {
+  if ((elemPtr->flags & ACTIVE_PENDING) && (elemPtr->nActiveIndices > 0))
     MapActiveSymbols(graphPtr, elemPtr);
-  }
-  /*
-   * Map connecting line segments if they are to be displayed.
-   */
+
+  // Map connecting line segments if they are to be displayed.
   elemPtr->smooth = elemPtr->reqSmooth;
   if ((np > 1) && (elemPtr->builtinPen.traceWidth > 0)) {
-    /*
-     * Do smoothing if necessary.  This can extend the coordinate array,
-     * so both mi.points and mi.nPoints may change.
-     */
+    // Do smoothing if necessary.  This can extend the coordinate array,
+    // so both mi.points and mi.nPoints may change.
     switch (elemPtr->smooth) {
     case PEN_SMOOTH_STEP:
       GenerateSteps(&mi);
@@ -1877,21 +1840,19 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
 
     case PEN_SMOOTH_NATURAL:
     case PEN_SMOOTH_QUADRATIC:
-      if (mi.nScreenPts < 3) {
-	/* Can't interpolate with less than three points. */
+      // Can't interpolate with less than three points
+      if (mi.nScreenPts < 3)
 	elemPtr->smooth = PEN_SMOOTH_LINEAR;
-      } else {
+      else
 	GenerateSpline(graphPtr, elemPtr, &mi);
-      }
       break;
 
     case PEN_SMOOTH_CATROM:
-      if (mi.nScreenPts < 3) {
-	/* Can't interpolate with less than three points. */
+      // Can't interpolate with less than three points
+      if (mi.nScreenPts < 3)
 	elemPtr->smooth = PEN_SMOOTH_LINEAR;
-      } else {
+      else
 	GenerateParametricSpline(graphPtr, elemPtr, &mi);
-      }
       break;
 
     default:
@@ -1908,18 +1869,20 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
   free(mi.screenPts);
   free(mi.map);
 
-  /* Set the symbol size of all the pen styles. */
-  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  // Set the symbol size of all the pen styles
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-    size = ScaleSymbol(elemPtr, penPtr->symbol.size);
+    int size = ScaleSymbol(elemPtr, penPtr->symbol.size);
+    //    cerr << size << ' ' << penPtr->symbol.size << endl;
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penPtr->errorBarCapWidth > 0) 
       ? penPtr->errorBarCapWidth : Round(size * 0.6666666);
     stylePtr->errorBarCapWidth /= 2;
   }
-  styleMap = (LineStyle **)Blt_StyleMap((Element *)elemPtr);
+
+  LineStyle **styleMap = (LineStyle **)Blt_StyleMap((Element *)elemPtr);
   if (((elemPtr->yHigh && elemPtr->yHigh->nValues > 0) &&
        (elemPtr->yLow && elemPtr->yLow->nValues > 0)) ||
       ((elemPtr->xHigh && elemPtr->xHigh->nValues > 0) &&
@@ -1928,6 +1891,7 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
       (elemPtr->yError && elemPtr->yError->nValues > 0)) {
     MapErrorBars(graphPtr, elemPtr, styleMap);
   }
+
   MergePens(elemPtr, styleMap);
   free(styleMap);
 }
@@ -3026,12 +2990,11 @@ static void DrawActiveLineProc(Graph* graphPtr, Drawable drawable,
 {
   LineElement* elemPtr = (LineElement *)basePtr;
   LinePen* penPtr = (LinePen *)elemPtr->activePenPtr;
-  int symbolSize;
 
-  if (penPtr == NULL) {
+  if (!penPtr)
     return;
-  }
-  symbolSize = ScaleSymbol(elemPtr, penPtr->symbol.size);
+
+  int symbolSize = ScaleSymbol(elemPtr, penPtr->symbol.size);
 
   /* 
    * nActiveIndices 
@@ -3379,12 +3342,11 @@ static void ActiveLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 {
   LineElement* elemPtr = (LineElement *)basePtr;
   LinePen* penPtr = (LinePen *)elemPtr->activePenPtr;
-  int symbolSize;
 
-  if (penPtr == NULL) {
+  if (!penPtr)
     return;
-  }
-  symbolSize = ScaleSymbol(elemPtr, penPtr->symbol.size);
+
+  int symbolSize = ScaleSymbol(elemPtr, penPtr->symbol.size);
   if (elemPtr->nActiveIndices > 0) {
     if (elemPtr->flags & ACTIVE_PENDING) {
       MapActiveSymbols(graphPtr, elemPtr);
