@@ -836,6 +836,7 @@ static int ScaleSymbol(LineElement* elemPtr, int normalSize)
   if (elemPtr->scaleSymbols) {
     double xRange = (elemPtr->axes.x->max - elemPtr->axes.x->min);
     double yRange = (elemPtr->axes.y->max - elemPtr->axes.y->min);
+    // Save the ranges as a baseline for future scaling
     if (elemPtr->flags & SCALE_SYMBOL) {
       elemPtr->xRange = xRange;
       elemPtr->yRange = yRange;
@@ -859,6 +860,7 @@ static int ScaleSymbol(LineElement* elemPtr, int normalSize)
 
   // Make the symbol size odd so that its center is a single pixel.
   newSize |= 0x01;
+
   return newSize;
 }
 
@@ -1875,7 +1877,6 @@ static void MapLineProc(Graph* graphPtr, Element *basePtr)
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     int size = ScaleSymbol(elemPtr, penPtr->symbol.size);
-    //    cerr << size << ' ' << penPtr->symbol.size << endl;
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penPtr->errorBarCapWidth > 0) 
       ? penPtr->errorBarCapWidth : Round(size * 0.6666666);
