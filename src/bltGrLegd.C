@@ -481,6 +481,8 @@ void Blt_DestroyLegend(Graph* graphPtr)
     }
   }
 
+  Blt_Chain_Destroy(legendPtr->selected);
+
   Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
 		       graphPtr->tkwin);
   free(legendPtr);
