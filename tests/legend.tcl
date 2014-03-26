@@ -3,7 +3,9 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-#bltTest2 $graph legend -activebackground
+echo "Testing Legend..."
+
+bltTest2 $graph legend -activebackground
 #bltTest2 $graph legend -activeborderwidth
 #bltTest2 $graph legend -activeforeground
 #bltTest2 $graph legend -activerelief

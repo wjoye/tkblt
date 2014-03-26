@@ -3,6 +3,8 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
+echo "Testing Crosshairs..."
+
 $graph crosshairs configure -hide no
 $graph crosshairs configure -position "@200,200"
 

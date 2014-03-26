@@ -185,9 +185,8 @@ static ElementProcs barProcs = {
 
 static Tk_ObjCustomOption styleObjOption =
   {
-    "style", StyleSetProc, StyleGetProc, NULL, NULL, 
+    "style", StyleSetProc, StyleGetProc, StyleRestoreProc, StyleFreeProc, 
     (ClientData)sizeof(BarStyle)
-
   };
 
 extern Tk_ObjCustomOption barPenObjOption;
@@ -429,9 +428,8 @@ static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
   Blt_ChainLink link;
   BarStyle *stylePtr;
 
-  if (ConfigurePenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK) {
+  if (ConfigurePenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK)
     return TCL_ERROR;
-  }
 
   // Point to the static normal pen if no external pens have been selected.
   link = Blt_Chain_FirstLink(elemPtr->stylePalette);
@@ -505,12 +503,11 @@ static int ConfigurePenProc(Graph* graphPtr, Pen *basePtr)
 
 static void ResetStylePalette(Blt_Chain stylePalette)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_FirstLink(stylePalette); link; 
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); link; 
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
-    stylePtr->xeb.length = stylePtr->yeb.length = 0;
+    stylePtr->xeb.length = 0;
+    stylePtr->yeb.length = 0;
     stylePtr->nBars = 0;
   }
 }
@@ -744,12 +741,8 @@ static void ClosestBarProc(Graph* graphPtr, Element *basePtr)
 static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
 {
   if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
-    Blt_ChainLink link;
-    BarStyle *stylePtr;
-
-    link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-
-    stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     stylePtr->nBars = elemPtr->nBars;
     stylePtr->bars = elemPtr->bars;
     stylePtr->symbolSize = elemPtr->bars->width / 2;
@@ -759,9 +752,9 @@ static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
     stylePtr->yeb.segments = elemPtr->yeb.segments;
     return;
   }
-  /* We have more than one style. Group bar segments of like pen styles
-   * together.  */
 
+  // We have more than one style. Group bar segments of like pen styles
+  // together
   if (elemPtr->nBars > 0) {
     Blt_ChainLink link;
     XRectangle *bars, *bp;
@@ -899,8 +892,8 @@ static void MapActiveBars(BarElement* elemPtr)
 
 static void ResetBar(BarElement* elemPtr)
 {
-  /* Release any storage associated with the display of the bar */
   ResetStylePalette(elemPtr->stylePalette);
+
   if (elemPtr->activeRects)
     free(elemPtr->activeRects);
 
@@ -1284,20 +1277,18 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
   if (count > 0) {
     size = bars->width;
   }
-  {
-    Blt_ChainLink link;
 
-    /* Set the symbol size of all the pen styles. */
-    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
-	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
-      stylePtr->symbolSize = size;
-      stylePtr->errorBarCapWidth = 
-	(stylePtr->penPtr->errorBarCapWidth > 0) 
-	? stylePtr->penPtr->errorBarCapWidth : (size * 66666) / 100000;
-      stylePtr->errorBarCapWidth /= 2;
-    }
+  // Set the symbol size of all the pen styles
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+       link = Blt_Chain_NextLink(link)) {
+    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    stylePtr->symbolSize = size;
+    stylePtr->errorBarCapWidth = 
+      (stylePtr->penPtr->errorBarCapWidth > 0) 
+      ? stylePtr->penPtr->errorBarCapWidth : (size * 66666) / 100000;
+    stylePtr->errorBarCapWidth /= 2;
   }
+
   dataToStyle = (BarStyle**)Blt_StyleMap((Element *)elemPtr);
   if (((elemPtr->yHigh && elemPtr->yHigh->nValues > 0) && 
        (elemPtr->yLow && elemPtr->yLow->nValues > 0)) ||
@@ -1307,6 +1298,7 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
       (elemPtr->yError && elemPtr->yError->nValues > 0)) {
     MapErrorBars(graphPtr, elemPtr, dataToStyle);
   }
+
   MergePens(elemPtr, dataToStyle);
   free(dataToStyle);
 }
@@ -1488,32 +1480,30 @@ static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable,
 			      Element *basePtr)
 {
   BarElement* elemPtr = (BarElement *)basePtr;
-  int count;
-  Blt_ChainLink link;
 
-  count = 0;
-  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  int count = 0;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    if (stylePtr->nBars > 0) {
+    if (stylePtr->nBars > 0)
       DrawBarSegments(graphPtr, drawable, penPtr, stylePtr->bars,
 		      stylePtr->nBars);
-    }
-    if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X)) {
+
+    if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X))
       Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
-    }
-    if ((stylePtr->yeb.length > 0) && (penPtr->errorBarShow & SHOW_Y)) {
+
+    if ((stylePtr->yeb.length > 0) && (penPtr->errorBarShow & SHOW_Y))
       Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
-    }
-    if (penPtr->valueShow != SHOW_NONE) {
+
+    if (penPtr->valueShow != SHOW_NONE)
       DrawBarValues(graphPtr, drawable, elemPtr, penPtr, 
 		    stylePtr->bars, stylePtr->nBars, 
 		    elemPtr->barToData + count);
-    }
+
     count += stylePtr->nBars;
   }
 }
@@ -1537,7 +1527,8 @@ static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable,
 		      elemPtr->activeRects, elemPtr->nActive, 
 		      elemPtr->activeToData);
       }
-    } else if (elemPtr->nActiveIndices < 0) {
+    }
+    else if (elemPtr->nActiveIndices < 0) {
       DrawBarSegments(graphPtr, drawable, penPtr, elemPtr->bars, 
 		      elemPtr->nBars);
       if (penPtr->valueShow != SHOW_NONE) {
@@ -1704,21 +1695,18 @@ static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 				      Element *basePtr)
 {
   BarElement* elemPtr = (BarElement *)basePtr;
-  Blt_ChainLink link;
-  int count;
-
-  count = 0;
-  for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  
+  int count = 0;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    XColor* colorPtr;
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    if (stylePtr->nBars > 0) {
+    if (stylePtr->nBars > 0)
       SegmentsToPostScript(graphPtr, ps, penPtr, stylePtr->bars, 
 			   stylePtr->nBars);
-    }
-    colorPtr = penPtr->errorBarColor;
+
+    XColor* colorPtr = penPtr->errorBarColor;
     if (!colorPtr)
       colorPtr = penPtr->outlineColor;
 
@@ -1728,17 +1716,19 @@ static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
       Blt_Ps_Draw2DSegments(ps, stylePtr->xeb.segments,
 			    stylePtr->xeb.length);
     }
+
     if ((stylePtr->yeb.length > 0) && (penPtr->errorBarShow & SHOW_Y)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, penPtr->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       Blt_Ps_Draw2DSegments(ps, stylePtr->yeb.segments, 
 			    stylePtr->yeb.length);
     }
-    if (penPtr->valueShow != SHOW_NONE) {
+
+    if (penPtr->valueShow != SHOW_NONE)
       BarValuesToPostScript(graphPtr, ps, elemPtr, penPtr, 
 			    stylePtr->bars, stylePtr->nBars, 
 			    elemPtr->barToData + count);
-    }
+
     count += stylePtr->nBars;
   }
 }

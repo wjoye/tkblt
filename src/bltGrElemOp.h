@@ -68,7 +68,9 @@ extern "C" {
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
 
 typedef struct {
-  double min, max, range;
+  double min;
+  double max;
+  double range;
 } Weight;
 
 #define SetRange(l)							\
@@ -189,13 +191,15 @@ struct _Element {
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
 extern Tk_CustomOptionGetProc StyleGetProc;
+extern Tk_CustomOptionRestoreProc StyleRestoreProc;
+extern Tk_CustomOptionFreeProc StyleFreeProc;
 
 extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
 extern void Blt_ResizeStatusArray(Element* elemPtr, int nPoints);
 extern int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
 			   PenStyle *stylePtr);
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
-extern PenStyle **Blt_StyleMap (Element* elemPtr);
+extern PenStyle** Blt_StyleMap (Element* elemPtr);
 extern void Blt_MapErrorBars(Graph *graphPtr, Element* elemPtr, 
 			     PenStyle **dataToStyle);
 extern void Blt_FreeDataValues(ElemValues *evPtr);

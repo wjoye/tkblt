@@ -3,6 +3,8 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
+echo "Testing LineGraph..."
+
 bltTest $graph -aspect 2
 bltTest $graph -background red
 bltTest $graph -barmode overlap

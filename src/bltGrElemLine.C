@@ -273,7 +273,7 @@ static const char* penDirObjOption[] =
 
 static Tk_ObjCustomOption styleObjOption =
   {
-    "styles", StyleSetProc, StyleGetProc, NULL, NULL, 
+    "styles", StyleSetProc, StyleGetProc, StyleRestoreProc, StyleFreeProc, 
     (ClientData)sizeof(LineStyle)
 
   };

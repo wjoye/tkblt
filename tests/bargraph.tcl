@@ -3,6 +3,8 @@ source base.tcl
 set w .bar
 set graph [bltBarGraph $w]
 
+echo "Testing BarGraph..."
+
 # Graph
 bltTest $graph -aspect 2
 bltTest $graph -background red

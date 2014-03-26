@@ -6,6 +6,8 @@ set graph [bltLineGraph $w]
 set mm [$graph marker create bitmap tt -element data1 \
 	    -coords {1.5 100} -bitmap error]
 
+echo "Testing Bitmap Marker..."
+
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background yellow
 bltTest3 $graph marker $mm -bg red

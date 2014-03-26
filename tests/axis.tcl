@@ -5,6 +5,8 @@ set graph [bltLineGraph $w]
 
 $graph xaxis configure -title "X Axis" -limitsformat "%g"
 
+echo "Testing Axis..."
+
 #bltCmd $graph axis activate
 #bltCmd $graph axis bind
 #bltCmd $graph axis cget

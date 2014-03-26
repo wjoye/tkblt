@@ -6,6 +6,8 @@ set graph [bltLineGraph $w]
 set mm [$graph marker create polygon tt -element data1 \
 	    -coords {1 50 1.5 100 1 150} -linewidth 5]
 
+echo "Testing Polygon Marker..."
+
 bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
 bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
