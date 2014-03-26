@@ -900,7 +900,7 @@ static Blt_OpSpec elemOps[] = {
   {"lower",      1, (void*)LowerOp,      4, 0, "?elemName?...",},
   {"names",      1, (void*)NamesOp,      3, 0, "?pattern?...",},
   {"raise",      1, (void*)RaiseOp,      4, 0, "?elemName?...",},
-  {"show",       1, (void*)ShowOp,       4, 4, "?elemList?",},
+  {"show",       1, (void*)ShowOp,       4, 0, "?elemList?",},
   {"type",       1, (void*)TypeOp,       4, 4, "elemName",},
 };
 static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);

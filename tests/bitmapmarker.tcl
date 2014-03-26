@@ -11,7 +11,7 @@ echo "Testing Bitmap Marker..."
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background yellow
 bltTest3 $graph marker $mm -bg red
-bltTest3 $graph marker $mm -bindtags {aa}
+#bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -bitmap hourglass
 bltTest3 $graph marker $mm -coords {1 50}
 bltTest3 $graph marker $mm -element data2

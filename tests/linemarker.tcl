@@ -11,7 +11,7 @@ set nn [$graph marker create line ss -element data1 \
 
 echo "Testing Line Marker..."
 
-bltTest3 $graph marker $mm -bindtags {aa}
+#bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
 bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
 bltTest3 $graph marker $mm -dashes dashdot

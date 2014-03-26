@@ -49,12 +49,13 @@ bltTest2 $graph legend -titlefont "times 24 bold italic"
 
 #bltCmd $graph legend activate
 #bltCmd $graph legend bind
-#bltCmd $graph legend cget
-#bltCmd $graph legend configure
+bltCmd $graph legend cget -fg
+bltCmd $graph legend configure
+bltCmd $graph legend configure -fg
 #bltCmd $graph legend curselection
 #bltCmd $graph legend deactivate
 bltCmd $graph legend focus data1
-bltCmd $graph legend get data1
+#bltCmd $graph legend get data1
 bltCmd $graph legend selection anchor data1
 bltCmd $graph legend selection mark data1
 bltCmd $graph legend selection includes data2

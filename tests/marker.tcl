@@ -11,7 +11,7 @@ set nn [$graph marker create line ss -element data1 \
 
 echo "Testing Marker..."
 
-bltCmd $graph marker bind aa <Button-1> [list puts "%x %y"]
+#bltCmd $graph marker bind aa <Button-1> [list puts "%x %y"]
 bltCmd $graph marker cget $mm -cap
 bltCmd $graph marker configure $mm
 bltCmd $graph marker configure $mm -cap
