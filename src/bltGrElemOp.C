@@ -191,7 +191,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   ElemCoords* coordsPtr = (ElemCoords*)(widgRec + offset);
   *(double*)savePtr = (double)NULL;
 
-  double *values;
+  double* values;
   int nValues;
   if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
     return TCL_ERROR;
@@ -218,7 +218,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   coordsPtr->x->values = (double*)malloc(newSize);
   coordsPtr->x->nValues = nValues;
   coordsPtr->y->values = (double*)malloc(newSize);
-  coordsPtr->x->nValues = nValues;
+  coordsPtr->y->nValues = nValues;
 
   int ii=0;
   for (double* p = values; ii<nValues; ii++) {
@@ -1030,6 +1030,8 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
 			      Blt_VectorNotify notify)
 {
   ElemValues* valuesPtr = (ElemValues*)clientData;
+  if (!valuesPtr)
+    return;
 
   if (notify == BLT_VECTOR_NOTIFY_DESTROY)
     FreeDataValues(valuesPtr);
@@ -1102,6 +1104,9 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 
 static void FreeDataValues(ElemValues *valuesPtr)
 {
+  if (!valuesPtr)
+    return;
+
   switch (valuesPtr->type) {
   case ELEM_SOURCE_VECTOR: 
     FreeVectorSource(valuesPtr);
@@ -1117,34 +1122,31 @@ static void FreeDataValues(ElemValues *valuesPtr)
 
 static void FindRange(ElemValues *valuesPtr)
 {
-  int i;
-  double *x;
-  double min, max;
-
-  if (!valuesPtr || 
-      (valuesPtr->nValues < 1) || 
-      (valuesPtr->values == NULL))
+  if (!valuesPtr || (valuesPtr->nValues < 1) || !valuesPtr->values)
     return;
-  x = valuesPtr->values;
 
-  min = DBL_MAX, max = -DBL_MAX;
-  for(i = 0; i < valuesPtr->nValues; i++) {
-    if (isfinite(x[i])) {
-      min = max = x[i];
+  double* x = valuesPtr->values;
+  double min = DBL_MAX;
+  double max = -DBL_MAX;
+  int ii;
+  for(ii=0; ii<valuesPtr->nValues; ii++) {
+    if (isfinite(x[ii])) {
+      min = max = x[ii];
       break;
     }
   }
-  /*  Initialize values to track the vector range */
-  for (/* empty */; i < valuesPtr->nValues; i++) {
-    if (isfinite(x[i])) {
-      if (x[i] < min) {
-	min = x[i];
-      } else if (x[i] > max) {
-	max = x[i];
-      }
+
+  //  Initialize values to track the vector range
+  for (/* empty */; ii<valuesPtr->nValues; ii++) {
+    if (isfinite(x[ii])) {
+      if (x[ii] < min)
+	min = x[ii];
+      else if (x[ii] > max)
+	max = x[ii];
     }
   }
-  valuesPtr->min = min, valuesPtr->max = max;
+  valuesPtr->min = min;
+  valuesPtr->max = max;
 }
 
 double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
