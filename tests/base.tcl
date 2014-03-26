@@ -64,14 +64,21 @@ proc bltCmd {graph args} {
 }
 
 proc bltElements {graph} {
-    $graph element create data1 \
-	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
-	-ydata { 13 25 36 46 55 64 70 75 80 90}
+    blt::vector create xv(10)
+    blt::vector create yv(10)
+    xv set { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 }
+    yv set { 5 10 10 15 15 10 20 25 30 35 }
+
+    $graph element create data1 -data {0.2 13 0.4 25 0.6 36 0.8 46 1.0 55 1.2 64 1.4 70 1.6 75 1.8 80 2.0 90}
+
     $graph element create data2 \
 	-xdata { 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 } \
 	-ydata { 26 50 72 92 110 128 140 150 160 180} \
  	-yerror {10 10 10 10 10 10 10 10 10 10 10}  \
 	-color red
+
+    $graph element create data3 -xdata xv -ydata yv -color green
+
     $graph legend configure -title "Legend"
 }
 

@@ -209,7 +209,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   coordsPtr->x = NULL;
   coordsPtr->y = NULL;
 
-  if (newSize==0)
+  if (!newSize)
     return TCL_OK;
 
   coordsPtr->x = (ElemValues*)calloc(1,sizeof(ElemValues));
