@@ -54,39 +54,41 @@ typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc,
 
 static Tk_CustomOptionSetProc PenSetProc;
 static Tk_CustomOptionGetProc PenGetProc;
+static Tk_CustomOptionFreeProc PenFreeProc;
 Tk_ObjCustomOption barPenObjOption =
   {
-    "barPen", PenSetProc, PenGetProc, NULL, NULL, (ClientData)CID_ELEM_BAR
+    "barPen", PenSetProc, PenGetProc, RestoreProc, PenFreeProc,
+    (ClientData)CID_ELEM_BAR
   };
 Tk_ObjCustomOption linePenObjOption =
   {
-    "linePen", PenSetProc, PenGetProc, NULL, NULL, (ClientData)CID_ELEM_LINE
+    "linePen", PenSetProc, PenGetProc, RestoreProc, PenFreeProc,
+    (ClientData)CID_ELEM_LINE
   };
 
 static int PenSetProc(ClientData clientData, Tcl_Interp* interp,
 		      Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		      int offset, char* save, int flags)
+		      int offset, char* savePtr, int flags)
 {
   Pen** penPtrPtr = (Pen**)(widgRec + offset);
+  *(double*)savePtr = *(double*)penPtrPtr;
+  
+  if (!penPtrPtr)
+    return TCL_OK;
+
   const char* string = Tcl_GetString(*objPtr);
-  if ((string[0] == '\0') && (flags & TK_OPTION_NULL_OK)) {
-    Blt_FreePen(*penPtrPtr);
+  if (!string || !string[0]) {
     *penPtrPtr = NULL;
-  } 
-  else {
-    Pen* penPtr;
-    Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
-    ClassId classId = (ClassId)(long(clientData));
-
-    if (classId == CID_NONE)
-      classId = graphPtr->classId;
-
-    if (Blt_GetPenFromObj(interp, graphPtr, *objPtr, classId,&penPtr) != TCL_OK)
-      return TCL_ERROR;
-    
-    Blt_FreePen(*penPtrPtr);
-    *penPtrPtr = penPtr;
+    return TCL_OK;
   }
+
+  Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
+  ClassId classId = (ClassId)(long(clientData));
+  Pen* penPtr;
+  if (Blt_GetPenFromObj(interp, graphPtr, *objPtr, classId, &penPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  *penPtrPtr = penPtr;
 
   return TCL_OK;
 };
@@ -95,12 +97,18 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
 			   char *widgRec, int offset)
 {
   Pen* penPtr = *(Pen**)(widgRec + offset);
-
-  if (penPtr == NULL)
+  if (!penPtr)
     return Tcl_NewStringObj("", -1);
-  else
-    return Tcl_NewStringObj(penPtr->name, -1);
+
+  return Tcl_NewStringObj(penPtr->name, -1);
 };
+
+static void PenFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
+{
+  Pen* penPtr = *(Pen**)ptr;
+  if (penPtr)
+    Blt_FreePen(penPtr);
+}
 
 // Create
 

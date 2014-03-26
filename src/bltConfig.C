@@ -68,8 +68,8 @@ static int PointSetProc(ClientData clientData, Tcl_Interp *interp,
 			int offset, char* save, int flags)
 {
   XPoint* pointPtr = (XPoint*)(widgRec + offset);
-  int x, y;
 
+  int x, y;
   if (Blt_GetXY(interp, tkwin, Tcl_GetString(*objPtr), &x, &y) != TCL_OK)
     return TCL_ERROR;
 
@@ -109,33 +109,27 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
 
   int length;
   const char* string = Tcl_GetStringFromObj(*objPtr, &length);
-  if (!string) {
+  if (!string || !string[0]) {
     dashesPtr->values[0] = 0;
     return TCL_OK;
   }
 
-  if (!string[0])
-    dashesPtr->values[0] = 0;
-  else if (!strncmp(string, "dot", length)) {	
-    /* 1 */
+  if (!strncmp(string, "dot", length)) {	
     dashesPtr->values[0] = 1;
     dashesPtr->values[1] = 0;
   }
   else if (!strncmp(string, "dash", length)) {	
-    /* 5 2 */
     dashesPtr->values[0] = 5;
     dashesPtr->values[1] = 2;
     dashesPtr->values[2] = 0;
   }
   else if (!strncmp(string, "dashdot", length)) { 
-    /* 2 4 2 */
     dashesPtr->values[0] = 2;
     dashesPtr->values[1] = 4;
     dashesPtr->values[2] = 2;
     dashesPtr->values[3] = 0;
   }
   else if (!strncmp(string, "dashdotdot", length)) { 
-    /* 2 4 2 2 */
     dashesPtr->values[0] = 2;
     dashesPtr->values[1] = 4;
     dashesPtr->values[2] = 2;
@@ -148,7 +142,8 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
     if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
       return TCL_ERROR;
 
-    if (objc > 11) {	/* This is the postscript limit */
+    // This is the postscript limit
+    if (objc > 11) {
       Tcl_AppendResult(interp, "too many values in dash list \"", 
 		       string, "\"", (char *)NULL);
       return TCL_ERROR;
@@ -160,10 +155,7 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
       if (Tcl_GetIntFromObj(interp, objv[ii], &value) != TCL_OK)
 	return TCL_ERROR;
 
-      /*
-       * Backward compatibility:
-       * Allow list of 0 to turn off dashes
-       */
+      // Backward compatibility: Allow list of 0 to turn off dashes
       if ((value == 0) && (objc == 1))
 	break;
 
@@ -176,7 +168,7 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
       dashesPtr->values[ii] = (unsigned char)value;
     }
 
-    // Make sure the array ends with a NUL byte
+    // Make sure the array ends with a NULL byte
     dashesPtr->values[ii] = 0;
   }
 

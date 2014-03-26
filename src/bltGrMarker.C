@@ -94,15 +94,15 @@ static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
   if (!coordsPtrPtr)
     return TCL_OK;
 
-  *coordsPtrPtr = NULL;
-
   int objc;
   Tcl_Obj** objv;
   if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
     return TCL_ERROR;
 
-  if (objc == 0)
+  if (objc == 0) {
+    *coordsPtrPtr = NULL;
     return TCL_OK;
+  }
 
   if (objc & 1) {
     Tcl_AppendResult(interp, "odd number of marker coordinates specified",NULL);

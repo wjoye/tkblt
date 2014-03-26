@@ -169,9 +169,12 @@ static int LimitSetProc(ClientData clientData, Tcl_Interp* interp,
 {
   double* limitPtr = (double*)(widgRec + offset);
   const char* string = Tcl_GetString(*objPtr);
-  if (string[0] == '\0')
+  if (!string || !string[0]) {
     *limitPtr = NAN;
-  else if (Blt_ExprDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
+    return TCL_OK;
+  }
+
+  if (Blt_ExprDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;
