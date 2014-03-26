@@ -538,11 +538,20 @@ static void DestroyAxis(Axis *axisPtr)
   if (axisPtr->activeTickGC)
     Tk_FreeGC(graphPtr->display, axisPtr->activeTickGC);
 
+  if (axisPtr->major.segments) 
+    free(axisPtr->major.segments);
   if (axisPtr->major.gc) 
     Blt_FreePrivateGC(graphPtr->display, axisPtr->major.gc);
 
+  if (axisPtr->minor.segments) 
+    free(axisPtr->minor.segments);
   if (axisPtr->minor.gc)
     Blt_FreePrivateGC(graphPtr->display, axisPtr->minor.gc);
+
+  if (axisPtr->t1Ptr)
+    free(axisPtr->t1Ptr);
+  if (axisPtr->t2Ptr)
+    free(axisPtr->t2Ptr);
 
   FreeTickLabels(axisPtr->tickLabels);
 
@@ -2635,8 +2644,14 @@ static void MapGridlines(Axis *axisPtr)
   if (axisPtr->showGridMinor)
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
 
-  if (needed == 0)
+  if (needed == 0) {
+    // Free generated ticks
+    if (t1Ptr != axisPtr->t1Ptr)
+      free(t1Ptr);
+    if (t2Ptr != axisPtr->t2Ptr)
+      free(t2Ptr);
     return;			
+  }
 
   needed = t1Ptr->nTicks;
   if (needed != axisPtr->major.nAllocated) {
@@ -2665,10 +2680,8 @@ static void MapGridlines(Axis *axisPtr)
       int j;
 
       for (j = 0; j < t2Ptr->nTicks; j++) {
-	double subValue;
-
-	subValue = value + (axisPtr->majorSweep.step * 
-			    t2Ptr->values[j]);
+	double subValue = value + (axisPtr->majorSweep.step * 
+				   t2Ptr->values[j]);
 	if (InRange(subValue, &axisPtr->axisRange)) {
 	  MakeGridLine(axisPtr, subValue, s2);
 	  s2++;
@@ -2681,11 +2694,11 @@ static void MapGridlines(Axis *axisPtr)
     }
   }
 
+  // Free generated ticks
   if (t1Ptr != axisPtr->t1Ptr)
-    free(t1Ptr);		/* Free generated ticks. */
- 
+    free(t1Ptr);
   if (t2Ptr != axisPtr->t2Ptr)
-    free(t2Ptr);		/* Free generated ticks. */
+    free(t2Ptr);
 
   axisPtr->major.nUsed = s1 - axisPtr->major.segments;
   axisPtr->minor.nUsed = s2 - axisPtr->minor.segments;
