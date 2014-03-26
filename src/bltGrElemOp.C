@@ -48,16 +48,16 @@ static void DestroyElement(Element* elemPtr);
 static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			       Element* elemPtr, 
 			       int objc, Tcl_Obj* const objv[]);
-static void FreeDataValues(ElemValues *valuesPtr);
-static void FreeVectorSource(ElemValues *valuesPtr);
+static void FreeDataValues(ElemValues* valuesPtr);
+static void FreeVectorSource(ElemValues* valuesPtr);
 static void FreeElement(char* data);
-static void FindRange(ElemValues *valuesPtr);
+static void FindRange(ElemValues* valuesPtr);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
 static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
-static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr, 
+static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr, 
 			 const char *vecName);
 static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr);
@@ -161,18 +161,19 @@ static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin,
 			   char *ptr)
 {
   ElemValues* valuesPtr = *(ElemValues**)ptr;
-  if (valuesPtr) {
-    switch (valuesPtr->type) {
-    case ELEM_SOURCE_VECTOR: 
-      FreeVectorSource(valuesPtr);
-      break;
-    case ELEM_SOURCE_VALUES:
-      break;
-    }
+  if (!valuesPtr)
+    return;
 
-    FreeDataValues(valuesPtr);
-    free(valuesPtr);
+  switch (valuesPtr->type) {
+  case ELEM_SOURCE_VECTOR: 
+    FreeVectorSource(valuesPtr);
+    break;
+  case ELEM_SOURCE_VALUES:
+    break;
   }
+
+  FreeDataValues(valuesPtr);
+  free(valuesPtr);
 }
 
 static Tk_CustomOptionSetProc PairsSetProc;
@@ -209,7 +210,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   coordsPtr->x = NULL;
   coordsPtr->y = NULL;
 
-  if (!newSize)
+  if (newSize == 0)
     return TCL_OK;
 
   coordsPtr->x = (ElemValues*)calloc(1,sizeof(ElemValues));
@@ -993,8 +994,11 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static void FreeVectorSource(ElemValues *valuesPtr)
+static void FreeVectorSource(ElemValues* valuesPtr)
 {
+  if (!valuesPtr)
+    return;
+
   if (valuesPtr->vectorSource.vector) { 
     Blt_SetVectorChangedProc(valuesPtr->vectorSource.vector, NULL, NULL);
     Blt_FreeVectorId(valuesPtr->vectorSource.vector); 
@@ -1002,9 +1006,12 @@ static void FreeVectorSource(ElemValues *valuesPtr)
   }
 }
 
-static int FetchVectorValues(Tcl_Interp* interp, ElemValues *valuesPtr, 
+static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr, 
 			     Blt_Vector *vector)
 {
+  if (!valuesPtr)
+    return TCL_ERROR;
+
   double *array;
   if (!valuesPtr->values)
     array = (double*)malloc(Blt_VecLength(vector) * sizeof(double));
@@ -1052,9 +1059,12 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   }
 }
 
-static int GetVectorData(Tcl_Interp* interp, ElemValues *valuesPtr, 
+static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr, 
 			 const char *vecName)
 {
+  if (!valuesPtr)
+    return TCL_ERROR;
+
   VectorDataSource *srcPtr = &valuesPtr->vectorSource;
   srcPtr->vector = Blt_AllocVectorId(interp, vecName);
 
@@ -1102,7 +1112,7 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
   return TCL_OK;
 }
 
-static void FreeDataValues(ElemValues *valuesPtr)
+static void FreeDataValues(ElemValues* valuesPtr)
 {
   if (!valuesPtr)
     return;
@@ -1120,7 +1130,7 @@ static void FreeDataValues(ElemValues *valuesPtr)
   valuesPtr->nValues =0;
 }
 
-static void FindRange(ElemValues *valuesPtr)
+static void FindRange(ElemValues* valuesPtr)
 {
   if (!valuesPtr || (valuesPtr->nValues < 1) || !valuesPtr->values)
     return;
@@ -1149,7 +1159,7 @@ static void FindRange(ElemValues *valuesPtr)
   valuesPtr->max = max;
 }
 
-double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
+double Blt_FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
 {
   double min = DBL_MAX;
   if (!valuesPtr)
@@ -1157,14 +1167,12 @@ double Blt_FindElemValuesMinimum(ElemValues *valuesPtr, double minLimit)
 
   for (int ii=0; ii<valuesPtr->nValues; ii++) {
     double x = valuesPtr->values[ii];
-    if (x < 0.0) {
-      /* What do you do about negative values when using log
-       * scale values seems like a grey area.  Mirror. */
+    // What do you do about negative values when using log
+    // scale values seems like a grey area. Mirror.
+    if (x < 0.0)
       x = -x;
-    }
-    if ((x > minLimit) && (min > x)) {
+    if ((x > minLimit) && (min > x))
       min = x;
-    }
   }
   if (min == DBL_MAX)
     min = minLimit;
