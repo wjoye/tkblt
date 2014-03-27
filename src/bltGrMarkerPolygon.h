@@ -69,7 +69,7 @@ class PolygonMarker : public Marker {
   int xorState;
 
  public:
-  PolygonMarker(Graph*);
+  PolygonMarker(Graph*, const char*);
   virtual ~PolygonMarker();
 };
 

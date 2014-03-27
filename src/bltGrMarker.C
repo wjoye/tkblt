@@ -38,6 +38,11 @@ extern "C" {
 #include "bltConfig.h"
 #include "bltGrElem.h"
 #include "bltGrMarker.h"
+#include "bltGrMarkerBitmap.h"
+#include "bltGrMarkerLine.h"
+#include "bltGrMarkerPolygon.h"
+#include "bltGrMarkerText.h"
+#include "bltGrMarkerWindow.h"
 
 using namespace Blt;
 
@@ -49,10 +54,10 @@ extern MarkerCreateProc Blt_CreateWindowProc;
 
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 
-Marker::Marker(Graph* graphPtr)
+Marker::Marker(Graph* graphPtr, const char* name)
 {
   obj.classId =CID_NONE;
-  obj.name =NULL;
+  obj.name = dupstr(name);
   obj.className =NULL;
   obj.graphPtr =graphPtr;
   obj.tags = NULL;
@@ -76,8 +81,11 @@ Marker::~Marker()
 
   Blt_DeleteBindings(graphPtr->bindTable, this);
 
+  if (obj.className)
+    delete [] obj.className;
+
   if (obj.name)
-    free((void*)obj.name);
+    delete [] obj.name;
 
   if (hashPtr)
     Tcl_DeleteHashEntry(hashPtr);
@@ -297,33 +305,20 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   const char* type = Tcl_GetString(objv[3]);
   Marker* markerPtr;
-  if (!strcmp(type, "bitmap")) {
-    markerPtr = Blt_CreateBitmapProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_BITMAP);
-  }
-  else if (!strcmp(type, "line")) {
-    markerPtr = Blt_CreateLineProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_LINE);
-  }
-  else if (!strcmp(type, "polygon")) {
-    markerPtr = Blt_CreatePolygonProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_POLYGON);
-  }
-  else if (!strcmp(type, "text")) {
-    markerPtr = Blt_CreateTextProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_TEXT);
-  }
-  else if (!strcmp(type, "window")) {
-    markerPtr = Blt_CreateWindowProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_WINDOW);
-  }
+  if (!strcmp(type, "bitmap"))
+    markerPtr = new BitmapMarker(graphPtr, name);
+  else if (!strcmp(type, "line"))
+    markerPtr = new LineMarker(graphPtr, name);
+  else if (!strcmp(type, "polygon"))
+    markerPtr = new PolygonMarker(graphPtr, name);
+  else if (!strcmp(type, "text"))
+    markerPtr = new TextMarker(graphPtr, name);
+  else if (!strcmp(type, "window"))
+    markerPtr = new WindowMarker(graphPtr, name);
   else {
     Tcl_AppendResult(interp, "unknown marker type ", type, NULL);
     return TCL_ERROR;
   }
-
-  markerPtr->obj.name = Blt_Strdup(name);
-  markerPtr->obj.graphPtr = graphPtr;
 
   markerPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, markerPtr);
@@ -896,7 +891,7 @@ void Blt_DestroyMarkers(Graph* graphPtr)
     // Dereferencing the pointer to the hash table prevents the hash table
     // entry from being automatically deleted.
     markerPtr->hashPtr = NULL;
-    DestroyMarker(markerPtr);
+    delete markerPtr;
   }
   Tcl_DeleteHashTable(&graphPtr->markers.table);
   Tcl_DeleteHashTable(&graphPtr->markers.tagTable);

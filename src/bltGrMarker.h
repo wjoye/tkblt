@@ -85,7 +85,7 @@ typedef struct {
    void* ops;
 
  public:
-   Marker(Graph*);
+   Marker(Graph*, const char*);
    virtual ~Marker();
  };
 

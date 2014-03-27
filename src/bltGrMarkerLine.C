@@ -107,17 +107,20 @@ static MarkerClass lineMarkerClass = {
   LineToPostscriptProc,
 };
 
-LineMarker::LineMarker(Graph* graphPtr) : Marker(graphPtr)
+LineMarker::LineMarker(Graph* graphPtr, const char* name) 
+  : Marker(graphPtr, name)
 {
-  gc =NULL;
-  segments =NULL;
-  nSegments =0;
-  xorState =0;
-
+  obj.classId = CID_MARKER_LINE;
+  obj.className = dupstr("LineMarker");
   classPtr = &lineMarkerClass;
   ops = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
   ((LineMarkerOptions*)ops)->xorr = FALSE;
   optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
+  gc =NULL;
+  segments =NULL;
+  nSegments =0;
+  xorState =0;
 }
 
 LineMarker::~LineMarker()

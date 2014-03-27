@@ -101,8 +101,15 @@ static MarkerClass bitmapMarkerClass = {
   BitmapToPostscriptProc,
 };
 
-BitmapMarker::BitmapMarker(Graph* graphPtr) : Marker(graphPtr)
+BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name)
+  : Marker(graphPtr, name)
 {
+  obj.classId = CID_MARKER_BITMAP;
+  obj.className = dupstr("BitmapMarker");
+  classPtr = &bitmapMarkerClass;
+  ops = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
   anchorPt.x =0;
   anchorPt.y =0;
   gc =NULL;
@@ -110,10 +117,6 @@ BitmapMarker::BitmapMarker(Graph* graphPtr) : Marker(graphPtr)
   nOutlinePts =0;
   width =0;
   height =0;
-
-  classPtr = &bitmapMarkerClass;
-  ops = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 }
 
 BitmapMarker::~BitmapMarker()

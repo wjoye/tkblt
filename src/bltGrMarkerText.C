@@ -105,18 +105,21 @@ static MarkerClass textMarkerClass = {
   TextToPostscriptProc,
 };
 
-TextMarker::TextMarker(Graph* graphPtr) : Marker(graphPtr)
+TextMarker::TextMarker(Graph* graphPtr, const char* name) 
+  : Marker(graphPtr, name)
 {
+  obj.classId = CID_MARKER_TEXT;
+  obj.className = dupstr("TextMarker");
+  classPtr = &textMarkerClass;
+  ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
+  Blt_Ts_InitStyle(((TextMarkerOptions*)ops)->style);
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
   anchorPt.x =0;
   anchorPt.y =0;
   width =0;
   height =0;
   fillGC =NULL;
-
-  classPtr = &textMarkerClass;
-  ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
-  Blt_Ts_InitStyle(((TextMarkerOptions*)ops)->style);
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 }
 
 TextMarker::~TextMarker()

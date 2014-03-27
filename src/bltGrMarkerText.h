@@ -60,7 +60,7 @@ class TextMarker : public Marker {
   Point2d outline[5];
 
  public:
-  TextMarker(Graph*);
+  TextMarker(Graph*, const char*);
   virtual ~TextMarker();
 };
 

@@ -62,7 +62,7 @@ class LineMarker : public Marker {
   int xorState;
 
  public:
-  LineMarker(Graph*);
+  LineMarker(Graph*, const char*);
   virtual ~LineMarker();
 };
 

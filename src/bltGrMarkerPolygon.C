@@ -115,8 +115,15 @@ static MarkerClass polygonMarkerClass = {
   PolygonToPostscriptProc,
 };
 
-PolygonMarker::PolygonMarker(Graph* graphPtr) : Marker(graphPtr)
+PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name) 
+  : Marker(graphPtr, name)
 {
+  obj.classId = CID_MARKER_POLYGON;
+  obj.className = dupstr("PolygonMarker");
+  classPtr = &polygonMarkerClass;
+  ops = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+
   screenPts =NULL;
   outlineGC =NULL;
   fillGC =NULL;
@@ -125,10 +132,6 @@ PolygonMarker::PolygonMarker(Graph* graphPtr) : Marker(graphPtr)
   outlinePts =NULL;
   nOutlinePts =0;
   xorState =0;
-
-  classPtr = &polygonMarkerClass;
-  ops = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 }
 
 PolygonMarker::~PolygonMarker()
