@@ -976,7 +976,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 {
   Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
   GraphObj* graphObjPtr = (GraphObj*)object;
-  BltMarker* markerPtr = (BltMarker*)object;
+  Marker* markerPtr = (Marker*)object;
 
   MakeTagProc* tagProc;
   switch (graphObjPtr->classId) {
@@ -1063,7 +1063,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  BltMarker* markerPtr = (BltMarker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
+  Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
   if (markerPtr)
     return markerPtr;
 
@@ -1088,7 +1088,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   if (searchPtr->dist <= (double)searchPtr->halo)
     return searchPtr->elemPtr;
 
-  markerPtr = (BltMarker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
+  markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr)
     return markerPtr;
 

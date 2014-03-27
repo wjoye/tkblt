@@ -37,7 +37,7 @@ extern "C" {
 
 using namespace Blt;
 
-LineMarker::LineMarker() : BltMarker()
+LineMarker::LineMarker() : Marker()
 {
   /*
   gc =NULL;
@@ -121,7 +121,7 @@ static MarkerClass lineMarkerClass = {
   LineToPostscriptProc,
 };
 
-BltMarker* Blt_CreateLineProc(Graph* graphPtr)
+Marker* Blt_CreateLineProc(Graph* graphPtr)
 {
   LineMarker* lmPtr = (LineMarker*)calloc(1, sizeof(LineMarker));
 
@@ -132,10 +132,10 @@ BltMarker* Blt_CreateLineProc(Graph* graphPtr)
   ops->xorr = FALSE;
   lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (BltMarker*)lmPtr;
+  return (Marker*)lmPtr;
 }
 
-static int PointInLineProc(BltMarker* markerPtr, Point2d *samplePtr)
+static int PointInLineProc(Marker* markerPtr, Point2d *samplePtr)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
 
@@ -143,7 +143,7 @@ static int PointInLineProc(BltMarker* markerPtr, Point2d *samplePtr)
 			     (double)markerPtr->obj.graphPtr->search.halo);
 }
 
-static int RegionInLineProc(BltMarker* markerPtr, Region2d *extsPtr, int enclosed)
+static int RegionInLineProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
   LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
@@ -179,7 +179,7 @@ static int RegionInLineProc(BltMarker* markerPtr, Region2d *extsPtr, int enclose
   }
 }
 
-static void DrawLineProc(BltMarker* markerPtr, Drawable drawable)
+static void DrawLineProc(Marker* markerPtr, Drawable drawable)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
   LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
@@ -194,7 +194,7 @@ static void DrawLineProc(BltMarker* markerPtr, Drawable drawable)
   }
 }
 
-static int ConfigureLineProc(BltMarker* markerPtr)
+static int ConfigureLineProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker*)markerPtr;
@@ -252,7 +252,7 @@ static int ConfigureLineProc(BltMarker* markerPtr)
   return TCL_OK;
 }
 
-static void LineToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
+static void LineToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
   LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
@@ -280,7 +280,7 @@ static void LineToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
   }
 }
 
-static void FreeLineProc(BltMarker* markerPtr)
+static void FreeLineProc(Marker* markerPtr)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
@@ -296,7 +296,7 @@ static void FreeLineProc(BltMarker* markerPtr)
     free(ops);
 }
 
-static void MapLineProc(BltMarker* markerPtr)
+static void MapLineProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker*)markerPtr;

@@ -37,7 +37,7 @@ extern "C" {
 
 using namespace Blt;
 
-PolygonMarker::PolygonMarker() : BltMarker()
+PolygonMarker::PolygonMarker() : Marker()
 {
   screenPts =NULL;
   outlineGC =NULL;
@@ -131,7 +131,7 @@ static MarkerClass polygonMarkerClass = {
   PolygonToPostscriptProc,
 };
 
-BltMarker* Blt_CreatePolygonProc(Graph* graphPtr)
+Marker* Blt_CreatePolygonProc(Graph* graphPtr)
 {
   PolygonMarker* pmPtr = (PolygonMarker*)calloc(1, sizeof(PolygonMarker));
   pmPtr->classPtr = &polygonMarkerClass;
@@ -139,10 +139,10 @@ BltMarker* Blt_CreatePolygonProc(Graph* graphPtr)
 
   pmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (BltMarker*)pmPtr;
+  return (Marker*)pmPtr;
 }
 
-static int PointInPolygonProc(BltMarker* markerPtr, Point2d *samplePtr)
+static int PointInPolygonProc(Marker* markerPtr, Point2d *samplePtr)
 {
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
@@ -156,7 +156,7 @@ static int PointInPolygonProc(BltMarker* markerPtr, Point2d *samplePtr)
   return FALSE;
 }
 
-static int RegionInPolygonProc(BltMarker* markerPtr, Region2d *extsPtr, 
+static int RegionInPolygonProc(Marker* markerPtr, Region2d *extsPtr, 
 			       int enclosed)
 {
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
@@ -171,7 +171,7 @@ static int RegionInPolygonProc(BltMarker* markerPtr, Region2d *extsPtr,
   return FALSE;
 }
 
-static void DrawPolygonProc(BltMarker* markerPtr, Drawable drawable)
+static void DrawPolygonProc(Marker* markerPtr, Drawable drawable)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
@@ -204,7 +204,7 @@ static void DrawPolygonProc(BltMarker* markerPtr, Drawable drawable)
   }
 }
 
-static void PolygonToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
+static void PolygonToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
@@ -268,7 +268,7 @@ static void PolygonToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
   }
 }
 
-static int ConfigurePolygonProc(BltMarker* markerPtr)
+static int ConfigurePolygonProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
@@ -354,7 +354,7 @@ static int ConfigurePolygonProc(BltMarker* markerPtr)
   return TCL_OK;
 }
 
-static void FreePolygonProc(BltMarker* markerPtr)
+static void FreePolygonProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
@@ -379,7 +379,7 @@ static void FreePolygonProc(BltMarker* markerPtr)
     free(ops);
 }
 
-static void MapPolygonProc(BltMarker* markerPtr)
+static void MapPolygonProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;

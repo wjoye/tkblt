@@ -54,7 +54,7 @@ typedef struct {
   int xorr;
 } LineMarkerOptions;
 
-class LineMarker : public BltMarker {
+class LineMarker : public Marker {
  public:
   GC gc;
   Segment2d* segments;

@@ -38,7 +38,7 @@ extern "C" {
 
 using namespace Blt;
 
-TextMarker::TextMarker() : BltMarker()
+TextMarker::TextMarker() : Marker()
 {
   anchorPt.x =0;
   anchorPt.y =0;
@@ -118,7 +118,7 @@ static MarkerClass textMarkerClass = {
   TextToPostscriptProc,
 };
 
-Blt::BltMarker* Blt_CreateTextProc(Graph* graphPtr)
+Blt::Marker* Blt_CreateTextProc(Graph* graphPtr)
 {
   TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
@@ -128,10 +128,10 @@ Blt::BltMarker* Blt_CreateTextProc(Graph* graphPtr)
   Blt_Ts_InitStyle(ops->style);
   tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (Blt::BltMarker*)tmPtr;
+  return (Blt::Marker*)tmPtr;
 }
 
-static int ConfigureTextProc(BltMarker* markerPtr)
+static int ConfigureTextProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
@@ -156,7 +156,7 @@ static int ConfigureTextProc(BltMarker* markerPtr)
   return TCL_OK;
 }
 
-static void MapTextProc(BltMarker* markerPtr)
+static void MapTextProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
@@ -201,7 +201,7 @@ static void MapTextProc(BltMarker* markerPtr)
   tmPtr->anchorPt = anchorPt;
 }
 
-static int PointInTextProc(BltMarker* markerPtr, Point2d *samplePtr)
+static int PointInTextProc(Marker* markerPtr, Point2d *samplePtr)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
@@ -227,7 +227,7 @@ static int PointInTextProc(BltMarker* markerPtr, Point2d *samplePtr)
 	  (samplePtr->y < (tmPtr->anchorPt.y + tmPtr->height)));
 }
 
-static int RegionInTextProc(BltMarker* markerPtr, Region2d *extsPtr, int enclosed)
+static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
@@ -255,7 +255,7 @@ static int RegionInTextProc(BltMarker* markerPtr, Region2d *extsPtr, int enclose
 	   ((tmPtr->anchorPt.y + tmPtr->height) <= extsPtr->top));
 }
 
-static void DrawTextProc(BltMarker* markerPtr, Drawable drawable) 
+static void DrawTextProc(Marker* markerPtr, Drawable drawable) 
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
@@ -282,7 +282,7 @@ static void DrawTextProc(BltMarker* markerPtr, Drawable drawable)
 		  &ops->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
-static void TextToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
+static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
@@ -306,7 +306,7 @@ static void TextToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
 		  tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
-static void FreeTextProc(BltMarker* markerPtr)
+static void FreeTextProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;

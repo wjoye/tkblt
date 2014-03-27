@@ -33,16 +33,16 @@
 #define MAX_OUTLINE_POINTS	12
 
 namespace Blt {
-  class BltMarker;
+  class Marker;
 
-typedef BltMarker* (MarkerCreateProc)(Graph*);
-typedef void (MarkerDrawProc)(BltMarker* markerPtr, Drawable drawable);
-typedef void (MarkerFreeProc)(BltMarker* markerPtr);
-typedef int (MarkerConfigProc)(BltMarker* markerPtr);
-typedef void (MarkerMapProc)(BltMarker* markerPtr);
-typedef void (MarkerPostscriptProc)(BltMarker* markerPtr, Blt_Ps ps);
-typedef int (MarkerPointProc)(BltMarker* markerPtr, Point2d *samplePtr);
-typedef int (MarkerRegionProc)(BltMarker* markerPtr, Region2d *extsPtr, int enclosed);
+typedef Marker* (MarkerCreateProc)(Graph*);
+typedef void (MarkerDrawProc)(Marker* markerPtr, Drawable drawable);
+typedef void (MarkerFreeProc)(Marker* markerPtr);
+typedef int (MarkerConfigProc)(Marker* markerPtr);
+typedef void (MarkerMapProc)(Marker* markerPtr);
+typedef void (MarkerPostscriptProc)(Marker* markerPtr, Blt_Ps ps);
+typedef int (MarkerPointProc)(Marker* markerPtr, Point2d *samplePtr);
+typedef int (MarkerRegionProc)(Marker* markerPtr, Region2d *extsPtr, int enclosed);
 
 typedef struct {
   Tk_OptionSpec *optionSpecs;
@@ -72,7 +72,7 @@ typedef struct {
   int yOffset;
 } MarkerOptions;
 
- class BltMarker {
+ class Marker {
  public:
    GraphObj obj;
    MarkerClass *classPtr;
@@ -85,8 +85,8 @@ typedef struct {
    void* ops;
 
  public:
-   BltMarker();
-   virtual ~BltMarker();
+   Marker();
+   virtual ~Marker();
  };
 
 };

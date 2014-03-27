@@ -51,7 +51,7 @@ typedef struct {
   const char* string;
 } TextMarkerOptions;
 
-class TextMarker : public BltMarker {
+class TextMarker : public Marker {
  public:
   Point2d anchorPt;
   int width;

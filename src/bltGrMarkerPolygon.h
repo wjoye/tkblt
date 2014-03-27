@@ -57,7 +57,7 @@ typedef struct {
   int xorr;
 } PolygonMarkerOptions;
 
-class PolygonMarker : public BltMarker {
+class PolygonMarker : public Marker {
  public:
   Point2d *screenPts;
   GC outlineGC;
