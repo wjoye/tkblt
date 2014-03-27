@@ -38,19 +38,6 @@ extern "C" {
 
 using namespace Blt;
 
-TextMarker::TextMarker() : Marker()
-{
-  anchorPt.x =0;
-  anchorPt.y =0;
-  width =0;
-  height =0;
-  fillGC =NULL;
-}
-
-TextMarker::~TextMarker()
-{
-}
-
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
    "center", -1, Tk_Offset(TextMarkerOptions, anchor), 0, NULL, 0},
@@ -117,6 +104,27 @@ static MarkerClass textMarkerClass = {
   RegionInTextProc,
   TextToPostscriptProc,
 };
+
+TextMarker::TextMarker(Graph* graphPtr) : Marker(graphPtr)
+{
+  anchorPt.x =0;
+  anchorPt.y =0;
+  width =0;
+  height =0;
+  fillGC =NULL;
+
+  classPtr = &textMarkerClass;
+  ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
+  Blt_Ts_InitStyle(((TextMarkerOptions*)ops)->style);
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+}
+
+TextMarker::~TextMarker()
+{
+  Graph* graphPtr = obj.graphPtr;
+
+  Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops)->style);
+}
 
 Blt::Marker* Blt_CreateTextProc(Graph* graphPtr)
 {

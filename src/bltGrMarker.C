@@ -49,12 +49,12 @@ extern MarkerCreateProc Blt_CreateWindowProc;
 
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 
-Marker::Marker()
+Marker::Marker(Graph* graphPtr)
 {
-  obj.classId = CID_NONE;
+  obj.classId =CID_NONE;
   obj.name =NULL;
   obj.className =NULL;
-  obj.graphPtr =NULL;
+  obj.graphPtr =graphPtr;
   obj.tags = NULL;
 
   classPtr =NULL;
@@ -67,6 +67,28 @@ Marker::Marker()
 
 Marker::~Marker()
 {
+  Graph* graphPtr = obj.graphPtr;
+
+  // If the marker to be deleted is currently displayed below the
+  // elements, then backing store needs to be repaired.
+  if (((MarkerOptions*)ops)->drawUnder)
+    graphPtr->flags |= CACHE_DIRTY;
+
+  Blt_DeleteBindings(graphPtr->bindTable, this);
+
+  if (obj.name)
+    free((void*)obj.name);
+
+  if (hashPtr)
+    Tcl_DeleteHashEntry(hashPtr);
+
+  if (link)
+    Blt_Chain_DeleteLink(graphPtr->markers.displayList, link);
+
+  Tk_FreeConfigOptions((char*)ops, optionTable, graphPtr->tkwin);
+
+  if (ops)
+    free(ops);
 }
 
 // Defs

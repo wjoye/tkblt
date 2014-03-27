@@ -37,21 +37,6 @@ extern "C" {
 
 using namespace Blt;
 
-BitmapMarker::BitmapMarker() : Marker()
-{
-  anchorPt.x =0;
-  anchorPt.y =0;
-  gc =NULL;
-  fillGC =NULL;
-  nOutlinePts =0;
-  width =0;
-  height =0;
-}
-
-BitmapMarker::~BitmapMarker()
-{
-}
-
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -115,6 +100,31 @@ static MarkerClass bitmapMarkerClass = {
   RegionInBitmapProc,
   BitmapToPostscriptProc,
 };
+
+BitmapMarker::BitmapMarker(Graph* graphPtr) : Marker(graphPtr)
+{
+  anchorPt.x =0;
+  anchorPt.y =0;
+  gc =NULL;
+  fillGC =NULL;
+  nOutlinePts =0;
+  width =0;
+  height =0;
+
+  classPtr = &bitmapMarkerClass;
+  ops = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+}
+
+BitmapMarker::~BitmapMarker()
+{
+  Graph* graphPtr = obj.graphPtr;
+
+  if (gc)
+    Tk_FreeGC(graphPtr->display, gc);
+  if (fillGC)
+    Tk_FreeGC(graphPtr->display, fillGC);
+}
 
 Marker* Blt_CreateBitmapProc(Graph* graphPtr)
 {

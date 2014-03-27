@@ -62,7 +62,7 @@ class BitmapMarker : public Marker {
   int height;
 
  public:
-  BitmapMarker();
+  BitmapMarker(Graph*);
   virtual ~BitmapMarker();
 };
 

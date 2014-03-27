@@ -37,22 +37,6 @@ extern "C" {
 
 using namespace Blt;
 
-PolygonMarker::PolygonMarker() : Marker()
-{
-  screenPts =NULL;
-  outlineGC =NULL;
-  fillGC =NULL;
-  fillPts =NULL;
-  nFillPts =0;
-  outlinePts =NULL;
-  nOutlinePts =0;
-  xorState =0;
-}
-
-PolygonMarker::~PolygonMarker()
-{
-}
-
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -130,6 +114,38 @@ static MarkerClass polygonMarkerClass = {
   RegionInPolygonProc,
   PolygonToPostscriptProc,
 };
+
+PolygonMarker::PolygonMarker(Graph* graphPtr) : Marker(graphPtr)
+{
+  screenPts =NULL;
+  outlineGC =NULL;
+  fillGC =NULL;
+  fillPts =NULL;
+  nFillPts =0;
+  outlinePts =NULL;
+  nOutlinePts =0;
+  xorState =0;
+
+  classPtr = &polygonMarkerClass;
+  ops = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+}
+
+PolygonMarker::~PolygonMarker()
+{
+  Graph* graphPtr = obj.graphPtr;
+
+  if (fillGC)
+    Tk_FreeGC(graphPtr->display, fillGC);
+  if (outlineGC)
+    Blt_FreePrivateGC(graphPtr->display, outlineGC);
+  if (fillPts)
+    free(fillPts);
+  if (outlinePts)
+    free(outlinePts);
+  if (screenPts)
+    free(screenPts);
+}
 
 Marker* Blt_CreatePolygonProc(Graph* graphPtr)
 {

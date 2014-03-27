@@ -37,18 +37,6 @@ extern "C" {
 
 using namespace Blt;
 
-LineMarker::LineMarker() : Marker()
-{
-  gc =NULL;
-  segments =NULL;
-  nSegments =0;
-  xorState =0;
-}
-
-LineMarker::~LineMarker()
-{
-}
-
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -118,6 +106,29 @@ static MarkerClass lineMarkerClass = {
   RegionInLineProc,
   LineToPostscriptProc,
 };
+
+LineMarker::LineMarker(Graph* graphPtr) : Marker(graphPtr)
+{
+  gc =NULL;
+  segments =NULL;
+  nSegments =0;
+  xorState =0;
+
+  classPtr = &lineMarkerClass;
+  ops = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
+  ((LineMarkerOptions*)ops)->xorr = FALSE;
+  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+}
+
+LineMarker::~LineMarker()
+{
+  Graph* graphPtr = obj.graphPtr;
+
+  if (gc)
+    Blt_FreePrivateGC(graphPtr->display, gc);
+  if (segments)
+    free(segments);
+}
 
 Marker* Blt_CreateLineProc(Graph* graphPtr)
 {
