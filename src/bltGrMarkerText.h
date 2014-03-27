@@ -59,7 +59,7 @@ class TextMarker {
   int clipped;
   unsigned int flags;		
 
-  TextMarkerOptions* ops;
+  void* ops;
 
   // Fields specific to text
 

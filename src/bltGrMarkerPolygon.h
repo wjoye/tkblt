@@ -65,7 +65,7 @@ class PolygonMarker {
   int clipped;
   unsigned int flags;		
 
-  PolygonMarkerOptions* ops;
+  void* ops;
 
   // Fields specific to polygon
 

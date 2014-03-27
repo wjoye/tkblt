@@ -59,7 +59,7 @@ class BitmapMarker {
   int clipped;
   unsigned int flags;		
 
-  BitmapMarkerOptions* ops;
+  void* ops;
 
   // Fields specific to bitmap
 
