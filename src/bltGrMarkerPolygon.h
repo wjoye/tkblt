@@ -69,7 +69,8 @@ class PolygonMarker : public Marker {
   int xorState;
 
  private:
-  int Configure();
+  int configure();
+  void draw(Drawable);
 
  public:
   PolygonMarker(Graph*, const char*);

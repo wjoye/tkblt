@@ -87,7 +87,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerDrawProc DrawLineProc;
 static MarkerMapProc MapLineProc;
 static MarkerPointProc PointInLineProc;
 static MarkerPostscriptProc LineToPostscriptProc;
@@ -95,7 +94,6 @@ static MarkerRegionProc RegionInLineProc;
 
 static MarkerClass lineMarkerClass = {
   optionSpecs,
-  DrawLineProc,
   MapLineProc,
   PointInLineProc,
   RegionInLineProc,
@@ -128,7 +126,7 @@ LineMarker::~LineMarker()
     free(segments);
 }
 
-int LineMarker::Configure()
+int LineMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
   LineMarkerOptions* opp = (LineMarkerOptions*)ops;
@@ -163,7 +161,7 @@ int LineMarker::Configure()
 
     gcValues.foreground ^= pixel;
     if (drawable != None)
-      DrawLineProc(this, drawable);
+      draw(drawable);
   }
 
   GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
@@ -177,12 +175,24 @@ int LineMarker::Configure()
   if (opp->xorr) {
     if (drawable != None) {
       MapLineProc(this);
-      DrawLineProc(this, drawable);
+      draw(drawable);
     }
     return TCL_OK;
   }
 
   return TCL_OK;
+}
+
+void LineMarker::draw(Drawable drawable)
+{
+  Graph* graphPtr = obj.graphPtr;
+  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+
+  if (nSegments > 0) {
+    Blt_Draw2DSegments(graphPtr->display, drawable, gc, segments, nSegments);
+    if (opp->xorr)
+      xorState = (xorState == 0);
+  }
 }
 
 static int PointInLineProc(Marker* markerPtr, Point2d *samplePtr)
@@ -226,21 +236,6 @@ static int RegionInLineProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
     }
     return (count > 0);		/* At least 1 segment passes through
 				 * region. */
-  }
-}
-
-static void DrawLineProc(Marker* markerPtr, Drawable drawable)
-{
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
-
-  if (lmPtr->nSegments > 0) {
-    Graph* graphPtr = markerPtr->obj.graphPtr;
-
-    Blt_Draw2DSegments(graphPtr->display, drawable, lmPtr->gc, 
-		       lmPtr->segments, lmPtr->nSegments);
-    if (ops->xorr)
-      lmPtr->xorState = (lmPtr->xorState == 0);
   }
 }
 

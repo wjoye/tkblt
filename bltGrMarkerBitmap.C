@@ -81,7 +81,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerDrawProc DrawBitmapProc;
 static MarkerMapProc MapBitmapProc;
 static MarkerPointProc PointInBitmapProc;
 static MarkerPostscriptProc BitmapToPostscriptProc;
@@ -89,7 +88,6 @@ static MarkerRegionProc RegionInBitmapProc;
 
 static MarkerClass bitmapMarkerClass = {
   optionSpecs,
-  DrawBitmapProc,
   MapBitmapProc,
   PointInBitmapProc,
   RegionInBitmapProc,
@@ -124,7 +122,7 @@ BitmapMarker::~BitmapMarker()
     Tk_FreeGC(graphPtr->display, fillGC);
 }
 
-int BitmapMarker::Configure()
+int BitmapMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
@@ -169,6 +167,26 @@ int BitmapMarker::Configure()
   }
 
   return TCL_OK;
+}
+
+void BitmapMarker::draw(Drawable drawable)
+{
+  Graph* graphPtr = obj.graphPtr;
+  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+
+  if ((opp->bitmap == None) || (width < 1) || (height < 1))
+    return;
+
+  if (opp->fillColor == NULL) {
+    XSetClipMask(graphPtr->display, gc, opp->bitmap);
+    XSetClipOrigin(graphPtr->display, gc, anchorPt.x, anchorPt.y);
+  }
+  else {
+    XSetClipMask(graphPtr->display, gc, None);
+    XSetClipOrigin(graphPtr->display, gc, 0, 0);
+  }
+  XCopyPlane(graphPtr->display, opp->bitmap, drawable, gc, 0, 0,
+	     width, height, anchorPt.x, anchorPt.y, 1);
 }
 
 static void MapBitmapProc(Marker* markerPtr)
@@ -261,29 +279,6 @@ static int RegionInBitmapProc(Marker* markerPtr, Region2d *extsPtr,
 	   (bmPtr->anchorPt.y >= extsPtr->bottom) ||
 	   ((bmPtr->anchorPt.x + bmPtr->width) <= extsPtr->left) ||
 	   ((bmPtr->anchorPt.y + bmPtr->height) <= extsPtr->top));
-}
-
-static void DrawBitmapProc(Marker* markerPtr, Drawable drawable)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
-
-  if ((ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
-    return;
-
-  if (ops->fillColor == NULL) {
-    XSetClipMask(graphPtr->display, bmPtr->gc, ops->bitmap);
-    XSetClipOrigin(graphPtr->display, bmPtr->gc, bmPtr->anchorPt.x, 
-		   bmPtr->anchorPt.y);
-  }
-  else {
-    XSetClipMask(graphPtr->display, bmPtr->gc, None);
-    XSetClipOrigin(graphPtr->display, bmPtr->gc, 0, 0);
-  }
-  XCopyPlane(graphPtr->display, ops->bitmap, drawable, bmPtr->gc, 0, 0,
-	     bmPtr->width, bmPtr->height, bmPtr->anchorPt.x, 
-	     bmPtr->anchorPt.y, 1);
 }
 
 static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)

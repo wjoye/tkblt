@@ -85,7 +85,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerDrawProc DrawTextProc;
 static MarkerMapProc MapTextProc;
 static MarkerPointProc PointInTextProc;
 static MarkerPostscriptProc TextToPostscriptProc;
@@ -93,7 +92,6 @@ static MarkerRegionProc RegionInTextProc;
 
 static MarkerClass textMarkerClass = {
   optionSpecs,
-  DrawTextProc,
   MapTextProc,
   PointInTextProc,
   RegionInTextProc,
@@ -124,7 +122,7 @@ TextMarker::~TextMarker()
   Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops)->style);
 }
 
-int TextMarker::Configure()
+int TextMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
   TextMarkerOptions* opp = (TextMarkerOptions*)ops;
@@ -146,6 +144,32 @@ int TextMarker::Configure()
   fillGC = newGC;
 
   return TCL_OK;
+}
+
+void TextMarker::draw(Drawable drawable) 
+{
+  Graph* graphPtr = obj.graphPtr;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+
+  if (!opp->string)
+    return;
+
+  if (fillGC) {
+    // Simulate the rotated background of the bitmap by filling a bounding
+    // polygon with the background color.
+    XPoint points[4];
+    for (int ii=0; ii<4; ii++) {
+      points[ii].x = (short int)(outline[ii].x + anchorPt.x);
+      points[ii].y = (short int)(outline[ii].y + anchorPt.y);
+    }
+    XFillPolygon(graphPtr->display, drawable, fillGC, points, 4,
+		 Convex, CoordModeOrigin);
+  }
+
+  // be sure to update style->gc, things might have changed
+  opp->style.flags |= UPDATE_GC;
+  Blt_Ts_DrawText(graphPtr->tkwin, drawable, opp->string, -1,
+		  &opp->style, anchorPt.x, anchorPt.y);
 }
 
 static void MapTextProc(Marker* markerPtr)
@@ -245,33 +269,6 @@ static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 	   (tmPtr->anchorPt.y >= extsPtr->bottom) ||
 	   ((tmPtr->anchorPt.x + tmPtr->width) <= extsPtr->left) ||
 	   ((tmPtr->anchorPt.y + tmPtr->height) <= extsPtr->top));
-}
-
-static void DrawTextProc(Marker* markerPtr, Drawable drawable) 
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
-
-  if (!ops->string)
-    return;
-
-  if (tmPtr->fillGC) {
-    // Simulate the rotated background of the bitmap by filling a bounding
-    // polygon with the background color.
-    XPoint points[4];
-    for (int ii=0; ii<4; ii++) {
-      points[ii].x = (short int)(tmPtr->outline[ii].x + tmPtr->anchorPt.x);
-      points[ii].y = (short int)(tmPtr->outline[ii].y + tmPtr->anchorPt.y);
-    }
-    XFillPolygon(graphPtr->display, drawable, tmPtr->fillGC, points, 4,
-		 Convex, CoordModeOrigin);
-  }
-
-  // be sure to update style->gc, things might have changed
-  ops->style.flags |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->string, -1,
-		  &ops->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
 static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)

@@ -95,7 +95,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerDrawProc DrawPolygonProc;
 static MarkerMapProc MapPolygonProc;
 static MarkerPointProc PointInPolygonProc;
 static MarkerPostscriptProc PolygonToPostscriptProc;
@@ -103,7 +102,6 @@ static MarkerRegionProc RegionInPolygonProc;
 
 static MarkerClass polygonMarkerClass = {
   optionSpecs,
-  DrawPolygonProc,
   MapPolygonProc,
   PointInPolygonProc,
   RegionInPolygonProc,
@@ -145,7 +143,7 @@ PolygonMarker::~PolygonMarker()
     free(screenPts);
 }
 
-int PolygonMarker::Configure()
+int PolygonMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
@@ -186,7 +184,7 @@ int PolygonMarker::Configure()
     }
     gcValues.foreground ^= pixel;
     if (drawable != None) {
-      DrawPolygonProc(this, drawable);
+      draw(drawable);
     }
   }
   newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
@@ -222,12 +220,44 @@ int PolygonMarker::Configure()
   if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (opp->xorr)) {
     if (drawable != None) {
       MapPolygonProc(this);
-      DrawPolygonProc(this, drawable);
+      draw(drawable);
     }
     return TCL_OK;
   }
 
   return TCL_OK;
+}
+
+void PolygonMarker::draw(Drawable drawable)
+{
+  Graph* graphPtr = obj.graphPtr;
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
+
+  // fill region
+  if ((nFillPts > 0) && (opp->fill)) {
+    XPoint* points = (XPoint*)malloc(nFillPts * sizeof(XPoint));
+    if (!points)
+      return;
+
+    XPoint* dp = points;
+    Point2d *sp, *send;
+    for (sp = fillPts, send = sp + nFillPts; sp < send; sp++) {
+      dp->x = (short int)sp->x;
+      dp->y = (short int)sp->y;
+      dp++;
+    }
+
+    XFillPolygon(graphPtr->display, drawable, fillGC, points, 
+		 nFillPts, Complex, CoordModeOrigin);
+    free(points);
+  }
+
+  // outline
+  if ((nOutlinePts > 0) && (opp->lineWidth > 0) && 
+      (opp->outline)) {
+    Blt_Draw2DSegments(graphPtr->display, drawable, outlineGC,
+		       outlinePts, nOutlinePts);
+  }
 }
 
 static int PointInPolygonProc(Marker* markerPtr, Point2d *samplePtr)
@@ -257,39 +287,6 @@ static int RegionInPolygonProc(Marker* markerPtr, Region2d *extsPtr,
 			       ops->worldPts->num, enclosed);
 
   return FALSE;
-}
-
-static void DrawPolygonProc(Marker* markerPtr, Drawable drawable)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
-
-  /* Draw polygon fill region */
-  if ((pmPtr->nFillPts > 0) && (ops->fill)) {
-    XPoint* points = (XPoint*)malloc(pmPtr->nFillPts * sizeof(XPoint));
-    if (!points)
-      return;
-
-    XPoint* dp = points;
-    Point2d *sp, *send;
-    for (sp = pmPtr->fillPts, send = sp + pmPtr->nFillPts; sp < send; 
-	 sp++) {
-      dp->x = (short int)sp->x;
-      dp->y = (short int)sp->y;
-      dp++;
-    }
-
-    XFillPolygon(graphPtr->display, drawable, pmPtr->fillGC, points, 
-		 pmPtr->nFillPts, Complex, CoordModeOrigin);
-    free(points);
-  }
-  /* and then the outline */
-  if ((pmPtr->nOutlinePts > 0) && (ops->lineWidth > 0) && 
-      (ops->outline)) {
-    Blt_Draw2DSegments(graphPtr->display, drawable, pmPtr->outlineGC,
-		       pmPtr->outlinePts, pmPtr->nOutlinePts);
-  }
 }
 
 static void PolygonToPostscriptProc(Marker* markerPtr, Blt_Ps ps)

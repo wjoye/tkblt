@@ -62,7 +62,8 @@ class LineMarker : public Marker {
   int xorState;
 
  private:
-  int Configure();
+  int configure();
+  void draw(Drawable);
 
  public:
   LineMarker(Graph*, const char*);

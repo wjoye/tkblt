@@ -60,7 +60,8 @@ class TextMarker : public Marker {
   Point2d outline[5];
 
  private:
-  int Configure();
+  int configure();
+  void draw(Drawable);
 
  public:
   TextMarker(Graph*, const char*);

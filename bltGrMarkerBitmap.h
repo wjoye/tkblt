@@ -62,7 +62,8 @@ class BitmapMarker : public Marker {
   int height;
 
  private:
-  int Configure();
+  int configure();
+  void draw(Drawable);
 
  public:
   BitmapMarker(Graph*, const char*);
