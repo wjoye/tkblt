@@ -87,7 +87,6 @@ static Tk_OptionSpec optionSpecs[] = {
 
 static MarkerConfigProc ConfigureTextProc;
 static MarkerDrawProc DrawTextProc;
-static MarkerFreeProc FreeTextProc;
 static MarkerMapProc MapTextProc;
 static MarkerPointProc PointInTextProc;
 static MarkerPostscriptProc TextToPostscriptProc;
@@ -97,7 +96,6 @@ static MarkerClass textMarkerClass = {
   optionSpecs,
   ConfigureTextProc,
   DrawTextProc,
-  FreeTextProc,
   MapTextProc,
   PointInTextProc,
   RegionInTextProc,
@@ -302,16 +300,3 @@ static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
   Blt_Ps_DrawText(ps, ops->string, &ops->style,
 		  tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
-
-static void FreeTextProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
-
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->style);
-
-  if (ops)
-    free(ops);
-}
-

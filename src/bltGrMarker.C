@@ -46,12 +46,6 @@ extern "C" {
 
 using namespace Blt;
 
-extern MarkerCreateProc Blt_CreateBitmapProc;
-extern MarkerCreateProc Blt_CreateLineProc;
-extern MarkerCreateProc Blt_CreatePolygonProc;
-extern MarkerCreateProc Blt_CreateTextProc;
-extern MarkerCreateProc Blt_CreateWindowProc;
-
 #define NORMALIZE(A,x) 	(((x) - (A)->axisRange.min) * (A)->axisRange.scale)
 
 Marker::Marker(Graph* graphPtr, const char* name)
@@ -110,7 +104,6 @@ typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[]);
-static void DestroyMarker(Marker* markerPtr);
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
 static int IsElementHidden(Marker* markerPtr);
@@ -324,7 +317,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_SetHashValue(hPtr, markerPtr);
 
   if ((Tk_InitOptions(graphPtr->interp, (char*)markerPtr->ops, markerPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
-    DestroyMarker(markerPtr);
+    delete markerPtr;
     return TCL_ERROR;
   }
 
@@ -333,34 +326,6 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
   return TCL_OK;
-}
-
-static void DestroyMarker(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
-
-  // If the marker to be deleted is currently displayed below the
-  // elements, then backing store needs to be repaired.
-  if (ops->drawUnder)
-    graphPtr->flags |= CACHE_DIRTY;
-
-  Blt_DeleteBindings(graphPtr->bindTable, markerPtr);
-
-  if (markerPtr->obj.name)
-    free((void*)markerPtr->obj.name);
-
-  if (markerPtr->hashPtr)
-    Tcl_DeleteHashEntry(markerPtr->hashPtr);
-
-  if (markerPtr->link)
-    Blt_Chain_DeleteLink(graphPtr->markers.displayList, markerPtr->link);
-
-  Tk_FreeConfigOptions((char*)markerPtr->ops, markerPtr->optionTable,
-		       graphPtr->tkwin);
-
-  (*markerPtr->classPtr->freeProc)(markerPtr);
-  free(markerPtr);
 }
 
 // Configure
@@ -933,7 +898,7 @@ ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName)
 void Blt_FreeMarker(char* dataPtr) 
 {
   Marker* markerPtr = (Marker*)dataPtr;
-  DestroyMarker(markerPtr);
+  delete markerPtr;
 }
 
 int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)

@@ -97,7 +97,6 @@ static Tk_OptionSpec optionSpecs[] = {
 
 static MarkerConfigProc ConfigurePolygonProc;
 static MarkerDrawProc DrawPolygonProc;
-static MarkerFreeProc FreePolygonProc;
 static MarkerMapProc MapPolygonProc;
 static MarkerPointProc PointInPolygonProc;
 static MarkerPostscriptProc PolygonToPostscriptProc;
@@ -107,7 +106,6 @@ static MarkerClass polygonMarkerClass = {
   optionSpecs,
   ConfigurePolygonProc,
   DrawPolygonProc,
-  FreePolygonProc,
   MapPolygonProc,
   PointInPolygonProc,
   RegionInPolygonProc,
@@ -359,31 +357,6 @@ static int ConfigurePolygonProc(Marker* markerPtr)
   }
 
   return TCL_OK;
-}
-
-static void FreePolygonProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
-
-  if (pmPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, pmPtr->fillGC);
-
-  if (pmPtr->outlineGC)
-    Blt_FreePrivateGC(graphPtr->display, pmPtr->outlineGC);
-
-  if (pmPtr->fillPts)
-    free(pmPtr->fillPts);
-
-  if (pmPtr->outlinePts)
-    free(pmPtr->outlinePts);
-
-  if (pmPtr->screenPts)
-    free(pmPtr->screenPts);
-
-  if (ops)
-    free(ops);
 }
 
 static void MapPolygonProc(Marker* markerPtr)

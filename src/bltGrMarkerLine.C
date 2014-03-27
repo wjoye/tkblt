@@ -89,7 +89,6 @@ static Tk_OptionSpec optionSpecs[] = {
 
 static MarkerConfigProc ConfigureLineProc;
 static MarkerDrawProc DrawLineProc;
-static MarkerFreeProc FreeLineProc;
 static MarkerMapProc MapLineProc;
 static MarkerPointProc PointInLineProc;
 static MarkerPostscriptProc LineToPostscriptProc;
@@ -99,7 +98,6 @@ static MarkerClass lineMarkerClass = {
   optionSpecs,
   ConfigureLineProc,
   DrawLineProc,
-  FreeLineProc,
   MapLineProc,
   PointInLineProc,
   RegionInLineProc,
@@ -275,22 +273,6 @@ static void LineToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 
     Blt_Ps_Draw2DSegments(ps, lmPtr->segments, lmPtr->nSegments);
   }
-}
-
-static void FreeLineProc(Marker* markerPtr)
-{
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
-
-  if (lmPtr->gc)
-    Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
-
-  if (lmPtr->segments)
-    free(lmPtr->segments);
-
-  if (ops)
-    free(ops);
 }
 
 static void MapLineProc(Marker* markerPtr)

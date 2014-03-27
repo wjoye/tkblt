@@ -37,7 +37,6 @@ namespace Blt {
 
 typedef Marker* (MarkerCreateProc)(Graph*);
 typedef void (MarkerDrawProc)(Marker* markerPtr, Drawable drawable);
-typedef void (MarkerFreeProc)(Marker* markerPtr);
 typedef int (MarkerConfigProc)(Marker* markerPtr);
 typedef void (MarkerMapProc)(Marker* markerPtr);
 typedef void (MarkerPostscriptProc)(Marker* markerPtr, Blt_Ps ps);
@@ -48,7 +47,6 @@ typedef struct {
   Tk_OptionSpec *optionSpecs;
   MarkerConfigProc *configProc;
   MarkerDrawProc *drawProc;
-  MarkerFreeProc *freeProc;
   MarkerMapProc *mapProc;
   MarkerPointProc *pointProc;
   MarkerRegionProc *regionProc;

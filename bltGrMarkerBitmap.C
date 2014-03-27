@@ -83,7 +83,6 @@ static Tk_OptionSpec optionSpecs[] = {
 
 static MarkerConfigProc ConfigureBitmapProc;
 static MarkerDrawProc DrawBitmapProc;
-static MarkerFreeProc FreeBitmapProc;
 static MarkerMapProc MapBitmapProc;
 static MarkerPointProc PointInBitmapProc;
 static MarkerPostscriptProc BitmapToPostscriptProc;
@@ -93,7 +92,6 @@ static MarkerClass bitmapMarkerClass = {
   optionSpecs,
   ConfigureBitmapProc,
   DrawBitmapProc,
-  FreeBitmapProc,
   MapBitmapProc,
   PointInBitmapProc,
   RegionInBitmapProc,
@@ -319,20 +317,3 @@ static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 		   "    } imagemask\n",
 		   "grestore\n", (char*)NULL);
 }
-
-static void FreeBitmapProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
-
-  if (bmPtr->gc)
-    Tk_FreeGC(graphPtr->display, bmPtr->gc);
-
-  if (bmPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
-
-  if (ops)
-    free(ops);
-}
-
