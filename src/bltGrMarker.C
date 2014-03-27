@@ -445,18 +445,19 @@ static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
 static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  Marker *markerPtr;
-  if (GetMarkerFromObj(NULL, graphPtr, objv[3], &markerPtr) != TCL_OK) {
-    Tcl_AppendResult(interp, "can't find marker \"", 
-		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
-    return TCL_ERROR;
+  for (int ii=3; ii<objc; ii++) {
+    Marker *markerPtr;
+    if (GetMarkerFromObj(NULL, graphPtr, objv[ii], &markerPtr) != TCL_OK) {
+      Tcl_AppendResult(interp, "can't find marker \"", 
+		       Tcl_GetString(objv[ii]), "\" in \"", 
+		       Tk_PathName(graphPtr->tkwin), "\"", NULL);
+      return TCL_ERROR;
+    }
+    markerPtr->flags |= DELETE_PENDING;
+    Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);
   }
 
-  markerPtr->flags |= DELETE_PENDING;
-  Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);
   Blt_EventuallyRedrawGraph(graphPtr);
-
   return TCL_OK;
 }
 
@@ -650,12 +651,12 @@ static Blt_OpSpec markerOps[] =
     {"cget",      2, (void*)CgetOp,   5, 5, "marker option",},
     {"configure", 2, (void*)ConfigureOp, 4, 0,"marker ?option value?...",},
     {"create",    2, (void*)CreateOp, 4, 0, "type ?option value?...",},
-    {"delete",    1, (void*)DeleteOp, 4, 4, "marker",},
+    {"delete",    1, (void*)DeleteOp, 3, 0, "?marker?...",},
     {"exists",    1, (void*)ExistsOp, 4, 4, "marker",},
-    {"find",      1, (void*)FindOp,   8, 8, "enclosed|overlapping x1 y1 x2 y2",},
+    {"find",      1, (void*)FindOp,   8, 8, "option x1 y1 x2 y2",},
     {"get",       1, (void*)GetOp,    5, 5, "current",},
     {"lower",     1, (void*)RelinkOp, 4, 5, "marker ?afterMarker?",},
-    {"names",     1, (void*)NamesOp,  3, 0, "?pattern?",},
+    {"names",     1, (void*)NamesOp,  3, 0, "?pattern?...",},
     {"raise",     1, (void*)RelinkOp, 4, 5, "marker ?beforeMarker?",},
     {"type",      1, (void*)TypeOp,   4, 4, "marker",},
   };
