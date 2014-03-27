@@ -3022,9 +3022,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
   /* 
    * Step 2:  Add the graph title height to the top margin. 
    */
-  if (graphPtr->title) {
+  if (graphPtr->title)
     top += graphPtr->titleHeight + 6;
-  }
+
   inset = (graphPtr->inset + graphPtr->plotBW);
   inset2 = 2 * inset;
 
@@ -3034,12 +3034,12 @@ void Blt_LayoutGraph(Graph* graphPtr)
    *	       -plotheight graph options.  We use this to compute the
    *	       size of the legend. 
    */
-  if (width == 0) {
+  if (width == 0)
     width = 400;
-  }
-  if (height == 0) {
+
+  if (height == 0)
     height = 400;
-  }
+
   plotWidth  = (graphPtr->reqPlotWidth > 0) ? graphPtr->reqPlotWidth :
     width - (inset2 + left + right); /* Plot width. */
   plotHeight = (graphPtr->reqPlotHeight > 0) ? graphPtr->reqPlotHeight : 
@@ -3076,15 +3076,13 @@ void Blt_LayoutGraph(Graph* graphPtr)
    */
   if (graphPtr->reqPlotWidth == 0) {
     plotWidth = width  - (inset2 + left + right);
-    if (plotWidth < 1) {
+    if (plotWidth < 1)
       plotWidth = 1;
-    }
   }
   if (graphPtr->reqPlotHeight == 0) {
     plotHeight = height - (inset2 + top + bottom);
-    if (plotHeight < 1) {
+    if (plotHeight < 1)
       plotHeight = 1;
-    }
   }
 
   /*
@@ -3101,26 +3099,23 @@ void Blt_LayoutGraph(Graph* graphPtr)
      */
     ratio = (float)plotWidth / (float)plotHeight;
     if (ratio > graphPtr->aspect) {
-      int scaledWidth;
-
-      /* Shrink the width. */
-      scaledWidth = (int)(plotHeight * graphPtr->aspect);
-      if (scaledWidth < 1) {
+      // Shrink the width
+      int scaledWidth = (int)(plotHeight * graphPtr->aspect);
+      if (scaledWidth < 1)
 	scaledWidth = 1;
-      }
-      /* Add the difference to the right margin. */
-      /* CHECK THIS: w = scaledWidth; */
-      right += (plotWidth - scaledWidth);
-    } else {
-      int scaledHeight;
 
-      /* Shrink the height. */
-      scaledHeight = (int)(plotWidth / graphPtr->aspect);
-      if (scaledHeight < 1) {
+      // Add the difference to the right margin.
+      // CHECK THIS: w = scaledWidth
+      right += (plotWidth - scaledWidth);
+    }
+    else {
+      // Shrink the height
+      int scaledHeight = (int)(plotWidth / graphPtr->aspect);
+      if (scaledHeight < 1)
 	scaledHeight = 1;
-      }
-      /* Add the difference to the top margin. */
-      /* CHECK THIS: h = scaledHeight; */
+
+      // Add the difference to the top margin
+      // CHECK THIS: h = scaledHeight;
       top += (plotHeight - scaledHeight); 
     }
   }
@@ -3131,70 +3126,66 @@ void Blt_LayoutGraph(Graph* graphPtr)
    *	       for the longest axis titles.
    */
 
-  if (top < graphPtr->leftMargin.axesTitleLength) {
+  if (top < graphPtr->leftMargin.axesTitleLength)
     top = graphPtr->leftMargin.axesTitleLength;
-  }
-  if (right < graphPtr->bottomMargin.axesTitleLength) {
+
+  if (right < graphPtr->bottomMargin.axesTitleLength)
     right = graphPtr->bottomMargin.axesTitleLength;
-  }
-  if (top < graphPtr->rightMargin.axesTitleLength) {
+
+  if (top < graphPtr->rightMargin.axesTitleLength)
     top = graphPtr->rightMargin.axesTitleLength;
-  }
-  if (right < graphPtr->topMargin.axesTitleLength) {
+
+  if (right < graphPtr->topMargin.axesTitleLength)
     right = graphPtr->topMargin.axesTitleLength;
-  }
 
   /* 
    * Step 7: Override calculated values with requested margin sizes.
    */
-  if (graphPtr->leftMargin.reqSize > 0) {
+  if (graphPtr->leftMargin.reqSize > 0)
     left = graphPtr->leftMargin.reqSize;
-  }
-  if (graphPtr->rightMargin.reqSize > 0) {
-    right = graphPtr->rightMargin.reqSize;
-  }
-  if (graphPtr->topMargin.reqSize > 0) {
-    top = graphPtr->topMargin.reqSize;
-  }
-  if (graphPtr->bottomMargin.reqSize > 0) {
-    bottom = graphPtr->bottomMargin.reqSize;
-  }
-  if (graphPtr->reqPlotWidth > 0) {	
-    int w;
 
+  if (graphPtr->rightMargin.reqSize > 0)
+    right = graphPtr->rightMargin.reqSize;
+
+  if (graphPtr->topMargin.reqSize > 0)
+    top = graphPtr->topMargin.reqSize;
+
+  if (graphPtr->bottomMargin.reqSize > 0)
+    bottom = graphPtr->bottomMargin.reqSize;
+
+  if (graphPtr->reqPlotWidth > 0) {	
     /* 
      * Width of plotarea is constained.  If there's extra space, add it to
      * th left and/or right margins.  If there's too little, grow the
      * graph width to accomodate it.
      */
-    w = plotWidth + inset2 + left + right;
+    int w = plotWidth + inset2 + left + right;
     if (width > w) {		/* Extra space in window. */
-      int extra;
-
-      extra = (width - w) / 2;
+      int extra = (width - w) / 2;
       if (graphPtr->leftMargin.reqSize == 0) { 
 	left += extra;
 	if (graphPtr->rightMargin.reqSize == 0) { 
 	  right += extra;
-	} else {
+	}
+	else {
 	  left += extra;
 	}
-      } else if (graphPtr->rightMargin.reqSize == 0) {
+      }
+      else if (graphPtr->rightMargin.reqSize == 0) {
 	right += extra + extra;
       }
-    } else if (width < w) {
+    }
+    else if (width < w) {
       width = w;
     }
   } 
   if (graphPtr->reqPlotHeight > 0) {	/* Constrain the plotarea height. */
-    int h;
-
     /* 
      * Height of plotarea is constained.  If there's extra space, 
      * add it to th top and/or bottom margins.  If there's too little,
      * grow the graph height to accomodate it.
      */
-    h = plotHeight + inset2 + top + bottom;
+    int h = plotHeight + inset2 + top + bottom;
     if (height > h) {		/* Extra space in window. */
       int extra;
 
@@ -3203,13 +3194,16 @@ void Blt_LayoutGraph(Graph* graphPtr)
 	top += extra;
 	if (graphPtr->bottomMargin.reqSize == 0) { 
 	  bottom += extra;
-	} else {
+	}
+	else {
 	  top += extra;
 	}
-      } else if (graphPtr->bottomMargin.reqSize == 0) {
+      }
+      else if (graphPtr->bottomMargin.reqSize == 0) {
 	bottom += extra + extra;
       }
-    } else if (height < h) {
+    }
+    else if (height < h) {
       height = h;
     }
   }	
@@ -3230,23 +3224,20 @@ void Blt_LayoutGraph(Graph* graphPtr)
   graphPtr->hOffset = graphPtr->left + graphPtr->xPad;
   graphPtr->hRange  = plotWidth  - 2*graphPtr->xPad;
 
-  if (graphPtr->vRange < 1) {
+  if (graphPtr->vRange < 1)
     graphPtr->vRange = 1;
-  }
-  if (graphPtr->hRange < 1) {
+
+  if (graphPtr->hRange < 1)
     graphPtr->hRange = 1;
-  }
+
   graphPtr->hScale = 1.0f / (float)graphPtr->hRange;
   graphPtr->vScale = 1.0f / (float)graphPtr->vRange;
 
-  /*
-   * Calculate the placement of the graph title so it is centered within the
-   * space provided for it in the top margin
-   */
+  // Calculate the placement of the graph title so it is centered within the
+  // space provided for it in the top margin
   titleY = graphPtr->titleHeight;
   graphPtr->titleY = 3 + graphPtr->inset;
   graphPtr->titleX = (graphPtr->right + graphPtr->left) / 2;
-
 }
 
 static int ConfigureAxis(Axis *axisPtr)
@@ -3287,9 +3278,9 @@ static int ConfigureAxis(Axis *axisPtr)
     }
   }
   angle = fmod(axisPtr->tickAngle, 360.0);
-  if (angle < 0.0f) {
+  if (angle < 0.0f)
     angle += 360.0f;
-  }
+
   axisPtr->tickAngle = angle;
   ResetTextStyles(axisPtr);
 
