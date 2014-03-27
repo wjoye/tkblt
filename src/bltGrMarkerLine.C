@@ -35,6 +35,8 @@ extern "C" {
 
 #include "bltGrMarkerLine.h"
 
+using namespace Blt;
+
 LineMarker::LineMarker() : BltMarker()
 {
   /*

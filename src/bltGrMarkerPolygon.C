@@ -35,6 +35,8 @@ extern "C" {
 
 #include "bltGrMarkerPolygon.h"
 
+using namespace Blt;
+
 PolygonMarker::PolygonMarker() : BltMarker()
 {
   screenPts =NULL;

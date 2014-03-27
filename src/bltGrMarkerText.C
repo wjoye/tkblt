@@ -36,6 +36,8 @@ extern "C" {
 
 #include "bltGrMarkerText.h"
 
+using namespace Blt;
+
 TextMarker::TextMarker() : BltMarker()
 {
   anchorPt.x =0;
@@ -116,7 +118,7 @@ static MarkerClass textMarkerClass = {
   TextToPostscriptProc,
 };
 
-BltMarker* Blt_CreateTextProc(Graph* graphPtr)
+Blt::BltMarker* Blt_CreateTextProc(Graph* graphPtr)
 {
   TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
@@ -126,7 +128,7 @@ BltMarker* Blt_CreateTextProc(Graph* graphPtr)
   Blt_Ts_InitStyle(ops->style);
   tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (BltMarker*)tmPtr;
+  return (Blt::BltMarker*)tmPtr;
 }
 
 static int ConfigureTextProc(BltMarker* markerPtr)

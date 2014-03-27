@@ -32,7 +32,8 @@
 
 #define MAX_OUTLINE_POINTS	12
 
-class BltMarker;
+namespace Blt {
+  class BltMarker;
 
 typedef BltMarker* (MarkerCreateProc)(Graph*);
 typedef void (MarkerDrawProc)(BltMarker* markerPtr, Drawable drawable);
@@ -71,21 +72,23 @@ typedef struct {
   int yOffset;
 } MarkerOptions;
 
-class BltMarker {
+ class BltMarker {
  public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry* hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
+   GraphObj obj;
+   MarkerClass *classPtr;
+   Tk_OptionTable optionTable;
+   Tcl_HashEntry* hashPtr;
+   Blt_ChainLink link;
+   int clipped;
+   unsigned int flags;		
 
-  void* ops;
+   void* ops;
 
  public:
-  BltMarker();
-  virtual ~BltMarker();
+   BltMarker();
+   virtual ~BltMarker();
+ };
+
 };
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);

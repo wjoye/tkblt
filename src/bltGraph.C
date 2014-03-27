@@ -43,6 +43,8 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrMarker.h"
 
+using namespace Blt;
+
 #define MARKER_UNDER	1	/* Draw markers designated to lie underneath
 				 * elements, grids, legend, etc. */
 #define MARKER_ABOVE	0	/* Draw markers designated to rest above

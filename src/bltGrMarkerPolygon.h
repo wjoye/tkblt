@@ -32,6 +32,8 @@
 
 #include "bltGrMarker.h"
 
+namespace Blt {
+
 typedef struct {
   const char** tags;
   Coords* worldPts;
@@ -69,6 +71,8 @@ class PolygonMarker : public BltMarker {
  public:
   PolygonMarker();
   virtual ~PolygonMarker();
+};
+
 };
 
 #endif

@@ -35,6 +35,8 @@ extern "C" {
 
 #include "bltGrMarkerBitmap.h"
 
+using namespace Blt;
+
 BitmapMarker::BitmapMarker() : BltMarker()
 {
   anchorPt.x =0;

@@ -39,6 +39,8 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrMarker.h"
 
+using namespace Blt;
+
 extern MarkerCreateProc Blt_CreateBitmapProc;
 extern MarkerCreateProc Blt_CreateLineProc;
 extern MarkerCreateProc Blt_CreatePolygonProc;
@@ -65,7 +67,7 @@ BltMarker::BltMarker()
   */
 }
 
-BltMarker::~BltMarker()
+Blt::BltMarker::~BltMarker()
 {
 }
 
@@ -274,7 +276,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   const char* type = Tcl_GetString(objv[3]);
-  BltMarker *markerPtr;
+  Blt::BltMarker* markerPtr;
   if (!strcmp(type, "text")) {
     markerPtr = Blt_CreateTextProc(graphPtr);
     Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_TEXT);
