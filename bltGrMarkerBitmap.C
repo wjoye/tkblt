@@ -35,6 +35,21 @@ extern "C" {
 
 #include "bltGrMarkerBitmap.h"
 
+BitmapMarker::BitmapMarker() : BltMarker()
+{
+  anchorPt.x =0;
+  anchorPt.y =0;
+  gc =NULL;
+  fillGC =NULL;
+  nOutlinePts =0;
+  width =0;
+  height =0;
+}
+
+BitmapMarker::~BitmapMarker()
+{
+}
+
 // OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -99,7 +114,7 @@ static MarkerClass bitmapMarkerClass = {
   BitmapToPostscriptProc,
 };
 
-Marker* Blt_CreateBitmapProc(Graph* graphPtr)
+BltMarker* Blt_CreateBitmapProc(Graph* graphPtr)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)calloc(1, sizeof(BitmapMarker));
   bmPtr->classPtr = &bitmapMarkerClass;
@@ -107,10 +122,10 @@ Marker* Blt_CreateBitmapProc(Graph* graphPtr)
 
   bmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (Marker*)bmPtr;
+  return (BltMarker*)bmPtr;
 }
 
-static int ConfigureBitmapProc(Marker* markerPtr)
+static int ConfigureBitmapProc(BltMarker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
@@ -158,7 +173,7 @@ static int ConfigureBitmapProc(Marker* markerPtr)
   return TCL_OK;
 }
 
-static void MapBitmapProc(Marker* markerPtr)
+static void MapBitmapProc(BltMarker* markerPtr)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
@@ -218,7 +233,7 @@ static void MapBitmapProc(Marker* markerPtr)
     bmPtr->nOutlinePts = nn;
 }
 
-static int PointInBitmapProc(Marker* markerPtr, Point2d *samplePtr)
+static int PointInBitmapProc(BltMarker* markerPtr, Point2d *samplePtr)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
@@ -232,7 +247,7 @@ static int PointInBitmapProc(Marker* markerPtr, Point2d *samplePtr)
 	  (samplePtr->y < (bmPtr->anchorPt.y + bmPtr->height)));
 }
 
-static int RegionInBitmapProc(Marker* markerPtr, Region2d *extsPtr, 
+static int RegionInBitmapProc(BltMarker* markerPtr, Region2d *extsPtr, 
 			      int enclosed)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
@@ -250,7 +265,7 @@ static int RegionInBitmapProc(Marker* markerPtr, Region2d *extsPtr,
 	   ((bmPtr->anchorPt.y + bmPtr->height) <= extsPtr->top));
 }
 
-static void DrawBitmapProc(Marker* markerPtr, Drawable drawable)
+static void DrawBitmapProc(BltMarker* markerPtr, Drawable drawable)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
@@ -273,7 +288,7 @@ static void DrawBitmapProc(Marker* markerPtr, Drawable drawable)
 	     bmPtr->anchorPt.y, 1);
 }
 
-static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
+static void BitmapToPostscriptProc(BltMarker* markerPtr, Blt_Ps ps)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
@@ -302,7 +317,7 @@ static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 		   "grestore\n", (char*)NULL);
 }
 
-static void FreeBitmapProc(Marker* markerPtr)
+static void FreeBitmapProc(BltMarker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;

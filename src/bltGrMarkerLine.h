@@ -52,12 +52,16 @@ typedef struct {
   int xorr;
 } LineMarkerOptions;
 
-class LineMarker : public Marker {
+class LineMarker : public BltMarker {
  public:
   GC gc;
-  Segment2d *segments;
+  Segment2d* segments;
   int nSegments;
   int xorState;
+
+ public:
+  LineMarker();
+  virtual ~LineMarker();
 };
 
 #endif

@@ -49,7 +49,7 @@ typedef struct {
   XColor* outlineColor;
 } BitmapMarkerOptions;
 
-class BitmapMarker : public Marker {
+class BitmapMarker : public BltMarker {
  public:
   Point2d anchorPt;
   GC gc;
@@ -58,6 +58,10 @@ class BitmapMarker : public Marker {
   int nOutlinePts;
   int width;
   int height;
+
+ public:
+  BitmapMarker();
+  virtual ~BitmapMarker();
 };
 
 #endif

@@ -49,13 +49,17 @@ typedef struct {
   const char* string;
 } TextMarkerOptions;
 
-class TextMarker : public Marker {
+class TextMarker : public BltMarker {
  public:
   Point2d anchorPt;
   int width;
   int height;
   GC fillGC;
   Point2d outline[5];
+
+ public:
+  TextMarker();
+  virtual ~TextMarker();
 };
 
 #endif

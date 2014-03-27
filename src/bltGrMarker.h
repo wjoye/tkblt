@@ -32,16 +32,16 @@
 
 #define MAX_OUTLINE_POINTS	12
 
-class Marker;
+class BltMarker;
 
-typedef Marker* (MarkerCreateProc)(Graph*);
-typedef void (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
-typedef void (MarkerFreeProc)(Marker *markerPtr);
-typedef int (MarkerConfigProc)(Marker *markerPtr);
-typedef void (MarkerMapProc)(Marker *markerPtr);
-typedef void (MarkerPostscriptProc)(Marker *markerPtr, Blt_Ps ps);
-typedef int (MarkerPointProc)(Marker *markerPtr, Point2d *samplePtr);
-typedef int (MarkerRegionProc)(Marker *markerPtr, Region2d *extsPtr, int enclosed);
+typedef BltMarker* (MarkerCreateProc)(Graph*);
+typedef void (MarkerDrawProc)(BltMarker* markerPtr, Drawable drawable);
+typedef void (MarkerFreeProc)(BltMarker* markerPtr);
+typedef int (MarkerConfigProc)(BltMarker* markerPtr);
+typedef void (MarkerMapProc)(BltMarker* markerPtr);
+typedef void (MarkerPostscriptProc)(BltMarker* markerPtr, Blt_Ps ps);
+typedef int (MarkerPointProc)(BltMarker* markerPtr, Point2d *samplePtr);
+typedef int (MarkerRegionProc)(BltMarker* markerPtr, Region2d *extsPtr, int enclosed);
 
 typedef struct {
   Tk_OptionSpec *optionSpecs;
@@ -71,17 +71,21 @@ typedef struct {
   int yOffset;
 } MarkerOptions;
 
-class Marker {
+class BltMarker {
  public:
   GraphObj obj;
   MarkerClass *classPtr;
   Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
+  Tcl_HashEntry* hashPtr;
   Blt_ChainLink link;
   int clipped;
   unsigned int flags;		
 
   void* ops;
+
+ public:
+  BltMarker();
+  virtual ~BltMarker();
 };
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
