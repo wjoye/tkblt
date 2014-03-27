@@ -39,12 +39,10 @@ using namespace Blt;
 
 LineMarker::LineMarker() : Marker()
 {
-  /*
   gc =NULL;
   segments =NULL;
   nSegments =0;
   xorState =0;
-  */
 }
 
 LineMarker::~LineMarker()

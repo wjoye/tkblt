@@ -948,37 +948,12 @@ static void AdjustAxisPointers(Graph* graphPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GraphTags --
- *
- *	Sets the binding tags for a graph obj. This routine is called by Tk
- *	when an event occurs in the graph.  It fills an array of pointers with
- *	bind tag addresses.
- *
- *	The object addresses are strings hashed in one of two tag tables: one
- *	for elements and the another for markers.  Note that there's only one
- *	binding table for elements and markers.  [We don't want to trigger
- *	both a marker and element bind command for the same event.]  But we
- *	don't want a marker and element with the same tag name to activate the
- *	others bindings. A tag "all" for markers should mean all markers, not
- *	all markers and elements.  As a result, element and marker tags are
- *	stored in separate hash tables, which means we can't generate the same
- *	tag address for both an elements and marker, even if they have the
- *	same name.
- *
- *---------------------------------------------------------------------------
- */
-
 void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)
 {
   Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
   ClassId classId = (ClassId)(long(context));
 
-
-  //  switch (graphObjPtr->classId) {
   switch (classId) {
   case CID_ELEM_BAR:		
   case CID_ELEM_LINE: 

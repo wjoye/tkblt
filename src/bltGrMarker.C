@@ -51,7 +51,6 @@ extern MarkerCreateProc Blt_CreateWindowProc;
 
 Marker::Marker()
 {
-  /*
   obj.classId = CID_NONE;
   obj.name =NULL;
   obj.className =NULL;
@@ -64,7 +63,6 @@ Marker::Marker()
   link =NULL;
   clipped =0;
   flags =0;
-  */
 }
 
 Marker::~Marker()
@@ -277,9 +275,9 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   const char* type = Tcl_GetString(objv[3]);
   Marker* markerPtr;
-  if (!strcmp(type, "text")) {
-    markerPtr = Blt_CreateTextProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_TEXT);
+  if (!strcmp(type, "bitmap")) {
+    markerPtr = Blt_CreateBitmapProc(graphPtr);
+    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_BITMAP);
   }
   else if (!strcmp(type, "line")) {
     markerPtr = Blt_CreateLineProc(graphPtr);
@@ -289,9 +287,9 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
     markerPtr = Blt_CreatePolygonProc(graphPtr);
     Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_POLYGON);
   }
-  else if (!strcmp(type, "bitmap")) {
-    markerPtr = Blt_CreateBitmapProc(graphPtr);
-    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_BITMAP);
+  else if (!strcmp(type, "text")) {
+    markerPtr = Blt_CreateTextProc(graphPtr);
+    Blt_GraphSetObjectClass(&markerPtr->obj, CID_MARKER_TEXT);
   }
   else if (!strcmp(type, "window")) {
     markerPtr = Blt_CreateWindowProc(graphPtr);
