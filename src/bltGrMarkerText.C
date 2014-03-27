@@ -85,7 +85,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerConfigProc ConfigureTextProc;
 static MarkerDrawProc DrawTextProc;
 static MarkerMapProc MapTextProc;
 static MarkerPointProc PointInTextProc;
@@ -94,7 +93,6 @@ static MarkerRegionProc RegionInTextProc;
 
 static MarkerClass textMarkerClass = {
   optionSpecs,
-  ConfigureTextProc,
   DrawTextProc,
   MapTextProc,
   PointInTextProc,
@@ -126,27 +124,26 @@ TextMarker::~TextMarker()
   Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops)->style);
 }
 
-static int ConfigureTextProc(Marker* markerPtr)
+int TextMarker::Configure()
 {
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
+  Graph* graphPtr = obj.graphPtr;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
 
-  ops->style.angle = (float)fmod(ops->style.angle, 360.0);
-  if (ops->style.angle < 0.0f)
-    ops->style.angle += 360.0f;
+  opp->style.angle = (float)fmod(opp->style.angle, 360.0);
+  if (opp->style.angle < 0.0f)
+    opp->style.angle += 360.0f;
 
   GC newGC = NULL;
   XGCValues gcValues;
   unsigned long gcMask;
-  if (ops->fillColor) {
+  if (opp->fillColor) {
     gcMask = GCForeground;
-    gcValues.foreground = ops->fillColor->pixel;
+    gcValues.foreground = opp->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
-  if (tmPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, tmPtr->fillGC);
-  tmPtr->fillGC = newGC;
+  if (fillGC)
+    Tk_FreeGC(graphPtr->display, fillGC);
+  fillGC = newGC;
 
   return TCL_OK;
 }

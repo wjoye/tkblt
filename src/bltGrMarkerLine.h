@@ -61,6 +61,9 @@ class LineMarker : public Marker {
   int nSegments;
   int xorState;
 
+ private:
+  int Configure();
+
  public:
   LineMarker(Graph*, const char*);
   virtual ~LineMarker();

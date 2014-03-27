@@ -394,7 +394,7 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
     markerPtr->flags |= mask;
     markerPtr->flags |= MAP_ITEM;
     graphPtr->flags |= CACHE_DIRTY;
-    if ((*markerPtr->classPtr->configProc)(markerPtr) != TCL_OK)
+    if (markerPtr->Configure() != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -825,7 +825,7 @@ void Blt_ConfigureMarkers(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    (*markerPtr->classPtr->configProc)(markerPtr);
+    markerPtr->Configure();
   }
 }
 

@@ -61,6 +61,9 @@ class BitmapMarker : public Marker {
   int width;
   int height;
 
+ private:
+  int Configure();
+
  public:
   BitmapMarker(Graph*, const char*);
   virtual ~BitmapMarker();

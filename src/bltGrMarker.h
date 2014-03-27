@@ -45,7 +45,6 @@ typedef int (MarkerRegionProc)(Marker* markerPtr, Region2d *extsPtr, int enclose
 
 typedef struct {
   Tk_OptionSpec *optionSpecs;
-  MarkerConfigProc *configProc;
   MarkerDrawProc *drawProc;
   MarkerMapProc *mapProc;
   MarkerPointProc *pointProc;
@@ -71,6 +70,8 @@ typedef struct {
 } MarkerOptions;
 
  class Marker {
+ protected:
+
  public:
    GraphObj obj;
    MarkerClass *classPtr;
@@ -82,9 +83,12 @@ typedef struct {
 
    void* ops;
 
+
  public:
    Marker(Graph*, const char*);
    virtual ~Marker();
+
+   virtual int Configure() =0;
  };
 
 };

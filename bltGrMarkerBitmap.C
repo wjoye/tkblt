@@ -81,7 +81,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerConfigProc ConfigureBitmapProc;
 static MarkerDrawProc DrawBitmapProc;
 static MarkerMapProc MapBitmapProc;
 static MarkerPointProc PointInBitmapProc;
@@ -90,7 +89,6 @@ static MarkerRegionProc RegionInBitmapProc;
 
 static MarkerClass bitmapMarkerClass = {
   optionSpecs,
-  ConfigureBitmapProc,
   DrawBitmapProc,
   MapBitmapProc,
   PointInBitmapProc,
@@ -126,30 +124,29 @@ BitmapMarker::~BitmapMarker()
     Tk_FreeGC(graphPtr->display, fillGC);
 }
 
-static int ConfigureBitmapProc(Marker* markerPtr)
+int BitmapMarker::Configure()
 {
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
+  Graph* graphPtr = obj.graphPtr;
+  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
 
-  if (ops->bitmap == None)
+  if (opp->bitmap == None)
     return TCL_OK;
 
   XGCValues gcValues;
   unsigned long gcMask = 0;
-  if (ops->outlineColor) {
+  if (opp->outlineColor) {
     gcMask |= GCForeground;
-    gcValues.foreground = ops->outlineColor->pixel;
+    gcValues.foreground = opp->outlineColor->pixel;
   }
 
-  if (ops->fillColor) {
+  if (opp->fillColor) {
     // Opaque bitmap: both foreground and background (fill) colors are used
-    gcValues.background = ops->fillColor->pixel;
+    gcValues.background = opp->fillColor->pixel;
     gcMask |= GCBackground;
   }
   else {
     // Transparent bitmap: set the clip mask to the current bitmap
-    gcValues.clip_mask = ops->bitmap;
+    gcValues.clip_mask = opp->bitmap;
     gcMask |= GCClipMask;
   }
 
@@ -158,17 +155,17 @@ static int ConfigureBitmapProc(Marker* markerPtr)
   // no other client will be allocated this GC with the GCClipMask set to
   // this particular bitmap.
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (bmPtr->gc)
-    Tk_FreeGC(graphPtr->display, bmPtr->gc);
-  bmPtr->gc = newGC;
+  if (gc)
+    Tk_FreeGC(graphPtr->display, gc);
+  gc = newGC;
 
   // Create the background GC containing the fill color
-  if (ops->fillColor) {
-    gcValues.foreground = ops->fillColor->pixel;
+  if (opp->fillColor) {
+    gcValues.foreground = opp->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (bmPtr->fillGC)
-      Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
-    bmPtr->fillGC = newGC;
+    if (fillGC)
+      Tk_FreeGC(graphPtr->display, fillGC);
+    fillGC = newGC;
   }
 
   return TCL_OK;

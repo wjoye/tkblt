@@ -59,6 +59,9 @@ class TextMarker : public Marker {
   GC fillGC;
   Point2d outline[5];
 
+ private:
+  int Configure();
+
  public:
   TextMarker(Graph*, const char*);
   virtual ~TextMarker();

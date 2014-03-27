@@ -87,7 +87,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerConfigProc ConfigureLineProc;
 static MarkerDrawProc DrawLineProc;
 static MarkerMapProc MapLineProc;
 static MarkerPointProc PointInLineProc;
@@ -96,7 +95,6 @@ static MarkerRegionProc RegionInLineProc;
 
 static MarkerClass lineMarkerClass = {
   optionSpecs,
-  ConfigureLineProc,
   DrawLineProc,
   MapLineProc,
   PointInLineProc,
@@ -128,6 +126,63 @@ LineMarker::~LineMarker()
     Blt_FreePrivateGC(graphPtr->display, gc);
   if (segments)
     free(segments);
+}
+
+int LineMarker::Configure()
+{
+  Graph* graphPtr = obj.graphPtr;
+  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+
+  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
+  unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
+  XGCValues gcValues;
+  if (opp->outlineColor) {
+    gcMask |= GCForeground;
+    gcValues.foreground = opp->outlineColor->pixel;
+  }
+  if (opp->fillColor) {
+    gcMask |= GCBackground;
+    gcValues.background = opp->fillColor->pixel;
+  }
+  gcValues.cap_style = opp->capStyle;
+  gcValues.join_style = opp->joinStyle;
+  gcValues.line_width = LineWidth(opp->lineWidth);
+  gcValues.line_style = LineSolid;
+  if (LineIsDashed(opp->dashes)) {
+    gcValues.line_style = 
+      (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
+  }
+  if (opp->xorr) {
+    unsigned long pixel;
+    gcValues.function = GXxor;
+
+    gcMask |= GCFunction;
+    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
+    if (gcMask & GCBackground)
+      gcValues.background ^= pixel;
+
+    gcValues.foreground ^= pixel;
+    if (drawable != None)
+      DrawLineProc(this, drawable);
+  }
+
+  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (gc)
+    Blt_FreePrivateGC(graphPtr->display, gc);
+
+  if (LineIsDashed(opp->dashes))
+    Blt_SetDashes(graphPtr->display, newGC, &opp->dashes);
+
+  gc = newGC;
+  if (opp->xorr) {
+    if (drawable != None) {
+      MapLineProc(this);
+      DrawLineProc(this, drawable);
+    }
+    return TCL_OK;
+  }
+
+  return TCL_OK;
 }
 
 static int PointInLineProc(Marker* markerPtr, Point2d *samplePtr)
@@ -187,64 +242,6 @@ static void DrawLineProc(Marker* markerPtr, Drawable drawable)
     if (ops->xorr)
       lmPtr->xorState = (lmPtr->xorState == 0);
   }
-}
-
-static int ConfigureLineProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
-
-  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
-  unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
-  XGCValues gcValues;
-  if (ops->outlineColor) {
-    gcMask |= GCForeground;
-    gcValues.foreground = ops->outlineColor->pixel;
-  }
-  if (ops->fillColor) {
-    gcMask |= GCBackground;
-    gcValues.background = ops->fillColor->pixel;
-  }
-  gcValues.cap_style = ops->capStyle;
-  gcValues.join_style = ops->joinStyle;
-  gcValues.line_width = LineWidth(ops->lineWidth);
-  gcValues.line_style = LineSolid;
-  if (LineIsDashed(ops->dashes)) {
-    gcValues.line_style = 
-      (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
-  }
-  if (ops->xorr) {
-    unsigned long pixel;
-    gcValues.function = GXxor;
-
-    gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
-    if (gcMask & GCBackground)
-      gcValues.background ^= pixel;
-
-    gcValues.foreground ^= pixel;
-    if (drawable != None)
-      DrawLineProc(markerPtr, drawable);
-  }
-
-  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lmPtr->gc)
-    Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
-
-  if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
-
-  lmPtr->gc = newGC;
-  if (ops->xorr) {
-    if (drawable != None) {
-      MapLineProc(markerPtr);
-      DrawLineProc(markerPtr, drawable);
-    }
-    return TCL_OK;
-  }
-
-  return TCL_OK;
 }
 
 static void LineToPostscriptProc(Marker* markerPtr, Blt_Ps ps)

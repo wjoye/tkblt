@@ -95,7 +95,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerConfigProc ConfigurePolygonProc;
 static MarkerDrawProc DrawPolygonProc;
 static MarkerMapProc MapPolygonProc;
 static MarkerPointProc PointInPolygonProc;
@@ -104,7 +103,6 @@ static MarkerRegionProc RegionInPolygonProc;
 
 static MarkerClass polygonMarkerClass = {
   optionSpecs,
-  ConfigurePolygonProc,
   DrawPolygonProc,
   MapPolygonProc,
   PointInPolygonProc,
@@ -145,6 +143,91 @@ PolygonMarker::~PolygonMarker()
     free(outlinePts);
   if (screenPts)
     free(screenPts);
+}
+
+int PolygonMarker::Configure()
+{
+  Graph* graphPtr = obj.graphPtr;
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
+
+  GC newGC;
+  XGCValues gcValues;
+  unsigned long gcMask;
+  Drawable drawable;
+
+  drawable = Tk_WindowId(graphPtr->tkwin);
+  gcMask = (GCLineWidth | GCLineStyle);
+  if (opp->outline) {
+    gcMask |= GCForeground;
+    gcValues.foreground = opp->outline->pixel;
+  }
+  if (opp->outlineBg) {
+    gcMask |= GCBackground;
+    gcValues.background = opp->outlineBg->pixel;
+  }
+  gcMask |= (GCCapStyle | GCJoinStyle);
+  gcValues.cap_style = opp->capStyle;
+  gcValues.join_style = opp->joinStyle;
+  gcValues.line_style = LineSolid;
+  gcValues.dash_offset = 0;
+  gcValues.line_width = LineWidth(opp->lineWidth);
+  if (LineIsDashed(opp->dashes)) {
+    gcValues.line_style = (opp->outlineBg == NULL)
+      ? LineOnOffDash : LineDoubleDash;
+  }
+  if (opp->xorr) {
+    unsigned long pixel;
+    gcValues.function = GXxor;
+
+    gcMask |= GCFunction;
+    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
+    if (gcMask & GCBackground) {
+      gcValues.background ^= pixel;
+    }
+    gcValues.foreground ^= pixel;
+    if (drawable != None) {
+      DrawPolygonProc(this, drawable);
+    }
+  }
+  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (LineIsDashed(opp->dashes)) {
+    Blt_SetDashes(graphPtr->display, newGC, &opp->dashes);
+  }
+  if (outlineGC) {
+    Blt_FreePrivateGC(graphPtr->display, outlineGC);
+  }
+  outlineGC = newGC;
+
+  gcMask = 0;
+  if (opp->fill) {
+    gcMask |= GCForeground;
+    gcValues.foreground = opp->fill->pixel;
+  }
+  if (opp->fillBg) {
+    gcMask |= GCBackground;
+    gcValues.background = opp->fillBg->pixel;
+  }
+  if (opp->stipple != None) {
+    gcValues.stipple = opp->stipple;
+    gcValues.fill_style = (opp->fillBg)
+      ? FillOpaqueStippled : FillStippled;
+    gcMask |= (GCStipple | GCFillStyle);
+  }
+  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (fillGC) {
+    Tk_FreeGC(graphPtr->display, fillGC);
+  }
+  fillGC = newGC;
+
+  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (opp->xorr)) {
+    if (drawable != None) {
+      MapPolygonProc(this);
+      DrawPolygonProc(this, drawable);
+    }
+    return TCL_OK;
+  }
+
+  return TCL_OK;
 }
 
 static int PointInPolygonProc(Marker* markerPtr, Point2d *samplePtr)
@@ -271,92 +354,6 @@ static void PolygonToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
     }
     Blt_Ps_Draw2DSegments(ps, pmPtr->outlinePts, pmPtr->nOutlinePts);
   }
-}
-
-static int ConfigurePolygonProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
-
-  GC newGC;
-  XGCValues gcValues;
-  unsigned long gcMask;
-  Drawable drawable;
-
-  drawable = Tk_WindowId(graphPtr->tkwin);
-  gcMask = (GCLineWidth | GCLineStyle);
-  if (ops->outline) {
-    gcMask |= GCForeground;
-    gcValues.foreground = ops->outline->pixel;
-  }
-  if (ops->outlineBg) {
-    gcMask |= GCBackground;
-    gcValues.background = ops->outlineBg->pixel;
-  }
-  gcMask |= (GCCapStyle | GCJoinStyle);
-  gcValues.cap_style = ops->capStyle;
-  gcValues.join_style = ops->joinStyle;
-  gcValues.line_style = LineSolid;
-  gcValues.dash_offset = 0;
-  gcValues.line_width = LineWidth(ops->lineWidth);
-  if (LineIsDashed(ops->dashes)) {
-    gcValues.line_style = (ops->outlineBg == NULL)
-      ? LineOnOffDash : LineDoubleDash;
-  }
-  if (ops->xorr) {
-    unsigned long pixel;
-    gcValues.function = GXxor;
-
-    gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
-    if (gcMask & GCBackground) {
-      gcValues.background ^= pixel;
-    }
-    gcValues.foreground ^= pixel;
-    if (drawable != None) {
-      DrawPolygonProc(markerPtr, drawable);
-    }
-  }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(ops->dashes)) {
-    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
-  }
-  if (pmPtr->outlineGC) {
-    Blt_FreePrivateGC(graphPtr->display, pmPtr->outlineGC);
-  }
-  pmPtr->outlineGC = newGC;
-
-  gcMask = 0;
-  if (ops->fill) {
-    gcMask |= GCForeground;
-    gcValues.foreground = ops->fill->pixel;
-  }
-  if (ops->fillBg) {
-    gcMask |= GCBackground;
-    gcValues.background = ops->fillBg->pixel;
-  }
-  if (ops->stipple != None) {
-    gcValues.stipple = ops->stipple;
-    gcValues.fill_style = (ops->fillBg)
-      ? FillOpaqueStippled : FillStippled;
-    gcMask |= (GCStipple | GCFillStyle);
-  }
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (pmPtr->fillGC) {
-    Tk_FreeGC(graphPtr->display, pmPtr->fillGC);
-  }
-  pmPtr->fillGC = newGC;
-
-  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (ops->xorr)) {
-    if (drawable != None) {
-      MapPolygonProc(markerPtr);
-      DrawPolygonProc(markerPtr, drawable);
-    }
-    return TCL_OK;
-  }
-
-  return TCL_OK;
 }
 
 static void MapPolygonProc(Marker* markerPtr)

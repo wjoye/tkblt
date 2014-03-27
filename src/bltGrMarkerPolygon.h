@@ -68,6 +68,9 @@ class PolygonMarker : public Marker {
   int nOutlinePts;
   int xorState;
 
+ private:
+  int Configure();
+
  public:
   PolygonMarker(Graph*, const char*);
   virtual ~PolygonMarker();
