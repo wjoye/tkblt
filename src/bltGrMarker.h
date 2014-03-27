@@ -81,7 +81,7 @@ class Marker {
   int clipped;
   unsigned int flags;		
 
-  MarkerOptions* ops;
+  void* ops;
 };
 
 Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);

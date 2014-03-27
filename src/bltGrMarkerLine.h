@@ -62,7 +62,7 @@ class LineMarker {
   int clipped;
   unsigned int flags;		
 
-  LineMarkerOptions* ops;
+  void* ops;
 
   // Fields specific to line
 

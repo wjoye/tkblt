@@ -172,11 +172,11 @@ static void MapBitmapProc(Marker* markerPtr)
   Tk_SizeOfBitmap(graphPtr->display, bmPtr->ops->bitmap, &width, &height);
 
   Point2d anchorPt = 
-    Blt_MapPoint(bmPtr->ops->worldPts->points, &markerPtr->ops->axes);
+    Blt_MapPoint(bmPtr->ops->worldPts->points, &bmPtr->ops->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, width, height,
 			     bmPtr->ops->anchor);
-  anchorPt.x += markerPtr->ops->xOffset;
-  anchorPt.y += markerPtr->ops->yOffset;
+  anchorPt.x += bmPtr->ops->xOffset;
+  anchorPt.y += bmPtr->ops->yOffset;
 
   Region2d extents;
   extents.left = anchorPt.x;

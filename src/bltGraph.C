@@ -1022,10 +1022,13 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_LINE:
   case CID_MARKER_POLYGON:
   case CID_MARKER_TEXT:
-  case CID_MARKER_WINDOW:
-    if (markerPtr->ops->tags)
-      for (const char** p = markerPtr->ops->tags; *p != NULL; p++)
-	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+  case CID_MARKER_WINDOW: 
+    {
+      MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    }
     break;
   case CID_NONE:
     break;

@@ -169,11 +169,11 @@ static void MapTextProc(Marker* markerPtr)
   tmPtr->outline[4].y = tmPtr->outline[0].y;
 
   Point2d anchorPt = 
-    Blt_MapPoint(tmPtr->ops->worldPts->points, &markerPtr->ops->axes);
+    Blt_MapPoint(tmPtr->ops->worldPts->points, &tmPtr->ops->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, tmPtr->width, 
 			     tmPtr->height, tmPtr->ops->anchor);
-  anchorPt.x += markerPtr->ops->xOffset;
-  anchorPt.y += markerPtr->ops->yOffset;
+  anchorPt.x += tmPtr->ops->xOffset;
+  anchorPt.y += tmPtr->ops->yOffset;
 
   Region2d extents;
   extents.left = anchorPt.x;

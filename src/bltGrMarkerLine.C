@@ -108,10 +108,12 @@ static MarkerClass lineMarkerClass = {
 Marker* Blt_CreateLineProc(Graph* graphPtr)
 {
   LineMarker* lmPtr = (LineMarker*)calloc(1, sizeof(LineMarker));
+
   lmPtr->classPtr = &lineMarkerClass;
   lmPtr->ops = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
-  lmPtr->ops->xorr = FALSE;
+  ops->xorr = FALSE;
   lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker*)lmPtr;
@@ -128,16 +130,17 @@ static int PointInLineProc(Marker *markerPtr, Point2d *samplePtr)
 static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
-  if (!lmPtr->ops->worldPts || lmPtr->ops->worldPts->num < 2)
+  if (!ops->worldPts || ops->worldPts->num < 2)
     return FALSE;
 
   if (enclosed) {
     Point2d *pp, *pend;
 
-    for (pp = lmPtr->ops->worldPts->points, pend = pp + lmPtr->ops->worldPts->num; 
+    for (pp = ops->worldPts->points, pend = pp + ops->worldPts->num; 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &markerPtr->ops->axes);
+      Point2d p = Blt_MapPoint(pp, &ops->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
@@ -148,10 +151,10 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
   else {
     Point2d *pp, *pend;
     int count = 0;
-    for (pp = lmPtr->ops->worldPts->points, pend = pp + (lmPtr->ops->worldPts->num - 1); 
+    for (pp = ops->worldPts->points, pend = pp + (ops->worldPts->num - 1); 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &markerPtr->ops->axes);
-      Point2d q = Blt_MapPoint(pp + 1, &markerPtr->ops->axes);
+      Point2d p = Blt_MapPoint(pp, &ops->axes);
+      Point2d q = Blt_MapPoint(pp + 1, &ops->axes);
       if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
     }
@@ -163,13 +166,14 @@ static int RegionInLineProc(Marker *markerPtr, Region2d *extsPtr, int enclosed)
 static void DrawLineProc(Marker *markerPtr, Drawable drawable)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
   if (lmPtr->nSegments > 0) {
     Graph* graphPtr = markerPtr->obj.graphPtr;
 
     Blt_Draw2DSegments(graphPtr->display, drawable, lmPtr->gc, 
 		       lmPtr->segments, lmPtr->nSegments);
-    if (lmPtr->ops->xorr)
+    if (ops->xorr)
       lmPtr->xorState = (lmPtr->xorState == 0);
   }
 }
@@ -178,27 +182,28 @@ static int ConfigureLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker*)markerPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
   Drawable drawable = Tk_WindowId(graphPtr->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
   XGCValues gcValues;
-  if (lmPtr->ops->outlineColor) {
+  if (ops->outlineColor) {
     gcMask |= GCForeground;
-    gcValues.foreground = lmPtr->ops->outlineColor->pixel;
+    gcValues.foreground = ops->outlineColor->pixel;
   }
-  if (lmPtr->ops->fillColor) {
+  if (ops->fillColor) {
     gcMask |= GCBackground;
-    gcValues.background = lmPtr->ops->fillColor->pixel;
+    gcValues.background = ops->fillColor->pixel;
   }
-  gcValues.cap_style = lmPtr->ops->capStyle;
-  gcValues.join_style = lmPtr->ops->joinStyle;
-  gcValues.line_width = LineWidth(lmPtr->ops->lineWidth);
+  gcValues.cap_style = ops->capStyle;
+  gcValues.join_style = ops->joinStyle;
+  gcValues.line_width = LineWidth(ops->lineWidth);
   gcValues.line_style = LineSolid;
-  if (LineIsDashed(lmPtr->ops->dashes)) {
+  if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = 
       (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
   }
-  if (lmPtr->ops->xorr) {
+  if (ops->xorr) {
     unsigned long pixel;
     gcValues.function = GXxor;
 
@@ -216,11 +221,11 @@ static int ConfigureLineProc(Marker *markerPtr)
   if (lmPtr->gc)
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
 
-  if (LineIsDashed(lmPtr->ops->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &lmPtr->ops->dashes);
+  if (LineIsDashed(ops->dashes))
+    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
 
   lmPtr->gc = newGC;
-  if (lmPtr->ops->xorr) {
+  if (ops->xorr) {
     if (drawable != None) {
       MapLineProc(markerPtr);
       DrawLineProc(markerPtr, drawable);
@@ -234,16 +239,17 @@ static int ConfigureLineProc(Marker *markerPtr)
 static void LineToPostscriptProc(Marker *markerPtr, Blt_Ps ps)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
   if (lmPtr->nSegments > 0) {
-    Blt_Ps_XSetLineAttributes(ps, lmPtr->ops->outlineColor, 
-			      lmPtr->ops->lineWidth,
-			      &lmPtr->ops->dashes,
-			      lmPtr->ops->capStyle,
-			      lmPtr->ops->joinStyle);
-    if ((LineIsDashed(lmPtr->ops->dashes)) && (lmPtr->ops->fillColor)) {
+    Blt_Ps_XSetLineAttributes(ps, ops->outlineColor, 
+			      ops->lineWidth,
+			      &ops->dashes,
+			      ops->capStyle,
+			      ops->joinStyle);
+    if ((LineIsDashed(ops->dashes)) && (ops->fillColor)) {
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-      Blt_Ps_XSetBackground(ps, lmPtr->ops->fillColor);
+      Blt_Ps_XSetBackground(ps, ops->fillColor);
       Blt_Ps_Append(ps, "    ");
       Blt_Ps_XSetDashes(ps, (Blt_Dashes*)NULL);
       Blt_Ps_VarAppend(ps,
@@ -262,6 +268,7 @@ static void FreeLineProc(Marker *markerPtr)
 {
   LineMarker *lmPtr = (LineMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
   if (lmPtr->gc)
     Blt_FreePrivateGC(graphPtr->display, lmPtr->gc);
@@ -269,20 +276,21 @@ static void FreeLineProc(Marker *markerPtr)
   if (lmPtr->segments)
     free(lmPtr->segments);
 
-  if (lmPtr->ops)
-    free(lmPtr->ops);
+  if (ops)
+    free(ops);
 }
 
 static void MapLineProc(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   LineMarker *lmPtr = (LineMarker*)markerPtr;
+  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
 
   lmPtr->nSegments = 0;
   if (lmPtr->segments)
     free(lmPtr->segments);
 
-  if (!lmPtr->ops->worldPts || (lmPtr->ops->worldPts->num < 2))
+  if (!ops->worldPts || (ops->worldPts->num < 2))
     return;
 
   Region2d extents;
@@ -295,19 +303,19 @@ static void MapLineProc(Marker *markerPtr)
    * disconnected segments.
    */
   Segment2d* segments = 
-    (Segment2d*)malloc(lmPtr->ops->worldPts->num * sizeof(Segment2d));
-  Point2d* srcPtr = lmPtr->ops->worldPts->points;
-  Point2d p = Blt_MapPoint(srcPtr, &markerPtr->ops->axes);
-  p.x += markerPtr->ops->xOffset;
-  p.y += markerPtr->ops->yOffset;
+    (Segment2d*)malloc(ops->worldPts->num * sizeof(Segment2d));
+  Point2d* srcPtr = ops->worldPts->points;
+  Point2d p = Blt_MapPoint(srcPtr, &ops->axes);
+  p.x += ops->xOffset;
+  p.y += ops->yOffset;
 
   Segment2d* segPtr = segments;
   Point2d* pend;
-  for (srcPtr++, pend = lmPtr->ops->worldPts->points + lmPtr->ops->worldPts->num; 
+  for (srcPtr++, pend = ops->worldPts->points + ops->worldPts->num; 
        srcPtr < pend; srcPtr++) {
-    Point2d next = Blt_MapPoint(srcPtr, &markerPtr->ops->axes);
-    next.x += lmPtr->ops->xOffset;
-    next.y += lmPtr->ops->yOffset;
+    Point2d next = Blt_MapPoint(srcPtr, &ops->axes);
+    next.x += ops->xOffset;
+    next.y += ops->yOffset;
     Point2d q = next;
 
     if (Blt_LineRectClip(&extents, &p, &q)) {

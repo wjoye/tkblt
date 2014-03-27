@@ -299,10 +299,11 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 static void DestroyMarker(Marker *markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
 
   // If the marker to be deleted is currently displayed below the
   // elements, then backing store needs to be repaired.
-  if (markerPtr->ops->drawUnder)
+  if (ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
   Blt_DeleteBindings(graphPtr->bindTable, markerPtr);
@@ -519,7 +520,8 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide) {
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
+    if ((markerPtr->flags & DELETE_PENDING) || ops->hide) {
       continue;
     }
     if (IsElementHidden(markerPtr))
@@ -592,6 +594,7 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
   Marker *markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
+  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
 
   Marker* placePtr =NULL;
   if (objc == 5)
@@ -609,7 +612,7 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
   else
     Blt_Chain_LinkBefore(graphPtr->markers.displayList, link, place);
 
-  if (markerPtr->ops->drawUnder)
+  if (ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
 
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -678,9 +681,10 @@ static int IsElementHidden(Marker *markerPtr)
 {
   Tcl_HashEntry *hPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
 
-  if (markerPtr->ops->elemName) {
-    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, markerPtr->ops->elemName);
+  if (ops->elemName) {
+    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, ops->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (!elemPtr->link || elemPtr->hide)
@@ -773,13 +777,14 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
     if (markerPtr->classPtr->postscriptProc == NULL)
       continue;
 
-    if (markerPtr->ops->drawUnder != under)
+    if (ops->drawUnder != under)
       continue;
 
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide)
+    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
       continue;
 
     if (IsElementHidden(markerPtr))
@@ -796,11 +801,12 @@ void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
 
-    if ((markerPtr->ops->drawUnder != under) ||
+    if ((ops->drawUnder != under) ||
 	(markerPtr->clipped) ||
 	(markerPtr->flags & DELETE_PENDING) ||
-	(markerPtr->ops->hide))
+	(ops->hide))
       continue;
 
     if (IsElementHidden(markerPtr))
@@ -824,8 +830,9 @@ void Blt_MapMarkers(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker *markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
 
-    if ((markerPtr->flags & DELETE_PENDING) || markerPtr->ops->hide)
+    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
       continue;
 
     if ((graphPtr->flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
@@ -860,15 +867,16 @@ void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
+
     if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || 
-	(markerPtr->ops->hide))
+	(ops->hide))
       continue;
 
     if (IsElementHidden(markerPtr))
       continue;
 
-    if ((markerPtr->ops->drawUnder == under) && 
-	(markerPtr->ops->state == BLT_STATE_NORMAL))
+    if ((ops->drawUnder == under) && (ops->state == BLT_STATE_NORMAL))
       if ((*markerPtr->classPtr->pointProc) (markerPtr, &point))
 	return markerPtr;
   }
