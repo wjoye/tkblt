@@ -681,7 +681,7 @@ static int ConfigureLineProc(Graph* graphPtr, Element *basePtr)
   // Point to the static normal/active pens if no external pens have been
   // selected.
   Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette);
-  if (link == NULL) {
+  if (!link) {
     link = Blt_Chain_AllocLink(sizeof(LineStyle));
     Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
   } 
@@ -701,9 +701,8 @@ static int ConfigureLineProc(Graph* graphPtr, Element *basePtr)
     gcValues.background = elemPtr->fillBgColor->pixel;
   }
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (elemPtr->fillGC) {
+  if (elemPtr->fillGC)
     Tk_FreeGC(graphPtr->display, elemPtr->fillGC);
-  }
   elemPtr->fillGC = newGC;
 
   return TCL_OK;
@@ -733,16 +732,16 @@ static int ConfigurePenProc(Graph* graphPtr, Pen* basePtr)
 	gcValues.clip_mask = lpPtr->symbol.mask;
 	gcMask |= GCClipMask;
       }
-    } else {
+    }
+    else {
       gcValues.clip_mask = lpPtr->symbol.bitmap;
       gcMask |= GCClipMask;
     }
   }
   gcValues.line_width = LineWidth(lpPtr->symbol.outlineWidth);
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lpPtr->symbol.outlineGC) {
+  if (lpPtr->symbol.outlineGC)
     Tk_FreeGC(graphPtr->display, lpPtr->symbol.outlineGC);
-  }
   lpPtr->symbol.outlineGC = newGC;
 
   // symbol fill
@@ -2264,20 +2263,13 @@ static void DrawCircles(Display *display, Drawable drawable,
 			LineElement* elemPtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int radius)
 {
-  int i;
-  int reqSize;
-  int s;
-  int count;
-
-  s = radius + radius;
+  int count = 0;
+  int s = radius + radius;
   XArc *arcs = (XArc*)malloc(nSymbolPts * sizeof(XArc));
 
   if (elemPtr->symbolInterval > 0) {
+    XArc* ap = arcs;
     Point2d *pp, *pend;
-    XArc *ap;
-
-    ap = arcs;
-    count = 0;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       if (DRAW_SYMBOL(elemPtr)) {
 	ap->x = Round(pp->x) - radius;
@@ -2289,11 +2281,10 @@ static void DrawCircles(Display *display, Drawable drawable,
       }
       elemPtr->symbolCounter++;
     }
-  } else {
+  }
+  else {
+    XArc *ap = arcs;
     Point2d *pp, *pend;
-    XArc *ap;
-
-    ap = arcs;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       ap->x = Round(pp->x) - radius;
       ap->y = Round(pp->y) - radius;
@@ -2304,18 +2295,17 @@ static void DrawCircles(Display *display, Drawable drawable,
     }
     count = nSymbolPts;
   }
-  reqSize = MAX_DRAWARCS(display);
-  for (i = 0; i < count; i += reqSize) {
-    int n;
 
-    n = ((i + reqSize) > count) ? (count - i) : reqSize;
-    if (penPtr->symbol.fillGC) {
-      XFillArcs(display, drawable, penPtr->symbol.fillGC, arcs + i, n);
-    }
-    if (penPtr->symbol.outlineWidth > 0) {
-      XDrawArcs(display, drawable, penPtr->symbol.outlineGC, arcs + i, n);
-    }
+  int reqSize = MAX_DRAWARCS(display);
+  for (int ii=0; ii<count; ii+= reqSize) {
+    int n = ((ii + reqSize) > count) ? (count - ii) : reqSize;
+    if (penPtr->symbol.fillGC)
+      XFillArcs(display, drawable, penPtr->symbol.fillGC, arcs + ii, n);
+
+    if (penPtr->symbol.outlineWidth > 0)
+      XDrawArcs(display, drawable, penPtr->symbol.outlineGC, arcs + ii, n);
   }
+
   free(arcs);
 }
 
@@ -2323,18 +2313,13 @@ static void DrawSquares(Display *display, Drawable drawable,
 			LineElement* elemPtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int r)
 {
-  XRectangle *rp, *rend;
-  int reqSize;
-  int s, count;
-
-  s = r + r;
+  int count =0;
+  int s = r + r;
   XRectangle *rectangles = (XRectangle*)malloc(nSymbolPts * sizeof(XRectangle));
-  if (elemPtr->symbolInterval > 0) {
-    Point2d *pp, *pend;
-    XRectangle *rp;
 
-    count = 0;
-    rp = rectangles;
+  if (elemPtr->symbolInterval > 0) {
+    XRectangle* rp = rectangles;
+    Point2d *pp, *pend;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       if (DRAW_SYMBOL(elemPtr)) {
 	rp->x = Round(pp->x) - r;
@@ -2344,11 +2329,10 @@ static void DrawSquares(Display *display, Drawable drawable,
       }
       elemPtr->symbolCounter++;
     }
-  } else {
+  }
+  else {
+    XRectangle* rp = rectangles;
     Point2d *pp, *pend;
-    XRectangle *rp;
-
-    rp = rectangles;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       rp->x = Round(pp->x) - r;
       rp->y = Round(pp->y) - r;
@@ -2357,40 +2341,38 @@ static void DrawSquares(Display *display, Drawable drawable,
     }
     count = nSymbolPts;
   }
-  reqSize = MAX_DRAWRECTANGLES(display) - 3;
-  for (rp = rectangles, rend = rp + count; rp < rend; rp += reqSize) {
-    int n;
 
-    n = rend - rp;
-    if (n > reqSize) {
+  int reqSize = MAX_DRAWRECTANGLES(display) - 3;
+  XRectangle *rp, *rend;
+  for (rp = rectangles, rend = rp + count; rp < rend; rp += reqSize) {
+    int n = rend - rp;
+    if (n > reqSize)
       n = reqSize;
-    }
-    if (penPtr->symbol.fillGC) {
+
+    if (penPtr->symbol.fillGC)
       XFillRectangles(display, drawable, penPtr->symbol.fillGC, rp, n);
-    }
-    if (penPtr->symbol.outlineWidth > 0) {
+
+    if (penPtr->symbol.outlineWidth > 0)
       XDrawRectangles(display, drawable, penPtr->symbol.outlineGC, rp, n);
-    }
   }
+
   free(rectangles);
 }
 
+#define SQRT_PI		1.77245385090552
+#define S_RATIO		0.886226925452758
 static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 			LineElement* elemPtr, LinePen* penPtr,
 			int size, int nSymbolPts, Point2d *symbolPts)
 {
   XPoint pattern[13];			/* Template for polygon symbols */
-  int r1, r2;
   int count;
-#define SQRT_PI		1.77245385090552
-#define S_RATIO		0.886226925452758
 
   if (size < 3) {
     if (penPtr->symbol.fillGC) {
+      XPoint* points = (XPoint*)malloc(nSymbolPts * sizeof(XPoint));
+      XPoint* xpp = points;
       Point2d *pp, *endp;
-      XPoint *points, *xpp;
-	    
-      xpp = points = (XPoint*)malloc(nSymbolPts * sizeof(XPoint));
       for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	xpp->x = Round(pp->x);
 	xpp->y = Round(pp->y);
@@ -2402,8 +2384,9 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
     }
     return;
   }
-  r1 = (int)ceil(size * 0.5);
-  r2 = (int)ceil(size * S_RATIO * 0.5);
+
+  int r1 = (int)ceil(size * 0.5);
+  int r2 = (int)ceil(size * S_RATIO * 0.5);
 
   switch (penPtr->symbol.type) {
   case SYMBOL_NONE:
@@ -2422,27 +2405,22 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
   case SYMBOL_SPLUS:
   case SYMBOL_SCROSS:
     {
-      XSegment *segments;		/* Array of line segments (splus,
-					 * scross) */
-      int i;
-      int reqSize, nSegs;
-
       if (penPtr->symbol.type == SYMBOL_SCROSS) {
 	r2 = Round((double)r2 * M_SQRT1_2);
 	pattern[3].y = pattern[2].x = pattern[0].x = pattern[0].y = -r2;
 	pattern[3].x = pattern[2].y = pattern[1].y = pattern[1].x = r2;
-      } else {
+      }
+      else {
 	pattern[0].y = pattern[1].y = pattern[2].x = pattern[3].x = 0;
 	pattern[0].x = pattern[2].y = -r2;
 	pattern[1].x = pattern[3].y = r2;
       }
-      segments = (XSegment*)malloc(nSymbolPts * 2 * sizeof(XSegment));
-      if (elemPtr->symbolInterval > 0) {
-	Point2d *pp, *endp;
-	XSegment *sp;
 
-	sp = segments;
+      XSegment *segments = (XSegment*)malloc(nSymbolPts * 2 * sizeof(XSegment));
+      if (elemPtr->symbolInterval > 0) {
+	XSegment* sp = segments;
 	count = 0;
+	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL(elemPtr)) {
 	    int rndx, rndy;
@@ -2461,15 +2439,14 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	  }
 	  elemPtr->symbolCounter++;
 	}
-      } else {
-	Point2d *pp, *endp;
-	XSegment *sp;
-
-	sp = segments;
+      }
+      else {
+	XSegment* sp = segments;
 	count = nSymbolPts;
+	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int rndx, rndy;
-	  rndx = Round(pp->x), rndy = Round(pp->y);
+	  int rndx = Round(pp->x);
+	  int rndy = Round(pp->y);
 	  sp->x1 = pattern[0].x + rndx;
 	  sp->y1 = pattern[0].y + rndy;
 	  sp->x2 = pattern[1].x + rndx;
@@ -2482,15 +2459,13 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	  sp++;
 	}
       }
-      nSegs = count * 2;
-      /* Always draw skinny symbols regardless of the outline width */
-      reqSize = MAX_DRAWSEGMENTS(graphPtr->display);
-      for (i = 0; i < nSegs; i += reqSize) {
-	int chunk;
-
-	chunk = ((i + reqSize) > nSegs) ? (nSegs - i) : reqSize;
+      int nSegs = count * 2;
+      // Always draw skinny symbols regardless of the outline width
+      int reqSize = MAX_DRAWSEGMENTS(graphPtr->display);
+      for (int ii=0; ii<nSegs; ii+=reqSize) {
+	int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
 	XDrawSegments(graphPtr->display, drawable, 
-		      penPtr->symbol.outlineGC, segments + i, chunk);
+		      penPtr->symbol.outlineGC, segments + ii, chunk);
       }
       free(segments);
     }
@@ -2527,77 +2502,62 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
       pattern[9].y = pattern[8].y = r2;
 
       if (penPtr->symbol.type == SYMBOL_CROSS) {
-	int i;
-
 	/* For the cross symbol, rotate the points by 45 degrees. */
-	for (i = 0; i < 12; i++) {
-	  double dx, dy;
-
-	  dx = (double)pattern[i].x * M_SQRT1_2;
-	  dy = (double)pattern[i].y * M_SQRT1_2;
-	  pattern[i].x = Round(dx - dy);
-	  pattern[i].y = Round(dx + dy);
+	for (int ii=0; ii<12; ii++) {
+	  double dx = (double)pattern[ii].x * M_SQRT1_2;
+	  double dy = (double)pattern[ii].y * M_SQRT1_2;
+	  pattern[ii].x = Round(dx - dy);
+	  pattern[ii].y = Round(dx + dy);
 	}
 	pattern[12] = pattern[0];
       }
       polygon = (XPoint*)malloc(nSymbolPts * 13 * sizeof(XPoint));
       if (elemPtr->symbolInterval > 0) {
-	Point2d *pp, *endp;
-	XPoint *xpp;
-
 	count = 0;
-	xpp = polygon;
+	XPoint* xpp = polygon;
+	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL(elemPtr)) {
-	    int i;
-	    int rndx, rndy;
-
-	    rndx = Round(pp->x), rndy = Round(pp->y);
-	    for (i = 0; i < 13; i++) {
-	      xpp->x = pattern[i].x + rndx;
-	      xpp->y = pattern[i].y + rndy;
+	    int rndx = Round(pp->x);
+	    int rndy = Round(pp->y);
+	    for (int ii=0; ii<13; ii++) {
+	      xpp->x = pattern[ii].x + rndx;
+	      xpp->y = pattern[ii].y + rndy;
 	      xpp++;
 	    }
 	    count++;
 	  }
 	  elemPtr->symbolCounter++;
 	}
-      } else {
+      }
+      else {
+	XPoint* xpp = polygon;
 	Point2d *pp, *endp;
-	XPoint *xpp;
-
-	xpp = polygon;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int i;
-	  int rndx, rndy;
-
-	  rndx = Round(pp->x), rndy = Round(pp->y);
-	  for (i = 0; i < 13; i++) {
-	    xpp->x = pattern[i].x + rndx;
-	    xpp->y = pattern[i].y + rndy;
+	  int rndx = Round(pp->x);
+	  int rndy = Round(pp->y);
+	  for (int ii=0; ii<13; ii++) {
+	    xpp->x = pattern[ii].x + rndx;
+	    xpp->y = pattern[ii].y + rndy;
 	    xpp++;
 	  }
 	}
 	count = nSymbolPts;
       }
       if (penPtr->symbol.fillGC) {
-	int i;
+	int ii;
 	XPoint *xpp;
-
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 13) {
+	for (xpp = polygon, ii = 0; ii<count; ii++, xpp += 13)
 	  XFillPolygon(graphPtr->display, drawable, 
 		       penPtr->symbol.fillGC, xpp, 13, Complex, 
 		       CoordModeOrigin);
-	}
       }
       if (penPtr->symbol.outlineWidth > 0) {
-	int i;
+	int ii;
 	XPoint *xpp;
-
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 13) {
+	for (xpp = polygon, ii=0; ii<count; ii++, xpp += 13)
 	  XDrawLines(graphPtr->display, drawable, 
 		     penPtr->symbol.outlineGC, xpp, 13, CoordModeOrigin);
-	}
       }
       free(polygon);
     }
@@ -2667,11 +2627,9 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	XPoint *xpp;
 	int i;
 
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 5) {
+	for (xpp = polygon, i = 0; i < count; i++, xpp += 5)
 	  XFillPolygon(graphPtr->display, drawable, 
 		       penPtr->symbol.fillGC, xpp, 5, Convex, CoordModeOrigin);
-
-	}
       }
       if (penPtr->symbol.outlineWidth > 0) {
 	XPoint *xpp;
@@ -2771,10 +2729,9 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 	int i;
 
 	xpp = polygon;
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 4) {
+	for (xpp = polygon, i = 0; i < count; i++, xpp += 4)
 	  XFillPolygon(graphPtr->display, drawable, 
 		       penPtr->symbol.fillGC, xpp, 4, Convex, CoordModeOrigin);
-	}
       }
       if (penPtr->symbol.outlineWidth > 0) {
 	XPoint *xpp;
