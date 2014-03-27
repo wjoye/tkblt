@@ -52,20 +52,8 @@ typedef struct {
   int xorr;
 } LineMarkerOptions;
 
-class LineMarker {
+class LineMarker : public Marker {
  public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
-
-  void* ops;
-
-  // Fields specific to line
-
   GC gc;
   Segment2d *segments;
   int nSegments;

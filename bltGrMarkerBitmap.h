@@ -49,20 +49,8 @@ typedef struct {
   XColor* outlineColor;
 } BitmapMarkerOptions;
 
-class BitmapMarker {
+class BitmapMarker : public Marker {
  public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
-
-  void* ops;
-
-  // Fields specific to bitmap
-
   Point2d anchorPt;
   GC gc;
   GC fillGC;

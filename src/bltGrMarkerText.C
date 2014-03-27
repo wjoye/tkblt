@@ -108,8 +108,9 @@ Marker* Blt_CreateTextProc(Graph* graphPtr)
   TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
   tmPtr->classPtr = &textMarkerClass;
   tmPtr->ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  Blt_Ts_InitStyle(tmPtr->ops->style);
+  Blt_Ts_InitStyle(ops->style);
   tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   return (Marker*)tmPtr;
@@ -119,18 +120,18 @@ static int ConfigureTextProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  tmPtr->ops->style.angle = (float)fmod(tmPtr->ops->style.angle, 360.0);
-  if (tmPtr->ops->style.angle < 0.0f) {
-    tmPtr->ops->style.angle += 360.0f;
-  }
+  ops->style.angle = (float)fmod(ops->style.angle, 360.0);
+  if (ops->style.angle < 0.0f)
+    ops->style.angle += 360.0f;
 
   GC newGC = NULL;
   XGCValues gcValues;
   unsigned long gcMask;
-  if (tmPtr->ops->fillColor) {
+  if (ops->fillColor) {
     gcMask = GCForeground;
-    gcValues.foreground = tmPtr->ops->fillColor->pixel;
+    gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
   if (tmPtr->fillGC)
@@ -144,21 +145,22 @@ static void MapTextProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  if (!tmPtr->ops->string)
+  if (!ops->string)
     return;
 
-  if (!tmPtr->ops->worldPts || (tmPtr->ops->worldPts->num < 1))
+  if (!ops->worldPts || (ops->worldPts->num < 1))
     return;
 
   tmPtr->width =0;
   tmPtr->height =0;
 
   unsigned int w, h;
-  Blt_Ts_GetExtents(&tmPtr->ops->style, tmPtr->ops->string, &w, &h);
+  Blt_Ts_GetExtents(&ops->style, ops->string, &w, &h);
 
   double rw, rh;
-  Blt_GetBoundingBox(w, h, tmPtr->ops->style.angle, &rw, &rh, tmPtr->outline);
+  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, tmPtr->outline);
   tmPtr->width = ROUND(rw);
   tmPtr->height = ROUND(rh);
   for (int ii=0; ii<4; ii++) {
@@ -169,11 +171,11 @@ static void MapTextProc(Marker* markerPtr)
   tmPtr->outline[4].y = tmPtr->outline[0].y;
 
   Point2d anchorPt = 
-    Blt_MapPoint(tmPtr->ops->worldPts->points, &tmPtr->ops->axes);
+    Blt_MapPoint(ops->worldPts->points, &ops->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, tmPtr->width, 
-			     tmPtr->height, tmPtr->ops->anchor);
-  anchorPt.x += tmPtr->ops->xOffset;
-  anchorPt.y += tmPtr->ops->yOffset;
+			     tmPtr->height, ops->anchor);
+  anchorPt.x += ops->xOffset;
+  anchorPt.y += ops->yOffset;
 
   Region2d extents;
   extents.left = anchorPt.x;
@@ -187,11 +189,12 @@ static void MapTextProc(Marker* markerPtr)
 static int PointInTextProc(Marker* markerPtr, Point2d *samplePtr)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  if (!tmPtr->ops->string)
+  if (!ops->string)
     return 0;
 
-  if (tmPtr->ops->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0f) {
     Point2d points[5];
 
     // Figure out the bounding polygon (isolateral) for the text and see
@@ -212,8 +215,9 @@ static int PointInTextProc(Marker* markerPtr, Point2d *samplePtr)
 static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  if (tmPtr->ops->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0f) {
     // Generate the bounding polygon (isolateral) for the bitmap and see
     // if the point is inside of it.
     Point2d points[5];
@@ -238,10 +242,11 @@ static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
 
 static void DrawTextProc(Marker* markerPtr, Drawable drawable) 
 {
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  if (!tmPtr->ops->string)
+  if (!ops->string)
     return;
 
   if (tmPtr->fillGC) {
@@ -257,16 +262,17 @@ static void DrawTextProc(Marker* markerPtr, Drawable drawable)
   }
 
   // be sure to update style->gc, things might have changed
-  tmPtr->ops->style.flags |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr->tkwin, drawable, tmPtr->ops->string, -1,
-		  &tmPtr->ops->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
+  ops->style.flags |= UPDATE_GC;
+  Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->string, -1,
+		  &ops->style, tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
 static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  if (!tmPtr->ops->string)
+  if (!ops->string)
     return;
 
   if (tmPtr->fillGC) {
@@ -277,22 +283,23 @@ static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
       points[ii].x = tmPtr->outline[ii].x + tmPtr->anchorPt.x;
       points[ii].y = tmPtr->outline[ii].y + tmPtr->anchorPt.y;
     }
-    Blt_Ps_XSetBackground(ps, tmPtr->ops->fillColor);
+    Blt_Ps_XSetBackground(ps, ops->fillColor);
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, tmPtr->ops->string, &tmPtr->ops->style,
+  Blt_Ps_DrawText(ps, ops->string, &ops->style,
 		  tmPtr->anchorPt.x, tmPtr->anchorPt.y);
 }
 
 static void FreeTextProc(Marker* markerPtr)
 {
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  TextMarker* tmPtr = (TextMarker*)markerPtr;
+  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
 
-  Blt_Ts_FreeStyle(graphPtr->display, &tmPtr->ops->style);
+  Blt_Ts_FreeStyle(graphPtr->display, &ops->style);
 
-  if (tmPtr->ops)
-    free(tmPtr->ops);
+  if (ops)
+    free(ops);
 }
 

@@ -55,20 +55,8 @@ typedef struct {
   int xorr;
 } PolygonMarkerOptions;
 
-class PolygonMarker {
+class PolygonMarker : public Marker {
  public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
-
-  void* ops;
-
-  // Fields specific to polygon
-
   Point2d *screenPts;
   GC outlineGC;
   GC fillGC;

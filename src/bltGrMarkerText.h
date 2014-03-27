@@ -49,20 +49,8 @@ typedef struct {
   const char* string;
 } TextMarkerOptions;
 
-class TextMarker {
+class TextMarker : public Marker {
  public:
-  GraphObj obj;
-  MarkerClass *classPtr;
-  Tk_OptionTable optionTable;
-  Tcl_HashEntry *hashPtr;
-  Blt_ChainLink link;
-  int clipped;
-  unsigned int flags;		
-
-  void* ops;
-
-  // Fields specific to text
-
   Point2d anchorPt;
   int width;
   int height;

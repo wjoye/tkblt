@@ -114,25 +114,26 @@ static int ConfigureBitmapProc(Marker* markerPtr)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
 
-  if (bmPtr->ops->bitmap == None)
+  if (ops->bitmap == None)
     return TCL_OK;
 
   XGCValues gcValues;
   unsigned long gcMask = 0;
-  if (bmPtr->ops->outlineColor) {
+  if (ops->outlineColor) {
     gcMask |= GCForeground;
-    gcValues.foreground = bmPtr->ops->outlineColor->pixel;
+    gcValues.foreground = ops->outlineColor->pixel;
   }
 
-  if (bmPtr->ops->fillColor) {
+  if (ops->fillColor) {
     // Opaque bitmap: both foreground and background (fill) colors are used
-    gcValues.background = bmPtr->ops->fillColor->pixel;
+    gcValues.background = ops->fillColor->pixel;
     gcMask |= GCBackground;
   }
   else {
     // Transparent bitmap: set the clip mask to the current bitmap
-    gcValues.clip_mask = bmPtr->ops->bitmap;
+    gcValues.clip_mask = ops->bitmap;
     gcMask |= GCClipMask;
   }
 
@@ -146,8 +147,8 @@ static int ConfigureBitmapProc(Marker* markerPtr)
   bmPtr->gc = newGC;
 
   // Create the background GC containing the fill color
-  if (bmPtr->ops->fillColor) {
-    gcValues.foreground = bmPtr->ops->fillColor->pixel;
+  if (ops->fillColor) {
+    gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
     if (bmPtr->fillGC)
       Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
@@ -160,23 +161,24 @@ static int ConfigureBitmapProc(Marker* markerPtr)
 static void MapBitmapProc(Marker* markerPtr)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
   Graph* graphPtr = markerPtr->obj.graphPtr;
 
-  if (bmPtr->ops->bitmap == None)
+  if (ops->bitmap == None)
     return;
  
-  if (!bmPtr->ops->worldPts || (bmPtr->ops->worldPts->num < 1))
+  if (!ops->worldPts || (ops->worldPts->num < 1))
     return;
 
   int width, height;
-  Tk_SizeOfBitmap(graphPtr->display, bmPtr->ops->bitmap, &width, &height);
+  Tk_SizeOfBitmap(graphPtr->display, ops->bitmap, &width, &height);
 
   Point2d anchorPt = 
-    Blt_MapPoint(bmPtr->ops->worldPts->points, &bmPtr->ops->axes);
+    Blt_MapPoint(ops->worldPts->points, &ops->axes);
   anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, width, height,
-			     bmPtr->ops->anchor);
-  anchorPt.x += bmPtr->ops->xOffset;
-  anchorPt.y += bmPtr->ops->yOffset;
+			     ops->anchor);
+  anchorPt.x += ops->xOffset;
+  anchorPt.y += ops->yOffset;
 
   Region2d extents;
   extents.left = anchorPt.x;
@@ -219,8 +221,9 @@ static void MapBitmapProc(Marker* markerPtr)
 static int PointInBitmapProc(Marker* markerPtr, Point2d *samplePtr)
 {
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
 
-  if (bmPtr->ops->bitmap == None)
+  if (ops->bitmap == None)
     return 0;
 
   return ((samplePtr->x >= bmPtr->anchorPt.x) && 
@@ -251,11 +254,13 @@ static void DrawBitmapProc(Marker* markerPtr, Drawable drawable)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  if ((bmPtr->ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
+
+  if ((ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
     return;
 
-  if (bmPtr->ops->fillColor == NULL) {
-    XSetClipMask(graphPtr->display, bmPtr->gc, bmPtr->ops->bitmap);
+  if (ops->fillColor == NULL) {
+    XSetClipMask(graphPtr->display, bmPtr->gc, ops->bitmap);
     XSetClipOrigin(graphPtr->display, bmPtr->gc, bmPtr->anchorPt.x, 
 		   bmPtr->anchorPt.y);
   }
@@ -263,7 +268,7 @@ static void DrawBitmapProc(Marker* markerPtr, Drawable drawable)
     XSetClipMask(graphPtr->display, bmPtr->gc, None);
     XSetClipOrigin(graphPtr->display, bmPtr->gc, 0, 0);
   }
-  XCopyPlane(graphPtr->display, bmPtr->ops->bitmap, drawable, bmPtr->gc, 0, 0,
+  XCopyPlane(graphPtr->display, ops->bitmap, drawable, bmPtr->gc, 0, 0,
 	     bmPtr->width, bmPtr->height, bmPtr->anchorPt.x, 
 	     bmPtr->anchorPt.y, 1);
 }
@@ -272,14 +277,16 @@ static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 {
   Graph* graphPtr = markerPtr->obj.graphPtr;
   BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  if ((bmPtr->ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
+
+  if ((ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
     return;
 
-  if (bmPtr->ops->fillColor) {
-    Blt_Ps_XSetBackground(ps, bmPtr->ops->fillColor);
+  if (ops->fillColor) {
+    Blt_Ps_XSetBackground(ps, ops->fillColor);
     Blt_Ps_XFillPolygon(ps, bmPtr->outline, 4);
   }
-  Blt_Ps_XSetForeground(ps, bmPtr->ops->outlineColor);
+  Blt_Ps_XSetForeground(ps, ops->outlineColor);
 
   Blt_Ps_Format(ps,
 		"  gsave\n    %g %g translate\n    %d %d scale\n", 
@@ -288,7 +295,7 @@ static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
   Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
 		bmPtr->width, bmPtr->height, bmPtr->width, 
 		-bmPtr->height, bmPtr->height);
-  Blt_Ps_XSetBitmapData(ps, graphPtr->display, bmPtr->ops->bitmap,
+  Blt_Ps_XSetBitmapData(ps, graphPtr->display, ops->bitmap,
 			bmPtr->width, bmPtr->height);
   Blt_Ps_VarAppend(ps, 
 		   "    } imagemask\n",
@@ -297,8 +304,9 @@ static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
 
 static void FreeBitmapProc(Marker* markerPtr)
 {
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
   Graph* graphPtr = markerPtr->obj.graphPtr;
+  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
 
   if (bmPtr->gc)
     Tk_FreeGC(graphPtr->display, bmPtr->gc);
@@ -306,7 +314,7 @@ static void FreeBitmapProc(Marker* markerPtr)
   if (bmPtr->fillGC)
     Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
 
-  if (bmPtr->ops)
-    free(bmPtr->ops);
+  if (ops)
+    free(ops);
 }
 
