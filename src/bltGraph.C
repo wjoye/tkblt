@@ -975,64 +975,51 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)
 {
   Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
-  GraphObj* graphObjPtr = (GraphObj*)object;
-  Marker* markerPtr = (Marker*)object;
+  ClassId classId = (ClassId)(long(context));
 
-  MakeTagProc* tagProc;
-  switch (graphObjPtr->classId) {
+
+  //  switch (graphObjPtr->classId) {
+  switch (classId) {
   case CID_ELEM_BAR:		
   case CID_ELEM_LINE: 
-    tagProc = Blt_MakeElementTag;
+    {
+      GraphObj* graphObjPtr = (GraphObj*)object;
+      MakeTagProc* tagProc = Blt_MakeElementTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
+      if (graphObjPtr->tags)
+	for (const char** p = graphObjPtr->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    }
     break;
   case CID_AXIS_X:
   case CID_AXIS_Y:
-    tagProc = Blt_MakeAxisTag;
+    {
+      GraphObj* graphObjPtr = (GraphObj*)object;
+      MakeTagProc* tagProc = Blt_MakeAxisTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
+      if (graphObjPtr->tags)
+	for (const char** p = graphObjPtr->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    }
     break;
   case CID_MARKER_BITMAP:
   case CID_MARKER_LINE:
   case CID_MARKER_POLYGON:
   case CID_MARKER_TEXT:
   case CID_MARKER_WINDOW:
-    tagProc = Blt_MakeMarkerTag;
-    break;
-  case CID_NONE:
-    tagProc = NULL;
-    break;
-  default:
-    tagProc = NULL;
-    break;
-  }
-
-  // Always add the name of the object to the tag array.
-  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
-  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
-
-  switch (graphObjPtr->classId) {
-  case CID_ELEM_BAR:		
-  case CID_ELEM_LINE: 
-    if (graphObjPtr->tags)
-      for (const char** p = graphObjPtr->tags; *p != NULL; p++)
-	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-    break;
-  case CID_AXIS_X:
-  case CID_AXIS_Y:
-    if (graphObjPtr->tags)
-      for (const char** p = graphObjPtr->tags; *p != NULL; p++)
-	Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-    break;
-  case CID_MARKER_BITMAP:
-  case CID_MARKER_LINE:
-  case CID_MARKER_POLYGON:
-  case CID_MARKER_TEXT:
-  case CID_MARKER_WINDOW: 
     {
+      Marker* markerPtr = (Marker*)object;
       MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
+      MakeTagProc* tagProc = Blt_MakeMarkerTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.name), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.className), 0);
       if (ops->tags)
 	for (const char** p = ops->tags; *p != NULL; p++)
 	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+
     }
-    break;
-  case CID_NONE:
     break;
   default:
     break;
@@ -1048,24 +1035,33 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 {
   Graph* graphPtr = (Graph*)clientData;
 
-  if (graphPtr->flags & MAP_ALL)
+  if (graphPtr->flags & MAP_ALL) {
+    *contextPtr = (ClientData)NULL;
     return NULL;
+  }
 
   Region2d exts;
   Blt_GraphExtents(graphPtr, &exts);
 
   // Sample coordinate is in one of the graph margins. Can only pick an axis.
   if ((x >= exts.right) || (x < exts.left) || 
-      (y >= exts.bottom) || (y < exts.top))
-    return Blt_NearestAxis(graphPtr, x, y);
+      (y >= exts.bottom) || (y < exts.top)) {
+    Axis* axisPtr = Blt_NearestAxis(graphPtr, x, y);
+    if (axisPtr) {
+      *contextPtr = (ClientData)axisPtr->obj.classId;
+      return axisPtr;
+    }
+  }
 
   // From top-to-bottom check:
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
   Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
-  if (markerPtr)
+  if (markerPtr) {
+    *contextPtr = (ClientData)markerPtr->obj.classId;
     return markerPtr;
+  }
 
   ClosestSearch* searchPtr = &graphPtr->search;
   searchPtr->index = -1;
@@ -1085,13 +1081,18 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
       (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
   }
   // Found an element within the minimum halo distance.
-  if (searchPtr->dist <= (double)searchPtr->halo)
+  if (searchPtr->dist <= (double)searchPtr->halo) {
+    *contextPtr = (ClientData)elemPtr->obj.classId;
     return searchPtr->elemPtr;
+  }
 
   markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
-  if (markerPtr)
+  if (markerPtr) {
+    *contextPtr = (ClientData)markerPtr->obj.classId;
     return markerPtr;
+  }
 
+  *contextPtr = (ClientData)NULL;
   return NULL;
 }
 
