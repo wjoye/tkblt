@@ -85,7 +85,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-MarkerCreateProc Blt_CreateTextProc;
 static MarkerConfigProc ConfigureTextProc;
 static MarkerDrawProc DrawTextProc;
 static MarkerFreeProc FreeTextProc;
@@ -127,19 +126,6 @@ TextMarker::~TextMarker()
   Graph* graphPtr = obj.graphPtr;
 
   Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops)->style);
-}
-
-Blt::Marker* Blt_CreateTextProc(Graph* graphPtr)
-{
-  TextMarker* tmPtr = (TextMarker*)calloc(1, sizeof(TextMarker));
-  tmPtr->classPtr = &textMarkerClass;
-  tmPtr->ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
-
-  Blt_Ts_InitStyle(ops->style);
-  tmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-
-  return (Blt::Marker*)tmPtr;
 }
 
 static int ConfigureTextProc(Marker* markerPtr)

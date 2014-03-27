@@ -81,7 +81,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-MarkerCreateProc Blt_CreateBitmapProc;
 static MarkerConfigProc ConfigureBitmapProc;
 static MarkerDrawProc DrawBitmapProc;
 static MarkerFreeProc FreeBitmapProc;
@@ -127,17 +126,6 @@ BitmapMarker::~BitmapMarker()
     Tk_FreeGC(graphPtr->display, gc);
   if (fillGC)
     Tk_FreeGC(graphPtr->display, fillGC);
-}
-
-Marker* Blt_CreateBitmapProc(Graph* graphPtr)
-{
-  BitmapMarker* bmPtr = (BitmapMarker*)calloc(1, sizeof(BitmapMarker));
-  bmPtr->classPtr = &bitmapMarkerClass;
-  bmPtr->ops = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
-
-  bmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-
-  return (Marker*)bmPtr;
 }
 
 static int ConfigureBitmapProc(Marker* markerPtr)

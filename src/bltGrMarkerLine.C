@@ -87,7 +87,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-MarkerCreateProc Blt_CreateLineProc;
 static MarkerConfigProc ConfigureLineProc;
 static MarkerDrawProc DrawLineProc;
 static MarkerFreeProc FreeLineProc;
@@ -131,20 +130,6 @@ LineMarker::~LineMarker()
     Blt_FreePrivateGC(graphPtr->display, gc);
   if (segments)
     free(segments);
-}
-
-Marker* Blt_CreateLineProc(Graph* graphPtr)
-{
-  LineMarker* lmPtr = (LineMarker*)calloc(1, sizeof(LineMarker));
-
-  lmPtr->classPtr = &lineMarkerClass;
-  lmPtr->ops = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
-
-  ops->xorr = FALSE;
-  lmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-
-  return (Marker*)lmPtr;
 }
 
 static int PointInLineProc(Marker* markerPtr, Point2d *samplePtr)

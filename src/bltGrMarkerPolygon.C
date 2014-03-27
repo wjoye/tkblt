@@ -95,7 +95,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-MarkerCreateProc Blt_CreatePolygonProc;
 static MarkerConfigProc ConfigurePolygonProc;
 static MarkerDrawProc DrawPolygonProc;
 static MarkerFreeProc FreePolygonProc;
@@ -148,17 +147,6 @@ PolygonMarker::~PolygonMarker()
     free(outlinePts);
   if (screenPts)
     free(screenPts);
-}
-
-Marker* Blt_CreatePolygonProc(Graph* graphPtr)
-{
-  PolygonMarker* pmPtr = (PolygonMarker*)calloc(1, sizeof(PolygonMarker));
-  pmPtr->classPtr = &polygonMarkerClass;
-  pmPtr->ops = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
-
-  pmPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-
-  return (Marker*)pmPtr;
 }
 
 static int PointInPolygonProc(Marker* markerPtr, Point2d *samplePtr)
