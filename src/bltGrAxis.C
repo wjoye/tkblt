@@ -39,6 +39,8 @@ extern "C" {
 #include "bltOp.h"
 }
 
+class Marker;
+
 #include "bltConfig.h"
 #include "bltGrElem.h"
 #include "bltGrAxis.h"

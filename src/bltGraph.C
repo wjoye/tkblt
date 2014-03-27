@@ -1058,7 +1058,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  Marker* markerPtr = Blt_NearestMarker(graphPtr, x, y, FALSE);
+  Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
   if (markerPtr)
     return markerPtr;
 
@@ -1083,7 +1083,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   if (searchPtr->dist <= (double)searchPtr->halo)
     return searchPtr->elemPtr;
 
-  markerPtr = Blt_NearestMarker(graphPtr, x, y, TRUE);
+  markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr)
     return markerPtr;
 

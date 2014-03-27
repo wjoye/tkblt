@@ -51,7 +51,6 @@ typedef struct _Legend Legend;
 typedef struct _Crosshairs Crosshairs;
 typedef struct _Element Element;
 typedef struct _Pen Pen;
-typedef struct _Marker Marker;
 
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
@@ -555,6 +554,6 @@ extern void Blt_MapMarkers(Graph* graphPtr);
 extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 			 int objc, Tcl_Obj* const objv[]);
 extern void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
-extern Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
+extern void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 
 #endif

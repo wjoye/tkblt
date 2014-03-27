@@ -71,7 +71,7 @@ extern "C" {
   int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 			 int objc, Tcl_Obj* const objv[]);
   void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
-  Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
+  void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
 
 // OptionSpecs
@@ -852,7 +852,7 @@ void Blt_DestroyMarkers(Graph* graphPtr)
   Blt_Chain_Destroy(graphPtr->markers.displayList);
 }
 
-Marker* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
+void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
 {
   Point2d point;
   point.x = (double)x;

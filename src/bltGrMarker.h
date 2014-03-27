@@ -32,7 +32,9 @@
 
 #define MAX_OUTLINE_POINTS	12
 
-typedef Marker *(MarkerCreateProc)(Graph*);
+class Marker;
+
+typedef Marker* (MarkerCreateProc)(Graph*);
 typedef void (MarkerDrawProc)(Marker *markerPtr, Drawable drawable);
 typedef void (MarkerFreeProc)(Marker *markerPtr);
 typedef int (MarkerConfigProc)(Marker *markerPtr);
@@ -69,7 +71,8 @@ typedef struct {
   int yOffset;
 } MarkerOptions;
 
-struct _Marker {
+class Marker {
+ public:
   GraphObj obj;
   MarkerClass *classPtr;
   Tk_OptionTable optionTable;
