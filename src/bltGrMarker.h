@@ -42,15 +42,15 @@ namespace Blt {
  class Marker {
  protected:
    ClassId classId_;
-   Graph* graphPtr_;
+   const char *name_;
+   const char *className_;
    Tk_OptionTable optionTable_;
    void* ops_;
+   Graph* graphPtr_;
    Tcl_HashEntry* hashPtr_;
    int clipped_;
 
  public:
-   const char *name;
-   const char *className;
    Blt_ChainLink link;
    unsigned int flags;		
 
@@ -74,6 +74,8 @@ namespace Blt {
    virtual void postscript(Blt_Ps) =0;
 
    ClassId classId() {return classId_;}
+   const char* name() {return name_;}
+   const char* className() {return className_;}
    int clipped() {return clipped_;}
    Tk_OptionTable optionTable() {return optionTable_;}
    MarkerOptions* ops() {return (MarkerOptions*)ops_;}

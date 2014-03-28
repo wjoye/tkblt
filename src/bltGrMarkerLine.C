@@ -89,7 +89,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
   classId_ = CID_MARKER_LINE;
-  className = dupstr("LineMarker");
+  className_ = dupstr("LineMarker");
   ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -103,7 +103,7 @@ LineMarker::~LineMarker()
   if (gc_)
     Blt_FreePrivateGC(graphPtr_->display, gc_);
   if (segments_)
-    free(segments_);
+    delete [] segments_;
 }
 
 int LineMarker::configure()
@@ -165,7 +165,7 @@ int LineMarker::configure()
 void LineMarker::draw(Drawable drawable)
 {
   if (nSegments_ > 0)
-    Blt_Draw2DSegments(graphPtr_->display, drawable, gc_, segments_, nSegments_);
+    Blt_Draw2DSegments(graphPtr_->display, drawable, gc_, segments_,nSegments_);
 }
 
 void LineMarker::map()
@@ -174,7 +174,7 @@ void LineMarker::map()
 
   nSegments_ = 0;
   if (segments_)
-    free(segments_);
+    delete [] segments_;
 
   if (!ops->worldPts || (ops->worldPts->num < 2))
     return;
@@ -186,7 +186,8 @@ void LineMarker::map()
   // as series of line segments, not one continous polyline.  This is
   // because clipping against the plot area may chop the line into several
   // disconnected segments.
-  Segment2d* segments = (Segment2d*)malloc(ops->worldPts->num * sizeof(Segment2d));
+
+  Segment2d* segments = new Segment2d[ops->worldPts->num];
   Point2d* srcPtr = ops->worldPts->points;
   Point2d p = mapPoint(srcPtr, &ops->axes);
   p.x += ops->xOffset;

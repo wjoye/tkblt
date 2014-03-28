@@ -98,7 +98,7 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
   : Marker(graphPtr, name, hPtr)
 {
   classId_ = CID_MARKER_POLYGON;
-  className = dupstr("PolygonMarker");
+  className_ = dupstr("PolygonMarker");
   ops_ = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -118,11 +118,11 @@ PolygonMarker::~PolygonMarker()
   if (outlineGC_)
     Blt_FreePrivateGC(graphPtr_->display, outlineGC_);
   if (fillPts_)
-    free(fillPts_);
+    delete [] fillPts_;
   if (outlinePts_)
-    free(outlinePts_);
+    delete [] outlinePts_;
   if (screenPts_)
-    free(screenPts_);
+    delete [] screenPts_;
 }
 
 int PolygonMarker::configure()
@@ -210,7 +210,7 @@ void PolygonMarker::draw(Drawable drawable)
 
   // fill region
   if ((nFillPts_ > 0) && (ops->fill)) {
-    XPoint* points = (XPoint*)malloc(nFillPts_ * sizeof(XPoint));
+    XPoint* points = new XPoint[nFillPts_];
     if (!points)
       return;
 
@@ -224,7 +224,7 @@ void PolygonMarker::draw(Drawable drawable)
 
     XFillPolygon(graphPtr_->display, drawable, fillGC_, points, 
 		 nFillPts_, Complex, CoordModeOrigin);
-    free(points);
+    delete [] points;
   }
 
   // outline
@@ -240,19 +240,19 @@ void PolygonMarker::map()
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (outlinePts_) {
-    free(outlinePts_);
+    delete [] outlinePts_;
     outlinePts_ = NULL;
     nOutlinePts_ = 0;
   }
 
   if (fillPts_) {
-    free(fillPts_);
+    delete [] fillPts_;
     fillPts_ = NULL;
     nFillPts_ = 0;
   }
 
   if (screenPts_) {
-    free(screenPts_);
+    delete [] screenPts_;
     screenPts_ = NULL;
   }
 
@@ -263,11 +263,10 @@ void PolygonMarker::map()
   // the polygon.
 
   int nScreenPts = ops->worldPts->num + 1;
-  Point2d* screenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
+  Point2d* screenPts = new Point2d[nScreenPts + 1];
   {
-    Point2d *sp, *dp, *send;
-
-    dp = screenPts;
+    Point2d* dp = screenPts;
+    Point2d *sp, *send;
     for (sp = ops->worldPts->points, send = sp + ops->worldPts->num; 
 	 sp < send; sp++) {
       *dp = mapPoint(sp, &ops->axes);
@@ -281,11 +280,11 @@ void PolygonMarker::map()
   Blt_GraphExtents(graphPtr_, &extents);
   clipped_ = TRUE;
   if (ops->fill) {
-    Point2d* lfillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
+    Point2d* lfillPts = new Point2d[nScreenPts * 3];
     int n = 
       Blt_PolyRectClip(&extents, screenPts, ops->worldPts->num,lfillPts);
     if (n < 3)
-      free(lfillPts);
+      delete [] lfillPts;
     else {
       nFillPts_ = n;
       fillPts_ = lfillPts;
@@ -295,7 +294,7 @@ void PolygonMarker::map()
   if ((ops->outline) && (ops->lineWidth > 0)) { 
     // Generate line segments representing the polygon outline.  The
     // resulting outline may or may not be closed from viewport clipping.
-    Segment2d* outlinePts = (Segment2d*)malloc(nScreenPts * sizeof(Segment2d));
+    Segment2d* outlinePts = new Segment2d[nScreenPts];
     if (!outlinePts)
       return;
 
