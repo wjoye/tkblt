@@ -35,6 +35,59 @@
 #include <iomanip>
 using namespace std;
 
-};
+#include "bltGrElem.h"
+#include "bltGrPenBar.h"
+
+typedef struct {
+  GraphObj obj;
+  unsigned int flags;		
+  int hide;
+  Tcl_HashEntry *hashPtr;
+
+  // Fields specific to elements
+  const char *label;
+  unsigned short row;
+  unsigned short col;
+  int legendRelief;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues* w;
+  int *activeIndices;
+  int nActiveIndices;
+  ElementProcs *procsPtr;
+  Tk_OptionTable optionTable;
+  BarPen *activePenPtr;
+  BarPen *normalPenPtr;
+  BarPen *builtinPenPtr;
+  Blt_Chain stylePalette;
+
+  // Symbol scaling
+  int scaleSymbols;
+  double xRange;
+  double yRange;
+  int state;
+  Blt_ChainLink link;
+
+  // Fields specific to the barchart element
+  double barWidth;
+  const char *groupName;
+  int *barToData;
+  XRectangle *bars;
+  int *activeToData;
+  XRectangle *activeRects;
+  int nBars;
+  int nActive;
+  int xPad;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
+  BarPen builtinPen;
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int errorBarCapWidth;
+} BarElement;
 
 #endif

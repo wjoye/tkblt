@@ -45,6 +45,9 @@ extern "C" {
 
 // Defs
 
+extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
+			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
+
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 static void DestroyElement(Element* elemPtr);
 static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
@@ -67,8 +70,6 @@ typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 			       Tcl_Obj *const *objv);
 
 // OptionSpecs
-
-const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
 static Tk_CustomOptionSetProc ValuesSetProc;
 static Tk_CustomOptionGetProc ValuesGetProc;

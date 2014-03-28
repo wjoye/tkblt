@@ -35,6 +35,25 @@
 #include <iomanip>
 using namespace std;
 
-};
+#include "bltGrPenOp.h"
+
+typedef struct _Pen Pen;
+
+typedef Pen* (PenCreateProc)(void);
+typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
+typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
+
+typedef struct _Pen {
+  const char *name;
+  ClassId classId;
+  const char *typeId;
+  unsigned int flags;
+  int refCount;
+  Tcl_HashEntry *hashPtr;
+  Tk_OptionTable optionTable;
+  PenConfigureProc *configProc;
+  PenDestroyProc *destroyProc;
+  Graph* graphPtr;
+} Pen;
 
 #endif

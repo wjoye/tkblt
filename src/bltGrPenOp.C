@@ -38,10 +38,17 @@ extern "C" {
 #include "bltOp.h"
 };
 
-#include "bltGrElem.h"
+#include "bltGrPenOp.h"
+#include "bltGrPenLine.h"
+#include "bltGrPenBar.h"
 
 // Defs
 
+extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
+extern void Blt_FreePen(Pen* penPtr);
+
+static Pen* CreateBarPen(Graph* graphPtr, const char *penName);
+static Pen* CreateLinePen(Graph* graphPtr, const char* penName);
 static void DestroyPen(Pen* penPtr);
 static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr);
@@ -129,10 +136,10 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   Pen* penPtr;
   switch (classId) {
   case CID_ELEM_BAR:
-    penPtr = Blt_BarPen(graphPtr, penName);
+    penPtr = CreateBarPen(graphPtr, penName);
     break;
   case CID_ELEM_LINE:
-    penPtr = Blt_LinePen(graphPtr, penName);
+    penPtr = CreateLinePen(graphPtr, penName);
     break;
   default:
     return TCL_ERROR;
@@ -439,5 +446,24 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   }
   *penPtrPtr = penPtr;
   return TCL_OK;
+}
+
+static Pen* CreateBarPen(Graph* graphPtr, const char *penName)
+{
+  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
+  InitBarPen(graphPtr, penPtr);
+  penPtr->name = Blt_Strdup(penName);
+
+  return (Pen*)penPtr;
+}
+
+static Pen* CreateLinePen(Graph* graphPtr, const char* penName)
+{
+  LinePen* penPtr = (LinePen*)calloc(1, sizeof(LinePen));
+  InitLinePen(graphPtr, penPtr);
+  penPtr->name = Blt_Strdup(penName);
+  penPtr->classId = CID_ELEM_LINE;
+
+  return (Pen*)penPtr;
 }
 

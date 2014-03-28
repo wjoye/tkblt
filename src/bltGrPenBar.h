@@ -35,6 +35,44 @@
 #include <iomanip>
 using namespace std;
 
-};
+#include "bltGrPen.h"
+
+typedef struct {
+  const char *name;
+  ClassId classId;
+  const char *typeId;
+  unsigned int flags;
+  int refCount;
+  Tcl_HashEntry *hashPtr;
+  Tk_OptionTable optionTable;
+  PenConfigureProc *configProc;
+  PenDestroyProc *destroyProc;
+  Graph* graphPtr;
+
+  // Barchart specific pen fields start here
+  XColor* outlineColor;
+  Tk_3DBorder fill;
+  int borderWidth;
+  int relief;
+  Pixmap stipple;
+  GC fillGC;
+  GC outlineGC;
+
+  // Error bar attributes
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+  GC errorBarGC;
+
+  // Show value attributes
+  int valueShow;
+  const char *valueFormat;
+  TextStyle valueStyle;
+} BarPen;
+
+extern void InitBarPen(Graph* graphPtr, BarPen* penPtr);
+extern int ConfigureBarPenProc(Graph* graphPtr, Pen *basePtr);
+extern void DestroyBarPenProc(Graph* graphPtr, Pen* basePtr);
 
 #endif

@@ -46,18 +46,16 @@ using namespace Blt;
 
 // Defs
 
-void Blt_FreeMarker(char* dataPtr);
-static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
-static Tcl_Obj* PrintCoordinate(double x);
-
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
-
+void Blt_FreeMarker(char* dataPtr);
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[]);
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
+static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
+static Tcl_Obj* PrintCoordinate(double x);
 static int IsElementHidden(Graph*, Marker*);
 
 extern "C" {

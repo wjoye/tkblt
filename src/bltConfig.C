@@ -52,6 +52,9 @@ void RestoreProc(ClientData clientData, Tk_Window tkwin,
   *(double*)ptr = *(double*)savePtr;
 }
 
+// Fill
+const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
+
 // State
 const char* stateObjOption[] = {"normal", "active", "disabled", NULL};
 

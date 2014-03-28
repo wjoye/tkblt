@@ -34,6 +34,11 @@ extern "C" {
 #include <bltVector.h>
 };
 
+#include "bltGrPen.h"
+
+extern void Blt_FreePen(Pen* penPtr);
+
+
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
 
@@ -84,24 +89,6 @@ typedef struct {
   Segment2d* segments;
   int nSegments;
 } ErrorBarSegments;
-
-struct _Pen {
-  const char *name;
-  ClassId classId;
-  const char *typeId;
-  unsigned int flags;
-  int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph *graphPtr;
-};
-
-typedef struct {
-  Weight weight;
-  Pen* penPtr;
-} PenStyle;
 
 typedef struct {
   XColor* color;
@@ -159,6 +146,11 @@ typedef struct {
   ElemValues* y;
 } ElemCoords;
 
+typedef struct {
+  Weight weight;
+  Pen* penPtr;
+} PenStyle;
+
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
 extern Tk_CustomOptionGetProc StyleGetProc;
@@ -167,8 +159,6 @@ extern Tk_CustomOptionFreeProc StyleFreeProc;
 
 extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
 extern void Blt_ResizeStatusArray(Element* elemPtr, int nPoints);
-extern int Blt_GetPenStyle(Graph *graphPtr, char *name, size_t classId, 
-			   PenStyle *stylePtr);
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
 extern PenStyle** Blt_StyleMap (Element* elemPtr);
 extern void Blt_MapErrorBars(Graph *graphPtr, Element* elemPtr, 

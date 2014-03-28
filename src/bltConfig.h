@@ -37,6 +37,7 @@
 #define BLT_STATE_ACTIVE		(1<<0)
 #define BLT_STATE_DISABLED		(1<<1)
 
+extern const char* fillObjOption[];
 extern const char* stateObjOption[];
 
 typedef struct {

@@ -38,8 +38,8 @@ extern "C" {
 #include "bltGraph.h"
 };
 
+#include "bltGrElemBar.h"
 #include "bltConfig.h"
-#include "bltGrElemOp.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 
@@ -52,40 +52,6 @@ typedef struct {
 } BarRegion;
 
 typedef struct {
-  const char *name;
-  ClassId classId;
-  const char *typeId;
-  unsigned int flags;
-  int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph* graphPtr;
-
-  // Barchart specific pen fields start here
-  XColor* outlineColor;
-  Tk_3DBorder fill;
-  int borderWidth;
-  int relief;
-  Pixmap stipple;
-  GC fillGC;
-  GC outlineGC;
-
-  // Error bar attributes
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
-  GC errorBarGC;
-
-  // Show value attributes
-  int valueShow;
-  const char *valueFormat;
-  TextStyle valueStyle;
-} BarPen;
-
-typedef struct {
   Weight weight;
   BarPen* penPtr;
   XRectangle *bars;
@@ -96,65 +62,10 @@ typedef struct {
   int errorBarCapWidth;
 } BarStyle;
 
-typedef struct {
-  GraphObj obj;
-  unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-
-  // Fields specific to elements
-  const char *label;
-  unsigned short row;
-  unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  BarPen *activePenPtr;
-  BarPen *normalPenPtr;
-  BarPen *builtinPenPtr;
-  Blt_Chain stylePalette;
-
-  // Symbol scaling
-  int scaleSymbols;
-  double xRange;
-  double yRange;
-  int state;
-  Blt_ChainLink link;
-
-  // Fields specific to the barchart element
-  double barWidth;
-  const char *groupName;
-  int *barToData;
-  XRectangle *bars;
-  int *activeToData;
-  XRectangle *activeRects;
-  int nBars;
-  int nActive;
-  int xPad;
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  BarPen builtinPen;
-  GraphSegments xeb;
-  GraphSegments yeb;
-  int errorBarCapWidth;
-} BarElement;
-
 // Defs
 
-static void InitBarPen(Graph* graphPtr, BarPen* penPtr);
 static void ResetBar(BarElement* elemPtr);
 
-static PenConfigureProc ConfigurePenProc;
-static PenDestroyProc DestroyPenProc;
 static ElementClosestProc ClosestBarProc;
 static ElementConfigProc ConfigureBarProc;
 static ElementDestroyProc DestroyBarProc;
@@ -302,49 +213,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static Tk_OptionSpec barPenOptionSpecs[] = {
-  {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, fill), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(BarPen, borderWidth), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   NULL, -1, Tk_Offset(BarPen, errorBarColor), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
-   "1", -1, Tk_Offset(BarPen, errorBarLineWidth), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(BarPen, errorBarCapWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, outlineColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   "raised", -1, Tk_Offset(BarPen, relief), 0, NULL, 0},
-  {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", -1, Tk_Offset(BarPen, errorBarShow), 0, &fillObjOption, 0},
-  {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "none", -1, Tk_Offset(BarPen, valueShow), 0, &fillObjOption, 0},
-  {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
-   NULL, -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING, "-type", "type", "Type",
-   "bar", -1, Tk_Offset(BarPen, typeId), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
-  {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPen, valueStyle.color), 0, NULL, 0},
-  {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, -1, Tk_Offset(BarPen, valueStyle.font), 0, NULL, 0},
-  {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", -1, Tk_Offset(BarPen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   "0", -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
-};
-
 // Create
 
 Element* Blt_BarElement(Graph* graphPtr)
@@ -361,31 +229,11 @@ Element* Blt_BarElement(Graph* graphPtr)
   return (Element*)elemPtr;
 }
 
-Pen* Blt_BarPen(Graph* graphPtr, const char *penName)
-{
-  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
-  InitBarPen(graphPtr, penPtr);
-  penPtr->name = Blt_Strdup(penName);
-
-  return (Pen*)penPtr;
-}
-
-static void InitBarPen(Graph* graphPtr, BarPen* penPtr)
-{
-  penPtr->configProc = ConfigurePenProc;
-  penPtr->destroyProc = DestroyPenProc;
-
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
-}
-
 static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
 {
   BarElement* elemPtr = (BarElement*)basePtr;
 
-  DestroyPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
+  DestroyBarPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
 
   if (elemPtr->activePenPtr)
     Blt_FreePen((Pen *)elemPtr->activePenPtr);
@@ -403,23 +251,6 @@ static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
     free(elemPtr->activeIndices);
 }
 
-static void DestroyPenProc(Graph* graphPtr, Pen* basePtr)
-{
-  BarPen* penPtr = (BarPen*)basePtr;
-
-  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
-  if (penPtr->outlineGC)
-    Tk_FreeGC(graphPtr->display, penPtr->outlineGC);
-
-  if (penPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, penPtr->fillGC);
-
-  if (penPtr->errorBarGC)
-    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
-
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
-}
-
 // Configure
 
 static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
@@ -428,7 +259,7 @@ static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
   Blt_ChainLink link;
   BarStyle *stylePtr;
 
-  if (ConfigurePenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK)
+  if (ConfigureBarPenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK)
     return TCL_ERROR;
 
   // Point to the static normal pen if no external pens have been selected.
@@ -439,62 +270,6 @@ static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
   }
   stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(elemPtr);
-
-  return TCL_OK;
-}
-
-static int ConfigurePenProc(Graph* graphPtr, Pen *basePtr)
-{
-  BarPen* penPtr = (BarPen*)basePtr;
-  int screenNum = Tk_ScreenNumber(graphPtr->tkwin);
-  XGCValues gcValues;
-  unsigned long gcMask;
-  GC newGC;
-
-  // outlineGC
-  gcMask = GCForeground | GCLineWidth;
-  gcValues.line_width = LineWidth(penPtr->errorBarLineWidth);
-
-  if (penPtr->outlineColor)
-    gcValues.foreground = penPtr->outlineColor->pixel;
-  else if (penPtr->fill)
-    gcValues.foreground = Tk_3DBorderColor(penPtr->fill)->pixel;
-
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (penPtr->outlineGC)
-    Tk_FreeGC(graphPtr->display, penPtr->outlineGC);
-  penPtr->outlineGC = newGC;
-
-  newGC = NULL;
-  if (penPtr->stipple != None) {
-    // Handle old-style -stipple specially
-    gcMask = GCForeground | GCBackground | GCFillStyle | GCStipple;
-    gcValues.foreground = BlackPixel(graphPtr->display, screenNum);
-    gcValues.background = WhitePixel(graphPtr->display, screenNum);
-    if (penPtr->fill)
-      gcValues.foreground = Tk_3DBorderColor(penPtr->fill)->pixel;
-    else if (penPtr->outlineColor)
-      gcValues.foreground = penPtr->outlineColor->pixel;
-
-    gcValues.stipple = penPtr->stipple;
-    gcValues.fill_style = FillStippled;
-    newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  }
-  if (penPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, penPtr->fillGC);
-  penPtr->fillGC = newGC;
-
-  // errorBarGC
-  gcMask = GCForeground | GCLineWidth;
-  XColor* colorPtr = penPtr->errorBarColor;
-  if (!colorPtr)
-    colorPtr = penPtr->outlineColor;
-  gcValues.foreground = colorPtr->pixel;
-  gcValues.line_width = LineWidth(penPtr->errorBarLineWidth);
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (penPtr->errorBarGC)
-    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
-  penPtr->errorBarGC = newGC;
 
   return TCL_OK;
 }

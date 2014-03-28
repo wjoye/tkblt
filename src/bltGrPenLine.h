@@ -35,6 +35,8 @@
 #include <iomanip>
 using namespace std;
 
+#include "bltGrPen.h"
+
 typedef enum {
   SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
   SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
@@ -89,5 +91,11 @@ typedef struct {
   const char* valueFormat;
   TextStyle valueStyle;
 } LinePen;
+
+extern Tk_ObjCustomOption symbolObjOption;
+
+extern void InitLinePen(Graph* graphPtr, LinePen* penPtr);
+extern int ConfigureLinePenProc(Graph* graphPtr, Pen *basePtr);
+extern void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr);
 
 #endif
