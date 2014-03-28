@@ -5545,6 +5545,8 @@ done
 	bltGrMisc.C
 	bltGrPenOp.C
 	bltGrPen.C
+	bltGrPenBar.C
+	bltGrPenLine.C
 	bltGrPs.C
 	bltGraph.C
 	bltInt.C
