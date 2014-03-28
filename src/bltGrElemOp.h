@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_ELEM_H
-#define _BLT_GR_ELEM_H
+#ifndef __bltgrelemop_h__
+#define __bltgrelemop_h__
 
 extern "C" {
 #include <bltVector.h>
@@ -158,35 +158,6 @@ typedef struct {
   ElemValues* x;
   ElemValues* y;
 } ElemCoords;
-
-struct _Element {
-  GraphObj obj;
-  unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-
-  // Fields specific to elements
-  const char *label;
-  unsigned short row;
-  unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  Pen *activePenPtr;
-  Pen *normalPenPtr;
-  Pen *builtinPenPtr;
-  Blt_Chain stylePalette;
-  int scaleSymbols;
-  double xRange;
-  double yRange;
-  int state;
-  Blt_ChainLink link;
-};
 
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;

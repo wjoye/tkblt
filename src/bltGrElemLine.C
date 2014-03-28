@@ -40,7 +40,7 @@ extern "C" {
 }
 
 #include "bltConfig.h"
-#include "bltGrElem.h"
+#include "bltGrElemOp.h"
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 

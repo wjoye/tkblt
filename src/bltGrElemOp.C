@@ -40,6 +40,7 @@ extern "C" {
 #include "bltOp.h"
 };
 
+#include "bltGrElemOp.h"
 #include "bltGrElem.h"
 
 // Defs

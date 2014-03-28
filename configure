@@ -5532,6 +5532,7 @@ done
 	bltGrAxis.C
 	bltGrBar.C
 	bltGrElem.C
+	bltGrElemOp.C
 	bltGrHairs.C
 	bltGrLegd.C
 	bltGrLine.C
@@ -5543,6 +5544,7 @@ done
 	bltGrMarkerText.C
 	bltGrMisc.C
 	bltGrPen.C
+	bltGrPenOp.C
 	bltGrPs.C
 	bltGraph.C
 	bltInt.C
