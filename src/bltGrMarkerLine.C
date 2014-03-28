@@ -87,17 +87,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerMapProc MapLineProc;
-static MarkerPointProc PointInLineProc;
-static MarkerPostscriptProc LineToPostscriptProc;
-static MarkerRegionProc RegionInLineProc;
-
 static MarkerClass lineMarkerClass = {
   optionSpecs,
-  MapLineProc,
-  PointInLineProc,
-  RegionInLineProc,
-  LineToPostscriptProc,
 };
 
 LineMarker::LineMarker(Graph* graphPtr, const char* name) 
@@ -174,7 +165,7 @@ int LineMarker::configure()
   gc = newGC;
   if (opp->xorr) {
     if (drawable != None) {
-      MapLineProc(this);
+      map();
       draw(drawable);
     }
     return TCL_OK;
@@ -195,28 +186,71 @@ void LineMarker::draw(Drawable drawable)
   }
 }
 
-static int PointInLineProc(Marker* markerPtr, Point2d *samplePtr)
+void LineMarker::map()
 {
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
+  Graph* graphPtr = obj.graphPtr;
+  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
 
-  return Blt_PointInSegments(samplePtr, lmPtr->segments, lmPtr->nSegments, 
-			     (double)markerPtr->obj.graphPtr->search.halo);
+  nSegments = 0;
+  if (segments)
+    free(segments);
+
+  if (!opp->worldPts || (opp->worldPts->num < 2))
+    return;
+
+  Region2d extents;
+  Blt_GraphExtents(graphPtr, &extents);
+
+  // Allow twice the number of world coordinates. The line will represented
+  // as series of line segments, not one continous polyline.  This is
+  // because clipping against the plot area may chop the line into several
+  // disconnected segments.
+  Segment2d* lsegments = (Segment2d*)malloc(opp->worldPts->num * sizeof(Segment2d));
+  Point2d* srcPtr = opp->worldPts->points;
+  Point2d p = Blt_MapPoint(srcPtr, &opp->axes);
+  p.x += opp->xOffset;
+  p.y += opp->yOffset;
+
+  Segment2d* segPtr = lsegments;
+  Point2d* pend;
+  for (srcPtr++, pend = opp->worldPts->points + opp->worldPts->num; 
+       srcPtr < pend; srcPtr++) {
+    Point2d next = Blt_MapPoint(srcPtr, &opp->axes);
+    next.x += opp->xOffset;
+    next.y += opp->yOffset;
+    Point2d q = next;
+
+    if (Blt_LineRectClip(&extents, &p, &q)) {
+      segPtr->p = p;
+      segPtr->q = q;
+      segPtr++;
+    }
+    p = next;
+  }
+  nSegments = segPtr - lsegments;
+  segments = lsegments;
+  clipped = (nSegments == 0);
 }
 
-static int RegionInLineProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
+int LineMarker::pointIn(Point2d *samplePtr)
 {
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
+  return Blt_PointInSegments(samplePtr, segments, nSegments, 
+			     (double)obj.graphPtr->search.halo);
+}
 
-  if (!ops->worldPts || ops->worldPts->num < 2)
+int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
+{
+  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+
+  if (!opp->worldPts || opp->worldPts->num < 2)
     return FALSE;
 
   if (enclosed) {
     Point2d *pp, *pend;
 
-    for (pp = ops->worldPts->points, pend = pp + ops->worldPts->num; 
+    for (pp = opp->worldPts->points, pend = pp + opp->worldPts->num; 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &ops->axes);
+      Point2d p = Blt_MapPoint(pp, &opp->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
@@ -227,10 +261,10 @@ static int RegionInLineProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
   else {
     Point2d *pp, *pend;
     int count = 0;
-    for (pp = ops->worldPts->points, pend = pp + (ops->worldPts->num - 1); 
+    for (pp = opp->worldPts->points, pend = pp + (opp->worldPts->num - 1); 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &ops->axes);
-      Point2d q = Blt_MapPoint(pp + 1, &ops->axes);
+      Point2d p = Blt_MapPoint(pp, &opp->axes);
+      Point2d q = Blt_MapPoint(pp + 1, &opp->axes);
       if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
     }
@@ -239,81 +273,25 @@ static int RegionInLineProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
   }
 }
 
-static void LineToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
+void LineMarker::postscript(Blt_Ps ps)
 {
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
+  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
 
-  if (lmPtr->nSegments > 0) {
-    Blt_Ps_XSetLineAttributes(ps, ops->outlineColor, 
-			      ops->lineWidth,
-			      &ops->dashes,
-			      ops->capStyle,
-			      ops->joinStyle);
-    if ((LineIsDashed(ops->dashes)) && (ops->fillColor)) {
+  if (nSegments > 0) {
+    Blt_Ps_XSetLineAttributes(ps, opp->outlineColor, opp->lineWidth,
+			      &opp->dashes, opp->capStyle, opp->joinStyle);
+    if ((LineIsDashed(opp->dashes)) && (opp->fillColor)) {
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-      Blt_Ps_XSetBackground(ps, ops->fillColor);
+      Blt_Ps_XSetBackground(ps, opp->fillColor);
       Blt_Ps_Append(ps, "    ");
       Blt_Ps_XSetDashes(ps, (Blt_Dashes*)NULL);
-      Blt_Ps_VarAppend(ps,
-		       "stroke\n",
-		       "  grestore\n",
-		       "} def\n", (char*)NULL);
+      Blt_Ps_VarAppend(ps, "stroke\n", "  grestore\n", "} def\n", (char*)NULL);
     } 
     else
       Blt_Ps_Append(ps, "/DashesProc {} def\n");
 
-    Blt_Ps_Draw2DSegments(ps, lmPtr->segments, lmPtr->nSegments);
+    Blt_Ps_Draw2DSegments(ps, segments, nSegments);
   }
 }
 
-static void MapLineProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  LineMarker *lmPtr = (LineMarker*)markerPtr;
-  LineMarkerOptions* ops = (LineMarkerOptions*)lmPtr->ops;
-
-  lmPtr->nSegments = 0;
-  if (lmPtr->segments)
-    free(lmPtr->segments);
-
-  if (!ops->worldPts || (ops->worldPts->num < 2))
-    return;
-
-  Region2d extents;
-  Blt_GraphExtents(graphPtr, &extents);
-
-  /* 
-   * Allow twice the number of world coordinates. The line will represented
-   * as series of line segments, not one continous polyline.  This is
-   * because clipping against the plot area may chop the line into several
-   * disconnected segments.
-   */
-  Segment2d* segments = 
-    (Segment2d*)malloc(ops->worldPts->num * sizeof(Segment2d));
-  Point2d* srcPtr = ops->worldPts->points;
-  Point2d p = Blt_MapPoint(srcPtr, &ops->axes);
-  p.x += ops->xOffset;
-  p.y += ops->yOffset;
-
-  Segment2d* segPtr = segments;
-  Point2d* pend;
-  for (srcPtr++, pend = ops->worldPts->points + ops->worldPts->num; 
-       srcPtr < pend; srcPtr++) {
-    Point2d next = Blt_MapPoint(srcPtr, &ops->axes);
-    next.x += ops->xOffset;
-    next.y += ops->yOffset;
-    Point2d q = next;
-
-    if (Blt_LineRectClip(&extents, &p, &q)) {
-      segPtr->p = p;
-      segPtr->q = q;
-      segPtr++;
-    }
-    p = next;
-  }
-  lmPtr->nSegments = segPtr - segments;
-  lmPtr->segments = segments;
-  lmPtr->clipped = (lmPtr->nSegments == 0);
-}
 

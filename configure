@@ -5540,7 +5540,6 @@ done
 	bltGrMarkerLine.C
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C
-	bltGrMarkerWindow.C
 	bltGrMisc.C
 	bltGrPen.C
 	bltGrPs.C

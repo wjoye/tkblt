@@ -64,6 +64,10 @@ class BitmapMarker : public Marker {
  private:
   int configure();
   void draw(Drawable);
+  void map();
+  int pointIn(Point2d*);
+  int regionIn(Region2d*, int);
+  void postscript(Blt_Ps);
 
  public:
   BitmapMarker(Graph*, const char*);

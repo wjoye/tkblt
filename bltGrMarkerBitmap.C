@@ -81,17 +81,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerMapProc MapBitmapProc;
-static MarkerPointProc PointInBitmapProc;
-static MarkerPostscriptProc BitmapToPostscriptProc;
-static MarkerRegionProc RegionInBitmapProc;
-
 static MarkerClass bitmapMarkerClass = {
   optionSpecs,
-  MapBitmapProc,
-  PointInBitmapProc,
-  RegionInBitmapProc,
-  BitmapToPostscriptProc,
 };
 
 BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name)
@@ -189,41 +180,40 @@ void BitmapMarker::draw(Drawable drawable)
 	     width, height, anchorPt.x, anchorPt.y, 1);
 }
 
-static void MapBitmapProc(Marker* markerPtr)
+void BitmapMarker::map()
 {
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
-  Graph* graphPtr = markerPtr->obj.graphPtr;
+  Graph* graphPtr = obj.graphPtr;
+  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
 
-  if (ops->bitmap == None)
+  if (opp->bitmap == None)
     return;
  
-  if (!ops->worldPts || (ops->worldPts->num < 1))
+  if (!opp->worldPts || (opp->worldPts->num < 1))
     return;
 
-  int width, height;
-  Tk_SizeOfBitmap(graphPtr->display, ops->bitmap, &width, &height);
+  int lwidth;
+  int lheight;
+  Tk_SizeOfBitmap(graphPtr->display, opp->bitmap, &lwidth, &lheight);
 
-  Point2d anchorPt = 
-    Blt_MapPoint(ops->worldPts->points, &ops->axes);
-  anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, width, height,
-			     ops->anchor);
-  anchorPt.x += ops->xOffset;
-  anchorPt.y += ops->yOffset;
+  Point2d lanchorPt = Blt_MapPoint(opp->worldPts->points, &opp->axes);
+  lanchorPt = 
+    Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, opp->anchor);
+  lanchorPt.x += opp->xOffset;
+  lanchorPt.y += opp->yOffset;
 
   Region2d extents;
-  extents.left = anchorPt.x;
-  extents.top = anchorPt.y;
-  extents.right = anchorPt.x + width - 1;
-  extents.bottom = anchorPt.y + height - 1;
-  markerPtr->clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
+  extents.left = lanchorPt.x;
+  extents.top = lanchorPt.y;
+  extents.right = lanchorPt.x + lwidth - 1;
+  extents.bottom = lanchorPt.y + lheight - 1;
+  clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
 
-  if (markerPtr->clipped)
+  if (clipped)
     return;
 
-  bmPtr->width = width;
-  bmPtr->height = height;
-  bmPtr->anchorPt = anchorPt;
+  width = lwidth;
+  height = lheight;
+  anchorPt = lanchorPt;
 
   // Compute a polygon to represent the background area of the bitmap.
   // This is needed for print a background in PostScript.
@@ -240,72 +230,61 @@ static void MapBitmapProc(Marker* markerPtr)
     polygon[ii].y = (polygon[ii].y) + ty;
   }
   Blt_GraphExtents(graphPtr, &extents);
-  int nn = Blt_PolyRectClip(&extents, polygon, 4, bmPtr->outline); 
+  int nn = Blt_PolyRectClip(&extents, polygon, 4, outline); 
   if (nn < 3) { 
-    memcpy(&bmPtr->outline, polygon, sizeof(Point2d) * 4);
-    bmPtr->nOutlinePts = 4;
+    memcpy(&outline, polygon, sizeof(Point2d) * 4);
+    nOutlinePts = 4;
   }
   else
-    bmPtr->nOutlinePts = nn;
+    nOutlinePts = nn;
 }
 
-static int PointInBitmapProc(Marker* markerPtr, Point2d *samplePtr)
+int BitmapMarker::pointIn(Point2d *samplePtr)
 {
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
+  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
 
-  if (ops->bitmap == None)
+  if (opp->bitmap == None)
     return 0;
 
-  return ((samplePtr->x >= bmPtr->anchorPt.x) && 
-	  (samplePtr->x < (bmPtr->anchorPt.x + bmPtr->width)) &&
-	  (samplePtr->y >= bmPtr->anchorPt.y) && 
-	  (samplePtr->y < (bmPtr->anchorPt.y + bmPtr->height)));
+  return ((samplePtr->x >= anchorPt.x) && 
+	  (samplePtr->x < (anchorPt.x + width)) &&
+	  (samplePtr->y >= anchorPt.y) && 
+	  (samplePtr->y < (anchorPt.y + height)));
 }
 
-static int RegionInBitmapProc(Marker* markerPtr, Region2d *extsPtr, 
-			      int enclosed)
+int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-
   if (enclosed) {
-    return ((bmPtr->anchorPt.x >= extsPtr->left) &&
-	    (bmPtr->anchorPt.y >= extsPtr->top) && 
-	    ((bmPtr->anchorPt.x + bmPtr->width) <= extsPtr->right) &&
-	    ((bmPtr->anchorPt.y + bmPtr->height) <= extsPtr->bottom));
+    return ((anchorPt.x >= extsPtr->left) &&
+	    (anchorPt.y >= extsPtr->top) && 
+	    ((anchorPt.x + width) <= extsPtr->right) &&
+	    ((anchorPt.y + height) <= extsPtr->bottom));
   }
 
-  return !((bmPtr->anchorPt.x >= extsPtr->right) ||
-	   (bmPtr->anchorPt.y >= extsPtr->bottom) ||
-	   ((bmPtr->anchorPt.x + bmPtr->width) <= extsPtr->left) ||
-	   ((bmPtr->anchorPt.y + bmPtr->height) <= extsPtr->top));
+  return !((anchorPt.x >= extsPtr->right) ||
+	   (anchorPt.y >= extsPtr->bottom) ||
+	   ((anchorPt.x + width) <= extsPtr->left) ||
+	   ((anchorPt.y + height) <= extsPtr->top));
 }
 
-static void BitmapToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
+void BitmapMarker::postscript(Blt_Ps ps)
 {
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  BitmapMarker* bmPtr = (BitmapMarker*)markerPtr;
-  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)bmPtr->ops;
+  Graph* graphPtr = obj.graphPtr;
+  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
 
-  if ((ops->bitmap == None) || (bmPtr->width < 1) || (bmPtr->height < 1))
+  if ((opp->bitmap == None) || (width < 1) || (height < 1))
     return;
 
-  if (ops->fillColor) {
-    Blt_Ps_XSetBackground(ps, ops->fillColor);
-    Blt_Ps_XFillPolygon(ps, bmPtr->outline, 4);
+  if (opp->fillColor) {
+    Blt_Ps_XSetBackground(ps, opp->fillColor);
+    Blt_Ps_XFillPolygon(ps, outline, 4);
   }
-  Blt_Ps_XSetForeground(ps, ops->outlineColor);
+  Blt_Ps_XSetForeground(ps, opp->outlineColor);
 
-  Blt_Ps_Format(ps,
-		"  gsave\n    %g %g translate\n    %d %d scale\n", 
-		bmPtr->anchorPt.x, bmPtr->anchorPt.y + bmPtr->height, 
-		bmPtr->width, -bmPtr->height);
+  Blt_Ps_Format(ps, "  gsave\n    %g %g translate\n    %d %d scale\n", 
+		anchorPt.x, anchorPt.y + height, width, -height);
   Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
-		bmPtr->width, bmPtr->height, bmPtr->width, 
-		-bmPtr->height, bmPtr->height);
-  Blt_Ps_XSetBitmapData(ps, graphPtr->display, ops->bitmap,
-			bmPtr->width, bmPtr->height);
-  Blt_Ps_VarAppend(ps, 
-		   "    } imagemask\n",
-		   "grestore\n", (char*)NULL);
+		width, height, width, -height, height);
+  Blt_Ps_XSetBitmapData(ps, graphPtr->display, opp->bitmap, width, height);
+  Blt_Ps_VarAppend(ps, "    } imagemask\n", "grestore\n", (char*)NULL);
 }

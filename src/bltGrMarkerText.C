@@ -85,17 +85,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerMapProc MapTextProc;
-static MarkerPointProc PointInTextProc;
-static MarkerPostscriptProc TextToPostscriptProc;
-static MarkerRegionProc RegionInTextProc;
-
 static MarkerClass textMarkerClass = {
   optionSpecs,
-  MapTextProc,
-  PointInTextProc,
-  RegionInTextProc,
-  TextToPostscriptProc,
 };
 
 TextMarker::TextMarker(Graph* graphPtr, const char* name) 
@@ -172,125 +163,123 @@ void TextMarker::draw(Drawable drawable)
 		  &opp->style, anchorPt.x, anchorPt.y);
 }
 
-static void MapTextProc(Marker* markerPtr)
+void TextMarker::map()
 {
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
+  Graph* graphPtr = obj.graphPtr;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
 
-  if (!ops->string)
+  if (!opp->string)
     return;
 
-  if (!ops->worldPts || (ops->worldPts->num < 1))
+  if (!opp->worldPts || (opp->worldPts->num < 1))
     return;
 
-  tmPtr->width =0;
-  tmPtr->height =0;
+  width =0;
+  height =0;
 
-  unsigned int w, h;
-  Blt_Ts_GetExtents(&ops->style, ops->string, &w, &h);
+  unsigned int w;
+  unsigned int h;
+  Blt_Ts_GetExtents(&opp->style, opp->string, &w, &h);
 
-  double rw, rh;
-  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, tmPtr->outline);
-  tmPtr->width = ROUND(rw);
-  tmPtr->height = ROUND(rh);
+  double rw;
+  double rh;
+  Blt_GetBoundingBox(w, h, opp->style.angle, &rw, &rh, outline);
+  width = ROUND(rw);
+  height = ROUND(rh);
   for (int ii=0; ii<4; ii++) {
-    tmPtr->outline[ii].x += ROUND(rw * 0.5);
-    tmPtr->outline[ii].y += ROUND(rh * 0.5);
+    outline[ii].x += ROUND(rw * 0.5);
+    outline[ii].y += ROUND(rh * 0.5);
   }
-  tmPtr->outline[4].x = tmPtr->outline[0].x;
-  tmPtr->outline[4].y = tmPtr->outline[0].y;
+  outline[4].x = outline[0].x;
+  outline[4].y = outline[0].y;
 
-  Point2d anchorPt = 
-    Blt_MapPoint(ops->worldPts->points, &ops->axes);
-  anchorPt = Blt_AnchorPoint(anchorPt.x, anchorPt.y, tmPtr->width, 
-			     tmPtr->height, ops->anchor);
-  anchorPt.x += ops->xOffset;
-  anchorPt.y += ops->yOffset;
+  Point2d lanchorPtr = 
+    Blt_MapPoint(opp->worldPts->points, &opp->axes);
+  lanchorPtr = Blt_AnchorPoint(lanchorPtr.x, lanchorPtr.y, width, 
+			     height, opp->anchor);
+  lanchorPtr.x += opp->xOffset;
+  lanchorPtr.y += opp->yOffset;
 
   Region2d extents;
-  extents.left = anchorPt.x;
-  extents.top = anchorPt.y;
-  extents.right = anchorPt.x + tmPtr->width - 1;
-  extents.bottom = anchorPt.y + tmPtr->height - 1;
-  markerPtr->clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
-  tmPtr->anchorPt = anchorPt;
+  extents.left = lanchorPtr.x;
+  extents.top = lanchorPtr.y;
+  extents.right = lanchorPtr.x + width - 1;
+  extents.bottom = lanchorPtr.y + height - 1;
+  clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
+
+  anchorPt = lanchorPtr;
 }
 
-static int PointInTextProc(Marker* markerPtr, Point2d *samplePtr)
+int TextMarker::pointIn(Point2d *samplePtr)
 {
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
 
-  if (!ops->string)
+  if (!opp->string)
     return 0;
 
-  if (ops->style.angle != 0.0f) {
+  if (opp->style.angle != 0.0f) {
     Point2d points[5];
 
     // Figure out the bounding polygon (isolateral) for the text and see
     // if the point is inside of it.
     for (int ii=0; ii<5; ii++) {
-      points[ii].x = tmPtr->outline[ii].x + tmPtr->anchorPt.x;
-      points[ii].y = tmPtr->outline[ii].y + tmPtr->anchorPt.y;
+      points[ii].x = outline[ii].x + anchorPt.x;
+      points[ii].y = outline[ii].y + anchorPt.y;
     }
     return Blt_PointInPolygon(samplePtr, points, 5);
   } 
 
-  return ((samplePtr->x >= tmPtr->anchorPt.x) && 
-	  (samplePtr->x < (tmPtr->anchorPt.x + tmPtr->width)) &&
-	  (samplePtr->y >= tmPtr->anchorPt.y) && 
-	  (samplePtr->y < (tmPtr->anchorPt.y + tmPtr->height)));
+  return ((samplePtr->x >= anchorPt.x) && 
+	  (samplePtr->x < (anchorPt.x + width)) &&
+	  (samplePtr->y >= anchorPt.y) && 
+	  (samplePtr->y < (anchorPt.y + height)));
 }
 
-static int RegionInTextProc(Marker* markerPtr, Region2d *extsPtr, int enclosed)
+int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
 
-  if (ops->style.angle != 0.0f) {
+  if (opp->style.angle != 0.0f) {
     // Generate the bounding polygon (isolateral) for the bitmap and see
     // if the point is inside of it.
     Point2d points[5];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = tmPtr->outline[ii].x + tmPtr->anchorPt.x;
-      points[ii].y = tmPtr->outline[ii].y + tmPtr->anchorPt.y;
+      points[ii].x = outline[ii].x + anchorPt.x;
+      points[ii].y = outline[ii].y + anchorPt.y;
     }
     return Blt_RegionInPolygon(extsPtr, points, 4, enclosed);
   } 
 
   if (enclosed)
-    return ((tmPtr->anchorPt.x >= extsPtr->left) &&
-	    (tmPtr->anchorPt.y >= extsPtr->top) && 
-	    ((tmPtr->anchorPt.x + tmPtr->width) <= extsPtr->right) &&
-	    ((tmPtr->anchorPt.y + tmPtr->height) <= extsPtr->bottom));
+    return ((anchorPt.x >= extsPtr->left) &&
+	    (anchorPt.y >= extsPtr->top) && 
+	    ((anchorPt.x + width) <= extsPtr->right) &&
+	    ((anchorPt.y + height) <= extsPtr->bottom));
 
-  return !((tmPtr->anchorPt.x >= extsPtr->right) ||
-	   (tmPtr->anchorPt.y >= extsPtr->bottom) ||
-	   ((tmPtr->anchorPt.x + tmPtr->width) <= extsPtr->left) ||
-	   ((tmPtr->anchorPt.y + tmPtr->height) <= extsPtr->top));
+  return !((anchorPt.x >= extsPtr->right) ||
+	   (anchorPt.y >= extsPtr->bottom) ||
+	   ((anchorPt.x + width) <= extsPtr->left) ||
+	   ((anchorPt.y + height) <= extsPtr->top));
 }
 
-static void TextToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
+void TextMarker::postscript(Blt_Ps ps)
 {
-  TextMarker* tmPtr = (TextMarker*)markerPtr;
-  TextMarkerOptions* ops = (TextMarkerOptions*)tmPtr->ops;
+  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
 
-  if (!ops->string)
+  if (!opp->string)
     return;
 
-  if (tmPtr->fillGC) {
+  if (fillGC) {
     // Simulate the rotated background of the bitmap by filling a bounding
     // polygon with the background color.
     Point2d points[4];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = tmPtr->outline[ii].x + tmPtr->anchorPt.x;
-      points[ii].y = tmPtr->outline[ii].y + tmPtr->anchorPt.y;
+      points[ii].x = outline[ii].x + anchorPt.x;
+      points[ii].y = outline[ii].y + anchorPt.y;
     }
-    Blt_Ps_XSetBackground(ps, ops->fillColor);
+    Blt_Ps_XSetBackground(ps, opp->fillColor);
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, ops->string, &ops->style,
-		  tmPtr->anchorPt.x, tmPtr->anchorPt.y);
+  Blt_Ps_DrawText(ps, opp->string, &opp->style,  anchorPt.x, anchorPt.y);
 }

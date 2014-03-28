@@ -45,10 +45,6 @@ typedef int (MarkerRegionProc)(Marker* markerPtr, Region2d *extsPtr, int enclose
 
 typedef struct {
   Tk_OptionSpec *optionSpecs;
-  MarkerMapProc *mapProc;
-  MarkerPointProc *pointProc;
-  MarkerRegionProc *regionProc;
-  MarkerPostscriptProc *postscriptProc;
 }  MarkerClass;
 
 typedef struct {
@@ -88,6 +84,10 @@ typedef struct {
 
    virtual int configure() =0;
    virtual void draw(Drawable) =0;
+   virtual void map() =0;
+   virtual int pointIn(Point2d*) =0;
+   virtual int regionIn(Region2d*, int) =0;
+   virtual void postscript(Blt_Ps) =0;
  };
 
 };

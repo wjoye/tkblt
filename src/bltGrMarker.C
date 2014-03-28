@@ -42,7 +42,6 @@ extern "C" {
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerPolygon.h"
 #include "bltGrMarkerText.h"
-#include "bltGrMarkerWindow.h"
 
 using namespace Blt;
 
@@ -306,8 +305,6 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
     markerPtr = new PolygonMarker(graphPtr, name);
   else if (!strcmp(type, "text"))
     markerPtr = new TextMarker(graphPtr, name);
-  else if (!strcmp(type, "window"))
-    markerPtr = new WindowMarker(graphPtr, name);
   else {
     Tcl_AppendResult(interp, "unknown marker type ", type, NULL);
     return TCL_ERROR;
@@ -531,7 +528,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
     if (IsElementHidden(markerPtr))
       continue;
 
-    if ((*markerPtr->classPtr->regionProc)(markerPtr, &extents, enclosed)) {
+    if (markerPtr->regionIn(&extents, enclosed)) {
       Tcl_Obj* objPtr = Tcl_GetObjResult(interp);
       Tcl_SetStringObj(objPtr, markerPtr->obj.name, -1);
       return TCL_OK;
@@ -782,9 +779,6 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
-    if (markerPtr->classPtr->postscriptProc == NULL)
-      continue;
-
     if (ops->drawUnder != under)
       continue;
 
@@ -796,7 +790,7 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 
     Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->obj.name, 
 		     "\" is a ", markerPtr->obj.className, ".\n", (char*)NULL);
-    (*markerPtr->classPtr->postscriptProc) (markerPtr, ps);
+    markerPtr->postscript(ps);
   }
 }
 
@@ -840,7 +834,7 @@ void Blt_MapMarkers(Graph* graphPtr)
       continue;
 
     if ((graphPtr->flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
-      (*markerPtr->classPtr->mapProc) (markerPtr);
+      markerPtr->map();
       markerPtr->flags &= ~MAP_ITEM;
     }
   }
@@ -881,7 +875,7 @@ void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
       continue;
 
     if ((ops->drawUnder == under) && (ops->state == BLT_STATE_NORMAL))
-      if ((*markerPtr->classPtr->pointProc) (markerPtr, &point))
+      if (markerPtr->pointIn(&point))
 	return markerPtr;
   }
   return NULL;

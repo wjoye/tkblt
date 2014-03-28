@@ -95,17 +95,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerMapProc MapPolygonProc;
-static MarkerPointProc PointInPolygonProc;
-static MarkerPostscriptProc PolygonToPostscriptProc;
-static MarkerRegionProc RegionInPolygonProc;
-
 static MarkerClass polygonMarkerClass = {
   optionSpecs,
-  MapPolygonProc,
-  PointInPolygonProc,
-  RegionInPolygonProc,
-  PolygonToPostscriptProc,
 };
 
 PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name) 
@@ -219,7 +210,7 @@ int PolygonMarker::configure()
 
   if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (opp->xorr)) {
     if (drawable != None) {
-      MapPolygonProc(this);
+      map();
       draw(drawable);
     }
     return TCL_OK;
@@ -260,157 +251,65 @@ void PolygonMarker::draw(Drawable drawable)
   }
 }
 
-static int PointInPolygonProc(Marker* markerPtr, Point2d *samplePtr)
+void PolygonMarker::map()
 {
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
+  Graph* graphPtr = obj.graphPtr;
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
 
-  if (ops->worldPts && 
-      (ops->worldPts->num >= 3) && 
-      (pmPtr->screenPts))
-    return Blt_PointInPolygon(samplePtr, pmPtr->screenPts, 
-			      ops->worldPts->num + 1);
-
-  return FALSE;
-}
-
-static int RegionInPolygonProc(Marker* markerPtr, Region2d *extsPtr, 
-			       int enclosed)
-{
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
-    
-  if (ops->worldPts && 
-      (ops->worldPts->num >= 3) && 
-      (pmPtr->screenPts))
-    return Blt_RegionInPolygon(extsPtr, pmPtr->screenPts, 
-			       ops->worldPts->num, enclosed);
-
-  return FALSE;
-}
-
-static void PolygonToPostscriptProc(Marker* markerPtr, Blt_Ps ps)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
-
-  if (ops->fill) {
-
-    /*
-     * Options:  fg bg
-     *			Draw outline only.
-     *	     x          Draw solid or stipple.
-     *	     x  x       Draw solid or stipple.
-     */
-
-    /* Create a path to use for both the polygon and its outline. */
-    Blt_Ps_Polyline(ps, pmPtr->fillPts, pmPtr->nFillPts);
-
-    /* If the background fill color was specified, draw the polygon in a
-     * solid fashion with that color.  */
-    if (ops->fillBg) {
-      /* Draw the solid background as the background layer of the opaque
-       * stipple  */
-      Blt_Ps_XSetBackground(ps, ops->fillBg);
-      /* Retain the path. We'll need it for the foreground layer. */
-      Blt_Ps_Append(ps, "gsave fill grestore\n");
-    }
-    Blt_Ps_XSetForeground(ps, ops->fill);
-    if (ops->stipple != None) {
-      /* Draw the stipple in the foreground color. */
-      Blt_Ps_XSetStipple(ps, graphPtr->display, ops->stipple);
-    } else {
-      Blt_Ps_Append(ps, "fill\n");
-    }
+  if (outlinePts) {
+    free(outlinePts);
+    outlinePts = NULL;
+    nOutlinePts = 0;
   }
 
-  /* Draw the outline in the foreground color.  */
-  if ((ops->lineWidth > 0) && (ops->outline)) {
-
-    /*  Set up the line attributes.  */
-    Blt_Ps_XSetLineAttributes(ps, ops->outline,
-			      ops->lineWidth,
-			      &ops->dashes,
-			      ops->capStyle,
-			      ops->joinStyle);
-
-    /*  
-     * Define on-the-fly a PostScript macro "DashesProc" that will be
-     * executed for each call to the Polygon drawing routine.  If the line
-     * isn't dashed, simply make this an empty definition.
-     */
-    if ((ops->outlineBg) && (LineIsDashed(ops->dashes))) {
-      Blt_Ps_Append(ps, "/DashesProc {\ngsave\n    ");
-      Blt_Ps_XSetBackground(ps, ops->outlineBg);
-      Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
-      Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
-    } else {
-      Blt_Ps_Append(ps, "/DashesProc {} def\n");
-    }
-    Blt_Ps_Draw2DSegments(ps, pmPtr->outlinePts, pmPtr->nOutlinePts);
+  if (fillPts) {
+    free(fillPts);
+    fillPts = NULL;
+    nFillPts = 0;
   }
-}
 
-static void MapPolygonProc(Marker* markerPtr)
-{
-  Graph* graphPtr = markerPtr->obj.graphPtr;
-  PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
-  PolygonMarkerOptions* ops = (PolygonMarkerOptions*)pmPtr->ops;
+  if (screenPts) {
+    free(screenPts);
+    screenPts = NULL;
+  }
 
-  if (pmPtr->outlinePts) {
-    free(pmPtr->outlinePts);
-    pmPtr->outlinePts = NULL;
-    pmPtr->nOutlinePts = 0;
-  }
-  if (pmPtr->fillPts) {
-    free(pmPtr->fillPts);
-    pmPtr->fillPts = NULL;
-    pmPtr->nFillPts = 0;
-  }
-  if (pmPtr->screenPts) {
-    free(pmPtr->screenPts);
-    pmPtr->screenPts = NULL;
-  }
-  if (!ops->worldPts || ops->worldPts->num < 3)
+  if (!opp->worldPts || opp->worldPts->num < 3)
     return;
 
-  /* 
-   * Allocate and fill a temporary array to hold the screen coordinates of
-   * the polygon.
-   */
-  int nScreenPts = ops->worldPts->num + 1;
-  Point2d* screenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
+  // Allocate and fill a temporary array to hold the screen coordinates of
+  // the polygon.
+
+  int nScreenPts = opp->worldPts->num + 1;
+  Point2d* lscreenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
   {
     Point2d *sp, *dp, *send;
 
-    dp = screenPts;
-    for (sp = ops->worldPts->points, send = sp + ops->worldPts->num; 
+    dp = lscreenPts;
+    for (sp = opp->worldPts->points, send = sp + opp->worldPts->num; 
 	 sp < send; sp++) {
-      *dp = Blt_MapPoint(sp, &ops->axes);
-      dp->x += ops->xOffset;
-      dp->y += ops->yOffset;
+      *dp = Blt_MapPoint(sp, &opp->axes);
+      dp->x += opp->xOffset;
+      dp->y += opp->yOffset;
       dp++;
     }
-    *dp = screenPts[0];
+    *dp = lscreenPts[0];
   }
   Region2d extents;
   Blt_GraphExtents(graphPtr, &extents);
-  pmPtr->clipped = TRUE;
-  if (ops->fill) {
-    Point2d* fillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
+  clipped = TRUE;
+  if (opp->fill) {
+    Point2d* lfillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
     int n = 
-      Blt_PolyRectClip(&extents, screenPts, ops->worldPts->num,fillPts);
+      Blt_PolyRectClip(&extents, lscreenPts, opp->worldPts->num,lfillPts);
     if (n < 3)
-      free(fillPts);
+      free(lfillPts);
     else {
-      pmPtr->nFillPts = n;
-      pmPtr->fillPts = fillPts;
-      pmPtr->clipped = FALSE;
+      nFillPts = n;
+      fillPts = lfillPts;
+      clipped = FALSE;
     }
   }
-  if ((ops->outline) && (ops->lineWidth > 0)) { 
+  if ((opp->outline) && (opp->lineWidth > 0)) { 
     Segment2d *segPtr;
     Point2d *sp, *send;
 
@@ -418,26 +317,90 @@ static void MapPolygonProc(Marker* markerPtr)
      * Generate line segments representing the polygon outline.  The
      * resulting outline may or may not be closed from viewport clipping.
      */
-    Segment2d* outlinePts = (Segment2d*)malloc(nScreenPts * sizeof(Segment2d));
-    if (!outlinePts)
+    Segment2d* loutlinePts = (Segment2d*)malloc(nScreenPts * sizeof(Segment2d));
+    if (!loutlinePts)
       return;
 
     // Note that this assumes that the point array contains an extra point
     // that closes the polygon.
-    segPtr = outlinePts;
-    for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
+    segPtr = loutlinePts;
+    for (sp = lscreenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
       if (Blt_LineRectClip(&extents, &segPtr->p, &segPtr->q)) {
 	segPtr++;
       }
     }
-    pmPtr->nOutlinePts = segPtr - outlinePts;
-    pmPtr->outlinePts = outlinePts;
-    if (pmPtr->nOutlinePts > 0) {
-      pmPtr->clipped = FALSE;
+    nOutlinePts = segPtr - loutlinePts;
+    outlinePts = loutlinePts;
+    if (nOutlinePts > 0) {
+      clipped = FALSE;
     }
   }
-  pmPtr->screenPts = screenPts;
+
+  screenPts = lscreenPts;
+}
+
+int PolygonMarker::pointIn(Point2d *samplePtr)
+{
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
+
+  if (opp->worldPts && 
+      (opp->worldPts->num >= 3) && 
+      (screenPts))
+    return Blt_PointInPolygon(samplePtr, screenPts, 
+			      opp->worldPts->num + 1);
+
+  return FALSE;
+}
+
+int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
+{
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
+    
+  if (opp->worldPts && 
+      (opp->worldPts->num >= 3) && 
+      (screenPts))
+    return Blt_RegionInPolygon(extsPtr, screenPts, 
+			       opp->worldPts->num, enclosed);
+
+  return FALSE;
+}
+
+void PolygonMarker::postscript(Blt_Ps ps)
+{
+  Graph* graphPtr = obj.graphPtr;
+  PolygonMarkerOptions* opp = (PolygonMarkerOptions*)ops;
+
+  if (opp->fill) {
+    Blt_Ps_Polyline(ps, fillPts, nFillPts);
+    if (opp->fillBg) {
+      Blt_Ps_XSetBackground(ps, opp->fillBg);
+      Blt_Ps_Append(ps, "gsave fill grestore\n");
+    }
+    Blt_Ps_XSetForeground(ps, opp->fill);
+    if (opp->stipple != None) {
+      Blt_Ps_XSetStipple(ps, graphPtr->display, opp->stipple);
+    } else {
+      Blt_Ps_Append(ps, "fill\n");
+    }
+  }
+
+  if ((opp->lineWidth > 0) && (opp->outline)) {
+
+    Blt_Ps_XSetLineAttributes(ps, opp->outline, opp->lineWidth, &opp->dashes,
+			      opp->capStyle, opp->joinStyle);
+
+    if ((opp->outlineBg) && (LineIsDashed(opp->dashes))) {
+      Blt_Ps_Append(ps, "/DashesProc {\ngsave\n    ");
+      Blt_Ps_XSetBackground(ps, opp->outlineBg);
+      Blt_Ps_Append(ps, "    ");
+      Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
+      Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
+    } else {
+      Blt_Ps_Append(ps, "/DashesProc {} def\n");
+    }
+    Blt_Ps_Draw2DSegments(ps, outlinePts, nOutlinePts);
+  }
 }
 
