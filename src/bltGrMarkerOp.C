@@ -58,7 +58,7 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       int objc, Tcl_Obj* const objv[]);
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
-static int IsElementHidden(Marker* markerPtr);
+static int IsElementHidden(Graph*, Marker*);
 
 extern "C" {
   void Blt_DestroyMarkers(Graph* graphPtr);
@@ -477,7 +477,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
     if ((markerPtr->flags & DELETE_PENDING) || ops->hide) {
       continue;
     }
-    if (IsElementHidden(markerPtr))
+    if (IsElementHidden(graphPtr, markerPtr))
       continue;
 
     if (markerPtr->regionIn(&extents, enclosed)) {
@@ -575,7 +575,7 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
 
-  switch (markerPtr->classId) {
+  switch (markerPtr->classId()) {
   case CID_MARKER_BITMAP:
     Tcl_SetStringObj(Tcl_GetObjResult(interp), "bitmap", -1);
     return TCL_OK;
@@ -626,18 +626,17 @@ int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-static int IsElementHidden(Marker* markerPtr)
+static int IsElementHidden(Graph* graphPtr, Marker* markerPtr)
 {
-  Tcl_HashEntry *hPtr;
-  Graph* graphPtr = markerPtr->graphPtr;
   MarkerOptions* ops = markerPtr->ops();
 
   if (ops->elemName) {
-    hPtr = Tcl_FindHashEntry(&graphPtr->elements.table, ops->elemName);
+    Tcl_HashEntry *hPtr 
+      = Tcl_FindHashEntry(&graphPtr->elements.table, ops->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (!elemPtr->link || elemPtr->hide)
-	return TRUE;
+	return 1;
     }
   }
   return 0;
@@ -672,7 +671,7 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
     if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
       continue;
 
-    if (IsElementHidden(markerPtr))
+    if (IsElementHidden(graphPtr, markerPtr))
       continue;
 
     Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name, 
@@ -692,7 +691,7 @@ void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
 	(markerPtr->flags & DELETE_PENDING) || (ops->hide))
       continue;
 
-    if (IsElementHidden(markerPtr))
+    if (IsElementHidden(graphPtr, markerPtr))
       continue;
 
     markerPtr->draw(drawable);
@@ -755,7 +754,7 @@ void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
 	(ops->hide))
       continue;
 
-    if (IsElementHidden(markerPtr))
+    if (IsElementHidden(graphPtr, markerPtr))
       continue;
 
     if ((ops->drawUnder == under) && (ops->state == BLT_STATE_NORMAL))

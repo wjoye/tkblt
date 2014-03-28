@@ -97,8 +97,8 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
 			     Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  classId = CID_MARKER_POLYGON;
-  className = dupstr("PolygonMarker");
+  classId_ = CID_MARKER_POLYGON;
+  className_ = dupstr("PolygonMarker");
   ops_ = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -114,9 +114,9 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
 PolygonMarker::~PolygonMarker()
 {
   if (fillGC_)
-    Tk_FreeGC(graphPtr->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display, fillGC_);
   if (outlineGC_)
-    Blt_FreePrivateGC(graphPtr->display, outlineGC_);
+    Blt_FreePrivateGC(graphPtr_->display, outlineGC_);
   if (fillPts_)
     free(fillPts_);
   if (outlinePts_)
@@ -129,7 +129,7 @@ int PolygonMarker::configure()
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
-  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
+  Drawable drawable = Tk_WindowId(graphPtr_->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle);
   XGCValues gcValues;
   if (ops->outline) {
@@ -155,7 +155,7 @@ int PolygonMarker::configure()
     gcValues.function = GXxor;
 
     gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
+    pixel = Tk_3DBorderColor(graphPtr_->plotBg)->pixel;
     if (gcMask & GCBackground)
       gcValues.background ^= pixel;
 
@@ -165,11 +165,11 @@ int PolygonMarker::configure()
   }
 
   // outlineGC
-  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
+    Blt_SetDashes(graphPtr_->display, newGC, &ops->dashes);
   if (outlineGC_)
-    Blt_FreePrivateGC(graphPtr->display, outlineGC_);
+    Blt_FreePrivateGC(graphPtr_->display, outlineGC_);
   outlineGC_ = newGC;
 
   // fillGC
@@ -188,12 +188,12 @@ int PolygonMarker::configure()
       ? FillOpaqueStippled : FillStippled;
     gcMask |= (GCStipple | GCFillStyle);
   }
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
   if (fillGC_)
-    Tk_FreeGC(graphPtr->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display, fillGC_);
   fillGC_ = newGC;
 
-  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && ops->xorr) {
+  if ((gcMask == 0) && !(graphPtr_->flags & RESET_AXES) && ops->xorr) {
     if (drawable != None) {
       map();
       draw(drawable);
@@ -222,7 +222,7 @@ void PolygonMarker::draw(Drawable drawable)
       dp++;
     }
 
-    XFillPolygon(graphPtr->display, drawable, fillGC_, points, 
+    XFillPolygon(graphPtr_->display, drawable, fillGC_, points, 
 		 nFillPts_, Complex, CoordModeOrigin);
     free(points);
   }
@@ -230,7 +230,7 @@ void PolygonMarker::draw(Drawable drawable)
   // outline
   if ((nOutlinePts_ > 0) && (ops->lineWidth > 0) && 
       (ops->outline)) {
-    Blt_Draw2DSegments(graphPtr->display, drawable, outlineGC_,
+    Blt_Draw2DSegments(graphPtr_->display, drawable, outlineGC_,
 		       outlinePts_, nOutlinePts_);
   }
 }
@@ -278,7 +278,7 @@ void PolygonMarker::map()
     *dp = screenPts[0];
   }
   Region2d extents;
-  Blt_GraphExtents(graphPtr, &extents);
+  Blt_GraphExtents(graphPtr_, &extents);
   clipped_ = TRUE;
   if (ops->fill) {
     Point2d* lfillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
@@ -352,7 +352,7 @@ void PolygonMarker::postscript(Blt_Ps ps)
     }
     Blt_Ps_XSetForeground(ps, ops->fill);
     if (ops->stipple != None) {
-      Blt_Ps_XSetStipple(ps, graphPtr->display, ops->stipple);
+      Blt_Ps_XSetStipple(ps, graphPtr_->display, ops->stipple);
     } else {
       Blt_Ps_Append(ps, "fill\n");
     }

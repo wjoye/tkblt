@@ -85,7 +85,7 @@ static Tk_OptionSpec optionSpecs[] = {
 TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  classId = CID_MARKER_TEXT;
+  classId_ = CID_MARKER_TEXT;
   className = dupstr("TextMarker");
   ops_ = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
   Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
@@ -100,7 +100,7 @@ TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 TextMarker::~TextMarker()
 {
-  Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops_)->style);
+  Blt_Ts_FreeStyle(graphPtr_->display, &((TextMarkerOptions*)ops_)->style);
 }
 
 int TextMarker::configure()
@@ -117,10 +117,10 @@ int TextMarker::configure()
   if (ops->fillColor) {
     gcMask = GCForeground;
     gcValues.foreground = ops->fillColor->pixel;
-    newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+    newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
   }
   if (fillGC_)
-    Tk_FreeGC(graphPtr->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display, fillGC_);
   fillGC_ = newGC;
 
   return TCL_OK;
@@ -141,13 +141,13 @@ void TextMarker::draw(Drawable drawable)
       points[ii].x = (short int)(outline_[ii].x + anchorPt_.x);
       points[ii].y = (short int)(outline_[ii].y + anchorPt_.y);
     }
-    XFillPolygon(graphPtr->display, drawable, fillGC_, points, 4,
+    XFillPolygon(graphPtr_->display, drawable, fillGC_, points, 4,
 		 Convex, CoordModeOrigin);
   }
 
   // be sure to update style->gc, things might have changed
   ops->style.flags |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->string, -1,
+  Blt_Ts_DrawText(graphPtr_->tkwin, drawable, ops->string, -1,
 		  &ops->style, anchorPt_.x, anchorPt_.y);
 }
 
@@ -191,7 +191,7 @@ void TextMarker::map()
   extents.top = anchorPtr.y;
   extents.right = anchorPtr.x + width_ - 1;
   extents.bottom = anchorPtr.y + height_ - 1;
-  clipped_ = boxesDontOverlap(graphPtr, &extents);
+  clipped_ = boxesDontOverlap(graphPtr_, &extents);
 
   anchorPt_ = anchorPtr;
 }

@@ -88,8 +88,8 @@ static Tk_OptionSpec optionSpecs[] = {
 LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  classId = CID_MARKER_LINE;
-  className = dupstr("LineMarker");
+  classId_ = CID_MARKER_LINE;
+  className_ = dupstr("LineMarker");
   ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -101,7 +101,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 LineMarker::~LineMarker()
 {
   if (gc_)
-    Blt_FreePrivateGC(graphPtr->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display, gc_);
   if (segments_)
     free(segments_);
 }
@@ -110,7 +110,7 @@ int LineMarker::configure()
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
-  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
+  Drawable drawable = Tk_WindowId(graphPtr_->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
   XGCValues gcValues;
   if (ops->outlineColor) {
@@ -134,7 +134,7 @@ int LineMarker::configure()
     gcValues.function = GXxor;
 
     gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
+    pixel = Tk_3DBorderColor(graphPtr_->plotBg)->pixel;
     if (gcMask & GCBackground)
       gcValues.background ^= pixel;
 
@@ -143,12 +143,12 @@ int LineMarker::configure()
       draw(drawable);
   }
 
-  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
   if (gc_)
-    Blt_FreePrivateGC(graphPtr->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display, gc_);
 
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
+    Blt_SetDashes(graphPtr_->display, newGC, &ops->dashes);
 
   gc_ = newGC;
   if (ops->xorr) {
@@ -165,7 +165,7 @@ int LineMarker::configure()
 void LineMarker::draw(Drawable drawable)
 {
   if (nSegments_ > 0)
-    Blt_Draw2DSegments(graphPtr->display, drawable, gc_, segments_, nSegments_);
+    Blt_Draw2DSegments(graphPtr_->display, drawable, gc_, segments_, nSegments_);
 }
 
 void LineMarker::map()
@@ -180,7 +180,7 @@ void LineMarker::map()
     return;
 
   Region2d extents;
-  Blt_GraphExtents(graphPtr, &extents);
+  Blt_GraphExtents(graphPtr_, &extents);
 
   // Allow twice the number of world coordinates. The line will represented
   // as series of line segments, not one continous polyline.  This is
@@ -216,7 +216,7 @@ void LineMarker::map()
 int LineMarker::pointIn(Point2d *samplePtr)
 {
   return Blt_PointInSegments(samplePtr, segments_, nSegments_, 
-			     (double)graphPtr->search.halo);
+			     (double)graphPtr_->search.halo);
 }
 
 int LineMarker::regionIn(Region2d *extsPtr, int enclosed)

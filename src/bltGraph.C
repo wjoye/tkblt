@@ -1034,7 +1034,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 3. markers drawn under element (-under true).
   Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId;
+    *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
   }
 
@@ -1063,7 +1063,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 
   markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId;
+    *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
   }
 

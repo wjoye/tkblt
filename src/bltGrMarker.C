@@ -37,16 +37,14 @@ using namespace Blt;
 
 Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 {
-  classId =CID_NONE;
-  name = dupstr(nPtr);
-  className =NULL;
-  graphPtr =gPtr;  
-  tags = NULL;
-
+  classId_ =CID_NONE;
+  graphPtr_ =gPtr;  
   optionTable_ =NULL;
   clipped_ =0;
-
   hashPtr_ = hPtr;
+
+  name = dupstr(nPtr);
+  className =NULL;
   link =NULL;
   flags =0;
 }
@@ -56,9 +54,9 @@ Marker::~Marker()
   // If the marker to be deleted is currently displayed below the
   // elements, then backing store needs to be repaired.
   if (((MarkerOptions*)ops_)->drawUnder)
-    graphPtr->flags |= CACHE_DIRTY;
+    graphPtr_->flags |= CACHE_DIRTY;
 
-  Blt_DeleteBindings(graphPtr->bindTable, this);
+  Blt_DeleteBindings(graphPtr_->bindTable, this);
 
   if (className)
     delete [] className;
@@ -70,9 +68,9 @@ Marker::~Marker()
     Tcl_DeleteHashEntry(hashPtr_);
 
   if (link)
-    Blt_Chain_DeleteLink(graphPtr->markers.displayList, link);
+    Blt_Chain_DeleteLink(graphPtr_->markers.displayList, link);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
 
   if (ops_)
     free(ops_);
@@ -125,7 +123,7 @@ double Marker::VMap(Axis *axisPtr, double y)
 Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
 {
   Point2d result;
-  if (graphPtr->inverted) {
+  if (graphPtr_->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
     result.y = VMap(axesPtr->x, pointPtr->x);
   }
@@ -137,10 +135,10 @@ Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
   return result;
 }
 
-int Marker::boxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
+int Marker::boxesDontOverlap(Graph* graphPtr_, Region2d *extsPtr)
 {
-  return (((double)graphPtr->right < extsPtr->left) ||
-	  ((double)graphPtr->bottom < extsPtr->top) ||
-	  (extsPtr->right < (double)graphPtr->left) ||
-	  (extsPtr->bottom < (double)graphPtr->top));
+  return (((double)graphPtr_->right < extsPtr->left) ||
+	  ((double)graphPtr_->bottom < extsPtr->top) ||
+	  (extsPtr->right < (double)graphPtr_->left) ||
+	  (extsPtr->bottom < (double)graphPtr_->top));
 }
