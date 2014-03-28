@@ -5530,21 +5530,21 @@ done
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C
-	bltGrBar.C
-	bltGrElem.C
 	bltGrElemOp.C
+	bltGrElem.C
+	bltGrElemBar.C
+	bltGrElemLine.C
 	bltGrHairs.C
 	bltGrLegd.C
-	bltGrLine.C
+	bltGrMarkerOp.C
 	bltGrMarker.C
 	bltGrMarkerBitmap.C
 	bltGrMarkerLine.C
-	bltGrMarkerOp.C
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C
 	bltGrMisc.C
-	bltGrPen.C
 	bltGrPenOp.C
+	bltGrPen.C
 	bltGrPs.C
 	bltGraph.C
 	bltInt.C
