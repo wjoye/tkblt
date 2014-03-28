@@ -39,8 +39,9 @@ extern "C" {
 #include "bltGraph.h"
 }
 
+#include "bltGrElemLine.h"
+#include "bltGrPenLine.h"
 #include "bltConfig.h"
-#include "bltGrElemOp.h"
 
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
@@ -51,20 +52,9 @@ extern "C" {
 #define DRAW_SYMBOL(linePtr)					\
   (((linePtr)->symbolCounter % (linePtr)->symbolInterval) == 0)
 
-typedef struct {
-  Point2d *points;
-  int length;
-  int *map;
-} GraphPoints;
-
 typedef enum {
   PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
 } PenDirection;
-
-typedef enum {
-  PEN_SMOOTH_LINEAR, PEN_SMOOTH_STEP, PEN_SMOOTH_NATURAL,
-  PEN_SMOOTH_QUADRATIC, PEN_SMOOTH_CATROM
-} Smoothing;
 
 typedef struct {
   Point2d *screenPts;
@@ -73,66 +63,10 @@ typedef struct {
   int *map;
 } MapInfo;
 
-// Symbol types for line elements
-typedef enum {
-  SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
-  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
-  SYMBOL_BITMAP
-} SymbolType;
-
-typedef struct {
-  SymbolType type;
-  int size;
-  XColor* outlineColor;
-  int outlineWidth;
-  GC outlineGC;
-  XColor* fillColor;
-  GC fillGC;
-
-  // The last two fields are used only for bitmap symbols
-  Pixmap bitmap;
-  Pixmap mask;
-} Symbol;
-
 typedef struct {
   int start;
   GraphPoints screenPts;
 } bltTrace;
-
-typedef struct {
-  const char* name;
-  ClassId classId;
-  const char* typeId;
-  unsigned int flags;
-  int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph* graphPtr;
-
-  // Symbol attributes
-  Symbol symbol;
-
-  // Trace attributes.
-  int traceWidth;
-  Blt_Dashes traceDashes;
-  XColor* traceColor;
-  XColor* traceOffColor;
-  GC traceGC;
-    
-  // Error bar attributes
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
-  GC errorBarGC;
-
-  // Show value attributes
-  int valueShow;
-  const char* valueFormat;
-  TextStyle valueStyle;
-} LinePen;
 
 typedef struct {
   Weight weight;
@@ -144,77 +78,6 @@ typedef struct {
   int symbolSize;
   int errorBarCapWidth;
 } LineStyle;
-
-typedef struct {
-  GraphObj obj;
-  unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-
-  // Fields specific to elements
-  const char* label;
-  unsigned short row;
-  unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  LinePen *activePenPtr;
-  LinePen *normalPenPtr;
-  LinePen *builtinPenPtr;
-  Blt_Chain stylePalette;
-  int scaleSymbols;
-  double xRange;
-  double yRange;
-  int state;
-  Blt_ChainLink link;
-
-  // The line element specific fields start here
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  LinePen builtinPen;
-  int errorBarCapWidth;
-
-  // Line smoothing
-  Smoothing reqSmooth;
-  Smoothing smooth;
-  double rTolerance;
-
-  // Area-under-curve fill attributes
-  XColor* fillFgColor;
-  XColor* fillBgColor;
-  GC fillGC;
-  Tk_3DBorder fillBg;
-  Point2d *fillPts;
-  int nFillPts;
-
-  // Symbol points
-  GraphPoints symbolPts;
-
-  // Active symbol points
-  GraphPoints activePts;
-  GraphSegments xeb;
-  GraphSegments yeb;
-
-  int reqMaxSymbols;
-  int symbolInterval;
-  int symbolCounter;
-
-  // X-Y graph-specific fields
-  int penDir;
-  Blt_Chain traces;
-
-  // Stripchart-specific fields
-  GraphSegments lines;
-} LineElement;
 
 // Defs
 

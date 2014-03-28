@@ -35,6 +35,59 @@
 #include <iomanip>
 using namespace std;
 
-};
+typedef enum {
+  SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
+  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
+  SYMBOL_BITMAP
+} SymbolType;
+
+typedef struct {
+  SymbolType type;
+  int size;
+  XColor* outlineColor;
+  int outlineWidth;
+  GC outlineGC;
+  XColor* fillColor;
+  GC fillGC;
+
+  // The last two fields are used only for bitmap symbols
+  Pixmap bitmap;
+  Pixmap mask;
+} Symbol;
+
+typedef struct {
+  const char* name;
+  ClassId classId;
+  const char* typeId;
+  unsigned int flags;
+  int refCount;
+  Tcl_HashEntry *hashPtr;
+  Tk_OptionTable optionTable;
+  PenConfigureProc *configProc;
+  PenDestroyProc *destroyProc;
+  Graph* graphPtr;
+
+  // Symbol attributes
+  Symbol symbol;
+
+  // Trace attributes.
+  int traceWidth;
+  Blt_Dashes traceDashes;
+  XColor* traceColor;
+  XColor* traceOffColor;
+  GC traceGC;
+    
+  // Error bar attributes
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+  GC errorBarGC;
+
+  // Show value attributes
+  int valueShow;
+  const char* valueFormat;
+  TextStyle valueStyle;
+} LinePen;
 
 #endif
