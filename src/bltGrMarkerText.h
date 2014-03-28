@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_MARKER_TEXT_H
-#define _BLT_GR_MARKER_TEXT_H
+#ifndef __bltgrmarkertext_h__
+#define __bltgrmarkertext_h__
 
 #include "bltGrMarker.h"
 
@@ -68,7 +68,7 @@ class TextMarker : public Marker {
   void postscript(Blt_Ps);
 
  public:
-  TextMarker(Graph*, const char*);
+  TextMarker(Graph*, const char*, Tcl_HashEntry*);
   virtual ~TextMarker();
 };
 

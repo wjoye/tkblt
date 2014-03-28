@@ -27,56 +27,29 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_MARKER_H
-#define _BLT_GR_MARKER_H
+#ifndef __bltgrmarker_h__
+#define __bltgrmarker_h__
 
-#define MAX_OUTLINE_POINTS	12
+#include "bltGrMarkerOp.h"
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
 
 namespace Blt {
-  class Marker;
-
-typedef Marker* (MarkerCreateProc)(Graph*);
-typedef void (MarkerDrawProc)(Marker* markerPtr, Drawable drawable);
-typedef int (MarkerConfigProc)(Marker* markerPtr);
-typedef void (MarkerMapProc)(Marker* markerPtr);
-typedef void (MarkerPostscriptProc)(Marker* markerPtr, Blt_Ps ps);
-typedef int (MarkerPointProc)(Marker* markerPtr, Point2d *samplePtr);
-typedef int (MarkerRegionProc)(Marker* markerPtr, Region2d *extsPtr, int enclosed);
-
-typedef struct {
-  Tk_OptionSpec *optionSpecs;
-}  MarkerClass;
-
-typedef struct {
-  Point2d* points;
-  int num;
-} Coords;
-
-typedef struct {
-  const char** tags;
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
-} MarkerOptions;
 
  class Marker {
  protected:
+   int clipped_;
+   Tk_OptionTable optionTable_;
+   Tcl_HashEntry* hashPtr_;
+   void* ops_;
 
  public:
    GraphObj obj;
-   MarkerClass *classPtr;
-   Tk_OptionTable optionTable;
-   Tcl_HashEntry* hashPtr;
    Blt_ChainLink link;
-   int clipped;
    unsigned int flags;		
-
-   void* ops;
 
  private:
    double HMap(Axis*, double);
@@ -87,7 +60,7 @@ typedef struct {
    int boxesDontOverlap(Graph*, Region2d*);
 
  public:
-   Marker(Graph*, const char*);
+   Marker(Graph*, const char*, Tcl_HashEntry*);
    virtual ~Marker();
 
    virtual int configure() =0;
@@ -96,16 +69,12 @@ typedef struct {
    virtual int pointIn(Point2d*) =0;
    virtual int regionIn(Region2d*, int) =0;
    virtual void postscript(Blt_Ps) =0;
+
+   int clipped() {return clipped_;}
+   Tk_OptionTable optionTable() {return optionTable_;}
+   MarkerOptions* ops() {return (MarkerOptions*)ops_;}
  };
 
 };
-
-void Blt_FreeMarker(char*);
-
-extern Tk_ObjCustomOption coordsObjOption;
-extern Tk_ObjCustomOption capStyleObjOption;
-extern Tk_ObjCustomOption joinStyleObjOption;
-extern Tk_ObjCustomOption xAxisObjOption;
-extern Tk_ObjCustomOption yAxisObjOption;
 
 #endif

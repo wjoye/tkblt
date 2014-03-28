@@ -27,12 +27,15 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrmarkerpolygon_h__
-#define __bltgrmarkerpolygon_h__
-
-#include "bltGrMarker.h"
+#ifndef __blt_grmarkerop_h__
+#define __blt_grmarkerop_h__
 
 namespace Blt {
+
+typedef struct {
+  Point2d* points;
+  int num;
+} Coords;
 
 typedef struct {
   const char** tags;
@@ -44,43 +47,14 @@ typedef struct {
   int drawUnder;
   int xOffset;
   int yOffset;
-
-  int capStyle;
-  Blt_Dashes dashes;
-  XColor* fill;
-  XColor* fillBg;
-  int joinStyle;
-  int lineWidth;
-  XColor* outline;
-  XColor* outlineBg;
-  Pixmap stipple;
-  int xorr;
-} PolygonMarkerOptions;
-
-class PolygonMarker : public Marker {
- public:
-  Point2d *screenPts;
-  GC outlineGC;
-  GC fillGC;
-  Point2d *fillPts;
-  int nFillPts;
-  Segment2d *outlinePts;
-  int nOutlinePts;
-  int xorState;
-
- private:
-  int configure();
-  void draw(Drawable);
-  void map();
-  int pointIn(Point2d*);
-  int regionIn(Region2d*, int);
-  void postscript(Blt_Ps);
-
- public:
-  PolygonMarker(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~PolygonMarker();
-};
+} MarkerOptions;
 
 };
+
+extern Tk_ObjCustomOption coordsObjOption;
+extern Tk_ObjCustomOption capStyleObjOption;
+extern Tk_ObjCustomOption joinStyleObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
 #endif

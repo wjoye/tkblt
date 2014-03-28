@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_MARKER_LINE_H
-#define _BLT_GR_MARKER_LINE_H
+#ifndef __bltgrmarkerline_h__
+#define __bltgrmarkerline_h__
 
 #include "bltGrMarker.h"
 
@@ -70,7 +70,7 @@ class LineMarker : public Marker {
   void postscript(Blt_Ps);
 
  public:
-  LineMarker(Graph*, const char*);
+  LineMarker(Graph*, const char*, Tcl_HashEntry*);
   virtual ~LineMarker();
 };
 

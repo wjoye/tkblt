@@ -27,9 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
-#include "bltMath.h"
-
 extern "C" {
 #include "bltGraph.h"
 };
@@ -85,19 +82,14 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerClass textMarkerClass = {
-  optionSpecs,
-};
-
-TextMarker::TextMarker(Graph* graphPtr, const char* name) 
-  : Marker(graphPtr, name)
+TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
+  : Marker(graphPtr, name, hPtr)
 {
   obj.classId = CID_MARKER_TEXT;
   obj.className = dupstr("TextMarker");
-  classPtr = &textMarkerClass;
-  ops = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
-  Blt_Ts_InitStyle(((TextMarkerOptions*)ops)->style);
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  ops_ = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
+  Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   anchorPt.x =0;
   anchorPt.y =0;
@@ -110,24 +102,24 @@ TextMarker::~TextMarker()
 {
   Graph* graphPtr = obj.graphPtr;
 
-  Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops)->style);
+  Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops_)->style);
 }
 
 int TextMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  opp->style.angle = (float)fmod(opp->style.angle, 360.0);
-  if (opp->style.angle < 0.0f)
-    opp->style.angle += 360.0f;
+  ops->style.angle = (float)fmod(ops->style.angle, 360.0);
+  if (ops->style.angle < 0.0f)
+    ops->style.angle += 360.0f;
 
   GC newGC = NULL;
   XGCValues gcValues;
   unsigned long gcMask;
-  if (opp->fillColor) {
+  if (ops->fillColor) {
     gcMask = GCForeground;
-    gcValues.foreground = opp->fillColor->pixel;
+    gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
   if (fillGC)
@@ -140,9 +132,9 @@ int TextMarker::configure()
 void TextMarker::draw(Drawable drawable) 
 {
   Graph* graphPtr = obj.graphPtr;
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (!opp->string)
+  if (!ops->string)
     return;
 
   if (fillGC) {
@@ -158,20 +150,20 @@ void TextMarker::draw(Drawable drawable)
   }
 
   // be sure to update style->gc, things might have changed
-  opp->style.flags |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr->tkwin, drawable, opp->string, -1,
-		  &opp->style, anchorPt.x, anchorPt.y);
+  ops->style.flags |= UPDATE_GC;
+  Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->string, -1,
+		  &ops->style, anchorPt.x, anchorPt.y);
 }
 
 void TextMarker::map()
 {
   Graph* graphPtr = obj.graphPtr;
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (!opp->string)
+  if (!ops->string)
     return;
 
-  if (!opp->worldPts || (opp->worldPts->num < 1))
+  if (!ops->worldPts || (ops->worldPts->num < 1))
     return;
 
   width =0;
@@ -179,44 +171,44 @@ void TextMarker::map()
 
   unsigned int w;
   unsigned int h;
-  Blt_Ts_GetExtents(&opp->style, opp->string, &w, &h);
+  Blt_Ts_GetExtents(&ops->style, ops->string, &w, &h);
 
   double rw;
   double rh;
-  Blt_GetBoundingBox(w, h, opp->style.angle, &rw, &rh, outline);
-  width = ROUND(rw);
-  height = ROUND(rh);
+  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, outline);
+  width = rw;
+  height = rh;
   for (int ii=0; ii<4; ii++) {
-    outline[ii].x += ROUND(rw * 0.5);
-    outline[ii].y += ROUND(rh * 0.5);
+    outline[ii].x += rw * 0.5;
+    outline[ii].y += rh * 0.5;
   }
   outline[4].x = outline[0].x;
   outline[4].y = outline[0].y;
 
-  Point2d lanchorPtr = mapPoint(opp->worldPts->points, &opp->axes);
+  Point2d lanchorPtr = mapPoint(ops->worldPts->points, &ops->axes);
   lanchorPtr = Blt_AnchorPoint(lanchorPtr.x, lanchorPtr.y, width, 
-			     height, opp->anchor);
-  lanchorPtr.x += opp->xOffset;
-  lanchorPtr.y += opp->yOffset;
+			     height, ops->anchor);
+  lanchorPtr.x += ops->xOffset;
+  lanchorPtr.y += ops->yOffset;
 
   Region2d extents;
   extents.left = lanchorPtr.x;
   extents.top = lanchorPtr.y;
   extents.right = lanchorPtr.x + width - 1;
   extents.bottom = lanchorPtr.y + height - 1;
-  clipped = boxesDontOverlap(graphPtr, &extents);
+  clipped_ = boxesDontOverlap(graphPtr, &extents);
 
   anchorPt = lanchorPtr;
 }
 
 int TextMarker::pointIn(Point2d *samplePtr)
 {
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (!opp->string)
+  if (!ops->string)
     return 0;
 
-  if (opp->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0f) {
     Point2d points[5];
 
     // Figure out the bounding polygon (isolateral) for the text and see
@@ -236,9 +228,9 @@ int TextMarker::pointIn(Point2d *samplePtr)
 
 int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (opp->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0f) {
     // Generate the bounding polygon (isolateral) for the bitmap and see
     // if the point is inside of it.
     Point2d points[5];
@@ -263,9 +255,9 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 
 void TextMarker::postscript(Blt_Ps ps)
 {
-  TextMarkerOptions* opp = (TextMarkerOptions*)ops;
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (!opp->string)
+  if (!ops->string)
     return;
 
   if (fillGC) {
@@ -276,9 +268,9 @@ void TextMarker::postscript(Blt_Ps ps)
       points[ii].x = outline[ii].x + anchorPt.x;
       points[ii].y = outline[ii].y + anchorPt.y;
     }
-    Blt_Ps_XSetBackground(ps, opp->fillColor);
+    Blt_Ps_XSetBackground(ps, ops->fillColor);
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, opp->string, &opp->style,  anchorPt.x, anchorPt.y);
+  Blt_Ps_DrawText(ps, ops->string, &ops->style,  anchorPt.x, anchorPt.y);
 }

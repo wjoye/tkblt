@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
-
 extern "C" {
 #include "bltGraph.h"
 };
@@ -87,19 +85,14 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerClass lineMarkerClass = {
-  optionSpecs,
-};
-
-LineMarker::LineMarker(Graph* graphPtr, const char* name) 
-  : Marker(graphPtr, name)
+LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
+  : Marker(graphPtr, name, hPtr)
 {
   obj.classId = CID_MARKER_LINE;
   obj.className = dupstr("LineMarker");
-  classPtr = &lineMarkerClass;
-  ops = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
-  ((LineMarkerOptions*)ops)->xorr = FALSE;
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
+  ((LineMarkerOptions*)ops_)->xorr = FALSE;
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   gc =NULL;
   segments =NULL;
@@ -120,28 +113,28 @@ LineMarker::~LineMarker()
 int LineMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
-  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+  LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   Drawable drawable = Tk_WindowId(graphPtr->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
   XGCValues gcValues;
-  if (opp->outlineColor) {
+  if (ops->outlineColor) {
     gcMask |= GCForeground;
-    gcValues.foreground = opp->outlineColor->pixel;
+    gcValues.foreground = ops->outlineColor->pixel;
   }
-  if (opp->fillColor) {
+  if (ops->fillColor) {
     gcMask |= GCBackground;
-    gcValues.background = opp->fillColor->pixel;
+    gcValues.background = ops->fillColor->pixel;
   }
-  gcValues.cap_style = opp->capStyle;
-  gcValues.join_style = opp->joinStyle;
-  gcValues.line_width = LineWidth(opp->lineWidth);
+  gcValues.cap_style = ops->capStyle;
+  gcValues.join_style = ops->joinStyle;
+  gcValues.line_width = LineWidth(ops->lineWidth);
   gcValues.line_style = LineSolid;
-  if (LineIsDashed(opp->dashes)) {
+  if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = 
       (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
   }
-  if (opp->xorr) {
+  if (ops->xorr) {
     unsigned long pixel;
     gcValues.function = GXxor;
 
@@ -159,11 +152,11 @@ int LineMarker::configure()
   if (gc)
     Blt_FreePrivateGC(graphPtr->display, gc);
 
-  if (LineIsDashed(opp->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &opp->dashes);
+  if (LineIsDashed(ops->dashes))
+    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
 
   gc = newGC;
-  if (opp->xorr) {
+  if (ops->xorr) {
     if (drawable != None) {
       map();
       draw(drawable);
@@ -177,11 +170,11 @@ int LineMarker::configure()
 void LineMarker::draw(Drawable drawable)
 {
   Graph* graphPtr = obj.graphPtr;
-  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+  LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   if (nSegments > 0) {
     Blt_Draw2DSegments(graphPtr->display, drawable, gc, segments, nSegments);
-    if (opp->xorr)
+    if (ops->xorr)
       xorState = (xorState == 0);
   }
 }
@@ -189,13 +182,13 @@ void LineMarker::draw(Drawable drawable)
 void LineMarker::map()
 {
   Graph* graphPtr = obj.graphPtr;
-  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+  LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   nSegments = 0;
   if (segments)
     free(segments);
 
-  if (!opp->worldPts || (opp->worldPts->num < 2))
+  if (!ops->worldPts || (ops->worldPts->num < 2))
     return;
 
   Region2d extents;
@@ -205,19 +198,19 @@ void LineMarker::map()
   // as series of line segments, not one continous polyline.  This is
   // because clipping against the plot area may chop the line into several
   // disconnected segments.
-  Segment2d* lsegments = (Segment2d*)malloc(opp->worldPts->num * sizeof(Segment2d));
-  Point2d* srcPtr = opp->worldPts->points;
-  Point2d p = mapPoint(srcPtr, &opp->axes);
-  p.x += opp->xOffset;
-  p.y += opp->yOffset;
+  Segment2d* lsegments = (Segment2d*)malloc(ops->worldPts->num * sizeof(Segment2d));
+  Point2d* srcPtr = ops->worldPts->points;
+  Point2d p = mapPoint(srcPtr, &ops->axes);
+  p.x += ops->xOffset;
+  p.y += ops->yOffset;
 
   Segment2d* segPtr = lsegments;
   Point2d* pend;
-  for (srcPtr++, pend = opp->worldPts->points + opp->worldPts->num; 
+  for (srcPtr++, pend = ops->worldPts->points + ops->worldPts->num; 
        srcPtr < pend; srcPtr++) {
-    Point2d next = mapPoint(srcPtr, &opp->axes);
-    next.x += opp->xOffset;
-    next.y += opp->yOffset;
+    Point2d next = mapPoint(srcPtr, &ops->axes);
+    next.x += ops->xOffset;
+    next.y += ops->yOffset;
     Point2d q = next;
 
     if (Blt_LineRectClip(&extents, &p, &q)) {
@@ -229,7 +222,7 @@ void LineMarker::map()
   }
   nSegments = segPtr - lsegments;
   segments = lsegments;
-  clipped = (nSegments == 0);
+  clipped_ = (nSegments == 0);
 }
 
 int LineMarker::pointIn(Point2d *samplePtr)
@@ -240,17 +233,17 @@ int LineMarker::pointIn(Point2d *samplePtr)
 
 int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
-  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+  LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
-  if (!opp->worldPts || opp->worldPts->num < 2)
+  if (!ops->worldPts || ops->worldPts->num < 2)
     return FALSE;
 
   if (enclosed) {
     Point2d *pp, *pend;
 
-    for (pp = opp->worldPts->points, pend = pp + opp->worldPts->num; 
+    for (pp = ops->worldPts->points, pend = pp + ops->worldPts->num; 
 	 pp < pend; pp++) {
-      Point2d p = mapPoint(pp, &opp->axes);
+      Point2d p = mapPoint(pp, &ops->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
@@ -261,10 +254,10 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
   else {
     Point2d *pp, *pend;
     int count = 0;
-    for (pp = opp->worldPts->points, pend = pp + (opp->worldPts->num - 1); 
+    for (pp = ops->worldPts->points, pend = pp + (ops->worldPts->num - 1); 
 	 pp < pend; pp++) {
-      Point2d p = mapPoint(pp, &opp->axes);
-      Point2d q = mapPoint(pp + 1, &opp->axes);
+      Point2d p = mapPoint(pp, &ops->axes);
+      Point2d q = mapPoint(pp + 1, &ops->axes);
       if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
     }
@@ -275,14 +268,14 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 
 void LineMarker::postscript(Blt_Ps ps)
 {
-  LineMarkerOptions* opp = (LineMarkerOptions*)ops;
+  LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   if (nSegments > 0) {
-    Blt_Ps_XSetLineAttributes(ps, opp->outlineColor, opp->lineWidth,
-			      &opp->dashes, opp->capStyle, opp->joinStyle);
-    if ((LineIsDashed(opp->dashes)) && (opp->fillColor)) {
+    Blt_Ps_XSetLineAttributes(ps, ops->outlineColor, ops->lineWidth,
+			      &ops->dashes, ops->capStyle, ops->joinStyle);
+    if ((LineIsDashed(ops->dashes)) && (ops->fillColor)) {
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-      Blt_Ps_XSetBackground(ps, opp->fillColor);
+      Blt_Ps_XSetBackground(ps, ops->fillColor);
       Blt_Ps_Append(ps, "    ");
       Blt_Ps_XSetDashes(ps, (Blt_Dashes*)NULL);
       Blt_Ps_VarAppend(ps, "stroke\n", "  grestore\n", "} def\n", (char*)NULL);

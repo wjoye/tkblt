@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
-
 extern "C" {
 #include "bltGraph.h"
 };
@@ -81,18 +79,14 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-static MarkerClass bitmapMarkerClass = {
-  optionSpecs,
-};
-
-BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name)
-  : Marker(graphPtr, name)
+BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name, 
+			   Tcl_HashEntry* hPtr)
+  : Marker(graphPtr, name, hPtr)
 {
   obj.classId = CID_MARKER_BITMAP;
   obj.className = dupstr("BitmapMarker");
-  classPtr = &bitmapMarkerClass;
-  ops = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
-  optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  ops_ = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
   anchorPt.x =0;
   anchorPt.y =0;
@@ -116,26 +110,26 @@ BitmapMarker::~BitmapMarker()
 int BitmapMarker::configure()
 {
   Graph* graphPtr = obj.graphPtr;
-  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if (opp->bitmap == None)
+  if (ops->bitmap == None)
     return TCL_OK;
 
   XGCValues gcValues;
   unsigned long gcMask = 0;
-  if (opp->outlineColor) {
+  if (ops->outlineColor) {
     gcMask |= GCForeground;
-    gcValues.foreground = opp->outlineColor->pixel;
+    gcValues.foreground = ops->outlineColor->pixel;
   }
 
-  if (opp->fillColor) {
+  if (ops->fillColor) {
     // Opaque bitmap: both foreground and background (fill) colors are used
-    gcValues.background = opp->fillColor->pixel;
+    gcValues.background = ops->fillColor->pixel;
     gcMask |= GCBackground;
   }
   else {
     // Transparent bitmap: set the clip mask to the current bitmap
-    gcValues.clip_mask = opp->bitmap;
+    gcValues.clip_mask = ops->bitmap;
     gcMask |= GCClipMask;
   }
 
@@ -149,8 +143,8 @@ int BitmapMarker::configure()
   gc = newGC;
 
   // Create the background GC containing the fill color
-  if (opp->fillColor) {
-    gcValues.foreground = opp->fillColor->pixel;
+  if (ops->fillColor) {
+    gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
     if (fillGC)
       Tk_FreeGC(graphPtr->display, fillGC);
@@ -163,52 +157,52 @@ int BitmapMarker::configure()
 void BitmapMarker::draw(Drawable drawable)
 {
   Graph* graphPtr = obj.graphPtr;
-  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if ((opp->bitmap == None) || (width < 1) || (height < 1))
+  if ((ops->bitmap == None) || (width < 1) || (height < 1))
     return;
 
-  if (opp->fillColor == NULL) {
-    XSetClipMask(graphPtr->display, gc, opp->bitmap);
+  if (ops->fillColor == NULL) {
+    XSetClipMask(graphPtr->display, gc, ops->bitmap);
     XSetClipOrigin(graphPtr->display, gc, anchorPt.x, anchorPt.y);
   }
   else {
     XSetClipMask(graphPtr->display, gc, None);
     XSetClipOrigin(graphPtr->display, gc, 0, 0);
   }
-  XCopyPlane(graphPtr->display, opp->bitmap, drawable, gc, 0, 0,
+  XCopyPlane(graphPtr->display, ops->bitmap, drawable, gc, 0, 0,
 	     width, height, anchorPt.x, anchorPt.y, 1);
 }
 
 void BitmapMarker::map()
 {
   Graph* graphPtr = obj.graphPtr;
-  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if (opp->bitmap == None)
+  if (ops->bitmap == None)
     return;
  
-  if (!opp->worldPts || (opp->worldPts->num < 1))
+  if (!ops->worldPts || (ops->worldPts->num < 1))
     return;
 
   int lwidth;
   int lheight;
-  Tk_SizeOfBitmap(graphPtr->display, opp->bitmap, &lwidth, &lheight);
+  Tk_SizeOfBitmap(graphPtr->display, ops->bitmap, &lwidth, &lheight);
 
-  Point2d lanchorPt = mapPoint(opp->worldPts->points, &opp->axes);
+  Point2d lanchorPt = mapPoint(ops->worldPts->points, &ops->axes);
   lanchorPt = 
-    Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, opp->anchor);
-  lanchorPt.x += opp->xOffset;
-  lanchorPt.y += opp->yOffset;
+    Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, ops->anchor);
+  lanchorPt.x += ops->xOffset;
+  lanchorPt.y += ops->yOffset;
 
   Region2d extents;
   extents.left = lanchorPt.x;
   extents.top = lanchorPt.y;
   extents.right = lanchorPt.x + lwidth - 1;
   extents.bottom = lanchorPt.y + lheight - 1;
-  clipped = boxesDontOverlap(graphPtr, &extents);
+  clipped_ = boxesDontOverlap(graphPtr, &extents);
 
-  if (clipped)
+  if (clipped_)
     return;
 
   width = lwidth;
@@ -241,9 +235,9 @@ void BitmapMarker::map()
 
 int BitmapMarker::pointIn(Point2d *samplePtr)
 {
-  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if (opp->bitmap == None)
+  if (ops->bitmap == None)
     return 0;
 
   return ((samplePtr->x >= anchorPt.x) && 
@@ -270,21 +264,21 @@ int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 void BitmapMarker::postscript(Blt_Ps ps)
 {
   Graph* graphPtr = obj.graphPtr;
-  BitmapMarkerOptions* opp = (BitmapMarkerOptions*)ops;
+  BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if ((opp->bitmap == None) || (width < 1) || (height < 1))
+  if ((ops->bitmap == None) || (width < 1) || (height < 1))
     return;
 
-  if (opp->fillColor) {
-    Blt_Ps_XSetBackground(ps, opp->fillColor);
+  if (ops->fillColor) {
+    Blt_Ps_XSetBackground(ps, ops->fillColor);
     Blt_Ps_XFillPolygon(ps, outline, 4);
   }
-  Blt_Ps_XSetForeground(ps, opp->outlineColor);
+  Blt_Ps_XSetForeground(ps, ops->outlineColor);
 
   Blt_Ps_Format(ps, "  gsave\n    %g %g translate\n    %d %d scale\n", 
 		anchorPt.x, anchorPt.y + height, width, -height);
   Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
 		width, height, width, -height, height);
-  Blt_Ps_XSetBitmapData(ps, graphPtr->display, opp->bitmap, width, height);
+  Blt_Ps_XSetBitmapData(ps, graphPtr->display, ops->bitmap, width, height);
   Blt_Ps_VarAppend(ps, "    } imagemask\n", "grestore\n", (char*)NULL);
 }

@@ -27,10 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_MARKER_BITMAP_H
-#define _BLT_GR_MARKER_BITMAP_H
+#ifndef __bltgrmarkerbitmap_h__
+#define __bltgrmarkerbitmap_h__
 
 #include "bltGrMarker.h"
+#define MAX_OUTLINE_POINTS	12
 
 namespace Blt {
 
@@ -70,7 +71,7 @@ class BitmapMarker : public Marker {
   void postscript(Blt_Ps);
 
  public:
-  BitmapMarker(Graph*, const char*);
+  BitmapMarker(Graph*, const char*, Tcl_HashEntry*);
   virtual ~BitmapMarker();
 };
 

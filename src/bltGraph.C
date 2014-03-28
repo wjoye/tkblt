@@ -986,7 +986,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_WINDOW:
     {
       Marker* markerPtr = (Marker*)object;
-      MarkerOptions* ops = (MarkerOptions*)markerPtr->ops;
+      MarkerOptions* ops = markerPtr->ops();
       MakeTagProc* tagProc = Blt_MakeMarkerTag;
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.name), 0);
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.className), 0);
