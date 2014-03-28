@@ -89,7 +89,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
   classId_ = CID_MARKER_LINE;
-  className_ = dupstr("LineMarker");
+  className = dupstr("LineMarker");
   ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 

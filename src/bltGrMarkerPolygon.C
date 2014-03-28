@@ -98,7 +98,7 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
   : Marker(graphPtr, name, hPtr)
 {
   classId_ = CID_MARKER_POLYGON;
-  className_ = dupstr("PolygonMarker");
+  className = dupstr("PolygonMarker");
   ops_ = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
