@@ -102,30 +102,29 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
   ops_ = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  screenPts =NULL;
-  outlineGC =NULL;
-  fillGC =NULL;
-  fillPts =NULL;
-  nFillPts =0;
-  outlinePts =NULL;
-  nOutlinePts =0;
-  xorState =0;
+  screenPts_ =NULL;
+  outlineGC_ =NULL;
+  fillGC_ =NULL;
+  fillPts_ =NULL;
+  nFillPts_ =0;
+  outlinePts_ =NULL;
+  nOutlinePts_ =0;
 }
 
 PolygonMarker::~PolygonMarker()
 {
   Graph* graphPtr = obj.graphPtr;
 
-  if (fillGC)
-    Tk_FreeGC(graphPtr->display, fillGC);
-  if (outlineGC)
-    Blt_FreePrivateGC(graphPtr->display, outlineGC);
-  if (fillPts)
-    free(fillPts);
-  if (outlinePts)
-    free(outlinePts);
-  if (screenPts)
-    free(screenPts);
+  if (fillGC_)
+    Tk_FreeGC(graphPtr->display, fillGC_);
+  if (outlineGC_)
+    Blt_FreePrivateGC(graphPtr->display, outlineGC_);
+  if (fillPts_)
+    free(fillPts_);
+  if (outlinePts_)
+    free(outlinePts_);
+  if (screenPts_)
+    free(screenPts_);
 }
 
 int PolygonMarker::configure()
@@ -133,13 +132,9 @@ int PolygonMarker::configure()
   Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
-  GC newGC;
+  Drawable drawable = Tk_WindowId(graphPtr->tkwin);
+  unsigned long gcMask = (GCLineWidth | GCLineStyle);
   XGCValues gcValues;
-  unsigned long gcMask;
-  Drawable drawable;
-
-  drawable = Tk_WindowId(graphPtr->tkwin);
-  gcMask = (GCLineWidth | GCLineStyle);
   if (ops->outline) {
     gcMask |= GCForeground;
     gcValues.foreground = ops->outline->pixel;
@@ -164,23 +159,23 @@ int PolygonMarker::configure()
 
     gcMask |= GCFunction;
     pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
-    if (gcMask & GCBackground) {
+    if (gcMask & GCBackground)
       gcValues.background ^= pixel;
-    }
-    gcValues.foreground ^= pixel;
-    if (drawable != None) {
-      draw(drawable);
-    }
-  }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(ops->dashes)) {
-    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
-  }
-  if (outlineGC) {
-    Blt_FreePrivateGC(graphPtr->display, outlineGC);
-  }
-  outlineGC = newGC;
 
+    gcValues.foreground ^= pixel;
+    if (drawable != None)
+      draw(drawable);
+  }
+
+  // outlineGC
+  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  if (LineIsDashed(ops->dashes))
+    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
+  if (outlineGC_)
+    Blt_FreePrivateGC(graphPtr->display, outlineGC_);
+  outlineGC_ = newGC;
+
+  // fillGC
   gcMask = 0;
   if (ops->fill) {
     gcMask |= GCForeground;
@@ -197,12 +192,11 @@ int PolygonMarker::configure()
     gcMask |= (GCStipple | GCFillStyle);
   }
   newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (fillGC) {
-    Tk_FreeGC(graphPtr->display, fillGC);
-  }
-  fillGC = newGC;
+  if (fillGC_)
+    Tk_FreeGC(graphPtr->display, fillGC_);
+  fillGC_ = newGC;
 
-  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && (ops->xorr)) {
+  if ((gcMask == 0) && !(graphPtr->flags & RESET_AXES) && ops->xorr) {
     if (drawable != None) {
       map();
       draw(drawable);
@@ -219,29 +213,29 @@ void PolygonMarker::draw(Drawable drawable)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   // fill region
-  if ((nFillPts > 0) && (ops->fill)) {
-    XPoint* points = (XPoint*)malloc(nFillPts * sizeof(XPoint));
+  if ((nFillPts_ > 0) && (ops->fill)) {
+    XPoint* points = (XPoint*)malloc(nFillPts_ * sizeof(XPoint));
     if (!points)
       return;
 
     XPoint* dp = points;
     Point2d *sp, *send;
-    for (sp = fillPts, send = sp + nFillPts; sp < send; sp++) {
+    for (sp = fillPts_, send = sp + nFillPts_; sp < send; sp++) {
       dp->x = (short int)sp->x;
       dp->y = (short int)sp->y;
       dp++;
     }
 
-    XFillPolygon(graphPtr->display, drawable, fillGC, points, 
-		 nFillPts, Complex, CoordModeOrigin);
+    XFillPolygon(graphPtr->display, drawable, fillGC_, points, 
+		 nFillPts_, Complex, CoordModeOrigin);
     free(points);
   }
 
   // outline
-  if ((nOutlinePts > 0) && (ops->lineWidth > 0) && 
+  if ((nOutlinePts_ > 0) && (ops->lineWidth > 0) && 
       (ops->outline)) {
-    Blt_Draw2DSegments(graphPtr->display, drawable, outlineGC,
-		       outlinePts, nOutlinePts);
+    Blt_Draw2DSegments(graphPtr->display, drawable, outlineGC_,
+		       outlinePts_, nOutlinePts_);
   }
 }
 
@@ -250,21 +244,21 @@ void PolygonMarker::map()
   Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
-  if (outlinePts) {
-    free(outlinePts);
-    outlinePts = NULL;
-    nOutlinePts = 0;
+  if (outlinePts_) {
+    free(outlinePts_);
+    outlinePts_ = NULL;
+    nOutlinePts_ = 0;
   }
 
-  if (fillPts) {
-    free(fillPts);
-    fillPts = NULL;
-    nFillPts = 0;
+  if (fillPts_) {
+    free(fillPts_);
+    fillPts_ = NULL;
+    nFillPts_ = 0;
   }
 
-  if (screenPts) {
-    free(screenPts);
-    screenPts = NULL;
+  if (screenPts_) {
+    free(screenPts_);
+    screenPts_ = NULL;
   }
 
   if (!ops->worldPts || ops->worldPts->num < 3)
@@ -274,11 +268,11 @@ void PolygonMarker::map()
   // the polygon.
 
   int nScreenPts = ops->worldPts->num + 1;
-  Point2d* lscreenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
+  Point2d* screenPts = (Point2d*)malloc((nScreenPts + 1) * sizeof(Point2d));
   {
     Point2d *sp, *dp, *send;
 
-    dp = lscreenPts;
+    dp = screenPts;
     for (sp = ops->worldPts->points, send = sp + ops->worldPts->num; 
 	 sp < send; sp++) {
       *dp = mapPoint(sp, &ops->axes);
@@ -286,7 +280,7 @@ void PolygonMarker::map()
       dp->y += ops->yOffset;
       dp++;
     }
-    *dp = lscreenPts[0];
+    *dp = screenPts[0];
   }
   Region2d extents;
   Blt_GraphExtents(graphPtr, &extents);
@@ -294,71 +288,61 @@ void PolygonMarker::map()
   if (ops->fill) {
     Point2d* lfillPts = (Point2d*)malloc(sizeof(Point2d) * nScreenPts * 3);
     int n = 
-      Blt_PolyRectClip(&extents, lscreenPts, ops->worldPts->num,lfillPts);
+      Blt_PolyRectClip(&extents, screenPts, ops->worldPts->num,lfillPts);
     if (n < 3)
       free(lfillPts);
     else {
-      nFillPts = n;
-      fillPts = lfillPts;
-      clipped_ = FALSE;
+      nFillPts_ = n;
+      fillPts_ = lfillPts;
+      clipped_ = 0;
     }
   }
   if ((ops->outline) && (ops->lineWidth > 0)) { 
-    Segment2d *segPtr;
-    Point2d *sp, *send;
-
-    /* 
-     * Generate line segments representing the polygon outline.  The
-     * resulting outline may or may not be closed from viewport clipping.
-     */
-    Segment2d* loutlinePts = (Segment2d*)malloc(nScreenPts * sizeof(Segment2d));
-    if (!loutlinePts)
+    // Generate line segments representing the polygon outline.  The
+    // resulting outline may or may not be closed from viewport clipping.
+    Segment2d* outlinePts = (Segment2d*)malloc(nScreenPts * sizeof(Segment2d));
+    if (!outlinePts)
       return;
 
     // Note that this assumes that the point array contains an extra point
     // that closes the polygon.
-    segPtr = loutlinePts;
-    for (sp = lscreenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
+    Segment2d* segPtr = outlinePts;
+    Point2d *sp, *send;
+    for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
       if (Blt_LineRectClip(&extents, &segPtr->p, &segPtr->q)) {
 	segPtr++;
       }
     }
-    nOutlinePts = segPtr - loutlinePts;
-    outlinePts = loutlinePts;
-    if (nOutlinePts > 0) {
-      clipped_ = FALSE;
-    }
+    nOutlinePts_ = segPtr - outlinePts;
+    outlinePts_ = outlinePts;
+    if (nOutlinePts_ > 0)
+      clipped_ = 0;
   }
 
-  screenPts = lscreenPts;
+  screenPts_ = screenPts;
 }
 
 int PolygonMarker::pointIn(Point2d *samplePtr)
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
-  if (ops->worldPts && 
-      (ops->worldPts->num >= 3) && 
-      (screenPts))
-    return Blt_PointInPolygon(samplePtr, screenPts, 
-			      ops->worldPts->num + 1);
+  if (ops->worldPts && (ops->worldPts->num >= 3) && screenPts_)
+    return Blt_PointInPolygon(samplePtr, screenPts_, ops->worldPts->num + 1);
 
-  return FALSE;
+  return 0;
 }
 
 int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
     
-  if (ops->worldPts && 
-      (ops->worldPts->num >= 3) && 
-      (screenPts))
-    return Blt_RegionInPolygon(extsPtr, screenPts, 
+  if (ops->worldPts && (ops->worldPts->num >= 3) && screenPts_)
+    return Blt_RegionInPolygon(extsPtr, screenPts_, 
 			       ops->worldPts->num, enclosed);
 
-  return FALSE;
+  return 0;
 }
 
 void PolygonMarker::postscript(Blt_Ps ps)
@@ -367,7 +351,7 @@ void PolygonMarker::postscript(Blt_Ps ps)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->fill) {
-    Blt_Ps_Polyline(ps, fillPts, nFillPts);
+    Blt_Ps_Polyline(ps, fillPts_, nFillPts_);
     if (ops->fillBg) {
       Blt_Ps_XSetBackground(ps, ops->fillBg);
       Blt_Ps_Append(ps, "gsave fill grestore\n");
@@ -394,7 +378,7 @@ void PolygonMarker::postscript(Blt_Ps ps)
     } else {
       Blt_Ps_Append(ps, "/DashesProc {} def\n");
     }
-    Blt_Ps_Draw2DSegments(ps, outlinePts, nOutlinePts);
+    Blt_Ps_Draw2DSegments(ps, outlinePts_, nOutlinePts_);
   }
 }
 

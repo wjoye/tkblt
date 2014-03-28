@@ -52,12 +52,12 @@ typedef struct {
 } TextMarkerOptions;
 
 class TextMarker : public Marker {
- public:
-  Point2d anchorPt;
-  int width;
-  int height;
-  GC fillGC;
-  Point2d outline[5];
+ private:
+  Point2d anchorPt_;
+  int width_;
+  int height_;
+  GC fillGC_;
+  Point2d outline_[5];
 
  private:
   int configure();

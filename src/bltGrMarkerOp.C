@@ -644,7 +644,7 @@ static int IsElementHidden(Marker* markerPtr)
 	return TRUE;
     }
   }
-  return FALSE;
+  return 0;
 }
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 

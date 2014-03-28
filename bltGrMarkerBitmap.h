@@ -54,13 +54,13 @@ typedef struct {
 
 class BitmapMarker : public Marker {
  public:
-  Point2d anchorPt;
-  GC gc;
-  GC fillGC;
-  Point2d outline[MAX_OUTLINE_POINTS];
-  int nOutlinePts;
-  int width;
-  int height;
+  Point2d anchorPt_;
+  GC gc_;
+  GC fillGC_;
+  Point2d outline_[MAX_OUTLINE_POINTS];
+  int nOutlinePts_;
+  int width_;
+  int height_;
 
  private:
   int configure();

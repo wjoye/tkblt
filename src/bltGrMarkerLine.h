@@ -55,11 +55,10 @@ typedef struct {
 } LineMarkerOptions;
 
 class LineMarker : public Marker {
- public:
-  GC gc;
-  Segment2d* segments;
-  int nSegments;
-  int xorState;
+ private:
+  GC gc_;
+  Segment2d* segments_;
+  int nSegments_;
 
  private:
   int configure();

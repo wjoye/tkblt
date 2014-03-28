@@ -91,11 +91,11 @@ TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  anchorPt.x =0;
-  anchorPt.y =0;
-  width =0;
-  height =0;
-  fillGC =NULL;
+  anchorPt_.x =0;
+  anchorPt_.y =0;
+  width_ =0;
+  height_ =0;
+  fillGC_ =NULL;
 }
 
 TextMarker::~TextMarker()
@@ -122,9 +122,9 @@ int TextMarker::configure()
     gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
   }
-  if (fillGC)
-    Tk_FreeGC(graphPtr->display, fillGC);
-  fillGC = newGC;
+  if (fillGC_)
+    Tk_FreeGC(graphPtr->display, fillGC_);
+  fillGC_ = newGC;
 
   return TCL_OK;
 }
@@ -137,22 +137,22 @@ void TextMarker::draw(Drawable drawable)
   if (!ops->string)
     return;
 
-  if (fillGC) {
+  if (fillGC_) {
     // Simulate the rotated background of the bitmap by filling a bounding
     // polygon with the background color.
     XPoint points[4];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = (short int)(outline[ii].x + anchorPt.x);
-      points[ii].y = (short int)(outline[ii].y + anchorPt.y);
+      points[ii].x = (short int)(outline_[ii].x + anchorPt_.x);
+      points[ii].y = (short int)(outline_[ii].y + anchorPt_.y);
     }
-    XFillPolygon(graphPtr->display, drawable, fillGC, points, 4,
+    XFillPolygon(graphPtr->display, drawable, fillGC_, points, 4,
 		 Convex, CoordModeOrigin);
   }
 
   // be sure to update style->gc, things might have changed
   ops->style.flags |= UPDATE_GC;
   Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->string, -1,
-		  &ops->style, anchorPt.x, anchorPt.y);
+		  &ops->style, anchorPt_.x, anchorPt_.y);
 }
 
 void TextMarker::map()
@@ -166,8 +166,8 @@ void TextMarker::map()
   if (!ops->worldPts || (ops->worldPts->num < 1))
     return;
 
-  width =0;
-  height =0;
+  width_ =0;
+  height_ =0;
 
   unsigned int w;
   unsigned int h;
@@ -175,30 +175,30 @@ void TextMarker::map()
 
   double rw;
   double rh;
-  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, outline);
-  width = rw;
-  height = rh;
+  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, outline_);
+  width_ = rw;
+  height_ = rh;
   for (int ii=0; ii<4; ii++) {
-    outline[ii].x += rw * 0.5;
-    outline[ii].y += rh * 0.5;
+    outline_[ii].x += rw * 0.5;
+    outline_[ii].y += rh * 0.5;
   }
-  outline[4].x = outline[0].x;
-  outline[4].y = outline[0].y;
+  outline_[4].x = outline_[0].x;
+  outline_[4].y = outline_[0].y;
 
-  Point2d lanchorPtr = mapPoint(ops->worldPts->points, &ops->axes);
-  lanchorPtr = Blt_AnchorPoint(lanchorPtr.x, lanchorPtr.y, width, 
-			     height, ops->anchor);
-  lanchorPtr.x += ops->xOffset;
-  lanchorPtr.y += ops->yOffset;
+  Point2d anchorPtr = mapPoint(ops->worldPts->points, &ops->axes);
+  anchorPtr = Blt_AnchorPoint(anchorPtr.x, anchorPtr.y, width_, 
+			     height_, ops->anchor);
+  anchorPtr.x += ops->xOffset;
+  anchorPtr.y += ops->yOffset;
 
   Region2d extents;
-  extents.left = lanchorPtr.x;
-  extents.top = lanchorPtr.y;
-  extents.right = lanchorPtr.x + width - 1;
-  extents.bottom = lanchorPtr.y + height - 1;
+  extents.left = anchorPtr.x;
+  extents.top = anchorPtr.y;
+  extents.right = anchorPtr.x + width_ - 1;
+  extents.bottom = anchorPtr.y + height_ - 1;
   clipped_ = boxesDontOverlap(graphPtr, &extents);
 
-  anchorPt = lanchorPtr;
+  anchorPt_ = anchorPtr;
 }
 
 int TextMarker::pointIn(Point2d *samplePtr)
@@ -214,16 +214,16 @@ int TextMarker::pointIn(Point2d *samplePtr)
     // Figure out the bounding polygon (isolateral) for the text and see
     // if the point is inside of it.
     for (int ii=0; ii<5; ii++) {
-      points[ii].x = outline[ii].x + anchorPt.x;
-      points[ii].y = outline[ii].y + anchorPt.y;
+      points[ii].x = outline_[ii].x + anchorPt_.x;
+      points[ii].y = outline_[ii].y + anchorPt_.y;
     }
     return Blt_PointInPolygon(samplePtr, points, 5);
   } 
 
-  return ((samplePtr->x >= anchorPt.x) && 
-	  (samplePtr->x < (anchorPt.x + width)) &&
-	  (samplePtr->y >= anchorPt.y) && 
-	  (samplePtr->y < (anchorPt.y + height)));
+  return ((samplePtr->x >= anchorPt_.x) && 
+	  (samplePtr->x < (anchorPt_.x + width_)) &&
+	  (samplePtr->y >= anchorPt_.y) && 
+	  (samplePtr->y < (anchorPt_.y + height_)));
 }
 
 int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
@@ -235,22 +235,22 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
     // if the point is inside of it.
     Point2d points[5];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = outline[ii].x + anchorPt.x;
-      points[ii].y = outline[ii].y + anchorPt.y;
+      points[ii].x = outline_[ii].x + anchorPt_.x;
+      points[ii].y = outline_[ii].y + anchorPt_.y;
     }
     return Blt_RegionInPolygon(extsPtr, points, 4, enclosed);
   } 
 
   if (enclosed)
-    return ((anchorPt.x >= extsPtr->left) &&
-	    (anchorPt.y >= extsPtr->top) && 
-	    ((anchorPt.x + width) <= extsPtr->right) &&
-	    ((anchorPt.y + height) <= extsPtr->bottom));
+    return ((anchorPt_.x >= extsPtr->left) &&
+	    (anchorPt_.y >= extsPtr->top) && 
+	    ((anchorPt_.x + width_) <= extsPtr->right) &&
+	    ((anchorPt_.y + height_) <= extsPtr->bottom));
 
-  return !((anchorPt.x >= extsPtr->right) ||
-	   (anchorPt.y >= extsPtr->bottom) ||
-	   ((anchorPt.x + width) <= extsPtr->left) ||
-	   ((anchorPt.y + height) <= extsPtr->top));
+  return !((anchorPt_.x >= extsPtr->right) ||
+	   (anchorPt_.y >= extsPtr->bottom) ||
+	   ((anchorPt_.x + width_) <= extsPtr->left) ||
+	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
 void TextMarker::postscript(Blt_Ps ps)
@@ -260,17 +260,17 @@ void TextMarker::postscript(Blt_Ps ps)
   if (!ops->string)
     return;
 
-  if (fillGC) {
+  if (fillGC_) {
     // Simulate the rotated background of the bitmap by filling a bounding
     // polygon with the background color.
     Point2d points[4];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = outline[ii].x + anchorPt.x;
-      points[ii].y = outline[ii].y + anchorPt.y;
+      points[ii].x = outline_[ii].x + anchorPt_.x;
+      points[ii].y = outline_[ii].y + anchorPt_.y;
     }
     Blt_Ps_XSetBackground(ps, ops->fillColor);
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, ops->string, &ops->style,  anchorPt.x, anchorPt.y);
+  Blt_Ps_DrawText(ps, ops->string, &ops->style,  anchorPt_.x, anchorPt_.y);
 }

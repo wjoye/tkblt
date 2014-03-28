@@ -88,23 +88,23 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
   ops_ = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  anchorPt.x =0;
-  anchorPt.y =0;
-  gc =NULL;
-  fillGC =NULL;
-  nOutlinePts =0;
-  width =0;
-  height =0;
+  anchorPt_.x =0;
+  anchorPt_.y =0;
+  gc_ =NULL;
+  fillGC_ =NULL;
+  nOutlinePts_ =0;
+  width_ =0;
+  height_ =0;
 }
 
 BitmapMarker::~BitmapMarker()
 {
   Graph* graphPtr = obj.graphPtr;
 
-  if (gc)
-    Tk_FreeGC(graphPtr->display, gc);
-  if (fillGC)
-    Tk_FreeGC(graphPtr->display, fillGC);
+  if (gc_)
+    Tk_FreeGC(graphPtr->display, gc_);
+  if (fillGC_)
+    Tk_FreeGC(graphPtr->display, fillGC_);
 }
 
 int BitmapMarker::configure()
@@ -138,17 +138,17 @@ int BitmapMarker::configure()
   // no other client will be allocated this GC with the GCClipMask set to
   // this particular bitmap.
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (gc)
-    Tk_FreeGC(graphPtr->display, gc);
-  gc = newGC;
+  if (gc_)
+    Tk_FreeGC(graphPtr->display, gc_);
+  gc_ = newGC;
 
   // Create the background GC containing the fill color
   if (ops->fillColor) {
     gcValues.foreground = ops->fillColor->pixel;
     newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (fillGC)
-      Tk_FreeGC(graphPtr->display, fillGC);
-    fillGC = newGC;
+    if (fillGC_)
+      Tk_FreeGC(graphPtr->display, fillGC_);
+    fillGC_ = newGC;
   }
 
   return TCL_OK;
@@ -159,19 +159,19 @@ void BitmapMarker::draw(Drawable drawable)
   Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if ((ops->bitmap == None) || (width < 1) || (height < 1))
+  if ((ops->bitmap == None) || (width_ < 1) || (height_ < 1))
     return;
 
   if (ops->fillColor == NULL) {
-    XSetClipMask(graphPtr->display, gc, ops->bitmap);
-    XSetClipOrigin(graphPtr->display, gc, anchorPt.x, anchorPt.y);
+    XSetClipMask(graphPtr->display, gc_, ops->bitmap);
+    XSetClipOrigin(graphPtr->display, gc_, anchorPt_.x, anchorPt_.y);
   }
   else {
-    XSetClipMask(graphPtr->display, gc, None);
-    XSetClipOrigin(graphPtr->display, gc, 0, 0);
+    XSetClipMask(graphPtr->display, gc_, None);
+    XSetClipOrigin(graphPtr->display, gc_, 0, 0);
   }
-  XCopyPlane(graphPtr->display, ops->bitmap, drawable, gc, 0, 0,
-	     width, height, anchorPt.x, anchorPt.y, 1);
+  XCopyPlane(graphPtr->display, ops->bitmap, drawable, gc_, 0, 0,
+	     width_, height_, anchorPt_.x, anchorPt_.y, 1);
 }
 
 void BitmapMarker::map()
@@ -205,32 +205,32 @@ void BitmapMarker::map()
   if (clipped_)
     return;
 
-  width = lwidth;
-  height = lheight;
-  anchorPt = lanchorPt;
+  width_ = lwidth;
+  height_ = lheight;
+  anchorPt_ = lanchorPt;
 
   // Compute a polygon to represent the background area of the bitmap.
   // This is needed for print a background in PostScript.
   double rotWidth, rotHeight;
   Point2d polygon[5];
-  Blt_GetBoundingBox(width, height, 0, &rotWidth, &rotHeight, polygon);
+  Blt_GetBoundingBox(width_, height_, 0, &rotWidth, &rotHeight, polygon);
 	
   // Adjust each point of the polygon. Both scale it to the new size and
   // translate it to the actual screen position of the bitmap.
-  double tx = extents.left + width * 0.5;
-  double ty = extents.top + height * 0.5;
+  double tx = extents.left + width_ * 0.5;
+  double ty = extents.top + height_ * 0.5;
   for (int ii=0; ii<4; ii++) {
     polygon[ii].x = (polygon[ii].x) + tx;
     polygon[ii].y = (polygon[ii].y) + ty;
   }
   Blt_GraphExtents(graphPtr, &extents);
-  int nn = Blt_PolyRectClip(&extents, polygon, 4, outline); 
+  int nn = Blt_PolyRectClip(&extents, polygon, 4, outline_); 
   if (nn < 3) { 
-    memcpy(&outline, polygon, sizeof(Point2d) * 4);
-    nOutlinePts = 4;
+    memcpy(&outline_, polygon, sizeof(Point2d) * 4);
+    nOutlinePts_ = 4;
   }
   else
-    nOutlinePts = nn;
+    nOutlinePts_ = nn;
 }
 
 int BitmapMarker::pointIn(Point2d *samplePtr)
@@ -240,25 +240,25 @@ int BitmapMarker::pointIn(Point2d *samplePtr)
   if (ops->bitmap == None)
     return 0;
 
-  return ((samplePtr->x >= anchorPt.x) && 
-	  (samplePtr->x < (anchorPt.x + width)) &&
-	  (samplePtr->y >= anchorPt.y) && 
-	  (samplePtr->y < (anchorPt.y + height)));
+  return ((samplePtr->x >= anchorPt_.x) && 
+	  (samplePtr->x < (anchorPt_.x + width_)) &&
+	  (samplePtr->y >= anchorPt_.y) && 
+	  (samplePtr->y < (anchorPt_.y + height_)));
 }
 
 int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
   if (enclosed) {
-    return ((anchorPt.x >= extsPtr->left) &&
-	    (anchorPt.y >= extsPtr->top) && 
-	    ((anchorPt.x + width) <= extsPtr->right) &&
-	    ((anchorPt.y + height) <= extsPtr->bottom));
+    return ((anchorPt_.x >= extsPtr->left) &&
+	    (anchorPt_.y >= extsPtr->top) && 
+	    ((anchorPt_.x + width_) <= extsPtr->right) &&
+	    ((anchorPt_.y + height_) <= extsPtr->bottom));
   }
 
-  return !((anchorPt.x >= extsPtr->right) ||
-	   (anchorPt.y >= extsPtr->bottom) ||
-	   ((anchorPt.x + width) <= extsPtr->left) ||
-	   ((anchorPt.y + height) <= extsPtr->top));
+  return !((anchorPt_.x >= extsPtr->right) ||
+	   (anchorPt_.y >= extsPtr->bottom) ||
+	   ((anchorPt_.x + width_) <= extsPtr->left) ||
+	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
 void BitmapMarker::postscript(Blt_Ps ps)
@@ -266,19 +266,19 @@ void BitmapMarker::postscript(Blt_Ps ps)
   Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
-  if ((ops->bitmap == None) || (width < 1) || (height < 1))
+  if ((ops->bitmap == None) || (width_ < 1) || (height_ < 1))
     return;
 
   if (ops->fillColor) {
     Blt_Ps_XSetBackground(ps, ops->fillColor);
-    Blt_Ps_XFillPolygon(ps, outline, 4);
+    Blt_Ps_XFillPolygon(ps, outline_, 4);
   }
   Blt_Ps_XSetForeground(ps, ops->outlineColor);
 
   Blt_Ps_Format(ps, "  gsave\n    %g %g translate\n    %d %d scale\n", 
-		anchorPt.x, anchorPt.y + height, width, -height);
+		anchorPt_.x, anchorPt_.y + height_, width_, -height_);
   Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
-		width, height, width, -height, height);
-  Blt_Ps_XSetBitmapData(ps, graphPtr->display, ops->bitmap, width, height);
+		width_, height_, width_, -height_, height_);
+  Blt_Ps_XSetBitmapData(ps, graphPtr->display, ops->bitmap, width_, height_);
   Blt_Ps_VarAppend(ps, "    } imagemask\n", "grestore\n", (char*)NULL);
 }

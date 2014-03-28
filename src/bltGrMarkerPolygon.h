@@ -58,15 +58,14 @@ typedef struct {
 } PolygonMarkerOptions;
 
 class PolygonMarker : public Marker {
- public:
-  Point2d *screenPts;
-  GC outlineGC;
-  GC fillGC;
-  Point2d *fillPts;
-  int nFillPts;
-  Segment2d *outlinePts;
-  int nOutlinePts;
-  int xorState;
+ private:
+  Point2d *screenPts_;
+  GC outlineGC_;
+  GC fillGC_;
+  Point2d *fillPts_;
+  int nFillPts_;
+  Segment2d *outlinePts_;
+  int nOutlinePts_;
 
  private:
   int configure();
