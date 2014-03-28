@@ -988,8 +988,8 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
       Marker* markerPtr = (Marker*)object;
       MarkerOptions* ops = markerPtr->ops();
       MakeTagProc* tagProc = Blt_MakeMarkerTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.name), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->obj.className), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->name), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->className), 0);
       if (ops->tags)
 	for (const char** p = ops->tags; *p != NULL; p++)
 	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
@@ -1034,7 +1034,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 3. markers drawn under element (-under true).
   Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->obj.classId;
+    *contextPtr = (ClientData)markerPtr->classId;
     return markerPtr;
   }
 
@@ -1063,7 +1063,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 
   markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->obj.classId;
+    *contextPtr = (ClientData)markerPtr->classId;
     return markerPtr;
   }
 

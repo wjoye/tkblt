@@ -88,8 +88,8 @@ static Tk_OptionSpec optionSpecs[] = {
 LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  obj.classId = CID_MARKER_LINE;
-  obj.className = dupstr("LineMarker");
+  classId = CID_MARKER_LINE;
+  className = dupstr("LineMarker");
   ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -100,8 +100,6 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 LineMarker::~LineMarker()
 {
-  Graph* graphPtr = obj.graphPtr;
-
   if (gc_)
     Blt_FreePrivateGC(graphPtr->display, gc_);
   if (segments_)
@@ -110,7 +108,6 @@ LineMarker::~LineMarker()
 
 int LineMarker::configure()
 {
-  Graph* graphPtr = obj.graphPtr;
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   Drawable drawable = Tk_WindowId(graphPtr->tkwin);
@@ -167,15 +164,12 @@ int LineMarker::configure()
 
 void LineMarker::draw(Drawable drawable)
 {
-  Graph* graphPtr = obj.graphPtr;
-
   if (nSegments_ > 0)
     Blt_Draw2DSegments(graphPtr->display, drawable, gc_, segments_, nSegments_);
 }
 
 void LineMarker::map()
 {
-  Graph* graphPtr = obj.graphPtr;
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   nSegments_ = 0;
@@ -222,7 +216,7 @@ void LineMarker::map()
 int LineMarker::pointIn(Point2d *samplePtr)
 {
   return Blt_PointInSegments(samplePtr, segments_, nSegments_, 
-			     (double)obj.graphPtr->search.halo);
+			     (double)graphPtr->search.halo);
 }
 
 int LineMarker::regionIn(Region2d *extsPtr, int enclosed)

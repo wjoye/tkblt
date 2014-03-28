@@ -47,7 +47,12 @@ namespace Blt {
    void* ops_;
 
  public:
-   GraphObj obj;
+   ClassId classId;
+   const char *name;
+   const char *className;
+   Graph* graphPtr;
+   const char **tags;
+
    Blt_ChainLink link;
    unsigned int flags;		
 

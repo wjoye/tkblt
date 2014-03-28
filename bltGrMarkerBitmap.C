@@ -83,8 +83,8 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
 			   Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
-  obj.classId = CID_MARKER_BITMAP;
-  obj.className = dupstr("BitmapMarker");
+  classId = CID_MARKER_BITMAP;
+  className = dupstr("BitmapMarker");
   ops_ = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -99,8 +99,6 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
 
 BitmapMarker::~BitmapMarker()
 {
-  Graph* graphPtr = obj.graphPtr;
-
   if (gc_)
     Tk_FreeGC(graphPtr->display, gc_);
   if (fillGC_)
@@ -109,7 +107,6 @@ BitmapMarker::~BitmapMarker()
 
 int BitmapMarker::configure()
 {
-  Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
   if (ops->bitmap == None)
@@ -156,7 +153,6 @@ int BitmapMarker::configure()
 
 void BitmapMarker::draw(Drawable drawable)
 {
-  Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
   if ((ops->bitmap == None) || (width_ < 1) || (height_ < 1))
@@ -176,7 +172,6 @@ void BitmapMarker::draw(Drawable drawable)
 
 void BitmapMarker::map()
 {
-  Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
   if (ops->bitmap == None)
@@ -263,7 +258,6 @@ int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 
 void BitmapMarker::postscript(Blt_Ps ps)
 {
-  Graph* graphPtr = obj.graphPtr;
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
   if ((ops->bitmap == None) || (width_ < 1) || (height_ < 1))

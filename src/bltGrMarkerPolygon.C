@@ -97,8 +97,8 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
 			     Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  obj.classId = CID_MARKER_POLYGON;
-  obj.className = dupstr("PolygonMarker");
+  classId = CID_MARKER_POLYGON;
+  className = dupstr("PolygonMarker");
   ops_ = (PolygonMarkerOptions*)calloc(1, sizeof(PolygonMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -113,8 +113,6 @@ PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name,
 
 PolygonMarker::~PolygonMarker()
 {
-  Graph* graphPtr = obj.graphPtr;
-
   if (fillGC_)
     Tk_FreeGC(graphPtr->display, fillGC_);
   if (outlineGC_)
@@ -129,7 +127,6 @@ PolygonMarker::~PolygonMarker()
 
 int PolygonMarker::configure()
 {
-  Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   Drawable drawable = Tk_WindowId(graphPtr->tkwin);
@@ -209,7 +206,6 @@ int PolygonMarker::configure()
 
 void PolygonMarker::draw(Drawable drawable)
 {
-  Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   // fill region
@@ -241,7 +237,6 @@ void PolygonMarker::draw(Drawable drawable)
 
 void PolygonMarker::map()
 {
-  Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (outlinePts_) {
@@ -347,7 +342,6 @@ int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
 
 void PolygonMarker::postscript(Blt_Ps ps)
 {
-  Graph* graphPtr = obj.graphPtr;
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->fill) {

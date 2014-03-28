@@ -85,8 +85,8 @@ static Tk_OptionSpec optionSpecs[] = {
 TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  obj.classId = CID_MARKER_TEXT;
-  obj.className = dupstr("TextMarker");
+  classId = CID_MARKER_TEXT;
+  className = dupstr("TextMarker");
   ops_ = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
   Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
@@ -100,14 +100,11 @@ TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 TextMarker::~TextMarker()
 {
-  Graph* graphPtr = obj.graphPtr;
-
   Blt_Ts_FreeStyle(graphPtr->display, &((TextMarkerOptions*)ops_)->style);
 }
 
 int TextMarker::configure()
 {
-  Graph* graphPtr = obj.graphPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
   ops->style.angle = (float)fmod(ops->style.angle, 360.0);
@@ -131,7 +128,6 @@ int TextMarker::configure()
 
 void TextMarker::draw(Drawable drawable) 
 {
-  Graph* graphPtr = obj.graphPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
   if (!ops->string)
@@ -157,7 +153,6 @@ void TextMarker::draw(Drawable drawable)
 
 void TextMarker::map()
 {
-  Graph* graphPtr = obj.graphPtr;
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
   if (!ops->string)

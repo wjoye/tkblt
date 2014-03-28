@@ -35,13 +35,13 @@ extern "C" {
 
 using namespace Blt;
 
-Marker::Marker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
+Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 {
-  obj.classId =CID_NONE;
-  obj.name = dupstr(name);
-  obj.className =NULL;
-  obj.graphPtr =graphPtr;
-  obj.tags = NULL;
+  classId =CID_NONE;
+  name = dupstr(nPtr);
+  className =NULL;
+  graphPtr =gPtr;  
+  tags = NULL;
 
   optionTable_ =NULL;
   clipped_ =0;
@@ -53,8 +53,6 @@ Marker::Marker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 Marker::~Marker()
 {
-  Graph* graphPtr = obj.graphPtr;
-
   // If the marker to be deleted is currently displayed below the
   // elements, then backing store needs to be repaired.
   if (((MarkerOptions*)ops_)->drawUnder)
@@ -62,11 +60,11 @@ Marker::~Marker()
 
   Blt_DeleteBindings(graphPtr->bindTable, this);
 
-  if (obj.className)
-    delete [] obj.className;
+  if (className)
+    delete [] className;
 
-  if (obj.name)
-    delete [] obj.name;
+  if (name)
+    delete [] name;
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
@@ -126,8 +124,6 @@ double Marker::VMap(Axis *axisPtr, double y)
 
 Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
 {
-  Graph* graphPtr = axesPtr->y->obj.graphPtr;
-
   Point2d result;
   if (graphPtr->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
