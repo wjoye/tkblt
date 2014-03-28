@@ -193,8 +193,7 @@ void TextMarker::map()
   outline[4].x = outline[0].x;
   outline[4].y = outline[0].y;
 
-  Point2d lanchorPtr = 
-    Blt_MapPoint(opp->worldPts->points, &opp->axes);
+  Point2d lanchorPtr = mapPoint(opp->worldPts->points, &opp->axes);
   lanchorPtr = Blt_AnchorPoint(lanchorPtr.x, lanchorPtr.y, width, 
 			     height, opp->anchor);
   lanchorPtr.x += opp->xOffset;
@@ -205,7 +204,7 @@ void TextMarker::map()
   extents.top = lanchorPtr.y;
   extents.right = lanchorPtr.x + width - 1;
   extents.bottom = lanchorPtr.y + height - 1;
-  clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
+  clipped = boxesDontOverlap(graphPtr, &extents);
 
   anchorPt = lanchorPtr;
 }

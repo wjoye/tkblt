@@ -78,6 +78,14 @@ typedef struct {
 
    void* ops;
 
+ private:
+   double HMap(Axis*, double);
+   double VMap(Axis*, double);
+
+ protected:
+   Point2d mapPoint(Point2d*, Axis2d*);
+   int boxesDontOverlap(Graph*, Region2d*);
+
  public:
    Marker(Graph*, const char*);
    virtual ~Marker();
@@ -92,9 +100,7 @@ typedef struct {
 
 };
 
-Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr);
 void Blt_FreeMarker(char*);
-int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr);
 
 extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;

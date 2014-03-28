@@ -92,6 +92,75 @@ Marker::~Marker()
     free(ops);
 }
 
+double Marker::HMap(Axis *axisPtr, double x)
+{
+  if (x == DBL_MAX)
+    x = 1.0;
+  else if (x == -DBL_MAX)
+    x = 0.0;
+  else {
+    if (axisPtr->logScale) {
+      if (x > 0.0)
+	x = log10(x);
+      else if (x < 0.0)
+	x = 0.0;
+    }
+    x = NORMALIZE(axisPtr, x);
+  }
+  if (axisPtr->descending)
+    x = 1.0 - x;
+
+  // Horizontal transformation
+  return (x * axisPtr->screenRange + axisPtr->screenMin);
+}
+
+double Marker::VMap(Axis *axisPtr, double y)
+{
+  if (y == DBL_MAX)
+    y = 1.0;
+  else if (y == -DBL_MAX)
+    y = 0.0;
+  else {
+    if (axisPtr->logScale) {
+      if (y > 0.0)
+	y = log10(y);
+      else if (y < 0.0)
+	y = 0.0;
+    }
+    y = NORMALIZE(axisPtr, y);
+  }
+  if (axisPtr->descending)
+    y = 1.0 - y;
+
+  // Vertical transformation
+  return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
+}
+
+Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
+{
+  Graph* graphPtr = axesPtr->y->obj.graphPtr;
+
+  Point2d result;
+  if (graphPtr->inverted) {
+    result.x = HMap(axesPtr->y, pointPtr->y);
+    result.y = VMap(axesPtr->x, pointPtr->x);
+  }
+  else {
+    result.x = HMap(axesPtr->x, pointPtr->x);
+    result.y = VMap(axesPtr->y, pointPtr->y);
+  }
+
+  return result;
+}
+
+int Marker::boxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
+{
+  return (((double)graphPtr->right < extsPtr->left) ||
+	  ((double)graphPtr->bottom < extsPtr->top) ||
+	  (extsPtr->right < (double)graphPtr->left) ||
+	  (extsPtr->bottom < (double)graphPtr->top));
+}
+
 // Defs
 
 static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr);
@@ -695,67 +764,6 @@ static int IsElementHidden(Marker* markerPtr)
   return FALSE;
 }
 
-static double HMap(Axis *axisPtr, double x)
-{
-  if (x == DBL_MAX)
-    x = 1.0;
-  else if (x == -DBL_MAX)
-    x = 0.0;
-  else {
-    if (axisPtr->logScale) {
-      if (x > 0.0)
-	x = log10(x);
-      else if (x < 0.0)
-	x = 0.0;
-    }
-    x = NORMALIZE(axisPtr, x);
-  }
-  if (axisPtr->descending)
-    x = 1.0 - x;
-
-  // Horizontal transformation
-  return (x * axisPtr->screenRange + axisPtr->screenMin);
-}
-
-static double VMap(Axis *axisPtr, double y)
-{
-  if (y == DBL_MAX)
-    y = 1.0;
-  else if (y == -DBL_MAX)
-    y = 0.0;
-  else {
-    if (axisPtr->logScale) {
-      if (y > 0.0)
-	y = log10(y);
-      else if (y < 0.0)
-	y = 0.0;
-    }
-    y = NORMALIZE(axisPtr, y);
-  }
-  if (axisPtr->descending)
-    y = 1.0 - y;
-
-  // Vertical transformation
-  return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
-}
-
-Point2d Blt_MapPoint(Point2d *pointPtr, Axis2d *axesPtr)
-{
-  Graph* graphPtr = axesPtr->y->obj.graphPtr;
-
-  Point2d result;
-  if (graphPtr->inverted) {
-    result.x = HMap(axesPtr->y, pointPtr->y);
-    result.y = VMap(axesPtr->x, pointPtr->x);
-  }
-  else {
-    result.x = HMap(axesPtr->x, pointPtr->x);
-    result.y = VMap(axesPtr->y, pointPtr->y);
-  }
-
-  return result;
-}
-
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj *objPtr, Marker** markerPtrPtr)
 {
@@ -893,14 +901,6 @@ void Blt_FreeMarker(char* dataPtr)
 {
   Marker* markerPtr = (Marker*)dataPtr;
   delete markerPtr;
-}
-
-int Blt_BoxesDontOverlap(Graph* graphPtr, Region2d *extsPtr)
-{
-  return (((double)graphPtr->right < extsPtr->left) ||
-	  ((double)graphPtr->bottom < extsPtr->top) ||
-	  (extsPtr->right < (double)graphPtr->left) ||
-	  (extsPtr->bottom < (double)graphPtr->top));
 }
 
 static Tcl_Obj* PrintCoordinate(double x)

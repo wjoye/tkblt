@@ -287,7 +287,7 @@ void PolygonMarker::map()
     dp = lscreenPts;
     for (sp = opp->worldPts->points, send = sp + opp->worldPts->num; 
 	 sp < send; sp++) {
-      *dp = Blt_MapPoint(sp, &opp->axes);
+      *dp = mapPoint(sp, &opp->axes);
       dp->x += opp->xOffset;
       dp->y += opp->yOffset;
       dp++;

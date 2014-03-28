@@ -195,7 +195,7 @@ void BitmapMarker::map()
   int lheight;
   Tk_SizeOfBitmap(graphPtr->display, opp->bitmap, &lwidth, &lheight);
 
-  Point2d lanchorPt = Blt_MapPoint(opp->worldPts->points, &opp->axes);
+  Point2d lanchorPt = mapPoint(opp->worldPts->points, &opp->axes);
   lanchorPt = 
     Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, opp->anchor);
   lanchorPt.x += opp->xOffset;
@@ -206,7 +206,7 @@ void BitmapMarker::map()
   extents.top = lanchorPt.y;
   extents.right = lanchorPt.x + lwidth - 1;
   extents.bottom = lanchorPt.y + lheight - 1;
-  clipped = Blt_BoxesDontOverlap(graphPtr, &extents);
+  clipped = boxesDontOverlap(graphPtr, &extents);
 
   if (clipped)
     return;

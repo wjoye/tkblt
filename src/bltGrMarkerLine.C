@@ -207,7 +207,7 @@ void LineMarker::map()
   // disconnected segments.
   Segment2d* lsegments = (Segment2d*)malloc(opp->worldPts->num * sizeof(Segment2d));
   Point2d* srcPtr = opp->worldPts->points;
-  Point2d p = Blt_MapPoint(srcPtr, &opp->axes);
+  Point2d p = mapPoint(srcPtr, &opp->axes);
   p.x += opp->xOffset;
   p.y += opp->yOffset;
 
@@ -215,7 +215,7 @@ void LineMarker::map()
   Point2d* pend;
   for (srcPtr++, pend = opp->worldPts->points + opp->worldPts->num; 
        srcPtr < pend; srcPtr++) {
-    Point2d next = Blt_MapPoint(srcPtr, &opp->axes);
+    Point2d next = mapPoint(srcPtr, &opp->axes);
     next.x += opp->xOffset;
     next.y += opp->yOffset;
     Point2d q = next;
@@ -250,7 +250,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 
     for (pp = opp->worldPts->points, pend = pp + opp->worldPts->num; 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &opp->axes);
+      Point2d p = mapPoint(pp, &opp->axes);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return FALSE;
@@ -263,8 +263,8 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
     int count = 0;
     for (pp = opp->worldPts->points, pend = pp + (opp->worldPts->num - 1); 
 	 pp < pend; pp++) {
-      Point2d p = Blt_MapPoint(pp, &opp->axes);
-      Point2d q = Blt_MapPoint(pp + 1, &opp->axes);
+      Point2d p = mapPoint(pp, &opp->axes);
+      Point2d q = mapPoint(pp + 1, &opp->axes);
       if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
     }
