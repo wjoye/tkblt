@@ -1295,5 +1295,5 @@ void Blt_ReconfigureGraph(Graph* graphPtr)
   //  Blt_ConfigureLegend(graphPtr);
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);
-  //  Blt_ConfigureMarkers(graphPtr);
+  Blt_ConfigureMarkers(graphPtr);
 }

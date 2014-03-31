@@ -49,7 +49,7 @@ using namespace Blt;
 
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
-void Blt_FreeMarker(char* dataPtr);
+static void FreeMarker(char* dataPtr);
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[]);
@@ -249,7 +249,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_ERROR;
     }
     markerPtr->flags |= DELETE_PENDING;
-    Tcl_EventuallyFree(markerPtr, Blt_FreeMarker);
+    Tcl_EventuallyFree(markerPtr, FreeMarker);
   }
 
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -500,6 +500,14 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_ERROR;
 }
 
+static void FreeMarker(char* dataPtr) 
+{
+  Marker* markerPtr = (Marker*)dataPtr;
+  delete markerPtr;
+}
+
+// export
+
 void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 {
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
@@ -611,11 +619,5 @@ ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName)
   Tcl_HashEntry *hPtr =
     Tcl_CreateHashEntry(&graphPtr->markers.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&graphPtr->markers.tagTable, hPtr);
-}
-
-void Blt_FreeMarker(char* dataPtr) 
-{
-  Marker* markerPtr = (Marker*)dataPtr;
-  delete markerPtr;
 }
 
