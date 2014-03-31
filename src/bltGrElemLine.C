@@ -47,6 +47,17 @@ extern "C" {
 #define SEARCH_Y	1
 #define SEARCH_BOTH	2
 
+#define SEARCH_POINTS	0	/* Search for closest data point. */
+#define SEARCH_TRACES	1	/* Search for closest point on trace.
+				 * Interpolate the connecting line segments if
+				 * necessary. */
+#define SEARCH_AUTO	2	/* Automatically determine whether to search
+				 * for data points or traces.  Look for traces
+				 * if the linewidth is > 0 and if there is
+				 * more than one data point. */
+
+#define SCALE_SYMBOL	(1<<10)
+
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 #define BROKEN_TRACE(dir,last,next)			\

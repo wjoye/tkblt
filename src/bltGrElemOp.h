@@ -30,47 +30,10 @@
 #ifndef __bltgrelemop_h__
 #define __bltgrelemop_h__
 
-extern "C" {
-#include <bltVector.h>
-};
-
 #include "bltGrPen.h"
 
 extern void Blt_FreePen(Pen* penPtr);
 
-
-#define SHOW_NONE	0
-#define SHOW_X		1
-#define SHOW_Y		2
-#define SHOW_BOTH	3
-
-#define SEARCH_POINTS	0	/* Search for closest data point. */
-#define SEARCH_TRACES	1	/* Search for closest point on trace.
-				 * Interpolate the connecting line segments if
-				 * necessary. */
-#define SEARCH_AUTO	2	/* Automatically determine whether to search
-				 * for data points or traces.  Look for traces
-				 * if the linewidth is > 0 and if there is
-				 * more than one data point. */
-
-#define	LABEL_ACTIVE 	(1<<9)	/* Non-zero indicates that the element's entry
-				 * in the legend should be drawn in its active
-				 * foreground and background colors. */
-#define SCALE_SYMBOL	(1<<10)
-
-#define NUMBEROFPOINTS(e) MIN( \
-			      (e)->coords.x ? (e)->coords.x->nValues : 0, \
-			      (e)->coords.y ? (e)->coords.y->nValues : 0 \
-			       )
-
-#define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
-
-#define SetRange(l)							\
-  ((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
-#define SetScale(l)				\
-  ((l).scale = 1.0 / (l).range)
-#define SetWeight(l, lo, hi)			\
-  ((l).min = (lo), (l).max = (hi), SetRange(l))
 
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
