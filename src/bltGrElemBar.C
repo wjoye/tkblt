@@ -29,12 +29,9 @@
 
 #include "bltMath.h"
 
-extern "C" {
-#include "bltGraph.h"
-};
-
 #include "bltGrElemBar.h"
 #include "bltGrElemOption.h"
+#include "bltGrPenOp.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 

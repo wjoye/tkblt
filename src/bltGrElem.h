@@ -36,7 +36,8 @@
 using namespace std;
 
 extern "C" {
-#include <bltVector.h>
+#include "bltGraph.h"
+#include "bltVector.h"
 };
 
 #include "bltGrPen.h"

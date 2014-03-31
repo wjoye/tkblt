@@ -30,15 +30,6 @@
 #ifndef __bltgrpenop_h__
 #define __bltgrpenop_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 extern void Blt_FreePen(Pen* penPtr);
-
-extern "C" {
-#include "bltGraph.h"
-};
 
 #endif

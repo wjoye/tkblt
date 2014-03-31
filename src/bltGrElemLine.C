@@ -30,12 +30,12 @@
 #include "bltMath.h"
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltSpline.h"
 }
 
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
+#include "bltGrPenOp.h"
 
 #define SEARCH_X	0
 #define SEARCH_Y	1

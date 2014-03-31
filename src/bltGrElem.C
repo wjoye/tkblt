@@ -27,15 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltInt.h"
-#include "bltGraph.h"
-#include "bltOp.h"
-};
-
-#include "bltGrElemOp.h"
 #include "bltGrElem.h"
-#include "bltGrPen.h"
+#include "bltGrElemOp.h"
 #include "bltGrPenOp.h"
 
 PenStyle** Blt_StyleMap(Element* elemPtr)
