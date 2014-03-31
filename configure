@@ -5546,6 +5546,7 @@ done
 	bltGrMarkerText.C
 	bltGrMisc.C
 	bltGrPenOp.C
+	bltGrPenOption.C
 	bltGrPen.C
 	bltGrPenBar.C
 	bltGrPenLine.C

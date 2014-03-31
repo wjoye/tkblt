@@ -29,6 +29,7 @@
 
 #include "bltGrElem.h"
 #include "bltGrElemOption.h"
+#include "bltGrPenOp.h"
 
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
@@ -37,9 +38,6 @@
 #define SETWEIGHT(l, lo, hi) ((l).min = (lo), (l).max = (hi), SETRANGE(l))
 
 // Defs
-
-extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
-			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 
 static void FreeDataValues(ElemValues* valuesPtr);
 static void FreeVectorSource(ElemValues* valuesPtr);
