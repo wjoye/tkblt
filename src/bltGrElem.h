@@ -41,6 +41,22 @@ extern "C" {
 #include <bltVector.h>
 };
 
+#define SHOW_NONE	0
+#define SHOW_X		1
+#define SHOW_Y		2
+#define SHOW_BOTH	3
+
+#define	LABEL_ACTIVE 	(1<<9)	/* Non-zero indicates that the element's entry
+				 * in the legend should be drawn in its active
+				 * foreground and background colors. */
+
+#define NUMBEROFPOINTS(e) MIN( \
+			      (e)->coords.x ? (e)->coords.x->nValues : 0, \
+			      (e)->coords.y ? (e)->coords.y->nValues : 0 \
+			       )
+
+#define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
+
 typedef struct _Element Element;
 
 typedef struct {

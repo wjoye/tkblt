@@ -38,6 +38,7 @@ extern "C" {
 #include "bltGraph.h"
 };
 
+#include "bltGrElemOption.h"
 #include "bltGrElemBar.h"
 #include "bltConfig.h"
 

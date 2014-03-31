@@ -27,14 +27,13 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelemop_h__
-#define __bltgrelemop_h__
+#ifndef __bltgrelemoption_h__
+#define __bltgrelemoption_h__
 
-#include "bltGrPen.h"
+extern const char* fillObjOption[];
+extern Tk_CustomOptionSetProc StyleSetProc;
+extern Tk_CustomOptionGetProc StyleGetProc;
+extern Tk_CustomOptionRestoreProc StyleRestoreProc;
+extern Tk_CustomOptionFreeProc StyleFreeProc;
 
-extern void Blt_FreePen(Pen* penPtr);
-
-
-extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
-			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 #endif

@@ -46,6 +46,9 @@ extern "C" {
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
 
+#define SetRange(l) ((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
+#define SetWeight(l, lo, hi) ((l).min = (lo), (l).max = (hi), SetRange(l))
+
 // Defs
 
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
