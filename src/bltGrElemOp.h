@@ -132,21 +132,6 @@ typedef struct {
 } VectorDataSource;
 
 typedef struct {
-  int type;
-  Element* elemPtr;
-  VectorDataSource vectorSource;
-  double *values;
-  int nValues;
-  int arraySize;
-  double min, max;
-} ElemValues;
-
-typedef struct {
-  ElemValues* x;
-  ElemValues* y;
-} ElemCoords;
-
-typedef struct {
   Weight weight;
   Pen* penPtr;
 } PenStyle;
@@ -157,14 +142,6 @@ extern Tk_CustomOptionGetProc StyleGetProc;
 extern Tk_CustomOptionRestoreProc StyleRestoreProc;
 extern Tk_CustomOptionFreeProc StyleFreeProc;
 
-extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
-extern void Blt_ResizeStatusArray(Element* elemPtr, int nPoints);
-extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
-extern PenStyle** Blt_StyleMap (Element* elemPtr);
-extern void Blt_MapErrorBars(Graph *graphPtr, Element* elemPtr, 
-			     PenStyle **dataToStyle);
-extern void Blt_FreeDataValues(ElemValues *evPtr);
 extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
 			  Tcl_Obj *objPtr, Element **elemPtrPtr);
-
 #endif

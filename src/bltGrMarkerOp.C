@@ -27,16 +27,13 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
-
 extern "C" {
 #include "bltGraph.h"
 #include "bltOp.h"
 };
+#include "bltGrElem.h"
 
 #include "bltGrMarkerOp.h"
-#include "bltConfig.h"
-#include "bltGrElem.h"
 #include "bltGrMarker.h"
 #include "bltGrMarkerBitmap.h"
 #include "bltGrMarkerLine.h"

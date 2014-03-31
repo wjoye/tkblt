@@ -37,7 +37,24 @@
 #include <iomanip>
 using namespace std;
 
-struct _Element {
+typedef struct _Element Element;
+
+typedef struct {
+  int type;
+  Element* elemPtr;
+  VectorDataSource vectorSource;
+  double *values;
+  int nValues;
+  int arraySize;
+  double min, max;
+} ElemValues;
+
+typedef struct {
+  ElemValues* x;
+  ElemValues* y;
+} ElemCoords;
+
+typedef struct _Element {
   GraphObj obj;
   unsigned int flags;		
   int hide;
@@ -64,6 +81,10 @@ struct _Element {
   double yRange;
   int state;
   Blt_ChainLink link;
-};
+} Element;
+
+extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
+extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
+extern PenStyle** Blt_StyleMap (Element* elemPtr);
 
 #endif
