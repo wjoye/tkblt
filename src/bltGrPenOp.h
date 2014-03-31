@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrpenop_h__
-#define __bltgrpenop_h__
+#ifndef __BltGrPenOp_h__
+#define __BltGrPenOp_h__
 
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 extern void Blt_DestroyPen(Pen* penPtr);

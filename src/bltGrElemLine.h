@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelemline_h__
-#define __bltgrelemline_h__
+#ifndef __BltGrElemLine_h__
+#define __BltGrElemLine_h__
 
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"

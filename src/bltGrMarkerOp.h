@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __blt_grmarkerop_h__
-#define __blt_grmarkerop_h__
+#ifndef __Blt_GrMarkerOp_h__
+#define __Blt_GrMarkerOp_h__
 
 namespace Blt {
   extern void DestroyMarkers(Graph* graphPtr);

@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __blt_grmarkeroption_h__
-#define __blt_grmarkeroption_h__
+#ifndef __Blt_GrMarkerOption_h__
+#define __Blt_GrMarkerOption_h__
 
 extern Tk_ObjCustomOption coordsObjOption;
 extern Tk_ObjCustomOption capStyleObjOption;

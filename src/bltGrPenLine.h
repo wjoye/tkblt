@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrpenline_h__
-#define __bltgrpenline_h__
+#ifndef __BltGrPenLine_h__
+#define __BltGrPenLine_h__
 
 #include <iostream>
 #include <sstream>

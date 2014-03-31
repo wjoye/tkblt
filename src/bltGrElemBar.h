@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelembar_h__
-#define __bltgrelembar_h__
+#ifndef __BltGrElemBar_h__
+#define __BltGrElemBar_h__
 
 #include <iostream>
 #include <sstream>

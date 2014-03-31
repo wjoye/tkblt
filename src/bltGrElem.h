@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelem_h__
-#define __bltgrelem_h__
+#ifndef __BltGrElem_h__
+#define __BltGrElem_h__
 
 #include <iostream>
 #include <sstream>
@@ -119,6 +119,9 @@ typedef struct {
   ElementSymbolToPostScriptProc *printSymbolProc;
   ElementMapProc *mapProc;
 } ElementProcs;
+
+typedef struct {
+} ElemOptions;
 
 typedef struct _Element {
   GraphObj obj;

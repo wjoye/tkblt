@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelemop_h__
-#define __bltgrelemop_h__
+#ifndef __BltGrElemOp_h__
+#define __BltGrElemOp_h__
 
 extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj* const objv[], ClassId classId);

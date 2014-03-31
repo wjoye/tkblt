@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrmarkertext_h__
-#define __bltgrmarkertext_h__
+#ifndef __BltGrmarkerText_h__
+#define __BltGrmarkerText_h__
 
 #include "bltGrMarker.h"
 

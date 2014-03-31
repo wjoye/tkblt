@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrelemoption_h__
-#define __bltgrelemoption_h__
+#ifndef __BltGrElemOption_h__
+#define __BltGrElemOption_h__
 
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
