@@ -384,21 +384,9 @@ struct _Graph {
 #define REDRAW_WORLD		(DRAW_LEGEND)
 #define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
 
-// Markers
-extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
-			 int objc, Tcl_Obj* const objv[]);
-extern void Blt_DestroyMarkers(Graph* graphPtr);
-extern void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
-extern void Blt_MapMarkers(Graph* graphPtr);
-extern void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
-extern ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName);
-extern void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
+// Misc
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
-extern int Blt_RegionInPolygon(Region2d *extsPtr, Point2d *points, 
-			       int nPoints, int enclosed);
-extern int Blt_PointInSegments(Point2d *samplePtr, Segment2d *segments, 
-			       int nSegments, double halo);
 
 // Pens
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 

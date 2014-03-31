@@ -42,6 +42,7 @@ extern "C" {
 
 #include "bltGrElem.h"
 #include "bltGrMarker.h"
+#include "bltGrMarkerOp.h"
 
 using namespace Blt;
 

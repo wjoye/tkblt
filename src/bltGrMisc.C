@@ -39,8 +39,6 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-#define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
-
 // Converts a string in the form "@x,y" into an XPoint structure of the x
 // and y coordinates.
 int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 
@@ -79,40 +77,6 @@ int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string,
   return TCL_ERROR;
 }
 
-int Blt_PointInSegments(Point2d* samplePtr, Segment2d* segments,
-			int nSegments, double halo)
-{
-  Segment2d *sp, *send;
-  double minDist;
-
-  minDist = DBL_MAX;
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    double dist;
-    double left, right, top, bottom;
-    Point2d p, t;
-
-    t = Blt_GetProjection((int)samplePtr->x, (int)samplePtr->y, 
-			  &sp->p, &sp->q);
-    if (sp->p.x > sp->q.x) {
-      right = sp->p.x, left = sp->q.x;
-    } else {
-      right = sp->q.x, left = sp->p.x;
-    }
-    if (sp->p.y > sp->q.y) {
-      bottom = sp->p.y, top = sp->q.y;
-    } else {
-      bottom = sp->q.y, top = sp->p.y;
-    }
-    p.x = BOUND(t.x, left, right);
-    p.y = BOUND(t.y, top, bottom);
-    dist = hypot(p.x - samplePtr->x, p.y - samplePtr->y);
-    if (dist < minDist) {
-      minDist = dist;
-    }
-  }
-  return (minDist < halo);
-}
-
 int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
 {
   Point2d *p, *q, *qend;
@@ -131,49 +95,6 @@ int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
     }
   }
   return (count & 0x01);
-}
-
-int Blt_RegionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
-			int enclosed)
-{
-  Point2d *pp, *pend;
-
-  if (enclosed) {
-    /*  
-     * All points of the polygon must be inside the rectangle.
-     */
-    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
-      if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
-	  (pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
-	return FALSE;	/* One point is exterior. */
-      }
-    }
-    return TRUE;
-  } else {
-    Point2d r;
-    /*
-     * If any segment of the polygon clips the bounding region, the
-     * polygon overlaps the rectangle.
-     */
-    points[nPoints] = points[0];
-    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
-      Point2d p, q;
-
-      p = *pp;
-      q = *(pp + 1);
-      if (Blt_LineRectClip(regionPtr, &p, &q)) {
-	return TRUE;
-      }
-    }
-    /* 
-     * Otherwise the polygon and rectangle are either disjoint or
-     * enclosed.  Check if one corner of the rectangle is inside the
-     * polygon.
-     */
-    r.x = regionPtr->left;
-    r.y = regionPtr->top;
-    return Blt_PointInPolygon(&r, points, nPoints);
-  }
 }
 
 /*

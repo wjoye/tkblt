@@ -230,7 +230,7 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
       points[ii].x = outline_[ii].x + anchorPt_.x;
       points[ii].y = outline_[ii].y + anchorPt_.y;
     }
-    return Blt_RegionInPolygon(extsPtr, points, 4, enclosed);
+    return regionInPolygon(extsPtr, points, 4, enclosed);
   } 
 
   if (enclosed)

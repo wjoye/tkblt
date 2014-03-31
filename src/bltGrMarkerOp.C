@@ -32,9 +32,9 @@
 extern "C" {
 #include "bltGraph.h"
 #include "bltOp.h"
-#include "bltGrMarkerOption.h"
 };
 
+#include "bltGrMarkerOp.h"
 #include "bltConfig.h"
 #include "bltGrElem.h"
 #include "bltGrMarker.h"
@@ -56,17 +56,6 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
 static int IsElementHidden(Graph*, Marker*);
-
-extern "C" {
-  void Blt_DestroyMarkers(Graph* graphPtr);
-  void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
-  ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName);
-  void Blt_MapMarkers(Graph* graphPtr);
-  int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
-			 int objc, Tcl_Obj* const objv[]);
-  void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
-  void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
-};
 
 // Create
 

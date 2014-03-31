@@ -134,3 +134,42 @@ int Marker::boxesDontOverlap(Graph* graphPtr_, Region2d *extsPtr)
 	  (extsPtr->right < (double)graphPtr_->left) ||
 	  (extsPtr->bottom < (double)graphPtr_->top));
 }
+
+int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
+			    int enclosed)
+{
+  if (enclosed) {
+    // All points of the polygon must be inside the rectangle.
+    Point2d *pp, *pend;
+    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
+      if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
+	  (pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
+	return FALSE;	/* One point is exterior. */
+      }
+    }
+    return TRUE;
+  }
+  else {
+    // If any segment of the polygon clips the bounding region, the
+    // polygon overlaps the rectangle.
+    points[nPoints] = points[0];
+    Point2d *pp, *pend;
+    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
+      Point2d p, q;
+
+      p = *pp;
+      q = *(pp + 1);
+      if (Blt_LineRectClip(regionPtr, &p, &q))
+	return TRUE;
+    }
+
+    // Otherwise the polygon and rectangle are either disjoint or
+    // enclosed.  Check if one corner of the rectangle is inside the polygon.
+    Point2d r;
+    r.x = regionPtr->left;
+    r.y = regionPtr->top;
+
+    return Blt_PointInPolygon(&r, points, nPoints);
+  }
+}
+

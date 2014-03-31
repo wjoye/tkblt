@@ -328,8 +328,7 @@ int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
     
   if (ops->worldPts && (ops->worldPts->num >= 3) && screenPts_)
-    return Blt_RegionInPolygon(extsPtr, screenPts_, 
-			       ops->worldPts->num, enclosed);
+    return regionInPolygon(extsPtr, screenPts_, ops->worldPts->num, enclosed);
 
   return 0;
 }

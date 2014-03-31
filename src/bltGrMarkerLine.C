@@ -30,6 +30,8 @@
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerOption.h"
 
+#define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
+
 using namespace Blt;
 
 static Tk_OptionSpec optionSpecs[] = {
@@ -211,8 +213,50 @@ void LineMarker::map()
 
 int LineMarker::pointIn(Point2d *samplePtr)
 {
-  return Blt_PointInSegments(samplePtr, segments_, nSegments_, 
-			     (double)graphPtr_->search.halo);
+  return pointInSegments(samplePtr, segments_, nSegments_, 
+			 (double)graphPtr_->search.halo);
+}
+
+int LineMarker::pointInSegments(Point2d* samplePtr, Segment2d* segments,
+				int nSegments, double halo)
+{
+  double minDist = DBL_MAX;
+  Segment2d *sp, *send;
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    Point2d t = Blt_GetProjection((int)samplePtr->x, (int)samplePtr->y, 
+			  &sp->p, &sp->q);
+    double right;
+    double left;
+    if (sp->p.x > sp->q.x) {
+      right = sp->p.x;
+      left = sp->q.x;
+    }
+    else {
+      right = sp->q.x;
+      left = sp->p.x;
+    }
+
+    double top;
+    double bottom;
+    if (sp->p.y > sp->q.y) {
+      bottom = sp->p.y;
+      top = sp->q.y;
+    }
+    else {
+      bottom = sp->q.y;
+      top = sp->p.y;
+    }
+
+    Point2d p;
+    p.x = BOUND(t.x, left, right);
+    p.y = BOUND(t.y, top, bottom);
+
+    double dist = hypot(p.x - samplePtr->x, p.y - samplePtr->y);
+    if (dist < minDist)
+      minDist = dist;
+  }
+
+  return (minDist < halo);
 }
 
 int LineMarker::regionIn(Region2d *extsPtr, int enclosed)

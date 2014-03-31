@@ -67,6 +67,8 @@ namespace Blt {
     int pointIn(Point2d*);
     int regionIn(Region2d*, int);
     void postscript(Blt_Ps);
+    int pointInSegments(Point2d *samplePtr, Segment2d *segments, 
+			int nSegments, double halo);
 
   public:
     LineMarker(Graph*, const char*, Tcl_HashEntry*);
