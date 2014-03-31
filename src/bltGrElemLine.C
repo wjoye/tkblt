@@ -43,6 +43,10 @@ extern "C" {
 #include "bltGrPenLine.h"
 #include "bltConfig.h"
 
+#define SEARCH_X	0
+#define SEARCH_Y	1
+#define SEARCH_BOTH	2
+
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 #define BROKEN_TRACE(dir,last,next)			\

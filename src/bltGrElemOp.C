@@ -43,6 +43,9 @@ extern "C" {
 #include "bltGrElemOp.h"
 #include "bltGrElem.h"
 
+#define ELEM_SOURCE_VALUES	0
+#define ELEM_SOURCE_VECTOR	1
+
 // Defs
 
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 

@@ -39,13 +39,6 @@ extern "C" {
 extern void Blt_FreePen(Pen* penPtr);
 
 
-#define ELEM_SOURCE_VALUES	0
-#define ELEM_SOURCE_VECTOR	1
-
-#define SEARCH_X	0
-#define SEARCH_Y	1
-#define SEARCH_BOTH	2
-
 #define SHOW_NONE	0
 #define SHOW_X		1
 #define SHOW_Y		2
@@ -72,69 +65,12 @@ extern void Blt_FreePen(Pen* penPtr);
 
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
 
-typedef struct {
-  double min;
-  double max;
-  double range;
-} Weight;
-
 #define SetRange(l)							\
   ((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
 #define SetScale(l)				\
   ((l).scale = 1.0 / (l).range)
 #define SetWeight(l, lo, hi)			\
   ((l).min = (lo), (l).max = (hi), SetRange(l))
-
-typedef struct {
-  Segment2d* segments;
-  int nSegments;
-} ErrorBarSegments;
-
-typedef struct {
-  XColor* color;
-  int lineWidth;
-  GC gc;
-  int show;
-} ErrorBarAttributes;
-
-typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
-				Element* elemPtr);
-typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-					Element* elemPtr);
-typedef void (ElementDestroyProc) (Graph *graphPtr, Element* elemPtr);
-typedef int (ElementConfigProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
-typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
-				      Element* elemPtr, int x, int y, 
-				      int symbolSize);
-typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-					      Element* elemPtr, double x, 
-					      double y, int symSize);
-
-typedef struct {
-  ElementClosestProc *closestProc;
-  ElementConfigProc *configProc;
-  ElementDestroyProc *destroyProc;
-  ElementDrawProc *drawActiveProc;
-  ElementDrawProc *drawNormalProc;
-  ElementDrawSymbolProc *drawSymbolProc;
-  ElementExtentsProc *extentsProc;
-  ElementToPostScriptProc *printActiveProc;
-  ElementToPostScriptProc *printNormalProc;
-  ElementSymbolToPostScriptProc *printSymbolProc;
-  ElementMapProc *mapProc;
-} ElementProcs;
-
-typedef struct {
-  Blt_VectorId vector;
-} VectorDataSource;
-
-typedef struct {
-  Weight weight;
-  Pen* penPtr;
-} PenStyle;
 
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;

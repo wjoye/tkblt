@@ -37,7 +37,15 @@
 #include <iomanip>
 using namespace std;
 
+extern "C" {
+#include <bltVector.h>
+};
+
 typedef struct _Element Element;
+
+typedef struct {
+  Blt_VectorId vector;
+} VectorDataSource;
 
 typedef struct {
   int type;
@@ -53,6 +61,47 @@ typedef struct {
   ElemValues* x;
   ElemValues* y;
 } ElemCoords;
+
+typedef struct {
+  double min;
+  double max;
+  double range;
+} Weight;
+
+typedef struct {
+  Weight weight;
+  Pen* penPtr;
+} PenStyle;
+
+typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
+				Element* elemPtr);
+typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
+					Element* elemPtr);
+typedef void (ElementDestroyProc) (Graph *graphPtr, Element* elemPtr);
+typedef int (ElementConfigProc) (Graph *graphPtr, Element* elemPtr);
+typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
+typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
+typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr);
+typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
+				      Element* elemPtr, int x, int y, 
+				      int symbolSize);
+typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
+					      Element* elemPtr, double x, 
+					      double y, int symSize);
+
+typedef struct {
+  ElementClosestProc *closestProc;
+  ElementConfigProc *configProc;
+  ElementDestroyProc *destroyProc;
+  ElementDrawProc *drawActiveProc;
+  ElementDrawProc *drawNormalProc;
+  ElementDrawSymbolProc *drawSymbolProc;
+  ElementExtentsProc *extentsProc;
+  ElementToPostScriptProc *printActiveProc;
+  ElementToPostScriptProc *printNormalProc;
+  ElementSymbolToPostScriptProc *printSymbolProc;
+  ElementMapProc *mapProc;
+} ElementProcs;
 
 typedef struct _Element {
   GraphObj obj;
