@@ -37,6 +37,8 @@ extern "C" {
 
 // Defs
 
+extern Element *Blt_LineElement(Graph* graphPtr);
+extern Element *Blt_BarElement(Graph* graphPtr);
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 

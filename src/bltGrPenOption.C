@@ -89,6 +89,4 @@ static void PenFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
     Blt_FreePen(penPtr);
 }
 
-// Support
-
 

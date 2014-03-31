@@ -397,20 +397,8 @@ extern int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
 extern void Blt_DestroyPens(Graph* graphPtr);
 
 // Elements
-extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			 Tcl_Obj* const objv[], ClassId classId);
-extern void Blt_DestroyElements(Graph* graphPtr);
-extern void Blt_DrawElements(Graph* graphPtr, Drawable drawable);
-extern void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable);
-extern void Blt_MapElements(Graph* graphPtr);
-extern void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
-extern void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 
-// Line Element
-extern Element *Blt_LineElement(Graph* graphPtr);
 
-// Bar Element
-extern Element *Blt_BarElement(Graph* graphPtr);
 extern void Blt_DestroyBarSets(Graph* graphPtr);
 extern void Blt_ResetBarGroups(Graph* graphPtr);
 extern void Blt_InitBarSetTable(Graph* graphPtr);

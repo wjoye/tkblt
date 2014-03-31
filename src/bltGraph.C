@@ -41,6 +41,7 @@ extern "C" {
 }
 
 #include "bltGrElem.h"
+#include "bltGrElemOp.h"
 #include "bltGrMarker.h"
 #include "bltGrMarkerOp.h"
 
