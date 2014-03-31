@@ -223,7 +223,9 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeMarkerTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  ClientData rr = Blt::MakeMarkerTag(graphPtr, Tcl_GetString(objv[3]));
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, rr, 
+				      objc - 4, objv + 4);
 }
 
 static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
@@ -455,7 +457,7 @@ static Blt_OpSpec markerOps[] =
   };
 static int nMarkerOps = sizeof(markerOps) / sizeof(Blt_OpSpec);
 
-int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
+int Blt::MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
   GraphMarkerProc* proc = (GraphMarkerProc*)Blt_GetOpFromObj(interp, nMarkerOps, markerOps, BLT_OP_ARG2, objc, objv,0);
@@ -508,7 +510,7 @@ static void FreeMarker(char* dataPtr)
 
 // export
 
-void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
+void Blt::MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 {
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
@@ -529,7 +531,7 @@ void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
   }
 }
 
-void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
+void Blt::DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
 {
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
@@ -547,7 +549,7 @@ void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
   }
 }
 
-void Blt_ConfigureMarkers(Graph* graphPtr)
+void Blt::ConfigureMarkers(Graph* graphPtr)
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
@@ -556,7 +558,7 @@ void Blt_ConfigureMarkers(Graph* graphPtr)
   }
 }
 
-void Blt_MapMarkers(Graph* graphPtr)
+void Blt::MapMarkers(Graph* graphPtr)
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
@@ -573,7 +575,7 @@ void Blt_MapMarkers(Graph* graphPtr)
   }
 }
 
-void Blt_DestroyMarkers(Graph* graphPtr)
+void Blt::DestroyMarkers(Graph* graphPtr)
 {
   Tcl_HashSearch iter;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->markers.table, &iter); 
@@ -589,7 +591,7 @@ void Blt_DestroyMarkers(Graph* graphPtr)
   Blt_Chain_Destroy(graphPtr->markers.displayList);
 }
 
-void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
+void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
 {
   Point2d point;
   point.x = (double)x;
@@ -613,7 +615,7 @@ void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under)
   return NULL;
 }
 
-ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName)
+ClientData Blt::MakeMarkerTag(Graph* graphPtr, const char* tagName)
 {
   int isNew;
   Tcl_HashEntry *hPtr =
