@@ -45,10 +45,41 @@ typedef struct {
 } GraphPoints;
 
 typedef struct {
+  char** tags;
+  int hide;
+  const char* label;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues* w;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
+  int legendRelief;
+  Blt_Chain stylePalette;
+
+  LinePen builtinPen;
+  LinePen *activePenPtr;
+  LinePen *normalPenPtr;
+
+  XColor* fillFgColor;
+  Tk_3DBorder fillBg;
+  int reqMaxSymbols;
+  double rTolerance;
+  int scaleSymbols;
+  Smoothing reqSmooth;
+  int state;
+  int penDir;
+} ElemLineOptions;
+
+typedef struct {
   GraphObj obj;
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
+  void* ops;
 
   // Fields specific to elements
   const char* label;

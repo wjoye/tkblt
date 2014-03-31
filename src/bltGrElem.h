@@ -121,6 +121,20 @@ typedef struct {
 } ElementProcs;
 
 typedef struct {
+  char** tags;
+  int hide;
+  const char* label;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues* w;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
+  int legendRelief;
+  Blt_Chain stylePalette;
 } ElemOptions;
 
 typedef struct _Element {
@@ -128,6 +142,7 @@ typedef struct _Element {
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
+  void* ops;
 
   // Fields specific to elements
   const char *label;

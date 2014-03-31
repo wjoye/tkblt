@@ -39,10 +39,35 @@ using namespace std;
 #include "bltGrPenBar.h"
 
 typedef struct {
+  char** tags;
+  int hide;
+  const char *label;
+  Axis2d axes;
+  ElemCoords coords;
+  ElemValues* w;
+  ElemValues* xError;
+  ElemValues* yError;
+  ElemValues* xHigh;
+  ElemValues* xLow;
+  ElemValues* yHigh;
+  ElemValues* yLow;
+  int legendRelief;
+  Blt_Chain stylePalette;
+
+  BarPen builtinPen;
+  BarPen *activePenPtr;
+  BarPen *normalPenPtr;
+
+  double barWidth;
+  const char *groupName;
+} ElemBarOptions;
+
+typedef struct {
   GraphObj obj;
   unsigned int flags;		
   int hide;
   Tcl_HashEntry *hashPtr;
+  void* ops;
 
   // Fields specific to elements
   const char *label;
