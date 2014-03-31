@@ -5531,6 +5531,7 @@ done
 	bltConfig.C
 	bltGrAxis.C
 	bltGrElemOp.C
+	bltGrElemOption.C
 	bltGrElem.C
 	bltGrElemBar.C
 	bltGrElemLine.C

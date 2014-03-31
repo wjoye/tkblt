@@ -793,4 +793,3 @@ ClientData Blt_MakeElementTag(Graph* graphPtr, const char *tagName)
   hPtr = Tcl_CreateHashEntry(&graphPtr->elements.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
 }
-

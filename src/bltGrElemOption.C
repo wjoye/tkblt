@@ -29,12 +29,10 @@
 
 extern "C" {
 #include "bltGraph.h"
-#include "bltOp.h"
 };
 
 #include "bltGrElem.h"
 #include "bltGrElemOption.h"
-#include "bltGrElemOp.h"
 
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
