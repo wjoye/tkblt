@@ -41,6 +41,8 @@ extern "C" {
 #include <bltVector.h>
 };
 
+#include "bltGrPen.h"
+
 #define SHOW_NONE	0
 #define SHOW_X		1
 #define SHOW_Y		2

@@ -40,6 +40,7 @@ extern "C" {
 
 #include "bltGrElemOption.h"
 #include "bltGrElemBar.h"
+#include "bltGrPenOp.h"
 #include "bltConfig.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))

@@ -30,9 +30,6 @@
 #ifndef __bltgrelemop_h__
 #define __bltgrelemop_h__
 
-#include "bltGrPen.h"
-
-extern void Blt_FreePen(Pen* penPtr);
 
 
 extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 

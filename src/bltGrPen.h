@@ -35,9 +35,9 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltGrPenOp.h"
 
 typedef struct _Pen Pen;
+#include "bltGrPenOp.h"
 
 typedef Pen* (PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);

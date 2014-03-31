@@ -35,6 +35,8 @@ extern "C" {
 
 #include "bltGrElemOp.h"
 #include "bltGrElem.h"
+#include "bltGrPen.h"
+#include "bltGrPenOp.h"
 
 PenStyle** Blt_StyleMap(Element* elemPtr)
 {

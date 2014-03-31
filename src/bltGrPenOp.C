@@ -38,6 +38,7 @@ extern "C" {
 #include "bltOp.h"
 };
 
+#include "bltGrPen.h"
 #include "bltGrPenOp.h"
 #include "bltGrPenLine.h"
 #include "bltGrPenBar.h"
@@ -45,7 +46,6 @@ extern "C" {
 // Defs
 
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
-extern void Blt_FreePen(Pen* penPtr);
 
 static Pen* CreateBarPen(Graph* graphPtr, const char *penName);
 static Pen* CreateLinePen(Graph* graphPtr, const char* penName);
