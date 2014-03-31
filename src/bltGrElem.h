@@ -30,8 +30,6 @@
 #ifndef __bltgrelem_h__
 #define __bltgrelem_h__
 
-#include "bltGrElemOp.h"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>

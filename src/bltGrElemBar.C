@@ -27,21 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
-#include "bltInt.h"
 #include "bltGraph.h"
 };
 
-#include "bltGrElemOption.h"
 #include "bltGrElemBar.h"
-#include "bltGrPenOp.h"
-#include "bltConfig.h"
+#include "bltGrElemOption.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 

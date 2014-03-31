@@ -41,6 +41,7 @@ extern "C" {
 
 #include "bltConfig.h"
 #include "bltGrElem.h"
+#include "bltGrElemOp.h"
 
 /*
  *  Selection related flags:

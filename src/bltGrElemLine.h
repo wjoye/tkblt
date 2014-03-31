@@ -30,14 +30,8 @@
 #ifndef __bltgrelemline_h__
 #define __bltgrelemline_h__
 
-#include "bltGrElemOp.h"
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"
-
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
 
 typedef enum {
   PEN_SMOOTH_LINEAR, PEN_SMOOTH_STEP, PEN_SMOOTH_NATURAL,

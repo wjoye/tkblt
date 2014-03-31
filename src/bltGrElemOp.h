@@ -30,8 +30,6 @@
 #ifndef __bltgrelemop_h__
 #define __bltgrelemop_h__
 
-
-
 extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
 			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 #endif

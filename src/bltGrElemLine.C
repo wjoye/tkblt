@@ -27,23 +27,15 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
-#include "bltInt.h"
-#include "bltSpline.h"
 #include "bltGraph.h"
+#include "bltSpline.h"
 }
 
-#include "bltGrElemOption.h"
 #include "bltGrElemLine.h"
-#include "bltGrPenLine.h"
-#include "bltGrPenOp.h"
-#include "bltConfig.h"
+#include "bltGrElemOption.h"
 
 #define SEARCH_X	0
 #define SEARCH_Y	1
