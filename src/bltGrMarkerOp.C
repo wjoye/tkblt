@@ -49,13 +49,13 @@ using namespace Blt;
 
 typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			      Tcl_Obj* const objv[]);
-static void FreeMarker(char* dataPtr);
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[]);
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
 static int IsElementHidden(Graph*, Marker*);
+static void FreeMarker(char* dataPtr);
 
 // Create
 

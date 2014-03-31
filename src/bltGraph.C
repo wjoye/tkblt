@@ -361,7 +361,7 @@ static void DestroyGraph(char* dataPtr)
   Graph* graphPtr = (Graph*)dataPtr;
 
   Blt_DestroyCrosshairs(graphPtr);
-  Blt_DestroyMarkers(graphPtr);
+  Blt::DestroyMarkers(graphPtr);
   Blt_DestroyElements(graphPtr);  // must come before legend and others
   Blt_DestroyLegend(graphPtr);
   Blt_DestroyAxes(graphPtr);
@@ -609,7 +609,7 @@ static void DisplayGraph(ClientData clientData)
     DrawPlot(graphPtr, drawable);
   }
   /* Draw markers above elements */
-  Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
+  Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
   /* Don't draw legend in the plot area. */
   int site = Blt_Legend_Site(graphPtr);
@@ -881,7 +881,7 @@ static Blt_OpSpec graphOps[] =
     {"invtransform", 3, (void*)InvtransformOp,    4, 4, "winX winY",},
     {"legend",       2, (void*)Blt_LegendOp,      2, 0, "oper ?args?",},
     {"line",         2, (void*)LineOp,            2, 0, "oper ?args?",},
-    {"marker",       2, (void*)Blt_MarkerOp,      2, 0, "oper ?args?",},
+    {"marker",       2, (void*)Blt::MarkerOp,      2, 0, "oper ?args?",},
     {"pen",          2, (void*)Blt_PenOp,         2, 0, "oper ?args?",},
     {"postscript",   2, (void*)Blt_PostScriptOp,  2, 0, "oper ?args?",},
     {"transform",    1, (void*)TransformOp,       4, 4, "x y",},
@@ -988,7 +988,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
     {
       Marker* markerPtr = (Marker*)object;
       MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-      MakeTagProc* tagProc = Blt_MakeMarkerTag;
+      MakeTagProc* tagProc = Blt::MakeMarkerTag;
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->name()), 0);
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->className()), 0);
       if (ops->tags)
@@ -1033,7 +1033,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  Marker* markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, FALSE);
+  Marker* markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, FALSE);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
@@ -1062,7 +1062,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return searchPtr->elemPtr;
   }
 
-  markerPtr = (Marker*)Blt_NearestMarker(graphPtr, x, y, TRUE);
+  markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, TRUE);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
@@ -1191,7 +1191,7 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   /* Draw the elements, markers, legend, and axis limits. */
   Blt_DrawAxes(graphPtr, drawable);
   Blt_DrawGrids(graphPtr, drawable);
-  Blt_DrawMarkers(graphPtr, drawable, MARKER_UNDER);
+  Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
   int site = Blt_Legend_Site(graphPtr);
   if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr))) {
@@ -1218,7 +1218,7 @@ void Blt_MapGraph(Graph* graphPtr)
       Blt_MapAxes(graphPtr);
 
     Blt_MapElements(graphPtr);
-    Blt_MapMarkers(graphPtr);
+    Blt::MapMarkers(graphPtr);
     graphPtr->flags &= ~(MAP_ALL);
   }
 }
@@ -1227,7 +1227,7 @@ void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
 {
   DrawPlot(graphPtr, drawable);
   /* Draw markers above elements */
-  Blt_DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
+  Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
 
   /* Don't draw legend in the plot area. */
@@ -1295,5 +1295,5 @@ void Blt_ReconfigureGraph(Graph* graphPtr)
   //  Blt_ConfigureLegend(graphPtr);
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);
-  Blt_ConfigureMarkers(graphPtr);
+  Blt::ConfigureMarkers(graphPtr);
 }

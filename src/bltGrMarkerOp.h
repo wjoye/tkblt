@@ -30,17 +30,16 @@
 #ifndef __blt_grmarkerop_h__
 #define __blt_grmarkerop_h__
 
-extern void Blt_DestroyMarkers(Graph* graphPtr);
-extern void Blt_DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
-extern void Blt_MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
-extern int Blt_MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
-			 int objc, Tcl_Obj* const objv[]);
-extern void Blt_MapMarkers(Graph* graphPtr);
-extern void* Blt_NearestMarker(Graph* graphPtr, int x, int y, int under);
-extern ClientData Blt_MakeMarkerTag(Graph* graphPtr, const char* tagName);
-extern void Blt_ConfigureMarkers(Graph*);
-
 namespace Blt {
+  extern void DestroyMarkers(Graph* graphPtr);
+  extern void DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
+  extern ClientData MakeMarkerTag(Graph* graphPtr, const char* tagName);
+  extern void MapMarkers(Graph* graphPtr);
+  extern void ConfigureMarkers(Graph*);
+  extern int MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
+  extern void MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
+  extern void* NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
 
 #endif
