@@ -27,11 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltGraph.h"
-};
-
 #include "bltGrMarkerText.h"
+#include "bltGrMarkerOption.h"
 
 using namespace Blt;
 

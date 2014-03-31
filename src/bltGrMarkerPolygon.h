@@ -34,51 +34,51 @@
 
 namespace Blt {
 
-typedef struct {
-  const char** tags;
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  typedef struct {
+    const char** tags;
+    Coords* worldPts;
+    const char* elemName;
+    Axis2d axes;
+    int hide;
+    int state;
+    int drawUnder;
+    int xOffset;
+    int yOffset;
 
-  int capStyle;
-  Blt_Dashes dashes;
-  XColor* fill;
-  XColor* fillBg;
-  int joinStyle;
-  int lineWidth;
-  XColor* outline;
-  XColor* outlineBg;
-  Pixmap stipple;
-  int xorr;
-} PolygonMarkerOptions;
+    int capStyle;
+    Blt_Dashes dashes;
+    XColor* fill;
+    XColor* fillBg;
+    int joinStyle;
+    int lineWidth;
+    XColor* outline;
+    XColor* outlineBg;
+    Pixmap stipple;
+    int xorr;
+  } PolygonMarkerOptions;
 
-class PolygonMarker : public Marker {
- private:
-  Point2d *screenPts_;
-  GC outlineGC_;
-  GC fillGC_;
-  Point2d *fillPts_;
-  int nFillPts_;
-  Segment2d *outlinePts_;
-  int nOutlinePts_;
+  class PolygonMarker : public Marker {
+  private:
+    Point2d *screenPts_;
+    GC outlineGC_;
+    GC fillGC_;
+    Point2d *fillPts_;
+    int nFillPts_;
+    Segment2d *outlinePts_;
+    int nOutlinePts_;
 
- private:
-  int configure();
-  void draw(Drawable);
-  void map();
-  int pointIn(Point2d*);
-  int regionIn(Region2d*, int);
-  void postscript(Blt_Ps);
+  private:
+    int configure();
+    void draw(Drawable);
+    void map();
+    int pointIn(Point2d*);
+    int regionIn(Region2d*, int);
+    void postscript(Blt_Ps);
 
- public:
-  PolygonMarker(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~PolygonMarker();
-};
+  public:
+    PolygonMarker(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~PolygonMarker();
+  };
 
 };
 

@@ -34,43 +34,43 @@
 
 namespace Blt {
 
-typedef struct {
-  const char** tags;
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  typedef struct {
+    const char** tags;
+    Coords* worldPts;
+    const char* elemName;
+    Axis2d axes;
+    int hide;
+    int state;
+    int drawUnder;
+    int xOffset;
+    int yOffset;
 
-  Tk_Anchor anchor;
-  XColor* fillColor;
-  TextStyle style;
-  const char* string;
-} TextMarkerOptions;
+    Tk_Anchor anchor;
+    XColor* fillColor;
+    TextStyle style;
+    const char* string;
+  } TextMarkerOptions;
 
-class TextMarker : public Marker {
- private:
-  Point2d anchorPt_;
-  int width_;
-  int height_;
-  GC fillGC_;
-  Point2d outline_[5];
+  class TextMarker : public Marker {
+  private:
+    Point2d anchorPt_;
+    int width_;
+    int height_;
+    GC fillGC_;
+    Point2d outline_[5];
 
- private:
-  int configure();
-  void draw(Drawable);
-  void map();
-  int pointIn(Point2d*);
-  int regionIn(Region2d*, int);
-  void postscript(Blt_Ps);
+  private:
+    int configure();
+    void draw(Drawable);
+    void map();
+    int pointIn(Point2d*);
+    int regionIn(Region2d*, int);
+    void postscript(Blt_Ps);
 
- public:
-  TextMarker(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~TextMarker();
-};
+  public:
+    TextMarker(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~TextMarker();
+  };
 
 };
 

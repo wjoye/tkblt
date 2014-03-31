@@ -5537,6 +5537,7 @@ done
 	bltGrHairs.C
 	bltGrLegd.C
 	bltGrMarkerOp.C
+	bltGrMarkerOption.C
 	bltGrMarker.C
 	bltGrMarkerBitmap.C
 	bltGrMarkerLine.C

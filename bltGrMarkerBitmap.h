@@ -31,49 +31,48 @@
 #define __bltgrmarkerbitmap_h__
 
 #include "bltGrMarker.h"
-#define MAX_OUTLINE_POINTS	12
 
 namespace Blt {
 
-typedef struct {
-  const char** tags;
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
+  typedef struct {
+    const char** tags;
+    Coords* worldPts;
+    const char* elemName;
+    Axis2d axes;
+    int hide;
+    int state;
+    int drawUnder;
+    int xOffset;
+    int yOffset;
 
-  Tk_Anchor anchor;
-  Pixmap bitmap;
-  XColor* fillColor;
-  XColor* outlineColor;
-} BitmapMarkerOptions;
+    Tk_Anchor anchor;
+    Pixmap bitmap;
+    XColor* fillColor;
+    XColor* outlineColor;
+  } BitmapMarkerOptions;
 
-class BitmapMarker : public Marker {
- public:
-  Point2d anchorPt_;
-  GC gc_;
-  GC fillGC_;
-  Point2d outline_[MAX_OUTLINE_POINTS];
-  int nOutlinePts_;
-  int width_;
-  int height_;
+  class BitmapMarker : public Marker {
+  public:
+    Point2d anchorPt_;
+    GC gc_;
+    GC fillGC_;
+    Point2d outline_[12];
+    int nOutlinePts_;
+    int width_;
+    int height_;
 
- private:
-  int configure();
-  void draw(Drawable);
-  void map();
-  int pointIn(Point2d*);
-  int regionIn(Region2d*, int);
-  void postscript(Blt_Ps);
+  private:
+    int configure();
+    void draw(Drawable);
+    void map();
+    int pointIn(Point2d*);
+    int regionIn(Region2d*, int);
+    void postscript(Blt_Ps);
 
- public:
-  BitmapMarker(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~BitmapMarker();
-};
+  public:
+    BitmapMarker(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~BitmapMarker();
+  };
 
 };
 

@@ -32,29 +32,7 @@
 
 namespace Blt {
 
-typedef struct {
-  Point2d* points;
-  int num;
-} Coords;
-
-typedef struct {
-  const char** tags;
-  Coords* worldPts;
-  const char* elemName;
-  Axis2d axes;
-  int hide;
-  int state;
-  int drawUnder;
-  int xOffset;
-  int yOffset;
-} MarkerOptions;
 
 };
-
-extern Tk_ObjCustomOption coordsObjOption;
-extern Tk_ObjCustomOption capStyleObjOption;
-extern Tk_ObjCustomOption joinStyleObjOption;
-extern Tk_ObjCustomOption xAxisObjOption;
-extern Tk_ObjCustomOption yAxisObjOption;
 
 #endif

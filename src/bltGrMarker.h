@@ -30,56 +30,75 @@
 #ifndef __bltgrmarker_h__
 #define __bltgrmarker_h__
 
-#include "bltGrMarkerOp.h"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 using namespace std;
 
+extern "C" {
+#include "bltGraph.h"
+};
+
 namespace Blt {
 
- class Marker {
- protected:
-   ClassId classId_;
-   const char *name_;
-   const char *className_;
-   Tk_OptionTable optionTable_;
-   void* ops_;
-   Graph* graphPtr_;
-   Tcl_HashEntry* hashPtr_;
-   int clipped_;
+  typedef struct {
+    Point2d* points;
+    int num;
+  } Coords;
 
- public:
-   Blt_ChainLink link;
-   unsigned int flags;		
+  typedef struct {
+    const char** tags;
+    Coords* worldPts;
+    const char* elemName;
+    Axis2d axes;
+    int hide;
+    int state;
+    int drawUnder;
+    int xOffset;
+    int yOffset;
+  } MarkerOptions;
 
- private:
-   double HMap(Axis*, double);
-   double VMap(Axis*, double);
+  class Marker {
+  protected:
+    ClassId classId_;
+    const char *name_;
+    const char *className_;
+    Tk_OptionTable optionTable_;
+    void* ops_;
+    Graph* graphPtr_;
+    Tcl_HashEntry* hashPtr_;
+    int clipped_;
 
- protected:
-   Point2d mapPoint(Point2d*, Axis2d*);
-   int boxesDontOverlap(Graph*, Region2d*);
+  public:
+    Blt_ChainLink link;
+    unsigned int flags;		
 
- public:
-   Marker(Graph*, const char*, Tcl_HashEntry*);
-   virtual ~Marker();
+  private:
+    double HMap(Axis*, double);
+    double VMap(Axis*, double);
 
-   virtual int configure() =0;
-   virtual void draw(Drawable) =0;
-   virtual void map() =0;
-   virtual int pointIn(Point2d*) =0;
-   virtual int regionIn(Region2d*, int) =0;
-   virtual void postscript(Blt_Ps) =0;
+  protected:
+    Point2d mapPoint(Point2d*, Axis2d*);
+    int boxesDontOverlap(Graph*, Region2d*);
 
-   ClassId classId() {return classId_;}
-   const char* name() {return name_;}
-   const char* className() {return className_;}
-   int clipped() {return clipped_;}
-   Tk_OptionTable optionTable() {return optionTable_;}
-   MarkerOptions* ops() {return (MarkerOptions*)ops_;}
- };
+  public:
+    Marker(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~Marker();
+
+    virtual int configure() =0;
+    virtual void draw(Drawable) =0;
+    virtual void map() =0;
+    virtual int pointIn(Point2d*) =0;
+    virtual int regionIn(Region2d*, int) =0;
+    virtual void postscript(Blt_Ps) =0;
+
+    ClassId classId() {return classId_;}
+    const char* name() {return name_;}
+    const char* className() {return className_;}
+    int clipped() {return clipped_;}
+    Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+  };
 
 };
 

@@ -27,51 +27,13 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __bltgrmarkerline_h__
-#define __bltgrmarkerline_h__
+#ifndef __blt_grmarkeroption_h__
+#define __blt_grmarkeroption_h__
 
-#include "bltGrMarker.h"
+extern Tk_ObjCustomOption coordsObjOption;
+extern Tk_ObjCustomOption capStyleObjOption;
+extern Tk_ObjCustomOption joinStyleObjOption;
+extern Tk_ObjCustomOption xAxisObjOption;
+extern Tk_ObjCustomOption yAxisObjOption;
 
-namespace Blt {
-
-  typedef struct {
-    const char** tags;
-    Coords* worldPts;
-    const char* elemName;
-    Axis2d axes;
-    int hide;
-    int state;
-    int drawUnder;
-    int xOffset;
-    int yOffset;
-
-    int capStyle;
-    Blt_Dashes dashes;
-    XColor* fillColor;
-    int joinStyle;
-    int lineWidth;
-    XColor* outlineColor;
-    int xorr;
-  } LineMarkerOptions;
-
-  class LineMarker : public Marker {
-  private:
-    GC gc_;
-    Segment2d* segments_;
-    int nSegments_;
-
-  private:
-    int configure();
-    void draw(Drawable);
-    void map();
-    int pointIn(Point2d*);
-    int regionIn(Region2d*, int);
-    void postscript(Blt_Ps);
-
-  public:
-    LineMarker(Graph*, const char*, Tcl_HashEntry*);
-    virtual ~LineMarker();
-  };
-
-};
 #endif

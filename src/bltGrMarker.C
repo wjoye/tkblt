@@ -27,10 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltGraph.h"
-};
-
 #include "bltGrMarker.h"
 
 using namespace Blt;
@@ -52,11 +48,6 @@ Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 
 Marker::~Marker()
 {
-  // If the marker to be deleted is currently displayed below the
-  // elements, then backing store needs to be repaired.
-  if (((MarkerOptions*)ops_)->drawUnder)
-    graphPtr_->flags |= CACHE_DIRTY;
-
   Blt_DeleteBindings(graphPtr_->bindTable, this);
 
   if (className_)

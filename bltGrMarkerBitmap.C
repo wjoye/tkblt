@@ -27,15 +27,10 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltGraph.h"
-};
-
 #include "bltGrMarkerBitmap.h"
+#include "bltGrMarkerOption.h"
 
 using namespace Blt;
-
-// OptionSpecs
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
