@@ -121,9 +121,8 @@ typedef struct {
 } ElementProcs;
 
 typedef struct {
-  char** tags;
-  int hide;
   const char* label;
+  char** tags;
   Axis2d axes;
   ElemCoords coords;
   ElemValues* w;
@@ -133,6 +132,7 @@ typedef struct {
   ElemValues* xLow;
   ElemValues* yHigh;
   ElemValues* yLow;
+  int hide;
   int legendRelief;
   Blt_Chain stylePalette;
 } ElemOptions;

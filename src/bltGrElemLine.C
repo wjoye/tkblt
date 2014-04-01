@@ -285,15 +285,21 @@ static Tk_OptionSpec optionSpecs[] = {
 Element* Blt_LineElement(Graph* graphPtr)
 {
   LineElement* elemPtr = (LineElement*)calloc(1, sizeof(LineElement));
+  elemPtr->ops = (LineElementOptions*)calloc(1, sizeof(LineElementOptions));
   elemPtr->procsPtr = &lineProcs;
-  elemPtr->flags = SCALE_SYMBOL;
+
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  InitLinePen(graphPtr, elemPtr->builtinPenPtr);
+  elemPtr->builtinPen.ops = 
+    &(((LineElementOptions*)(elemPtr->ops))->builtinPenOps);
+  elemPtr->builtinPen.manageOptions =0;
+
+  InitLinePen(graphPtr, elemPtr->builtinPenPtr, "builtin");
   Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
 		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
 
   elemPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
+  elemPtr->flags = SCALE_SYMBOL;
   return (Element*)elemPtr;
 }
 

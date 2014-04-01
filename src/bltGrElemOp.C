@@ -132,6 +132,10 @@ static void DestroyElement(Element* elemPtr)
   Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
 
   (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
+
+  if (elemPtr->ops)
+    free(elemPtr->ops);
+
   free(elemPtr);
 }
 

@@ -45,9 +45,8 @@ typedef struct {
 } GraphPoints;
 
 typedef struct {
-  char** tags;
-  int hide;
   const char* label;
+  char** tags;
   Axis2d axes;
   ElemCoords coords;
   ElemValues* w;
@@ -57,10 +56,12 @@ typedef struct {
   ElemValues* xLow;
   ElemValues* yHigh;
   ElemValues* yLow;
+  int hide;
   int legendRelief;
   Blt_Chain stylePalette;
 
-  LinePen builtinPen;
+  // derived
+  LinePenOptions builtinPenOps;
   LinePen *activePenPtr;
   LinePen *normalPenPtr;
 
@@ -72,7 +73,7 @@ typedef struct {
   Smoothing reqSmooth;
   int state;
   int penDir;
-} ElemLineOptions;
+} LineElementOptions;
 
 typedef struct {
   GraphObj obj;

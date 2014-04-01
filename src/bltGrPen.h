@@ -45,10 +45,20 @@ typedef Pen* (PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
 typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
 
+typedef struct {
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+
+  int valueShow;
+  const char* valueFormat;
+  TextStyle valueStyle;
+} PenOptions;
+
 typedef struct _Pen {
   const char *name;
   ClassId classId;
-  const char *typeId;
   unsigned int flags;
   int refCount;
   Tcl_HashEntry *hashPtr;
@@ -56,6 +66,8 @@ typedef struct _Pen {
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
   Graph* graphPtr;
+  void* ops;
+  int manageOptions;
 } Pen;
 
 #endif

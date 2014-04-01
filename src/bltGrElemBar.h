@@ -39,9 +39,8 @@ using namespace std;
 #include "bltGrPenBar.h"
 
 typedef struct {
-  char** tags;
-  int hide;
   const char *label;
+  char** tags;
   Axis2d axes;
   ElemCoords coords;
   ElemValues* w;
@@ -51,16 +50,18 @@ typedef struct {
   ElemValues* xLow;
   ElemValues* yHigh;
   ElemValues* yLow;
+  int hide;
   int legendRelief;
   Blt_Chain stylePalette;
 
-  BarPen builtinPen;
+  // derived
+  BarPenOptions builtinPenOps;
   BarPen *activePenPtr;
   BarPen *normalPenPtr;
 
   double barWidth;
   const char *groupName;
-} ElemBarOptions;
+} BarElementOptions;
 
 typedef struct {
   GraphObj obj;

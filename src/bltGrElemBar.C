@@ -210,9 +210,15 @@ static Tk_OptionSpec optionSpecs[] = {
 Element* Blt_BarElement(Graph* graphPtr)
 {
   BarElement* elemPtr = (BarElement*)calloc(1, sizeof(BarElement));
+  elemPtr->ops = (BarElementOptions*)calloc(1, sizeof(BarElementOptions));
   elemPtr->procsPtr = &barProcs;
+
   elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  InitBarPen(graphPtr, elemPtr->builtinPenPtr);
+  elemPtr->builtinPen.ops = 
+    &(((BarElementOptions*)(elemPtr->ops))->builtinPenOps);
+  elemPtr->builtinPen.manageOptions =0;
+
+  InitBarPen(graphPtr, elemPtr->builtinPenPtr, "builtin");
   Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
 		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
 

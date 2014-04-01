@@ -39,8 +39,6 @@ extern "C" {
 
 // Defs
 
-static Pen* CreateBarPen(Graph* graphPtr, const char *penName);
-static Pen* CreateLinePen(Graph* graphPtr, const char* penName);
 static void DestroyPen(Pen* penPtr);
 static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr);
@@ -80,7 +78,6 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   penPtr->graphPtr = graphPtr;
-  penPtr->classId = classId;
   penPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, penPtr);
 
@@ -99,7 +96,7 @@ static void DestroyPen(Pen* penPtr)
 {
   Graph* graphPtr = penPtr->graphPtr;
 
-  (*penPtr->destroyProc) (graphPtr, penPtr);
+  (*penPtr->destroyProc)(graphPtr, penPtr);
 
   if (penPtr->name)
     free((void*)(penPtr->name));
@@ -380,22 +377,4 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-static Pen* CreateBarPen(Graph* graphPtr, const char *penName)
-{
-  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
-  InitBarPen(graphPtr, penPtr);
-  penPtr->name = Blt_Strdup(penName);
-
-  return (Pen*)penPtr;
-}
-
-static Pen* CreateLinePen(Graph* graphPtr, const char* penName)
-{
-  LinePen* penPtr = (LinePen*)calloc(1, sizeof(LinePen));
-  InitLinePen(graphPtr, penPtr);
-  penPtr->name = Blt_Strdup(penName);
-  penPtr->classId = CID_ELEM_LINE;
-
-  return (Pen*)penPtr;
-}
 

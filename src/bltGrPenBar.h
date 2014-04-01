@@ -38,9 +38,26 @@ using namespace std;
 #include "bltGrPen.h"
 
 typedef struct {
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+
+  int valueShow;
+  const char *valueFormat;
+  TextStyle valueStyle;
+
+  XColor* outlineColor;
+  Tk_3DBorder fill;
+  int borderWidth;
+  int relief;
+  Pixmap stipple;
+
+} BarPenOptions;
+
+typedef struct {
   const char *name;
   ClassId classId;
-  const char *typeId;
   unsigned int flags;
   int refCount;
   Tcl_HashEntry *hashPtr;
@@ -48,6 +65,8 @@ typedef struct {
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
   Graph* graphPtr;
+  void* ops;
+  int manageOptions;
 
   // Barchart specific pen fields start here
   XColor* outlineColor;
@@ -71,7 +90,8 @@ typedef struct {
   TextStyle valueStyle;
 } BarPen;
 
-extern void InitBarPen(Graph* graphPtr, BarPen* penPtr);
+extern Pen* CreateBarPen(Graph* graphPtr, const char *penName);
+extern void InitBarPen(Graph* graphPtr, BarPen* penPtr, const char* penName);
 extern int ConfigureBarPenProc(Graph* graphPtr, Pen *basePtr);
 extern void DestroyBarPenProc(Graph* graphPtr, Pen* basePtr);
 

@@ -58,9 +58,25 @@ typedef struct {
 } Symbol;
 
 typedef struct {
+  int errorBarShow;
+  int errorBarLineWidth;
+  int errorBarCapWidth;
+  XColor* errorBarColor;
+
+  int valueShow;
+  const char* valueFormat;
+  TextStyle valueStyle;
+
+  Symbol symbol;
+  int traceWidth;
+  Blt_Dashes traceDashes;
+  XColor* traceColor;
+  XColor* traceOffColor;
+} LinePenOptions;
+
+typedef struct {
   const char* name;
   ClassId classId;
-  const char* typeId;
   unsigned int flags;
   int refCount;
   Tcl_HashEntry *hashPtr;
@@ -68,6 +84,8 @@ typedef struct {
   PenConfigureProc *configProc;
   PenDestroyProc *destroyProc;
   Graph* graphPtr;
+  void* ops;
+  int manageOptions;
 
   // Symbol attributes
   Symbol symbol;
@@ -94,7 +112,8 @@ typedef struct {
 
 extern Tk_ObjCustomOption symbolObjOption;
 
-extern void InitLinePen(Graph* graphPtr, LinePen* penPtr);
+extern Pen* CreateLinePen(Graph* graphPtr, const char* penName);
+extern void InitLinePen(Graph* graphPtr, LinePen* penPtr, const char* penName);
 extern int ConfigureLinePenProc(Graph* graphPtr, Pen *basePtr);
 extern void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr);
 

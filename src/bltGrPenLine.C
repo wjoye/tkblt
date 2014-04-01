@@ -180,8 +180,6 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
    "none", -1, Tk_Offset(LinePen, valueShow), 0, &fillObjOption, 0},
   {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
    "none", -1, Tk_Offset(LinePen, symbol), 0, &symbolObjOption, 0},
-  {TK_OPTION_STRING, "-type", "type", "Type",
-   "line", -1, Tk_Offset(Pen, typeId), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -194,6 +192,33 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
    "0", -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
+
+Pen* CreateLinePen(Graph* graphPtr, const char* penName)
+{
+  LinePen* penPtr = (LinePen*)calloc(1, sizeof(LinePen));
+  penPtr->ops = (LinePenOptions*)calloc(1, sizeof(LinePenOptions));
+  penPtr->manageOptions =1;
+
+  InitLinePen(graphPtr, penPtr, penName);
+  return (Pen*)penPtr;
+}
+
+void InitLinePen(Graph* graphPtr, LinePen* penPtr, const char* penName)
+{
+  penPtr->configProc = ConfigureLinePenProc;
+  penPtr->destroyProc = DestroyLinePenProc;
+
+  penPtr->classId = CID_ELEM_LINE;
+  penPtr->name = Blt_Strdup(penName);
+
+  Blt_Ts_InitStyle(penPtr->valueStyle);
+  penPtr->symbol.bitmap = None;
+  penPtr->symbol.mask = None;
+  penPtr->symbol.type = SYMBOL_NONE;
+
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
+}
 
 int ConfigureLinePenProc(Graph* graphPtr, Pen* basePtr)
 {
@@ -291,20 +316,6 @@ int ConfigureLinePenProc(Graph* graphPtr, Pen* basePtr)
   return TCL_OK;
 }
 
-void InitLinePen(Graph* graphPtr, LinePen* penPtr)
-{
-  penPtr->configProc = ConfigureLinePenProc;
-  penPtr->destroyProc = DestroyLinePenProc;
-
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->symbol.bitmap = None;
-  penPtr->symbol.mask = None;
-  penPtr->symbol.type = SYMBOL_NONE;
-
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
-}
-
 void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr)
 {
   LinePen* penPtr = (LinePen*)basePtr;
@@ -332,6 +343,10 @@ void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr)
   }
 
   Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
+
+  if (penPtr->manageOptions)
+    if (penPtr->ops)
+      free(penPtr->ops);
 }
 
 static void DestroySymbol(Display *display, Symbol *symbolPtr)

@@ -57,8 +57,6 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    "none", -1, Tk_Offset(BarPen, valueShow), 0, &fillObjOption, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
    NULL, -1, Tk_Offset(BarPen, stipple), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING, "-type", "type", "Type",
-   "bar", -1, Tk_Offset(BarPen, typeId), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(BarPen, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -71,6 +69,30 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    "0", -1, Tk_Offset(BarPen, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
+
+Pen* CreateBarPen(Graph* graphPtr, const char *penName)
+{
+  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
+  penPtr->ops = (BarPenOptions*)calloc(1, sizeof(BarPenOptions));
+  penPtr->manageOptions =1;
+
+  InitBarPen(graphPtr, penPtr, penName);
+  return (Pen*)penPtr;
+}
+
+void InitBarPen(Graph* graphPtr, BarPen* penPtr, const char* penName)
+{
+  penPtr->configProc = ConfigureBarPenProc;
+  penPtr->destroyProc = DestroyBarPenProc;
+
+  penPtr->classId = CID_ELEM_BAR;
+  penPtr->name = Blt_Strdup(penName);
+
+  Blt_Ts_InitStyle(penPtr->valueStyle);
+
+  penPtr->optionTable = 
+    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
+}
 
 int ConfigureBarPenProc(Graph* graphPtr, Pen *basePtr)
 {
@@ -126,17 +148,6 @@ int ConfigureBarPenProc(Graph* graphPtr, Pen *basePtr)
   penPtr->errorBarGC = newGC;
 
   return TCL_OK;
-}
-
-void InitBarPen(Graph* graphPtr, BarPen* penPtr)
-{
-  penPtr->configProc = ConfigureBarPenProc;
-  penPtr->destroyProc = DestroyBarPenProc;
-
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
 }
 
 void DestroyBarPenProc(Graph* graphPtr, Pen* basePtr)
