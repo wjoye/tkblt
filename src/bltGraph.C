@@ -281,8 +281,8 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
 					    GraphInstCmdDeleteProc);
   graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
-  graphPtr->backingStore = TRUE;
-  graphPtr->doubleBuffer = TRUE;
+  graphPtr->backingStore = 1;
+  graphPtr->doubleBuffer = 1;
   graphPtr->borderWidth = 2;
   graphPtr->plotBW = 1;
   graphPtr->highlightWidth = 2;
@@ -1034,7 +1034,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  Marker* markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, FALSE);
+  Marker* markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, 0);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
@@ -1054,8 +1054,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     if (elemPtr->hide || (elemPtr->flags & MAP_ITEM))
       continue;
 
-    if (elemPtr->state == BLT_STATE_NORMAL)
-      (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
+    (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
   }
   // Found an element within the minimum halo distance.
   if (searchPtr->dist <= (double)searchPtr->halo) {
@@ -1063,7 +1062,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return searchPtr->elemPtr;
   }
 
-  markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, TRUE);
+  markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, 1);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;

@@ -1081,7 +1081,7 @@ NextValue(
 
     vPtr = valuePtr->vPtr;
     v2Ptr = Blt_Vec_New(vPtr->dataPtr);
-    gotOp = FALSE;
+    gotOp = 0;
     value2.vPtr = v2Ptr;
     value2.pv.buffer = value2.pv.next = value2.staticSpace;
     value2.pv.end = value2.pv.buffer + STATIC_STRING_SPACE - 1;
@@ -1116,7 +1116,7 @@ NextValue(
 	    if (result != TCL_OK) {
 		goto done;
 	    }
-	    gotOp = TRUE;
+	    gotOp = 1;
 	    /* Process unary operators. */
 	    switch (operator) {
 	    case UNARY_MINUS:

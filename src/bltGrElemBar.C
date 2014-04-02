@@ -100,107 +100,115 @@ extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
-   "activeBar", -1, Tk_Offset(BarElement, activePenPtr), 
+   "activeBar", -1, Tk_Offset(BarElementOptions, activePenPtr), 
    TK_OPTION_NULL_OK, &barPenObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement, builtinPen.fill),
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   0, -1, Tk_Offset(BarElement, barWidth), 0, NULL, MAP_ITEM},
+   0, -1, Tk_Offset(BarElementOptions, barWidth), 0, NULL, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
-   "all", -1, Tk_Offset(BarElement, obj.tags), 
+   "all", -1, Tk_Offset(BarElementOptions, tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(BarElement, builtinPen.borderWidth),
+   STD_BORDERWIDTH, -1, Tk_Offset(BarElementOptions, builtinPen.borderWidth),
    0, NULL, 0},
   {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
-   NULL, -1, Tk_Offset(BarElement, coords),
+   NULL, -1, Tk_Offset(BarElementOptions, coords),
    TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   NULL, -1, Tk_Offset(BarElement, builtinPen.errorBarColor), 
+   NULL, -1, Tk_Offset(BarElementOptions, builtinPen.errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS,"-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", -1, Tk_Offset(BarElement, builtinPen.errorBarLineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarLineWidth),
+   0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(BarElement, builtinPen.errorBarCapWidth), 0, NULL, 0},
+   "2", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
+   0, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement, builtinPen.outlineColor),
+   STD_NORMAL_FOREGROUND, -1, 
+   Tk_Offset(BarElementOptions, builtinPen.outlineColor),
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "no", -1, Tk_Offset(BarElement, hide), 0, NULL, MAP_ITEM},
+   "no", -1, Tk_Offset(BarElementOptions, hide), 0, NULL, MAP_ITEM},
   {TK_OPTION_STRING, "-label", "label", "Label",
-   NULL, -1, Tk_Offset(BarElement, label), TK_OPTION_NULL_OK, NULL, MAP_ITEM},
+   NULL, -1, Tk_Offset(BarElementOptions, label), 
+   TK_OPTION_NULL_OK, NULL, MAP_ITEM},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
-   "flat", -1, Tk_Offset(BarElement, legendRelief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(BarElementOptions, legendRelief), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
-   "x", -1, Tk_Offset(BarElement, axes.x), 0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(BarElementOptions, axes.x), 0, &xAxisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(BarElement, axes.y), 0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(BarElementOptions, axes.y), 0, &yAxisObjOption, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
-   NULL, -1, Tk_Offset(BarElement, normalPenPtr), 
+   NULL, -1, Tk_Offset(BarElementOptions, normalPenPtr), 
    TK_OPTION_NULL_OK, &barPenObjOption},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-   "raised", -1, Tk_Offset(BarElement, builtinPen.relief), 0, NULL, 0},
+   "raised", -1, Tk_Offset(BarElementOptions, builtinPen.relief), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", -1, Tk_Offset(BarElement, builtinPen.errorBarShow), 
+   "both", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarShow), 
    0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "none", -1, Tk_Offset(BarElement, builtinPen.valueShow), 
+   "none", -1, Tk_Offset(BarElementOptions, builtinPen.valueShow), 
    0, &fillObjOption, 0},
   {TK_OPTION_STRING, "-stack", "stack", "Stack", 
-   NULL, -1, Tk_Offset(BarElement, groupName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(BarElementOptions, groupName),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
-   NULL, -1, Tk_Offset(BarElement, builtinPen.stipple), 
+   NULL, -1, Tk_Offset(BarElementOptions, builtinPen.stipple), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
-   "", -1, Tk_Offset(BarElement, stylePalette), 0, &styleObjOption, 0},
+   "", -1, Tk_Offset(BarElementOptions, stylePalette), 0, &styleObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", -1, Tk_Offset(BarElement, builtinPen.valueStyle.anchor), 0, NULL, 0},
+   "s", -1, Tk_Offset(BarElementOptions, builtinPen.valueStyle.anchor),
+   0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElement,builtinPen.valueStyle.color),
+   STD_NORMAL_FOREGROUND, -1, 
+   Tk_Offset(BarElementOptions,builtinPen.valueStyle.color),
    0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, -1, Tk_Offset(BarElement, builtinPen.valueStyle.font),
+   STD_FONT_SMALL, -1, Tk_Offset(BarElementOptions, builtinPen.valueStyle.font),
    0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", -1, Tk_Offset(BarElement, builtinPen.valueFormat),
+   "%g", -1, Tk_Offset(BarElementOptions, builtinPen.valueFormat),
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   "0", -1, Tk_Offset(BarElement, builtinPen.valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(BarElementOptions, builtinPen.valueStyle.angle),
+   0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
-   NULL, -1, Tk_Offset(BarElement, w), 
+   NULL, -1, Tk_Offset(BarElementOptions, w), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
-   NULL, -1, Tk_Offset(BarElement, coords.x), 
+   NULL, -1, Tk_Offset(BarElementOptions, coords.x), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
-   NULL, -1, Tk_Offset(BarElement, xError), 
+   NULL, -1, Tk_Offset(BarElementOptions, xError), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
-   NULL, -1, Tk_Offset(BarElement, xHigh), 
+   NULL, -1, Tk_Offset(BarElementOptions, xHigh), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
-   NULL, -1, Tk_Offset(BarElement, xLow), 
+   NULL, -1, Tk_Offset(BarElementOptions, xLow), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
-   NULL, -1, Tk_Offset(BarElement, coords.y), 
+   NULL, -1, Tk_Offset(BarElementOptions, coords.y), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
-   NULL, -1, Tk_Offset(BarElement, yError), 
+   NULL, -1, Tk_Offset(BarElementOptions, yError), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
-   NULL, -1, Tk_Offset(BarElement, yHigh), 
+   NULL, -1, Tk_Offset(BarElementOptions, yHigh), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
-   NULL, -1, Tk_Offset(BarElement, yLow), 
+   NULL, -1, Tk_Offset(BarElementOptions, yLow), 
    TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
@@ -209,65 +217,66 @@ static Tk_OptionSpec optionSpecs[] = {
 
 Element* Blt_BarElement(Graph* graphPtr)
 {
-  BarElement* elemPtr = (BarElement*)calloc(1, sizeof(BarElement));
-  elemPtr->ops = (BarElementOptions*)calloc(1, sizeof(BarElementOptions));
-  elemPtr->procsPtr = &barProcs;
+  BarElement* bePtr = (BarElement*)calloc(1, sizeof(BarElement));
+  bePtr->ops = (BarElementOptions*)calloc(1, sizeof(BarElementOptions));
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+  ops->elemPtr = (Element*)bePtr;
 
-  elemPtr->builtinPenPtr = &elemPtr->builtinPen;
-  elemPtr->builtinPen.ops = 
-    &(((BarElementOptions*)(elemPtr->ops))->builtinPenOps);
-  elemPtr->builtinPen.manageOptions =0;
+  bePtr->procsPtr = &barProcs;
+  ops->builtinPenPtr = &bePtr->builtinPen;
+  bePtr->builtinPen.ops = &ops->builtinPen;
+  bePtr->builtinPen.manageOptions =0;
 
-  InitBarPen(graphPtr, elemPtr->builtinPenPtr, "builtin");
-  Tk_InitOptions(graphPtr->interp, (char*)elemPtr->builtinPenPtr,
-		 elemPtr->builtinPenPtr->optionTable, graphPtr->tkwin);
+  InitBarPen(graphPtr, &bePtr->builtinPen, "builtin");
+  Tk_InitOptions(graphPtr->interp, (char*)&(ops->builtinPen),
+		 bePtr->builtinPen.optionTable, graphPtr->tkwin);
 
-  elemPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  bePtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
-  return (Element*)elemPtr;
+  return (Element*)bePtr;
 }
 
-static void DestroyBarProc(Graph* graphPtr, Element* basePtr)
+static void DestroyBarProc(Graph* graphPtr, Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement*)basePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  DestroyBarPenProc(graphPtr, (Pen*)&elemPtr->builtinPen);
+  DestroyBarPenProc(graphPtr, (Pen*)&bePtr->builtinPen);
 
-  if (elemPtr->activePenPtr)
-    Blt_FreePen((Pen *)elemPtr->activePenPtr);
-  if (elemPtr->normalPenPtr)
-    Blt_FreePen((Pen *)elemPtr->normalPenPtr);
+  if (ops->activePenPtr)
+    Blt_FreePen((Pen*)ops->activePenPtr);
+  if (ops->normalPenPtr)
+    Blt_FreePen((Pen*)ops->normalPenPtr);
 
-  ResetBar(elemPtr);
+  ResetBar(bePtr);
 
-  if (elemPtr->stylePalette) {
-    Blt_FreeStylePalette(elemPtr->stylePalette);
-    Blt_Chain_Destroy(elemPtr->stylePalette);
+  if (ops->stylePalette) {
+    Blt_FreeStylePalette(ops->stylePalette);
+    Blt_Chain_Destroy(ops->stylePalette);
   }
 
-  if (elemPtr->activeIndices)
-    free(elemPtr->activeIndices);
+  if (bePtr->activeIndices)
+    free(bePtr->activeIndices);
 }
 
 // Configure
 
-static int ConfigureBarProc(Graph* graphPtr, Element *basePtr)
+static int ConfigureBarProc(Graph* graphPtr, Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
-  Blt_ChainLink link;
-  BarStyle *stylePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  if (ConfigureBarPenProc(graphPtr, (Pen*)&elemPtr->builtinPen)!= TCL_OK)
+  if (ConfigureBarPenProc(graphPtr, (Pen*)&bePtr->builtinPen)!= TCL_OK)
     return TCL_ERROR;
 
   // Point to the static normal pen if no external pens have been selected.
-  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+  Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   if (!link) {
     link = Blt_Chain_AllocLink(sizeof(BarStyle));
-    Blt_Chain_LinkAfter(elemPtr->stylePalette, link, NULL);
+    Blt_Chain_LinkAfter(ops->stylePalette, link, NULL);
   }
-  stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
-  stylePtr->penPtr = NORMALPEN(elemPtr);
+  BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+  stylePtr->penPtr = NORMALPEN(ops);
 
   return TCL_OK;
 }
@@ -288,75 +297,67 @@ static void ResetStylePalette(Blt_Chain stylePalette)
 static void CheckBarStacks(Graph* graphPtr, Axis2d *pairPtr, 
 			   double *minPtr, double *maxPtr)
 {
-  BarGroup *gp, *gend;
-
   if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
     return;
 
+  BarGroup *gp, *gend;
   for (gp = graphPtr->barGroups, gend = gp + graphPtr->nBarGroups; gp < gend;
        gp++) {
     if ((gp->axes.x == pairPtr->x) && (gp->axes.y == pairPtr->y)) {
-      /*
-       * Check if any of the y-values (because of stacking) are greater
-       * than the current limits of the graph.
-       */
+
+      // Check if any of the y-values (because of stacking) are greater
+      // than the current limits of the graph.
       if (gp->sum < 0.0f) {
-	if (*minPtr > gp->sum) {
+	if (*minPtr > gp->sum)
 	  *minPtr = gp->sum;
-	}
-      } else {
-	if (*maxPtr < gp->sum) {
+      }
+      else {
+	if (*maxPtr < gp->sum)
 	  *maxPtr = gp->sum;
-	}
       }
     }
   }
 }
 
-static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
+static void GetBarExtentsProc(Element* elemPtr, Region2d *regPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
-  Graph* graphPtr;
-  double middle, barWidth;
-  int nPoints;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  graphPtr = elemPtr->obj.graphPtr;
+  Graph* graphPtr = bePtr->obj.graphPtr;
   regPtr->top = regPtr->left = DBL_MAX;
   regPtr->bottom = regPtr->right = -DBL_MAX;
 
-  if (!elemPtr->coords.x || !elemPtr->coords.y ||
-      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
+  if (!ops->coords.x || !ops->coords.y ||
+      !ops->coords.x->nValues || !ops->coords.y->nValues)
     return;
-  nPoints = NUMBEROFPOINTS(elemPtr);
 
-  barWidth = graphPtr->barWidth;
-  if (elemPtr->barWidth > 0.0f)
-    barWidth = elemPtr->barWidth;
+  int nPoints = NUMBEROFPOINTS(ops);
+  double barWidth = graphPtr->barWidth;
+  if (ops->barWidth > 0.0f)
+    barWidth = ops->barWidth;
 
-  middle = 0.5;
-  regPtr->left = elemPtr->coords.x->min - middle;
-  regPtr->right = elemPtr->coords.x->max + middle;
+  double middle = 0.5;
+  regPtr->left = ops->coords.x->min - middle;
+  regPtr->right = ops->coords.x->max + middle;
 
-  regPtr->top = elemPtr->coords.y->min;
-  regPtr->bottom = elemPtr->coords.y->max;
-  if (regPtr->bottom < graphPtr->baseline) {
+  regPtr->top = ops->coords.y->min;
+  regPtr->bottom = ops->coords.y->max;
+  if (regPtr->bottom < graphPtr->baseline)
     regPtr->bottom = graphPtr->baseline;
-  }
 
   // Handle stacked bar elements specially.
   // If element is stacked, the sum of its ordinates may be outside the
   // minimum/maximum limits of the element's data points.
   if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
-    CheckBarStacks(graphPtr, &elemPtr->axes, &regPtr->top, &regPtr->bottom);
+    CheckBarStacks(graphPtr, &ops->axes, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
-  if (elemPtr->axes.x->logScale) {
-    regPtr->left = Blt_FindElemValuesMinimum(elemPtr->coords.x, DBL_MIN) + 
-      middle;
-  }
+  if (ops->axes.x->logScale)
+    regPtr->left = Blt_FindElemValuesMinimum(ops->coords.x, DBL_MIN) + middle;
 
   // Fix y-min limits for barchart
-  if (elemPtr->axes.y->logScale) {
+  if (ops->axes.y->logScale) {
     if ((regPtr->top <= 0.0) || (regPtr->top > 1.0))
       regPtr->top = 1.0;
   }
@@ -366,15 +367,15 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
 
   // Correct the extents for error bars if they exist
-  if (elemPtr->xError && (elemPtr->xError->nValues > 0)) {
-    nPoints = MIN(elemPtr->xError->nValues, nPoints);
+  if (ops->xError && (ops->xError->nValues > 0)) {
+    nPoints = MIN(ops->xError->nValues, nPoints);
     for (int ii=0; ii<nPoints; ii++) {
-      double x = elemPtr->coords.x->values[ii] + elemPtr->xError->values[ii];
+      double x = ops->coords.x->values[ii] + ops->xError->values[ii];
       if (x > regPtr->right)
 	regPtr->right = x;
 
-      x = elemPtr->coords.x->values[ii] - elemPtr->xError->values[ii];
-      if (elemPtr->axes.x->logScale) {
+      x = ops->coords.x->values[ii] - ops->xError->values[ii];
+      if (ops->axes.x->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
 	  x = -x;
@@ -388,33 +389,33 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     }		     
   }
   else {
-    if ((elemPtr->xHigh) &&
-	(elemPtr->xHigh->nValues > 0) && 
-	(elemPtr->xHigh->max > regPtr->right))
-      regPtr->right = elemPtr->xHigh->max;
+    if ((ops->xHigh) &&
+	(ops->xHigh->nValues > 0) && 
+	(ops->xHigh->max > regPtr->right))
+      regPtr->right = ops->xHigh->max;
 
-    if (elemPtr->xLow && (elemPtr->xLow->nValues > 0)) {
+    if (ops->xLow && (ops->xLow->nValues > 0)) {
       double left;
-      if ((elemPtr->xLow->min <= 0.0) && (elemPtr->axes.x->logScale))
-	left = Blt_FindElemValuesMinimum(elemPtr->xLow, DBL_MIN);
+      if ((ops->xLow->min <= 0.0) && (ops->axes.x->logScale))
+	left = Blt_FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
-	left = elemPtr->xLow->min;
+	left = ops->xLow->min;
 
       if (left < regPtr->left)
 	regPtr->left = left;
     }
   }
 
-  if (elemPtr->yError && (elemPtr->yError->nValues > 0)) {
-    nPoints = MIN(elemPtr->yError->nValues, nPoints);
+  if (ops->yError && (ops->yError->nValues > 0)) {
+    nPoints = MIN(ops->yError->nValues, nPoints);
 
     for (int ii=0; ii<nPoints; ii++) {
-      double y = elemPtr->coords.y->values[ii] + elemPtr->yError->values[ii];
+      double y = ops->coords.y->values[ii] + ops->yError->values[ii];
       if (y > regPtr->bottom)
 	regPtr->bottom = y;
 
-      y = elemPtr->coords.y->values[ii] - elemPtr->yError->values[ii];
-      if (elemPtr->axes.y->logScale) {
+      y = ops->coords.y->values[ii] - ops->yError->values[ii];
+      if (ops->axes.y->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (y < 0.0) 
 	  y = -y;
@@ -428,18 +429,18 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
     }		     
   }
   else {
-    if ((elemPtr->yHigh) &&
-	(elemPtr->yHigh->nValues > 0) && 
-	(elemPtr->yHigh->max > regPtr->bottom))
-      regPtr->bottom = elemPtr->yHigh->max;
+    if ((ops->yHigh) &&
+	(ops->yHigh->nValues > 0) && 
+	(ops->yHigh->max > regPtr->bottom))
+      regPtr->bottom = ops->yHigh->max;
 
-    if (elemPtr->yLow && elemPtr->yLow->nValues > 0) {
+    if (ops->yLow && ops->yLow->nValues > 0) {
       double top;
-      if ((elemPtr->yLow->min <= 0.0) && 
-	  (elemPtr->axes.y->logScale))
-	top = Blt_FindElemValuesMinimum(elemPtr->yLow, DBL_MIN);
+      if ((ops->yLow->min <= 0.0) && 
+	  (ops->axes.y->logScale))
+	top = Blt_FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
-	top = elemPtr->yLow->min;
+	top = ops->yLow->min;
 
       if (top < regPtr->top)
 	regPtr->top = top;
@@ -447,312 +448,308 @@ static void GetBarExtentsProc(Element *basePtr, Region2d *regPtr)
   }
 }
 
-static void ClosestBarProc(Graph* graphPtr, Element *basePtr)
+static void ClosestBarProc(Graph* graphPtr, Element* elemPtr)
 {
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+
   ClosestSearch* searchPtr = &graphPtr->search;
-
-  BarElement* elemPtr = (BarElement *)basePtr;
-  XRectangle *bp;
-  double minDist;
-  int imin;
-  int i;
-
-  minDist = searchPtr->dist;
-  imin = 0;
+  double minDist = searchPtr->dist;
+  int imin = 0;
     
-  for (bp = elemPtr->bars, i = 0; i < elemPtr->nBars; i++, bp++) {
-    Point2d *pp, *pend;
-    Point2d outline[5];
-    double left, right, top, bottom;
-
+  int i;
+  XRectangle *bp;
+  for (bp = bePtr->bars, i = 0; i < bePtr->nBars; i++, bp++) {
     if (PointInRectangle(bp, searchPtr->x, searchPtr->y)) {
-      imin = elemPtr->barToData[i];
+      imin = bePtr->barToData[i];
       minDist = 0.0;
       break;
     }
-    left = bp->x, top = bp->y;
-    right = (double)(bp->x + bp->width);
-    bottom = (double)(bp->y + bp->height);
+    double left = bp->x;
+    double top = bp->y;
+    double right = (double)(bp->x + bp->width);
+    double bottom = (double)(bp->y + bp->height);
+
+    Point2d outline[5];
     outline[4].x = outline[3].x = outline[0].x = left;
     outline[4].y = outline[1].y = outline[0].y = top;
     outline[2].x = outline[1].x = right;
     outline[3].y = outline[2].y = bottom;
 
+    Point2d *pp, *pend;
     for (pp = outline, pend = outline + 4; pp < pend; pp++) {
-      Point2d t;
-      double dist;
-
-      t = Blt_GetProjection(searchPtr->x, searchPtr->y, pp, pp + 1);
-      if (t.x > right) {
+      Point2d t = Blt_GetProjection(searchPtr->x, searchPtr->y, pp, pp + 1);
+      if (t.x > right)
 	t.x = right;
-      } else if (t.x < left) {
+      else if (t.x < left)
 	t.x = left;
-      }
-      if (t.y > bottom) {
+
+      if (t.y > bottom)
 	t.y = bottom;
-      } else if (t.y < top) {
+      else if (t.y < top)
 	t.y = top;
-      }
-      dist = hypot((t.x - searchPtr->x), (t.y - searchPtr->y));
+
+      double dist = hypot((t.x - searchPtr->x), (t.y - searchPtr->y));
       if (dist < minDist) {
 	minDist = dist;
-	imin = elemPtr->barToData[i];
+	imin = bePtr->barToData[i];
       }
     }
   }
   if (minDist < searchPtr->dist) {
-    searchPtr->elemPtr = (Element *)elemPtr;
+    searchPtr->elemPtr = (Element*)bePtr;
     searchPtr->dist = minDist;
     searchPtr->index = imin;
     searchPtr->point.x = 
-      elemPtr->coords.x ? (double)elemPtr->coords.x->values[imin] : 0;
+      ops->coords.x ? (double)ops->coords.x->values[imin] : 0;
     searchPtr->point.y = 
-      elemPtr->coords.y ? (double)elemPtr->coords.y->values[imin] : 0;
+      ops->coords.y ? (double)ops->coords.y->values[imin] : 0;
   }
 }
 
-static void MergePens(BarElement* elemPtr, BarStyle **dataToStyle)
+static void MergePens(BarElement* bePtr, BarStyle **dataToStyle)
 {
-  if (Blt_Chain_GetLength(elemPtr->stylePalette) < 2) {
-    Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+
+  if (Blt_Chain_GetLength(ops->stylePalette) < 2) {
+    Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
-    stylePtr->nBars = elemPtr->nBars;
-    stylePtr->bars = elemPtr->bars;
-    stylePtr->symbolSize = elemPtr->bars->width / 2;
-    stylePtr->xeb.length = elemPtr->xeb.length;
-    stylePtr->xeb.segments = elemPtr->xeb.segments;
-    stylePtr->yeb.length = elemPtr->yeb.length;
-    stylePtr->yeb.segments = elemPtr->yeb.segments;
+    stylePtr->nBars = bePtr->nBars;
+    stylePtr->bars = bePtr->bars;
+    stylePtr->symbolSize = bePtr->bars->width / 2;
+    stylePtr->xeb.length = bePtr->xeb.length;
+    stylePtr->xeb.segments = bePtr->xeb.segments;
+    stylePtr->yeb.length = bePtr->yeb.length;
+    stylePtr->yeb.segments = bePtr->yeb.segments;
     return;
   }
 
   // We have more than one style. Group bar segments of like pen styles
   // together
-  if (elemPtr->nBars > 0) {
+  if (bePtr->nBars > 0) {
     Blt_ChainLink link;
     XRectangle *bars, *bp;
     int *ip, *barToData;
 
-    bars = (XRectangle*)malloc(elemPtr->nBars * sizeof(XRectangle));
-    barToData = (int*)malloc(elemPtr->nBars * sizeof(int));
+    bars = (XRectangle*)malloc(bePtr->nBars * sizeof(XRectangle));
+    barToData = (int*)malloc(bePtr->nBars * sizeof(int));
     bp = bars, ip = barToData;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
+    for (link = Blt_Chain_FirstLink(ops->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
       int i;
 
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->symbolSize = bp->width / 2;
       stylePtr->bars = bp;
-      for (i = 0; i < elemPtr->nBars; i++) {
+      for (i = 0; i < bePtr->nBars; i++) {
 	int iData;
 
-	iData = elemPtr->barToData[i];
+	iData = bePtr->barToData[i];
 	if (dataToStyle[iData] == stylePtr) {
-	  *bp++ = elemPtr->bars[i];
+	  *bp++ = bePtr->bars[i];
 	  *ip++ = iData;
 	}
       }
       stylePtr->nBars = bp - stylePtr->bars;
     }
-    free(elemPtr->bars);
-    free(elemPtr->barToData);
-    elemPtr->bars = bars;
-    elemPtr->barToData = barToData;
+    free(bePtr->bars);
+    free(bePtr->barToData);
+    bePtr->bars = bars;
+    bePtr->barToData = barToData;
   }
 
-  if (elemPtr->xeb.length > 0) {
+  if (bePtr->xeb.length > 0) {
     Blt_ChainLink link;
     Segment2d *sp;
     int *ip;
 
     Segment2d* bars = 
-      (Segment2d*)malloc(elemPtr->xeb.length * sizeof(Segment2d));
-    int* map = (int*)malloc(elemPtr->xeb.length * sizeof(int));
+      (Segment2d*)malloc(bePtr->xeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(bePtr->xeb.length * sizeof(int));
     sp = bars, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); 
+    for (link = Blt_Chain_FirstLink(ops->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
       int i;
 
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
-      for (i = 0; i < elemPtr->xeb.length; i++) {
+      for (i = 0; i < bePtr->xeb.length; i++) {
 	int iData;
 
-	iData = elemPtr->xeb.map[i];
+	iData = bePtr->xeb.map[i];
 	if (dataToStyle[iData] == stylePtr) {
-	  *sp++ = elemPtr->xeb.segments[i];
+	  *sp++ = bePtr->xeb.segments[i];
 	  *ip++ = iData;
 	}
       }
       stylePtr->xeb.length = sp - stylePtr->xeb.segments;
     }
-    free(elemPtr->xeb.segments);
-    elemPtr->xeb.segments = bars;
-    free(elemPtr->xeb.map);
-    elemPtr->xeb.map = map;
+    free(bePtr->xeb.segments);
+    bePtr->xeb.segments = bars;
+    free(bePtr->xeb.map);
+    bePtr->xeb.map = map;
   }
-  if (elemPtr->yeb.length > 0) {
+  if (bePtr->yeb.length > 0) {
     Blt_ChainLink link;
     Segment2d *sp;
     int *ip;
 
     Segment2d* bars = 
-      (Segment2d*)malloc(elemPtr->yeb.length * sizeof(Segment2d));
-    int* map = (int*)malloc(elemPtr->yeb.length * sizeof(int));
+      (Segment2d*)malloc(bePtr->yeb.length * sizeof(Segment2d));
+    int* map = (int*)malloc(bePtr->yeb.length * sizeof(int));
     sp = bars, ip = map;
-    for (link = Blt_Chain_FirstLink(elemPtr->stylePalette); link; 
+    for (link = Blt_Chain_FirstLink(ops->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
       int i;
 
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->yeb.segments = sp;
-      for (i = 0; i < elemPtr->yeb.length; i++) {
+      for (i = 0; i < bePtr->yeb.length; i++) {
 	int iData;
 
-	iData = elemPtr->yeb.map[i];
+	iData = bePtr->yeb.map[i];
 	if (dataToStyle[iData] == stylePtr) {
-	  *sp++ = elemPtr->yeb.segments[i];
+	  *sp++ = bePtr->yeb.segments[i];
 	  *ip++ = iData;
 	}
       }
       stylePtr->yeb.length = sp - stylePtr->yeb.segments;
     }
-    free(elemPtr->yeb.segments);
-    elemPtr->yeb.segments = bars;
-    free(elemPtr->yeb.map);
-    elemPtr->yeb.map = map;
+    free(bePtr->yeb.segments);
+    bePtr->yeb.segments = bars;
+    free(bePtr->yeb.map);
+    bePtr->yeb.map = map;
   }
 }
 
-static void MapActiveBars(BarElement* elemPtr)
+static void MapActiveBars(BarElement* bePtr)
 {
-  if (elemPtr->activeRects) {
-    free(elemPtr->activeRects);
-    elemPtr->activeRects = NULL;
+  if (bePtr->activeRects) {
+    free(bePtr->activeRects);
+    bePtr->activeRects = NULL;
   }
-  if (elemPtr->activeToData) {
-    free(elemPtr->activeToData);
-    elemPtr->activeToData = NULL;
+  if (bePtr->activeToData) {
+    free(bePtr->activeToData);
+    bePtr->activeToData = NULL;
   }
-  elemPtr->nActive = 0;
+  bePtr->nActive = 0;
 
-  if (elemPtr->nActiveIndices > 0) {
+  if (bePtr->nActiveIndices > 0) {
     int i;
     int count;
 
     XRectangle *activeRects = 
-      (XRectangle*)malloc(sizeof(XRectangle) * elemPtr->nActiveIndices);
-    int* activeToData = (int*)malloc(sizeof(int) * elemPtr->nActiveIndices);
+      (XRectangle*)malloc(sizeof(XRectangle) * bePtr->nActiveIndices);
+    int* activeToData = (int*)malloc(sizeof(int) * bePtr->nActiveIndices);
     count = 0;
-    for (i = 0; i < elemPtr->nBars; i++) {
+    for (i = 0; i < bePtr->nBars; i++) {
       int *ip, *iend;
 
-      for (ip = elemPtr->activeIndices, 
-	     iend = ip + elemPtr->nActiveIndices; ip < iend; ip++) {
-	if (elemPtr->barToData[i] == *ip) {
-	  activeRects[count] = elemPtr->bars[i];
+      for (ip = bePtr->activeIndices, 
+	     iend = ip + bePtr->nActiveIndices; ip < iend; ip++) {
+	if (bePtr->barToData[i] == *ip) {
+	  activeRects[count] = bePtr->bars[i];
 	  activeToData[count] = i;
 	  count++;
 	}
       }
     }
-    elemPtr->nActive = count;
-    elemPtr->activeRects = activeRects;
-    elemPtr->activeToData = activeToData;
+    bePtr->nActive = count;
+    bePtr->activeRects = activeRects;
+    bePtr->activeToData = activeToData;
   }
-  elemPtr->flags &= ~ACTIVE_PENDING;
+  bePtr->flags &= ~ACTIVE_PENDING;
 }
 
-static void ResetBar(BarElement* elemPtr)
+static void ResetBar(BarElement* bePtr)
 {
-  ResetStylePalette(elemPtr->stylePalette);
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  if (elemPtr->activeRects)
-    free(elemPtr->activeRects);
+  ResetStylePalette(ops->stylePalette);
 
-  if (elemPtr->activeToData)
-    free(elemPtr->activeToData);
+  if (bePtr->activeRects)
+    free(bePtr->activeRects);
 
-  if (elemPtr->xeb.segments)
-    free(elemPtr->xeb.segments);
+  if (bePtr->activeToData)
+    free(bePtr->activeToData);
 
-  if (elemPtr->xeb.map)
-    free(elemPtr->xeb.map);
+  if (bePtr->xeb.segments)
+    free(bePtr->xeb.segments);
 
-  if (elemPtr->yeb.segments)
-    free(elemPtr->yeb.segments);
+  if (bePtr->xeb.map)
+    free(bePtr->xeb.map);
 
-  if (elemPtr->yeb.map)
-    free(elemPtr->yeb.map);
+  if (bePtr->yeb.segments)
+    free(bePtr->yeb.segments);
 
-  if (elemPtr->bars)
-    free(elemPtr->bars);
+  if (bePtr->yeb.map)
+    free(bePtr->yeb.map);
 
-  if (elemPtr->barToData)
-    free(elemPtr->barToData);
+  if (bePtr->bars)
+    free(bePtr->bars);
 
-  elemPtr->activeToData = elemPtr->xeb.map = elemPtr->yeb.map = 
-    elemPtr->barToData = NULL;
-  elemPtr->activeRects = elemPtr->bars = NULL;
-  elemPtr->xeb.segments = elemPtr->yeb.segments = NULL;
-  elemPtr->nActive = elemPtr->xeb.length = elemPtr->yeb.length = 
-    elemPtr->nBars = 0;
+  if (bePtr->barToData)
+    free(bePtr->barToData);
+
+  bePtr->activeToData = bePtr->xeb.map = bePtr->yeb.map = 
+    bePtr->barToData = NULL;
+  bePtr->activeRects = NULL;
+  bePtr->bars = NULL;
+  bePtr->xeb.segments = NULL;
+  bePtr->yeb.segments = NULL;
+  bePtr->nActive = 0;
+  bePtr->xeb.length = 0;
+  bePtr->yeb.length = 0;
+  bePtr->nBars = 0;
 }
 
-static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr, 
+static void MapErrorBars(Graph* graphPtr, BarElement* bePtr, 
 			 BarStyle **dataToStyle)
 {
-  int n, nPoints;
-  Region2d reg;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
+  Region2d reg;
   Blt_GraphExtents(graphPtr, &reg);
 
-  nPoints = NUMBEROFPOINTS(elemPtr);
-  n =0;
-  if (elemPtr->coords.x && elemPtr->coords.y) {
-    if (elemPtr->xError && (elemPtr->xError->nValues > 0))
-      n = MIN(elemPtr->xError->nValues, nPoints);
+  int nPoints = NUMBEROFPOINTS(ops);
+  int n =0;
+  if (ops->coords.x && ops->coords.y) {
+    if (ops->xError && (ops->xError->nValues > 0))
+      n = MIN(ops->xError->nValues, nPoints);
     else
-      if (elemPtr->xHigh && elemPtr->xLow)
-	n = MIN3(elemPtr->xHigh->nValues, elemPtr->xLow->nValues, nPoints);
+      if (ops->xHigh && ops->xLow)
+	n = MIN3(ops->xHigh->nValues, ops->xLow->nValues, nPoints);
   }
 
   if (n > 0) {
-    Segment2d *bars;
-    Segment2d *segPtr;
-    int *map;
-    int *indexPtr;
-    int i;
-		
-    segPtr = bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = map = (int*)malloc(n * 3 * sizeof(int));
-    for (i = 0; i < n; i++) {
-      double x, y;
-      double high, low;
-      BarStyle *stylePtr;
+    Segment2d*bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    Segment2d* segPtr = bars;
+    int* map = (int*)malloc(n * 3 * sizeof(int));
+    int* indexPtr = map;
 
-      x = elemPtr->coords.x->values[i];
-      y = elemPtr->coords.y->values[i];
-      stylePtr = dataToStyle[i];
+    for (int ii=0; ii<n; ii++) {
+      double x = ops->coords.x->values[ii];
+      double y = ops->coords.y->values[ii];
+      BarStyle* stylePtr = dataToStyle[ii];
+
+      double high, low;
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->xError->nValues > 0) {
-	  high = x + elemPtr->xError->values[i];
-	  low = x - elemPtr->xError->values[i];
+	if (ops->xError->nValues > 0) {
+	  high = x + ops->xError->values[ii];
+	  low = x - ops->xError->values[ii];
 	}
 	else {
-	  high = elemPtr->xHigh ? elemPtr->xHigh->values[i] : 0;
-	  low  = elemPtr->xLow  ? elemPtr->xLow->values[i]  : 0;
+	  high = ops->xHigh ? ops->xHigh->values[ii] : 0;
+	  low  = ops->xLow  ? ops->xLow->values[ii]  : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p, q;
-
-	  p = Blt_Map2D(graphPtr, high, y, &elemPtr->axes);
-	  q = Blt_Map2D(graphPtr, low, y, &elemPtr->axes);
+	  Point2d p = Blt_Map2D(graphPtr, high, y, &ops->axes);
+	  Point2d q = Blt_Map2D(graphPtr, low, y, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	  /* Left cap */
 	  segPtr->p.x = segPtr->q.x = p.x;
@@ -760,7 +757,7 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	  /* Right cap */
 	  segPtr->p.x = segPtr->q.x = q.x;
@@ -768,60 +765,53 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	}
       }
     }
-    elemPtr->xeb.segments = bars;
-    elemPtr->xeb.length = segPtr - bars;
-    elemPtr->xeb.map = map;
+    bePtr->xeb.segments = bars;
+    bePtr->xeb.length = segPtr - bars;
+    bePtr->xeb.map = map;
   }
 
   n =0;
-  if (elemPtr->coords.x && elemPtr->coords.y) {
-    if (elemPtr->yError && (elemPtr->yError->nValues > 0))
-      n = MIN(elemPtr->yError->nValues, nPoints);
+  if (ops->coords.x && ops->coords.y) {
+    if (ops->yError && (ops->yError->nValues > 0))
+      n = MIN(ops->yError->nValues, nPoints);
     else
-      if (elemPtr->yHigh && elemPtr->yLow)
-	n = MIN3(elemPtr->yHigh->nValues, elemPtr->yLow->nValues, nPoints);
+      if (ops->yHigh && ops->yLow)
+	n = MIN3(ops->yHigh->nValues, ops->yLow->nValues, nPoints);
   }
 
   if (n > 0) {
-    Segment2d *bars;
-    Segment2d *segPtr;
-    int *map;
-    int *indexPtr;
-    int i;
-		
-    segPtr = bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = map = (int*)malloc(n * 3 * sizeof(int));
-    for (i = 0; i < n; i++) {
-      double x, y;
-      double high, low;
-      BarStyle *stylePtr;
+    Segment2d* bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+    Segment2d* segPtr = bars;
+    int* map = (int*)malloc(n * 3 * sizeof(int));
+    int* indexPtr = map;
 
-      x = elemPtr->coords.x->values[i];
-      y = elemPtr->coords.y->values[i];
-      stylePtr = dataToStyle[i];
+    for (int ii=0; ii<n; ii++) {
+      double x = ops->coords.x->values[ii];
+      double y = ops->coords.y->values[ii];
+      BarStyle *stylePtr = dataToStyle[ii];
+
+      double high, low;
       if ((isfinite(x)) && (isfinite(y))) {
-	if (elemPtr->yError->nValues > 0) {
-	  high = y + elemPtr->yError->values[i];
-	  low = y - elemPtr->yError->values[i];
+	if (ops->yError->nValues > 0) {
+	  high = y + ops->yError->values[ii];
+	  low = y - ops->yError->values[ii];
 	} else {
-	  high = elemPtr->yHigh->values[i];
-	  low = elemPtr->yLow->values[i];
+	  high = ops->yHigh->values[ii];
+	  low = ops->yLow->values[ii];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p, q;
-		    
-	  p = Blt_Map2D(graphPtr, x, high, &elemPtr->axes);
-	  q = Blt_Map2D(graphPtr, x, low, &elemPtr->axes);
+	  Point2d p = Blt_Map2D(graphPtr, x, high, &ops->axes);
+	  Point2d q = Blt_Map2D(graphPtr, x, low, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	  /* Top cap. */
 	  segPtr->p.y = segPtr->q.y = p.y;
@@ -829,7 +819,7 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	  /* Bottom cap. */
 	  segPtr->p.y = segPtr->q.y = q.y;
@@ -837,49 +827,45 @@ static void MapErrorBars(Graph* graphPtr, BarElement* elemPtr,
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	}
       }
     }
-    elemPtr->yeb.segments = bars;
-    elemPtr->yeb.length = segPtr - bars;
-    elemPtr->yeb.map = map;
+    bePtr->yeb.segments = bars;
+    bePtr->yeb.length = segPtr - bars;
+    bePtr->yeb.map = map;
   }
 }
 
-static void MapBarProc(Graph* graphPtr, Element *basePtr)
+static void MapBarProc(Graph* graphPtr, Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
-  BarStyle **dataToStyle;
-  double *x, *y;
-  double barWidth, barOffset;
-  double baseline, ybot;
-  int *barToData;			/* Maps bars to data point indices */
-  int invertBar;
-  int nPoints, count;
-  XRectangle *rp, *bars;
-  int i;
-  int size;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  ResetBar(elemPtr);
-  if (!elemPtr->coords.x || !elemPtr->coords.y ||
-      !elemPtr->coords.x->nValues || !elemPtr->coords.y->nValues)
+  ResetBar(bePtr);
+  if (!ops->coords.x || !ops->coords.y ||
+      !ops->coords.x->nValues || !ops->coords.y->nValues)
     return;
-  nPoints = NUMBEROFPOINTS(elemPtr);
+  int nPoints = NUMBEROFPOINTS(ops);
 
-  barWidth = graphPtr->barWidth;
-  barWidth = (elemPtr->barWidth > 0.0f) ? elemPtr->barWidth:graphPtr->barWidth;
-  baseline = (elemPtr->axes.y->logScale) ? 0.0 : graphPtr->baseline;
-  barOffset = barWidth * 0.5;
+  //  double barWidth = graphPtr->barWidth;
+  double barWidth = (ops->barWidth > 0.0f) ? 
+    ops->barWidth : graphPtr->barWidth;
+  double baseline = (ops->axes.y->logScale) ? 0.0 : graphPtr->baseline;
+  double barOffset = barWidth * 0.5;
 
   // Create an array of bars representing the screen coordinates of all the
   // segments in the bar.
-  bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
-  barToData = (int*)calloc(nPoints, sizeof(int));
+  XRectangle* bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
+  int* barToData = (int*)calloc(nPoints, sizeof(int));
 
-  x = elemPtr->coords.x->values, y = elemPtr->coords.y->values;
-  count = 0;
+  double* x = ops->coords.x->values;
+  double* y = ops->coords.y->values;
+  int count = 0;
+
+  int i;
+  XRectangle *rp;
   for (rp = bars, i = 0; i < nPoints; i++) {
     Point2d c1, c2;			/* Two opposite corners of the rectangle
 					 * in graph coordinates. */
@@ -887,8 +873,8 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
     int height;
     double right, left, top, bottom;
 
-    if (((x[i] - barWidth) > elemPtr->axes.x->axisRange.max) ||
-	((x[i] + barWidth) < elemPtr->axes.x->axisRange.min)) {
+    if (((x[i] - barWidth) > ops->axes.x->axisRange.max) ||
+	((x[i] + barWidth) < ops->axes.x->axisRange.min)) {
       continue;			/* Abscissa is out of range of the
 				 * x-axis */
     }
@@ -908,14 +894,14 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
       BarSetKey key;
 
       key.value = (float)x[i];
-      key.axes = elemPtr->axes;
+      key.axes = ops->axes;
       key.axes.y = NULL;
       hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
       if (hPtr) {
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	const char *name = (elemPtr->groupName) ? elemPtr->groupName : 
-	  elemPtr->axes.y->obj.name;
+	const char *name = (ops->groupName) ? 
+	  ops->groupName : ops->axes.y->obj.name;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
 	  double slice, width, offset;
@@ -959,21 +945,21 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
 	}
       }
     }
-    invertBar = FALSE;
+    int invertBar = 0;
     if (c1.y < c2.y) {
       double temp;
 
       /* Handle negative bar values by swapping ordinates */
       temp = c1.y, c1.y = c2.y, c2.y = temp;
-      invertBar = TRUE;
+      invertBar = 1;
     }
     /*
      * Get the two corners of the bar segment and compute the rectangle
      */
-    ybot = c2.y;
-    c1 = Blt_Map2D(graphPtr, c1.x, c1.y, &elemPtr->axes);
-    c2 = Blt_Map2D(graphPtr, c2.x, c2.y, &elemPtr->axes);
-    if ((ybot == 0.0) && (elemPtr->axes.y->logScale)) {
+    double ybot = c2.y;
+    c1 = Blt_Map2D(graphPtr, c1.x, c1.y, &ops->axes);
+    c2 = Blt_Map2D(graphPtr, c2.x, c2.y, &ops->axes);
+    if ((ybot == 0.0) && (ops->axes.y->logScale)) {
       c2.y = graphPtr->bottom;
     }
 	    
@@ -992,8 +978,8 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
     /* Bound the bars horizontally by the width of the graph window */
     /* Bound the bars vertically by the position of the axis. */
     if (graphPtr->stackAxes) {
-      top = elemPtr->axes.y->screenMin;
-      bottom = elemPtr->axes.y->screenMin + elemPtr->axes.y->screenRange;
+      top = ops->axes.y->screenMin;
+      bottom = ops->axes.y->screenMin + ops->axes.y->screenRange;
       left = graphPtr->left;
       right = graphPtr->right;
     } else {
@@ -1039,55 +1025,57 @@ static void MapBarProc(Graph* graphPtr, Element *basePtr)
     count++;
     rp++;
   }
-  elemPtr->nBars = count;
-  elemPtr->bars = bars;
-  elemPtr->barToData = barToData;
-  if (elemPtr->nActiveIndices > 0) {
-    MapActiveBars(elemPtr);
+  bePtr->nBars = count;
+  bePtr->bars = bars;
+  bePtr->barToData = barToData;
+  if (bePtr->nActiveIndices > 0) {
+    MapActiveBars(bePtr);
   }
 	
-  size = 20;
-  if (count > 0) {
+  int size = 20;
+  if (count > 0)
     size = bars->width;
-  }
 
   // Set the symbol size of all the pen styles
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarPen* penPtr = stylePtr->penPtr;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = 
-      (stylePtr->penPtr->errorBarCapWidth > 0) 
-      ? stylePtr->penPtr->errorBarCapWidth : (size * 66666) / 100000;
+      (penOps->errorBarCapWidth > 0) 
+      ? penOps->errorBarCapWidth : (size * 66666) / 100000;
     stylePtr->errorBarCapWidth /= 2;
   }
 
-  dataToStyle = (BarStyle**)Blt_StyleMap((Element *)elemPtr);
-  if (((elemPtr->yHigh && elemPtr->yHigh->nValues > 0) && 
-       (elemPtr->yLow && elemPtr->yLow->nValues > 0)) ||
-      ((elemPtr->xHigh && elemPtr->xHigh->nValues > 0) &&
-       (elemPtr->xLow && elemPtr->xLow->nValues > 0)) ||
-      (elemPtr->xError && elemPtr->xError->nValues > 0) || 
-      (elemPtr->yError && elemPtr->yError->nValues > 0)) {
-    MapErrorBars(graphPtr, elemPtr, dataToStyle);
+  BarStyle** dataToStyle = (BarStyle**)Blt_StyleMap((Element*)bePtr);
+  if (((ops->yHigh && ops->yHigh->nValues > 0) && 
+       (ops->yLow && ops->yLow->nValues > 0)) ||
+      ((ops->xHigh && ops->xHigh->nValues > 0) &&
+       (ops->xLow && ops->xLow->nValues > 0)) ||
+      (ops->xError && ops->xError->nValues > 0) || 
+      (ops->yError && ops->yError->nValues > 0)) {
+    MapErrorBars(graphPtr, bePtr, dataToStyle);
   }
 
-  MergePens(elemPtr, dataToStyle);
+  MergePens(bePtr, dataToStyle);
   free(dataToStyle);
 }
 
 static void DrawSymbolProc(Graph* graphPtr, Drawable drawable, 
-			   Element *basePtr, int x, int y, int size)
+			   Element* elemPtr, int x, int y, int size)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
-  BarPen* penPtr;
-  int radius;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  penPtr = NORMALPEN(elemPtr);
-  if (!penPtr->fill && !penPtr->outlineColor)
+  BarPen* penPtr = NORMALPEN(ops);
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+
+  if (!penOps->fill && !penOps->outlineColor)
     return;
 
-  radius = (size / 2);
+  int radius = (size / 2);
   size--;
 
   x -= radius;
@@ -1095,12 +1083,12 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
   if (penPtr->fillGC)
     XSetTSOrigin(graphPtr->display, penPtr->fillGC, x, y);
 
-  if (penPtr->stipple != None)
+  if (penOps->stipple != None)
     XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, x, y, 
 		   size, size);
   else
-    Tk_Fill3DRectangle(graphPtr->tkwin, drawable, penPtr->fill, 
-		       x, y, size, size, penPtr->borderWidth, penPtr->relief);
+    Tk_Fill3DRectangle(graphPtr->tkwin, drawable, penOps->fill, 
+		       x, y, size, size, penOps->borderWidth, penOps->relief);
 
   XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC, x, y, 
 		 size, size);
@@ -1140,56 +1128,55 @@ static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
 static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 			    XRectangle *bars, int nBars)
 {
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
   TkRegion rgn;
 
-  {
-    XRectangle clip;
-    clip.x = graphPtr->left;
-    clip.y = graphPtr->top;
-    clip.width  = graphPtr->right - graphPtr->left + 1;
-    clip.height = graphPtr->bottom - graphPtr->top + 1;
-    rgn = TkCreateRegion();
-    TkUnionRectWithRegion(&clip, rgn, rgn);
-  }
+  XRectangle clip;
+  clip.x = graphPtr->left;
+  clip.y = graphPtr->top;
+  clip.width  = graphPtr->right - graphPtr->left + 1;
+  clip.height = graphPtr->bottom - graphPtr->top + 1;
+  rgn = TkCreateRegion();
+  TkUnionRectWithRegion(&clip, rgn, rgn);
 
-  if (penPtr->fill) {
-    int relief = (penPtr->relief == TK_RELIEF_SOLID) ? 
-      TK_RELIEF_FLAT: penPtr->relief;
+  if (penOps->fill) {
+    int relief = (penOps->relief == TK_RELIEF_SOLID) ? 
+      TK_RELIEF_FLAT: penOps->relief;
 
-    int hasOutline = ((relief == TK_RELIEF_FLAT) && penPtr->outlineColor);
-    if (penPtr->stipple != None)
+    int hasOutline = ((relief == TK_RELIEF_FLAT) && penOps->outlineColor);
+    if (penOps->stipple != None)
       TkSetRegion(graphPtr->display, penPtr->fillGC, rgn);
 
-    SetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill, rgn);
+    SetBackgroundClipRegion(graphPtr->tkwin, penOps->fill, rgn);
 
     if (hasOutline)
       TkSetRegion(graphPtr->display, penPtr->outlineGC, rgn);
 
     XRectangle *rp, *rend;
     for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-      if (penPtr->stipple != None)
+      if (penOps->stipple != None)
 	XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, 
 		       rp->x, rp->y, rp->width, rp->height);
       else
 	Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
-			   penPtr->fill, rp->x, rp->y, rp->width, rp->height, 
-			   penPtr->borderWidth, relief);
+			   penOps->fill, rp->x, rp->y, rp->width, rp->height, 
+			   penOps->borderWidth, relief);
 
       if (hasOutline)
 	XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC, 
 		       rp->x, rp->y, rp->width, rp->height);
     }
 
-    UnsetBackgroundClipRegion(graphPtr->tkwin, penPtr->fill);
+    UnsetBackgroundClipRegion(graphPtr->tkwin, penOps->fill);
 
     if (hasOutline)
       XSetClipMask(graphPtr->display, penPtr->outlineGC, None);
 
-    if (penPtr->stipple != None)
+    if (penOps->stipple != None)
       XSetClipMask(graphPtr->display, penPtr->fillGC, None);
 
   }
-  else if (penPtr->outlineColor) {
+  else if (penOps->outlineColor) {
     TkSetRegion(graphPtr->display, penPtr->outlineGC, rgn);
     XDrawRectangles(graphPtr->display, drawable, penPtr->outlineGC, bars, 
 		    nBars);
@@ -1200,126 +1187,132 @@ static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 }
 
 static void DrawBarValues(Graph* graphPtr, Drawable drawable, 
-			  BarElement* elemPtr,
+			  BarElement* bePtr,
 			  BarPen* penPtr, XRectangle *bars, int nBars, 
 			  int *barToData)
 {
-  XRectangle *rp, *rend;
-  int count;
-  const char *fmt;
-    
-  fmt = penPtr->valueFormat;
-  if (!fmt) {
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+
+  const char *fmt = penOps->valueFormat;
+  if (!fmt)
     fmt = "%g";
-  }
-  count = 0;
+
+  int count = 0;
+  XRectangle *rp, *rend;
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
     Point2d anchorPos;
-    double x, y;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
-    x = elemPtr->coords.x->values[barToData[count]];
-    y = elemPtr->coords.y->values[barToData[count]];
+    double x = ops->coords.x->values[barToData[count]];
+    double y = ops->coords.y->values[barToData[count]];
 
     count++;
-    if (penPtr->valueShow == SHOW_X) {
+    if (penOps->valueShow == SHOW_X)
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
-    } else if (penPtr->valueShow == SHOW_Y) {
+    else if (penOps->valueShow == SHOW_Y)
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
-    } else if (penPtr->valueShow == SHOW_BOTH) {
+    else if (penOps->valueShow == SHOW_BOTH) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
+
     if (graphPtr->inverted) {
       anchorPos.y = rp->y + rp->height * 0.5;
       anchorPos.x = rp->x + rp->width;
-      if (x < graphPtr->baseline) {
+      if (x < graphPtr->baseline)
 	anchorPos.x -= rp->width;
-      } 
-    } else {
+    }
+    else {
       anchorPos.x = rp->x + rp->width * 0.5;
       anchorPos.y = rp->y;
-      if (y < graphPtr->baseline) {			
+      if (y < graphPtr->baseline)
 	anchorPos.y += rp->height;
-      }
     }
-    Blt_DrawText(graphPtr->tkwin, drawable, string, &penPtr->valueStyle, 
+    Blt_DrawText(graphPtr->tkwin, drawable, string, &penOps->valueStyle, 
 		 (int)anchorPos.x, (int)anchorPos.y);
   }
 }
 
 static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable, 
-			      Element *basePtr)
+			      Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
   int count = 0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+
     if (stylePtr->nBars > 0)
       DrawBarSegments(graphPtr, drawable, penPtr, stylePtr->bars,
 		      stylePtr->nBars);
 
-    if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X))
+    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
       Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
-    if ((stylePtr->yeb.length > 0) && (penPtr->errorBarShow & SHOW_Y))
+    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
       Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
-    if (penPtr->valueShow != SHOW_NONE)
-      DrawBarValues(graphPtr, drawable, elemPtr, penPtr, 
+    if (penOps->valueShow != SHOW_NONE)
+      DrawBarValues(graphPtr, drawable, bePtr, penPtr, 
 		    stylePtr->bars, stylePtr->nBars, 
-		    elemPtr->barToData + count);
+		    bePtr->barToData + count);
 
     count += stylePtr->nBars;
   }
 }
 
 static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable, 
-			      Element *basePtr)
+			      Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  if (elemPtr->activePenPtr) {
-    BarPen* penPtr = elemPtr->activePenPtr;
+  if (ops->activePenPtr) {
+    BarPen* penPtr = ops->activePenPtr;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
 
-    if (elemPtr->nActiveIndices > 0) {
-      if (elemPtr->flags & ACTIVE_PENDING) {
-	MapActiveBars(elemPtr);
+    if (bePtr->nActiveIndices > 0) {
+      if (bePtr->flags & ACTIVE_PENDING) {
+	MapActiveBars(bePtr);
       }
-      DrawBarSegments(graphPtr, drawable, penPtr, elemPtr->activeRects, 
-		      elemPtr->nActive);
-      if (penPtr->valueShow != SHOW_NONE) {
-	DrawBarValues(graphPtr, drawable, elemPtr, penPtr, 
-		      elemPtr->activeRects, elemPtr->nActive, 
-		      elemPtr->activeToData);
+      DrawBarSegments(graphPtr, drawable, penPtr, bePtr->activeRects, 
+		      bePtr->nActive);
+      if (penOps->valueShow != SHOW_NONE) {
+	DrawBarValues(graphPtr, drawable, bePtr, penPtr, 
+		      bePtr->activeRects, bePtr->nActive, 
+		      bePtr->activeToData);
       }
     }
-    else if (elemPtr->nActiveIndices < 0) {
-      DrawBarSegments(graphPtr, drawable, penPtr, elemPtr->bars, 
-		      elemPtr->nBars);
-      if (penPtr->valueShow != SHOW_NONE) {
-	DrawBarValues(graphPtr, drawable, elemPtr, penPtr, 
-		      elemPtr->bars, elemPtr->nBars, elemPtr->barToData);
+    else if (bePtr->nActiveIndices < 0) {
+      DrawBarSegments(graphPtr, drawable, penPtr, bePtr->bars, 
+		      bePtr->nBars);
+      if (penOps->valueShow != SHOW_NONE) {
+	DrawBarValues(graphPtr, drawable, bePtr, penPtr, 
+		      bePtr->bars, bePtr->nBars, bePtr->barToData);
       }
     }
   }
 }
 
-static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
+static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element* elemPtr,
 				   double x, double y, int size)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
-  BarPen* penPtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  penPtr = NORMALPEN(elemPtr);
-  if (!penPtr->fill && !penPtr->outlineColor)
+  BarPen* penPtr = NORMALPEN(ops);
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+
+  if (!penOps->fill && !penOps->outlineColor)
     return;
 
   /*
@@ -1329,19 +1322,19 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
   Blt_Ps_Append(ps, "\n"
 		"/DrawSymbolProc {\n"
 		"gsave\n    ");
-  if (penPtr->stipple != None) {
-    if (penPtr->fill) {
-      Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penPtr->fill));
+  if (penOps->stipple != None) {
+    if (penOps->fill) {
+      Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penOps->fill));
       Blt_Ps_Append(ps, "    gsave fill grestore\n    ");
     }
-    if (penPtr->outlineColor) {
-      Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
+    if (penOps->outlineColor) {
+      Blt_Ps_XSetForeground(ps, penOps->outlineColor);
     } else {
-      Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penPtr->fill));
+      Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
     }
-    Blt_Ps_XSetStipple(ps, graphPtr->display, penPtr->stipple);
-  } else if (penPtr->outlineColor) {
-    Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
+    Blt_Ps_XSetStipple(ps, graphPtr->display, penOps->stipple);
+  } else if (penOps->outlineColor) {
+    Blt_Ps_XSetForeground(ps, penOps->outlineColor);
     Blt_Ps_Append(ps, "    fill\n");
   }
   Blt_Ps_Append(ps, "  grestore\n");
@@ -1352,67 +1345,69 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element *basePtr,
 static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen* penPtr, 
 				 XRectangle *bars, int nBars)
 {
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
   XRectangle *rp, *rend;
 
-  if (!penPtr->fill && !penPtr->outlineColor)
+  if (!penOps->fill && !penOps->outlineColor)
     return;
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1)) {
       continue;
     }
-    if (penPtr->stipple != None) {
+    if (penOps->stipple != None) {
       Blt_Ps_Rectangle(ps, rp->x, rp->y, rp->width - 1, rp->height - 1);
-      if (penPtr->fill) {
-	Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penPtr->fill));
+      if (penOps->fill) {
+	Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penOps->fill));
 	Blt_Ps_Append(ps, "gsave fill grestore\n");
       }
-      if (penPtr->outlineColor) {
-	Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
+      if (penOps->outlineColor) {
+	Blt_Ps_XSetForeground(ps, penOps->outlineColor);
       } else {
-	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penPtr->fill));
+	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
       }
-      Blt_Ps_XSetStipple(ps, graphPtr->display, penPtr->stipple);
-    } else if (penPtr->outlineColor) {
-      Blt_Ps_XSetForeground(ps, penPtr->outlineColor);
+      Blt_Ps_XSetStipple(ps, graphPtr->display, penOps->stipple);
+    } else if (penOps->outlineColor) {
+      Blt_Ps_XSetForeground(ps, penOps->outlineColor);
       Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
 			    (int)rp->width - 1, (int)rp->height - 1);
     }
-    if ((penPtr->fill) && (penPtr->borderWidth > 0) && 
-	(penPtr->relief != TK_RELIEF_FLAT)) {
-      Blt_Ps_Draw3DRectangle(ps, penPtr->fill, (double)rp->x, (double)rp->y,
+    if ((penOps->fill) && (penOps->borderWidth > 0) && 
+	(penOps->relief != TK_RELIEF_FLAT)) {
+      Blt_Ps_Draw3DRectangle(ps, penOps->fill, (double)rp->x, (double)rp->y,
 			     (int)rp->width, (int)rp->height,
-			     penPtr->borderWidth, penPtr->relief);
+			     penOps->borderWidth, penOps->relief);
     }
   }
 }
 
 static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps, 
-				  BarElement* elemPtr,
+				  BarElement* bePtr,
 				  BarPen* penPtr, XRectangle *bars, int nBars, 
 				  int *barToData)
 {
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+
   XRectangle *rp, *rend;
-  int count;
-  const char *fmt;
   char string[TCL_DOUBLE_SPACE * 2 + 2];
   double x, y;
   Point2d anchorPos;
     
-  count = 0;
-  fmt = penPtr->valueFormat;
+  int count = 0;
+  const char* fmt = penOps->valueFormat;
   if (!fmt)
     fmt = "%g";
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    x = elemPtr->coords.x->values[barToData[count]];
-    y = elemPtr->coords.y->values[barToData[count]];
+    x = ops->coords.x->values[barToData[count]];
+    y = ops->coords.y->values[barToData[count]];
     count++;
-    if (penPtr->valueShow == SHOW_X) {
+    if (penOps->valueShow == SHOW_X) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
-    } else if (penPtr->valueShow == SHOW_Y) {
+    } else if (penOps->valueShow == SHOW_Y) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
-    } else if (penPtr->valueShow == SHOW_BOTH) {
+    } else if (penOps->valueShow == SHOW_BOTH) {
       sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
@@ -1430,77 +1425,81 @@ static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps,
 	anchorPos.y += rp->height;
       }
     }
-    Blt_Ps_DrawText(ps, string, &penPtr->valueStyle, anchorPos.x, 
+    Blt_Ps_DrawText(ps, string, &penOps->valueStyle, anchorPos.x, 
 		    anchorPos.y);
   }
 }
 
 static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
-				      Element *basePtr)
+				      Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  if (elemPtr->activePenPtr) {
-    BarPen* penPtr = elemPtr->activePenPtr;
+  if (ops->activePenPtr) {
+    BarPen* penPtr = ops->activePenPtr;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
 	
-    if (elemPtr->nActiveIndices > 0) {
-      if (elemPtr->flags & ACTIVE_PENDING) {
-	MapActiveBars(elemPtr);
+    if (bePtr->nActiveIndices > 0) {
+      if (bePtr->flags & ACTIVE_PENDING) {
+	MapActiveBars(bePtr);
       }
-      SegmentsToPostScript(graphPtr, ps, penPtr, elemPtr->activeRects,
-			   elemPtr->nActive);
-      if (penPtr->valueShow != SHOW_NONE) {
-	BarValuesToPostScript(graphPtr, ps, elemPtr, penPtr, 
-			      elemPtr->activeRects, elemPtr->nActive, elemPtr->activeToData);
+      SegmentsToPostScript(graphPtr, ps, penPtr, bePtr->activeRects,
+			   bePtr->nActive);
+      if (penOps->valueShow != SHOW_NONE) {
+	BarValuesToPostScript(graphPtr, ps, bePtr, penPtr, 
+			      bePtr->activeRects, bePtr->nActive, bePtr->activeToData);
       }
-    } else if (elemPtr->nActiveIndices < 0) {
-      SegmentsToPostScript(graphPtr, ps, penPtr, elemPtr->bars, 
-			   elemPtr->nBars);
-      if (penPtr->valueShow != SHOW_NONE) {
-	BarValuesToPostScript(graphPtr, ps, elemPtr, penPtr, 
-			      elemPtr->bars, elemPtr->nBars, elemPtr->barToData);
+    } else if (bePtr->nActiveIndices < 0) {
+      SegmentsToPostScript(graphPtr, ps, penPtr, bePtr->bars, 
+			   bePtr->nBars);
+      if (penOps->valueShow != SHOW_NONE) {
+	BarValuesToPostScript(graphPtr, ps, bePtr, penPtr, 
+			      bePtr->bars, bePtr->nBars, bePtr->barToData);
       }
     }
   }
 }
 
 static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps, 
-				      Element *basePtr)
+				      Element* elemPtr)
 {
-  BarElement* elemPtr = (BarElement *)basePtr;
+  BarElement* bePtr = (BarElement*)elemPtr;
+  BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
   
   int count = 0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(elemPtr->stylePalette); link;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
     if (stylePtr->nBars > 0)
       SegmentsToPostScript(graphPtr, ps, penPtr, stylePtr->bars, 
 			   stylePtr->nBars);
 
-    XColor* colorPtr = penPtr->errorBarColor;
+    XColor* colorPtr = penOps->errorBarColor;
     if (!colorPtr)
-      colorPtr = penPtr->outlineColor;
+      colorPtr = penOps->outlineColor;
 
-    if ((stylePtr->xeb.length > 0) && (penPtr->errorBarShow & SHOW_X)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penPtr->errorBarLineWidth, 
+    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
+      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       Blt_Ps_Draw2DSegments(ps, stylePtr->xeb.segments,
 			    stylePtr->xeb.length);
     }
 
-    if ((stylePtr->yeb.length > 0) && (penPtr->errorBarShow & SHOW_Y)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penPtr->errorBarLineWidth, 
+    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
+      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       Blt_Ps_Draw2DSegments(ps, stylePtr->yeb.segments, 
 			    stylePtr->yeb.length);
     }
 
-    if (penPtr->valueShow != SHOW_NONE)
-      BarValuesToPostScript(graphPtr, ps, elemPtr, penPtr, 
+    if (penOps->valueShow != SHOW_NONE)
+      BarValuesToPostScript(graphPtr, ps, bePtr, penPtr, 
 			    stylePtr->bars, stylePtr->nBars, 
-			    elemPtr->barToData + count);
+			    bePtr->barToData + count);
 
     count += stylePtr->nBars;
   }
@@ -1536,15 +1535,16 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     double *x, *xend;
     int nPoints;
 
-    BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
-    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR))
+    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+    BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+    if ((bePtr->hide) || (bePtr->obj.classId != CID_ELEM_BAR))
       continue;
 
     nSegs++;
     
-    if (elemPtr->coords.x) {
-      nPoints = elemPtr->coords.x->nValues;
-      for (x = elemPtr->coords.x->values, xend = x + nPoints; x < xend; x++) {
+    if (ops->coords.x) {
+      nPoints = ops->coords.x->nValues;
+      for (x = ops->coords.x->values, xend = x + nPoints; x < xend; x++) {
 	Tcl_HashEntry *hPtr;
 	BarSetKey key;
 	int isNew;
@@ -1552,7 +1552,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 	const char *name;
 
 	key.value = *x;
-	key.axes = elemPtr->axes;
+	key.axes = ops->axes;
 	key.axes.y = NULL;
 	hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
 	Tcl_HashTable *tablePtr;
@@ -1564,8 +1564,8 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 	else
 	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 
-	name = (elemPtr->groupName) ? elemPtr->groupName : 
-	  elemPtr->axes.y->obj.name;
+	name = (ops->groupName) ? ops->groupName : 
+	  ops->axes.y->obj.name;
 	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	if (isNew)
 	  count = 1;
@@ -1654,27 +1654,28 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
        link; link = Blt_Chain_NextLink(link)) {
     double *x, *y, *xend;
 
-    BarElement* elemPtr = (BarElement*)Blt_Chain_GetValue(link);
-    if ((elemPtr->hide) || (elemPtr->obj.classId != CID_ELEM_BAR))
+    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+    BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
+    if ((bePtr->hide) || (bePtr->obj.classId != CID_ELEM_BAR))
       continue;
 
-    if (elemPtr->coords.x && elemPtr->coords.y) {
-      for (x = elemPtr->coords.x->values, y = elemPtr->coords.y->values, 
-	     xend = x + elemPtr->coords.x->nValues; x < xend; x++, y++) {
+    if (ops->coords.x && ops->coords.y) {
+      for (x = ops->coords.x->values, y = ops->coords.y->values, 
+	     xend = x + ops->coords.x->nValues; x < xend; x++, y++) {
 	BarSetKey key;
 	Tcl_HashEntry *hPtr;
 	const char *name;
 
 	key.value = *x;
-	key.axes = elemPtr->axes;
+	key.axes = ops->axes;
 	key.axes.y = NULL;
 	hPtr = Tcl_FindHashEntry(&graphPtr->setTable, (char *)&key);
 	if (!hPtr)
 	  continue;
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	name = (elemPtr->groupName) ? elemPtr->groupName : 
-	  elemPtr->axes.y->obj.name;
+	name = (ops->groupName) ? ops->groupName : 
+	  ops->axes.y->obj.name;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (!hPtr)
 	  continue;

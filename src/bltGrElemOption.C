@@ -66,7 +66,8 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
 {
   ElemValues** valuesPtrPtr = (ElemValues**)(widgRec + offset);
   *(double*)savePtr = *(double*)valuesPtrPtr;
-  Element* elemPtr = (Element*)widgRec;
+  ElementOptions* ops = (ElementOptions*)widgRec;
+  Element* elemPtr = ops->elemPtr;
 
   if (!valuesPtrPtr)
     return TCL_OK;
@@ -256,7 +257,8 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 		 int offset, char* save, int flags)
 {
   Blt_Chain stylePalette = *(Blt_Chain*)(widgRec + offset);
-  Element* elemPtr = (Element*)(widgRec);
+  ElementOptions* ops = (ElementOptions*)(widgRec);
+  Element* elemPtr = ops->elemPtr;
   size_t size = (size_t)clientData;
 
   int objc;
@@ -273,7 +275,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
   }
 
   PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
-  stylePtr->penPtr = NORMALPEN(elemPtr);
+  stylePtr->penPtr = NORMALPEN(ops);
   for (int ii = 0; ii<objc; ii++) {
     link = Blt_Chain_AllocLink(size);
     stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
@@ -286,7 +288,6 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
       Blt_FreeStylePalette(stylePalette);
       return TCL_ERROR;
     }
-
     Blt_Chain_LinkAfter(stylePalette, link, NULL);
   }
 

@@ -33,42 +33,33 @@
 
 PenStyle** Blt_StyleMap(Element* elemPtr)
 {
-  int i;
-  int nWeights;		/* Number of weights to be examined.
-			 * If there are more data points than
-			 * weights, they will default to the
-			 * normal pen. */
-  Blt_ChainLink link;
-  double *w;			/* Weight vector */
-  int nPoints;
+  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
 
-  nPoints = NUMBEROFPOINTS(elemPtr);
-  nWeights = MIN(elemPtr->w ? elemPtr->w->nValues : 0, nPoints);
-  w = elemPtr->w ? elemPtr->w->values : NULL;
-  link = Blt_Chain_FirstLink(elemPtr->stylePalette);
+  int nPoints = NUMBEROFPOINTS(ops);
+  int nWeights = MIN(ops->w ? ops->w->nValues : 0, nPoints);
+  double* w = ops->w ? ops->w->values : NULL;
+  Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
-  /* 
-   * Create a style mapping array (data point index to style), 
-   * initialized to the default style.
-   */
+  // Create a style mapping array (data point index to style), 
+  // initialized to the default style.
   PenStyle **dataToStyle = (PenStyle**)malloc(nPoints * sizeof(PenStyle *));
-  for (i = 0; i < nPoints; i++)
-    dataToStyle[i] = stylePtr;
+  for (int ii=0; ii<nPoints; ii++)
+    dataToStyle[ii] = stylePtr;
 
-  for (i = 0; i < nWeights; i++) {
-    for (link = Blt_Chain_LastLink(elemPtr->stylePalette); link != NULL; 
+  for (int ii=0; ii<nWeights; ii++) {
+    for (link = Blt_Chain_LastLink(ops->stylePalette); link != NULL; 
 	 link = Blt_Chain_PrevLink(link)) {
       stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
       if (stylePtr->weight.range > 0.0) {
 	double norm;
 
-	norm = (w[i] - stylePtr->weight.min) / stylePtr->weight.range;
+	norm = (w[ii] - stylePtr->weight.min) / stylePtr->weight.range;
 	if (((norm - 1.0) <= DBL_EPSILON) && 
 	    (((1.0 - norm) - 1.0) <= DBL_EPSILON)) {
-	  dataToStyle[i] = stylePtr;
-	  break;		/* Done: found range that matches. */
+	  dataToStyle[ii] = stylePtr;
+	  break;
 	}
       }
     }

@@ -1100,7 +1100,7 @@ Blt_Vec_New(VectorInterpData *dataPtr) /* Interpreter-specific data. */
     vPtr->interp = dataPtr->interp;
     vPtr->hashPtr = NULL;
     vPtr->chain = Blt_Chain_Create();
-    vPtr->flush = FALSE;
+    vPtr->flush = 0;
     vPtr->min = vPtr->max = NAN;
     vPtr->notifyFlags = NOTIFY_WHENIDLE;
     vPtr->dataPtr = dataPtr;
@@ -1991,9 +1991,9 @@ Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
 
     dataPtr = Blt_Vec_GetInterpData(interp);
     if (GetVectorObject(dataPtr, vecName, NS_SEARCH_BOTH) != NULL) {
-	return TRUE;
+	return 1;
     }
-    return FALSE;
+    return 0;
 }
 
 /*

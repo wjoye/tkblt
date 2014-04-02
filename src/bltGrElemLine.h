@@ -45,6 +45,7 @@ typedef struct {
 } GraphPoints;
 
 typedef struct {
+  Element* elemPtr;
   const char* label;
   char** tags;
   Axis2d axes;
@@ -59,19 +60,18 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-
-  // derived
-  LinePenOptions builtinPenOps;
+  LinePen *builtinPenPtr;
   LinePen *activePenPtr;
   LinePen *normalPenPtr;
+  LinePenOptions builtinPen;
 
+  // derived
   XColor* fillFgColor;
   Tk_3DBorder fillBg;
   int reqMaxSymbols;
   double rTolerance;
   int scaleSymbols;
   Smoothing reqSmooth;
-  int state;
   int penDir;
 } LineElementOptions;
 
@@ -82,68 +82,30 @@ typedef struct {
   Tcl_HashEntry *hashPtr;
   void* ops;
 
-  // Fields specific to elements
-  const char* label;
   unsigned short row;
   unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;
   Tk_OptionTable optionTable;
-  LinePen *activePenPtr;
-  LinePen *normalPenPtr;
-  LinePen *builtinPenPtr;
-  Blt_Chain stylePalette;
-  int scaleSymbols;
   double xRange;
   double yRange;
-  int state;
   Blt_ChainLink link;
 
-  // The line element specific fields start here
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
+  // Fields specific to Line Element
   LinePen builtinPen;
-  int errorBarCapWidth;
-
-  // Line smoothing
-  Smoothing reqSmooth;
   Smoothing smooth;
-  double rTolerance;
-
-  // Area-under-curve fill attributes
-  XColor* fillFgColor;
   XColor* fillBgColor;
   GC fillGC;
-  Tk_3DBorder fillBg;
   Point2d *fillPts;
   int nFillPts;
-
-  // Symbol points
   GraphPoints symbolPts;
-
-  // Active symbol points
   GraphPoints activePts;
   GraphSegments xeb;
   GraphSegments yeb;
-
-  int reqMaxSymbols;
   int symbolInterval;
   int symbolCounter;
-
-  // X-Y graph-specific fields
-  int penDir;
   Blt_Chain traces;
-
-  // Stripchart-specific fields
   GraphSegments lines;
 } LineElement;
 

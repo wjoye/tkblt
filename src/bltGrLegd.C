@@ -511,7 +511,7 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
     }
     Tcl_DeleteTimerHandler(legendPtr->timerToken);
     if ((legendPtr->active) && (legendPtr->flags & FOCUS)) {
-      legendPtr->cursorOn = TRUE;
+      legendPtr->cursorOn = 1;
       if (legendPtr->offTime != 0) {
 	legendPtr->timerToken = Tcl_CreateTimerHandler(legendPtr->onTime,
 						       BlinkCursorProc,
@@ -519,7 +519,7 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
       }
     } 
     else {
-      legendPtr->cursorOn = FALSE;
+      legendPtr->cursorOn = 0;
       legendPtr->timerToken = (Tcl_TimerToken)NULL;
     }
     Blt_Legend_EventuallyRedraw(graphPtr);
@@ -664,7 +664,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 
   string = Tcl_GetString(objv[2]);
   active = (string[0] == 'a') ? LABEL_ACTIVE : 0;
-  redraw = FALSE;
+  redraw = 0;
   for (i = 3; i < objc; i++) {
     Blt_ChainLink link;
     const char *pattern;
@@ -680,12 +680,12 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 	if (active) {
 	  if ((elemPtr->flags & LABEL_ACTIVE) == 0) {
 	    elemPtr->flags |= LABEL_ACTIVE;
-	    redraw = TRUE;
+	    redraw = 1;
 	  }
 	} else {
 	  if (elemPtr->flags & LABEL_ACTIVE) {
 	    elemPtr->flags &= ~LABEL_ACTIVE;
-	    redraw = TRUE;
+	    redraw = 1;
 	  }
 	}
 	fprintf(stderr, "legend %s(%s) %s is now %d\n",
@@ -1361,16 +1361,15 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
       for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	   link != NULL; link = Blt_Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-	if (elemPtr->label) {
-	  if (count == n) {
+	ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+	if (ops->label) {
+	  if (count == n)
 	    return elemPtr;
-	  }
 	  count++;
 	}
       }	      
-      if (link) {
+      if (link)
 	return Blt_Chain_GetValue(link);
-      }	
     }
   }
   return NULL;
@@ -1412,22 +1411,22 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
        link != NULL; link = Blt_Chain_NextLink(link)) {
     unsigned int w, h;
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
-      continue;			/* Element has no legend entry. */
-    }
-    Blt_Ts_GetExtents(&legendPtr->style, elemPtr->label, &w, &h);
-    if (maxWidth < (int)w) {
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+
+    if (ops->label == NULL)
+      continue;
+
+    Blt_Ts_GetExtents(&legendPtr->style, ops->label, &w, &h);
+    if (maxWidth < (int)w)
       maxWidth = w;
-    }
-    if (maxHeight < (int)h) {
+
+    if (maxHeight < (int)h)
       maxHeight = h;
-    }
+
     nEntries++;
   }
-  if (nEntries == 0) {
+  if (nEntries == 0)
     return;				/* No visible legend entries. */
-  }
-
 
   Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
   symbolWidth = 2 * fontMetrics.ascent;
@@ -1615,9 +1614,10 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     int isSelected;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
-      continue;			/* Skip this entry */
-    }
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
+      continue;
+
     isSelected = EntryIsSelected(legendPtr, elemPtr);
     if (elemPtr->flags & LABEL_ACTIVE) {
       Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->activeBg, 
@@ -1634,16 +1634,16 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 			 legendPtr->selBW, legendPtr->selRelief);
     } else {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
-      if (elemPtr->legendRelief != TK_RELIEF_FLAT) {
+      if (ops->legendRelief != TK_RELIEF_FLAT) {
 	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 
 			   x, y, legendPtr->entryWidth, 
 			   legendPtr->entryHeight, legendPtr->entryBW, 
-			   elemPtr->legendRelief);
+			   ops->legendRelief);
       }
     }
     (*elemPtr->procsPtr->drawSymbolProc) (graphPtr, pixmap, elemPtr,
 					  x + xSymbol, y + ySymbol, symbolSize);
-    Blt_DrawText(tkwin, pixmap, elemPtr->label, &legendPtr->style, 
+    Blt_DrawText(tkwin, pixmap, ops->label, &legendPtr->style, 
 		 x + xLabel, 
 		 y + legendPtr->entryBW + legendPtr->iyPad);
     count++;
@@ -1749,9 +1749,10 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
-      continue;			/* Skip this label */
-    }
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
+      continue;
+
     if (elemPtr->flags & LABEL_ACTIVE) {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->activeFgColor);
       Blt_Ps_Fill3DRectangle(ps, legendPtr->activeBg, x, y, legendPtr->entryWidth, 
@@ -1759,16 +1760,16 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 			     legendPtr->activeRelief);
     } else {
       Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
-      if (elemPtr->legendRelief != TK_RELIEF_FLAT) {
+      if (ops->legendRelief != TK_RELIEF_FLAT) {
 	Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, 
 			       legendPtr->entryWidth,
 			       legendPtr->entryHeight, legendPtr->entryBW, 
-			       elemPtr->legendRelief);
+			       ops->legendRelief);
       }
     }
     (*elemPtr->procsPtr->printSymbolProc) (graphPtr, ps, elemPtr, 
 					   x + xSymbol, y + ySymbol, symbolSize);
-    Blt_Ps_DrawText(ps, elemPtr->label, &legendPtr->style, 
+    Blt_Ps_DrawText(ps, ops->label, &legendPtr->style, 
 		    x + xLabel, y + legendPtr->entryBW + legendPtr->iyPad);
     count++;
     if ((count % legendPtr->nRows) > 0) {
@@ -1789,12 +1790,12 @@ static Element *GetNextRow(Graph* graphPtr, Element *focusPtr)
   row = focusPtr->row + 1;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
       continue;
-    }
-    if ((elemPtr->col == col) && (elemPtr->row == row)) {
+
+    if ((elemPtr->col == col) && (elemPtr->row == row))
       return elemPtr;	
-    }
   }
   return NULL;
 }
@@ -1808,12 +1809,12 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
   row = focusPtr->row;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL) {
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
       continue;
-    }
-    if ((elemPtr->col == col) && (elemPtr->row == row)) {
-      return elemPtr;		/* Don't go beyond legend boundaries. */
-    }
+
+    if ((elemPtr->col == col) && (elemPtr->row == row))
+      return elemPtr;
   }
   return NULL;
 }
@@ -1825,7 +1826,8 @@ static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
   for (Blt_ChainLink link = focusPtr->link; link != NULL; 
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL)
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
       continue;
 
     if ((elemPtr->col == col) && (elemPtr->row == row))
@@ -1841,7 +1843,8 @@ static Element *GetPreviousColumn(Graph* graphPtr, Element *focusPtr)
   for (Blt_ChainLink link = focusPtr->link; link != NULL;
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label == NULL)
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
       continue;
 
     if ((elemPtr->col == col) && (elemPtr->row == row))
@@ -1854,7 +1857,8 @@ static Element *GetFirstElement(Graph* graphPtr)
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label)
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label)
       return elemPtr;
   }
   return NULL;
@@ -1865,7 +1869,8 @@ static Element *GetLastElement(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->label)
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label)
       return elemPtr;
   }
   return NULL;
@@ -1888,49 +1893,50 @@ static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
   elemPtr = NULL;
 
   last = Blt_Chain_GetLength(graphPtr->elements.displayList) - 1;
-  if ((c == 'a') && (strcmp(string, "anchor") == 0)) {
+  if ((c == 'a') && (strcmp(string, "anchor") == 0))
     elemPtr = legendPtr->selAnchorPtr;
-  } else if ((c == 'c') && (strcmp(string, "current") == 0)) {
+  else if ((c == 'c') && (strcmp(string, "current") == 0))
     elemPtr = (Element *)Blt_GetCurrentItem(legendPtr->bindTable);
-  } else if ((c == 'f') && (strcmp(string, "first") == 0)) {
+  else if ((c == 'f') && (strcmp(string, "first") == 0))
     elemPtr = GetFirstElement(graphPtr);
-  } else if ((c == 'f') && (strcmp(string, "focus") == 0)) {
+  else if ((c == 'f') && (strcmp(string, "focus") == 0))
     elemPtr = legendPtr->focusPtr;
-  } else if ((c == 'l') && (strcmp(string, "last") == 0)) {
+  else if ((c == 'l') && (strcmp(string, "last") == 0))
     elemPtr = GetLastElement(graphPtr);
-  } else if ((c == 'e') && (strcmp(string, "end") == 0)) {
+  else if ((c == 'e') && (strcmp(string, "end") == 0))
     elemPtr = GetLastElement(graphPtr);
-  } else if ((c == 'n') && (strcmp(string, "next.row") == 0)) {
+  else if ((c == 'n') && (strcmp(string, "next.row") == 0))
     elemPtr = GetNextRow(graphPtr, legendPtr->focusPtr);
-  } else if ((c == 'n') && (strcmp(string, "next.column") == 0)) {
+  else if ((c == 'n') && (strcmp(string, "next.column") == 0))
     elemPtr = GetNextColumn(graphPtr, legendPtr->focusPtr);
-  } else if ((c == 'p') && (strcmp(string, "previous.row") == 0)) {
+  else if ((c == 'p') && (strcmp(string, "previous.row") == 0))
     elemPtr = GetPreviousRow(graphPtr, legendPtr->focusPtr);
-  } else if ((c == 'p') && (strcmp(string, "previous.column") == 0)) {
+  else if ((c == 'p') && (strcmp(string, "previous.column") == 0))
     elemPtr = GetPreviousColumn(graphPtr, legendPtr->focusPtr);
-  } else if ((c == 's') && (strcmp(string, "sel.first") == 0)) {
+  else if ((c == 's') && (strcmp(string, "sel.first") == 0))
     elemPtr = legendPtr->selFirstPtr;
-  } else if ((c == 's') && (strcmp(string, "sel.last") == 0)) {
+  else if ((c == 's') && (strcmp(string, "sel.last") == 0))
     elemPtr = legendPtr->selLastPtr;
-  } else if (c == '@') {
+  else if (c == '@') {
     int x, y;
 
-    if (Blt_GetXY(interp, legendPtr->tkwin, string, &x, &y) != TCL_OK) {
+    if (Blt_GetXY(interp, legendPtr->tkwin, string, &x, &y) != TCL_OK)
       return TCL_ERROR;
-    }
+
     elemPtr = (Element *)PickEntryProc(graphPtr, x, y, NULL);
-  } else {
-    if (Blt_GetElement(interp, graphPtr, objPtr, &elemPtr) != TCL_OK) {
+  }
+  else {
+    if (Blt_GetElement(interp, graphPtr, objPtr, &elemPtr) != TCL_OK)
       return TCL_ERROR;
-    }
+
     if (elemPtr->link == NULL) {
       Tcl_AppendResult(interp, "bad legend index \"", string, "\"",
 		       (char *)NULL);
       return TCL_ERROR;
     }
-    if (elemPtr->label == NULL) {
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    if (ops->label == NULL)
       elemPtr = NULL;
-    }
   }
   *elemPtrPtr = elemPtr;
   return TCL_OK;

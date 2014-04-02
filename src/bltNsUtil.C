@@ -64,7 +64,7 @@ int Blt_ParseObjectName(Tcl_Interp* interp, const char *path,
     if ((flags & BLT_NO_DEFAULT_NS) == 0) {
       namePtr->nsPtr = Tcl_GetCurrentNamespace(interp);
     }
-    return TRUE;		/* No namespace designated in name. */
+    return 1;		/* No namespace designated in name. */
   }
 
   /* Separate the namespace and the object name. */
@@ -78,10 +78,10 @@ int Blt_ParseObjectName(Tcl_Interp* interp, const char *path,
   /* Repair the string. */    *colon = ':';
 
   if (namePtr->nsPtr == NULL) {
-    return FALSE;		/* Namespace doesn't exist. */
+    return 0;		/* Namespace doesn't exist. */
   }
   namePtr->name =last;
-  return TRUE;
+  return 1;
 }
 
 char* Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)

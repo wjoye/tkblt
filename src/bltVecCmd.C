@@ -1409,7 +1409,7 @@ BinreadOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
     first = vPtr->length;
     fmt = FMT_DOUBLE;
     size = sizeof(double);
-    swap = FALSE;
+    swap = 0;
     count = 0;
 
     if (objc > 3) {
@@ -1433,7 +1433,7 @@ BinreadOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
     for (i = 3; i < objc; i++) {
 	string = Tcl_GetString(objv[i]);
 	if (strcmp(string, "-swap") == 0) {
-	    swap = TRUE;
+	    swap = 1;
 	} else if (strcmp(string, "-format") == 0) {
 	    i++;
 	    if (i >= objc) {
@@ -1539,10 +1539,10 @@ SearchOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
     char *string;
     Tcl_Obj *listObjPtr;
 
-    wantValue = FALSE;
+    wantValue = 0;
     string = Tcl_GetString(objv[2]);
     if ((string[0] == '-') && (strcmp(string, "-value") == 0)) {
-	wantValue = TRUE;
+	wantValue = 1;
 	objv++, objc--;
     }
     if (Blt_ExprDoubleFromObj(interp, objv[2], &min) != TCL_OK) {
@@ -1990,7 +1990,7 @@ SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const objv[])
     unsigned int n;
     SortSwitches switches;
 
-    sortDecreasing = FALSE;
+    sortDecreasing = 0;
     switches.flags = 0;
     i = Blt_ParseSwitches(interp, sortSwitches, objc - 2, objv + 2, &switches, 
 		BLT_SWITCH_OBJV_PARTIAL);

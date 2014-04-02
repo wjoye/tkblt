@@ -189,7 +189,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
       bindPtr->pickEvent = *eventPtr;
     }
   }
-  bindPtr->activePick = TRUE;
+  bindPtr->activePick = 1;
 
   /*
    * If this is a recursive call (there's already a partially completed call
@@ -427,10 +427,10 @@ int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
   unsigned long mask;
   if (command[0] == '+')
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command + 1, TRUE);
+			    command + 1, 1);
   else
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command, FALSE);
+			    command, 0);
 
   if (!mask)
     return TCL_ERROR;

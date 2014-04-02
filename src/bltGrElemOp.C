@@ -89,21 +89,22 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
   if (!elemPtr)
     return TCL_ERROR;
 
+  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
   elemPtr->obj.graphPtr = graphPtr;
   elemPtr->obj.name = Blt_Strdup(name);
 
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
-  elemPtr->label = Tcl_Alloc(strlen(name)+1);
+  ops->label = Tcl_Alloc(strlen(name)+1);
   if (name)
-    strcpy((char*)elemPtr->label,(char*)name);
+    strcpy((char*)ops->label,(char*)name);
   Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-  elemPtr->stylePalette = Blt_Chain_Create();
+  ops->stylePalette = Blt_Chain_Create();
 
   elemPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, elemPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp,graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr->ops, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
   }
@@ -654,9 +655,11 @@ static void FreeElement(char* data)
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr)
 {
+  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+
   char *string = Tcl_GetString(objPtr);
   if ((*string == 'e') && (strcmp("end", string) == 0))
-    *indexPtr = NUMBEROFPOINTS(elemPtr);
+    *indexPtr = NUMBEROFPOINTS(ops);
   else if (Blt_ExprIntFromObj(interp, objPtr, indexPtr) != TCL_OK)
     return TCL_ERROR;
 

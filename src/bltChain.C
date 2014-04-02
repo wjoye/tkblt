@@ -163,22 +163,22 @@ void Blt_Chain_UnlinkLink(Chain* chainPtr, ChainLink* linkPtr)
   // Indicates if the link is actually remove from the chain
   int unlinked;
 
-  unlinked = FALSE;
+  unlinked = 0;
   if (chainPtr->head == linkPtr) {
     chainPtr->head = linkPtr->next;
-    unlinked = TRUE;
+    unlinked = 1;
   }
   if (chainPtr->tail == linkPtr) {
     chainPtr->tail = linkPtr->prev;
-    unlinked = TRUE;
+    unlinked = 1;
   }
   if (linkPtr->next) {
     linkPtr->next->prev = linkPtr->prev;
-    unlinked = TRUE;
+    unlinked = 1;
   }
   if (linkPtr->prev) {
     linkPtr->prev->next = linkPtr->next;
-    unlinked = TRUE;
+    unlinked = 1;
   }
   if (unlinked) {
     chainPtr->nLinks--;
@@ -250,8 +250,8 @@ int Blt_Chain_IsBefore(ChainLink* firstPtr, ChainLink* lastPtr)
 {
   for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next) {
     if (linkPtr == lastPtr)
-      return TRUE;
+      return 1;
   }
-  return FALSE;
+  return 0;
 }
 

@@ -787,9 +787,9 @@ Blt_QuadraticSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
     int result = QuadEval(origPts, nOrigPts, intpPts, nIntpPts, work, epsilon);
     free(work);
     if (result > 1) {
-	return FALSE;
+	return 0;
     }
-    return TRUE;
+    return 1;
 }
 
 /*
@@ -847,7 +847,7 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
     if (!eq) {
 	free(A);
 	free(dx);
-	return FALSE;
+	return 0;
     }
     eq[0].c = eq[n].c = 0.0;
     for (j = n, i = n - 1; i >= 0; i--, j--) {
@@ -879,7 +879,7 @@ Blt_NaturalSpline(Point2d *origPts, int nOrigPts, Point2d *intpPts,
 	}
     }
     free(eq);
-    return TRUE;
+    return 1;
 }
 
 typedef struct {
@@ -912,11 +912,11 @@ SolveCubic1(TriDiagonalMatrix A[], int n)
     double m_ij, m_n, m_nn, d;
 
     if (n < 1) {
-	return FALSE;		/* Dimension should be at least 1 */
+	return 0;		/* Dimension should be at least 1 */
     }
     d = A[0][1];		/* D_{0,0} = A_{0,0} */
     if (d <= 0.0) {
-	return FALSE;		/* A (or D) should be positive definite */
+	return 0;		/* A (or D) should be positive definite */
     }
     m_n = A[0][0];		/*  A_{0,n-1}  */
     m_nn = A[n - 1][1];		/* A_{n-1,n-1} */
@@ -928,7 +928,7 @@ SolveCubic1(TriDiagonalMatrix A[], int n)
 	m_n = -A[i][2] * m_n;	/* to get C_{i+1,n-1} */
 	d = A[i + 1][1] - A[i][2] * m_ij;	/* D_{i+1,i+1} */
 	if (d <= 0.0) {
-	    return FALSE;	/* Elements of D should be positive */
+	    return 0;	/* Elements of D should be positive */
 	}
 	A[i + 1][1] = d;
     }
@@ -937,10 +937,10 @@ SolveCubic1(TriDiagonalMatrix A[], int n)
 	A[n - 2][0] = m_n / d;	/* C_{n-2,n-1} */
 	A[n - 1][1] = d = m_nn - A[n - 2][0] * m_n;	/* D_{n-1,n-1} */
 	if (d <= 0.0) {
-	    return FALSE;
+	    return 0;
 	}
     }
-    return TRUE;
+    return 1;
 }
 
 /*

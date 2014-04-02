@@ -62,7 +62,6 @@ typedef struct {
   int errorBarLineWidth;
   int errorBarCapWidth;
   XColor* errorBarColor;
-
   int valueShow;
   const char* valueFormat;
   TextStyle valueStyle;
@@ -87,27 +86,8 @@ typedef struct {
   void* ops;
   int manageOptions;
 
-  // Symbol attributes
-  Symbol symbol;
-
-  // Trace attributes.
-  int traceWidth;
-  Blt_Dashes traceDashes;
-  XColor* traceColor;
-  XColor* traceOffColor;
   GC traceGC;
-    
-  // Error bar attributes
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
   GC errorBarGC;
-
-  // Show value attributes
-  int valueShow;
-  const char* valueFormat;
-  TextStyle valueStyle;
 } LinePen;
 
 extern Tk_ObjCustomOption symbolObjOption;

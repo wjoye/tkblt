@@ -151,45 +151,51 @@ static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin,
 
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePen, traceColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePenOptions, traceColor), 
+   0, NULL, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
-   NULL, -1, Tk_Offset(LinePen, traceDashes), 
+   NULL, -1, Tk_Offset(LinePenOptions, traceDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
-   NULL, -1, Tk_Offset(LinePen, errorBarColor), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePenOptions, errorBarColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
-   "1", -1, Tk_Offset(LinePen, errorBarLineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePenOptions, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(LinePen, errorBarCapWidth), 0, NULL, 0},
+   "2", -1, Tk_Offset(LinePenOptions, errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
-   NULL, -1, Tk_Offset(LinePen, symbol.fillColor), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePenOptions, symbol.fillColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
-   "1", -1, Tk_Offset(LinePen, traceWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePenOptions, traceWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
-   NULL, -1, Tk_Offset(LinePen, traceOffColor), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LinePenOptions, traceOffColor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
-   NULL, -1, Tk_Offset(LinePen, symbol.outlineColor), 
+   NULL, -1, Tk_Offset(LinePenOptions, symbol.outlineColor), 
    TK_OPTION_NULL_OK, NULL,0},
   {TK_OPTION_PIXELS, "-outlinewidth", "outlineWidth", "OutlineWidth",
-   "1", -1, Tk_Offset(LinePen, symbol.outlineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(LinePenOptions, symbol.outlineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
-   "0.1i", -1, Tk_Offset(LinePen, symbol.size), 0, NULL, 0},
+   "0.1i", -1, Tk_Offset(LinePenOptions, symbol.size), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
-   "both", -1, Tk_Offset(LinePen, errorBarShow), 0, &fillObjOption, 0},
+   "both", -1, Tk_Offset(LinePenOptions, errorBarShow), 0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
-   "none", -1, Tk_Offset(LinePen, valueShow), 0, &fillObjOption, 0},
+   "none", -1, Tk_Offset(LinePenOptions, valueShow), 0, &fillObjOption, 0},
   {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
-   "none", -1, Tk_Offset(LinePen, symbol), 0, &symbolObjOption, 0},
+   "none", -1, Tk_Offset(LinePenOptions, symbol), 0, &symbolObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
-   "s", -1, Tk_Offset(LinePen, valueStyle.anchor), 0, NULL, 0},
+   "s", -1, Tk_Offset(LinePenOptions, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePen, valueStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePenOptions, valueStyle.color), 
+   0, NULL, 0},
   {TK_OPTION_FONT, "-valuefont", "valueFont", "ValueFont",
-   STD_FONT_SMALL, -1, Tk_Offset(LinePen, valueStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(LinePenOptions, valueStyle.font), 0, NULL, 0},
   {TK_OPTION_STRING, "-valueformat", "valueFormat", "ValueFormat",
-   "%g", -1, Tk_Offset(LinePen, valueFormat), TK_OPTION_NULL_OK, NULL, 0},
+   "%g", -1, Tk_Offset(LinePenOptions, valueFormat), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
-   "0", -1, Tk_Offset(LinePen, valueStyle.angle), 0, NULL, 0},
+   "0", -1, Tk_Offset(LinePenOptions, valueStyle.angle), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -205,151 +211,163 @@ Pen* CreateLinePen(Graph* graphPtr, const char* penName)
 
 void InitLinePen(Graph* graphPtr, LinePen* penPtr, const char* penName)
 {
+  LinePenOptions* ops = (LinePenOptions*)penPtr->ops;
+
   penPtr->configProc = ConfigureLinePenProc;
   penPtr->destroyProc = DestroyLinePenProc;
 
   penPtr->classId = CID_ELEM_LINE;
   penPtr->name = Blt_Strdup(penName);
 
-  Blt_Ts_InitStyle(penPtr->valueStyle);
-  penPtr->symbol.bitmap = None;
-  penPtr->symbol.mask = None;
-  penPtr->symbol.type = SYMBOL_NONE;
+  Blt_Ts_InitStyle(ops->valueStyle);
+  ops->symbol.bitmap = None;
+  ops->symbol.mask = None;
+  ops->symbol.type = SYMBOL_NONE;
 
   penPtr->optionTable = 
     Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
 }
 
-int ConfigureLinePenProc(Graph* graphPtr, Pen* basePtr)
+int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
 {
-  LinePen* lpPtr = (LinePen*)basePtr;
+  LinePen* lpPtr = (LinePen*)penPtr;
+  LinePenOptions* ops = (LinePenOptions*)lpPtr->ops;
 
   // symbol outline
-  unsigned long gcMask = (GCLineWidth | GCForeground);
-  XColor* colorPtr = lpPtr->symbol.outlineColor;
-  if (!colorPtr)
-    colorPtr = lpPtr->traceColor;
-
-  XGCValues gcValues;
-  gcValues.foreground = colorPtr->pixel;
-  if (lpPtr->symbol.type == SYMBOL_BITMAP) {
-    colorPtr = lpPtr->symbol.fillColor;
+  {
+    unsigned long gcMask = (GCLineWidth | GCForeground);
+    XColor* colorPtr = ops->symbol.outlineColor;
     if (!colorPtr)
-      colorPtr = lpPtr->traceColor;
+      colorPtr = ops->traceColor;
+    XGCValues gcValues;
+    gcValues.foreground = colorPtr->pixel;
+    if (ops->symbol.type == SYMBOL_BITMAP) {
+      colorPtr = ops->symbol.fillColor;
+      if (!colorPtr)
+	colorPtr = ops->traceColor;
 
-    if (colorPtr) {
-      gcValues.background = colorPtr->pixel;
-      gcMask |= GCBackground;
-      if (lpPtr->symbol.mask != None) {
-	gcValues.clip_mask = lpPtr->symbol.mask;
+      if (colorPtr) {
+	gcValues.background = colorPtr->pixel;
+	gcMask |= GCBackground;
+	if (ops->symbol.mask != None) {
+	  gcValues.clip_mask = ops->symbol.mask;
+	  gcMask |= GCClipMask;
+	}
+      }
+      else {
+	gcValues.clip_mask = ops->symbol.bitmap;
 	gcMask |= GCClipMask;
       }
     }
-    else {
-      gcValues.clip_mask = lpPtr->symbol.bitmap;
-      gcMask |= GCClipMask;
-    }
+    gcValues.line_width = LineWidth(ops->symbol.outlineWidth);
+    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+    if (ops->symbol.outlineGC)
+      Tk_FreeGC(graphPtr->display, ops->symbol.outlineGC);
+    ops->symbol.outlineGC = newGC;
   }
-  gcValues.line_width = LineWidth(lpPtr->symbol.outlineWidth);
-  GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lpPtr->symbol.outlineGC)
-    Tk_FreeGC(graphPtr->display, lpPtr->symbol.outlineGC);
-  lpPtr->symbol.outlineGC = newGC;
 
   // symbol fill
-  gcMask = (GCLineWidth | GCForeground);
-  colorPtr = lpPtr->symbol.fillColor;
-  if (!colorPtr)
-    colorPtr = lpPtr->traceColor;
-
-  newGC = NULL;
-  if (colorPtr) {
-    gcValues.foreground = colorPtr->pixel;
-    newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+  {
+    unsigned long gcMask = (GCLineWidth | GCForeground);
+    XColor* colorPtr = ops->symbol.fillColor;
+    if (!colorPtr)
+      colorPtr = ops->traceColor;
+    GC newGC = NULL;
+    XGCValues gcValues;
+    if (colorPtr) {
+      gcValues.foreground = colorPtr->pixel;
+      newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+    }
+    if (ops->symbol.fillGC)
+      Tk_FreeGC(graphPtr->display, ops->symbol.fillGC);
+    ops->symbol.fillGC = newGC;
   }
-  if (lpPtr->symbol.fillGC)
-    Tk_FreeGC(graphPtr->display, lpPtr->symbol.fillGC);
-  lpPtr->symbol.fillGC = newGC;
 
   // trace
-  gcMask = (GCLineWidth | GCForeground | GCLineStyle | GCCapStyle |
-	    GCJoinStyle);
-  gcValues.cap_style = CapButt;
-  gcValues.join_style = JoinRound;
-  gcValues.line_style = LineSolid;
-  gcValues.line_width = LineWidth(lpPtr->traceWidth);
+  {
+    unsigned long gcMask = 
+      (GCLineWidth | GCForeground | GCLineStyle | GCCapStyle | GCJoinStyle);
+    XGCValues gcValues;
+    gcValues.cap_style = CapButt;
+    gcValues.join_style = JoinRound;
+    gcValues.line_style = LineSolid;
+    gcValues.line_width = LineWidth(ops->traceWidth);
 
-  gcValues.foreground = lpPtr->traceColor->pixel;
-  colorPtr = lpPtr->traceOffColor;
-  if (colorPtr) {
-    gcMask |= GCBackground;
-    gcValues.background = colorPtr->pixel;
-  }
-  if (LineIsDashed(lpPtr->traceDashes)) {
-    gcValues.line_width = lpPtr->traceWidth;
-    gcValues.line_style = !colorPtr ? LineOnOffDash : LineDoubleDash;
-  }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lpPtr->traceGC)
-    Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
+    gcValues.foreground = ops->traceColor->pixel;
+    XColor* colorPtr = ops->traceOffColor;
+    if (colorPtr) {
+      gcMask |= GCBackground;
+      gcValues.background = colorPtr->pixel;
+    }
+    if (LineIsDashed(ops->traceDashes)) {
+      gcValues.line_width = ops->traceWidth;
+      gcValues.line_style = !colorPtr ? LineOnOffDash : LineDoubleDash;
+    }
+    GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+    if (lpPtr->traceGC)
+      Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
 
-  if (LineIsDashed(lpPtr->traceDashes)) {
-    lpPtr->traceDashes.offset = lpPtr->traceDashes.values[0] / 2;
-    Blt_SetDashes(graphPtr->display, newGC, &lpPtr->traceDashes);
+    if (LineIsDashed(ops->traceDashes)) {
+      ops->traceDashes.offset = ops->traceDashes.values[0] / 2;
+      Blt_SetDashes(graphPtr->display, newGC, &ops->traceDashes);
+    }
+    lpPtr->traceGC = newGC;
   }
-  lpPtr->traceGC = newGC;
 
   // errorbar
-  gcMask = (GCLineWidth | GCForeground);
-  colorPtr = lpPtr->errorBarColor;
-  if (!colorPtr)
-    colorPtr = lpPtr->traceColor;
-
-  gcValues.line_width = LineWidth(lpPtr->errorBarLineWidth);
-  gcValues.foreground = colorPtr->pixel;
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (lpPtr->errorBarGC) {
-    Tk_FreeGC(graphPtr->display, lpPtr->errorBarGC);
+  {
+    unsigned long gcMask = (GCLineWidth | GCForeground);
+    XColor* colorPtr = ops->errorBarColor;
+    if (!colorPtr)
+      colorPtr = ops->traceColor;
+    XGCValues gcValues;
+    gcValues.line_width = LineWidth(ops->errorBarLineWidth);
+    gcValues.foreground = colorPtr->pixel;
+    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+    if (lpPtr->errorBarGC) {
+      Tk_FreeGC(graphPtr->display, lpPtr->errorBarGC);
+    }
+    lpPtr->errorBarGC = newGC;
   }
-  lpPtr->errorBarGC = newGC;
 
   return TCL_OK;
 }
 
-void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr)
+void DestroyLinePenProc(Graph* graphPtr, Pen* penPtr)
 {
-  LinePen* penPtr = (LinePen*)basePtr;
+  LinePen* lpPtr = (LinePen*)penPtr;
+  LinePenOptions* ops = (LinePenOptions*)lpPtr->ops;
   
-  Blt_Ts_FreeStyle(graphPtr->display, &penPtr->valueStyle);
-  if (penPtr->symbol.outlineGC)
-    Tk_FreeGC(graphPtr->display, penPtr->symbol.outlineGC);
+  Blt_Ts_FreeStyle(graphPtr->display, &ops->valueStyle);
+  if (ops->symbol.outlineGC)
+    Tk_FreeGC(graphPtr->display, ops->symbol.outlineGC);
 
-  if (penPtr->symbol.fillGC)
-    Tk_FreeGC(graphPtr->display, penPtr->symbol.fillGC);
+  if (ops->symbol.fillGC)
+    Tk_FreeGC(graphPtr->display, ops->symbol.fillGC);
 
-  if (penPtr->errorBarGC)
-    Tk_FreeGC(graphPtr->display, penPtr->errorBarGC);
+  if (lpPtr->errorBarGC)
+    Tk_FreeGC(graphPtr->display, lpPtr->errorBarGC);
 
-  if (penPtr->traceGC)
-    Blt_FreePrivateGC(graphPtr->display, penPtr->traceGC);
+  if (lpPtr->traceGC)
+    Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
 
-  if (penPtr->symbol.bitmap != None) {
-    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.bitmap);
-    penPtr->symbol.bitmap = None;
+  if (ops->symbol.bitmap != None) {
+    Tk_FreeBitmap(graphPtr->display, ops->symbol.bitmap);
+    ops->symbol.bitmap = None;
   }
-  if (penPtr->symbol.mask != None) {
-    Tk_FreeBitmap(graphPtr->display, penPtr->symbol.mask);
-    penPtr->symbol.mask = None;
+  if (ops->symbol.mask != None) {
+    Tk_FreeBitmap(graphPtr->display, ops->symbol.mask);
+    ops->symbol.mask = None;
   }
 
-  Tk_FreeConfigOptions((char*)penPtr, penPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)lpPtr, lpPtr->optionTable, graphPtr->tkwin);
 
-  if (penPtr->manageOptions)
-    if (penPtr->ops)
-      free(penPtr->ops);
+  if (lpPtr->manageOptions)
+    if (lpPtr->ops)
+      free(lpPtr->ops);
 }
 
-static void DestroySymbol(Display *display, Symbol *symbolPtr)
+static void DestroySymbol(Display* display, Symbol* symbolPtr)
 {
   if (symbolPtr->bitmap != None) {
     Tk_FreeBitmap(display, symbolPtr->bitmap);
@@ -359,6 +377,7 @@ static void DestroySymbol(Display *display, Symbol *symbolPtr)
     Tk_FreeBitmap(display, symbolPtr->mask);
     symbolPtr->mask = None;
   }
+
   symbolPtr->type = SYMBOL_NONE;
 }
 

@@ -111,7 +111,7 @@ int Blt_InitCmd(Tcl_Interp* interp, const char *nsName,
   if (nsPtr == NULL)
     return TCL_ERROR;
 
-  if (Tcl_Export(interp, nsPtr, specPtr->name, FALSE) != TCL_OK)
+  if (Tcl_Export(interp, nsPtr, specPtr->name, 0) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;

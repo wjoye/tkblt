@@ -81,7 +81,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   penPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, penPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr, penPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr->ops, penPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyPen(penPtr);
     return TCL_ERROR;
   }

@@ -126,7 +126,7 @@ static int ClipTest (double ds, double dr, double *t1, double *t2)
   if (ds < 0.0) {
     t = dr / ds;
     if (t > *t2) {
-      return FALSE;
+      return 0;
     } 
     if (t > *t1) {
       *t1 = t;
@@ -134,7 +134,7 @@ static int ClipTest (double ds, double dr, double *t1, double *t2)
   } else if (ds > 0.0) {
     t = dr / ds;
     if (t < *t1) {
-      return FALSE;
+      return 0;
     } 
     if (t < *t2) {
       *t2 = t;
@@ -142,10 +142,10 @@ static int ClipTest (double ds, double dr, double *t1, double *t2)
   } else {
     /* d = 0, so line is parallel to this clipping edge */
     if (dr < 0.0) {		/* Line is outside clipping edge */
-      return FALSE;
+      return 0;
     }
   }
-  return TRUE;
+  return 1;
 }
 
 /*
@@ -179,10 +179,10 @@ int Blt_LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 	p->x += t1 * dx;
 	p->y += t1 * dy;
       }
-      return TRUE;
+      return 1;
     }
   }
-  return FALSE;
+  return 0;
 }
 
 /*

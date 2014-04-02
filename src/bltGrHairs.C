@@ -95,7 +95,7 @@ static Tk_OptionSpec optionSpecs[] = {
 int Blt_CreateCrosshairs(Graph* graphPtr)
 {
   Crosshairs* chPtr = (Crosshairs*)calloc(1, sizeof(Crosshairs));
-  chPtr->hide = TRUE;
+  chPtr->hide = 1;
   chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
   graphPtr->crosshairs = chPtr;
 
@@ -248,7 +248,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
 
   if (chPtr->hide) {
     TurnOnHairs(graphPtr, chPtr);
-    chPtr->hide = FALSE;
+    chPtr->hide = 0;
   }
   return TCL_OK;
 }
@@ -260,7 +260,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 
   if (!chPtr->hide) {
     TurnOffHairs(graphPtr->tkwin, chPtr);
-    chPtr->hide = TRUE;
+    chPtr->hide = 1;
   }
   return TCL_OK;
 }
@@ -306,7 +306,7 @@ static void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr)
   if (Tk_IsMapped(tkwin) && (chPtr->visible)) {
     XDrawSegments(Tk_Display(tkwin), Tk_WindowId(tkwin), chPtr->gc,
 		  chPtr->segArr, 2);
-    chPtr->visible = FALSE;
+    chPtr->visible = 0;
   }
 }
 
@@ -318,7 +318,7 @@ static void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr)
     }
     XDrawSegments(graphPtr->display, Tk_WindowId(graphPtr->tkwin),
 		  chPtr->gc, chPtr->segArr, 2);
-    chPtr->visible = TRUE;
+    chPtr->visible = 1;
   }
 }
 

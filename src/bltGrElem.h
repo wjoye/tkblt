@@ -121,6 +121,7 @@ typedef struct {
 } ElementProcs;
 
 typedef struct {
+  Element* elemPtr;
   const char* label;
   char** tags;
   Axis2d axes;
@@ -135,7 +136,11 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-} ElemOptions;
+  Pen* builtinPenPtr;
+  Pen* activePenPtr;
+  Pen* normalPenPtr;
+  PenOptions builtinPen;
+} ElementOptions;
 
 typedef struct _Element {
   GraphObj obj;
@@ -144,26 +149,14 @@ typedef struct _Element {
   Tcl_HashEntry *hashPtr;
   void* ops;
 
-  // Fields specific to elements
-  const char *label;
   unsigned short row;
   unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;
   Tk_OptionTable optionTable;
-  Pen *activePenPtr;
-  Pen *normalPenPtr;
-  Pen *builtinPenPtr;
-  Blt_Chain stylePalette;
-  int scaleSymbols;
   double xRange;
   double yRange;
-  int state;
   Blt_ChainLink link;
 } Element;
 

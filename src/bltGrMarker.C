@@ -144,10 +144,10 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
     for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
       if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
 	  (pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
-	return FALSE;	/* One point is exterior. */
+	return 0;	/* One point is exterior. */
       }
     }
-    return TRUE;
+    return 1;
   }
   else {
     // If any segment of the polygon clips the bounding region, the
@@ -160,7 +160,7 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
       p = *pp;
       q = *(pp + 1);
       if (Blt_LineRectClip(regionPtr, &p, &q))
-	return TRUE;
+	return 1;
     }
 
     // Otherwise the polygon and rectangle are either disjoint or

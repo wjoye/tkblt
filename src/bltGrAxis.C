@@ -1776,9 +1776,10 @@ void Blt_ResetAxes(Graph* graphPtr)
     Region2d exts;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
     (*elemPtr->procsPtr->extentsProc) (elemPtr, &exts);
-    GetDataLimits(elemPtr->axes.x, exts.left, exts.right);
-    GetDataLimits(elemPtr->axes.y, exts.top, exts.bottom);
+    GetDataLimits(ops->axes.x, exts.left, exts.right);
+    GetDataLimits(ops->axes.y, exts.top, exts.bottom);
   }
   /*
    * Step 3:  Now that we know the range of data values for each axis,

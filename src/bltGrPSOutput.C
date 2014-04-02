@@ -922,16 +922,16 @@ void Blt_Ps_FontName(const char *family, int flags, Tcl_DString *resultPtr)
      */
     Tcl_DStringAppend(resultPtr, family, -1);
     src = dest = Tcl_DStringValue(resultPtr) + len;
-    upper = TRUE;
+    upper = 1;
     while (*src != '\0') {
       while (isspace(*src)) { /* INTL: ISO space */
 	src++;
-	upper = TRUE;
+	upper = 1;
       }
       src += Tcl_UtfToUniChar(src, &ch);
       if (upper) {
 	ch = Tcl_UniCharToUpper(ch);
-	upper = FALSE;
+	upper = 0;
       } else {
 	ch = Tcl_UniCharToLower(ch);
       }

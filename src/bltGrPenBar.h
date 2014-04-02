@@ -42,7 +42,6 @@ typedef struct {
   int errorBarLineWidth;
   int errorBarCapWidth;
   XColor* errorBarColor;
-
   int valueShow;
   const char *valueFormat;
   TextStyle valueStyle;
@@ -52,7 +51,6 @@ typedef struct {
   int borderWidth;
   int relief;
   Pixmap stipple;
-
 } BarPenOptions;
 
 typedef struct {
@@ -68,26 +66,9 @@ typedef struct {
   void* ops;
   int manageOptions;
 
-  // Barchart specific pen fields start here
-  XColor* outlineColor;
-  Tk_3DBorder fill;
-  int borderWidth;
-  int relief;
-  Pixmap stipple;
   GC fillGC;
   GC outlineGC;
-
-  // Error bar attributes
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
   GC errorBarGC;
-
-  // Show value attributes
-  int valueShow;
-  const char *valueFormat;
-  TextStyle valueStyle;
 } BarPen;
 
 extern Pen* CreateBarPen(Graph* graphPtr, const char *penName);

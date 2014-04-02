@@ -39,6 +39,7 @@ using namespace std;
 #include "bltGrPenBar.h"
 
 typedef struct {
+  Element* elemPtr;
   const char *label;
   char** tags;
   Axis2d axes;
@@ -53,12 +54,12 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-
-  // derived
-  BarPenOptions builtinPenOps;
+  BarPen *builtinPenPtr;
   BarPen *activePenPtr;
   BarPen *normalPenPtr;
+  BarPenOptions builtinPen;
 
+  // derived
   double barWidth;
   const char *groupName;
 } BarElementOptions;
@@ -70,33 +71,18 @@ typedef struct {
   Tcl_HashEntry *hashPtr;
   void* ops;
 
-  // Fields specific to elements
-  const char *label;
   unsigned short row;
   unsigned short col;
-  int legendRelief;
-  Axis2d axes;
-  ElemCoords coords;
-  ElemValues* w;
   int *activeIndices;
   int nActiveIndices;
   ElementProcs *procsPtr;
   Tk_OptionTable optionTable;
-  BarPen *activePenPtr;
-  BarPen *normalPenPtr;
-  BarPen *builtinPenPtr;
-  Blt_Chain stylePalette;
-
-  // Symbol scaling
-  int scaleSymbols;
   double xRange;
   double yRange;
-  int state;
   Blt_ChainLink link;
 
-  // Fields specific to the barchart element
-  double barWidth;
-  const char *groupName;
+  // Fields specific to Bar Element
+  BarPen builtinPen;
   int *barToData;
   XRectangle *bars;
   int *activeToData;
@@ -104,16 +90,8 @@ typedef struct {
   int nBars;
   int nActive;
   int xPad;
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  BarPen builtinPen;
   GraphSegments xeb;
   GraphSegments yeb;
-  int errorBarCapWidth;
 } BarElement;
 
 #endif

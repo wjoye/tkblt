@@ -50,7 +50,6 @@ typedef struct {
   int errorBarLineWidth;
   int errorBarCapWidth;
   XColor* errorBarColor;
-
   int valueShow;
   const char* valueFormat;
   TextStyle valueStyle;
