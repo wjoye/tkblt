@@ -164,7 +164,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)penPtr, penPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)penPtr->ops, penPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -315,9 +315,8 @@ void Blt_FreePen(Pen* penPtr)
 {
   if (penPtr != NULL) {
     penPtr->refCount--;
-    if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING)) {
+    if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING))
       DestroyPen(penPtr);
-    }
   }
 }
 
@@ -349,6 +348,7 @@ int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
   penPtr->refCount++;
   *penPtrPtr = penPtr;
+
   return TCL_OK;
 }
 

@@ -5,7 +5,7 @@ set graph [bltLineGraph $w]
 
 echo "Testing Legend..."
 
-bltTest2 $graph legend -activebackground
+#bltTest2 $graph legend -activebackground
 #bltTest2 $graph legend -activeborderwidth
 #bltTest2 $graph legend -activeforeground
 #bltTest2 $graph legend -activerelief

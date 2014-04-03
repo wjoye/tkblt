@@ -130,7 +130,8 @@ static void DestroyElement(Element* elemPtr)
   if (elemPtr->obj.name)
     free((void*)(elemPtr->obj.name));
 
-  Tk_FreeConfigOptions((char*)elemPtr, elemPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)elemPtr->ops, elemPtr->optionTable,
+		       graphPtr->tkwin);
 
   (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
 
@@ -197,7 +198,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)elemPtr, elemPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)elemPtr->ops, elemPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;

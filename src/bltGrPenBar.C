@@ -173,6 +173,10 @@ void DestroyBarPenProc(Graph* graphPtr, Pen* penPtr)
   if (bpPtr->errorBarGC)
     Tk_FreeGC(graphPtr->display, bpPtr->errorBarGC);
 
-  Tk_FreeConfigOptions((char*)bpPtr, bpPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)bpPtr->ops, bpPtr->optionTable, graphPtr->tkwin);
+
+  if (bpPtr->manageOptions)
+    if (bpPtr->ops)
+      free(bpPtr->ops);
 }
 

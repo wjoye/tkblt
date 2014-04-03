@@ -360,7 +360,7 @@ void DestroyLinePenProc(Graph* graphPtr, Pen* penPtr)
     ops->symbol.mask = None;
   }
 
-  Tk_FreeConfigOptions((char*)lpPtr, lpPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)lpPtr->ops, lpPtr->optionTable, graphPtr->tkwin);
 
   if (lpPtr->manageOptions)
     if (lpPtr->ops)
