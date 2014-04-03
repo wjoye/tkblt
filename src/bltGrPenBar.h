@@ -53,7 +53,8 @@ typedef struct {
   Pixmap stipple;
 } BarPenOptions;
 
-typedef struct {
+class BarPen {
+ public:
   const char *name;
   ClassId classId;
   unsigned int flags;
@@ -69,7 +70,7 @@ typedef struct {
   GC fillGC;
   GC outlineGC;
   GC errorBarGC;
-} BarPen;
+};
 
 extern Pen* CreateBarPen(Graph* graphPtr, const char *penName);
 extern void InitBarPen(Graph* graphPtr, BarPen* penPtr, const char* penName);

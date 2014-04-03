@@ -73,7 +73,8 @@ typedef struct {
   XColor* traceOffColor;
 } LinePenOptions;
 
-typedef struct {
+class LinePen {
+ public:
   const char* name;
   ClassId classId;
   unsigned int flags;
@@ -88,7 +89,7 @@ typedef struct {
 
   GC traceGC;
   GC errorBarGC;
-} LinePen;
+};
 
 extern Tk_ObjCustomOption symbolObjOption;
 

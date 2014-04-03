@@ -39,7 +39,7 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-typedef struct _Pen Pen;
+class Pen;
 
 typedef Pen* (PenCreateProc)(void);
 typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
@@ -55,7 +55,8 @@ typedef struct {
   TextStyle valueStyle;
 } PenOptions;
 
-typedef struct _Pen {
+class Pen {
+ public:
   const char *name;
   ClassId classId;
   unsigned int flags;
@@ -67,6 +68,6 @@ typedef struct _Pen {
   Graph* graphPtr;
   void* ops;
   int manageOptions;
-} Pen;
+};
 
 #endif
