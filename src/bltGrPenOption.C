@@ -79,7 +79,7 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
   if (!penPtr)
     return Tcl_NewStringObj("", -1);
 
-  return Tcl_NewStringObj(penPtr->name, -1);
+  return Tcl_NewStringObj(penPtr->name(), -1);
 };
 
 static void PenFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)

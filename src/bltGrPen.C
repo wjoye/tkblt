@@ -28,3 +28,47 @@
  */
 
 #include "bltGrPen.h"
+
+Pen::Pen()
+{
+  graphPtr_ =NULL;
+  classId_ = CID_NONE;
+  name_ =NULL;
+  optionTable_ =NULL;
+  ops_ =NULL;
+  manageOptions_ =0;
+  flags =0;
+  refCount =0;
+  hashPtr_ =NULL;
+}
+
+Pen::Pen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
+{
+  graphPtr_ = graphPtr;
+  classId_ = CID_NONE;
+  name_ = dupstr(name);
+  optionTable_ = NULL;
+  ops_ = NULL;
+  manageOptions_ =0;
+  flags =0;
+  refCount =0;
+  hashPtr_ = hPtr;
+}
+
+Pen::~Pen()
+{
+  if (name_)
+    delete [] name_;
+
+  if (hashPtr_)
+    Tcl_DeleteHashEntry(hashPtr_);
+
+  PenOptions* ops = (PenOptions*)ops_;
+  Blt_Ts_FreeStyle(graphPtr_->display, &ops->valueStyle);
+
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+
+  if (manageOptions_)
+    if (ops_)
+      free(ops_);
+}

@@ -302,12 +302,10 @@ Element* Blt_LineElement(Graph* graphPtr)
 
   lePtr->procsPtr = &lineProcs;
   ops->builtinPenPtr = &lePtr->builtinPen;
-  lePtr->builtinPen.ops =&ops->builtinPen;
-  lePtr->builtinPen.manageOptions =0;
 
-  InitLinePen(graphPtr, &lePtr->builtinPen, "builtin");
+  lePtr->builtinPen.init(graphPtr, "builtin", &ops->builtinPen);
   Tk_InitOptions(graphPtr->interp, (char*)&(ops->builtinPen),
-		 lePtr->builtinPen.optionTable, graphPtr->tkwin);
+		 lePtr->builtinPen.optionTable(), graphPtr->tkwin);
 
   lePtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -320,7 +318,6 @@ static void DestroyLineProc(Graph* graphPtr, Element* elemPtr)
   LineElement* lePtr = (LineElement*)elemPtr;
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
 
-  DestroyLinePenProc(graphPtr, (Pen *)&lePtr->builtinPen);
   if (ops->activePenPtr)
     Blt_FreePen((Pen *)ops->activePenPtr);
   if (ops->normalPenPtr)
@@ -348,7 +345,7 @@ static int ConfigureLineProc(Graph* graphPtr, Element *elemPtr)
   LineElement* lePtr = (LineElement*)elemPtr;
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
 
-  if (ConfigureLinePenProc(graphPtr, (Pen *)&lePtr->builtinPen) != TCL_OK)
+  if (lePtr->builtinPen.configure() != TCL_OK)
     return TCL_ERROR;
 
   // Point to the static normal/active pens if no external pens have been
@@ -1458,7 +1455,7 @@ static void MapLineProc(Graph* graphPtr, Element *elemPtr)
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     int size = ScaleSymbol(lePtr, penOps->symbol.size);
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penOps->errorBarCapWidth > 0) 
@@ -1803,7 +1800,7 @@ static void ClosestLineProc(Graph* graphPtr, Element *elemPtr)
   int mode = searchPtr->mode;
   if (mode == SEARCH_AUTO) {
     LinePen* penPtr = NORMALPEN(ops);
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     mode = SEARCH_POINTS;
     if ((NUMBEROFPOINTS(ops) > 1) && (penOps->traceWidth > 0))
       mode = SEARCH_TRACES;
@@ -1845,7 +1842,7 @@ static void DrawCircles(Display *display, Drawable drawable,
 			LineElement* lePtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int radius)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   int count = 0;
   int s = radius + radius;
@@ -1897,7 +1894,7 @@ static void DrawSquares(Display *display, Drawable drawable,
 			LineElement* lePtr, LinePen* penPtr, 
 			int nSymbolPts, Point2d *symbolPts, int r)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   int count =0;
   int s = r + r;
@@ -1951,7 +1948,7 @@ static void DrawSymbols(Graph* graphPtr, Drawable drawable,
 			LineElement* lePtr, LinePen* penPtr,
 			int size, int nSymbolPts, Point2d *symbolPts)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   XPoint pattern[13];
   int count;
@@ -2404,7 +2401,7 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
 
   LinePen* penPtr = NORMALPEN(ops);
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (penOps->traceWidth > 0) {
     /*
@@ -2412,9 +2409,9 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
      * thicker appearance.  This is only for the legend entry.  This routine
      * is never called for drawing the actual line segments.
      */
-    XDrawLine(graphPtr->display, drawable, penPtr->traceGC, x - size, y, 
+    XDrawLine(graphPtr->display, drawable, penPtr->traceGC_, x - size, y, 
 	      x + size, y);
-    XDrawLine(graphPtr->display, drawable, penPtr->traceGC, x - size, y + 1,
+    XDrawLine(graphPtr->display, drawable, penPtr->traceGC_, x - size, y + 1,
 	      x + size, y + 1);
   }
   if (penOps->symbol.type != SYMBOL_NONE) {
@@ -2455,7 +2452,7 @@ static void DrawTraces(Graph* graphPtr, Drawable drawable,
       xpp->x = Round(tracePtr->screenPts.points[count].x);
       xpp->y = Round(tracePtr->screenPts.points[count].y);
     }
-    XDrawLines(graphPtr->display, drawable, penPtr->traceGC, points, 
+    XDrawLines(graphPtr->display, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);
 
     /* Step 2. Next handle any full-size chunks left. */
@@ -2471,7 +2468,7 @@ static void DrawTraces(Graph* graphPtr, Drawable drawable,
 	xpp->x = Round(tracePtr->screenPts.points[count].x);
 	xpp->y = Round(tracePtr->screenPts.points[count].y);
       }
-      XDrawLines(graphPtr->display, drawable, penPtr->traceGC, points, 
+      XDrawLines(graphPtr->display, drawable, penPtr->traceGC_, points, 
 		 np + 1, CoordModeOrigin);
     }
 	
@@ -2487,7 +2484,7 @@ static void DrawTraces(Graph* graphPtr, Drawable drawable,
 	xpp->x = Round(tracePtr->screenPts.points[count].x);
 	xpp->y = Round(tracePtr->screenPts.points[count].y);
       }	    
-      XDrawLines(graphPtr->display, drawable, penPtr->traceGC, points, 
+      XDrawLines(graphPtr->display, drawable, penPtr->traceGC_, points, 
 		 remaining + 1, CoordModeOrigin);
     }
   }
@@ -2499,7 +2496,7 @@ static void DrawValues(Graph* graphPtr, Drawable drawable,
 		       int length, Point2d *points, int *map)
 {
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   Point2d *pp, *endp;
   double *xval, *yval;
@@ -2545,7 +2542,7 @@ static void DrawActiveLineProc(Graph* graphPtr, Drawable drawable,
 
   if (!penPtr)
     return;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   int symbolSize = ScaleSymbol(lePtr, penOps->symbol.size);
 
@@ -2573,7 +2570,7 @@ static void DrawActiveLineProc(Graph* graphPtr, Drawable drawable,
     if (penOps->traceWidth > 0) {
       if (lePtr->lines.length > 0) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, 
-			   penPtr->traceGC, lePtr->lines.segments, 
+			   penPtr->traceGC_, lePtr->lines.segments, 
 			   lePtr->lines.length);
       } else if (Blt_Chain_GetLength(lePtr->traces) > 0) {
 	DrawTraces(graphPtr, drawable, lePtr, penPtr);
@@ -2622,17 +2619,17 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
 
       LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
       if ((stylePtr->lines.length > 0) && 
 	  (penOps->errorBarLineWidth > 0)) {
-	Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->traceGC,
+	Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->traceGC_,
 			   stylePtr->lines.segments, stylePtr->lines.length);
       }
     }
   } 
   else {
     LinePen* penPtr = NORMALPEN(ops);
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((Blt_Chain_GetLength(lePtr->traces) > 0) && 
 	(penOps->traceWidth > 0)) {
@@ -2658,14 +2655,14 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
+      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC_, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
+      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC_, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if ((stylePtr->symbolPts.length > 0) && 
@@ -2687,7 +2684,7 @@ static void DrawNormalLineProc(Graph* graphPtr, Drawable drawable,
 static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
 				    LinePen* penPtr, int size)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   /* Set line and foreground attributes */
   XColor* fillColor = penOps->symbol.fillColor;
@@ -2763,7 +2760,7 @@ static void GetSymbolPostScriptInfo(Graph* graphPtr, Blt_Ps ps,
 static void SymbolsToPostScript(Graph* graphPtr, Blt_Ps ps, LinePen* penPtr,
 				int size, int nSymbolPts, Point2d *symbolPts)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   double symbolSize;
   static const char* symbolMacros[] =
@@ -2810,7 +2807,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
 
   LinePen* penPtr = NORMALPEN(ops);
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (penOps->traceWidth > 0) {
     /*
@@ -2832,7 +2829,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 
 static void SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   /* Set the attributes of the line (color, dashes, linewidth) */
   Blt_Ps_XSetLineAttributes(ps, penOps->traceColor, penOps->traceWidth, 
@@ -2871,7 +2868,7 @@ static void ValuesToPostScript(Blt_Ps ps, LineElement* lePtr, LinePen* penPtr,
 			       int *pointToData)
 {
   LineElementOptions* ops = (LineElementOptions*)lePtr->ops;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   const char* fmt = penOps->valueFormat;
   if (fmt == NULL)
@@ -2909,7 +2906,7 @@ static void ActiveLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   LinePen* penPtr = (LinePen *)ops->activePenPtr;
   if (!penPtr)
     return;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   int symbolSize = ScaleSymbol(lePtr, penOps->symbol.size);
   if (lePtr->nActiveIndices > 0) {
@@ -2980,7 +2977,7 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 	 link = Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
       if ((stylePtr->lines.length > 0) && (penOps->traceWidth > 0)) {
 	SetLineAttributes(ps, penPtr);
@@ -2993,7 +2990,7 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
   }
   else {
     LinePen* penPtr = NORMALPEN(ops);
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((Blt_Chain_GetLength(lePtr->traces) > 0) && 
 	(penOps->traceWidth > 0)) {
@@ -3009,7 +3006,7 @@ static void NormalLineToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     XColor* colorPtr = penOps->errorBarColor;
     if (!colorPtr)
       colorPtr = penOps->traceColor;

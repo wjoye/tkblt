@@ -39,7 +39,6 @@ extern "C" {
 
 // Defs
 
-static void DestroyPen(Pen* penPtr);
 static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr);
 static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
@@ -66,10 +65,10 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   Pen* penPtr;
   switch (classId) {
   case CID_ELEM_BAR:
-    penPtr = CreateBarPen(graphPtr, penName);
+    penPtr = new BarPen(graphPtr, penName, hPtr);
     break;
   case CID_ELEM_LINE:
-    penPtr = CreateLinePen(graphPtr, penName);
+    penPtr = new LinePen(graphPtr, penName, hPtr);
     break;
   default:
     return TCL_ERROR;
@@ -77,12 +76,10 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   if (!penPtr)
     return TCL_ERROR;
 
-  penPtr->graphPtr = graphPtr;
-  penPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, penPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr->ops, penPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
-    DestroyPen(penPtr);
+  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr->ops(), penPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
+    delete penPtr;
     return TCL_ERROR;
   }
 
@@ -90,21 +87,6 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   Blt_EventuallyRedrawGraph(graphPtr);
 
   return TCL_OK;
-}
-
-static void DestroyPen(Pen* penPtr)
-{
-  Graph* graphPtr = penPtr->graphPtr;
-
-  (*penPtr->destroyProc)(graphPtr, penPtr);
-
-  if (penPtr->name)
-    free((void*)(penPtr->name));
-
-  if (penPtr->hashPtr)
-    Tcl_DeleteHashEntry(penPtr->hashPtr);
-
-  free(penPtr);
 }
 
 // Configure
@@ -123,7 +105,7 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
 
 
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)penPtr, 
-				      penPtr->optionTable,
+				      penPtr->optionTable(),
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -141,7 +123,7 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
 
   if (objc <= 5) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)penPtr, 
-				       penPtr->optionTable, 
+				       penPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)
@@ -164,7 +146,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)penPtr->ops, penPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)penPtr->ops(), penPtr->optionTable(), 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -177,7 +159,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
 
     graphPtr->flags |= mask;
     graphPtr->flags |= CACHE_DIRTY;
-    if ((*penPtr->configProc)(graphPtr, penPtr) != TCL_OK)
+    if (penPtr->configure() != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -224,7 +206,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 
   penPtr->flags |= DELETE_PENDING;
   if (penPtr->refCount == 0)
-    DestroyPen(penPtr);
+    delete penPtr;
 
   return TCL_OK;
 }
@@ -238,10 +220,9 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-      if ((penPtr->flags & DELETE_PENDING) == 0) {
+      if ((penPtr->flags & DELETE_PENDING) == 0)
 	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewStringObj(penPtr->name, -1));
-      }
+				 Tcl_NewStringObj(penPtr->name(), -1));
     }
   } 
   else {
@@ -250,11 +231,11 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
       if ((penPtr->flags & DELETE_PENDING) == 0) {
-	for (int i = 3; i < objc; i++) {
-	  char *pattern = Tcl_GetString(objv[i]);
-	  if (Tcl_StringMatch(penPtr->name, pattern)) {
+	for (int ii=3; ii<objc; ii++) {
+	  char *pattern = Tcl_GetString(objv[ii]);
+	  if (Tcl_StringMatch(penPtr->name(), pattern)) {
 	    Tcl_ListObjAppendElement(interp, listObjPtr, 
-				     Tcl_NewStringObj(penPtr->name, -1));
+				     Tcl_NewStringObj(penPtr->name(), -1));
 	    break;
 	  }
 	}
@@ -272,7 +253,8 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), Blt_GraphClassName(penPtr->classId), -1);
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), 
+		   Blt_GraphClassName(penPtr->classId()), -1);
   return TCL_OK;
 }
 
@@ -305,8 +287,7 @@ void Blt_DestroyPens(Graph* graphPtr)
   for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable, &iter);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
     Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-    penPtr->hashPtr = NULL;
-    DestroyPen(penPtr);
+    delete penPtr;
   }
   Tcl_DeleteHashTable(&graphPtr->penTable);
 }
@@ -316,7 +297,7 @@ void Blt_FreePen(Pen* penPtr)
   if (penPtr != NULL) {
     penPtr->refCount--;
     if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING))
-      DestroyPen(penPtr);
+      delete penPtr;
   }
 }
 
@@ -338,10 +319,11 @@ int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
     return TCL_ERROR;
   }
 
-  if (penPtr->classId != classId) {
+  if (penPtr->classId() != classId) {
     Tcl_AppendResult(interp, "pen \"", name, 
 		     "\" is the wrong type (is \"", 
-		     Blt_GraphClassName(penPtr->classId), "\"", ", wanted \"", 
+		     Blt_GraphClassName(penPtr->classId()),
+		     "\"", ", wanted \"", 
 		     Blt_GraphClassName(classId), "\")", (char *)NULL);
     return TCL_ERROR;
   }
@@ -362,9 +344,8 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
   if (hPtr != NULL) {
     penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-    if (penPtr->flags & DELETE_PENDING) {
+    if (penPtr->flags & DELETE_PENDING)
       penPtr = NULL;
-    }
   }
   if (penPtr == NULL) {
     if (interp != NULL) {

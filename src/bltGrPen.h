@@ -39,12 +39,6 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-class Pen;
-
-typedef Pen* (PenCreateProc)(void);
-typedef int (PenConfigureProc)(Graph* graphPtr, Pen* penPtr);
-typedef void (PenDestroyProc)(Graph* graphPtr, Pen* penPtr);
-
 typedef struct {
   int errorBarShow;
   int errorBarLineWidth;
@@ -57,17 +51,26 @@ typedef struct {
 
 class Pen {
  public:
-  const char *name;
-  ClassId classId;
+  Graph* graphPtr_;
+  ClassId classId_;
+  const char *name_;
+  Tk_OptionTable optionTable_;
+  void* ops_;
+  int manageOptions_;
   unsigned int flags;
   int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph* graphPtr;
-  void* ops;
-  int manageOptions;
+  Tcl_HashEntry *hashPtr_;
+
+ public:
+  Pen();
+  Pen(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~Pen();
+
+  virtual int configure() =0;
+  void* ops() {return ops_;}
+  Tk_OptionTable optionTable() {return optionTable_;}
+  const char* name() {return name_;}
+  ClassId classId() {return classId_;}
 };
 
 #endif

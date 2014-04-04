@@ -72,36 +72,55 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-Pen* CreateBarPen(Graph* graphPtr, const char *penName)
+BarPen::BarPen() : Pen()
 {
-  BarPen* penPtr = (BarPen*)calloc(1, sizeof(BarPen));
-  penPtr->ops = (BarPenOptions*)calloc(1, sizeof(BarPenOptions));
-  penPtr->manageOptions =1;
+  classId_ = CID_ELEM_BAR;
 
-  InitBarPen(graphPtr, penPtr, penName);
-  return (Pen*)penPtr;
+  fillGC_ =NULL;
+  outlineGC_ =NULL;
+  errorBarGC_ =NULL;
 }
 
-void InitBarPen(Graph* graphPtr, BarPen* penPtr, const char* penName)
+BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
+  : Pen(graphPtr, name, hPtr)
 {
-  BarPenOptions* ops = (BarPenOptions*)penPtr->ops;
+  classId_ = CID_ELEM_BAR;
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
+  ops_ = (BarPenOptions*)calloc(1, sizeof(BarPenOptions));
+  manageOptions_ =1;
 
-  penPtr->configProc = ConfigureBarPenProc;
-  penPtr->destroyProc = DestroyBarPenProc;
+  fillGC_ =NULL;
+  outlineGC_ =NULL;
+  errorBarGC_ =NULL;
 
-  penPtr->classId = CID_ELEM_BAR;
-  penPtr->name = Blt_Strdup(penName);
+  BarPenOptions* ops = (BarPenOptions*)ops_;
+  Blt_Ts_InitStyle(ops->valueStyle);
+}
+
+void BarPen::init(Graph* graphPtr, const char* penName, BarPenOptions* ops)
+{
+  graphPtr_ = graphPtr;
+  name_ = dupstr(penName);
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
+  ops_ = ops;
+  manageOptions_ =0;
 
   Blt_Ts_InitStyle(ops->valueStyle);
-
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, barPenOptionSpecs);
 }
 
-int ConfigureBarPenProc(Graph* graphPtr, Pen *penPtr)
+BarPen::~BarPen()
 {
-  BarPen* bpPtr = (BarPen*)penPtr;
-  BarPenOptions* ops = (BarPenOptions*)bpPtr->ops;
+  if (outlineGC_)
+    Tk_FreeGC(graphPtr_->display, outlineGC_);
+  if (fillGC_)
+    Tk_FreeGC(graphPtr_->display, fillGC_);
+  if (errorBarGC_)
+    Tk_FreeGC(graphPtr_->display, errorBarGC_);
+}
+
+int BarPen::configure()
+{
+  BarPenOptions* ops = (BarPenOptions*)ops_;
 
   // outlineGC
   {
@@ -112,10 +131,10 @@ int ConfigureBarPenProc(Graph* graphPtr, Pen *penPtr)
       gcValues.foreground = ops->outlineColor->pixel;
     else if (ops->fill)
       gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
-    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (bpPtr->outlineGC)
-      Tk_FreeGC(graphPtr->display, bpPtr->outlineGC);
-    bpPtr->outlineGC = newGC;
+    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    if (outlineGC_)
+      Tk_FreeGC(graphPtr_->display, outlineGC_);
+    outlineGC_ = newGC;
   }
 
   // fillGC
@@ -126,20 +145,20 @@ int ConfigureBarPenProc(Graph* graphPtr, Pen *penPtr)
       unsigned long gcMask = 
 	GCForeground | GCBackground | GCFillStyle | GCStipple;
       XGCValues gcValues;
-      int screenNum = Tk_ScreenNumber(graphPtr->tkwin);
-      gcValues.foreground = BlackPixel(graphPtr->display, screenNum);
-      gcValues.background = WhitePixel(graphPtr->display, screenNum);
+      int screenNum = Tk_ScreenNumber(graphPtr_->tkwin);
+      gcValues.foreground = BlackPixel(graphPtr_->display, screenNum);
+      gcValues.background = WhitePixel(graphPtr_->display, screenNum);
       if (ops->fill)
 	gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
       else if (ops->outlineColor)
 	gcValues.foreground = ops->outlineColor->pixel;
       gcValues.stipple = ops->stipple;
       gcValues.fill_style = FillStippled;
-      newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+      newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     }
-    if (bpPtr->fillGC)
-      Tk_FreeGC(graphPtr->display, bpPtr->fillGC);
-    bpPtr->fillGC = newGC;
+    if (fillGC_)
+      Tk_FreeGC(graphPtr_->display, fillGC_);
+    fillGC_ = newGC;
   }
 
   // errorBarGC
@@ -151,32 +170,12 @@ int ConfigureBarPenProc(Graph* graphPtr, Pen *penPtr)
     XGCValues gcValues;
     gcValues.foreground = colorPtr->pixel;
     gcValues.line_width = LineWidth(ops->errorBarLineWidth);
-    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (bpPtr->errorBarGC)
-      Tk_FreeGC(graphPtr->display, bpPtr->errorBarGC);
-    bpPtr->errorBarGC = newGC;
+    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    if (errorBarGC_)
+      Tk_FreeGC(graphPtr_->display, errorBarGC_);
+    errorBarGC_ = newGC;
   }
 
   return TCL_OK;
-}
-
-void DestroyBarPenProc(Graph* graphPtr, Pen* penPtr)
-{
-  BarPen* bpPtr = (BarPen*)penPtr;
-  BarPenOptions* ops = (BarPenOptions*)bpPtr->ops;
-
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->valueStyle);
-  if (bpPtr->outlineGC)
-    Tk_FreeGC(graphPtr->display, bpPtr->outlineGC);
-  if (bpPtr->fillGC)
-    Tk_FreeGC(graphPtr->display, bpPtr->fillGC);
-  if (bpPtr->errorBarGC)
-    Tk_FreeGC(graphPtr->display, bpPtr->errorBarGC);
-
-  Tk_FreeConfigOptions((char*)bpPtr->ops, bpPtr->optionTable, graphPtr->tkwin);
-
-  if (bpPtr->manageOptions)
-    if (bpPtr->ops)
-      free(bpPtr->ops);
 }
 

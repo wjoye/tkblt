@@ -27,9 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include "bltC.h"
 #include "bltMath.h"
 
@@ -40,6 +37,8 @@ extern "C" {
 #include "bltOp.h"
 }
 
+#include "bltGrPen.h"
+#include "bltGrPenOp.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrMarker.h"

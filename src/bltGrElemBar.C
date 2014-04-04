@@ -224,12 +224,10 @@ Element* Blt_BarElement(Graph* graphPtr)
 
   bePtr->procsPtr = &barProcs;
   ops->builtinPenPtr = &bePtr->builtinPen;
-  bePtr->builtinPen.ops = &ops->builtinPen;
-  bePtr->builtinPen.manageOptions =0;
 
-  InitBarPen(graphPtr, &bePtr->builtinPen, "builtin");
+  bePtr->builtinPen.init(graphPtr, "builtin", &ops->builtinPen);
   Tk_InitOptions(graphPtr->interp, (char*)&(ops->builtinPen),
-		 bePtr->builtinPen.optionTable, graphPtr->tkwin);
+		 bePtr->builtinPen.optionTable(), graphPtr->tkwin);
 
   bePtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 
@@ -240,8 +238,6 @@ static void DestroyBarProc(Graph* graphPtr, Element* elemPtr)
 {
   BarElement* bePtr = (BarElement*)elemPtr;
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
-
-  DestroyBarPenProc(graphPtr, (Pen*)&bePtr->builtinPen);
 
   if (ops->activePenPtr)
     Blt_FreePen((Pen*)ops->activePenPtr);
@@ -266,7 +262,7 @@ static int ConfigureBarProc(Graph* graphPtr, Element* elemPtr)
   BarElement* bePtr = (BarElement*)elemPtr;
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
-  if (ConfigureBarPenProc(graphPtr, (Pen*)&bePtr->builtinPen)!= TCL_OK)
+  if (bePtr->builtinPen.configure() != TCL_OK)
     return TCL_ERROR;
 
   // Point to the static normal pen if no external pens have been selected.
@@ -1041,7 +1037,7 @@ static void MapBarProc(Graph* graphPtr, Element* elemPtr)
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = 
       (penOps->errorBarCapWidth > 0) 
@@ -1070,7 +1066,7 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
   BarPen* penPtr = NORMALPEN(ops);
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 
   if (!penOps->fill && !penOps->outlineColor)
     return;
@@ -1080,20 +1076,20 @@ static void DrawSymbolProc(Graph* graphPtr, Drawable drawable,
 
   x -= radius;
   y -= radius;
-  if (penPtr->fillGC)
-    XSetTSOrigin(graphPtr->display, penPtr->fillGC, x, y);
+  if (penPtr->fillGC_)
+    XSetTSOrigin(graphPtr->display, penPtr->fillGC_, x, y);
 
   if (penOps->stipple != None)
-    XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, x, y, 
+    XFillRectangle(graphPtr->display, drawable, penPtr->fillGC_, x, y, 
 		   size, size);
   else
     Tk_Fill3DRectangle(graphPtr->tkwin, drawable, penOps->fill, 
 		       x, y, size, size, penOps->borderWidth, penOps->relief);
 
-  XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC, x, y, 
+  XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC_, x, y, 
 		 size, size);
-  if (penPtr->fillGC)
-    XSetTSOrigin(graphPtr->display, penPtr->fillGC, 0, 0);
+  if (penPtr->fillGC_)
+    XSetTSOrigin(graphPtr->display, penPtr->fillGC_, 0, 0);
 }
 
 static void SetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border, 
@@ -1128,7 +1124,7 @@ static void UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
 static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 			    XRectangle *bars, int nBars)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
   TkRegion rgn;
 
   XRectangle clip;
@@ -1145,17 +1141,17 @@ static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 
     int hasOutline = ((relief == TK_RELIEF_FLAT) && penOps->outlineColor);
     if (penOps->stipple != None)
-      TkSetRegion(graphPtr->display, penPtr->fillGC, rgn);
+      TkSetRegion(graphPtr->display, penPtr->fillGC_, rgn);
 
     SetBackgroundClipRegion(graphPtr->tkwin, penOps->fill, rgn);
 
     if (hasOutline)
-      TkSetRegion(graphPtr->display, penPtr->outlineGC, rgn);
+      TkSetRegion(graphPtr->display, penPtr->outlineGC_, rgn);
 
     XRectangle *rp, *rend;
     for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
       if (penOps->stipple != None)
-	XFillRectangle(graphPtr->display, drawable, penPtr->fillGC, 
+	XFillRectangle(graphPtr->display, drawable, penPtr->fillGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
       else
 	Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
@@ -1163,24 +1159,24 @@ static void DrawBarSegments(Graph* graphPtr, Drawable drawable, BarPen* penPtr,
 			   penOps->borderWidth, relief);
 
       if (hasOutline)
-	XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC, 
+	XDrawRectangle(graphPtr->display, drawable, penPtr->outlineGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
     }
 
     UnsetBackgroundClipRegion(graphPtr->tkwin, penOps->fill);
 
     if (hasOutline)
-      XSetClipMask(graphPtr->display, penPtr->outlineGC, None);
+      XSetClipMask(graphPtr->display, penPtr->outlineGC_, None);
 
     if (penOps->stipple != None)
-      XSetClipMask(graphPtr->display, penPtr->fillGC, None);
+      XSetClipMask(graphPtr->display, penPtr->fillGC_, None);
 
   }
   else if (penOps->outlineColor) {
-    TkSetRegion(graphPtr->display, penPtr->outlineGC, rgn);
-    XDrawRectangles(graphPtr->display, drawable, penPtr->outlineGC, bars, 
+    TkSetRegion(graphPtr->display, penPtr->outlineGC_, rgn);
+    XDrawRectangles(graphPtr->display, drawable, penPtr->outlineGC_, bars, 
 		    nBars);
-    XSetClipMask(graphPtr->display, penPtr->outlineGC, None);
+    XSetClipMask(graphPtr->display, penPtr->outlineGC_, None);
   }
 
   TkDestroyRegion(rgn);
@@ -1192,7 +1188,7 @@ static void DrawBarValues(Graph* graphPtr, Drawable drawable,
 			  int *barToData)
 {
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 
   const char *fmt = penOps->valueFormat;
   if (!fmt)
@@ -1247,18 +1243,18 @@ static void DrawNormalBarProc(Graph* graphPtr, Drawable drawable,
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 
     if (stylePtr->nBars > 0)
       DrawBarSegments(graphPtr, drawable, penPtr, stylePtr->bars,
 		      stylePtr->nBars);
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
+      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC_, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC, 
+      Blt_Draw2DSegments(graphPtr->display, drawable, penPtr->errorBarGC_, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if (penOps->valueShow != SHOW_NONE)
@@ -1278,7 +1274,7 @@ static void DrawActiveBarProc(Graph* graphPtr, Drawable drawable,
 
   if (ops->activePenPtr) {
     BarPen* penPtr = ops->activePenPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 
     if (bePtr->nActiveIndices > 0) {
       if (bePtr->flags & ACTIVE_PENDING) {
@@ -1310,7 +1306,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element* elemPtr,
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
   BarPen* penPtr = NORMALPEN(ops);
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 
   if (!penOps->fill && !penOps->outlineColor)
     return;
@@ -1345,7 +1341,7 @@ static void SymbolToPostScriptProc(Graph* graphPtr, Blt_Ps ps, Element* elemPtr,
 static void SegmentsToPostScript(Graph* graphPtr, Blt_Ps ps, BarPen* penPtr, 
 				 XRectangle *bars, int nBars)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
 
   if (!penOps->fill && !penOps->outlineColor)
@@ -1386,7 +1382,7 @@ static void BarValuesToPostScript(Graph* graphPtr, Blt_Ps ps,
 				  BarPen* penPtr, XRectangle *bars, int nBars, 
 				  int *barToData)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)bePtr->ops;
 
   XRectangle *rp, *rend;
@@ -1438,7 +1434,7 @@ static void ActiveBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 
   if (ops->activePenPtr) {
     BarPen* penPtr = ops->activePenPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 	
     if (bePtr->nActiveIndices > 0) {
       if (bePtr->flags & ACTIVE_PENDING) {
@@ -1473,7 +1469,7 @@ static void NormalBarToPostScriptProc(Graph* graphPtr, Blt_Ps ps,
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops;
+    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
     if (stylePtr->nBars > 0)
       SegmentsToPostScript(graphPtr, ps, penPtr, stylePtr->bars, 
 			   stylePtr->nBars);

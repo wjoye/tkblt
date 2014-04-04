@@ -32,5 +32,11 @@
 
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 extern void Blt_FreePen(Pen* penPtr);
+extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+		     Tcl_Obj* const objv[]);
+extern int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp, 
+			 const char* penName, ClassId classId, 
+			 int objc, Tcl_Obj* const objv[]);
+extern void Blt_DestroyPens(Graph* graphPtr);
 
 #endif

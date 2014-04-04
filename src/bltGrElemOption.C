@@ -311,7 +311,7 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
   for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
        link = Blt_Chain_NextLink(link)) {
     PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
-    ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name, -1);
+    ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name(), -1);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.min);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.max);
   }

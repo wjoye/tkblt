@@ -53,28 +53,19 @@ typedef struct {
   Pixmap stipple;
 } BarPenOptions;
 
-class BarPen {
+class BarPen : public Pen {
  public:
-  const char *name;
-  ClassId classId;
-  unsigned int flags;
-  int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph* graphPtr;
-  void* ops;
-  int manageOptions;
+  GC fillGC_;
+  GC outlineGC_;
+  GC errorBarGC_;
 
-  GC fillGC;
-  GC outlineGC;
-  GC errorBarGC;
+ public:
+  BarPen();
+  BarPen(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~BarPen();
+
+  void init(Graph*, const char*, BarPenOptions*);
+  int configure();
 };
-
-extern Pen* CreateBarPen(Graph* graphPtr, const char *penName);
-extern void InitBarPen(Graph* graphPtr, BarPen* penPtr, const char* penName);
-extern int ConfigureBarPenProc(Graph* graphPtr, Pen *basePtr);
-extern void DestroyBarPenProc(Graph* graphPtr, Pen* basePtr);
 
 #endif

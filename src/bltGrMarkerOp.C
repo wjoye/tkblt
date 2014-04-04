@@ -314,9 +314,9 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-    if ((markerPtr->flags & DELETE_PENDING) || ops->hide) {
+    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
       continue;
-    }
+
     if (IsElementHidden(graphPtr, markerPtr))
       continue;
 
@@ -598,8 +598,7 @@ void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
 
-    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || 
-	(ops->hide))
+    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (ops->hide))
       continue;
 
     if (IsElementHidden(graphPtr, markerPtr))

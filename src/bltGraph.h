@@ -388,17 +388,7 @@ struct _Graph {
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
 
-// Pens
-extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		     Tcl_Obj* const objv[]);
-extern int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp, 
-			 const char* penName, ClassId classId, 
-			 int objc, Tcl_Obj* const objv[]);
-extern void Blt_DestroyPens(Graph* graphPtr);
-
 // Elements
-
-
 extern void Blt_DestroyBarSets(Graph* graphPtr);
 extern void Blt_ResetBarGroups(Graph* graphPtr);
 extern void Blt_InitBarSetTable(Graph* graphPtr);

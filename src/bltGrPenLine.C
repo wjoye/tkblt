@@ -149,6 +149,20 @@ static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin,
   }
 }
 
+static void DestroySymbol(Display* display, Symbol* symbolPtr)
+{
+  if (symbolPtr->bitmap != None) {
+    Tk_FreeBitmap(display, symbolPtr->bitmap);
+    symbolPtr->bitmap = None;
+  }
+  if (symbolPtr->mask != None) {
+    Tk_FreeBitmap(display, symbolPtr->mask);
+    symbolPtr->mask = None;
+  }
+
+  symbolPtr->type = SYMBOL_NONE;
+}
+
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(LinePenOptions, traceColor), 
@@ -199,39 +213,76 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-Pen* CreateLinePen(Graph* graphPtr, const char* penName)
+LinePen::LinePen() : Pen()
 {
-  LinePen* penPtr = (LinePen*)calloc(1, sizeof(LinePen));
-  penPtr->ops = (LinePenOptions*)calloc(1, sizeof(LinePenOptions));
-  penPtr->manageOptions =1;
+  classId_ = CID_ELEM_LINE;
 
-  InitLinePen(graphPtr, penPtr, penName);
-  return (Pen*)penPtr;
+  traceGC_ =NULL;
+  errorBarGC_ =NULL;
 }
 
-void InitLinePen(Graph* graphPtr, LinePen* penPtr, const char* penName)
+LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
+  : Pen(graphPtr, name, hPtr)
 {
-  LinePenOptions* ops = (LinePenOptions*)penPtr->ops;
+  classId_ = CID_ELEM_LINE;
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
+  ops_ = (LinePenOptions*)calloc(1, sizeof(LinePenOptions));
+  manageOptions_ =1;
 
-  penPtr->configProc = ConfigureLinePenProc;
-  penPtr->destroyProc = DestroyLinePenProc;
+  traceGC_ =NULL;
+  errorBarGC_ =NULL;
 
-  penPtr->classId = CID_ELEM_LINE;
-  penPtr->name = Blt_Strdup(penName);
+  LinePenOptions* ops = (LinePenOptions*)ops_;
+  Blt_Ts_InitStyle(ops->valueStyle);
+  ops->symbol.bitmap = None;
+  ops->symbol.mask = None;
+  ops->symbol.type = SYMBOL_NONE;
+}
+
+void LinePen::init(Graph* graphPtr, const char* penName, LinePenOptions* ops)
+{
+  graphPtr_ = graphPtr;
+  name_ = dupstr(penName);
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
+  ops_ = ops;
+  manageOptions_ =0;
 
   Blt_Ts_InitStyle(ops->valueStyle);
   ops->symbol.bitmap = None;
   ops->symbol.mask = None;
   ops->symbol.type = SYMBOL_NONE;
-
-  penPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, linePenOptionSpecs);
 }
 
-int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
+LinePen::~LinePen()
 {
-  LinePen* lpPtr = (LinePen*)penPtr;
-  LinePenOptions* ops = (LinePenOptions*)lpPtr->ops;
+  LinePenOptions* ops = (LinePenOptions*)ops_;
+  
+  if (errorBarGC_)
+    Tk_FreeGC(graphPtr_->display, errorBarGC_);
+
+  if (traceGC_)
+    Blt_FreePrivateGC(graphPtr_->display, traceGC_);
+
+  if (ops->symbol.outlineGC)
+    Tk_FreeGC(graphPtr_->display, ops->symbol.outlineGC);
+
+  if (ops->symbol.fillGC)
+    Tk_FreeGC(graphPtr_->display, ops->symbol.fillGC);
+
+  if (ops->symbol.bitmap != None) {
+    Tk_FreeBitmap(graphPtr_->display, ops->symbol.bitmap);
+    ops->symbol.bitmap = None;
+  }
+
+  if (ops->symbol.mask != None) {
+    Tk_FreeBitmap(graphPtr_->display, ops->symbol.mask);
+    ops->symbol.mask = None;
+  }
+}
+
+int LinePen::configure()
+{
+  LinePenOptions* ops = (LinePenOptions*)ops_;
 
   // symbol outline
   {
@@ -260,9 +311,9 @@ int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
       }
     }
     gcValues.line_width = LineWidth(ops->symbol.outlineWidth);
-    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     if (ops->symbol.outlineGC)
-      Tk_FreeGC(graphPtr->display, ops->symbol.outlineGC);
+      Tk_FreeGC(graphPtr_->display, ops->symbol.outlineGC);
     ops->symbol.outlineGC = newGC;
   }
 
@@ -276,10 +327,10 @@ int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
     XGCValues gcValues;
     if (colorPtr) {
       gcValues.foreground = colorPtr->pixel;
-      newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
+      newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     }
     if (ops->symbol.fillGC)
-      Tk_FreeGC(graphPtr->display, ops->symbol.fillGC);
+      Tk_FreeGC(graphPtr_->display, ops->symbol.fillGC);
     ops->symbol.fillGC = newGC;
   }
 
@@ -303,15 +354,15 @@ int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
       gcValues.line_width = ops->traceWidth;
       gcValues.line_style = !colorPtr ? LineOnOffDash : LineDoubleDash;
     }
-    GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (lpPtr->traceGC)
-      Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
+    GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+    if (traceGC_)
+      Blt_FreePrivateGC(graphPtr_->display, traceGC_);
 
     if (LineIsDashed(ops->traceDashes)) {
       ops->traceDashes.offset = ops->traceDashes.values[0] / 2;
-      Blt_SetDashes(graphPtr->display, newGC, &ops->traceDashes);
+      Blt_SetDashes(graphPtr_->display, newGC, &ops->traceDashes);
     }
-    lpPtr->traceGC = newGC;
+    traceGC_ = newGC;
   }
 
   // errorbar
@@ -323,62 +374,14 @@ int ConfigureLinePenProc(Graph* graphPtr, Pen* penPtr)
     XGCValues gcValues;
     gcValues.line_width = LineWidth(ops->errorBarLineWidth);
     gcValues.foreground = colorPtr->pixel;
-    GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-    if (lpPtr->errorBarGC) {
-      Tk_FreeGC(graphPtr->display, lpPtr->errorBarGC);
+    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    if (errorBarGC_) {
+      Tk_FreeGC(graphPtr_->display, errorBarGC_);
     }
-    lpPtr->errorBarGC = newGC;
+    errorBarGC_ = newGC;
   }
 
   return TCL_OK;
-}
-
-void DestroyLinePenProc(Graph* graphPtr, Pen* penPtr)
-{
-  LinePen* lpPtr = (LinePen*)penPtr;
-  LinePenOptions* ops = (LinePenOptions*)lpPtr->ops;
-  
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->valueStyle);
-  if (ops->symbol.outlineGC)
-    Tk_FreeGC(graphPtr->display, ops->symbol.outlineGC);
-
-  if (ops->symbol.fillGC)
-    Tk_FreeGC(graphPtr->display, ops->symbol.fillGC);
-
-  if (lpPtr->errorBarGC)
-    Tk_FreeGC(graphPtr->display, lpPtr->errorBarGC);
-
-  if (lpPtr->traceGC)
-    Blt_FreePrivateGC(graphPtr->display, lpPtr->traceGC);
-
-  if (ops->symbol.bitmap != None) {
-    Tk_FreeBitmap(graphPtr->display, ops->symbol.bitmap);
-    ops->symbol.bitmap = None;
-  }
-  if (ops->symbol.mask != None) {
-    Tk_FreeBitmap(graphPtr->display, ops->symbol.mask);
-    ops->symbol.mask = None;
-  }
-
-  Tk_FreeConfigOptions((char*)lpPtr->ops, lpPtr->optionTable, graphPtr->tkwin);
-
-  if (lpPtr->manageOptions)
-    if (lpPtr->ops)
-      free(lpPtr->ops);
-}
-
-static void DestroySymbol(Display* display, Symbol* symbolPtr)
-{
-  if (symbolPtr->bitmap != None) {
-    Tk_FreeBitmap(display, symbolPtr->bitmap);
-    symbolPtr->bitmap = None;
-  }
-  if (symbolPtr->mask != None) {
-    Tk_FreeBitmap(display, symbolPtr->mask);
-    symbolPtr->mask = None;
-  }
-
-  symbolPtr->type = SYMBOL_NONE;
 }
 
 

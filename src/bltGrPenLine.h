@@ -73,29 +73,20 @@ typedef struct {
   XColor* traceOffColor;
 } LinePenOptions;
 
-class LinePen {
+class LinePen : public Pen {
  public:
-  const char* name;
-  ClassId classId;
-  unsigned int flags;
-  int refCount;
-  Tcl_HashEntry *hashPtr;
-  Tk_OptionTable optionTable;
-  PenConfigureProc *configProc;
-  PenDestroyProc *destroyProc;
-  Graph* graphPtr;
-  void* ops;
-  int manageOptions;
+  GC traceGC_;
+  GC errorBarGC_;
 
-  GC traceGC;
-  GC errorBarGC;
+ public:
+  LinePen();
+  LinePen(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~LinePen();
+
+  void init(Graph*, const char*, LinePenOptions*);
+  int configure();
 };
 
 extern Tk_ObjCustomOption symbolObjOption;
-
-extern Pen* CreateLinePen(Graph* graphPtr, const char* penName);
-extern void InitLinePen(Graph* graphPtr, LinePen* penPtr, const char* penName);
-extern int ConfigureLinePenProc(Graph* graphPtr, Pen *basePtr);
-extern void DestroyLinePenProc(Graph* graphPtr, Pen* basePtr);
 
 #endif
