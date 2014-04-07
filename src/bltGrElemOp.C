@@ -33,12 +33,12 @@ extern "C" {
 };
 
 #include "bltGrElem.h"
+#include "bltGrElemBar.h"
+#include "bltGrElemLine.h"
 #include "bltGrElemOp.h"
 
 // Defs
 
-extern Element *Blt_LineElement(Graph* graphPtr);
-extern Element *Blt_BarElement(Graph* graphPtr);
 extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 
@@ -78,10 +78,10 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
   Element* elemPtr;
   switch (classId) {
   case CID_ELEM_BAR:
-    elemPtr = Blt_BarElement(graphPtr);
+    elemPtr = new BarElement(graphPtr,name,hPtr);
     break;
   case CID_ELEM_LINE:
-    elemPtr = Blt_LineElement(graphPtr);
+    elemPtr = new LineElement(graphPtr,name,hPtr);
     break;
   default:
     return TCL_ERROR;
@@ -89,22 +89,9 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
   if (!elemPtr)
     return TCL_ERROR;
 
-  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
-  elemPtr->obj.graphPtr = graphPtr;
-  elemPtr->obj.name = Blt_Strdup(name);
-
-  // this is an option and will be freed via Tk_FreeConfigOptions
-  // By default an element's name and label are the same
-  ops->label = Tcl_Alloc(strlen(name)+1);
-  if (name)
-    strcpy((char*)ops->label,(char*)name);
-  Blt_GraphSetObjectClass(&elemPtr->obj, classId);
-  ops->stylePalette = Blt_Chain_Create();
-
-  elemPtr->hashPtr = hPtr;
   Tcl_SetHashValue(hPtr, elemPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr->ops, elemPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr->ops(), elemPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
   }
@@ -124,21 +111,7 @@ static void DestroyElement(Element* elemPtr)
   if (elemPtr->link)
     Blt_Chain_DeleteLink(graphPtr->elements.displayList, elemPtr->link);
 
-  if (elemPtr->hashPtr)
-    Tcl_DeleteHashEntry(elemPtr->hashPtr);
-
-  if (elemPtr->obj.name)
-    free((void*)(elemPtr->obj.name));
-
-  Tk_FreeConfigOptions((char*)elemPtr->ops, elemPtr->optionTable,
-		       graphPtr->tkwin);
-
-  (*elemPtr->procsPtr->destroyProc) (graphPtr, elemPtr);
-
-  if (elemPtr->ops)
-    free(elemPtr->ops);
-
-  free(elemPtr);
+  delete elemPtr;
 }
 
 // Configure
@@ -156,7 +129,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
-				      elemPtr->optionTable,
+				      elemPtr->optionTable(),
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -174,7 +147,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 
   if (objc <= 5) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
-				       elemPtr->optionTable, 
+				       elemPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)
@@ -198,7 +171,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)elemPtr->ops, elemPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -212,7 +185,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     elemPtr->flags |= mask;
     elemPtr->flags |= MAP_ITEM;
     graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
-    if ((*elemPtr->procsPtr->configProc)(graphPtr, elemPtr) != TCL_OK)
+    if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -269,10 +242,10 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     }
   }
 
-  if (elemPtr->activeIndices)
-    free(elemPtr->activeIndices);
-  elemPtr->nActiveIndices = nIndices;
-  elemPtr->activeIndices = indices;
+  if (elemPtr->activeIndices_)
+    free(elemPtr->activeIndices_);
+  elemPtr->nActiveIndices_ = nIndices;
+  elemPtr->activeIndices_ = indices;
 
   elemPtr->flags |= ACTIVE | ACTIVE_PENDING;
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -329,9 +302,9 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
       if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
-      if (elemPtr && !elemPtr->hide && 
+      if (elemPtr && !elemPtr->hide_ && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
-	(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
+	elemPtr->closest();
     }
   }
   else {
@@ -343,9 +316,9 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr && !elemPtr->hide && 
+      if (elemPtr && !elemPtr->hide_ && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
-	(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
+	elemPtr->closest();
     }
   }
 
@@ -385,11 +358,11 @@ static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
     if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (elemPtr->activeIndices) {
-      free(elemPtr->activeIndices);
-      elemPtr->activeIndices = NULL;
+    if (elemPtr->activeIndices_) {
+      free(elemPtr->activeIndices_);
+      elemPtr->activeIndices_ = NULL;
     }
-    elemPtr->nActiveIndices = 0;
+    elemPtr->nActiveIndices_ = 0;
     elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
   }
 
@@ -656,7 +629,7 @@ static void FreeElement(char* data)
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr)
 {
-  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+  ElementOptions* ops = (ElementOptions*)elemPtr->ops();
 
   char *string = Tcl_GetString(objPtr);
   if ((*string == 'e') && (strcmp("end", string) == 0))
@@ -711,7 +684,7 @@ void Blt_ConfigureElements(Graph* graphPtr)
   for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    (*elemPtr->procsPtr->configProc) (graphPtr, elemPtr);
+    elemPtr->configure();
   }
 }
 
@@ -727,7 +700,7 @@ void Blt_MapElements(Graph* graphPtr)
       continue;
 
     if ((graphPtr->flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
-      (*elemPtr->procsPtr->mapProc) (graphPtr, elemPtr);
+      elemPtr->map();
       elemPtr->flags &= ~MAP_ITEM;
     }
   }
@@ -741,9 +714,8 @@ void Blt_DrawElements(Graph* graphPtr, Drawable drawable)
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
-      (*elemPtr->procsPtr->drawNormalProc)(graphPtr, drawable, elemPtr);
-    }
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide_)
+      elemPtr->drawNormal(drawable);
   }
 }
 
@@ -754,11 +726,9 @@ void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && 
-	(elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide) {
-      (*elemPtr->procsPtr->drawActiveProc)(graphPtr, drawable, elemPtr);
-    }
+    if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide_)
+      elemPtr->drawActive(drawable);
   }
 }
 
@@ -769,12 +739,12 @@ void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide) {
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide_) {
       continue;
     }
     /* Comment the PostScript to indicate the start of the element */
     Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->obj.name);
-    (*elemPtr->procsPtr->printNormalProc) (graphPtr, ps, elemPtr);
+    elemPtr->printNormal(ps);
   }
 }
 
@@ -787,10 +757,10 @@ void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide) {
+	!elemPtr->hide_) {
       Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", 
 		    elemPtr->obj.name);
-      (*elemPtr->procsPtr->printActiveProc)(graphPtr, ps, elemPtr);
+      elemPtr->printActive(ps);
     }
   }
 }

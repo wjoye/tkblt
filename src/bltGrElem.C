@@ -31,9 +31,73 @@
 #include "bltGrElemOp.h"
 #include "bltGrPenOp.h"
 
-PenStyle** Blt_StyleMap(Element* elemPtr)
+Element::Element(Graph* gPtr, const char* name, Tcl_HashEntry* hPtr)
 {
-  ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+  obj.classId = CID_NONE;
+  obj.name = dupstr(name);
+  obj.className =NULL;
+  obj.graphPtr = gPtr;
+  obj.tags =NULL;
+
+  graphPtr_ = gPtr;
+  flags =0;
+  hide_ =0;
+  hashPtr = hPtr;
+  ops_ =NULL;
+
+  row_ =0;
+  col_ =0;
+  activeIndices_ =NULL;
+  nActiveIndices_ =0;
+  optionTable_ =NULL;
+  xRange_ =0;
+  yRange_ =0;
+  link =NULL;
+}
+
+Element::~Element()
+{
+  if (obj.name)
+    delete [] obj.name;
+  if (obj.className)
+    delete [] obj.className;
+
+  if (activeIndices_)
+    free(activeIndices_);
+
+  if (hashPtr)
+    Tcl_DeleteHashEntry(hashPtr);
+
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, obj.graphPtr->tkwin);
+
+  if (ops_)
+    free(ops_);
+}
+
+double Blt_FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
+{
+  double min = DBL_MAX;
+  if (!valuesPtr)
+    return min;
+
+  for (int ii=0; ii<valuesPtr->nValues; ii++) {
+    double x = valuesPtr->values[ii];
+    // What do you do about negative values when using log
+    // scale values seems like a grey area. Mirror.
+    if (x < 0.0)
+      x = -x;
+    if ((x > minLimit) && (min > x))
+      min = x;
+  }
+  if (min == DBL_MAX)
+    min = minLimit;
+
+  return min;
+}
+
+PenStyle** Element::StyleMap()
+{
+  ElementOptions* ops = (ElementOptions*)ops_;
 
   int nPoints = NUMBEROFPOINTS(ops);
   int nWeights = MIN(ops->w ? ops->w->nValues : 0, nPoints);
@@ -82,23 +146,3 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
   }
 }
 
-double Blt_FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
-{
-  double min = DBL_MAX;
-  if (!valuesPtr)
-    return min;
-
-  for (int ii=0; ii<valuesPtr->nValues; ii++) {
-    double x = valuesPtr->values[ii];
-    // What do you do about negative values when using log
-    // scale values seems like a grey area. Mirror.
-    if (x < 0.0)
-      x = -x;
-    if ((x > minLimit) && (min > x))
-      min = x;
-  }
-  if (min == DBL_MAX)
-    min = minLimit;
-
-  return min;
-}

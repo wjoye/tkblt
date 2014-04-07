@@ -74,7 +74,6 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 
 BarPen::BarPen() : Pen()
 {
-  classId_ = CID_ELEM_BAR;
 
   fillGC_ =NULL;
   outlineGC_ =NULL;
@@ -86,7 +85,7 @@ BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   classId_ = CID_ELEM_BAR;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
-  ops_ = (BarPenOptions*)calloc(1, sizeof(BarPenOptions));
+  ops_ = calloc(1, sizeof(BarPenOptions));
   manageOptions_ =1;
 
   fillGC_ =NULL;
@@ -97,14 +96,19 @@ BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   Blt_Ts_InitStyle(ops->valueStyle);
 }
 
-void BarPen::init(Graph* graphPtr, const char* penName, BarPenOptions* ops)
+BarPen::BarPen(Graph* graphPtr, const char* name, void* ops)
+  : Pen(graphPtr, name, NULL)
 {
-  graphPtr_ = graphPtr;
-  name_ = dupstr(penName);
+  classId_ = CID_ELEM_BAR;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
   ops_ = ops;
   manageOptions_ =0;
 
+  fillGC_ =NULL;
+  outlineGC_ =NULL;
+  errorBarGC_ =NULL;
+
+  BarPenOptions* ops = (BarPenOptions*)ops_;
   Blt_Ts_InitStyle(ops->valueStyle);
 }
 

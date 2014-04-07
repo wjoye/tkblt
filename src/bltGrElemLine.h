@@ -34,6 +34,17 @@
 #include "bltGrPenLine.h"
 
 typedef enum {
+  PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
+} PenDirection;
+
+typedef struct {
+  Point2d *screenPts;
+  int nScreenPts;
+  int *styleMap;
+  int *map;
+} MapInfo;
+
+typedef enum {
   PEN_SMOOTH_LINEAR, PEN_SMOOTH_STEP, PEN_SMOOTH_NATURAL,
   PEN_SMOOTH_QUADRATIC, PEN_SMOOTH_CATROM
 } Smoothing;
@@ -43,6 +54,22 @@ typedef struct {
   int length;
   int *map;
 } GraphPoints;
+
+typedef struct {
+  int start;
+  GraphPoints screenPts;
+} bltTrace;
+
+typedef struct {
+  Weight weight;
+  LinePen* penPtr;
+  GraphPoints symbolPts;
+  GraphSegments lines;
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int symbolSize;
+  int errorBarCapWidth;
+} LineStyle;
 
 typedef struct {
   Element* elemPtr;
@@ -75,38 +102,70 @@ typedef struct {
   int penDir;
 } LineElementOptions;
 
-typedef struct {
-  GraphObj obj;
-  unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-  void* ops;
+class LineElement : public Element {
+ public:
+  LinePen* builtinPenPtr;
+  Smoothing smooth_;
+  XColor* fillBgColor_;
+  GC fillGC_;
+  Point2d *fillPts_;
+  int nFillPts_;
+  GraphPoints symbolPts_;
+  GraphPoints activePts_;
+  GraphSegments xeb_;
+  GraphSegments yeb_;
+  GraphSegments lines_;
+  int symbolInterval_;
+  int symbolCounter_;
+  Blt_Chain traces_;
 
-  unsigned short row;
-  unsigned short col;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  double xRange;
-  double yRange;
-  Blt_ChainLink link;
+ protected:
+  int ScaleSymbol(int);
+  void GetScreenPoints(MapInfo*);
+  void ReducePoints(MapInfo*, double);
+  void GenerateSteps(MapInfo*);
+  void GenerateSpline(MapInfo*);
+  void GenerateParametricSpline(MapInfo*);
+  void MapSymbols(MapInfo*);
+  void MapActiveSymbols();
+  void MergePens(LineStyle**);
+  int OutCode(Region2d*, Point2d*);
+  int ClipSegment(Region2d*, int, int, Point2d*, Point2d*);
+  void SaveTrace(int, int, MapInfo*);
+  void FreeTraces();
+  void MapTraces(MapInfo*);
+  void MapFillArea(MapInfo*);
+  void ResetLine();
+  void MapErrorBars(LineStyle**);
+  int ClosestTrace();
+  void ClosestPoint(ClosestSearch*);
+  void DrawCircles(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void DrawSquares(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void DrawSymbols(Drawable, LinePen*, int, int, Point2d*);
+  void DrawTraces(Drawable, LinePen*);
+  void DrawValues(Drawable, LinePen*, int, Point2d*, int*);
+  void SetLineAttributes(Blt_Ps, LinePen*);
+  void TracesToPostScript(Blt_Ps, LinePen*);
+  void ValuesToPostScript(Blt_Ps, LinePen*, int, Point2d*, int*);
+  double DistanceToLine(int, int, Point2d*, Point2d*, Point2d*);
+  double DistanceToX(int, int, Point2d*, Point2d*, Point2d*);
+  double DistanceToY(int, int, Point2d*, Point2d*, Point2d*);
+  void SymbolsToPostScript(Blt_Ps, Pen*, int, int, Point2d*);
 
-  // Fields specific to Line Element
-  LinePen builtinPen;
-  Smoothing smooth;
-  XColor* fillBgColor;
-  GC fillGC;
-  Point2d *fillPts;
-  int nFillPts;
-  GraphPoints symbolPts;
-  GraphPoints activePts;
-  GraphSegments xeb;
-  GraphSegments yeb;
-  int symbolInterval;
-  int symbolCounter;
-  Blt_Chain traces;
-  GraphSegments lines;
-} LineElement;
+ public:
+  LineElement(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~LineElement();
+
+  int configure();
+  void map();
+  void extents(Region2d*);
+  void closest();
+  void drawActive(Drawable);
+  void drawNormal(Drawable);
+  void drawSymbol(Drawable, int, int, int);
+  void printActive(Blt_Ps);
+  void printNormal(Blt_Ps);
+  void printSymbol(Blt_Ps, double, double, int);
+};
 
 #endif

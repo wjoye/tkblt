@@ -60,11 +60,10 @@ class BarPen : public Pen {
   GC errorBarGC_;
 
  public:
-  BarPen();
   BarPen(Graph*, const char*, Tcl_HashEntry*);
+  BarPen(Graph*, const char*, void*);
   virtual ~BarPen();
 
-  void init(Graph*, const char*, BarPenOptions*);
   int configure();
 };
 

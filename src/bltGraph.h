@@ -49,7 +49,7 @@
 typedef struct _Graph Graph;
 typedef struct _Legend Legend;
 typedef struct _Crosshairs Crosshairs;
-typedef struct _Element Element;
+class Element;
 
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
@@ -388,11 +388,6 @@ struct _Graph {
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
 
-// Elements
-extern void Blt_DestroyBarSets(Graph* graphPtr);
-extern void Blt_ResetBarGroups(Graph* graphPtr);
-extern void Blt_InitBarSetTable(Graph* graphPtr);
-
 // Axis
 extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
@@ -449,7 +444,6 @@ extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y,
 extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
 extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			    int nInputPts, Point2d *outputPts);
-extern void Blt_ComputeBarStacks(Graph* graphPtr);
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
 extern void Blt_DrawGraph(Graph* graphPtr, Drawable drawable);
 extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 

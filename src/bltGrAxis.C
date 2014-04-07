@@ -43,6 +43,8 @@ class Marker;
 
 #include "bltConfig.h"
 #include "bltGrElem.h"
+#include "bltGrElemBar.h"
+#include "bltGrElemLine.h"
 #include "bltGrAxis.h"
 
 #define AXIS_PAD_TITLE 2
@@ -1776,8 +1778,8 @@ void Blt_ResetAxes(Graph* graphPtr)
     Region2d exts;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
-    (*elemPtr->procsPtr->extentsProc) (elemPtr, &exts);
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
+    elemPtr->extents(&exts);
     GetDataLimits(ops->axes.x, exts.left, exts.right);
     GetDataLimits(ops->axes.y, exts.top, exts.bottom);
   }

@@ -79,11 +79,10 @@ class LinePen : public Pen {
   GC errorBarGC_;
 
  public:
-  LinePen();
   LinePen(Graph*, const char*, Tcl_HashEntry*);
+  LinePen(Graph*, const char*, void*);
   virtual ~LinePen();
 
-  void init(Graph*, const char*, LinePenOptions*);
   int configure();
 };
 

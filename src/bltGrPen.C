@@ -29,19 +29,6 @@
 
 #include "bltGrPen.h"
 
-Pen::Pen()
-{
-  graphPtr_ =NULL;
-  classId_ = CID_NONE;
-  name_ =NULL;
-  optionTable_ =NULL;
-  ops_ =NULL;
-  manageOptions_ =0;
-  flags =0;
-  refCount =0;
-  hashPtr_ =NULL;
-}
-
 Pen::Pen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   graphPtr_ = graphPtr;

@@ -58,7 +58,7 @@ extern "C" {
 
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? (e)->builtinPenPtr : (e)->normalPenPtr))
 
-typedef struct _Element Element;
+class Element;
 
 typedef struct {
   Blt_VectorId vector;
@@ -90,36 +90,6 @@ typedef struct {
   Pen* penPtr;
 } PenStyle;
 
-typedef void (ElementDrawProc) (Graph *graphPtr, Drawable drawable, 
-				Element* elemPtr);
-typedef void (ElementToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-					Element* elemPtr);
-typedef void (ElementDestroyProc) (Graph *graphPtr, Element* elemPtr);
-typedef int (ElementConfigProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementMapProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementExtentsProc) (Element* elemPtr, Region2d *extsPtr);
-typedef void (ElementClosestProc) (Graph *graphPtr, Element* elemPtr);
-typedef void (ElementDrawSymbolProc) (Graph *graphPtr, Drawable drawable, 
-				      Element* elemPtr, int x, int y, 
-				      int symbolSize);
-typedef void (ElementSymbolToPostScriptProc) (Graph *graphPtr, Blt_Ps ps, 
-					      Element* elemPtr, double x, 
-					      double y, int symSize);
-
-typedef struct {
-  ElementClosestProc *closestProc;
-  ElementConfigProc *configProc;
-  ElementDestroyProc *destroyProc;
-  ElementDrawProc *drawActiveProc;
-  ElementDrawProc *drawNormalProc;
-  ElementDrawSymbolProc *drawSymbolProc;
-  ElementExtentsProc *extentsProc;
-  ElementToPostScriptProc *printActiveProc;
-  ElementToPostScriptProc *printNormalProc;
-  ElementSymbolToPostScriptProc *printSymbolProc;
-  ElementMapProc *mapProc;
-} ElementProcs;
-
 typedef struct {
   Element* elemPtr;
   const char* label;
@@ -142,26 +112,49 @@ typedef struct {
   PenOptions builtinPen;
 } ElementOptions;
 
-typedef struct _Element {
+class Element {
+ public:
   GraphObj obj;
+  Graph* graphPtr_;
   unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-  void* ops;
+  int hide_;
+  Tcl_HashEntry* hashPtr;
 
-  unsigned short row;
-  unsigned short col;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  double xRange;
-  double yRange;
+  unsigned short row_;
+  unsigned short col_;
+  int *activeIndices_;
+  int nActiveIndices_;
+  Tk_OptionTable optionTable_;
+  double xRange_;
+  double yRange_;
   Blt_ChainLink link;
-} Element;
 
-extern double Blt_FindElemValuesMinimum(ElemValues *vecPtr, double minLimit);
+ protected:
+  void* ops_;
+
+ protected:
+  double FindElemValuesMinimum(ElemValues*, double);
+  PenStyle** StyleMap();
+
+ public:
+  Element(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~Element();
+
+  virtual int configure() =0;
+  virtual void map() =0;
+  virtual void extents(Region2d*) =0;
+  virtual void drawActive(Drawable) =0;
+  virtual void drawNormal(Drawable) =0;
+  virtual void drawSymbol(Drawable, int, int, int) =0;
+  virtual void closest() =0;
+  virtual void printActive(Blt_Ps) =0;
+  virtual void printNormal(Blt_Ps) =0;
+  virtual void printSymbol(Blt_Ps, double, double, int) =0;
+
+  void* ops() {return ops_;}
+  Tk_OptionTable optionTable() {return optionTable();}
+};
+
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
-extern PenStyle** Blt_StyleMap (Element* elemPtr);
 
 #endif

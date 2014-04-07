@@ -39,6 +39,21 @@ using namespace std;
 #include "bltGrPenBar.h"
 
 typedef struct {
+  float x1, y1, x2, y2;
+} BarRegion;
+
+typedef struct {
+  Weight weight;
+  BarPen* penPtr;
+  XRectangle *bars;
+  int nBars;
+  GraphSegments xeb;
+  GraphSegments yeb;
+  int symbolSize;
+  int errorBarCapWidth;
+} BarStyle;
+
+typedef struct {
   Element* elemPtr;
   const char *label;
   char** tags;
@@ -64,34 +79,51 @@ typedef struct {
   const char *groupName;
 } BarElementOptions;
 
-typedef struct {
-  GraphObj obj;
-  unsigned int flags;		
-  int hide;
-  Tcl_HashEntry *hashPtr;
-  void* ops;
+class BarElement : public Element {
+ public:
+  BarPen* builtinPenPtr;
+  int* barToData_;
+  XRectangle* bars_;
+  int* activeToData_;
+  XRectangle* activeRects_;
+  int nBars_;
+  int nActive_;
+  int xPad_;
+  GraphSegments xeb_;
+  GraphSegments yeb_;
 
-  unsigned short row;
-  unsigned short col;
-  int *activeIndices;
-  int nActiveIndices;
-  ElementProcs *procsPtr;
-  Tk_OptionTable optionTable;
-  double xRange;
-  double yRange;
-  Blt_ChainLink link;
+  void ResetStylePalette(Blt_Chain);
+  void CheckBarStacks(Axis2d*, double*, double*);
+  void MergePens(BarStyle**);
+  void MapActiveBars();
+  void ResetBar();
+  void MapErrorBars(BarStyle**);
+  void SetBackgroundClipRegion(Tk_Window, Tk_3DBorder, TkRegion);
+  void UnsetBackgroundClipRegion(Tk_Window, Tk_3DBorder);
+  void DrawBarSegments(Drawable, BarPen*, XRectangle*, int);
+  void DrawBarValues(Drawable, BarPen*, XRectangle*, int, int*);
+  void SegmentsToPostScript(Blt_Ps, BarPen*, XRectangle*, int);
+  void BarValuesToPostScript(Blt_Ps, BarPen*, XRectangle*, int, int*);
 
-  // Fields specific to Bar Element
-  BarPen builtinPen;
-  int *barToData;
-  XRectangle *bars;
-  int *activeToData;
-  XRectangle *activeRects;
-  int nBars;
-  int nActive;
-  int xPad;
-  GraphSegments xeb;
-  GraphSegments yeb;
-} BarElement;
+ public:
+  BarElement(Graph*, const char*, Tcl_HashEntry*);
+  virtual ~BarElement();
+
+  int configure();
+  void map();
+  void extents(Region2d*);
+  void closest();
+  void drawActive(Drawable);
+  void drawNormal(Drawable);
+  void drawSymbol(Drawable, int, int, int);
+  void printActive(Blt_Ps);
+  void printNormal(Blt_Ps);
+  void printSymbol(Blt_Ps, double, double, int);
+};
+
+extern void Blt_InitBarSetTable(Graph* graphPtr);
+extern void Blt_ComputeBarStacks(Graph* graphPtr);
+extern void Blt_ResetBarGroups(Graph* graphPtr);
+extern void Blt_DestroyBarSets(Graph* graphPtr);
 
 #endif

@@ -226,7 +226,7 @@ LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   classId_ = CID_ELEM_LINE;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
-  ops_ = (LinePenOptions*)calloc(1, sizeof(LinePenOptions));
+  ops_ = calloc(1, sizeof(LinePenOptions));
   manageOptions_ =1;
 
   traceGC_ =NULL;
@@ -239,14 +239,18 @@ LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   ops->symbol.type = SYMBOL_NONE;
 }
 
-void LinePen::init(Graph* graphPtr, const char* penName, LinePenOptions* ops)
+LinePen::LinePen(Graph* graphPtr, const char* penName, void* ops)
+  : Pen(graphPtr, name, NULL);
 {
-  graphPtr_ = graphPtr;
-  name_ = dupstr(penName);
+  classId_ = CID_ELEM_LINE;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
   ops_ = ops;
   manageOptions_ =0;
 
+  traceGC_ =NULL;
+  errorBarGC_ =NULL;
+
+  LinePenOptions* ops = (LinePenOptions*)ops_;
   Blt_Ts_InitStyle(ops->valueStyle);
   ops->symbol.bitmap = None;
   ops->symbol.mask = None;
