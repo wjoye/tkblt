@@ -85,6 +85,7 @@ class LinePen : public Pen {
 
   ClassId classId() {return CID_ELEM_LINE;}
   const char* className() {return "LineElement";}
+  const char* typeName() {return "line";}
 
   int configure();
 };

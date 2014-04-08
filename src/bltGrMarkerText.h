@@ -73,8 +73,8 @@ namespace Blt {
 
     ClassId classId() {return CID_MARKER_TEXT;}
     const char* className() {return "TextMarker";}
+    const char* typeName() {return "text";}
   };
-
 };
 
 #endif

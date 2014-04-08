@@ -76,7 +76,8 @@ namespace Blt {
 
     ClassId classId() {return CID_MARKER_LINE;}
     const char* className() {return "LineMarker";}
+    const char* typeName() {return "line";}
   };
-
 };
+
 #endif

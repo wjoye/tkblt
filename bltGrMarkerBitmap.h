@@ -75,8 +75,8 @@ namespace Blt {
 
     ClassId classId() {return CID_MARKER_BITMAP;}
     const char* className() {return "BitmapMarker";}
+    const char* typeName() {return "bitmap";}
   };
-
 };
 
 #endif

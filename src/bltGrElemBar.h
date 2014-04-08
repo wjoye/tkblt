@@ -111,6 +111,7 @@ class BarElement : public Element {
 
   ClassId classId() {return CID_ELEM_BAR;}
   const char* className() {return "BarElement";}
+  const char* typeName() {return "bar";}
 
   int configure();
   void map();

@@ -81,8 +81,8 @@ namespace Blt {
 
     ClassId classId() {return CID_MARKER_POLYGON;}
     const char* className() {return "PolygonMarker";}
+    const char* typeName() {return "polygon";}
   };
-
 };
 
 #endif

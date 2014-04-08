@@ -66,6 +66,7 @@ class BarPen : public Pen {
 
   ClassId classId() {return CID_ELEM_BAR;}
   const char* className() {return "BarElement";}
+  const char* typeName() {return "bar";}
 
   int configure();
 };

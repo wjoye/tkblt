@@ -67,6 +67,7 @@ class Pen {
 
   virtual ClassId classId() =0;
   virtual const char* className() =0;
+  virtual const char* typeName() =0;
 
   const char* name() {return name_;}
   Tk_OptionTable optionTable() {return optionTable_;}

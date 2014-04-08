@@ -94,12 +94,13 @@ namespace Blt {
 
     virtual ClassId classId() =0;
     virtual const char* className() =0;
+    virtual const char* typeName() =0;
+
     const char* name() {return name_;}
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}
     int clipped() {return clipped_;}
   };
-
 };
 
 #endif
