@@ -27,14 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
-#include "bltC.h"
-
 extern "C" {
-#include "bltInt.h"
 #include "bltGraph.h"
 #include "bltOp.h"
 };
@@ -44,23 +37,15 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 
-/*
- *  Selection related flags:
- *
- *	SELECT_PENDING		A "selection" command idle task is pending.
- *
- *	SELECT_CLEAR		Clear selection flag of entry.
- *
- *	SELECT_SET		Set selection flag of entry.
- *
- *	SELECT_TOGGLE		Toggle selection flag of entry.
- *			        Mask of selection set/clear/toggle flags.
- *
- *	SELECT_SORTED		Indicates if the entries in the selection 
- *				should be sorted or displayed in the order 
- *				they were selected.
- *
- */
+//  Selection related flags:
+//	SELECT_PENDING		A "selection" command idle task is pending.
+//	SELECT_CLEAR		Clear selection flag of entry.
+//	SELECT_SET		Set selection flag of entry.
+//	SELECT_TOGGLE		Toggle selection flag of entry.
+//			        Mask of selection set/clear/toggle flags.
+//	SELECT_SORTED		Indicates if the entries in the selection 
+//				should be sorted or displayed in the order 
+//				they were selected.
 
 #define SELECT_CLEAR		(1<<24)
 #define SELECT_PENDING		(1<<25)

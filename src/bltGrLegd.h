@@ -42,16 +42,14 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-#define LEGEND_RIGHT	(1<<0)	/* Right margin */
-#define LEGEND_LEFT	(1<<1)	/* Left margin */
-#define LEGEND_BOTTOM	(1<<2)	/* Bottom margin */
-#define LEGEND_TOP	(1<<3)	/* Top margin, below the graph title. */
-#define LEGEND_PLOT	(1<<4)	/* Plot area */
-#define LEGEND_XY	(1<<5)	/* Screen coordinates in the plotting 
-				 * area. */
-#define LEGEND_WINDOW	(1<<6)	/* External window. */
-#define LEGEND_MARGIN_MASK \
-	(LEGEND_RIGHT | LEGEND_LEFT | LEGEND_BOTTOM | LEGEND_TOP)
+#define LEGEND_RIGHT	(1<<0)	// Right margin
+#define LEGEND_LEFT	(1<<1)	// Left margin
+#define LEGEND_BOTTOM	(1<<2)	// Bottom margin
+#define LEGEND_TOP	(1<<3)	// Top margin, below the graph title
+#define LEGEND_PLOT	(1<<4)	// Plot area
+#define LEGEND_XY	(1<<5)	// Screen coordinates in the plotting area
+#define LEGEND_WINDOW	(1<<6)	// External window
+#define LEGEND_MARGIN_MASK (LEGEND_RIGHT|LEGEND_LEFT|LEGEND_BOTTOM|LEGEND_TOP)
 #define LEGEND_PLOTAREA_MASK  (LEGEND_PLOT | LEGEND_XY)
 
 typedef enum {
@@ -59,50 +57,60 @@ typedef enum {
 } SelectMode;
 
 struct _Legend {
-  Tk_OptionTable optionTable;
-  unsigned int flags;
-  ClassId classId;
-  int nEntries;
-  int nColumns, nRows;
-  int width;
-  int height;
-  int entryWidth, entryHeight;
-  int site;
-  int xReq;
-  int yReq;
+  Tk_3DBorder activeBg;
+  XColor* activeFgColor;
+  int activeRelief;
+  Tk_3DBorder normalBg;
+  XColor* fgColor;
   Tk_Anchor anchor;
-  int x;
-  int y;
-  Graph* graphPtr;
-  Tcl_Command cmdToken;
+  int borderWidth;
   int reqColumns;
-  int reqRows;
+  int exportSelection;
+  Blt_Dashes focusDashes;
+  XColor* focusColor;
+  TextStyle style;
+  int hide;
   int ixPad;
   int iyPad;
   int xPad;
   int yPad;
-  Tk_Window tkwin;
-  TextStyle style;
-  int maxSymSize;
-  XColor* fgColor;
-  Tk_3DBorder activeBg;
-  XColor* activeFgColor;
-  int activeRelief;
-  int entryBW;
-  Tk_3DBorder normalBg;
-  int borderWidth;
+  int raised;
   int relief;
-  Blt_BindTable bindTable;
-  int selRelief;
+  int reqRows;
+  int entryBW;
   int selBW;
-  XColor* selInFocusFgColor;
-  XColor* selOutFocusFgColor;
-  Tk_3DBorder selInFocusBg;
+  const char *selectCmd;
   Tk_3DBorder selOutFocusBg;
-  XColor* focusColor;
-  Blt_Dashes focusDashes;
-  GC focusGC;
+  Tk_3DBorder selInFocusBg;
+  XColor* selOutFocusFgColor;
+  XColor* selInFocusFgColor;
+  SelectMode selectMode;
+  int selRelief;
   const char *takeFocus;
+  const char *title;
+  TextStyle titleStyle;
+
+  Graph* graphPtr;
+  ClassId classId;
+  Tk_OptionTable optionTable;
+  unsigned int flags;
+  int nEntries;
+  int nColumns;
+  int nRows;
+  int width;
+  int height;
+  int entryWidth;
+  int entryHeight;
+  int site;
+  int xReq;
+  int yReq;
+  int x;
+  int y;
+  Tcl_Command cmdToken;
+  Tk_Window tkwin;
+  int maxSymSize;
+  Blt_BindTable bindTable;
+  GC focusGC;
   int focus;
   int cursorX;
   int cursorY;
@@ -113,27 +121,19 @@ struct _Legend {
   Element *selMarkPtr;
   Element *selFirstPtr;
   Element *selLastPtr;
-  int hide;
-  int raised;
-  int exportSelection;
   int active;
   int cursorOn;
   int onTime;
   int offTime;
   Tcl_TimerToken timerToken;
-  const char *selectCmd;
-  SelectMode selectMode;
   Tcl_HashTable selectTable;
   Blt_Chain selected;
-  const char *title;
   unsigned int titleWidth;
   unsigned int titleHeight;
-  TextStyle titleStyle;
 };
 
 extern int Blt_CreateLegend(Graph *graphPtr);
 extern void Blt_DestroyLegend(Graph *graphPtr);
-
 extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
 extern void Blt_MapLegend(Graph *graphPtr, int width, int height);
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
