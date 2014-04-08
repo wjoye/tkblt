@@ -242,15 +242,23 @@ static Tk_OptionSpec optionSpecs[] = {
 
 // Create
 
+Legend::Legend()
+{
+}
+
+Legend::~Legend()
+{
+}
+
 int Blt_CreateLegend(Graph* graphPtr)
 {
   Legend* legendPtr = (Legend*)calloc(1, sizeof(Legend));
-  legendPtr->ops = (void*)calloc(1, sizeof(LegendOptions));
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  legendPtr->ops_ = (void*)calloc(1, sizeof(LegendOptions));
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   ops->legendPtr = legendPtr;
 
   graphPtr->legend = legendPtr;
-  legendPtr->graphPtr = graphPtr;
+  legendPtr->graphPtr_ = graphPtr;
   legendPtr->tkwin = graphPtr->tkwin;
   legendPtr->xReq = -SHRT_MAX;
   legendPtr->yReq = -SHRT_MAX;
@@ -271,9 +279,9 @@ int Blt_CreateLegend(Graph* graphPtr)
   legendPtr->onTime = 600;
   legendPtr->offTime = 300;
 
-  legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr->ops, 
-			legendPtr->optionTable, graphPtr->tkwin);
+  legendPtr->optionTable_ =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr->ops_, 
+			legendPtr->optionTable_, graphPtr->tkwin);
 }
 
 void Blt_DestroyLegend(Graph* graphPtr)
@@ -282,7 +290,7 @@ void Blt_DestroyLegend(Graph* graphPtr)
   if (!legendPtr)
     return;
 
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   Blt_Ts_FreeStyle(graphPtr->display, &ops->style);
   Blt_Ts_FreeStyle(graphPtr->display, &ops->titleStyle);
@@ -299,11 +307,11 @@ void Blt_DestroyLegend(Graph* graphPtr)
 
   Blt_Chain_Destroy(legendPtr->selected);
 
-  Tk_FreeConfigOptions((char*)legendPtr->ops, legendPtr->optionTable, 
+  Tk_FreeConfigOptions((char*)legendPtr->ops_, legendPtr->optionTable_, 
 		       graphPtr->tkwin);
 
-  if (legendPtr->ops)
-    free(legendPtr->ops);
+  if (legendPtr->ops_)
+    free(legendPtr->ops_);
 
   free(legendPtr);
 }
@@ -313,7 +321,7 @@ void Blt_DestroyLegend(Graph* graphPtr)
 void ConfigureLegend(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   /* GC for active label. Dashed outline. */
   unsigned long gcMask = GCForeground | GCLineStyle;
@@ -337,17 +345,13 @@ void ConfigureLegend(Graph* graphPtr)
 static void DisplayLegend(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
-  Graph* graphPtr;
 
   legendPtr->flags &= ~REDRAW_PENDING;
-  if (legendPtr->tkwin == NULL) {
-    return;				/* Window has been destroyed. */
-  }
-  graphPtr = legendPtr->graphPtr;
+  if (legendPtr->tkwin == NULL)
+    return;
 
-  if (Tk_IsMapped(legendPtr->tkwin)) {
-    Blt_DrawLegend(graphPtr, Tk_WindowId(legendPtr->tkwin));
-  }
+  if (Tk_IsMapped(legendPtr->tkwin))
+    Blt_DrawLegend(legendPtr->graphPtr_, Tk_WindowId(legendPtr->tkwin));
 }
 
 void Blt_Legend_EventuallyRedraw(Graph* graphPtr) 
@@ -362,13 +366,13 @@ void Blt_Legend_EventuallyRedraw(Graph* graphPtr)
 
 static void SetLegendOrigin(Legend* legendPtr)
 {
-  Graph* graphPtr;
-  int x, y, w, h;
+  Graph* graphPtr = legendPtr->graphPtr_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  graphPtr = legendPtr->graphPtr;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
-
-  x = y = w = h = 0;			/* Suppress compiler warning. */
+  int x =0;
+  int y =0;
+  int w =0;
+  int h =0;
   switch (legendPtr->site) {
   case LEGEND_RIGHT:
     w = graphPtr->rightMargin.width - graphPtr->rightMargin.axesOffset;
@@ -542,18 +546,15 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 				ClientData *contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
-  Legend* legendPtr;
-  int w, h;
+  Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  int w = legendPtr->width;
+  int h = legendPtr->height;
 
-  w = legendPtr->width;
-  h = legendPtr->height;
-
-  if (legendPtr->titleHeight > 0) {
+  if (legendPtr->titleHeight > 0)
     y -= legendPtr->titleHeight + ops->yPad;
-  }
+
   x -= legendPtr->x + ops->borderWidth;
   y -= legendPtr->y + ops->borderWidth;
   w -= 2 * ops->borderWidth + 2*ops->xPad;
@@ -595,7 +596,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   Blt_ChainLink link;
   int nRows, nColumns, nEntries;
@@ -746,7 +747,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   Blt_ChainLink link;
   Tk_FontMetrics fontMetrics;
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   Pixmap pixmap;
   Tk_Window tkwin;
@@ -760,7 +761,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   }
 
   SetLegendOrigin(legendPtr);
-  graphPtr = legendPtr->graphPtr;
+  graphPtr = legendPtr->graphPtr_;
   tkwin = legendPtr->tkwin;
   w = legendPtr->width;
   h = legendPtr->height;
@@ -899,7 +900,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   double x, y, yStart;
   int xLabel, xSymbol, ySymbol;
@@ -919,7 +920,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   height = legendPtr->height - 2*ops->yPad;
 
   Blt_Ps_Append(ps, "% Legend\n");
-  graphPtr = legendPtr->graphPtr;
+  graphPtr = legendPtr->graphPtr_;
   if (graphPtr->pageSetup->decorations) {
     if (ops->normalBg)
       Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
@@ -1187,14 +1188,14 @@ int Blt_Legend_Height(Graph* graphPtr)
 int Blt_Legend_IsHidden(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   return (ops->hide);
 }
 
 int Blt_Legend_IsRaised(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   return (ops->raised);
 }
 
@@ -1217,7 +1218,7 @@ static int SelectionProc(ClientData clientData, int offset,
 			 char *buffer, int maxBytes)
 {
   Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   int nBytes;
   Tcl_DString dString;
@@ -1236,14 +1237,10 @@ static int SelectionProc(ClientData clientData, int offset,
       Tcl_DStringAppend(&dString, elemPtr->name(), -1);
       Tcl_DStringAppend(&dString, "\n", -1);
     }
-  } else {
-    Blt_ChainLink link;
-    Graph* graphPtr;
-
-    graphPtr = legendPtr->graphPtr;
-    /* List of selected entries is in stacking order. */
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
+  }
+  else {
+    Graph* graphPtr = legendPtr->graphPtr_;
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (EntryIsSelected(legendPtr, elemPtr)) {
 	Tcl_DStringAppend(&dString, elemPtr->name(), -1);

@@ -112,9 +112,10 @@ typedef struct {
 
 class Legend {
  public:
-  Graph* graphPtr;
-  Tk_OptionTable optionTable;
-  void* ops;
+  Graph* graphPtr_;
+  Tk_OptionTable optionTable_;
+  void* ops_;
+
   unsigned int flags;
   int nEntries;
   int nColumns;
@@ -151,6 +152,10 @@ class Legend {
   Blt_Chain selected;
   unsigned int titleWidth;
   unsigned int titleHeight;
+
+ public:
+  Legend();
+  virtual ~Legend();
 };
 
 extern int Blt_CreateLegend(Graph *graphPtr);

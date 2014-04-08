@@ -66,8 +66,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Legend* legendPtr = graphPtr->legend;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)legendPtr->ops, 
-				      legendPtr->optionTable,
+				      (char*)legendPtr->ops_, 
+				      legendPtr->optionTable_,
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -82,8 +82,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)legendPtr->ops, 
-				       legendPtr->optionTable, 
+				       (char*)legendPtr->ops_, 
+				       legendPtr->optionTable_, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)
@@ -107,7 +107,7 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)legendPtr->ops, legendPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)legendPtr->ops_, legendPtr->optionTable_, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -143,7 +143,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   unsigned int active, redraw;
   const char *string;
@@ -299,7 +299,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   if (((ops->hide) == 0) && (legendPtr->nEntries > 0)) {
     Element* elemPtr;
@@ -387,7 +387,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 			   int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   Element* elemPtr;
 
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
@@ -437,7 +437,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   Element *firstPtr, *lastPtr;
   const char *string;
 
@@ -520,7 +520,7 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
 static void LostSelectionProc(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   if (ops->exportSelection)
     ClearSelection(legendPtr);
@@ -528,13 +528,13 @@ static void LostSelectionProc(ClientData clientData)
 
 static void ClearSelection(Legend* legendPtr)
 {
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   Tcl_DeleteHashTable(&legendPtr->selectTable);
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
   Blt_Chain_Reset(legendPtr->selected);
 
-  Blt_Legend_EventuallyRedraw(legendPtr->graphPtr);
+  Blt_Legend_EventuallyRedraw(legendPtr->graphPtr_);
   if (ops->selectCmd)
     EventuallyInvokeSelectCmd(legendPtr);
 }
@@ -550,14 +550,14 @@ static void EventuallyInvokeSelectCmd(Legend* legendPtr)
 static void SelectCmdProc(ClientData clientData) 
 {
   Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
   if (ops->selectCmd) {
     Tcl_Interp* interp;
 
-    interp = legendPtr->graphPtr->interp;
+    interp = legendPtr->graphPtr_->interp;
     if (Tcl_GlobalEval(interp, ops->selectCmd) != TCL_OK) {
       Tcl_BackgroundError(interp);
     }
