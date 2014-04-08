@@ -3044,7 +3044,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
     width - (inset2 + left + right); /* Plot width. */
   plotHeight = (graphPtr->reqPlotHeight > 0) ? graphPtr->reqPlotHeight : 
     height - (inset2 + top + bottom); /* Plot height. */
-  Blt_MapLegend(graphPtr, plotWidth, plotHeight);
+  graphPtr->legend->map(plotWidth, plotHeight);
 
   /* 
    * Step 2:  Add the legend to the appropiate margin. 

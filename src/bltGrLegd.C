@@ -340,6 +340,150 @@ void Legend::configure()
   focusGC_ = newGC;
 }
 
+void Legend::map(int plotWidth, int plotHeight)
+{
+  LegendOptions* ops = (LegendOptions*)ops_;
+  
+  entryWidth_ =0;
+  entryHeight_ = 0;
+  nRows_ =0;
+  nColumns_ =0;
+  nEntries_ =0;
+  height_ =0;
+  width_ = 0;
+
+  Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
+		    &titleWidth_, &titleHeight_);
+  /*   
+   * Count the number of legend entries and determine the widest and tallest
+   * label.  The number of entries would normally be the number of elements,
+   * but elements can have no legend entry (-label "").
+   */
+  int nEntries =0;
+  int maxWidth =0;
+  int maxHeight =0;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+    unsigned int w, h;
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+
+    if (elemOps->label == NULL)
+      continue;
+
+    Blt_Ts_GetExtents(&ops->style, elemOps->label, &w, &h);
+    if (maxWidth < (int)w)
+      maxWidth = w;
+
+    if (maxHeight < (int)h)
+      maxHeight = h;
+
+    nEntries++;
+  }
+  if (nEntries == 0)
+    return;				/* No visible legend entries. */
+
+  Tk_FontMetrics fontMetrics;
+  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
+  int symbolWidth = 2 * fontMetrics.ascent;
+
+  maxWidth += 2 * ops->entryBW + 2*ops->ixPad +
+    + symbolWidth + 3 * LABEL_PAD;
+
+  maxHeight += 2 * ops->entryBW + 2*ops->iyPad;
+
+  maxWidth |= 0x01;
+  maxHeight |= 0x01;
+
+  int lw = plotWidth - 2 * ops->borderWidth - 2*ops->xPad;
+  int lh = plotHeight - 2 * ops->borderWidth - 2*ops->yPad;
+
+  /*
+   * The number of rows and columns is computed as one of the following:
+   *
+   *	both options set		User defined. 
+   *  -rows				Compute columns from rows.
+   *  -columns			Compute rows from columns.
+   *	neither set			Compute rows and columns from
+   *					size of plot.  
+   */
+  int nRows =0;
+  int nColumns =0;
+  if (ops->reqRows > 0) {
+    nRows = MIN(ops->reqRows, nEntries); 
+    if (ops->reqColumns > 0)
+      nColumns = MIN(ops->reqColumns, nEntries);
+    else
+      nColumns = ((nEntries - 1) / nRows) + 1; /* Only -rows. */
+  }
+  else if (ops->reqColumns > 0) { /* Only -columns. */
+    nColumns = MIN(ops->reqColumns, nEntries);
+    nRows = ((nEntries - 1) / nColumns) + 1;
+  }
+  else {			
+    // Compute # of rows and columns from the legend size
+    nRows = lh / maxHeight;
+    nColumns = lw / maxWidth;
+    if (nRows < 1) {
+      nRows = nEntries;
+    }
+    if (nColumns < 1) {
+      nColumns = nEntries;
+    }
+    if (nRows > nEntries) {
+      nRows = nEntries;
+    } 
+    switch (site_) {
+    case LEGEND_TOP:
+    case LEGEND_BOTTOM:
+      nRows = ((nEntries - 1) / nColumns) + 1;
+      break;
+    case LEGEND_LEFT:
+    case LEGEND_RIGHT:
+    default:
+      nColumns = ((nEntries - 1) / nRows) + 1;
+      break;
+    }
+  }
+  if (nColumns < 1)
+    nColumns = 1;
+
+  if (nRows < 1)
+    nRows = 1;
+
+  lh = (nRows * maxHeight);
+  if (titleHeight_ > 0)
+    lh += titleHeight_ + ops->yPad;
+
+  lw = nColumns * maxWidth;
+  if (lw < (int)(titleWidth_))
+    lw = titleWidth_;
+
+  width_ = lw + 2 * ops->borderWidth + 2*ops->xPad;
+  height_ = lh + 2 * ops->borderWidth + 2*ops->yPad;
+  nRows_ = nRows;
+  nColumns_ = nColumns;
+  nEntries_ = nEntries;
+  entryHeight_ = maxHeight;
+  entryWidth_ = maxWidth;
+
+  {
+    int row =0;
+    int col =0;
+    int count =0;
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      count++;
+      elemPtr->row_ = row;
+      elemPtr->col_ = col;
+      row++;
+      if ((count % nRows) == 0) {
+	col++;
+	row = 0;
+      }
+    }
+  }
+}
+
 // Support
 
 static void DisplayLegend(ClientData clientData)
@@ -589,157 +733,6 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
     }
   }
   return NULL;
-}
-
-void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
-{
-  Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-
-  Blt_ChainLink link;
-  int nRows, nColumns, nEntries;
-  int lw, lh;
-  int maxWidth, maxHeight;
-  int symbolWidth;
-  Tk_FontMetrics fontMetrics;
-
-  /* Initialize legend values to default (no legend displayed) */
-  legendPtr->entryWidth_ =0;
-  legendPtr->entryHeight_ = 0;
-  legendPtr->nRows_ =0;
-  legendPtr->nColumns_ =0;
-  legendPtr->nEntries_ =0;
-  legendPtr->height_ =0;
-  legendPtr->width_ = 0;
-
-  Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
-		    &legendPtr->titleWidth_, &legendPtr->titleHeight_);
-  /*   
-   * Count the number of legend entries and determine the widest and tallest
-   * label.  The number of entries would normally be the number of elements,
-   * but elements can have no legend entry (-label "").
-   */
-  nEntries = 0;
-  maxWidth = maxHeight = 0;
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    unsigned int w, h;
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-
-    if (elemOps->label == NULL)
-      continue;
-
-    Blt_Ts_GetExtents(&ops->style, elemOps->label, &w, &h);
-    if (maxWidth < (int)w)
-      maxWidth = w;
-
-    if (maxHeight < (int)h)
-      maxHeight = h;
-
-    nEntries++;
-  }
-  if (nEntries == 0)
-    return;				/* No visible legend entries. */
-
-  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
-  symbolWidth = 2 * fontMetrics.ascent;
-
-  maxWidth += 2 * ops->entryBW + 2*ops->ixPad +
-    + symbolWidth + 3 * LABEL_PAD;
-
-  maxHeight += 2 * ops->entryBW + 2*ops->iyPad;
-
-  maxWidth |= 0x01;
-  maxHeight |= 0x01;
-
-  lw = plotWidth - 2 * ops->borderWidth - 2*ops->xPad;
-  lh = plotHeight - 2 * ops->borderWidth - 2*ops->yPad;
-
-  /*
-   * The number of rows and columns is computed as one of the following:
-   *
-   *	both options set		User defined. 
-   *  -rows				Compute columns from rows.
-   *  -columns			Compute rows from columns.
-   *	neither set			Compute rows and columns from
-   *					size of plot.  
-   */
-  if (ops->reqRows > 0) {
-    nRows = MIN(ops->reqRows, nEntries); 
-    if (ops->reqColumns > 0) {
-      nColumns = MIN(ops->reqColumns, nEntries);
-    } else {
-      nColumns = ((nEntries - 1) / nRows) + 1; /* Only -rows. */
-    }
-  } else if (ops->reqColumns > 0) { /* Only -columns. */
-    nColumns = MIN(ops->reqColumns, nEntries);
-    nRows = ((nEntries - 1) / nColumns) + 1;
-  } else {			
-    /* Compute # of rows and columns from the legend size. */
-    nRows = lh / maxHeight;
-    nColumns = lw / maxWidth;
-    if (nRows < 1) {
-      nRows = nEntries;
-    }
-    if (nColumns < 1) {
-      nColumns = nEntries;
-    }
-    if (nRows > nEntries) {
-      nRows = nEntries;
-    } 
-    switch (legendPtr->site_) {
-    case LEGEND_TOP:
-    case LEGEND_BOTTOM:
-      nRows = ((nEntries - 1) / nColumns) + 1;
-      break;
-    case LEGEND_LEFT:
-    case LEGEND_RIGHT:
-    default:
-      nColumns = ((nEntries - 1) / nRows) + 1;
-      break;
-    }
-  }
-  if (nColumns < 1) {
-    nColumns = 1;
-  } 
-  if (nRows < 1) {
-    nRows = 1;
-  }
-
-  lh = (nRows * maxHeight);
-  if (legendPtr->titleHeight_ > 0)
-    lh += legendPtr->titleHeight_ + ops->yPad;
-
-  lw = nColumns * maxWidth;
-  if (lw < (int)(legendPtr->titleWidth_))
-    lw = legendPtr->titleWidth_;
-
-  legendPtr->width_ = lw + 2 * ops->borderWidth + 2*ops->xPad;
-  legendPtr->height_ = lh + 2 * ops->borderWidth + 2*ops->yPad;
-  legendPtr->nRows_ = nRows;
-  legendPtr->nColumns_ = nColumns;
-  legendPtr->nEntries_ = nEntries;
-  legendPtr->entryHeight_ = maxHeight;
-  legendPtr->entryWidth_ = maxWidth;
-
-  {
-    int row, col, count;
-
-    row = col = count = 0;
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      count++;
-      elemPtr->row_ = row;
-      elemPtr->col_ = col;
-      row++;
-      if ((count % nRows) == 0) {
-	col++;
-	row = 0;
-      }
-    }
-  }
 }
 
 void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
