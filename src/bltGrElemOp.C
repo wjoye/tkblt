@@ -36,6 +36,7 @@ extern "C" {
 #include "bltGrElemBar.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOp.h"
+#include "bltGrLegd.h"
 
 // Defs
 

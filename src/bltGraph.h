@@ -95,7 +95,6 @@ typedef struct {
 } GraphObj;
 
 #include "bltGrAxis.h"
-#include "bltGrLegd.h"
 
 typedef struct {
   Segment2d *segments;
