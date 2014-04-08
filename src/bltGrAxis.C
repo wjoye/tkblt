@@ -3050,7 +3050,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
    * Step 2:  Add the legend to the appropiate margin. 
    */
   if (!Blt_Legend_IsHidden(graphPtr)) {
-    switch (Blt_Legend_Site(graphPtr)) {
+    switch (graphPtr->legend->site()) {
     case LEGEND_RIGHT:
       right += graphPtr->legend->width() + 2;
       break;

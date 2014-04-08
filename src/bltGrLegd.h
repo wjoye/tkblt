@@ -158,11 +158,11 @@ class Legend {
   void draw(Drawable drawable);
   int width() {return width_;}
   int height() {return height_;}
+  int site() {return site_;}
 };
 
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
 	Tcl_Obj* const objv[]);
-extern int Blt_Legend_Site(Graph *graphPtr);
 extern int Blt_Legend_IsHidden(Graph *graphPtr);
 extern int Blt_Legend_IsRaised(Graph *graphPtr);
 extern int Blt_Legend_X(Graph *graphPtr);

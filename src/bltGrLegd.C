@@ -1133,11 +1133,6 @@ int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr)
   return TCL_OK;
 }
 
-int Blt_Legend_Site(Graph* graphPtr)
-{
-  return graphPtr->legend->site_;
-}
-
 int Blt_Legend_IsHidden(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;

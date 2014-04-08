@@ -616,8 +616,8 @@ static void DisplayGraph(ClientData clientData)
   Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
   /* Don't draw legend in the plot area. */
-  int site = Blt_Legend_Site(graphPtr);
-  if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr)))
+  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
+      (Blt_Legend_IsRaised(graphPtr)))
     graphPtr->legend->draw(drawable);
 
   /* Draw 3D border just inside of the focus highlight ring. */
@@ -729,23 +729,17 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   char c = string[0];
   if ((c == 'p') && (length > 4) && 
       (strncmp("plotheight", string, length) == 0)) {
-    int height;
-
-    height = graphPtr->bottom - graphPtr->top + 1;
+    int height = graphPtr->bottom - graphPtr->top + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
   }
   else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotwidth", string, length) == 0)) {
-    int width;
-
-    width = graphPtr->right - graphPtr->left + 1;
+    int width = graphPtr->right - graphPtr->left + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
   }
   else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotarea", string, length) == 0)) {
-    Tcl_Obj* listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, 
 			     Tcl_NewIntObj(graphPtr->left));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
@@ -758,9 +752,7 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   }
   else if ((c == 'l') && (length > 2) &&
 	     (strncmp("legend", string, length) == 0)) {
-    Tcl_Obj* listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, 
 			     Tcl_NewIntObj(Blt_Legend_X(graphPtr)));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
@@ -772,7 +764,7 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
     Tcl_SetObjResult(interp, listObjPtr);
   }
   else if ((c == 'l') && (length > 2) &&
-	     (strncmp("leftmargin", string, length) == 0)) {
+	   (strncmp("leftmargin", string, length) == 0)) {
     Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->leftMargin.width);
   }
   else if ((c == 'r') && (length > 1) &&
@@ -803,13 +795,14 @@ topmargin, bottommargin, plotarea, or legend", (char*)NULL);
 static int InsideOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
-  int x, y;
-  if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK) {
+  int x;
+  if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK)
     return TCL_ERROR;
-  }
-  if (Tcl_GetIntFromObj(interp, objv[3], &y) != TCL_OK) {
+
+  int y;
+  if (Tcl_GetIntFromObj(interp, objv[3], &y) != TCL_OK)
     return TCL_ERROR;
-  }
+
   Region2d exts;
   Blt_GraphExtents(graphPtr, &exts);
   int result = PointInRegion(&exts, x, y);
@@ -1170,8 +1163,7 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
 		       x, y, w, h, graphPtr->plotBW, graphPtr->plotRelief);
   }
-  int site = Blt_Legend_Site(graphPtr);
-  if (site & LEGEND_MARGIN_MASK)
+  if (graphPtr->legend->site() & LEGEND_MARGIN_MASK)
     graphPtr->legend->draw(drawable);
 
   if (graphPtr->title != NULL) {
@@ -1199,8 +1191,8 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   Blt_DrawGrids(graphPtr, drawable);
   Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
-  int site = Blt_Legend_Site(graphPtr);
-  if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr)))
+  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
+      (!Blt_Legend_IsRaised(graphPtr)))
     graphPtr->legend->draw(drawable);
 
   Blt_DrawAxisLimits(graphPtr, drawable);
@@ -1235,7 +1227,7 @@ void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
   Blt_DrawActiveElements(graphPtr, drawable);
 
   /* Don't draw legend in the plot area. */
-  if ((Blt_Legend_Site(graphPtr) & LEGEND_PLOTAREA_MASK) && 
+  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
       (Blt_Legend_IsRaised(graphPtr)))
     graphPtr->legend->draw(drawable);
 
