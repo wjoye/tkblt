@@ -621,9 +621,6 @@ static void DisplayGraph(ClientData clientData)
   if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr))) {
     Blt_DrawLegend(graphPtr, drawable);
   }
-  if (site == LEGEND_WINDOW) {
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  }
   /* Draw 3D border just inside of the focus highlight ring. */
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
@@ -1170,9 +1167,8 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   if (site & LEGEND_MARGIN_MASK) {
     /* Legend is drawn on one of the graph margins */
     Blt_DrawLegend(graphPtr, drawable);
-  } else if (site == LEGEND_WINDOW) {
-    Blt_Legend_EventuallyRedraw(graphPtr);
   }
+
   if (graphPtr->title != NULL) {
     Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
 		 &graphPtr->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
@@ -1199,11 +1195,9 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
   int site = Blt_Legend_Site(graphPtr);
-  if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr))) {
+  if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr)))
     Blt_DrawLegend(graphPtr, drawable);
-  } else if (site == LEGEND_WINDOW) {
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  }
+
   Blt_DrawAxisLimits(graphPtr, drawable);
   Blt_DrawElements(graphPtr, drawable);
 }

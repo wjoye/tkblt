@@ -47,9 +47,9 @@
 #define bottomMargin	margins[MARGIN_BOTTOM]
 
 typedef struct _Graph Graph;
-typedef struct _Legend Legend;
 typedef struct _Crosshairs Crosshairs;
 class Element;
+class Legend;
 
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,

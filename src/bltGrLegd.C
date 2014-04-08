@@ -48,13 +48,9 @@ extern "C" {
 extern int EntryIsSelected(Legend* legendPtr, Element* elemPtr);
 extern void DeselectElement(Legend* legendPtr, Element* elemPtr);
 extern void SelectEntry(Legend* legendPtr, Element* elemPtr);
-static int CreateLegendWindow(Tcl_Interp* interp, Legend* legendPtr, 
-			      const char *pathName);
 
 static Tcl_IdleProc DisplayLegend;
 static Blt_BindPickProc PickEntryProc;
-static Tk_EventProc LegendEventProc;
-static Tcl_TimerProc BlinkCursorProc;
 static Tk_SelectionProc SelectionProc;
 
 // OptionSpecs
@@ -114,15 +110,10 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
     legendPtr->yReq = y;
     legendPtr->site = LEGEND_XY;
   }
-  else if (c == '.') {
-    if (CreateLegendWindow(interp, legendPtr, string) != TCL_OK) {
-      return TCL_ERROR;
-    }
-  }
   else {
     Tcl_AppendResult(interp, "bad position \"", string, "\": should be  \
 \"leftmargin\", \"rightmargin\", \"topmargin\", \"bottommargin\", \
-\"plotarea\", windowName or @x,y", (char *)NULL);
+\"plotarea\", or @x,y", (char *)NULL);
     return TCL_ERROR;
   }
   return TCL_OK;
@@ -151,9 +142,6 @@ static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin,
     break;
   case LEGEND_PLOT:
     objPtr = Tcl_NewStringObj("plotarea", -1);
-    break;
-  case LEGEND_WINDOW:
-    objPtr = Tcl_NewStringObj(Tk_PathName(legendPtr->tkwin), -1);
     break;
   case LEGEND_XY:
     {
@@ -309,27 +297,6 @@ void Blt_DestroyLegend(Graph* graphPtr)
   if (legendPtr->tkwin)
     Tk_DeleteSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING);
 
-  if (legendPtr->site == LEGEND_WINDOW) {
-    Tk_Window tkwin;
-	
-    /* The graph may be in the process of being torn down */
-    if (legendPtr->cmdToken) {
-      Tcl_DeleteCommandFromToken(graphPtr->interp, legendPtr->cmdToken);
-
-      if (legendPtr->flags & REDRAW_PENDING) {
-	Tcl_CancelIdleCall(DisplayLegend, legendPtr);
-	legendPtr->flags &= ~REDRAW_PENDING;
-      }
-      tkwin = legendPtr->tkwin;
-      legendPtr->tkwin = NULL;
-      if (tkwin) {
-	Tk_DeleteEventHandler(tkwin, ExposureMask | StructureNotifyMask,
-			      LegendEventProc, graphPtr);
-	Tk_DestroyWindow(tkwin);
-      }
-    }
-  }
-
   Blt_Chain_Destroy(legendPtr->selected);
 
   Tk_FreeConfigOptions((char*)legendPtr->ops, legendPtr->optionTable, 
@@ -339,69 +306,6 @@ void Blt_DestroyLegend(Graph* graphPtr)
     free(legendPtr->ops);
 
   free(legendPtr);
-}
-
-static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
-{
-  Graph* graphPtr = (Graph*)clientData;
-  Legend* legendPtr;
-
-  legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
-
-  if (eventPtr->type == Expose) {
-    if (eventPtr->xexpose.count == 0) {
-      Blt_Legend_EventuallyRedraw(graphPtr);
-    }
-  } 
-  else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
-    if (eventPtr->xfocus.detail == NotifyInferior) {
-      return;
-    }
-    if (eventPtr->type == FocusIn) {
-      legendPtr->flags |= FOCUS;
-    } else {
-      legendPtr->flags &= ~FOCUS;
-    }
-    Tcl_DeleteTimerHandler(legendPtr->timerToken);
-    if ((legendPtr->active) && (legendPtr->flags & FOCUS)) {
-      legendPtr->cursorOn = 1;
-      if (legendPtr->offTime != 0) {
-	legendPtr->timerToken = Tcl_CreateTimerHandler(legendPtr->onTime,
-						       BlinkCursorProc,
-						       graphPtr);
-      }
-    } 
-    else {
-      legendPtr->cursorOn = 0;
-      legendPtr->timerToken = (Tcl_TimerToken)NULL;
-    }
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  } 
-  else if (eventPtr->type == DestroyNotify) {
-    Graph* graphPtr = legendPtr->graphPtr;
-
-    if (legendPtr->site == LEGEND_WINDOW) {
-      if (legendPtr->cmdToken) {
-	Tcl_DeleteCommandFromToken(graphPtr->interp, 
-				   legendPtr->cmdToken);
-	legendPtr->cmdToken = NULL;
-      }
-      legendPtr->tkwin = graphPtr->tkwin;
-    }
-    if (legendPtr->flags & REDRAW_PENDING) {
-      Tcl_CancelIdleCall(DisplayLegend, legendPtr);
-      legendPtr->flags &= ~REDRAW_PENDING;
-    }
-    legendPtr->site = LEGEND_RIGHT;
-    ops->hide = 1;
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_MoveBindingTable(legendPtr->bindTable, graphPtr->tkwin);
-    Blt_EventuallyRedrawGraph(graphPtr);
-  } 
-  else if (eventPtr->type == ConfigureNotify) {
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  }
 }
 
 // Configure
@@ -440,15 +344,7 @@ static void DisplayLegend(ClientData clientData)
     return;				/* Window has been destroyed. */
   }
   graphPtr = legendPtr->graphPtr;
-  if (legendPtr->site == LEGEND_WINDOW) {
-    int w, h;
 
-    w = Tk_Width(legendPtr->tkwin);
-    h = Tk_Height(legendPtr->tkwin);
-    if ((w != legendPtr->width) || (h != legendPtr->height)) {
-      Blt_MapLegend(graphPtr, w, h);
-    }
-  }
   if (Tk_IsMapped(legendPtr->tkwin)) {
     Blt_DrawLegend(graphPtr, Tk_WindowId(legendPtr->tkwin));
   }
@@ -462,36 +358,6 @@ void Blt_Legend_EventuallyRedraw(Graph* graphPtr)
     Tcl_DoWhenIdle(DisplayLegend, legendPtr);
     legendPtr->flags |= REDRAW_PENDING;
   }
-}
-
-static int CreateLegendWindow(Tcl_Interp* interp, Legend* legendPtr, 
-			      const char *pathName)
-{
-  Graph* graphPtr;
-  Tk_Window tkwin;
-
-  graphPtr = legendPtr->graphPtr;
-  tkwin = Tk_CreateWindowFromPath(interp, graphPtr->tkwin, pathName, NULL);
-  if (tkwin == NULL) {
-    return TCL_ERROR;
-  }
-
-  ((TkWindow*)tkwin)->instanceData = legendPtr;
-  Tk_CreateEventHandler(tkwin, ExposureMask | StructureNotifyMask,
-			LegendEventProc, graphPtr);
-  /* Move the legend's binding table to the new window. */
-  Blt_MoveBindingTable(legendPtr->bindTable, tkwin);
-  if (legendPtr->tkwin != graphPtr->tkwin) {
-    Tk_DestroyWindow(legendPtr->tkwin);
-  }
-  /* Create a command by the same name as the legend window so that Legend
-   * bindings can use %W interchangably.  */
-  legendPtr->cmdToken = Tcl_CreateObjCommand(interp, pathName, 
-					     Blt_GraphInstCmdProc, 
-					     graphPtr, NULL);
-  legendPtr->tkwin = tkwin;
-  legendPtr->site = LEGEND_WINDOW;
-  return TCL_OK;
 }
 
 static void SetLegendOrigin(Legend* legendPtr)
@@ -557,11 +423,6 @@ static void SetLegendOrigin(Legend* legendPtr)
       y += graphPtr->height;
     }
     break;
-
-  case LEGEND_WINDOW:
-    ops->anchor = TK_ANCHOR_NW;
-    legendPtr->x = legendPtr->y = 0;
-    return;
   }
 
   switch (ops->anchor) {
@@ -748,14 +609,6 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   legendPtr->nRows = legendPtr->nColumns = legendPtr->nEntries = 0;
   legendPtr->height = legendPtr->width = 0;
 
-  if (legendPtr->site == LEGEND_WINDOW) {
-    if (Tk_Width(legendPtr->tkwin) > 1) {
-      plotWidth = Tk_Width(legendPtr->tkwin);
-    }
-    if (Tk_Height(legendPtr->tkwin) > 1) {
-      plotHeight = Tk_Height(legendPtr->tkwin);
-    }
-  }
   Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
 		    &legendPtr->titleWidth, &legendPtr->titleHeight);
   /*   
@@ -886,11 +739,6 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
       }
     }
   }
-  if ((legendPtr->site == LEGEND_WINDOW) &&
-      ((Tk_ReqWidth(legendPtr->tkwin) != legendPtr->width) ||
-       (Tk_ReqHeight(legendPtr->tkwin) != legendPtr->height))) {
-    Tk_GeometryRequest(legendPtr->tkwin,legendPtr->width,legendPtr->height);
-  }
 }
 
 void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
@@ -914,13 +762,8 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   SetLegendOrigin(legendPtr);
   graphPtr = legendPtr->graphPtr;
   tkwin = legendPtr->tkwin;
-  if (legendPtr->site == LEGEND_WINDOW) {
-    w = Tk_Width(tkwin);
-    h = Tk_Height(tkwin);
-  } else {
-    w = legendPtr->width;
-    h = legendPtr->height;
-  }
+  w = legendPtr->width;
+  h = legendPtr->height;
 
   pixmap = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), w, h, 
 			Tk_Depth(tkwin));
@@ -1415,20 +1258,3 @@ static int SelectionProc(ClientData clientData, int offset,
   return MIN(nBytes, maxBytes);
 }
 
-static void BlinkCursorProc(ClientData clientData)
-{
-  Graph* graphPtr = (Graph*)clientData;
-  Legend* legendPtr = graphPtr->legend;
-  if (!(legendPtr->flags & FOCUS) || (legendPtr->offTime == 0))
-    return;
-
-  if (legendPtr->active) {
-    int time;
-
-    legendPtr->cursorOn ^= 1;
-    time = (legendPtr->cursorOn) ? legendPtr->onTime : legendPtr->offTime;
-    legendPtr->timerToken = 
-      Tcl_CreateTimerHandler(time, BlinkCursorProc, graphPtr);
-    Blt_Legend_EventuallyRedraw(graphPtr);
-  }
-}

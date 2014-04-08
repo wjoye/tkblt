@@ -102,8 +102,6 @@ extern void Blt_PickCurrentItem(Blt_BindTable table);
 
 extern void Blt_DeleteBindings(Blt_BindTable table, ClientData object);
 
-extern void Blt_MoveBindingTable(Blt_BindTable table, Tk_Window tkwin);
-
 #define Blt_SetFocusItem(bindPtr, object, context) \
 	((bindPtr)->focusItem = (ClientData)(object),\
 	 (bindPtr)->focusContext = (ClientData)(context))

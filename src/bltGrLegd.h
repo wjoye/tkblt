@@ -71,7 +71,7 @@ typedef enum {
   SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
 } SelectMode;
 
-typedef struct _Legend Legend;
+class Legend;
 
 typedef struct {
   Legend* legendPtr;
@@ -110,9 +110,9 @@ typedef struct {
   TextStyle titleStyle;
 } LegendOptions;
 
-struct _Legend {
+class Legend {
+ public:
   Graph* graphPtr;
-  ClassId classId;
   Tk_OptionTable optionTable;
   void* ops;
   unsigned int flags;

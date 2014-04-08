@@ -31,6 +31,7 @@ bltTest2 $graph legend -pady 20
 bltTest2 $graph legend -position leftmargin
 bltTest2 $graph legend -position topmargin
 bltTest2 $graph legend -position bottommargin
+bltTest2 $graph legend -position plotarea
 bltTest2 $graph legend -position "@250,100"
 bltTest2 $graph legend -raised yes
 bltTest2 $graph legend -relief groove

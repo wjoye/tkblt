@@ -3065,7 +3065,6 @@ void Blt_LayoutGraph(Graph* graphPtr)
       break;
     case LEGEND_XY:
     case LEGEND_PLOT:
-    case LEGEND_WINDOW:
       /* Do nothing. */
       break;
     }

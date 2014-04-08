@@ -188,12 +188,9 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
      * redraw only the legend: it's either in an external window or it's
      * the only thing that need updating.
      */
-    if ((legendPtr->site != LEGEND_WINDOW) && 
-	(graphPtr->flags & REDRAW_PENDING)) {
+    if (graphPtr->flags & REDRAW_PENDING) {
       graphPtr->flags |= CACHE_DIRTY;
       graphPtr->flags |= REDRAW_WORLD; /* Redraw entire graph. */
-    } else {
-      Blt_Legend_EventuallyRedraw(graphPtr);
     }
   }
   {
@@ -359,6 +356,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   if (elemPtr) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
   }
+
   Blt_Legend_EventuallyRedraw(graphPtr);
   return TCL_OK;
 }
@@ -420,9 +418,8 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->selMarkPtr = elemPtr;
 
     Blt_Legend_EventuallyRedraw(graphPtr);
-    if (ops->selectCmd) {
+    if (ops->selectCmd)
       EventuallyInvokeSelectCmd(legendPtr);
-    }
   }
   return TCL_OK;
 }
@@ -491,9 +488,9 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 		    legendPtr);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);
-  if (ops->selectCmd) {
+  if (ops->selectCmd)
     EventuallyInvokeSelectCmd(legendPtr);
-  }
+
   return TCL_OK;
 }
 
@@ -536,10 +533,10 @@ static void ClearSelection(Legend* legendPtr)
   Tcl_DeleteHashTable(&legendPtr->selectTable);
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
   Blt_Chain_Reset(legendPtr->selected);
+
   Blt_Legend_EventuallyRedraw(legendPtr->graphPtr);
-  if (ops->selectCmd) {
+  if (ops->selectCmd)
     EventuallyInvokeSelectCmd(legendPtr);
-  }
 }
 
 static void EventuallyInvokeSelectCmd(Legend* legendPtr)

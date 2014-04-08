@@ -502,18 +502,6 @@ void Blt_DeleteBindings(BindTable *bindPtr, ClientData object)
   }
 }
 
-void Blt_MoveBindingTable(BindTable *bindPtr, Tk_Window tkwin)
-{
-  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-		       PointerMotionMask);
-  if (bindPtr->tkwin != NULL)
-    Tk_DeleteEventHandler(bindPtr->tkwin, mask, BindProc, bindPtr);
-
-  Tk_CreateEventHandler(tkwin, mask, BindProc, bindPtr);
-  bindPtr->tkwin = tkwin;
-}
-
 /*
  * The following union is used to hold the detail information from an
  * XEvent (including Tk's XVirtualEvent extension).
