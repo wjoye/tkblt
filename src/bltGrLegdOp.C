@@ -38,7 +38,6 @@ extern "C" {
 extern void SelectEntry(Legend* legendPtr, Element* elemPtr);
 extern void DeselectElement(Legend* legendPtr, Element* elemPtr);
 extern int EntryIsSelected(Legend* legendPtr, Element* elemPtr);
-extern void ConfigureLegend(Graph* graphPtr);
 extern int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, 
 			     Element **elemPtrPtr);
 extern int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr);
@@ -120,7 +119,7 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
     graphPtr->flags |= mask;
     graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
-    ConfigureLegend(graphPtr);
+    legendPtr->configure();
     Blt_EventuallyRedrawGraph(graphPtr);
 
     break; 
