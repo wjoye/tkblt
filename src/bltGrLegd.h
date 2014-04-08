@@ -52,6 +52,22 @@ extern "C" {
 #define LEGEND_MARGIN_MASK (LEGEND_RIGHT|LEGEND_LEFT|LEGEND_BOTTOM|LEGEND_TOP)
 #define LEGEND_PLOTAREA_MASK  (LEGEND_PLOT | LEGEND_XY)
 
+//  Selection related flags:
+//	SELECT_PENDING		A "selection" command idle task is pending.
+//	SELECT_CLEAR		Clear selection flag of entry.
+//	SELECT_SET		Set selection flag of entry.
+//	SELECT_TOGGLE		Toggle selection flag of entry.
+//			        Mask of selection set/clear/toggle flags.
+//	SELECT_SORTED		Indicates if the entries in the selection 
+//				should be sorted or displayed in the order 
+//				they were selected.
+
+#define SELECT_CLEAR		(1<<24)
+#define SELECT_PENDING		(1<<25)
+#define SELECT_SET		(1<<26)
+#define SELECT_SORTED		(1<<27)
+#define SELECT_TOGGLE		(SELECT_SET | SELECT_CLEAR)
+
 typedef enum {
   SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
 } SelectMode;

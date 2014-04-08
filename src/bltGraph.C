@@ -74,6 +74,8 @@ extern "C" {
   Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 };
 
+extern void ConfigureLegend(Graph* graphPtr);
+
 static Tcl_IdleProc DisplayGraph;
 static Tcl_FreeProc DestroyGraph;
 static Tk_EventProc GraphEventProc;
@@ -1295,7 +1297,7 @@ Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
 void Blt_ReconfigureGraph(Graph* graphPtr)	
 {
   ConfigureGraph(graphPtr);
-  //  Blt_ConfigureLegend(graphPtr);
+  ConfigureLegend(graphPtr);
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);
   Blt::ConfigureMarkers(graphPtr);
