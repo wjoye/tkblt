@@ -103,7 +103,7 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static void DestroyElement(Element* elemPtr)
 {
-  Graph* graphPtr = elemPtr->obj.graphPtr;
+  Graph* graphPtr = elemPtr->graphPtr_;
 
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
@@ -217,7 +217,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (elemPtr->flags & ACTIVE)
 	Tcl_ListObjAppendElement(interp, listObjPtr,
-				 Tcl_NewStringObj(elemPtr->obj.name, -1));
+				 Tcl_NewStringObj(elemPtr->name(), -1));
     }
 
     Tcl_SetObjResult(interp, listObjPtr);
@@ -325,7 +325,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   if (searchPtr->dist < (double)searchPtr->halo) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("name", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(searchPtr->elemPtr->obj.name, -1)); 
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(searchPtr->elemPtr->name(), -1)); 
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("index", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(searchPtr->index));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("x", -1));
@@ -407,12 +407,8 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   char *string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
     Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable);
-    /* Report only on elements. */
-    if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0) &&
-	(elemPtr->obj.classId >= CID_ELEM_BAR) &&
-	(elemPtr->obj.classId <= CID_ELEM_LINE)) {
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name,-1);
-    }
+    if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0))
+	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
   }
   return TCL_OK;
 }
@@ -457,7 +453,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_HashSearch iter;
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter); hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
   }
@@ -467,8 +463,8 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
 
       for (int ii=3; ii<objc; ii++) {
-	if (Tcl_StringMatch(elemPtr->obj.name,Tcl_GetString(objv[ii]))) {
-	  Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+	if (Tcl_StringMatch(elemPtr->name(),Tcl_GetString(objv[ii]))) {
+	  Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
 	  Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	  break;
 	}
@@ -558,7 +554,7 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
   if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
-  switch (elemPtr->obj.classId) {
+  switch (elemPtr->classId()) {
   case CID_ELEM_BAR:
     Tcl_SetStringObj(Tcl_GetObjResult(interp), "bar", -1);
     return TCL_OK;
@@ -613,7 +609,7 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
 
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+    Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
     Tcl_ListObjAppendElement(graphPtr->interp, listObjPtr, objPtr);
   }
 
@@ -669,10 +665,8 @@ void Blt_DestroyElements(Graph* graphPtr)
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.table, &iter);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
     Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-    if (elemPtr) {
-      elemPtr->hashPtr = NULL;
+    if (elemPtr)
       DestroyElement(elemPtr);
-    }
   }
   Tcl_DeleteHashTable(&graphPtr->elements.table);
   Tcl_DeleteHashTable(&graphPtr->elements.tagTable);
@@ -743,7 +737,7 @@ void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
       continue;
     }
     /* Comment the PostScript to indicate the start of the element */
-    Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->obj.name);
+    Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->name());
     elemPtr->printNormal(ps);
   }
 }
@@ -758,8 +752,7 @@ void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 
 	!elemPtr->hide_) {
-      Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", 
-		    elemPtr->obj.name);
+      Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", elemPtr->name());
       elemPtr->printActive(ps);
     }
   }

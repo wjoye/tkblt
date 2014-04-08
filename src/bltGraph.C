@@ -959,6 +959,17 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_ELEM_BAR:		
   case CID_ELEM_LINE: 
     {
+      Element* elemPtr = (Element*)object;
+      ElementOptions* ops = (ElementOptions*)elemPtr->ops();
+      MakeTagProc* tagProc = Blt_MakeElementTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->name()), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->className()), 0);
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+
+
+      /*
       GraphObj* graphObjPtr = (GraphObj*)object;
       MakeTagProc* tagProc = Blt_MakeElementTag;
       Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
@@ -966,6 +977,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
       if (graphObjPtr->tags)
 	for (const char** p = graphObjPtr->tags; *p != NULL; p++)
 	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+      */
     }
     break;
   case CID_AXIS_X:
@@ -1050,14 +1062,14 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->hide || (elemPtr->flags & MAP_ITEM))
+    if (elemPtr->hide_ || (elemPtr->flags & MAP_ITEM))
       continue;
 
-    (*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr);
+    elemPtr->closest();
   }
   // Found an element within the minimum halo distance.
   if (searchPtr->dist <= (double)searchPtr->halo) {
-    *contextPtr = (ClientData)elemPtr->obj.classId;
+    *contextPtr = (ClientData)elemPtr->classId();
     return searchPtr->elemPtr;
   }
 

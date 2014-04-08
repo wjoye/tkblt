@@ -673,9 +673,9 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (Tcl_StringMatch(elemPtr->obj.name, pattern)) {
+      if (Tcl_StringMatch(elemPtr->name(), pattern)) {
 	fprintf(stderr, "legend %s(%s) %s is currently %d\n",
-		string, pattern, elemPtr->obj.name, 
+		string, pattern, elemPtr->name(), 
 		(elemPtr->flags & LABEL_ACTIVE));
 	if (active) {
 	  if ((elemPtr->flags & LABEL_ACTIVE) == 0) {
@@ -689,7 +689,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 	  }
 	}
 	fprintf(stderr, "legend %s(%s) %s is now %d\n",
-		string, pattern, elemPtr->obj.name, 
+		string, pattern, elemPtr->name(), 
 		(elemPtr->flags & LABEL_ACTIVE));
       }
     }
@@ -721,7 +721,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       if (elemPtr->flags & LABEL_ACTIVE) {
 	Tcl_Obj *objPtr;
 
-	objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+	objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
 	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
       }
     }
@@ -763,21 +763,19 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
     for (link = Blt_Chain_FirstLink(legendPtr->selected); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
-  } else {
-    Blt_ChainLink link;
-
+  }
+  else {
     /* List of selected entries is in stacking order. */
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
       if (EntryIsSelected(legendPtr, elemPtr)) {
 	Tcl_Obj *objPtr;
 
-	objPtr = Tcl_NewStringObj(elemPtr->obj.name, -1);
+	objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
 	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
       }
     }
@@ -808,7 +806,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
   }
   if (legendPtr->focusPtr) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		     legendPtr->focusPtr->obj.name, -1);
+		     legendPtr->focusPtr->name(), -1);
   }
   return TCL_OK;
 }
@@ -825,7 +823,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_ERROR;
     }
     if (elemPtr) {
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name,-1);
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
     }
   }
   return TCL_OK;
@@ -871,7 +869,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   legendPtr->selAnchorPtr = elemPtr;
   legendPtr->selMarkPtr = NULL;
   if (elemPtr) {
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name, -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);
   return TCL_OK;
@@ -929,7 +927,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->flags &= ~SELECT_TOGGLE;
     legendPtr->flags |= SELECT_SET;
     SelectRange(legendPtr, legendPtr->selAnchorPtr, elemPtr);
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->obj.name, -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
     legendPtr->selMarkPtr = elemPtr;
 
     Blt_Legend_EventuallyRedraw(graphPtr);
@@ -972,7 +970,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetElementFromObj(graphPtr, objv[4], &firstPtr) != TCL_OK) {
     return TCL_ERROR;
   }
-  if ((firstPtr->hide) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
+  if ((firstPtr->hide_) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
     Tcl_AppendResult(interp, "can't select hidden node \"", 
 		     Tcl_GetString(objv[4]), "\"", (char *)NULL);
     return TCL_ERROR;
@@ -982,7 +980,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetElementFromObj(graphPtr, objv[5], &lastPtr) != TCL_OK) {
       return TCL_ERROR;
     }
-    if (lastPtr->hide && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
+    if (lastPtr->hide_ && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
       Tcl_AppendResult(interp, "can't select hidden node \"", 
 		       Tcl_GetString(objv[5]), "\"", (char *)NULL);
       return TCL_ERROR;
@@ -1361,7 +1359,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
       for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	   link != NULL; link = Blt_Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-	ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+	ElementOptions* ops = (ElementOptions*)elemPtr->ops();
 	if (ops->label) {
 	  if (count == n)
 	    return elemPtr;
@@ -1411,7 +1409,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
        link != NULL; link = Blt_Chain_NextLink(link)) {
     unsigned int w, h;
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
 
     if (ops->label == NULL)
       continue;
@@ -1519,8 +1517,8 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       count++;
-      elemPtr->row = row;
-      elemPtr->col = col;
+      elemPtr->row_ = row;
+      elemPtr->col_ = col;
       row++;
       if ((count % nRows) == 0) {
 	col++;
@@ -1614,7 +1612,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     int isSelected;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
@@ -1641,8 +1639,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 			   ops->legendRelief);
       }
     }
-    (*elemPtr->procsPtr->drawSymbolProc) (graphPtr, pixmap, elemPtr,
-					  x + xSymbol, y + ySymbol, symbolSize);
+    elemPtr->drawSymbol(pixmap, x + xSymbol, y + ySymbol, symbolSize);
     Blt_DrawText(tkwin, pixmap, ops->label, &legendPtr->style, 
 		 x + xLabel, 
 		 y + legendPtr->entryBW + legendPtr->iyPad);
@@ -1749,7 +1746,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
@@ -1767,8 +1764,7 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 			       ops->legendRelief);
       }
     }
-    (*elemPtr->procsPtr->printSymbolProc) (graphPtr, ps, elemPtr, 
-					   x + xSymbol, y + ySymbol, symbolSize);
+    elemPtr->printSymbol(ps, x + xSymbol, y + ySymbol, symbolSize);
     Blt_Ps_DrawText(ps, ops->label, &legendPtr->style, 
 		    x + xLabel, y + legendPtr->entryBW + legendPtr->iyPad);
     count++;
@@ -1786,15 +1782,15 @@ static Element *GetNextRow(Graph* graphPtr, Element *focusPtr)
   Blt_ChainLink link;
   int row, col;
 
-  col = focusPtr->col;
-  row = focusPtr->row + 1;
+  col = focusPtr->col_;
+  row = focusPtr->row_ + 1;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
-    if ((elemPtr->col == col) && (elemPtr->row == row))
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
       return elemPtr;	
   }
   return NULL;
@@ -1805,15 +1801,15 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
   Blt_ChainLink link;
   int row, col;
 
-  col = focusPtr->col + 1;
-  row = focusPtr->row;
+  col = focusPtr->col_ + 1;
+  row = focusPtr->row_;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
-    if ((elemPtr->col == col) && (elemPtr->row == row))
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
       return elemPtr;
   }
   return NULL;
@@ -1821,16 +1817,16 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
 
 static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
 {
-  int col = focusPtr->col;
-  int row = focusPtr->row - 1;
+  int col = focusPtr->col_;
+  int row = focusPtr->row_ - 1;
   for (Blt_ChainLink link = focusPtr->link; link != NULL; 
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
-    if ((elemPtr->col == col) && (elemPtr->row == row))
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
       return elemPtr;	
   }
   return NULL;
@@ -1838,16 +1834,16 @@ static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
 
 static Element *GetPreviousColumn(Graph* graphPtr, Element *focusPtr)
 {
-  int col = focusPtr->col - 1;
-  int row = focusPtr->row;
+  int col = focusPtr->col_ - 1;
+  int row = focusPtr->row_;
   for (Blt_ChainLink link = focusPtr->link; link != NULL;
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       continue;
 
-    if ((elemPtr->col == col) && (elemPtr->row == row))
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
       return elemPtr;	
   }
   return NULL;
@@ -1857,7 +1853,7 @@ static Element *GetFirstElement(Graph* graphPtr)
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label)
       return elemPtr;
   }
@@ -1869,7 +1865,7 @@ static Element *GetLastElement(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label)
       return elemPtr;
   }
@@ -1934,7 +1930,7 @@ static int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
 		       (char *)NULL);
       return TCL_ERROR;
     }
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops;
+    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
     if (ops->label == NULL)
       elemPtr = NULL;
   }
@@ -2025,7 +2021,7 @@ static int SelectionProc(ClientData clientData, int offset,
     for (link = Blt_Chain_FirstLink(legendPtr->selected); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      Tcl_DStringAppend(&dString, elemPtr->obj.name, -1);
+      Tcl_DStringAppend(&dString, elemPtr->name(), -1);
       Tcl_DStringAppend(&dString, "\n", -1);
     }
   } else {
@@ -2038,7 +2034,7 @@ static int SelectionProc(ClientData clientData, int offset,
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (EntryIsSelected(legendPtr, elemPtr)) {
-	Tcl_DStringAppend(&dString, elemPtr->obj.name, -1);
+	Tcl_DStringAppend(&dString, elemPtr->name(), -1);
 	Tcl_DStringAppend(&dString, "\n", -1);
       }
     }

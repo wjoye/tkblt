@@ -31,50 +31,45 @@
 #include "bltGrElemOp.h"
 #include "bltGrPenOp.h"
 
-Element::Element(Graph* gPtr, const char* name, Tcl_HashEntry* hPtr)
+Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
-  obj.classId = CID_NONE;
-  obj.name = dupstr(name);
-  obj.className =NULL;
-  obj.graphPtr = gPtr;
-  obj.tags =NULL;
-
-  graphPtr_ = gPtr;
-  flags =0;
-  hide_ =0;
-  hashPtr = hPtr;
+  graphPtr_ = graphPtr;
+  classId_ = CID_NONE;
+  name_ = dupstr(name);
+  optionTable_ =NULL;
   ops_ =NULL;
+  hashPtr_ = hPtr;
+  hide_ =0;
 
   row_ =0;
   col_ =0;
   activeIndices_ =NULL;
   nActiveIndices_ =0;
-  optionTable_ =NULL;
   xRange_ =0;
   yRange_ =0;
+
   link =NULL;
+  flags =0;
 }
 
 Element::~Element()
 {
-  if (obj.name)
-    delete [] obj.name;
-  if (obj.className)
-    delete [] obj.className;
+  if (name_)
+    delete [] name_;
 
   if (activeIndices_)
     free(activeIndices_);
 
-  if (hashPtr)
-    Tcl_DeleteHashEntry(hashPtr);
+  if (hashPtr_)
+    Tcl_DeleteHashEntry(hashPtr_);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, obj.graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
 
   if (ops_)
     free(ops_);
 }
 
-double Blt_FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
+double Element::FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
 {
   double min = DBL_MAX;
   if (!valuesPtr)

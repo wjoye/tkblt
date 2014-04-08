@@ -321,8 +321,7 @@ int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
   if (penPtr->classId() != classId) {
     Tcl_AppendResult(interp, "pen \"", name, 
-		     "\" is the wrong type (is \"", 
-		     Blt_GraphClassName(penPtr->classId()),
+		     "\" is the wrong type (is \"", penPtr->className(),
 		     "\"", ", wanted \"", 
 		     Blt_GraphClassName(classId), "\")", (char *)NULL);
     return TCL_ERROR;

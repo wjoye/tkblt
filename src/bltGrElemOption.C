@@ -282,8 +282,8 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
     stylePtr->weight.min = (double)ii;
     stylePtr->weight.max = (double)ii + 1.0;
     stylePtr->weight.range = 1.0;
-    if (GetPenStyleFromObj(interp, elemPtr->obj.graphPtr, objv[ii], 
-			   elemPtr->obj.classId, 
+    if (GetPenStyleFromObj(interp, elemPtr->graphPtr_, objv[ii], 
+			   elemPtr->classId(), 
 			   (PenStyle*)stylePtr) != TCL_OK) {
       Blt_FreeStylePalette(stylePalette);
       return TCL_ERROR;
@@ -421,7 +421,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   }
 
   Element* elemPtr = valuesPtr->elemPtr;
-  Graph* graphPtr = elemPtr->obj.graphPtr;
+  Graph* graphPtr = elemPtr->graphPtr_;
   graphPtr->flags |= RESET_AXES;
   elemPtr->flags |= MAP_ITEM;
   if (elemPtr->link && !(elemPtr->flags & DELETE_PENDING)) {

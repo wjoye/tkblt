@@ -171,7 +171,7 @@ static Tk_OptionSpec optionSpecs[] = {
 BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Element(graphPtr, name, hPtr)
 {
-  Blt_GraphSetObjectClass(&obj, CID_ELEM_BAR);
+  classId_ = CID_ELEM_BAR;
 
   barToData_ =NULL;
   bars_ =NULL;
@@ -1436,7 +1436,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide_) || (bePtr->obj.classId != CID_ELEM_BAR))
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     nSegs++;
@@ -1555,7 +1555,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide_) || (bePtr->obj.classId != CID_ELEM_BAR))
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     if (ops->coords.x && ops->coords.y) {

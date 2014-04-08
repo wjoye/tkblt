@@ -70,6 +70,7 @@ class Pen {
   void* ops() {return ops_;}
   Tk_OptionTable optionTable() {return optionTable_;}
   const char* name() {return name_;}
+  virtual const char* className() =0;
   ClassId classId() {return classId_;}
 };
 

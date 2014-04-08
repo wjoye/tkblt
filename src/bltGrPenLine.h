@@ -84,6 +84,7 @@ class LinePen : public Pen {
   virtual ~LinePen();
 
   int configure();
+  const char* className() {return "LineElement";}
 };
 
 extern Tk_ObjCustomOption symbolObjOption;

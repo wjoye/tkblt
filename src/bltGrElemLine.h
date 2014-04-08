@@ -150,7 +150,8 @@ class LineElement : public Element {
   double DistanceToLine(int, int, Point2d*, Point2d*, Point2d*);
   double DistanceToX(int, int, Point2d*, Point2d*, Point2d*);
   double DistanceToY(int, int, Point2d*, Point2d*, Point2d*);
-  void SymbolsToPostScript(Blt_Ps, Pen*, int, int, Point2d*);
+  void GetSymbolPostScriptInfo(Blt_Ps, LinePen*, int);
+  void SymbolsToPostScript(Blt_Ps, LinePen*, int, int, Point2d*);
 
  public:
   LineElement(Graph*, const char*, Tcl_HashEntry*);
@@ -166,6 +167,8 @@ class LineElement : public Element {
   void printActive(Blt_Ps);
   void printNormal(Blt_Ps);
   void printSymbol(Blt_Ps, double, double, int);
+
+  const char* className() {return "LineElement";}
 };
 
 #endif

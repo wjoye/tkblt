@@ -60,12 +60,12 @@ namespace Blt {
 
   class Marker {
   protected:
+    Graph* graphPtr_;
     ClassId classId_;
     const char *name_;
     const char *className_;
     Tk_OptionTable optionTable_;
     void* ops_;
-    Graph* graphPtr_;
     Tcl_HashEntry* hashPtr_;
     int clipped_;
 
@@ -97,9 +97,9 @@ namespace Blt {
     ClassId classId() {return classId_;}
     const char* name() {return name_;}
     const char* className() {return className_;}
-    int clipped() {return clipped_;}
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}
+    int clipped() {return clipped_;}
   };
 
 };

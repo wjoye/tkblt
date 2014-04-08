@@ -119,11 +119,8 @@ class BarElement : public Element {
   void printActive(Blt_Ps);
   void printNormal(Blt_Ps);
   void printSymbol(Blt_Ps, double, double, int);
-};
 
-extern void Blt_InitBarSetTable(Graph* graphPtr);
-extern void Blt_ComputeBarStacks(Graph* graphPtr);
-extern void Blt_ResetBarGroups(Graph* graphPtr);
-extern void Blt_DestroyBarSets(Graph* graphPtr);
+  const char* className() {return "BarElement";}
+};
 
 #endif

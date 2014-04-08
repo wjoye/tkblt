@@ -213,14 +213,6 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-LinePen::LinePen() : Pen()
-{
-  classId_ = CID_ELEM_LINE;
-
-  traceGC_ =NULL;
-  errorBarGC_ =NULL;
-}
-
 LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Pen(graphPtr, name, hPtr)
 {
@@ -239,12 +231,12 @@ LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   ops->symbol.type = SYMBOL_NONE;
 }
 
-LinePen::LinePen(Graph* graphPtr, const char* penName, void* ops)
-  : Pen(graphPtr, name, NULL);
+LinePen::LinePen(Graph* graphPtr, const char* name, void* options)
+  : Pen(graphPtr, name, NULL)
 {
   classId_ = CID_ELEM_LINE;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
-  ops_ = ops;
+  ops_ = options;
   manageOptions_ =0;
 
   traceGC_ =NULL;

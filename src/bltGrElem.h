@@ -93,7 +93,7 @@ typedef struct {
 typedef struct {
   Element* elemPtr;
   const char* label;
-  char** tags;
+  const char** tags;
   Axis2d axes;
   ElemCoords coords;
   ElemValues* w;
@@ -114,23 +114,23 @@ typedef struct {
 
 class Element {
  public:
-  GraphObj obj;
   Graph* graphPtr_;
-  unsigned int flags;		
+  ClassId classId_;
+  const char* name_;
+  Tk_OptionTable optionTable_;
+  void* ops_;
+  Tcl_HashEntry* hashPtr_;
   int hide_;
-  Tcl_HashEntry* hashPtr;
 
   unsigned short row_;
   unsigned short col_;
   int *activeIndices_;
   int nActiveIndices_;
-  Tk_OptionTable optionTable_;
   double xRange_;
   double yRange_;
-  Blt_ChainLink link;
 
- protected:
-  void* ops_;
+  Blt_ChainLink link;
+  unsigned int flags;		
 
  protected:
   double FindElemValuesMinimum(ElemValues*, double);
@@ -151,10 +151,17 @@ class Element {
   virtual void printNormal(Blt_Ps) =0;
   virtual void printSymbol(Blt_Ps, double, double, int) =0;
 
-  void* ops() {return ops_;}
+  ClassId classId() {return classId_;}
+  const char* name() {return name_;}
+  virtual const char* className() =0;
   Tk_OptionTable optionTable() {return optionTable();}
+  void* ops() {return ops_;}
 };
 
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
+extern void Blt_InitBarSetTable(Graph* graphPtr);
+extern void Blt_ComputeBarStacks(Graph* graphPtr);
+extern void Blt_ResetBarGroups(Graph* graphPtr);
+extern void Blt_DestroyBarSets(Graph* graphPtr);
 
 #endif

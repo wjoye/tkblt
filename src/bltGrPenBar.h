@@ -65,6 +65,7 @@ class BarPen : public Pen {
   virtual ~BarPen();
 
   int configure();
+  const char* className() {return "BarElement";}
 };
 
 #endif
