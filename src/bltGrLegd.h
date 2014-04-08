@@ -129,7 +129,6 @@ class Legend {
   int yReq;
   int x;
   int y;
-  Tk_Window tkwin;
   int maxSymSize;
   Blt_BindTable bindTable;
   GC focusGC;
@@ -154,12 +153,10 @@ class Legend {
   unsigned int titleHeight;
 
  public:
-  Legend();
+  Legend(Graph*);
   virtual ~Legend();
 };
 
-extern int Blt_CreateLegend(Graph *graphPtr);
-extern void Blt_DestroyLegend(Graph *graphPtr);
 extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
 extern void Blt_MapLegend(Graph *graphPtr, int width, int height);
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 

@@ -313,9 +313,9 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   graphPtr->axes.displayList = Blt_Chain_Create();
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
+  graphPtr->legend = new Legend(graphPtr);
+
   if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
-    goto error;
-  if (Blt_CreateLegend(graphPtr) != TCL_OK)
     goto error;
   if (Blt_CreatePen(graphPtr, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
       TCL_OK)
@@ -366,7 +366,8 @@ static void DestroyGraph(char* dataPtr)
   Blt_DestroyCrosshairs(graphPtr);
   Blt::DestroyMarkers(graphPtr);
   Blt_DestroyElements(graphPtr);  // must come before legend and others
-  Blt_DestroyLegend(graphPtr);
+  if (graphPtr->legend)
+    delete graphPtr->legend;
   Blt_DestroyAxes(graphPtr);
   Blt_DestroyPens(graphPtr);
   Blt_DestroyPageSetup(graphPtr);

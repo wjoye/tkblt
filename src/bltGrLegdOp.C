@@ -484,7 +484,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->selAnchorPtr = firstPtr;
   }
   if (ops->exportSelection) {
-    Tk_OwnSelection(legendPtr->tkwin, XA_PRIMARY, LostSelectionProc, 
+    Tk_OwnSelection(graphPtr->tkwin, XA_PRIMARY, LostSelectionProc, 
 		    legendPtr);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);

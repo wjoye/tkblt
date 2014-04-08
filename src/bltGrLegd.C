@@ -242,78 +242,90 @@ static Tk_OptionSpec optionSpecs[] = {
 
 // Create
 
-Legend::Legend()
+Legend::Legend(Graph* graphPtr)
 {
-}
+  ops_ = (void*)calloc(1, sizeof(LegendOptions));
+  LegendOptions* ops = (LegendOptions*)ops_;
+  ops->legendPtr = this;
 
-Legend::~Legend()
-{
-}
+  graphPtr_ = graphPtr;
+  flags =0;
+  nEntries =0;
+  nColumns =0;
+  nRows =0;
+  width =0;
+  height =0;
+  entryWidth =0;
+  entryHeight =0;
+  site =0;
+  xReq = -SHRT_MAX;
+  yReq = -SHRT_MAX;
+  x =0;
+  y =0;
+  maxSymSize =0;
+  bindTable =NULL;
+  focusGC =NULL;
+  focus =0;
+  cursorX =0;
+  cursorY =0;
+  cursorWidth =0;
+  cursorHeight =0;
+  focusPtr =NULL;
+  selAnchorPtr =NULL;
+  selMarkPtr =NULL;
+  selFirstPtr =NULL;
+  selLastPtr =NULL;
+  active =0;
+  cursorOn =0;
+  onTime = 600;
+  offTime = 300;
+  timerToken =NULL;
+  selected = Blt_Chain_Create();
+  titleWidth =0;
+  titleHeight =0;
 
-int Blt_CreateLegend(Graph* graphPtr)
-{
-  Legend* legendPtr = (Legend*)calloc(1, sizeof(Legend));
-  legendPtr->ops_ = (void*)calloc(1, sizeof(LegendOptions));
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-  ops->legendPtr = legendPtr;
-
-  graphPtr->legend = legendPtr;
-  legendPtr->graphPtr_ = graphPtr;
-  legendPtr->tkwin = graphPtr->tkwin;
-  legendPtr->xReq = -SHRT_MAX;
-  legendPtr->yReq = -SHRT_MAX;
   Blt_Ts_InitStyle(ops->style);
   Blt_Ts_InitStyle(ops->titleStyle);
   ops->style.justify = TK_JUSTIFY_LEFT;
   ops->style.anchor = TK_ANCHOR_NW;
   ops->titleStyle.justify = TK_JUSTIFY_LEFT;
   ops->titleStyle.anchor = TK_ANCHOR_NW;
-  legendPtr->bindTable = 
-    Blt_CreateBindingTable(graphPtr->interp, graphPtr->tkwin, 
-			   graphPtr, PickEntryProc, Blt_GraphTags);
 
-  Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
-  legendPtr->selected = Blt_Chain_Create();
-  Tk_CreateSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING, 
-		      SelectionProc, legendPtr, XA_STRING);
-  legendPtr->onTime = 600;
-  legendPtr->offTime = 300;
+  bindTable = Blt_CreateBindingTable(graphPtr->interp, 
+				     graphPtr->tkwin, graphPtr, 
+				     PickEntryProc, Blt_GraphTags);
 
-  legendPtr->optionTable_ =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr->ops_, 
-			legendPtr->optionTable_, graphPtr->tkwin);
+  Tcl_InitHashTable(&selectTable, TCL_ONE_WORD_KEYS);
+
+  Tk_CreateSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING, 
+		      SelectionProc, this, XA_STRING);
+
+  optionTable_ =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)ops_, optionTable_, graphPtr->tkwin);
 }
 
-void Blt_DestroyLegend(Graph* graphPtr)
+Legend::~Legend()
 {
-  Legend* legendPtr = graphPtr->legend;
-  if (!legendPtr)
-    return;
+  LegendOptions* ops = (LegendOptions*)ops_;
 
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->style);
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->titleStyle);
-  Blt_DestroyBindingTable(legendPtr->bindTable);
+  Blt_Ts_FreeStyle(graphPtr_->display, &ops->style);
+  Blt_Ts_FreeStyle(graphPtr_->display, &ops->titleStyle);
+  Blt_DestroyBindingTable(bindTable);
     
-  if (legendPtr->focusGC)
-    Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
+  if (focusGC)
+    Blt_FreePrivateGC(graphPtr_->display, focusGC);
 
-  if (legendPtr->timerToken)
-    Tcl_DeleteTimerHandler(legendPtr->timerToken);
+  if (timerToken)
+    Tcl_DeleteTimerHandler(timerToken);
 
-  if (legendPtr->tkwin)
-    Tk_DeleteSelHandler(legendPtr->tkwin, XA_PRIMARY, XA_STRING);
+  if (graphPtr_->tkwin)
+    Tk_DeleteSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING);
 
-  Blt_Chain_Destroy(legendPtr->selected);
+  Blt_Chain_Destroy(selected);
 
-  Tk_FreeConfigOptions((char*)legendPtr->ops_, legendPtr->optionTable_, 
-		       graphPtr->tkwin);
-
-  if (legendPtr->ops_)
-    free(legendPtr->ops_);
-
-  free(legendPtr);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  if (ops_)
+    free(ops_);
 }
 
 // Configure
@@ -329,7 +341,7 @@ void ConfigureLegend(Graph* graphPtr)
   gcValues.foreground = ops->focusColor->pixel;
   gcValues.line_style = (LineIsDashed(ops->focusDashes))
     ? LineOnOffDash : LineSolid;
-  GC newGC = Blt_GetPrivateGC(legendPtr->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
   if (LineIsDashed(ops->focusDashes)) {
     ops->focusDashes.offset = 2;
     Blt_SetDashes(graphPtr->display, newGC, &ops->focusDashes);
@@ -347,18 +359,16 @@ static void DisplayLegend(ClientData clientData)
   Legend* legendPtr = (Legend*)clientData;
 
   legendPtr->flags &= ~REDRAW_PENDING;
-  if (legendPtr->tkwin == NULL)
-    return;
-
-  if (Tk_IsMapped(legendPtr->tkwin))
-    Blt_DrawLegend(legendPtr->graphPtr_, Tk_WindowId(legendPtr->tkwin));
+  if (Tk_IsMapped(legendPtr->graphPtr_->tkwin))
+    Blt_DrawLegend(legendPtr->graphPtr_, 
+		   Tk_WindowId(legendPtr->graphPtr_->tkwin));
 }
 
 void Blt_Legend_EventuallyRedraw(Graph* graphPtr) 
 {
   Legend* legendPtr = graphPtr->legend;
 
-  if ((legendPtr->tkwin) && !(legendPtr->flags & REDRAW_PENDING)) {
+  if ((graphPtr->tkwin) && !(legendPtr->flags & REDRAW_PENDING)) {
     Tcl_DoWhenIdle(DisplayLegend, legendPtr);
     legendPtr->flags |= REDRAW_PENDING;
   }
@@ -762,7 +772,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 
   SetLegendOrigin(legendPtr);
   graphPtr = legendPtr->graphPtr_;
-  tkwin = legendPtr->tkwin;
+  tkwin = graphPtr->tkwin;
   w = legendPtr->width;
   h = legendPtr->height;
 
@@ -1079,23 +1089,15 @@ static Element *GetLastElement(Graph* graphPtr)
   return NULL;
 }
 
-int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, 
-			     Element **elemPtrPtr)
+int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, Element **elemPtrPtr)
 {
-  Element* elemPtr;
-  Legend* legendPtr;
-  Tcl_Interp* interp;
-  char c;
-  const char *string;
-  int last;
+  Legend* legendPtr = graphPtr->legend;
+  Tcl_Interp* interp = graphPtr->interp;
+  const char *string = Tcl_GetString(objPtr);
+  char c = string[0];
+  Element* elemPtr = NULL;
 
-  legendPtr = graphPtr->legend;
-  interp = graphPtr->interp;
-  string = Tcl_GetString(objPtr);
-  c = string[0];
-  elemPtr = NULL;
-
-  last = Blt_Chain_GetLength(graphPtr->elements.displayList) - 1;
+  //  int last = Blt_Chain_GetLength(graphPtr->elements.displayList) - 1;
   if ((c == 'a') && (strcmp(string, "anchor") == 0))
     elemPtr = legendPtr->selAnchorPtr;
   else if ((c == 'c') && (strcmp(string, "current") == 0))
@@ -1123,7 +1125,7 @@ int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
   else if (c == '@') {
     int x, y;
 
-    if (Blt_GetXY(interp, legendPtr->tkwin, string, &x, &y) != TCL_OK)
+    if (Blt_GetXY(interp, graphPtr->tkwin, string, &x, &y) != TCL_OK)
       return TCL_ERROR;
 
     elemPtr = (Element *)PickEntryProc(graphPtr, x, y, NULL);
