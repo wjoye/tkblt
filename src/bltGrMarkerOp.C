@@ -418,26 +418,8 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
 
-  switch (markerPtr->classId()) {
-  case CID_MARKER_BITMAP:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "bitmap", -1);
-    return TCL_OK;
-  case CID_MARKER_LINE:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "line", -1);
-    return TCL_OK;
-  case CID_MARKER_POLYGON:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "polygon", -1);
-    return TCL_OK;
-  case CID_MARKER_TEXT:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "text", -1);
-    return TCL_OK;
-  case CID_MARKER_WINDOW:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "window", -1);
-    return TCL_OK;
-  default:
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), "unknown", -1);
-    return TCL_OK;
-  }
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->typeName(), -1);
+  return TCL_OK;
 }
 
 static Blt_OpSpec markerOps[] =

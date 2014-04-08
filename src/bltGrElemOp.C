@@ -556,16 +556,8 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
   if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
-  switch (elemPtr->classId()) {
-  case CID_ELEM_BAR:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "bar", -1);
-    return TCL_OK;
-  case CID_ELEM_LINE:
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), "line", -1);
-    return TCL_OK;
-  default:
-    return TCL_ERROR;
-  }
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->typeName(), -1);
+  return TCL_OK;
 }
 
 static Blt_OpSpec elemOps[] = {

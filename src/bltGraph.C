@@ -969,17 +969,6 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
       if (ops->tags)
 	for (const char** p = ops->tags; *p != NULL; p++)
 	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-
-
-      /*
-      GraphObj* graphObjPtr = (GraphObj*)object;
-      MakeTagProc* tagProc = Blt_MakeElementTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
-      if (graphObjPtr->tags)
-	for (const char** p = graphObjPtr->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-      */
     }
     break;
   case CID_AXIS_X:

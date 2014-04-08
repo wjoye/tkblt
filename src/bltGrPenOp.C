@@ -255,8 +255,7 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		   Blt_GraphClassName(penPtr->classId()), -1);
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), penPtr->typeName(), -1);
   return TCL_OK;
 }
 
