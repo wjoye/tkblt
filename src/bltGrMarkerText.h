@@ -70,6 +70,9 @@ namespace Blt {
   public:
     TextMarker(Graph*, const char*, Tcl_HashEntry*);
     virtual ~TextMarker();
+
+    ClassId classId() {return CID_MARKER_TEXT;}
+    const char* className() {return "TextMarker";}
   };
 
 };

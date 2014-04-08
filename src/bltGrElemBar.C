@@ -171,8 +171,6 @@ static Tk_OptionSpec optionSpecs[] = {
 BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Element(graphPtr, name, hPtr)
 {
-  classId_ = CID_ELEM_BAR;
-
   barToData_ =NULL;
   bars_ =NULL;
   activeToData_ =NULL;

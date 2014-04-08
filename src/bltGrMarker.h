@@ -61,9 +61,7 @@ namespace Blt {
   class Marker {
   protected:
     Graph* graphPtr_;
-    ClassId classId_;
     const char *name_;
-    const char *className_;
     Tk_OptionTable optionTable_;
     void* ops_;
     Tcl_HashEntry* hashPtr_;
@@ -94,9 +92,9 @@ namespace Blt {
     virtual int regionIn(Region2d*, int) =0;
     virtual void postscript(Blt_Ps) =0;
 
-    ClassId classId() {return classId_;}
+    virtual ClassId classId() =0;
+    virtual const char* className() =0;
     const char* name() {return name_;}
-    const char* className() {return className_;}
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}
     int clipped() {return clipped_;}

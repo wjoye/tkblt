@@ -33,9 +33,7 @@ using namespace Blt;
 
 Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 {
-  classId_ =CID_NONE;
   name_ = dupstr(nPtr);
-  className_ =NULL;
   optionTable_ =NULL;
   ops_ =NULL;
   graphPtr_ =gPtr;  
@@ -49,9 +47,6 @@ Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 Marker::~Marker()
 {
   Blt_DeleteBindings(graphPtr_->bindTable, this);
-
-  if (className_)
-    delete [] className_;
 
   if (name_)
     delete [] name_;

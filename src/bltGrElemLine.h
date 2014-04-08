@@ -157,6 +157,9 @@ class LineElement : public Element {
   LineElement(Graph*, const char*, Tcl_HashEntry*);
   virtual ~LineElement();
 
+  ClassId classId() {return CID_ELEM_LINE;}
+  const char* className() {return "LineElement";}
+
   int configure();
   void map();
   void extents(Region2d*);
@@ -167,8 +170,6 @@ class LineElement : public Element {
   void printActive(Blt_Ps);
   void printNormal(Blt_Ps);
   void printSymbol(Blt_Ps, double, double, int);
-
-  const char* className() {return "LineElement";}
 };
 
 #endif

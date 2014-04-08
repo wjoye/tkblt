@@ -109,6 +109,9 @@ class BarElement : public Element {
   BarElement(Graph*, const char*, Tcl_HashEntry*);
   virtual ~BarElement();
 
+  ClassId classId() {return CID_ELEM_BAR;}
+  const char* className() {return "BarElement";}
+
   int configure();
   void map();
   void extents(Region2d*);
@@ -119,8 +122,6 @@ class BarElement : public Element {
   void printActive(Blt_Ps);
   void printNormal(Blt_Ps);
   void printSymbol(Blt_Ps, double, double, int);
-
-  const char* className() {return "BarElement";}
 };
 
 #endif

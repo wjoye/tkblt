@@ -216,7 +216,6 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Pen(graphPtr, name, hPtr)
 {
-  classId_ = CID_ELEM_LINE;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
   ops_ = calloc(1, sizeof(LinePenOptions));
   manageOptions_ =1;
@@ -234,7 +233,6 @@ LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 LinePen::LinePen(Graph* graphPtr, const char* name, void* options)
   : Pen(graphPtr, name, NULL)
 {
-  classId_ = CID_ELEM_LINE;
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, linePenOptionSpecs);
   ops_ = options;
   manageOptions_ =0;

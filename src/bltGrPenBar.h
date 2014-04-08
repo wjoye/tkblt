@@ -64,8 +64,10 @@ class BarPen : public Pen {
   BarPen(Graph*, const char*, void*);
   virtual ~BarPen();
 
-  int configure();
+  ClassId classId() {return CID_ELEM_BAR;}
   const char* className() {return "BarElement";}
+
+  int configure();
 };
 
 #endif

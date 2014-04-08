@@ -72,6 +72,9 @@ namespace Blt {
   public:
     BitmapMarker(Graph*, const char*, Tcl_HashEntry*);
     virtual ~BitmapMarker();
+
+    ClassId classId() {return CID_MARKER_BITMAP;}
+    const char* className() {return "BitmapMarker";}
   };
 
 };

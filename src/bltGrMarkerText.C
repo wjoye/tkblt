@@ -82,8 +82,6 @@ static Tk_OptionSpec optionSpecs[] = {
 TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
   : Marker(graphPtr, name, hPtr)
 {
-  classId_ = CID_MARKER_TEXT;
-  className_ = dupstr("TextMarker");
   ops_ = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
   Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);

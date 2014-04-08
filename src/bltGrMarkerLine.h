@@ -73,6 +73,9 @@ namespace Blt {
   public:
     LineMarker(Graph*, const char*, Tcl_HashEntry*);
     virtual ~LineMarker();
+
+    ClassId classId() {return CID_MARKER_LINE;}
+    const char* className() {return "LineMarker";}
   };
 
 };

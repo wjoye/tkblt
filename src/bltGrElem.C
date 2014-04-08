@@ -34,7 +34,6 @@
 Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   graphPtr_ = graphPtr;
-  classId_ = CID_NONE;
   name_ = dupstr(name);
   optionTable_ =NULL;
   ops_ =NULL;

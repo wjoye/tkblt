@@ -83,8 +83,10 @@ class LinePen : public Pen {
   LinePen(Graph*, const char*, void*);
   virtual ~LinePen();
 
-  int configure();
+  ClassId classId() {return CID_ELEM_LINE;}
   const char* className() {return "LineElement";}
+
+  int configure();
 };
 
 extern Tk_ObjCustomOption symbolObjOption;

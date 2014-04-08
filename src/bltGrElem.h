@@ -115,7 +115,6 @@ typedef struct {
 class Element {
  public:
   Graph* graphPtr_;
-  ClassId classId_;
   const char* name_;
   Tk_OptionTable optionTable_;
   void* ops_;
@@ -151,10 +150,11 @@ class Element {
   virtual void printNormal(Blt_Ps) =0;
   virtual void printSymbol(Blt_Ps, double, double, int) =0;
 
-  ClassId classId() {return classId_;}
-  const char* name() {return name_;}
+  virtual ClassId classId() =0;
   virtual const char* className() =0;
-  Tk_OptionTable optionTable() {return optionTable();}
+
+  const char* name() {return name_;}
+  Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 };
 

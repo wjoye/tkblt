@@ -78,8 +78,6 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
 			   Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
-  classId_ = CID_MARKER_BITMAP;
-  className_ = dupstr("BitmapMarker");
   ops_ = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
 

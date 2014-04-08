@@ -230,8 +230,6 @@ static Tk_OptionSpec optionSpecs[] = {
 LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Element(graphPtr, name, hPtr)
 {
-  classId_ = CID_ELEM_LINE;
-
   smooth_ = PEN_SMOOTH_LINEAR;
   fillBgColor_ =NULL;
   fillGC_ = NULL;

@@ -78,6 +78,9 @@ namespace Blt {
   public:
     PolygonMarker(Graph*, const char*, Tcl_HashEntry*);
     virtual ~PolygonMarker();
+
+    ClassId classId() {return CID_MARKER_POLYGON;}
+    const char* className() {return "PolygonMarker";}
   };
 
 };

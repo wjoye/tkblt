@@ -52,7 +52,6 @@ typedef struct {
 class Pen {
  public:
   Graph* graphPtr_;
-  ClassId classId_;
   const char *name_;
   Tk_OptionTable optionTable_;
   void* ops_;
@@ -66,12 +65,14 @@ class Pen {
   Pen(Graph*, const char*, Tcl_HashEntry*);
   virtual ~Pen();
 
-  virtual int configure() =0;
-  void* ops() {return ops_;}
-  Tk_OptionTable optionTable() {return optionTable_;}
-  const char* name() {return name_;}
+  virtual ClassId classId() =0;
   virtual const char* className() =0;
-  ClassId classId() {return classId_;}
+
+  const char* name() {return name_;}
+  Tk_OptionTable optionTable() {return optionTable_;}
+  void* ops() {return ops_;}
+
+  virtual int configure() =0;
 };
 
 #endif
