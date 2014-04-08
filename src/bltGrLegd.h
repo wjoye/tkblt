@@ -155,9 +155,9 @@ class Legend {
 
   void configure();
   void map(int, int);
+  void draw(Drawable drawable);
 };
 
-extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
 	Tcl_Obj* const objv[]);
 extern int Blt_Legend_Site(Graph *graphPtr);

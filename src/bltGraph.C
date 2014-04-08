@@ -617,9 +617,9 @@ static void DisplayGraph(ClientData clientData)
   Blt_DrawActiveElements(graphPtr, drawable);
   /* Don't draw legend in the plot area. */
   int site = Blt_Legend_Site(graphPtr);
-  if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr))) {
-    Blt_DrawLegend(graphPtr, drawable);
-  }
+  if ((site & LEGEND_PLOTAREA_MASK) && (Blt_Legend_IsRaised(graphPtr)))
+    graphPtr->legend->draw(drawable);
+
   /* Draw 3D border just inside of the focus highlight ring. */
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
@@ -1163,10 +1163,8 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
 		       x, y, w, h, graphPtr->plotBW, graphPtr->plotRelief);
   }
   int site = Blt_Legend_Site(graphPtr);
-  if (site & LEGEND_MARGIN_MASK) {
-    /* Legend is drawn on one of the graph margins */
-    Blt_DrawLegend(graphPtr, drawable);
-  }
+  if (site & LEGEND_MARGIN_MASK)
+    graphPtr->legend->draw(drawable);
 
   if (graphPtr->title != NULL) {
     Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
@@ -1195,7 +1193,7 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
 
   int site = Blt_Legend_Site(graphPtr);
   if ((site & LEGEND_PLOTAREA_MASK) && (!Blt_Legend_IsRaised(graphPtr)))
-    Blt_DrawLegend(graphPtr, drawable);
+    graphPtr->legend->draw(drawable);
 
   Blt_DrawAxisLimits(graphPtr, drawable);
   Blt_DrawElements(graphPtr, drawable);
@@ -1230,9 +1228,9 @@ void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
 
   /* Don't draw legend in the plot area. */
   if ((Blt_Legend_Site(graphPtr) & LEGEND_PLOTAREA_MASK) && 
-      (Blt_Legend_IsRaised(graphPtr))) {
-    Blt_DrawLegend(graphPtr, drawable);
-  }
+      (Blt_Legend_IsRaised(graphPtr)))
+    graphPtr->legend->draw(drawable);
+
   /* Draw 3D border just inside of the focus highlight ring. */
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 

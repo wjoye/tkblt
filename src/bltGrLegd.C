@@ -49,6 +49,7 @@ extern int EntryIsSelected(Legend* legendPtr, Element* elemPtr);
 extern void DeselectElement(Legend* legendPtr, Element* elemPtr);
 extern void SelectEntry(Legend* legendPtr, Element* elemPtr);
 
+static void SetLegendOrigin(Legend*);
 static Tcl_IdleProc DisplayLegend;
 static Blt_BindPickProc PickEntryProc;
 static Tk_SelectionProc SelectionProc;
@@ -484,6 +485,158 @@ void Legend::map(int plotWidth, int plotHeight)
   }
 }
 
+void Legend::draw(Drawable drawable)
+{
+  Blt_ChainLink link;
+  Tk_FontMetrics fontMetrics;
+  LegendOptions* ops = (LegendOptions*)ops_;
+
+  Pixmap pixmap;
+  Tk_Window tkwin;
+  int count;
+  int symbolSize, xMid, yMid;
+  int x, y, w, h;
+  int xLabel, yStart, xSymbol, ySymbol;
+
+  if ((ops->hide) || (nEntries_ == 0))
+    return;
+
+  SetLegendOrigin(this);
+  tkwin = graphPtr_->tkwin;
+  w = width_;
+  h = height_;
+
+  pixmap = Tk_GetPixmap(graphPtr_->display, Tk_WindowId(tkwin), w, h, 
+			Tk_Depth(tkwin));
+
+  if (ops->normalBg) {
+    Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
+		       w, h, 0, TK_RELIEF_FLAT);
+  }
+  else if (site_ & LEGEND_PLOTAREA_MASK) {
+    /* 
+     * Legend background is transparent and is positioned over the the
+     * plot area.  Either copy the part of the background from the backing
+     * store pixmap or (if no backing store exists) just fill it with the
+     * background color of the plot.
+     */
+    if (graphPtr_->cache != None) {
+      XCopyArea(graphPtr_->display, graphPtr_->cache, pixmap, 
+		graphPtr_->drawGC, x_, y_, w, h, 0, 0);
+    } else {
+      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->plotBg, 0, 0, 
+			 w, h, TK_RELIEF_FLAT, 0);
+    }
+  }
+  else {
+    /* 
+     * The legend is located in one of the margins or the external window.
+     */
+    Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 0, 0, 
+		       w, h, 0, TK_RELIEF_FLAT);
+  }
+  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
+
+  symbolSize = fontMetrics.ascent;
+  xMid = symbolSize + 1 + ops->entryBW;
+  yMid = (symbolSize / 2) + 1 + ops->entryBW;
+  xLabel = 2 * symbolSize + ops->entryBW +  ops->ixPad + 2 * LABEL_PAD;
+  ySymbol = yMid + ops->iyPad; 
+  xSymbol = xMid + LABEL_PAD;
+
+  x = ops->xPad + ops->borderWidth;
+  y = ops->yPad + ops->borderWidth;
+  Blt_DrawText(tkwin, pixmap, ops->title, &ops->titleStyle, x, y);
+  if (titleHeight_ > 0)
+    y += titleHeight_ + ops->yPad;
+
+  count = 0;
+  yStart = y;
+  for (link = Blt_Chain_FirstLink(graphPtr_->elements.displayList);
+       link != NULL; link = Blt_Chain_NextLink(link)) {
+    int isSelected;
+
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
+      continue;
+
+    isSelected = EntryIsSelected(this, elemPtr);
+    if (elemPtr->flags & LABEL_ACTIVE) {
+      Tk_Fill3DRectangle(tkwin, pixmap, ops->activeBg, 
+			 x, y, entryWidth_, entryHeight_, 
+			 ops->entryBW, ops->activeRelief);
+    } else if (isSelected) {
+      XColor* fg = (flags & FOCUS) ?
+	ops->selInFocusFgColor : ops->selOutFocusFgColor;
+      Tk_3DBorder bg = (flags & FOCUS) ?
+	ops->selInFocusBg : ops->selOutFocusBg;
+      Blt_Ts_SetForeground(ops->style, fg);
+      Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
+			 entryWidth_, entryHeight_, 
+			 ops->selBW, ops->selRelief);
+    } else {
+      Blt_Ts_SetForeground(ops->style, ops->fgColor);
+      if (elemOps->legendRelief != TK_RELIEF_FLAT) {
+	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 
+			   x, y, entryWidth_, 
+			   entryHeight_, ops->entryBW, 
+			   elemOps->legendRelief);
+      }
+    }
+    elemPtr->drawSymbol(pixmap, x + xSymbol, y + ySymbol, symbolSize);
+    Blt_DrawText(tkwin, pixmap, elemOps->label, &ops->style, 
+		 x + xLabel, 
+		 y + ops->entryBW + ops->iyPad);
+    count++;
+    if (focusPtr_ == elemPtr) { /* Focus outline */
+      if (isSelected) {
+	XColor* color;
+
+	color = (flags & FOCUS) ?
+	  ops->selInFocusFgColor :
+	  ops->selOutFocusFgColor;
+	XSetForeground(graphPtr_->display, focusGC_, 
+		       color->pixel);
+      }
+      XDrawRectangle(graphPtr_->display, pixmap, focusGC_, 
+		     x + 1, y + 1, entryWidth_ - 3, 
+		     entryHeight_ - 3);
+      if (isSelected) {
+	XSetForeground(graphPtr_->display, focusGC_, 
+		       ops->focusColor->pixel);
+      }
+    }
+    /* Check when to move to the next column */
+    if ((count % nRows_) > 0) {
+      y += entryHeight_;
+    } else {
+      x += entryWidth_;
+      y = yStart;
+    }
+  }
+  /*
+   * Draw the border and/or background of the legend.
+   */
+  Tk_3DBorder bg = ops->normalBg;
+  if (bg == NULL)
+    bg = graphPtr_->normalBg;
+
+  /* Disable crosshairs before redisplaying to the screen */
+  if (site_ & LEGEND_PLOTAREA_MASK) {
+    Blt_DisableCrosshairs(graphPtr_);
+  }
+  Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
+		     ops->borderWidth, ops->relief);
+  XCopyArea(graphPtr_->display, pixmap, drawable, graphPtr_->drawGC, 0, 0, w, h,
+	    x_, y_);
+  if (site_ & LEGEND_PLOTAREA_MASK) {
+    Blt_EnableCrosshairs(graphPtr_);
+  }
+  Tk_FreePixmap(graphPtr_->display, pixmap);
+  graphPtr_->flags &= ~DRAW_LEGEND;
+}
+
 // Support
 
 static void DisplayLegend(ClientData clientData)
@@ -492,8 +645,7 @@ static void DisplayLegend(ClientData clientData)
 
   legendPtr->flags &= ~REDRAW_PENDING;
   if (Tk_IsMapped(legendPtr->graphPtr_->tkwin))
-    Blt_DrawLegend(legendPtr->graphPtr_, 
-		   Tk_WindowId(legendPtr->graphPtr_->tkwin));
+    legendPtr->draw(Tk_WindowId(legendPtr->graphPtr_->tkwin));
 }
 
 void Blt_Legend_EventuallyRedraw(Graph* graphPtr) 
@@ -733,161 +885,6 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
     }
   }
   return NULL;
-}
-
-void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
-{
-  Blt_ChainLink link;
-  Tk_FontMetrics fontMetrics;
-  Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-
-  Pixmap pixmap;
-  Tk_Window tkwin;
-  int count;
-  int symbolSize, xMid, yMid;
-  int x, y, w, h;
-  int xLabel, yStart, xSymbol, ySymbol;
-
-  if ((ops->hide) || (legendPtr->nEntries_ == 0)) {
-    return;
-  }
-
-  SetLegendOrigin(legendPtr);
-  graphPtr = legendPtr->graphPtr_;
-  tkwin = graphPtr->tkwin;
-  w = legendPtr->width_;
-  h = legendPtr->height_;
-
-  pixmap = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), w, h, 
-			Tk_Depth(tkwin));
-
-  if (ops->normalBg) {
-    Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
-		       w, h, 0, TK_RELIEF_FLAT);
-  }
-  else if (legendPtr->site_ & LEGEND_PLOTAREA_MASK) {
-    /* 
-     * Legend background is transparent and is positioned over the the
-     * plot area.  Either copy the part of the background from the backing
-     * store pixmap or (if no backing store exists) just fill it with the
-     * background color of the plot.
-     */
-    if (graphPtr->cache != None) {
-      XCopyArea(graphPtr->display, graphPtr->cache, pixmap, 
-		graphPtr->drawGC, legendPtr->x_, legendPtr->y_, w, h, 0, 0);
-    } else {
-      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->plotBg, 0, 0, 
-			 w, h, TK_RELIEF_FLAT, 0);
-    }
-  }
-  else {
-    /* 
-     * The legend is located in one of the margins or the external window.
-     */
-    Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 0, 0, 
-		       w, h, 0, TK_RELIEF_FLAT);
-  }
-  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
-
-  symbolSize = fontMetrics.ascent;
-  xMid = symbolSize + 1 + ops->entryBW;
-  yMid = (symbolSize / 2) + 1 + ops->entryBW;
-  xLabel = 2 * symbolSize + ops->entryBW +  ops->ixPad + 2 * LABEL_PAD;
-  ySymbol = yMid + ops->iyPad; 
-  xSymbol = xMid + LABEL_PAD;
-
-  x = ops->xPad + ops->borderWidth;
-  y = ops->yPad + ops->borderWidth;
-  Blt_DrawText(tkwin, pixmap, ops->title, &ops->titleStyle, x, y);
-  if (legendPtr->titleHeight_ > 0)
-    y += legendPtr->titleHeight_ + ops->yPad;
-
-  count = 0;
-  yStart = y;
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    int isSelected;
-
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      continue;
-
-    isSelected = EntryIsSelected(legendPtr, elemPtr);
-    if (elemPtr->flags & LABEL_ACTIVE) {
-      Tk_Fill3DRectangle(tkwin, pixmap, ops->activeBg, 
-			 x, y, legendPtr->entryWidth_, legendPtr->entryHeight_, 
-			 ops->entryBW, ops->activeRelief);
-    } else if (isSelected) {
-      XColor* fg = (legendPtr->flags & FOCUS) ?
-	ops->selInFocusFgColor : ops->selOutFocusFgColor;
-      Tk_3DBorder bg = (legendPtr->flags & FOCUS) ?
-	ops->selInFocusBg : ops->selOutFocusBg;
-      Blt_Ts_SetForeground(ops->style, fg);
-      Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
-			 legendPtr->entryWidth_, legendPtr->entryHeight_, 
-			 ops->selBW, ops->selRelief);
-    } else {
-      Blt_Ts_SetForeground(ops->style, ops->fgColor);
-      if (elemOps->legendRelief != TK_RELIEF_FLAT) {
-	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 
-			   x, y, legendPtr->entryWidth_, 
-			   legendPtr->entryHeight_, ops->entryBW, 
-			   elemOps->legendRelief);
-      }
-    }
-    elemPtr->drawSymbol(pixmap, x + xSymbol, y + ySymbol, symbolSize);
-    Blt_DrawText(tkwin, pixmap, elemOps->label, &ops->style, 
-		 x + xLabel, 
-		 y + ops->entryBW + ops->iyPad);
-    count++;
-    if (legendPtr->focusPtr_ == elemPtr) { /* Focus outline */
-      if (isSelected) {
-	XColor* color;
-
-	color = (legendPtr->flags & FOCUS) ?
-	  ops->selInFocusFgColor :
-	  ops->selOutFocusFgColor;
-	XSetForeground(graphPtr->display, legendPtr->focusGC_, 
-		       color->pixel);
-      }
-      XDrawRectangle(graphPtr->display, pixmap, legendPtr->focusGC_, 
-		     x + 1, y + 1, legendPtr->entryWidth_ - 3, 
-		     legendPtr->entryHeight_ - 3);
-      if (isSelected) {
-	XSetForeground(graphPtr->display, legendPtr->focusGC_, 
-		       ops->focusColor->pixel);
-      }
-    }
-    /* Check when to move to the next column */
-    if ((count % legendPtr->nRows_) > 0) {
-      y += legendPtr->entryHeight_;
-    } else {
-      x += legendPtr->entryWidth_;
-      y = yStart;
-    }
-  }
-  /*
-   * Draw the border and/or background of the legend.
-   */
-  Tk_3DBorder bg = ops->normalBg;
-  if (bg == NULL)
-    bg = graphPtr->normalBg;
-
-  /* Disable crosshairs before redisplaying to the screen */
-  if (legendPtr->site_ & LEGEND_PLOTAREA_MASK) {
-    Blt_DisableCrosshairs(graphPtr);
-  }
-  Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
-		     ops->borderWidth, ops->relief);
-  XCopyArea(graphPtr->display, pixmap, drawable, graphPtr->drawGC, 0, 0, w, h,
-	    legendPtr->x_, legendPtr->y_);
-  if (legendPtr->site_ & LEGEND_PLOTAREA_MASK) {
-    Blt_EnableCrosshairs(graphPtr);
-  }
-  Tk_FreePixmap(graphPtr->display, pixmap);
-  graphPtr->flags &= ~DRAW_LEGEND;
 }
 
 void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
