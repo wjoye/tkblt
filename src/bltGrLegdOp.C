@@ -300,15 +300,14 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  if (((ops->hide) == 0) && (legendPtr->nEntries > 0)) {
+  if (((ops->hide) == 0) && (legendPtr->nEntries_ > 0)) {
     Element* elemPtr;
 
-    if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK) {
+    if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK)
       return TCL_ERROR;
-    }
-    if (elemPtr) {
+
+    if (elemPtr)
       Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
-    }
   }
   return TCL_OK;
 }

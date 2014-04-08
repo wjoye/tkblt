@@ -117,13 +117,13 @@ class Legend {
   void* ops_;
 
   unsigned int flags;
-  int nEntries;
-  int nColumns;
-  int nRows;
-  int width;
-  int height;
-  int entryWidth;
-  int entryHeight;
+  int nEntries_;
+  int nColumns_;
+  int nRows_;
+  int width_;
+  int height_;
+  int entryWidth_;
+  int entryHeight_;
   int site;
   int xReq;
   int yReq;

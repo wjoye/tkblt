@@ -250,13 +250,13 @@ Legend::Legend(Graph* graphPtr)
 
   graphPtr_ = graphPtr;
   flags =0;
-  nEntries =0;
-  nColumns =0;
-  nRows =0;
-  width =0;
-  height =0;
-  entryWidth =0;
-  entryHeight =0;
+  nEntries_ =0;
+  nColumns_ =0;
+  nRows_ =0;
+  width_ =0;
+  height_ =0;
+  entryWidth_ =0;
+  entryHeight_ =0;
   site =0;
   xReq = -SHRT_MAX;
   yReq = -SHRT_MAX;
@@ -423,8 +423,8 @@ static void SetLegendOrigin(Legend* legendPtr)
     break;
 
   case LEGEND_XY:
-    w = legendPtr->width;
-    h = legendPtr->height;
+    w = legendPtr->width_;
+    h = legendPtr->height_;
     x = legendPtr->xReq;
     y = legendPtr->yReq;
     if (x < 0) {
@@ -440,55 +440,55 @@ static void SetLegendOrigin(Legend* legendPtr)
   case TK_ANCHOR_NW:			/* Upper left corner */
     break;
   case TK_ANCHOR_W:			/* Left center */
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height) / 2;
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_) / 2;
     }
     break;
   case TK_ANCHOR_SW:			/* Lower left corner */
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height);
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_);
     }
     break;
   case TK_ANCHOR_N:			/* Top center */
-    if (w > legendPtr->width) {
-      x += (w - legendPtr->width) / 2;
+    if (w > legendPtr->width_) {
+      x += (w - legendPtr->width_) / 2;
     }
     break;
   case TK_ANCHOR_CENTER:		/* Center */
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height) / 2;
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_) / 2;
     }
-    if (w > legendPtr->width) {
-      x += (w - legendPtr->width) / 2;
+    if (w > legendPtr->width_) {
+      x += (w - legendPtr->width_) / 2;
     }
     break;
   case TK_ANCHOR_S:			/* Bottom center */
-    if (w > legendPtr->width) {
-      x += (w - legendPtr->width) / 2;
+    if (w > legendPtr->width_) {
+      x += (w - legendPtr->width_) / 2;
     }
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height);
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_);
     }
     break;
   case TK_ANCHOR_NE:			/* Upper right corner */
-    if (w > legendPtr->width) {
-      x += w - legendPtr->width;
+    if (w > legendPtr->width_) {
+      x += w - legendPtr->width_;
     }
     break;
   case TK_ANCHOR_E:			/* Right center */
-    if (w > legendPtr->width) {
-      x += w - legendPtr->width;
+    if (w > legendPtr->width_) {
+      x += w - legendPtr->width_;
     }
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height) / 2;
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_) / 2;
     }
     break;
   case TK_ANCHOR_SE:		/* Lower right corner */
-    if (w > legendPtr->width) {
-      x += w - legendPtr->width;
+    if (w > legendPtr->width_) {
+      x += w - legendPtr->width_;
     }
-    if (h > legendPtr->height) {
-      y += (h - legendPtr->height);
+    if (h > legendPtr->height_) {
+      y += (h - legendPtr->height_);
     }
     break;
   }
@@ -556,8 +556,8 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   Legend* legendPtr = graphPtr->legend;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  int w = legendPtr->width;
-  int h = legendPtr->height;
+  int w = legendPtr->width_;
+  int h = legendPtr->height_;
 
   if (legendPtr->titleHeight > 0)
     y -= legendPtr->titleHeight + ops->yPad;
@@ -574,10 +574,10 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
     /*
      * It's in the bounding box, so compute the index.
      */
-    row    = y / legendPtr->entryHeight;
-    column = x / legendPtr->entryWidth;
-    n = (column * legendPtr->nRows) + row;
-    if (n < legendPtr->nEntries) {
+    row    = y / legendPtr->entryHeight_;
+    column = x / legendPtr->entryWidth_;
+    n = (column * legendPtr->nRows_) + row;
+    if (n < legendPtr->nEntries_) {
       Blt_ChainLink link;
       int count;
 
@@ -613,9 +613,13 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   Tk_FontMetrics fontMetrics;
 
   /* Initialize legend values to default (no legend displayed) */
-  legendPtr->entryWidth = legendPtr->entryHeight = 0;
-  legendPtr->nRows = legendPtr->nColumns = legendPtr->nEntries = 0;
-  legendPtr->height = legendPtr->width = 0;
+  legendPtr->entryWidth_ =0;
+  legendPtr->entryHeight_ = 0;
+  legendPtr->nRows_ =0;
+  legendPtr->nColumns_ =0;
+  legendPtr->nEntries_ =0;
+  legendPtr->height_ =0;
+  legendPtr->width_ = 0;
 
   Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
 		    &legendPtr->titleWidth, &legendPtr->titleHeight);
@@ -720,15 +724,13 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   if (lw < (int)(legendPtr->titleWidth)) {
     lw = legendPtr->titleWidth;
   }
-  legendPtr->width = lw + 2 * ops->borderWidth + 
-    2*ops->xPad;
-  legendPtr->height = lh + 2 * ops->borderWidth + 
-    2*ops->yPad;
-  legendPtr->nRows = nRows;
-  legendPtr->nColumns = nColumns;
-  legendPtr->nEntries = nEntries;
-  legendPtr->entryHeight = maxHeight;
-  legendPtr->entryWidth = maxWidth;
+  legendPtr->width_ = lw + 2 * ops->borderWidth + 2*ops->xPad;
+  legendPtr->height_ = lh + 2 * ops->borderWidth + 2*ops->yPad;
+  legendPtr->nRows_ = nRows;
+  legendPtr->nColumns_ = nColumns;
+  legendPtr->nEntries_ = nEntries;
+  legendPtr->entryHeight_ = maxHeight;
+  legendPtr->entryWidth_ = maxWidth;
 
   {
     int row, col, count;
@@ -763,15 +765,15 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   int x, y, w, h;
   int xLabel, yStart, xSymbol, ySymbol;
 
-  if ((ops->hide) || (legendPtr->nEntries == 0)) {
+  if ((ops->hide) || (legendPtr->nEntries_ == 0)) {
     return;
   }
 
   SetLegendOrigin(legendPtr);
   graphPtr = legendPtr->graphPtr_;
   tkwin = graphPtr->tkwin;
-  w = legendPtr->width;
-  h = legendPtr->height;
+  w = legendPtr->width_;
+  h = legendPtr->height_;
 
   pixmap = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), w, h, 
 			Tk_Depth(tkwin));
@@ -831,7 +833,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     isSelected = EntryIsSelected(legendPtr, elemPtr);
     if (elemPtr->flags & LABEL_ACTIVE) {
       Tk_Fill3DRectangle(tkwin, pixmap, ops->activeBg, 
-			 x, y, legendPtr->entryWidth, legendPtr->entryHeight, 
+			 x, y, legendPtr->entryWidth_, legendPtr->entryHeight_, 
 			 ops->entryBW, ops->activeRelief);
     } else if (isSelected) {
       XColor* fg = (legendPtr->flags & FOCUS) ?
@@ -840,14 +842,14 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 	ops->selInFocusBg : ops->selOutFocusBg;
       Blt_Ts_SetForeground(ops->style, fg);
       Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
-			 legendPtr->entryWidth, legendPtr->entryHeight, 
+			 legendPtr->entryWidth_, legendPtr->entryHeight_, 
 			 ops->selBW, ops->selRelief);
     } else {
       Blt_Ts_SetForeground(ops->style, ops->fgColor);
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
 	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 
-			   x, y, legendPtr->entryWidth, 
-			   legendPtr->entryHeight, ops->entryBW, 
+			   x, y, legendPtr->entryWidth_, 
+			   legendPtr->entryHeight_, ops->entryBW, 
 			   elemOps->legendRelief);
       }
     }
@@ -867,18 +869,18 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 		       color->pixel);
       }
       XDrawRectangle(graphPtr->display, pixmap, legendPtr->focusGC, 
-		     x + 1, y + 1, legendPtr->entryWidth - 3, 
-		     legendPtr->entryHeight - 3);
+		     x + 1, y + 1, legendPtr->entryWidth_ - 3, 
+		     legendPtr->entryHeight_ - 3);
       if (isSelected) {
 	XSetForeground(graphPtr->display, legendPtr->focusGC, 
 		       ops->focusColor->pixel);
       }
     }
     /* Check when to move to the next column */
-    if ((count % legendPtr->nRows) > 0) {
-      y += legendPtr->entryHeight;
+    if ((count % legendPtr->nRows_) > 0) {
+      y += legendPtr->entryHeight_;
     } else {
-      x += legendPtr->entryWidth;
+      x += legendPtr->entryWidth_;
       y = yStart;
     }
   }
@@ -917,14 +919,14 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   int width, height;
   Tk_FontMetrics fontMetrics;
 
-  if ((ops->hide) || (legendPtr->nEntries == 0)) {
+  if ((ops->hide) || (legendPtr->nEntries_ == 0)) {
     return;
   }
   SetLegendOrigin(legendPtr);
 
   x = legendPtr->x, y = legendPtr->y;
-  width = legendPtr->width - 2*ops->xPad;
-  height = legendPtr->height - 2*ops->yPad;
+  width = legendPtr->width_ - 2*ops->xPad;
+  height = legendPtr->height_ - 2*ops->yPad;
 
   Blt_Ps_Append(ps, "% Legend\n");
   graphPtr = legendPtr->graphPtr_;
@@ -966,15 +968,15 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 
     if (elemPtr->flags & LABEL_ACTIVE) {
       Blt_Ts_SetForeground(ops->style, ops->activeFgColor);
-      Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, legendPtr->entryWidth, 
-			     legendPtr->entryHeight, ops->entryBW, 
+      Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, legendPtr->entryWidth_, 
+			     legendPtr->entryHeight_, ops->entryBW, 
 			     ops->activeRelief);
     } else {
       Blt_Ts_SetForeground(ops->style, ops->fgColor);
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
 	Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, 
-			       legendPtr->entryWidth,
-			       legendPtr->entryHeight, ops->entryBW, 
+			       legendPtr->entryWidth_,
+			       legendPtr->entryHeight_, ops->entryBW, 
 			       elemOps->legendRelief);
       }
     }
@@ -982,10 +984,10 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
     Blt_Ps_DrawText(ps, elemOps->label, &ops->style, 
 		    x + xLabel, y + ops->entryBW + ops->iyPad);
     count++;
-    if ((count % legendPtr->nRows) > 0) {
-      y += legendPtr->entryHeight;
+    if ((count % legendPtr->nRows_) > 0) {
+      y += legendPtr->entryHeight_;
     } else {
-      x += legendPtr->entryWidth;
+      x += legendPtr->entryWidth_;
       y = yStart;
     }
   }
@@ -1176,12 +1178,12 @@ int Blt_Legend_Site(Graph* graphPtr)
 
 int Blt_Legend_Width(Graph* graphPtr)
 {
-  return graphPtr->legend->width;
+  return graphPtr->legend->width_;
 }
 
 int Blt_Legend_Height(Graph* graphPtr)
 {
-  return graphPtr->legend->height;
+  return graphPtr->legend->height_;
 }
 
 int Blt_Legend_IsHidden(Graph* graphPtr)
