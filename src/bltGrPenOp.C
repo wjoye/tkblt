@@ -104,7 +104,8 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
 
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)penPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)penPtr->ops(), 
 				      penPtr->optionTable(),
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -122,7 +123,8 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)penPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)penPtr->ops(), 
 				       penPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
 				       graphPtr->tkwin);

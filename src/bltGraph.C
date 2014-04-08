@@ -428,7 +428,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_WrongNumArgs(interp, 1, objv, "cget option");
     return TCL_ERROR;
   }
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)graphPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)graphPtr, 
 				      graphPtr->optionTable,
 				      objv[2], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -442,7 +443,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   if (objc <= 3) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)graphPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, 
+				       (char*)graphPtr, 
 				       graphPtr->optionTable, 
 				       (objc == 3) ? objv[2] : NULL, 
 				       graphPtr->tkwin);

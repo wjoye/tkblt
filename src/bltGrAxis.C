@@ -516,8 +516,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
   Blt_Ts_InitStyle(axisPtr->limitsTextStyle);
   axisPtr->tickLabels = Blt_Chain_Create();
 
-  axisPtr->optionTable = 
-    Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  axisPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
   return axisPtr;
 }
 
@@ -583,7 +582,8 @@ static int CgetOp(Tcl_Interp* interp, Axis *axisPtr,
     return TCL_ERROR;
   }
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)axisPtr, 
 				      axisPtr->optionTable,
 				      objv[3], graphPtr->tkwin);
   if (!objPtr)
@@ -609,7 +609,8 @@ static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr,
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)axisPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)axisPtr, 
 				       axisPtr->optionTable, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);

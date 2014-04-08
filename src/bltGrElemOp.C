@@ -128,7 +128,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)elemPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)elemPtr->ops(), 
 				      elemPtr->optionTable(),
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -146,7 +147,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)elemPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)elemPtr->ops(), 
 				       elemPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
 				       graphPtr->tkwin);

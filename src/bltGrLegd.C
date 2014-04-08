@@ -561,7 +561,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   Legend* legendPtr = graphPtr->legend;
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)legendPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)legendPtr, 
 				      legendPtr->optionTable,
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -576,7 +577,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Legend* legendPtr = graphPtr->legend;
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)legendPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)legendPtr, 
 				       legendPtr->optionTable, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);

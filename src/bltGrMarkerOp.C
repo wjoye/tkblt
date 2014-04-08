@@ -124,7 +124,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)markerPtr->ops(), 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)markerPtr->ops(), 
 				      markerPtr->optionTable(),
 				      objv[4], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -168,7 +169,9 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)markerPtr->ops(), markerPtr->optionTable(), objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+      if (Tk_SetOptions(interp, (char*)markerPtr->ops(), 
+			markerPtr->optionTable(), 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }

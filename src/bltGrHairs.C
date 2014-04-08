@@ -128,7 +128,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   Crosshairs* chPtr = graphPtr->crosshairs;
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)chPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)chPtr, 
 				      chPtr->optionTable,
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -143,7 +144,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Crosshairs* chPtr = graphPtr->crosshairs;
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)chPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)chPtr, 
 				       chPtr->optionTable, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
