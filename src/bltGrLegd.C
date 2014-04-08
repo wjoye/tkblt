@@ -972,7 +972,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetElementFromObj(graphPtr, objv[4], &firstPtr) != TCL_OK) {
     return TCL_ERROR;
   }
-  if ((firstPtr->hide_) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
+  if ((firstPtr->hide()) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
     Tcl_AppendResult(interp, "can't select hidden node \"", 
 		     Tcl_GetString(objv[4]), "\"", (char *)NULL);
     return TCL_ERROR;
@@ -982,7 +982,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetElementFromObj(graphPtr, objv[5], &lastPtr) != TCL_OK) {
       return TCL_ERROR;
     }
-    if (lastPtr->hide_ && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
+    if (lastPtr->hide() && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
       Tcl_AppendResult(interp, "can't select hidden node \"", 
 		       Tcl_GetString(objv[5]), "\"", (char *)NULL);
       return TCL_ERROR;

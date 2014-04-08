@@ -103,7 +103,7 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static void DestroyElement(Element* elemPtr)
 {
-  Graph* graphPtr = elemPtr->graphPtr_;
+  Graph* graphPtr = elemPtr->graphPtr();
 
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
   Blt_Legend_RemoveElement(graphPtr, elemPtr);
@@ -304,7 +304,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
       if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
-      if (elemPtr && !elemPtr->hide_ && 
+      if (elemPtr && !elemPtr->hide() && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
 	elemPtr->closest();
     }
@@ -318,7 +318,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr && !elemPtr->hide_ && 
+      if (elemPtr && !elemPtr->hide() && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
 	elemPtr->closest();
     }
@@ -702,7 +702,7 @@ void Blt_DrawElements(Graph* graphPtr, Drawable drawable)
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide_)
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
       elemPtr->drawNormal(drawable);
   }
 }
@@ -715,7 +715,7 @@ void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide_)
+	!elemPtr->hide())
       elemPtr->drawActive(drawable);
   }
 }
@@ -727,7 +727,7 @@ void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide_) {
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide()) {
       continue;
     }
     /* Comment the PostScript to indicate the start of the element */
@@ -745,7 +745,7 @@ void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide_) {
+	!elemPtr->hide()) {
       Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", elemPtr->name());
       elemPtr->printActive(ps);
     }

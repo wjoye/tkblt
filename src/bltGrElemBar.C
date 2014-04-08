@@ -1434,7 +1434,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
+    if ((bePtr->hide()) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     nSegs++;
@@ -1553,7 +1553,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
+    if ((bePtr->hide()) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     if (ops->coords.x && ops->coords.y) {

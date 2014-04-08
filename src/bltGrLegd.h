@@ -62,4 +62,4 @@ extern int Blt_Legend_Y(Graph *graphPtr);
 extern void Blt_Legend_RemoveElement(Graph *graphPtr, Element *elemPtr);
 extern void Blt_Legend_EventuallyRedraw(Graph *graphPtr);
 
-#endif /* BLT_GR_LEGEND_H */
+#endif

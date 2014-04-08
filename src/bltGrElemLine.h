@@ -103,7 +103,7 @@ typedef struct {
 } LineElementOptions;
 
 class LineElement : public Element {
- public:
+ protected:
   LinePen* builtinPenPtr;
   Smoothing smooth_;
   XColor* fillBgColor_;

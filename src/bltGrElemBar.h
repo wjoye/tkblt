@@ -80,7 +80,7 @@ typedef struct {
 } BarElementOptions;
 
 class BarElement : public Element {
- public:
+ protected:
   BarPen* builtinPenPtr;
   int* barToData_;
   XRectangle* bars_;
@@ -92,6 +92,7 @@ class BarElement : public Element {
   GraphSegments xeb_;
   GraphSegments yeb_;
 
+ protected:
   void ResetStylePalette(Blt_Chain);
   void CheckBarStacks(Axis2d*, double*, double*);
   void MergePens(BarStyle**);

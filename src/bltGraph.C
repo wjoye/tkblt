@@ -1053,7 +1053,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->hide_ || (elemPtr->flags & MAP_ITEM))
+    if (elemPtr->hide() || (elemPtr->flags & MAP_ITEM))
       continue;
 
     elemPtr->closest();
