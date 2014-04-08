@@ -328,12 +328,9 @@ Legend::~Legend()
     free(ops_);
 }
 
-// Configure
-
-void ConfigureLegend(Graph* graphPtr)
+void Legend::configure()
 {
-  Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)ops_;
 
   /* GC for active label. Dashed outline. */
   unsigned long gcMask = GCForeground | GCLineStyle;
@@ -341,15 +338,15 @@ void ConfigureLegend(Graph* graphPtr)
   gcValues.foreground = ops->focusColor->pixel;
   gcValues.line_style = (LineIsDashed(ops->focusDashes))
     ? LineOnOffDash : LineSolid;
-  GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
   if (LineIsDashed(ops->focusDashes)) {
     ops->focusDashes.offset = 2;
-    Blt_SetDashes(graphPtr->display, newGC, &ops->focusDashes);
+    Blt_SetDashes(graphPtr_->display, newGC, &ops->focusDashes);
   }
-  if (legendPtr->focusGC)
-    Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
+  if (focusGC)
+    Blt_FreePrivateGC(graphPtr_->display, focusGC);
 
-  legendPtr->focusGC = newGC;
+  focusGC = newGC;
 }
 
 // Support

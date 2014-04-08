@@ -155,6 +155,8 @@ class Legend {
  public:
   Legend(Graph*);
   virtual ~Legend();
+
+  void configure();
 };
 
 extern void Blt_DrawLegend(Graph *graphPtr, Drawable drawable);
