@@ -232,7 +232,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend->bindTable, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend->bindTable_, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 
@@ -283,7 +283,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
        * layout stays the same. */
       legendPtr->focusPtr = elemPtr;
     }
-    Blt_SetFocusItem(legendPtr->bindTable, legendPtr->focusPtr, 
+    Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr, 
 		     CID_LEGEND_ENTRY);
     Blt_Legend_EventuallyRedraw(graphPtr);
   }
