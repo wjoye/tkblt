@@ -3052,16 +3052,16 @@ void Blt_LayoutGraph(Graph* graphPtr)
   if (!Blt_Legend_IsHidden(graphPtr)) {
     switch (Blt_Legend_Site(graphPtr)) {
     case LEGEND_RIGHT:
-      right += Blt_Legend_Width(graphPtr) + 2;
+      right += graphPtr->legend->width() + 2;
       break;
     case LEGEND_LEFT:
-      left += Blt_Legend_Width(graphPtr) + 2;
+      left += graphPtr->legend->width() + 2;
       break;
     case LEGEND_TOP:
-      top += Blt_Legend_Height(graphPtr) + 2;
+      top += graphPtr->legend->height() + 2;
       break;
     case LEGEND_BOTTOM:
-      bottom += Blt_Legend_Height(graphPtr) + 2;
+      bottom += graphPtr->legend->height() + 2;
       break;
     case LEGEND_XY:
     case LEGEND_PLOT:

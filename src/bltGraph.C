@@ -733,13 +733,15 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
     height = graphPtr->bottom - graphPtr->top + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
-  } else if ((c == 'p') && (length > 4) &&
+  }
+  else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotwidth", string, length) == 0)) {
     int width;
 
     width = graphPtr->right - graphPtr->left + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
-  } else if ((c == 'p') && (length > 4) &&
+  }
+  else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotarea", string, length) == 0)) {
     Tcl_Obj* listObjPtr;
 
@@ -753,7 +755,8 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
     Tcl_ListObjAppendElement(interp, listObjPtr, 
 			     Tcl_NewIntObj(graphPtr->bottom - graphPtr->top+1));
     Tcl_SetObjResult(interp, listObjPtr);
-  } else if ((c == 'l') && (length > 2) &&
+  }
+  else if ((c == 'l') && (length > 2) &&
 	     (strncmp("legend", string, length) == 0)) {
     Tcl_Obj* listObjPtr;
 
@@ -763,23 +766,28 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
     Tcl_ListObjAppendElement(interp, listObjPtr, 
 			     Tcl_NewIntObj(Blt_Legend_Y(graphPtr)));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(Blt_Legend_Width(graphPtr)));
+			     Tcl_NewIntObj(graphPtr->legend->width()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(Blt_Legend_Height(graphPtr)));
+			     Tcl_NewIntObj(graphPtr->legend->height()));
     Tcl_SetObjResult(interp, listObjPtr);
-  } else if ((c == 'l') && (length > 2) &&
+  }
+  else if ((c == 'l') && (length > 2) &&
 	     (strncmp("leftmargin", string, length) == 0)) {
     Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->leftMargin.width);
-  } else if ((c == 'r') && (length > 1) &&
+  }
+  else if ((c == 'r') && (length > 1) &&
 	     (strncmp("rightmargin", string, length) == 0)) {
     Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->rightMargin.width);
-  } else if ((c == 't') && (length > 1) &&
+  }
+  else if ((c == 't') && (length > 1) &&
 	     (strncmp("topmargin", string, length) == 0)) {
     Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->topMargin.height);
-  } else if ((c == 'b') && (length > 1) &&
+  }
+  else if ((c == 'b') && (length > 1) &&
 	     (strncmp("bottommargin", string, length) == 0)) {
     Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->bottomMargin.height);
-  } else {
+  }
+  else {
     Tcl_AppendResult(interp, "bad extent item \"", objv[2],
 		     "\": should be plotheight, plotwidth, leftmargin, rightmargin, \
 topmargin, bottommargin, plotarea, or legend", (char*)NULL);

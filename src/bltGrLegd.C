@@ -1138,16 +1138,6 @@ int Blt_Legend_Site(Graph* graphPtr)
   return graphPtr->legend->site_;
 }
 
-int Blt_Legend_Width(Graph* graphPtr)
-{
-  return graphPtr->legend->width_;
-}
-
-int Blt_Legend_Height(Graph* graphPtr)
-{
-  return graphPtr->legend->height_;
-}
-
 int Blt_Legend_IsHidden(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
