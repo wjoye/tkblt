@@ -116,7 +116,6 @@ class Legend {
   Tk_OptionTable optionTable_;
   void* ops_;
 
-  unsigned int flags;
   int nEntries_;
   int nColumns_;
   int nRows_;
@@ -142,10 +141,13 @@ class Legend {
   Element *selMarkPtr_;
   Element *selFirstPtr_;
   Element *selLastPtr_;
-  Tcl_HashTable selectTable;
-  Blt_Chain selected;
-  unsigned int titleWidth;
-  unsigned int titleHeight;
+  Tcl_HashTable selectTable_;
+  Blt_Chain selected_;
+  unsigned int titleWidth_;
+  unsigned int titleHeight_;
+
+ public:
+  unsigned int flags;
 
  public:
   Legend(Graph*);

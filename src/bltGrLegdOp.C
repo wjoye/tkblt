@@ -243,7 +243,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
   if (legendPtr->flags & SELECT_SORTED) {
     Blt_ChainLink link;
 
-    for (link = Blt_Chain_FirstLink(legendPtr->selected); link != NULL;
+    for (link = Blt_Chain_FirstLink(legendPtr->selected_); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
@@ -400,7 +400,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     Blt_ChainLink link, next;
 
     /* Deselect entry from the list all the way back to the anchor. */
-    for (link = Blt_Chain_LastLink(legendPtr->selected); link != NULL; 
+    for (link = Blt_Chain_LastLink(legendPtr->selected_); link != NULL; 
 	 link = next) {
       next = Blt_Chain_PrevLink(link);
       Element *selectPtr = (Element*)Blt_Chain_GetValue(link);
@@ -426,7 +426,7 @@ static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp,
 			      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  int boo = (Blt_Chain_GetLength(legendPtr->selected) > 0);
+  int boo = (Blt_Chain_GetLength(legendPtr->selected_) > 0);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }
@@ -528,9 +528,9 @@ static void ClearSelection(Legend* legendPtr)
 {
   LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  Tcl_DeleteHashTable(&legendPtr->selectTable);
-  Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
-  Blt_Chain_Reset(legendPtr->selected);
+  Tcl_DeleteHashTable(&legendPtr->selectTable_);
+  Tcl_InitHashTable(&legendPtr->selectTable_, TCL_ONE_WORD_KEYS);
+  Blt_Chain_Reset(legendPtr->selected_);
 
   Blt_Legend_EventuallyRedraw(legendPtr->graphPtr_);
   if (ops->selectCmd)

@@ -275,9 +275,9 @@ Legend::Legend(Graph* graphPtr)
   selMarkPtr_ =NULL;
   selFirstPtr_ =NULL;
   selLastPtr_ =NULL;
-  selected = Blt_Chain_Create();
-  titleWidth =0;
-  titleHeight =0;
+  selected_ = Blt_Chain_Create();
+  titleWidth_ =0;
+  titleHeight_ =0;
 
   Blt_Ts_InitStyle(ops->style);
   Blt_Ts_InitStyle(ops->titleStyle);
@@ -289,7 +289,7 @@ Legend::Legend(Graph* graphPtr)
   bindTable_ = Blt_CreateBindingTable(graphPtr->interp, graphPtr->tkwin, 
 				      graphPtr, PickEntryProc, Blt_GraphTags);
 
-  Tcl_InitHashTable(&selectTable, TCL_ONE_WORD_KEYS);
+  Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
   Tk_CreateSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING, 
 		      SelectionProc, this, XA_STRING);
@@ -312,7 +312,7 @@ Legend::~Legend()
     if (graphPtr_->tkwin)
     Tk_DeleteSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING);
 
-  Blt_Chain_Destroy(selected);
+  Blt_Chain_Destroy(selected_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
   if (ops_)
@@ -490,7 +490,7 @@ static void SetLegendOrigin(Legend* legendPtr)
 int EntryIsSelected(Legend* legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry*hPtr = 
-    Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+    Tcl_FindHashEntry(&legendPtr->selectTable_, (char *)elemPtr);
   return (hPtr != NULL);
 }
 
@@ -498,9 +498,9 @@ static void SelectElement(Legend* legendPtr, Element* elemPtr)
 {
   int isNew;
   Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&legendPtr->selectTable, (char *)elemPtr,&isNew);
+    Tcl_CreateHashEntry(&legendPtr->selectTable_, (char *)elemPtr,&isNew);
   if (isNew) {
-    Blt_ChainLink link = Blt_Chain_Append(legendPtr->selected, elemPtr);
+    Blt_ChainLink link = Blt_Chain_Append(legendPtr->selected_, elemPtr);
     Tcl_SetHashValue(hPtr, link);
   }
 }
@@ -508,10 +508,10 @@ static void SelectElement(Legend* legendPtr, Element* elemPtr)
 void DeselectElement(Legend* legendPtr, Element* elemPtr)
 {
   Tcl_HashEntry* hPtr = 
-    Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+    Tcl_FindHashEntry(&legendPtr->selectTable_, (char *)elemPtr);
   if (hPtr) {
     Blt_ChainLink link = (Blt_ChainLink)Tcl_GetHashValue(hPtr);
-    Blt_Chain_DeleteLink(legendPtr->selected, link);
+    Blt_Chain_DeleteLink(legendPtr->selected_, link);
     Tcl_DeleteHashEntry(hPtr);
   }
 }
@@ -530,7 +530,7 @@ void SelectEntry(Legend* legendPtr, Element* elemPtr)
     break;
 
   case SELECT_TOGGLE:
-    hPtr = Tcl_FindHashEntry(&legendPtr->selectTable, (char *)elemPtr);
+    hPtr = Tcl_FindHashEntry(&legendPtr->selectTable_, (char *)elemPtr);
     if (hPtr) {
       DeselectElement(legendPtr, elemPtr);
     } else {
@@ -550,8 +550,8 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   int w = legendPtr->width_;
   int h = legendPtr->height_;
 
-  if (legendPtr->titleHeight > 0)
-    y -= legendPtr->titleHeight + ops->yPad;
+  if (legendPtr->titleHeight_ > 0)
+    y -= legendPtr->titleHeight_ + ops->yPad;
 
   x -= legendPtr->x_ + ops->borderWidth;
   y -= legendPtr->y_ + ops->borderWidth;
@@ -613,7 +613,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   legendPtr->width_ = 0;
 
   Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
-		    &legendPtr->titleWidth, &legendPtr->titleHeight);
+		    &legendPtr->titleWidth_, &legendPtr->titleHeight_);
   /*   
    * Count the number of legend entries and determine the widest and tallest
    * label.  The number of entries would normally be the number of elements,
@@ -708,13 +708,13 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   }
 
   lh = (nRows * maxHeight);
-  if (legendPtr->titleHeight > 0) {
-    lh += legendPtr->titleHeight + ops->yPad;
-  }
+  if (legendPtr->titleHeight_ > 0)
+    lh += legendPtr->titleHeight_ + ops->yPad;
+
   lw = nColumns * maxWidth;
-  if (lw < (int)(legendPtr->titleWidth)) {
-    lw = legendPtr->titleWidth;
-  }
+  if (lw < (int)(legendPtr->titleWidth_))
+    lw = legendPtr->titleWidth_;
+
   legendPtr->width_ = lw + 2 * ops->borderWidth + 2*ops->xPad;
   legendPtr->height_ = lh + 2 * ops->borderWidth + 2*ops->yPad;
   legendPtr->nRows_ = nRows;
@@ -807,9 +807,9 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   x = ops->xPad + ops->borderWidth;
   y = ops->yPad + ops->borderWidth;
   Blt_DrawText(tkwin, pixmap, ops->title, &ops->titleStyle, x, y);
-  if (legendPtr->titleHeight > 0) {
-    y += legendPtr->titleHeight + ops->yPad;
-  }
+  if (legendPtr->titleHeight_ > 0)
+    y += legendPtr->titleHeight_ + ops->yPad;
+
   count = 0;
   yStart = y;
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
@@ -945,9 +945,8 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   x += ops->borderWidth;
   y += ops->borderWidth;
   Blt_Ps_DrawText(ps, ops->title, &ops->titleStyle, x, y);
-  if (legendPtr->titleHeight > 0) {
-    y += legendPtr->titleHeight + ops->yPad;
-  }
+  if (legendPtr->titleHeight_ > 0)
+    y += legendPtr->titleHeight_ + ops->yPad;
 
   count = 0;
   yStart = y;
@@ -1224,7 +1223,7 @@ static int SelectionProc(ClientData clientData, int offset,
   if (legendPtr->flags & SELECT_SORTED) {
     Blt_ChainLink link;
 
-    for (link = Blt_Chain_FirstLink(legendPtr->selected); 
+    for (link = Blt_Chain_FirstLink(legendPtr->selected_); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       Tcl_DStringAppend(&dString, elemPtr->name(), -1);
