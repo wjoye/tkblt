@@ -270,16 +270,11 @@ Legend::Legend(Graph* graphPtr)
   cursorY_ =0;
   cursorWidth_ =0;
   cursorHeight_ =0;
-  focusPtr =NULL;
-  selAnchorPtr =NULL;
-  selMarkPtr =NULL;
-  selFirstPtr =NULL;
-  selLastPtr =NULL;
-  active =0;
-  cursorOn =0;
-  onTime = 600;
-  offTime = 300;
-  timerToken =NULL;
+  focusPtr_ =NULL;
+  selAnchorPtr_ =NULL;
+  selMarkPtr_ =NULL;
+  selFirstPtr_ =NULL;
+  selLastPtr_ =NULL;
   selected = Blt_Chain_Create();
   titleWidth =0;
   titleHeight =0;
@@ -314,10 +309,7 @@ Legend::~Legend()
   if (focusGC_)
     Blt_FreePrivateGC(graphPtr_->display, focusGC_);
 
-  if (timerToken)
-    Tcl_DeleteTimerHandler(timerToken);
-
-  if (graphPtr_->tkwin)
+    if (graphPtr_->tkwin)
     Tk_DeleteSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING);
 
   Blt_Chain_Destroy(selected);
@@ -857,7 +849,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 		 x + xLabel, 
 		 y + ops->entryBW + ops->iyPad);
     count++;
-    if (legendPtr->focusPtr == elemPtr) { /* Focus outline */
+    if (legendPtr->focusPtr_ == elemPtr) { /* Focus outline */
       if (isSelected) {
 	XColor* color;
 
@@ -1098,29 +1090,29 @@ int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, Element **elemPtrPtr)
 
   //  int last = Blt_Chain_GetLength(graphPtr->elements.displayList) - 1;
   if ((c == 'a') && (strcmp(string, "anchor") == 0))
-    elemPtr = legendPtr->selAnchorPtr;
+    elemPtr = legendPtr->selAnchorPtr_;
   else if ((c == 'c') && (strcmp(string, "current") == 0))
     elemPtr = (Element *)Blt_GetCurrentItem(legendPtr->bindTable_);
   else if ((c == 'f') && (strcmp(string, "first") == 0))
     elemPtr = GetFirstElement(graphPtr);
   else if ((c == 'f') && (strcmp(string, "focus") == 0))
-    elemPtr = legendPtr->focusPtr;
+    elemPtr = legendPtr->focusPtr_;
   else if ((c == 'l') && (strcmp(string, "last") == 0))
     elemPtr = GetLastElement(graphPtr);
   else if ((c == 'e') && (strcmp(string, "end") == 0))
     elemPtr = GetLastElement(graphPtr);
   else if ((c == 'n') && (strcmp(string, "next.row") == 0))
-    elemPtr = GetNextRow(graphPtr, legendPtr->focusPtr);
+    elemPtr = GetNextRow(graphPtr, legendPtr->focusPtr_);
   else if ((c == 'n') && (strcmp(string, "next.column") == 0))
-    elemPtr = GetNextColumn(graphPtr, legendPtr->focusPtr);
+    elemPtr = GetNextColumn(graphPtr, legendPtr->focusPtr_);
   else if ((c == 'p') && (strcmp(string, "previous.row") == 0))
-    elemPtr = GetPreviousRow(graphPtr, legendPtr->focusPtr);
+    elemPtr = GetPreviousRow(graphPtr, legendPtr->focusPtr_);
   else if ((c == 'p') && (strcmp(string, "previous.column") == 0))
-    elemPtr = GetPreviousColumn(graphPtr, legendPtr->focusPtr);
+    elemPtr = GetPreviousColumn(graphPtr, legendPtr->focusPtr_);
   else if ((c == 's') && (strcmp(string, "sel.first") == 0))
-    elemPtr = legendPtr->selFirstPtr;
+    elemPtr = legendPtr->selFirstPtr_;
   else if ((c == 's') && (strcmp(string, "sel.last") == 0))
-    elemPtr = legendPtr->selLastPtr;
+    elemPtr = legendPtr->selLastPtr_;
   else if (c == '@') {
     int x, y;
 

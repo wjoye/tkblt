@@ -278,18 +278,18 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK) {
       return TCL_ERROR;
     }
-    if ((elemPtr != NULL) && (elemPtr != legendPtr->focusPtr)) {
+    if ((elemPtr != NULL) && (elemPtr != legendPtr->focusPtr_)) {
       /* Changing focus can only affect the visible entries.  The entry
        * layout stays the same. */
-      legendPtr->focusPtr = elemPtr;
+      legendPtr->focusPtr_ = elemPtr;
     }
-    Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr, 
+    Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
 		     CID_LEGEND_ENTRY);
     Blt_Legend_EventuallyRedraw(graphPtr);
   }
-  if (legendPtr->focusPtr) {
+  if (legendPtr->focusPtr_) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		     legendPtr->focusPtr->name(), -1);
+		     legendPtr->focusPtr_->name(), -1);
   }
   return TCL_OK;
 }
@@ -349,8 +349,8 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   }
   /* Set both the anchor and the mark. Indicates that a single entry
    * is selected. */
-  legendPtr->selAnchorPtr = elemPtr;
-  legendPtr->selMarkPtr = NULL;
+  legendPtr->selAnchorPtr_ = elemPtr;
+  legendPtr->selMarkPtr_ = NULL;
   if (elemPtr) {
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
   }
@@ -391,12 +391,12 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
     return TCL_ERROR;
   }
-  if (legendPtr->selAnchorPtr == NULL) {
+  if (legendPtr->selAnchorPtr_ == NULL) {
     Tcl_AppendResult(interp, "selection anchor must be set first", 
 		     (char *)NULL);
     return TCL_ERROR;
   }
-  if (legendPtr->selMarkPtr != elemPtr) {
+  if (legendPtr->selMarkPtr_ != elemPtr) {
     Blt_ChainLink link, next;
 
     /* Deselect entry from the list all the way back to the anchor. */
@@ -404,16 +404,16 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 	 link = next) {
       next = Blt_Chain_PrevLink(link);
       Element *selectPtr = (Element*)Blt_Chain_GetValue(link);
-      if (selectPtr == legendPtr->selAnchorPtr) {
+      if (selectPtr == legendPtr->selAnchorPtr_) {
 	break;
       }
       DeselectElement(legendPtr, selectPtr);
     }
     legendPtr->flags &= ~SELECT_TOGGLE;
     legendPtr->flags |= SELECT_SET;
-    SelectRange(legendPtr, legendPtr->selAnchorPtr, elemPtr);
+    SelectRange(legendPtr, legendPtr->selAnchorPtr_, elemPtr);
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
-    legendPtr->selMarkPtr = elemPtr;
+    legendPtr->selMarkPtr_ = elemPtr;
 
     Blt_Legend_EventuallyRedraw(graphPtr);
     if (ops->selectCmd)
@@ -478,8 +478,8 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
   /* Set both the anchor and the mark. Indicates that a single entry is
    * selected. */
-  if (legendPtr->selAnchorPtr == NULL) {
-    legendPtr->selAnchorPtr = firstPtr;
+  if (legendPtr->selAnchorPtr_ == NULL) {
+    legendPtr->selAnchorPtr_ = firstPtr;
   }
   if (ops->exportSelection) {
     Tk_OwnSelection(graphPtr->tkwin, XA_PRIMARY, LostSelectionProc, 
