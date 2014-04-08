@@ -54,7 +54,9 @@ typedef struct {
 } BarPenOptions;
 
 class BarPen : public Pen {
- public:
+  friend class BarElement;
+
+ protected:
   GC fillGC_;
   GC outlineGC_;
   GC errorBarGC_;

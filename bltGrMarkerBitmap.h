@@ -61,7 +61,7 @@ namespace Blt {
     int width_;
     int height_;
 
-  private:
+  protected:
     int configure();
     void draw(Drawable);
     void map();

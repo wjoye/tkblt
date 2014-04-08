@@ -50,15 +50,17 @@ typedef struct {
 } PenOptions;
 
 class Pen {
- public:
+ protected:
   Graph* graphPtr_;
   const char *name_;
   Tk_OptionTable optionTable_;
   void* ops_;
   int manageOptions_;
+  Tcl_HashEntry *hashPtr_;
+
+ public:
   unsigned int flags;
   int refCount;
-  Tcl_HashEntry *hashPtr_;
 
  public:
   Pen();

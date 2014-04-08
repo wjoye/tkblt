@@ -71,11 +71,9 @@ namespace Blt {
     Blt_ChainLink link;
     unsigned int flags;		
 
-  private:
+  protected:
     double HMap(Axis*, double);
     double VMap(Axis*, double);
-
-  protected:
     Point2d mapPoint(Point2d*, Axis2d*);
     int boxesDontOverlap(Graph*, Region2d*);
     int regionInPolygon(Region2d *extsPtr, Point2d *points, 

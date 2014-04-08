@@ -58,7 +58,7 @@ namespace Blt {
   } PolygonMarkerOptions;
 
   class PolygonMarker : public Marker {
-  private:
+  protected:
     Point2d *screenPts_;
     GC outlineGC_;
     GC fillGC_;
@@ -67,7 +67,7 @@ namespace Blt {
     Segment2d *outlinePts_;
     int nOutlinePts_;
 
-  private:
+  protected:
     int configure();
     void draw(Drawable);
     void map();

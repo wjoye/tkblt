@@ -74,7 +74,9 @@ typedef struct {
 } LinePenOptions;
 
 class LinePen : public Pen {
- public:
+  friend class LineElement;
+
+ protected:
   GC traceGC_;
   GC errorBarGC_;
 

@@ -52,14 +52,14 @@ namespace Blt {
   } TextMarkerOptions;
 
   class TextMarker : public Marker {
-  private:
+  protected:
     Point2d anchorPt_;
     int width_;
     int height_;
     GC fillGC_;
     Point2d outline_[5];
 
-  private:
+  protected:
     int configure();
     void draw(Drawable);
     void map();

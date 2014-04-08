@@ -55,12 +55,12 @@ namespace Blt {
   } LineMarkerOptions;
 
   class LineMarker : public Marker {
-  private:
+  protected:
     GC gc_;
     Segment2d* segments_;
     int nSegments_;
 
-  private:
+  protected:
     int configure();
     void draw(Drawable);
     void map();
