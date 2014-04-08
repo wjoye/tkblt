@@ -72,7 +72,9 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
 			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			   int offset, char* save, int flags)
 {
-  Legend* legendPtr = (Legend*)widgRec;
+  LegendOptions* ops = (LegendOptions*)widgRec;
+  Legend* legendPtr = ops->legendPtr;
+
   int length;
   const char* string = Tcl_GetStringFromObj(*objPtr, &length);
   char c;
@@ -129,7 +131,9 @@ static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
 static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin, 
 				char *widgRec, int offset)
 {
-  Legend* legendPtr = (Legend* )widgRec;
+  LegendOptions* ops = (LegendOptions*)widgRec;
+  Legend* legendPtr = ops->legendPtr;
+
   Tcl_Obj *objPtr;
 
   switch (legendPtr->site) {
@@ -167,84 +171,84 @@ static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin,
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BORDER, "-activebackground", "activeBackground",
    "ActiveBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(Legend, activeBg), 0, NULL, 0},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, activeBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-activeborderwidth", "activeBorderWidth", 
    "ActiveBorderWidth", 
-   STD_BORDERWIDTH, -1, Tk_Offset(Legend, entryBW), 0, NULL, 0}, 
+   STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, entryBW), 0, NULL, 0}, 
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Legend, activeFgColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, activeFgColor), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "ActiveRelief",
-   "flat", -1, Tk_Offset(Legend, activeRelief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(LegendOptions, activeRelief), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
-   "n", -1, Tk_Offset(Legend, anchor), 0, NULL, 0},
+   "n", -1, Tk_Offset(LegendOptions, anchor), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   NULL, -1, Tk_Offset(Legend, normalBg), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LegendOptions, normalBg), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(Legend, borderWidth), 0, NULL, 0}, 
+   STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, borderWidth), 0, NULL, 0}, 
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_INT, "-columns", "columns", "columns",
-   "0", -1, Tk_Offset(Legend, reqColumns), 0, NULL, 0},
+   "0", -1, Tk_Offset(LegendOptions, reqColumns), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-exportselection", "exportSelection", "ExportSelection", 
-   "no",  -1, Tk_Offset(Legend, exportSelection), 0, NULL, 0},
+   "no",  -1, Tk_Offset(LegendOptions, exportSelection), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-focusdashes", "focusDashes", "FocusDashes",
-   "dot", -1, Tk_Offset(Legend, focusDashes), 
+   "dot", -1, Tk_Offset(LegendOptions, focusDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Legend, focusColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, focusColor), 0, NULL, 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
-   STD_FONT_SMALL, -1, Tk_Offset(Legend, style.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, style.font), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Legend, fgColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, fgColor), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "no", -1, Tk_Offset(Legend, hide), 0, NULL, 0},
+   "no", -1, Tk_Offset(LegendOptions, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-ipadx", "iPadX", "Pad", 
-   "1", -1, Tk_Offset(Legend, ixPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(LegendOptions, ixPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-ipady", "iPadY", "Pad", 
-   "1", -1, Tk_Offset(Legend, iyPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(LegendOptions, iyPad), 0, NULL, 0},
   {TK_OPTION_BORDER, "-nofocusselectbackground", "noFocusSelectBackground", 
    "NoFocusSelectBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(Legend, selOutFocusBg), 0, NULL, 0},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selOutFocusBg), 0, NULL, 0},
   {TK_OPTION_COLOR, "-nofocusselectforeground", "noFocusSelectForeground", 
    "NoFocusSelectForeground", 
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Legend, selOutFocusFgColor), 0, NULL,0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selOutFocusFgColor), 0, NULL,0},
   {TK_OPTION_PIXELS, "-padx", "padX", "Pad", 
-   "1", -1, Tk_Offset(Legend, xPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(LegendOptions, xPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pady", "padY", "Pad", 
-   "1", -1, Tk_Offset(Legend, yPad), 0, NULL, 0},
+   "1", -1, Tk_Offset(LegendOptions, yPad), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-position", "position", "Position", 
    "rightmargin", -1, 0, 0, &positionObjOption, 0},
   {TK_OPTION_BOOLEAN, "-raised", "raised", "Raised", 
-   "no", -1, Tk_Offset(Legend, raised), 0, NULL, 0},
+   "no", -1, Tk_Offset(LegendOptions, raised), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
-   "flat", -1, Tk_Offset(Legend, relief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(LegendOptions, relief), 0, NULL, 0},
   {TK_OPTION_INT, "-rows", "rows", "rows", 
-   "0", -1, Tk_Offset(Legend, reqRows), 0, NULL, 0},
+   "0", -1, Tk_Offset(LegendOptions, reqRows), 0, NULL, 0},
   {TK_OPTION_BORDER, "-selectbackground", "selectBackground", 
    "SelectBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(Legend, selInFocusBg), 0, NULL, 0},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selInFocusBg), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-selectborderwidth", "selectBorderWidth", 
    "SelectBorderWidth", 
-   "1", -1, Tk_Offset(Legend, selBW), 0, NULL, 0},
+   "1", -1, Tk_Offset(LegendOptions, selBW), 0, NULL, 0},
   {TK_OPTION_STRING, "-selectcommand", "selectCommand", "SelectCommand",
-   NULL, -1, Tk_Offset(Legend, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LegendOptions, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-selectforeground", "selectForeground", "SelectForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(Legend, selInFocusFgColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selInFocusFgColor), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-selectmode", "selectMode", "SelectMode",
-   "multiple", -1, Tk_Offset(Legend, selectMode), 0, &selectmodeObjOption, 0},
+   "multiple", -1, Tk_Offset(LegendOptions, selectMode), 0, &selectmodeObjOption, 0},
   {TK_OPTION_RELIEF, "-selectrelief", "selectRelief", "SelectRelief",
-   "flat", -1, Tk_Offset(Legend, selRelief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(LegendOptions, selRelief), 0, NULL, 0},
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus", 
-   NULL, -1, Tk_Offset(Legend, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LegendOptions, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
-   NULL, -1, Tk_Offset(Legend, title), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(LegendOptions, title), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-titleanchor", "titleAnchor", "TitleAnchor", 
-   "nw", -1, Tk_Offset(Legend, titleStyle.anchor), 0, NULL, 0},
+   "nw", -1, Tk_Offset(LegendOptions, titleStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-titlecolor", "titleColor", "TitleColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Legend, titleStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, titleStyle.color), 0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
-   STD_FONT_SMALL, -1, Tk_Offset(Legend, titleStyle.font), 0, NULL, 0},
+   STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, titleStyle.font), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -253,17 +257,21 @@ static Tk_OptionSpec optionSpecs[] = {
 int Blt_CreateLegend(Graph* graphPtr)
 {
   Legend* legendPtr = (Legend*)calloc(1, sizeof(Legend));
+  legendPtr->ops = (void*)calloc(1, sizeof(LegendOptions));
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  ops->legendPtr = legendPtr;
+
   graphPtr->legend = legendPtr;
   legendPtr->graphPtr = graphPtr;
   legendPtr->tkwin = graphPtr->tkwin;
   legendPtr->xReq = -SHRT_MAX;
   legendPtr->yReq = -SHRT_MAX;
-  Blt_Ts_InitStyle(legendPtr->style);
-  Blt_Ts_InitStyle(legendPtr->titleStyle);
-  legendPtr->style.justify = TK_JUSTIFY_LEFT;
-  legendPtr->style.anchor = TK_ANCHOR_NW;
-  legendPtr->titleStyle.justify = TK_JUSTIFY_LEFT;
-  legendPtr->titleStyle.anchor = TK_ANCHOR_NW;
+  Blt_Ts_InitStyle(ops->style);
+  Blt_Ts_InitStyle(ops->titleStyle);
+  ops->style.justify = TK_JUSTIFY_LEFT;
+  ops->style.anchor = TK_ANCHOR_NW;
+  ops->titleStyle.justify = TK_JUSTIFY_LEFT;
+  ops->titleStyle.anchor = TK_ANCHOR_NW;
   legendPtr->bindTable = 
     Blt_CreateBindingTable(graphPtr->interp, graphPtr->tkwin, 
 			   graphPtr, PickEntryProc, Blt_GraphTags);
@@ -276,7 +284,7 @@ int Blt_CreateLegend(Graph* graphPtr)
   legendPtr->offTime = 300;
 
   legendPtr->optionTable =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr, 
+  return Tk_InitOptions(graphPtr->interp, (char*)legendPtr->ops, 
 			legendPtr->optionTable, graphPtr->tkwin);
 }
 
@@ -286,8 +294,10 @@ void Blt_DestroyLegend(Graph* graphPtr)
   if (!legendPtr)
     return;
 
-  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->style);
-  Blt_Ts_FreeStyle(graphPtr->display, &legendPtr->titleStyle);
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
+  Blt_Ts_FreeStyle(graphPtr->display, &ops->style);
+  Blt_Ts_FreeStyle(graphPtr->display, &ops->titleStyle);
   Blt_DestroyBindingTable(legendPtr->bindTable);
     
   if (legendPtr->focusGC)
@@ -322,8 +332,12 @@ void Blt_DestroyLegend(Graph* graphPtr)
 
   Blt_Chain_Destroy(legendPtr->selected);
 
-  Tk_FreeConfigOptions((char*)legendPtr, legendPtr->optionTable, 
+  Tk_FreeConfigOptions((char*)legendPtr->ops, legendPtr->optionTable, 
 		       graphPtr->tkwin);
+
+  if (legendPtr->ops)
+    free(legendPtr->ops);
+
   free(legendPtr);
 }
 
@@ -333,6 +347,8 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
   Legend* legendPtr;
 
   legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   if (eventPtr->type == Expose) {
     if (eventPtr->xexpose.count == 0) {
       Blt_Legend_EventuallyRedraw(graphPtr);
@@ -378,7 +394,7 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
       legendPtr->flags &= ~REDRAW_PENDING;
     }
     legendPtr->site = LEGEND_RIGHT;
-    legendPtr->hide = 1;
+    ops->hide = 1;
     graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
     Blt_MoveBindingTable(legendPtr->bindTable, graphPtr->tkwin);
     Blt_EventuallyRedrawGraph(graphPtr);
@@ -393,17 +409,18 @@ static void LegendEventProc(ClientData clientData, XEvent *eventPtr)
 void ConfigureLegend(Graph* graphPtr)
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
 
   /* GC for active label. Dashed outline. */
   unsigned long gcMask = GCForeground | GCLineStyle;
   XGCValues gcValues;
-  gcValues.foreground = legendPtr->focusColor->pixel;
-  gcValues.line_style = (LineIsDashed(legendPtr->focusDashes))
+  gcValues.foreground = ops->focusColor->pixel;
+  gcValues.line_style = (LineIsDashed(ops->focusDashes))
     ? LineOnOffDash : LineSolid;
   GC newGC = Blt_GetPrivateGC(legendPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(legendPtr->focusDashes)) {
-    legendPtr->focusDashes.offset = 2;
-    Blt_SetDashes(graphPtr->display, newGC, &legendPtr->focusDashes);
+  if (LineIsDashed(ops->focusDashes)) {
+    ops->focusDashes.offset = 2;
+    Blt_SetDashes(graphPtr->display, newGC, &ops->focusDashes);
   }
   if (legendPtr->focusGC)
     Blt_FreePrivateGC(graphPtr->display, legendPtr->focusGC);
@@ -483,6 +500,8 @@ static void SetLegendOrigin(Legend* legendPtr)
   int x, y, w, h;
 
   graphPtr = legendPtr->graphPtr;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   x = y = w = h = 0;			/* Suppress compiler warning. */
   switch (legendPtr->site) {
   case LEGEND_RIGHT:
@@ -540,12 +559,12 @@ static void SetLegendOrigin(Legend* legendPtr)
     break;
 
   case LEGEND_WINDOW:
-    legendPtr->anchor = TK_ANCHOR_NW;
+    ops->anchor = TK_ANCHOR_NW;
     legendPtr->x = legendPtr->y = 0;
     return;
   }
 
-  switch (legendPtr->anchor) {
+  switch (ops->anchor) {
   case TK_ANCHOR_NW:			/* Upper left corner */
     break;
   case TK_ANCHOR_W:			/* Left center */
@@ -601,8 +620,8 @@ static void SetLegendOrigin(Legend* legendPtr)
     }
     break;
   }
-  legendPtr->x = x + legendPtr->xPad;
-  legendPtr->y = y + legendPtr->yPad;
+  legendPtr->x = x + ops->xPad;
+  legendPtr->y = y + ops->yPad;
 }
 
 int EntryIsSelected(Legend* legendPtr, Element* elemPtr)
@@ -666,16 +685,18 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   int w, h;
 
   legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   w = legendPtr->width;
   h = legendPtr->height;
 
   if (legendPtr->titleHeight > 0) {
-    y -= legendPtr->titleHeight + legendPtr->yPad;
+    y -= legendPtr->titleHeight + ops->yPad;
   }
-  x -= legendPtr->x + legendPtr->borderWidth;
-  y -= legendPtr->y + legendPtr->borderWidth;
-  w -= 2 * legendPtr->borderWidth + 2*legendPtr->xPad;
-  h -= 2 * legendPtr->borderWidth + 2*legendPtr->yPad;
+  x -= legendPtr->x + ops->borderWidth;
+  y -= legendPtr->y + ops->borderWidth;
+  w -= 2 * ops->borderWidth + 2*ops->xPad;
+  h -= 2 * ops->borderWidth + 2*ops->yPad;
 
   if ((x >= 0) && (x < w) && (y >= 0) && (y < h)) {
     int row, column;
@@ -696,8 +717,8 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
       for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
 	   link != NULL; link = Blt_Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-	ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-	if (ops->label) {
+	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+	if (elemOps->label) {
 	  if (count == n)
 	    return elemPtr;
 	  count++;
@@ -713,6 +734,8 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   Blt_ChainLink link;
   int nRows, nColumns, nEntries;
   int lw, lh;
@@ -733,7 +756,7 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
       plotHeight = Tk_Height(legendPtr->tkwin);
     }
   }
-  Blt_Ts_GetExtents(&legendPtr->titleStyle, legendPtr->title, 
+  Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
 		    &legendPtr->titleWidth, &legendPtr->titleHeight);
   /*   
    * Count the number of legend entries and determine the widest and tallest
@@ -746,12 +769,12 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
        link != NULL; link = Blt_Chain_NextLink(link)) {
     unsigned int w, h;
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (ops->label == NULL)
+    if (elemOps->label == NULL)
       continue;
 
-    Blt_Ts_GetExtents(&legendPtr->style, ops->label, &w, &h);
+    Blt_Ts_GetExtents(&ops->style, elemOps->label, &w, &h);
     if (maxWidth < (int)w)
       maxWidth = w;
 
@@ -763,19 +786,19 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
   if (nEntries == 0)
     return;				/* No visible legend entries. */
 
-  Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
   symbolWidth = 2 * fontMetrics.ascent;
 
-  maxWidth += 2 * legendPtr->entryBW + 2*legendPtr->ixPad +
+  maxWidth += 2 * ops->entryBW + 2*ops->ixPad +
     + symbolWidth + 3 * LABEL_PAD;
 
-  maxHeight += 2 * legendPtr->entryBW + 2*legendPtr->iyPad;
+  maxHeight += 2 * ops->entryBW + 2*ops->iyPad;
 
   maxWidth |= 0x01;
   maxHeight |= 0x01;
 
-  lw = plotWidth - 2 * legendPtr->borderWidth - 2*legendPtr->xPad;
-  lh = plotHeight - 2 * legendPtr->borderWidth - 2*legendPtr->yPad;
+  lw = plotWidth - 2 * ops->borderWidth - 2*ops->xPad;
+  lh = plotHeight - 2 * ops->borderWidth - 2*ops->yPad;
 
   /*
    * The number of rows and columns is computed as one of the following:
@@ -786,15 +809,15 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
    *	neither set			Compute rows and columns from
    *					size of plot.  
    */
-  if (legendPtr->reqRows > 0) {
-    nRows = MIN(legendPtr->reqRows, nEntries); 
-    if (legendPtr->reqColumns > 0) {
-      nColumns = MIN(legendPtr->reqColumns, nEntries);
+  if (ops->reqRows > 0) {
+    nRows = MIN(ops->reqRows, nEntries); 
+    if (ops->reqColumns > 0) {
+      nColumns = MIN(ops->reqColumns, nEntries);
     } else {
       nColumns = ((nEntries - 1) / nRows) + 1; /* Only -rows. */
     }
-  } else if (legendPtr->reqColumns > 0) { /* Only -columns. */
-    nColumns = MIN(legendPtr->reqColumns, nEntries);
+  } else if (ops->reqColumns > 0) { /* Only -columns. */
+    nColumns = MIN(ops->reqColumns, nEntries);
     nRows = ((nEntries - 1) / nColumns) + 1;
   } else {			
     /* Compute # of rows and columns from the legend size. */
@@ -830,16 +853,16 @@ void Blt_MapLegend(Graph* graphPtr, int plotWidth, int plotHeight)
 
   lh = (nRows * maxHeight);
   if (legendPtr->titleHeight > 0) {
-    lh += legendPtr->titleHeight + legendPtr->yPad;
+    lh += legendPtr->titleHeight + ops->yPad;
   }
   lw = nColumns * maxWidth;
   if (lw < (int)(legendPtr->titleWidth)) {
     lw = legendPtr->titleWidth;
   }
-  legendPtr->width = lw + 2 * legendPtr->borderWidth + 
-    2*legendPtr->xPad;
-  legendPtr->height = lh + 2 * legendPtr->borderWidth + 
-    2*legendPtr->yPad;
+  legendPtr->width = lw + 2 * ops->borderWidth + 
+    2*ops->xPad;
+  legendPtr->height = lh + 2 * ops->borderWidth + 
+    2*ops->yPad;
   legendPtr->nRows = nRows;
   legendPtr->nColumns = nColumns;
   legendPtr->nEntries = nEntries;
@@ -875,6 +898,8 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   Blt_ChainLink link;
   Tk_FontMetrics fontMetrics;
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   Pixmap pixmap;
   Tk_Window tkwin;
   int count;
@@ -882,7 +907,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   int x, y, w, h;
   int xLabel, yStart, xSymbol, ySymbol;
 
-  if ((legendPtr->hide) || (legendPtr->nEntries == 0)) {
+  if ((ops->hide) || (legendPtr->nEntries == 0)) {
     return;
   }
 
@@ -900,8 +925,8 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   pixmap = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), w, h, 
 			Tk_Depth(tkwin));
 
-  if (legendPtr->normalBg) {
-    Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->normalBg, 0, 0, 
+  if (ops->normalBg) {
+    Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
   }
   else if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
@@ -926,21 +951,20 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
   }
-  Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
 
   symbolSize = fontMetrics.ascent;
-  xMid = symbolSize + 1 + legendPtr->entryBW;
-  yMid = (symbolSize / 2) + 1 + legendPtr->entryBW;
-  xLabel = 2 * symbolSize + legendPtr->entryBW + 
-    legendPtr->ixPad + 2 * LABEL_PAD;
-  ySymbol = yMid + legendPtr->iyPad; 
+  xMid = symbolSize + 1 + ops->entryBW;
+  yMid = (symbolSize / 2) + 1 + ops->entryBW;
+  xLabel = 2 * symbolSize + ops->entryBW +  ops->ixPad + 2 * LABEL_PAD;
+  ySymbol = yMid + ops->iyPad; 
   xSymbol = xMid + LABEL_PAD;
 
-  x = legendPtr->xPad + legendPtr->borderWidth;
-  y = legendPtr->yPad + legendPtr->borderWidth;
-  Blt_DrawText(tkwin, pixmap, legendPtr->title, &legendPtr->titleStyle, x, y);
+  x = ops->xPad + ops->borderWidth;
+  y = ops->yPad + ops->borderWidth;
+  Blt_DrawText(tkwin, pixmap, ops->title, &ops->titleStyle, x, y);
   if (legendPtr->titleHeight > 0) {
-    y += legendPtr->titleHeight + legendPtr->yPad;
+    y += legendPtr->titleHeight + ops->yPad;
   }
   count = 0;
   yStart = y;
@@ -949,45 +973,45 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     int isSelected;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     isSelected = EntryIsSelected(legendPtr, elemPtr);
     if (elemPtr->flags & LABEL_ACTIVE) {
-      Tk_Fill3DRectangle(tkwin, pixmap, legendPtr->activeBg, 
+      Tk_Fill3DRectangle(tkwin, pixmap, ops->activeBg, 
 			 x, y, legendPtr->entryWidth, legendPtr->entryHeight, 
-			 legendPtr->entryBW, legendPtr->activeRelief);
+			 ops->entryBW, ops->activeRelief);
     } else if (isSelected) {
       XColor* fg = (legendPtr->flags & FOCUS) ?
-	legendPtr->selInFocusFgColor : legendPtr->selOutFocusFgColor;
+	ops->selInFocusFgColor : ops->selOutFocusFgColor;
       Tk_3DBorder bg = (legendPtr->flags & FOCUS) ?
-	legendPtr->selInFocusBg : legendPtr->selOutFocusBg;
-      Blt_Ts_SetForeground(legendPtr->style, fg);
+	ops->selInFocusBg : ops->selOutFocusBg;
+      Blt_Ts_SetForeground(ops->style, fg);
       Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
 			 legendPtr->entryWidth, legendPtr->entryHeight, 
-			 legendPtr->selBW, legendPtr->selRelief);
+			 ops->selBW, ops->selRelief);
     } else {
-      Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
-      if (ops->legendRelief != TK_RELIEF_FLAT) {
+      Blt_Ts_SetForeground(ops->style, ops->fgColor);
+      if (elemOps->legendRelief != TK_RELIEF_FLAT) {
 	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr->normalBg, 
 			   x, y, legendPtr->entryWidth, 
-			   legendPtr->entryHeight, legendPtr->entryBW, 
-			   ops->legendRelief);
+			   legendPtr->entryHeight, ops->entryBW, 
+			   elemOps->legendRelief);
       }
     }
     elemPtr->drawSymbol(pixmap, x + xSymbol, y + ySymbol, symbolSize);
-    Blt_DrawText(tkwin, pixmap, ops->label, &legendPtr->style, 
+    Blt_DrawText(tkwin, pixmap, elemOps->label, &ops->style, 
 		 x + xLabel, 
-		 y + legendPtr->entryBW + legendPtr->iyPad);
+		 y + ops->entryBW + ops->iyPad);
     count++;
     if (legendPtr->focusPtr == elemPtr) { /* Focus outline */
       if (isSelected) {
 	XColor* color;
 
 	color = (legendPtr->flags & FOCUS) ?
-	  legendPtr->selInFocusFgColor :
-	  legendPtr->selOutFocusFgColor;
+	  ops->selInFocusFgColor :
+	  ops->selOutFocusFgColor;
 	XSetForeground(graphPtr->display, legendPtr->focusGC, 
 		       color->pixel);
       }
@@ -996,7 +1020,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 		     legendPtr->entryHeight - 3);
       if (isSelected) {
 	XSetForeground(graphPtr->display, legendPtr->focusGC, 
-		       legendPtr->focusColor->pixel);
+		       ops->focusColor->pixel);
       }
     }
     /* Check when to move to the next column */
@@ -1010,7 +1034,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
   /*
    * Draw the border and/or background of the legend.
    */
-  Tk_3DBorder bg = legendPtr->normalBg;
+  Tk_3DBorder bg = ops->normalBg;
   if (bg == NULL)
     bg = graphPtr->normalBg;
 
@@ -1019,7 +1043,7 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
     Blt_DisableCrosshairs(graphPtr);
   }
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
-		     legendPtr->borderWidth, legendPtr->relief);
+		     ops->borderWidth, ops->relief);
   XCopyArea(graphPtr->display, pixmap, drawable, graphPtr->drawGC, 0, 0, w, h,
 	    legendPtr->x, legendPtr->y);
   if (legendPtr->site & LEGEND_PLOTAREA_MASK) {
@@ -1032,6 +1056,8 @@ void Blt_DrawLegend(Graph* graphPtr, Drawable drawable)
 void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   double x, y, yStart;
   int xLabel, xSymbol, ySymbol;
   int count;
@@ -1040,42 +1066,42 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   int width, height;
   Tk_FontMetrics fontMetrics;
 
-  if ((legendPtr->hide) || (legendPtr->nEntries == 0)) {
+  if ((ops->hide) || (legendPtr->nEntries == 0)) {
     return;
   }
   SetLegendOrigin(legendPtr);
 
   x = legendPtr->x, y = legendPtr->y;
-  width = legendPtr->width - 2*legendPtr->xPad;
-  height = legendPtr->height - 2*legendPtr->yPad;
+  width = legendPtr->width - 2*ops->xPad;
+  height = legendPtr->height - 2*ops->yPad;
 
   Blt_Ps_Append(ps, "% Legend\n");
   graphPtr = legendPtr->graphPtr;
   if (graphPtr->pageSetup->decorations) {
-    if (legendPtr->normalBg)
-      Blt_Ps_Fill3DRectangle(ps, legendPtr->normalBg, x, y, width, height, 
-			     legendPtr->borderWidth, legendPtr->relief);
+    if (ops->normalBg)
+      Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
+			     ops->borderWidth, ops->relief);
     else
       Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, width, height, 
-			     legendPtr->borderWidth, legendPtr->relief);
+			     ops->borderWidth, ops->relief);
 
   } else {
     Blt_Ps_SetClearBackground(ps);
     Blt_Ps_XFillRectangle(ps, x, y, width, height);
   }
-  Tk_GetFontMetrics(legendPtr->style.font, &fontMetrics);
+  Tk_GetFontMetrics(ops->style.font, &fontMetrics);
   symbolSize = fontMetrics.ascent;
-  xMid = symbolSize + 1 + legendPtr->entryBW;
-  yMid = (symbolSize / 2) + 1 + legendPtr->entryBW;
-  xLabel = 2 * symbolSize + legendPtr->entryBW + legendPtr->ixPad + 5;
-  xSymbol = xMid + legendPtr->ixPad;
-  ySymbol = yMid + legendPtr->iyPad;
+  xMid = symbolSize + 1 + ops->entryBW;
+  yMid = (symbolSize / 2) + 1 + ops->entryBW;
+  xLabel = 2 * symbolSize + ops->entryBW + ops->ixPad + 5;
+  xSymbol = xMid + ops->ixPad;
+  ySymbol = yMid + ops->iyPad;
 
-  x += legendPtr->borderWidth;
-  y += legendPtr->borderWidth;
-  Blt_Ps_DrawText(ps, legendPtr->title, &legendPtr->titleStyle, x, y);
+  x += ops->borderWidth;
+  y += ops->borderWidth;
+  Blt_Ps_DrawText(ps, ops->title, &ops->titleStyle, x, y);
   if (legendPtr->titleHeight > 0) {
-    y += legendPtr->titleHeight + legendPtr->yPad;
+    y += legendPtr->titleHeight + ops->yPad;
   }
 
   count = 0;
@@ -1083,27 +1109,27 @@ void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
        link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     if (elemPtr->flags & LABEL_ACTIVE) {
-      Blt_Ts_SetForeground(legendPtr->style, legendPtr->activeFgColor);
-      Blt_Ps_Fill3DRectangle(ps, legendPtr->activeBg, x, y, legendPtr->entryWidth, 
-			     legendPtr->entryHeight, legendPtr->entryBW, 
-			     legendPtr->activeRelief);
+      Blt_Ts_SetForeground(ops->style, ops->activeFgColor);
+      Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, legendPtr->entryWidth, 
+			     legendPtr->entryHeight, ops->entryBW, 
+			     ops->activeRelief);
     } else {
-      Blt_Ts_SetForeground(legendPtr->style, legendPtr->fgColor);
-      if (ops->legendRelief != TK_RELIEF_FLAT) {
+      Blt_Ts_SetForeground(ops->style, ops->fgColor);
+      if (elemOps->legendRelief != TK_RELIEF_FLAT) {
 	Blt_Ps_Draw3DRectangle(ps, graphPtr->normalBg, x, y, 
 			       legendPtr->entryWidth,
-			       legendPtr->entryHeight, legendPtr->entryBW, 
-			       ops->legendRelief);
+			       legendPtr->entryHeight, ops->entryBW, 
+			       elemOps->legendRelief);
       }
     }
     elemPtr->printSymbol(ps, x + xSymbol, y + ySymbol, symbolSize);
-    Blt_Ps_DrawText(ps, ops->label, &legendPtr->style, 
-		    x + xLabel, y + legendPtr->entryBW + legendPtr->iyPad);
+    Blt_Ps_DrawText(ps, elemOps->label, &ops->style, 
+		    x + xLabel, y + ops->entryBW + ops->iyPad);
     count++;
     if ((count % legendPtr->nRows) > 0) {
       y += legendPtr->entryHeight;
@@ -1123,8 +1149,8 @@ static Element *GetNextRow(Graph* graphPtr, Element *focusPtr)
   row = focusPtr->row_ + 1;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -1142,8 +1168,8 @@ static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
   row = focusPtr->row_;
   for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -1159,8 +1185,8 @@ static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
   for (Blt_ChainLink link = focusPtr->link; link != NULL; 
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -1176,8 +1202,8 @@ static Element *GetPreviousColumn(Graph* graphPtr, Element *focusPtr)
   for (Blt_ChainLink link = focusPtr->link; link != NULL;
        link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -1190,8 +1216,8 @@ static Element *GetFirstElement(Graph* graphPtr)
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label)
       return elemPtr;
   }
   return NULL;
@@ -1202,8 +1228,8 @@ static Element *GetLastElement(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label)
       return elemPtr;
   }
   return NULL;
@@ -1267,8 +1293,8 @@ int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr,
 		       (char *)NULL);
       return TCL_ERROR;
     }
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    if (ops->label == NULL)
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
       elemPtr = NULL;
   }
   *elemPtrPtr = elemPtr;
@@ -1317,12 +1343,16 @@ int Blt_Legend_Height(Graph* graphPtr)
 
 int Blt_Legend_IsHidden(Graph* graphPtr)
 {
-  return (graphPtr->legend->hide);
+  Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  return (ops->hide);
 }
 
 int Blt_Legend_IsRaised(Graph* graphPtr)
 {
-  return (graphPtr->legend->raised);
+  Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+  return (ops->raised);
 }
 
 int Blt_Legend_X(Graph* graphPtr)
@@ -1344,10 +1374,12 @@ static int SelectionProc(ClientData clientData, int offset,
 			 char *buffer, int maxBytes)
 {
   Legend* legendPtr = (Legend*)clientData;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   int nBytes;
   Tcl_DString dString;
 
-  if ((legendPtr->exportSelection) == 0) {
+  if ((ops->exportSelection) == 0) {
     return -1;
   }
   /* Retrieve the names of the selected entries. */

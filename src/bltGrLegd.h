@@ -72,7 +72,11 @@ typedef enum {
   SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
 } SelectMode;
 
-struct _Legend {
+typedef struct _Legend Legend;
+
+typedef struct {
+  Legend* legendPtr;
+
   Tk_3DBorder activeBg;
   XColor* activeFgColor;
   int activeRelief;
@@ -105,10 +109,13 @@ struct _Legend {
   const char *takeFocus;
   const char *title;
   TextStyle titleStyle;
+} LegendOptions;
 
+struct _Legend {
   Graph* graphPtr;
   ClassId classId;
   Tk_OptionTable optionTable;
+  void* ops;
   unsigned int flags;
   int nEntries;
   int nColumns;

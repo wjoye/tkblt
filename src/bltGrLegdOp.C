@@ -66,7 +66,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Legend* legendPtr = graphPtr->legend;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)legendPtr, 
+				      (char*)legendPtr->ops, 
 				      legendPtr->optionTable,
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -82,7 +82,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)legendPtr, 
+				       (char*)legendPtr->ops, 
 				       legendPtr->optionTable, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
@@ -107,7 +107,7 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)legendPtr, legendPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)legendPtr->ops, legendPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -143,6 +143,8 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   unsigned int active, redraw;
   const char *string;
   int i;
@@ -179,7 +181,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       }
     }
   }
-  if ((redraw) && ((legendPtr->hide) == 0)) {
+  if ((redraw) && ((ops->hide) == 0)) {
     /*
      * See if how much we need to draw. If the graph is already scheduled
      * for a redraw, just make sure the right flags are set.  Otherwise
@@ -300,8 +302,9 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
 
-  if (((legendPtr->hide) == 0) && (legendPtr->nEntries > 0)) {
+  if (((ops->hide) == 0) && (legendPtr->nEntries > 0)) {
     Element* elemPtr;
 
     if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK) {
@@ -386,6 +389,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 			   int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
   Element* elemPtr;
 
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK) {
@@ -416,7 +420,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->selMarkPtr = elemPtr;
 
     Blt_Legend_EventuallyRedraw(graphPtr);
-    if (legendPtr->selectCmd) {
+    if (ops->selectCmd) {
       EventuallyInvokeSelectCmd(legendPtr);
     }
   }
@@ -436,6 +440,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
   Element *firstPtr, *lastPtr;
   const char *string;
 
@@ -481,12 +486,12 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (legendPtr->selAnchorPtr == NULL) {
     legendPtr->selAnchorPtr = firstPtr;
   }
-  if (legendPtr->exportSelection) {
+  if (ops->exportSelection) {
     Tk_OwnSelection(legendPtr->tkwin, XA_PRIMARY, LostSelectionProc, 
 		    legendPtr);
   }
   Blt_Legend_EventuallyRedraw(graphPtr);
-  if (legendPtr->selectCmd) {
+  if (ops->selectCmd) {
     EventuallyInvokeSelectCmd(legendPtr);
   }
   return TCL_OK;
@@ -518,18 +523,21 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
 static void LostSelectionProc(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
 
-  if (legendPtr->exportSelection)
+  if (ops->exportSelection)
     ClearSelection(legendPtr);
 }
 
 static void ClearSelection(Legend* legendPtr)
 {
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
+
   Tcl_DeleteHashTable(&legendPtr->selectTable);
   Tcl_InitHashTable(&legendPtr->selectTable, TCL_ONE_WORD_KEYS);
   Blt_Chain_Reset(legendPtr->selected);
   Blt_Legend_EventuallyRedraw(legendPtr->graphPtr);
-  if (legendPtr->selectCmd) {
+  if (ops->selectCmd) {
     EventuallyInvokeSelectCmd(legendPtr);
   }
 }
@@ -545,14 +553,15 @@ static void EventuallyInvokeSelectCmd(Legend* legendPtr)
 static void SelectCmdProc(ClientData clientData) 
 {
   Legend* legendPtr = (Legend*)clientData;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops;
 
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
-  if (legendPtr->selectCmd) {
+  if (ops->selectCmd) {
     Tcl_Interp* interp;
 
     interp = legendPtr->graphPtr->interp;
-    if (Tcl_GlobalEval(interp, legendPtr->selectCmd) != TCL_OK) {
+    if (Tcl_GlobalEval(interp, ops->selectCmd) != TCL_OK) {
       Tcl_BackgroundError(interp);
     }
   }
