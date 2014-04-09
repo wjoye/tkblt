@@ -56,6 +56,7 @@ bltCmd $graph legend configure -fg
 #bltCmd $graph legend curselection
 #bltCmd $graph legend deactivate
 bltCmd $graph legend focus data1
+bltCmd $graph legend focus
 #bltCmd $graph legend get data1
 bltCmd $graph legend selection anchor data1
 bltCmd $graph legend selection mark data1

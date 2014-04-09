@@ -263,25 +263,23 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Legend* legendPtr = graphPtr->legend;
 
+  legendPtr->focusPtr_ = NULL;
   if (objc == 4) {
     Element* elemPtr;
-
     if (legendPtr->getElementFromObj(objv[3], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if ((elemPtr != NULL) && (elemPtr != legendPtr->focusPtr_)) {
-      /* Changing focus can only affect the visible entries.  The entry
-       * layout stays the same. */
+    if (elemPtr)
       legendPtr->focusPtr_ = elemPtr;
-    }
-    Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
-		     CID_LEGEND_ENTRY);
-    graphPtr->legend->eventuallyRedraw();
   }
-  if (legendPtr->focusPtr_) {
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), 
-		     legendPtr->focusPtr_->name(), -1);
-  }
+
+  Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
+		   CID_LEGEND_ENTRY);
+  graphPtr->legend->eventuallyRedraw();
+
+  if (legendPtr->focusPtr_)
+    Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name(),-1);
+
   return TCL_OK;
 }
 
@@ -311,7 +309,7 @@ static Blt_OpSpec legendOps[] =
     {"configure",    2, (void*)ConfigureOp,     3, 0, "?option value?...",},
     {"curselection", 2, (void*)CurselectionOp,  3, 3, "",},
     {"deactivate",   1, (void*)ActivateOp,      3, 0, "?pattern?...",},
-    {"focus",        1, (void*)FocusOp,         4, 4, "elem",},
+    {"focus",        1, (void*)FocusOp,         3, 4, "?elem?",},
     {"get",          1, (void*)GetOp,           4, 4, "elem",},
     {"selection",    1, (void*)SelectionOp,     3, 0, "args"},
   };

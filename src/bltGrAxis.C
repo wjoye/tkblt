@@ -1051,20 +1051,18 @@ static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr, 
 		       int objc, Tcl_Obj* const objv[])
 {
-  if (objc > 3) {
-    Axis *axisPtr = NULL;
-    const char *string = Tcl_GetString(objv[3]);
-    if ((string[0] != '\0') && 
-	(GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK))
+  graphPtr->focusPtr = NULL;
+  if (objc == 4) {
+    Axis *axisPtr;
+    if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->focusPtr = NULL;
     if (axisPtr && !axisPtr->hide && axisPtr->use)
       graphPtr->focusPtr = axisPtr;
-
-    Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr, NULL);
   }
-  /* Return the name of the axis that has focus. */
+
+  Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr, NULL);
+
   if (graphPtr->focusPtr)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr->obj.name,-1);
 
