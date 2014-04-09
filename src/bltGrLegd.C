@@ -1006,7 +1006,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
 {
   Legend* legendPtr = (Legend*)clientData;
   Graph* graphPtr = legendPtr->graphPtr_;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   if ((ops->exportSelection) == 0)
     return -1;
@@ -1043,7 +1043,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
 static void SelectCmdProc(ClientData clientData) 
 {
   Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
@@ -1060,7 +1060,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 {
   Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   int w = legendPtr->width_;
   int h = legendPtr->height_;
