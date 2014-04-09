@@ -65,8 +65,6 @@ typedef enum {
 class Legend;
 
 typedef struct {
-  //  Legend* legendPtr;
-
   Tk_3DBorder activeBg;
   XColor* activeFgColor;
   int activeRelief;

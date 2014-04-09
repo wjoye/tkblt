@@ -54,8 +54,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Legend* legendPtr = graphPtr->legend;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)legendPtr->ops_, 
-				      legendPtr->optionTable_,
+				      (char*)legendPtr->ops(), 
+				      legendPtr->optionTable(),
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -70,8 +70,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)legendPtr->ops_, 
-				       legendPtr->optionTable_, 
+				       (char*)legendPtr->ops(), 
+				       legendPtr->optionTable(), 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)
@@ -95,7 +95,8 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)legendPtr->ops_, legendPtr->optionTable_, 
+      if (Tk_SetOptions(interp, (char*)legendPtr->ops(),
+			legendPtr->optionTable(), 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -131,7 +132,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   unsigned int active, redraw;
   const char *string;
@@ -282,7 +283,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   if (((ops->hide) == 0) && (legendPtr->nEntries_ > 0)) {
     Element* elemPtr;
@@ -370,7 +371,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 			   int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
   Element* elemPtr;
 
   if (legendPtr->getElementFromObj(objv[4], &elemPtr) != TCL_OK)
@@ -421,7 +422,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   legendPtr->flags &= ~SELECT_TOGGLE;
   const char* string = Tcl_GetString(objv[3]);
@@ -508,7 +509,7 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
 static void LostSelectionProc(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   if (ops->exportSelection)
     legendPtr->clearSelection();

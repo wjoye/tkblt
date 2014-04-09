@@ -150,7 +150,6 @@ Legend::Legend(Graph* graphPtr)
 {
   ops_ = (void*)calloc(1, sizeof(LegendOptions));
   LegendOptions* ops = (LegendOptions*)ops_;
-  ops->legendPtr = this;
 
   graphPtr_ = graphPtr;
   flags =0;
