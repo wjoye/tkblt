@@ -609,18 +609,27 @@ static void DisplayGraph(ClientData clientData)
     XCopyArea(graphPtr->display, graphPtr->cache, drawable,
 	      graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin),
 	      Tk_Height(graphPtr->tkwin), 0, 0);
-  } else {
-    DrawPlot(graphPtr, drawable);
   }
-  /* Draw markers above elements */
+  else
+    DrawPlot(graphPtr, drawable);
+
+  // Draw markers above elements
   Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
-  /* Don't draw legend in the plot area. */
-  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (graphPtr->legend->isRaised()))
-    graphPtr->legend->draw(drawable);
 
-  /* Draw 3D border just inside of the focus highlight ring. */
+  // Don't draw legend in the plot area.
+  if (graphPtr->legend->isRaised()) {
+    switch (graphPtr->legend->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      graphPtr->legend->draw(drawable);
+      break;
+    default:
+      break;
+    }
+  }
+
+  // Draw 3D border just inside of the focus highlight ring
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
 		       graphPtr->highlightWidth, graphPtr->highlightWidth, 
@@ -1163,13 +1172,22 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
 		       x, y, w, h, graphPtr->plotBW, graphPtr->plotRelief);
   }
-  if (graphPtr->legend->site() & LEGEND_MARGIN_MASK)
+  
+  switch (graphPtr->legend->position()) {
+  case Legend::TOP:
+  case Legend::BOTTOM:
+  case Legend::RIGHT:
+  case Legend::LEFT:
     graphPtr->legend->draw(drawable);
+    break;
+  default:
+    break;
+  }
 
-  if (graphPtr->title != NULL) {
+  if (graphPtr->title != NULL)
     Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
 		 &graphPtr->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
-  }
+
   Blt_DrawAxes(graphPtr, drawable);
   graphPtr->flags &= ~DRAW_MARGINS;
 }
@@ -1178,7 +1196,7 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
 {
   DrawMargins(graphPtr, drawable);
 
-  /* Draw the background of the plotting area with 3D border. */
+  // Draw the background of the plotting area with 3D border
   Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
 		     graphPtr->left-graphPtr->plotBW, 
 		     graphPtr->top-graphPtr->plotBW, 
@@ -1186,14 +1204,21 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
 		     graphPtr->bottom - graphPtr->top  + 1 +2*graphPtr->plotBW, 
 		     graphPtr->plotBW, graphPtr->plotRelief);
   
-  /* Draw the elements, markers, legend, and axis limits. */
+  // Draw the elements, markers, legend, and axis limits
   Blt_DrawAxes(graphPtr, drawable);
   Blt_DrawGrids(graphPtr, drawable);
   Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
-  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (!graphPtr->legend->isRaised()))
-    graphPtr->legend->draw(drawable);
+  if (!graphPtr->legend->isRaised()) {
+    switch (graphPtr->legend->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      graphPtr->legend->draw(drawable);
+      break;
+    default:
+      break;
+    }
+  }
 
   Blt_DrawAxisLimits(graphPtr, drawable);
   Blt_DrawElements(graphPtr, drawable);
@@ -1208,7 +1233,7 @@ void Blt_MapGraph(Graph* graphPtr)
     Blt_LayoutGraph(graphPtr);
     graphPtr->flags &= ~LAYOUT_NEEDED;
   }
-  /* Compute coordinate transformations for graph components */
+
   if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
     if (graphPtr->flags & MAP_WORLD)
       Blt_MapAxes(graphPtr);
@@ -1222,16 +1247,23 @@ void Blt_MapGraph(Graph* graphPtr)
 void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
 {
   DrawPlot(graphPtr, drawable);
-  /* Draw markers above elements */
+  // Draw markers above elements
   Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
   Blt_DrawActiveElements(graphPtr, drawable);
 
-  /* Don't draw legend in the plot area. */
-  if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (graphPtr->legend->isRaised()))
-    graphPtr->legend->draw(drawable);
+  // Don't draw legend in the plot area
+  if (graphPtr->legend->isRaised()) {
+    switch (graphPtr->legend->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      graphPtr->legend->draw(drawable);
+      break;
+    default:
+      break;
+    }
+  }
 
-  /* Draw 3D border just inside of the focus highlight ring. */
+  // Draw 3D border just inside of the focus highlight ring
   if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
     Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
 		       graphPtr->highlightWidth, graphPtr->highlightWidth, 

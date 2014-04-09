@@ -52,106 +52,13 @@ static Blt_BindPickProc PickEntryProc;
 
 // OptionSpecs
 
-static const char* selectmodeObjOption[] = {"single", "multiple", NULL};
-
-static Tk_CustomOptionSetProc PositionSetProc;
-static Tk_CustomOptionGetProc PositionGetProc;
-Tk_ObjCustomOption positionObjOption =
-  {
-    "position", PositionSetProc, PositionGetProc, NULL, NULL, NULL
-  };
-
-static int PositionSetProc(ClientData clientData, Tcl_Interp* interp,
-			   Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			   int offset, char* save, int flags)
-{
-  LegendOptions* ops = (LegendOptions*)widgRec;
-  Legend* legendPtr = ops->legendPtr;
-
-  int length;
-  const char* string = Tcl_GetStringFromObj(*objPtr, &length);
-  char c;
-  c = string[0];
-  if (c == '\0')
-    legendPtr->site_ = LEGEND_RIGHT;
-  else if ((c == 'l') && (strncmp(string, "leftmargin", length) == 0))
-    legendPtr->site_ = LEGEND_LEFT;
-  else if ((c == 'r') && (strncmp(string, "rightmargin", length) == 0))
-    legendPtr->site_ = LEGEND_RIGHT;
-  else if ((c == 't') && (strncmp(string, "topmargin", length) == 0))
-    legendPtr->site_ = LEGEND_TOP;
-  else if ((c == 'b') && (strncmp(string, "bottommargin", length) == 0))
-    legendPtr->site_ = LEGEND_BOTTOM;
-  else if ((c == 'p') && (strncmp(string, "plotarea", length) == 0))
-    legendPtr->site_ = LEGEND_PLOT;
-  else if (c == '@') {
-    char *comma;
-    long x, y;
-    int result;
-	
-    comma = (char*)strchr(string + 1, ',');
-    if (comma == NULL) {
-      Tcl_AppendResult(interp, "bad screen position \"", string,
-		       "\": should be @x,y", (char *)NULL);
-      return TCL_ERROR;
-    }
-    x = y = 0;
-    *comma = '\0';
-    result = ((Tcl_ExprLong(interp, string + 1, &x) == TCL_OK) &&
-	      (Tcl_ExprLong(interp, comma + 1, &y) == TCL_OK));
-    *comma = ',';
-    if (!result) {
-      return TCL_ERROR;
-    }
-    legendPtr->xReq_ = x;
-    legendPtr->yReq_ = y;
-    legendPtr->site_ = LEGEND_XY;
-  }
-  else {
-    Tcl_AppendResult(interp, "bad position \"", string, "\": should be  \
-\"leftmargin\", \"rightmargin\", \"topmargin\", \"bottommargin\", \
-\"plotarea\", or @x,y", (char *)NULL);
-    return TCL_ERROR;
-  }
-  return TCL_OK;
-}
-
-static Tcl_Obj* PositionGetProc(ClientData clientData, Tk_Window tkwin, 
-				char *widgRec, int offset)
-{
-  LegendOptions* ops = (LegendOptions*)widgRec;
-  Legend* legendPtr = ops->legendPtr;
-
-  Tcl_Obj *objPtr;
-
-  switch (legendPtr->site_) {
-  case LEGEND_LEFT:
-    objPtr = Tcl_NewStringObj("leftmargin", -1);
-    break;
-  case LEGEND_RIGHT:
-    objPtr = Tcl_NewStringObj("rightmargin", -1);
-    break;
-  case LEGEND_TOP:
-    objPtr = Tcl_NewStringObj("topmargin", -1);
-    break;
-  case LEGEND_BOTTOM:
-    objPtr = Tcl_NewStringObj("bottommargin", -1);
-    break;
-  case LEGEND_PLOT:
-    objPtr = Tcl_NewStringObj("plotarea", -1);
-    break;
-  case LEGEND_XY:
-    {
-      char string[200];
-
-      sprintf_s(string, 200, "@%d,%d", legendPtr->xReq_, legendPtr->yReq_);
-      objPtr = Tcl_NewStringObj(string, -1);
-    }
-  default:
-    objPtr = Tcl_NewStringObj("unknown legend position", -1);
-  }
-  return objPtr;
-}
+static const char* selectmodeObjOption[] = {
+  "single", "multiple", NULL
+};
+static const char*  positionObjOption[] = {
+  "rightmargin", "leftmargin", "topmargin", "bottommargin", 
+  "plotarea", "xy", NULL
+};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BORDER, "-activebackground", "activeBackground",
@@ -205,8 +112,9 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LegendOptions, xPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pady", "padY", "Pad", 
    "1", -1, Tk_Offset(LegendOptions, yPad), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-position", "position", "Position", 
-   "rightmargin", -1, 0, 0, &positionObjOption, 0},
+  {TK_OPTION_STRING_TABLE, "-position", "position", "Position", 
+   "rightmargin", -1, Tk_Offset(LegendOptions, position),
+   0, &positionObjOption, 0},
   {TK_OPTION_BOOLEAN, "-raised", "raised", "Raised", 
    "no", -1, Tk_Offset(LegendOptions, raised), 0, NULL, 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
@@ -239,6 +147,10 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, titleStyle.font), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-x", "x", "X", 
+   "0", -1, Tk_Offset(LegendOptions, xReq), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-y", "y", "Y", 
+   "0", -1, Tk_Offset(LegendOptions, yReq), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -259,9 +171,6 @@ Legend::Legend(Graph* graphPtr)
   height_ =0;
   entryWidth_ =0;
   entryHeight_ =0;
-  site_ =0;
-  xReq_ = -SHRT_MAX;
-  yReq_ = -SHRT_MAX;
   x_ =0;
   y_ =0;
   maxSymSize_ =0;
@@ -434,13 +343,13 @@ void Legend::map(int plotWidth, int plotHeight)
     if (nRows > nEntries) {
       nRows = nEntries;
     } 
-    switch (site_) {
-    case LEGEND_TOP:
-    case LEGEND_BOTTOM:
+    switch ((Position)ops->position) {
+    case TOP:
+    case BOTTOM:
       nRows = ((nEntries - 1) / nColumns) + 1;
       break;
-    case LEGEND_LEFT:
-    case LEGEND_RIGHT:
+    case LEFT:
+    case RIGHT:
     default:
       nColumns = ((nEntries - 1) / nRows) + 1;
       break;
@@ -508,23 +417,30 @@ void Legend::draw(Drawable drawable)
   if (ops->normalBg)
     Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
-
-  else if (site_ & LEGEND_PLOTAREA_MASK) {
-    // Legend background is transparent and is positioned over the the
-    // plot area.  Either copy the part of the background from the backing
-    // store pixmap or (if no backing store exists) just fill it with the
-    // background color of the plot.
-    if (graphPtr_->cache != None)
-      XCopyArea(graphPtr_->display, graphPtr_->cache, pixmap, 
-		graphPtr_->drawGC, x_, y_, w, h, 0, 0);
-    else 
-      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->plotBg, 0, 0, 
-			 w, h, TK_RELIEF_FLAT, 0);
+  else {
+    switch ((Position)ops->position) {
+    case TOP:
+    case BOTTOM:
+    case RIGHT:
+    case LEFT:
+      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 0, 0, 
+			 w, h, 0, TK_RELIEF_FLAT);
+      break;
+    case PLOT:
+    case XY:
+      // Legend background is transparent and is positioned over the the
+      // plot area.  Either copy the part of the background from the backing
+      // store pixmap or (if no backing store exists) just fill it with the
+      // background color of the plot.
+      if (graphPtr_->cache != None)
+	XCopyArea(graphPtr_->display, graphPtr_->cache, pixmap, 
+		  graphPtr_->drawGC, x_, y_, w, h, 0, 0);
+      else 
+	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->plotBg, 0, 0, 
+			   w, h, TK_RELIEF_FLAT, 0);
+      break;
+    };
   }
-  else
-    // The legend is located in one of the margins
-    Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 0, 0, 
-		       w, h, 0, TK_RELIEF_FLAT);
 
   Tk_FontMetrics fontMetrics;
   Tk_GetFontMetrics(ops->style.font, &fontMetrics);
@@ -610,16 +526,28 @@ void Legend::draw(Drawable drawable)
     bg = graphPtr_->normalBg;
 
   // Disable crosshairs before redisplaying to the screen
-  if (site_ & LEGEND_PLOTAREA_MASK)
+  switch ((Position)ops->position) {
+  case PLOT:
+  case XY:
     Blt_DisableCrosshairs(graphPtr_);
+    break;
+  default:
+    break;
+  }
 
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
 		     ops->borderWidth, ops->relief);
   XCopyArea(graphPtr_->display, pixmap, drawable, graphPtr_->drawGC, 0, 0, w, h,
 	    x_, y_);
 
-  if (site_ & LEGEND_PLOTAREA_MASK)
+  switch ((Position)ops->position) {
+  case PLOT:
+  case XY:
     Blt_EnableCrosshairs(graphPtr_);
+    break;
+  default:
+    break;
+  }
 
   Tk_FreePixmap(graphPtr_->display, pixmap);
   graphPtr_->flags &= ~DRAW_LEGEND;
@@ -736,22 +664,22 @@ void Legend::setOrigin()
   int y =0;
   int w =0;
   int h =0;
-  switch (site_) {
-  case LEGEND_RIGHT:
+  switch ((Position)ops->position) {
+  case RIGHT:
     w = graphPtr_->rightMargin.width - graphPtr_->rightMargin.axesOffset;
     h = graphPtr_->bottom - graphPtr_->top;
     x = graphPtr_->right + graphPtr_->rightMargin.axesOffset;
     y = graphPtr_->top;
     break;
 
-  case LEGEND_LEFT:
+  case LEFT:
     w = graphPtr_->leftMargin.width - graphPtr_->leftMargin.axesOffset;
     h = graphPtr_->bottom - graphPtr_->top;
     x = graphPtr_->inset;
     y = graphPtr_->top;
     break;
 
-  case LEGEND_TOP:
+  case TOP:
     w = graphPtr_->right - graphPtr_->left;
     h = graphPtr_->topMargin.height - graphPtr_->topMargin.axesOffset;
     if (graphPtr_->title)
@@ -763,25 +691,25 @@ void Legend::setOrigin()
       y += graphPtr_->titleHeight;
     break;
 
-  case LEGEND_BOTTOM:
+  case BOTTOM:
     w = graphPtr_->right - graphPtr_->left;
     h = graphPtr_->bottomMargin.height - graphPtr_->bottomMargin.axesOffset;
     x = graphPtr_->left;
     y = graphPtr_->bottom + graphPtr_->bottomMargin.axesOffset;
     break;
 
-  case LEGEND_PLOT:
+  case PLOT:
     w = graphPtr_->right - graphPtr_->left;
     h = graphPtr_->bottom - graphPtr_->top;
     x = graphPtr_->left;
     y = graphPtr_->top;
     break;
 
-  case LEGEND_XY:
+  case XY:
     w = width_;
     h = height_;
-    x = xReq_;
-    y = yReq_;
+    x = ops->xReq;
+    y = ops->yReq;
     if (x < 0)
       x += graphPtr_->width;
 

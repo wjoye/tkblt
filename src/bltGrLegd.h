@@ -42,15 +42,6 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-#define LEGEND_RIGHT	(1<<0)	// Right margin
-#define LEGEND_LEFT	(1<<1)	// Left margin
-#define LEGEND_BOTTOM	(1<<2)	// Bottom margin
-#define LEGEND_TOP	(1<<3)	// Top margin, below the graph title
-#define LEGEND_PLOT	(1<<4)	// Plot area
-#define LEGEND_XY	(1<<5)	// Screen coordinates in the plotting area
-#define LEGEND_MARGIN_MASK (LEGEND_RIGHT|LEGEND_LEFT|LEGEND_BOTTOM|LEGEND_TOP)
-#define LEGEND_PLOTAREA_MASK  (LEGEND_PLOT | LEGEND_XY)
-
 //  Selection related flags:
 //	SELECT_PENDING		A "selection" command idle task is pending.
 //	SELECT_CLEAR		Clear selection flag of entry.
@@ -98,6 +89,9 @@ typedef struct {
   int reqRows;
   int entryBW;
   int selBW;
+  int xReq;
+  int yReq;
+  int position;
   const char *selectCmd;
   Tk_3DBorder selOutFocusBg;
   Tk_3DBorder selInFocusBg;
@@ -112,9 +106,13 @@ typedef struct {
 
 class Legend {
  public:
+  enum Position {RIGHT, LEFT, TOP, BOTTOM, PLOT, XY};
+
+ public:
   Graph* graphPtr_;
   Tk_OptionTable optionTable_;
   void* ops_;
+
 
   int nEntries_;
   int nColumns_;
@@ -123,9 +121,6 @@ class Legend {
   int height_;
   int entryWidth_;
   int entryHeight_;
-  int site_;
-  int xReq_;
-  int yReq_;
   int x_;
   int y_;
   int maxSymSize_;
@@ -174,7 +169,6 @@ class Legend {
 
   int width() {return width_;}
   int height() {return height_;}
-  int site() {return site_;}
   int x() {return x_;}
   int y() {return y_;}
 
@@ -185,6 +179,7 @@ class Legend {
   void clearSelection();
   int entryIsSelected(Element*);
 
+  Position position() {return (Position)((LegendOptions*)ops_)->position;}
   int isRaised() {return ((LegendOptions*)ops_)->raised;}
   int isHidden() {return ((LegendOptions*)ops_)->hide;}
 };

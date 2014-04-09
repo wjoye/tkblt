@@ -269,8 +269,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
       legendPtr->focusPtr_ = elemPtr;
   }
 
-  Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
-		   CID_LEGEND_ENTRY);
+  Blt_SetFocusItem(legendPtr->bindTable_,legendPtr->focusPtr_,CID_LEGEND_ENTRY);
   graphPtr->legend->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
