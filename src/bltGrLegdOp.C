@@ -271,7 +271,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
 		   CID_LEGEND_ENTRY);
-  //  graphPtr->legend->eventuallyRedraw();
+  graphPtr->legend->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
     Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name(),-1);
@@ -339,7 +339,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   if (elemPtr)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
 
-  //  graphPtr->legend->eventuallyRedraw();
+  graphPtr->legend->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -347,7 +347,10 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
-  graphPtr->legend->clearSelection();
+  Legend* legendPtr = graphPtr->legend;
+  legendPtr->clearSelection();
+  legendPtr->eventuallyRedraw();
+
   return TCL_OK;
 }
 
@@ -398,7 +401,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
     legendPtr->selMarkPtr_ = elemPtr;
 
-    //    graphPtr->legend->eventuallyRedraw();
+    graphPtr->legend->eventuallyRedraw();
 
     if (ops->selectCmd)
       legendPtr->eventuallyInvokeSelectCmd();
@@ -470,7 +473,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (ops->exportSelection)
     Tk_OwnSelection(graphPtr->tkwin, XA_PRIMARY, LostSelectionProc, legendPtr);
 
-  //  graphPtr->legend->eventuallyRedraw();
+  graphPtr->legend->eventuallyRedraw();
 
   if (ops->selectCmd)
     legendPtr->eventuallyInvokeSelectCmd();
@@ -510,6 +513,7 @@ static void LostSelectionProc(ClientData clientData)
 
   if (ops->exportSelection)
     legendPtr->clearSelection();
+  legendPtr->eventuallyRedraw();
 }
 
 

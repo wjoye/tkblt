@@ -905,8 +905,6 @@ void Legend::clearSelection()
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
   Blt_Chain_Reset(selected_);
 
-  //  eventuallyRedraw();
-
   if (ops->selectCmd)
     eventuallyInvokeSelectCmd();
 }
