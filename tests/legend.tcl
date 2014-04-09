@@ -6,7 +6,7 @@ set graph [bltLineGraph $w]
 $graph legend selection set data2
 $graph legend focus data1
 $graph legend configure -selectrelief groove
-return
+
 echo "Testing Legend..."
 
 #bltTest2 $graph legend -activebackground

@@ -37,15 +37,7 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 
-#define LABEL_PAD	2
-
-// Defs
-
-extern "C" {
-  Tcl_ObjCmdProc Blt_GraphInstCmdProc;
-};
-
-static void SelectCmdProc(ClientData clientData);
+static void SelectCmdProc(ClientData);
 static Tcl_IdleProc DisplayProc;
 static Tk_SelectionProc SelectionProc;
 static Blt_BindPickProc PickEntryProc;
@@ -153,8 +145,6 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(LegendOptions, yReq), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
-
-// Create
 
 Legend::Legend(Graph* graphPtr)
 {
@@ -265,22 +255,22 @@ void Legend::map(int plotWidth, int plotHeight)
 
   Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
 		    &titleWidth_, &titleHeight_);
-  /*   
-   * Count the number of legend entries and determine the widest and tallest
-   * label.  The number of entries would normally be the number of elements,
-   * but elements can have no legend entry (-label "").
-   */
+
+  // Count the number of legend entries and determine the widest and tallest
+  // label.  The number of entries would normally be the number of elements,
+  // but elements can have no legend entry (-label "").
   int nEntries =0;
   int maxWidth =0;
   int maxHeight =0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
-    unsigned int w, h;
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
+    unsigned int w, h;
     Blt_Ts_GetExtents(&ops->style, elemOps->label, &w, &h);
     if (maxWidth < (int)w)
       maxWidth = w;
@@ -291,14 +281,14 @@ void Legend::map(int plotWidth, int plotHeight)
     nEntries++;
   }
   if (nEntries == 0)
-    return;				/* No visible legend entries. */
+    return;
 
   Tk_FontMetrics fontMetrics;
   Tk_GetFontMetrics(ops->style.font, &fontMetrics);
   int symbolWidth = 2 * fontMetrics.ascent;
 
   maxWidth += 2 * ops->entryBW + 2*ops->ixPad +
-    + symbolWidth + 3 * LABEL_PAD;
+    + symbolWidth + 3 * 2;
 
   maxHeight += 2 * ops->entryBW + 2*ops->iyPad;
 
@@ -377,20 +367,19 @@ void Legend::map(int plotWidth, int plotHeight)
   entryHeight_ = maxHeight;
   entryWidth_ = maxWidth;
 
-  {
-    int row =0;
-    int col =0;
-    int count =0;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      count++;
-      elemPtr->row_ = row;
-      elemPtr->col_ = col;
-      row++;
-      if ((count % nRows) == 0) {
-	col++;
-	row = 0;
-      }
+  int row =0;
+  int col =0;
+  int count =0;
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    count++;
+    elemPtr->row_ = row;
+    elemPtr->col_ = col;
+    row++;
+    if ((count % nRows) == 0) {
+      col++;
+      row = 0;
     }
   }
 }
@@ -448,9 +437,9 @@ void Legend::draw(Drawable drawable)
   int symbolSize = fontMetrics.ascent;
   int xMid = symbolSize + 1 + ops->entryBW;
   int yMid = (symbolSize / 2) + 1 + ops->entryBW;
-  int xLabel = 2 * symbolSize + ops->entryBW +  ops->ixPad + 2 * LABEL_PAD;
+  int xLabel = 2 * symbolSize + ops->entryBW +  ops->ixPad + 2 * 2;
   int ySymbol = yMid + ops->iyPad; 
-  int xSymbol = xMid + LABEL_PAD;
+  int xSymbol = xMid + 2;
 
   int x = ops->xPad + ops->borderWidth;
   int y = ops->yPad + ops->borderWidth;
@@ -464,7 +453,7 @@ void Legend::draw(Drawable drawable)
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     int isSelected = entryIsSelected(elemPtr);
@@ -522,7 +511,7 @@ void Legend::draw(Drawable drawable)
   }
 
   Tk_3DBorder bg = ops->normalBg;
-  if (bg == NULL)
+  if (!bg)
     bg = graphPtr_->normalBg;
 
   // Disable crosshairs before redisplaying to the screen
@@ -599,11 +588,12 @@ void Legend::print(Blt_Ps ps)
 
   int count = 0;
   double yStart = y;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     if (elemPtr->flags & LABEL_ACTIVE) {
@@ -719,46 +709,46 @@ void Legend::setOrigin()
   }
 
   switch (ops->anchor) {
-  case TK_ANCHOR_NW:			/* Upper left corner */
+  case TK_ANCHOR_NW:
     break;
-  case TK_ANCHOR_W:			/* Left center */
+  case TK_ANCHOR_W:
     if (h > height_)
       y += (h - height_) / 2;
     break;
-  case TK_ANCHOR_SW:			/* Lower left corner */
+  case TK_ANCHOR_SW:
     if (h > height_)
       y += (h - height_);
     break;
-  case TK_ANCHOR_N:			/* Top center */
+  case TK_ANCHOR_N:
     if (w > width_)
       x += (w - width_) / 2;
     break;
-  case TK_ANCHOR_CENTER:		/* Center */
+  case TK_ANCHOR_CENTER:
     if (h > height_)
       y += (h - height_) / 2;
 
     if (w > width_)
       x += (w - width_) / 2;
     break;
-  case TK_ANCHOR_S:			/* Bottom center */
+  case TK_ANCHOR_S:
     if (w > width_)
       x += (w - width_) / 2;
 
     if (h > height_)
       y += (h - height_);
     break;
-  case TK_ANCHOR_NE:			/* Upper right corner */
+  case TK_ANCHOR_NE:
     if (w > width_)
       x += w - width_;
     break;
-  case TK_ANCHOR_E:			/* Right center */
+  case TK_ANCHOR_E:
     if (w > width_)
       x += w - width_;
 
     if (h > height_)
       y += (h - height_) / 2;
     break;
-  case TK_ANCHOR_SE:		/* Lower right corner */
+  case TK_ANCHOR_SE:
     if (w > width_) {
       x += w - width_;
     }
@@ -767,6 +757,7 @@ void Legend::setOrigin()
     }
     break;
   }
+
   x_ = x + ops->xPad;
   y_ = y + ops->yPad;
 }
@@ -793,8 +784,7 @@ void Legend::selectEntry(Element* elemPtr)
 void Legend::selectElement(Element* elemPtr)
 {
   int isNew;
-  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, (char*)elemPtr, 
-					    &isNew);
+  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, elemPtr, &isNew);
   if (isNew) {
     Blt_ChainLink link = Blt_Chain_Append(selected_, elemPtr);
     Tcl_SetHashValue(hPtr, link);
@@ -803,7 +793,7 @@ void Legend::selectElement(Element* elemPtr)
 
 void Legend::deselectElement(Element* elemPtr)
 {
-  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, (char*)elemPtr);
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, elemPtr);
   if (hPtr) {
     Blt_ChainLink link = (Blt_ChainLink)Tcl_GetHashValue(hPtr);
     Blt_Chain_DeleteLink(selected_, link);
@@ -894,13 +884,13 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     if (Blt_GetElement(graphPtr_->interp, graphPtr_, objPtr, &elemPtr) !=TCL_OK)
       return TCL_ERROR;
 
-    if (elemPtr->link == NULL) {
+    if (!elemPtr->link) {
       Tcl_AppendResult(graphPtr_->interp, "bad legend index \"", string, "\"",
 		       (char *)NULL);
       return TCL_ERROR;
     }
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       elemPtr = NULL;
   }
 
@@ -916,7 +906,7 @@ Element* Legend::getNextRow(Element* focusPtr)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -933,7 +923,7 @@ Element* Legend::getNextColumn(Element* focusPtr)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -950,7 +940,7 @@ Element* Legend::getPreviousRow(Element* focusPtr)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -967,7 +957,7 @@ Element* Legend::getPreviousColumn(Element* focusPtr)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
-    if (elemOps->label == NULL)
+    if (!elemOps->label)
       continue;
 
     if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
@@ -978,7 +968,8 @@ Element* Legend::getPreviousColumn(Element* focusPtr)
 
 Element* Legend::getFirstElement()
 {
-  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList);link; link=Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList);
+       link; link=Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
     if (elemOps->label)
@@ -1024,17 +1015,16 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
   Tcl_DString dString;
   Tcl_DStringInit(&dString);
   if (legendPtr->flags & SELECT_SORTED) {
-    Blt_ChainLink link;
-
-    for (link = Blt_Chain_FirstLink(legendPtr->selected_); 
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(legendPtr->selected_); 
+	 link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       Tcl_DStringAppend(&dString, elemPtr->name(), -1);
       Tcl_DStringAppend(&dString, "\n", -1);
     }
   }
   else {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements.displayList);
+	 link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (legendPtr->entryIsSelected(elemPtr)) {
 	Tcl_DStringAppend(&dString, elemPtr->name(), -1);
@@ -1094,7 +1084,8 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
       // Legend entries are stored in bottom-to-top
       int count = 0;
       Blt_ChainLink link;
-      for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+      for (link=Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+	   link; link = Blt_Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 	if (elemOps->label) {
