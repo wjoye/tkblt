@@ -45,6 +45,7 @@ extern "C" {
   Tcl_ObjCmdProc Blt_GraphInstCmdProc;
 };
 
+static void SelectCmdProc(ClientData clientData);
 static Tcl_IdleProc DisplayProc;
 static Tk_SelectionProc SelectionProc;
 static Blt_BindPickProc PickEntryProc;
@@ -708,6 +709,14 @@ void Legend::eventuallyRedraw()
   }
 }
 
+void Legend::eventuallyInvokeSelectCmd()
+{
+  if ((flags & SELECT_PENDING) == 0) {
+    flags |= SELECT_PENDING;
+    Tcl_DoWhenIdle(SelectCmdProc, this);
+  }
+}
+
 void Legend::setOrigin()
 {
   LegendOptions* ops = (LegendOptions*)ops_;
@@ -863,6 +872,45 @@ void Legend::deselectElement(Element* elemPtr)
   }
 }
 
+
+int Legend::selectRange(Element *fromPtr, Element *toPtr)
+{
+  if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
+    for (Blt_ChainLink link=fromPtr->link; link; 
+	 link=Blt_Chain_NextLink(link)) {
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      selectEntry(elemPtr);
+      if (link == toPtr->link)
+	break;
+    }
+  } 
+  else {
+    for (Blt_ChainLink link=fromPtr->link; link;
+	 link=Blt_Chain_PrevLink(link)) {
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      selectEntry(elemPtr);
+      if (link == toPtr->link)
+	break;
+    }
+  }
+
+  return TCL_OK;
+}
+
+void Legend::clearSelection()
+{
+  LegendOptions* ops = (LegendOptions*)ops_;
+
+  Tcl_DeleteHashTable(&selectTable_);
+  Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
+  Blt_Chain_Reset(selected_);
+
+  //  eventuallyRedraw();
+
+  if (ops->selectCmd)
+    eventuallyInvokeSelectCmd();
+}
+
 int Legend::entryIsSelected(Element* elemPtr)
 {
   Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, (char*)elemPtr);
@@ -1014,30 +1062,6 @@ Element* Legend::getLastElement()
   return NULL;
 }
 
-int Legend::selectRange(Element *fromPtr, Element *toPtr)
-{
-  if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
-    for (Blt_ChainLink link=fromPtr->link; link; 
-	 link=Blt_Chain_NextLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      selectEntry(elemPtr);
-      if (link == toPtr->link)
-	break;
-    }
-  } 
-  else {
-    for (Blt_ChainLink link=fromPtr->link; link;
-	 link=Blt_Chain_PrevLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      selectEntry(elemPtr);
-      if (link == toPtr->link)
-	break;
-    }
-  }
-
-  return TCL_OK;
-}
-
 // Support
 
 static void DisplayProc(ClientData clientData)
@@ -1087,6 +1111,21 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
   Tcl_DStringFree(&dString);
   buffer[maxBytes] = '\0';
   return MIN(nBytes, maxBytes);
+}
+
+static void SelectCmdProc(ClientData clientData) 
+{
+  Legend* legendPtr = (Legend*)clientData;
+  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
+
+  Tcl_Preserve(legendPtr);
+  legendPtr->flags &= ~SELECT_PENDING;
+  if (ops->selectCmd) {
+    Tcl_Interp* interp = legendPtr->graphPtr_->interp;
+    if (Tcl_GlobalEval(interp, ops->selectCmd) != TCL_OK)
+      Tcl_BackgroundError(interp);
+  }
+  Tcl_Release(legendPtr);
 }
 
 static ClientData PickEntryProc(ClientData clientData, int x, int y, 

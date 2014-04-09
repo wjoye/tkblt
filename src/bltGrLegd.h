@@ -167,6 +167,7 @@ class Legend {
   void draw(Drawable drawable);
   void print(Blt_Ps ps);
   void eventuallyRedraw();
+  void eventuallyInvokeSelectCmd();
 
   void removeElement(Element*);
   int getElementFromObj(Tcl_Obj*, Element**);
@@ -178,9 +179,10 @@ class Legend {
   int y() {return y_;}
 
   void selectEntry(Element*);
-  int selectRange(Element*, Element*);
   void selectElement(Element*);
   void deselectElement(Element*);
+  int selectRange(Element*, Element*);
+  void clearSelection();
   int entryIsSelected(Element*);
 
   int isRaised() {return ((LegendOptions*)ops_)->raised;}

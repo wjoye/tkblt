@@ -35,15 +35,11 @@ extern "C" {
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
 
-static void SelectCmdProc(ClientData clientData);
-static void EventuallyInvokeSelectCmd(Legend* legendPtr);
+static Tk_LostSelProc LostSelectionProc;
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[]);
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[]);
-static void ClearSelection(Legend* legendPtr);
-static Tk_LostSelProc LostSelectionProc;
-
 typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[]);
 
@@ -275,7 +271,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Blt_SetFocusItem(legendPtr->bindTable_, legendPtr->focusPtr_, 
 		   CID_LEGEND_ENTRY);
-  graphPtr->legend->eventuallyRedraw();
+  //  graphPtr->legend->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
     Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name(),-1);
@@ -343,7 +339,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   if (elemPtr)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
 
-  graphPtr->legend->eventuallyRedraw();
+  //  graphPtr->legend->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -351,9 +347,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
 static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
-  Legend* legendPtr = graphPtr->legend;
-
-  ClearSelection(legendPtr);
+  graphPtr->legend->clearSelection();
   return TCL_OK;
 }
 
@@ -404,10 +398,10 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
     legendPtr->selMarkPtr_ = elemPtr;
 
-    graphPtr->legend->eventuallyRedraw();
+    //    graphPtr->legend->eventuallyRedraw();
 
     if (ops->selectCmd)
-      EventuallyInvokeSelectCmd(legendPtr);
+      legendPtr->eventuallyInvokeSelectCmd();
   }
   return TCL_OK;
 }
@@ -476,10 +470,10 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (ops->exportSelection)
     Tk_OwnSelection(graphPtr->tkwin, XA_PRIMARY, LostSelectionProc, legendPtr);
 
-  graphPtr->legend->eventuallyRedraw();
+  //  graphPtr->legend->eventuallyRedraw();
 
   if (ops->selectCmd)
-    EventuallyInvokeSelectCmd(legendPtr);
+    legendPtr->eventuallyInvokeSelectCmd();
 
   return TCL_OK;
 }
@@ -507,53 +501,17 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
   return (*proc)(graphPtr, interp, objc, objv);
 }
 
+// Support
+
 static void LostSelectionProc(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
   if (ops->exportSelection)
-    ClearSelection(legendPtr);
+    legendPtr->clearSelection();
 }
 
-static void ClearSelection(Legend* legendPtr)
-{
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
 
-  Tcl_DeleteHashTable(&legendPtr->selectTable_);
-  Tcl_InitHashTable(&legendPtr->selectTable_, TCL_ONE_WORD_KEYS);
-  Blt_Chain_Reset(legendPtr->selected_);
-
-  legendPtr->eventuallyRedraw();
-
-  if (ops->selectCmd)
-    EventuallyInvokeSelectCmd(legendPtr);
-}
-
-static void EventuallyInvokeSelectCmd(Legend* legendPtr)
-{
-  if ((legendPtr->flags & SELECT_PENDING) == 0) {
-    legendPtr->flags |= SELECT_PENDING;
-    Tcl_DoWhenIdle(SelectCmdProc, legendPtr);
-  }
-}
-
-static void SelectCmdProc(ClientData clientData) 
-{
-  Legend* legendPtr = (Legend*)clientData;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-
-  Tcl_Preserve(legendPtr);
-  legendPtr->flags &= ~SELECT_PENDING;
-  if (ops->selectCmd) {
-    Tcl_Interp* interp;
-
-    interp = legendPtr->graphPtr_->interp;
-    if (Tcl_GlobalEval(interp, ops->selectCmd) != TCL_OK) {
-      Tcl_BackgroundError(interp);
-    }
-  }
-  Tcl_Release(legendPtr);
-}
 
 
