@@ -44,6 +44,7 @@ extern "C" {
 #include "bltGrMarker.h"
 #include "bltGrMarkerOp.h"
 #include "bltGrLegd.h"
+#include "bltGrLegdOp.h"
 
 using namespace Blt;
 
@@ -617,7 +618,7 @@ static void DisplayGraph(ClientData clientData)
   Blt_DrawActiveElements(graphPtr, drawable);
   /* Don't draw legend in the plot area. */
   if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (Blt_Legend_IsRaised(graphPtr)))
+      (graphPtr->legend->isRaised()))
     graphPtr->legend->draw(drawable);
 
   /* Draw 3D border just inside of the focus highlight ring. */
@@ -754,9 +755,9 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 	     (strncmp("legend", string, length) == 0)) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(Blt_Legend_X(graphPtr)));
+			     Tcl_NewIntObj(graphPtr->legend->x()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(Blt_Legend_Y(graphPtr)));
+			     Tcl_NewIntObj(graphPtr->legend->y()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
 			     Tcl_NewIntObj(graphPtr->legend->width()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
@@ -1192,7 +1193,7 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
   if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (!Blt_Legend_IsRaised(graphPtr)))
+      (!graphPtr->legend->isRaised()))
     graphPtr->legend->draw(drawable);
 
   Blt_DrawAxisLimits(graphPtr, drawable);
@@ -1228,7 +1229,7 @@ void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
 
   /* Don't draw legend in the plot area. */
   if ((graphPtr->legend->site() & LEGEND_PLOTAREA_MASK) && 
-      (Blt_Legend_IsRaised(graphPtr)))
+      (graphPtr->legend->isRaised()))
     graphPtr->legend->draw(drawable);
 
   /* Draw 3D border just inside of the focus highlight ring. */

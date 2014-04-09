@@ -618,6 +618,19 @@ void Legend::draw(Drawable drawable)
   graphPtr_->flags &= ~DRAW_LEGEND;
 }
 
+void Legend::removeElement(Element* elemPtr)
+{
+  Blt_DeleteBindings(bindTable_, elemPtr);
+}
+
+void Legend::eventuallyRedraw() 
+{
+  if ((graphPtr_->tkwin) && !(flags & REDRAW_PENDING)) {
+    Tcl_DoWhenIdle(DisplayLegend, this);
+    flags |= REDRAW_PENDING;
+  }
+}
+
 // Support
 
 static void DisplayLegend(ClientData clientData)
@@ -627,16 +640,6 @@ static void DisplayLegend(ClientData clientData)
   legendPtr->flags &= ~REDRAW_PENDING;
   if (Tk_IsMapped(legendPtr->graphPtr_->tkwin))
     legendPtr->draw(Tk_WindowId(legendPtr->graphPtr_->tkwin));
-}
-
-void Blt_Legend_EventuallyRedraw(Graph* graphPtr) 
-{
-  Legend* legendPtr = graphPtr->legend;
-
-  if ((graphPtr->tkwin) && !(legendPtr->flags & REDRAW_PENDING)) {
-    Tcl_DoWhenIdle(DisplayLegend, legendPtr);
-    legendPtr->flags |= REDRAW_PENDING;
-  }
 }
 
 static void SetLegendOrigin(Legend* legendPtr)
@@ -1131,35 +1134,6 @@ int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr)
     }
   }
   return TCL_OK;
-}
-
-int Blt_Legend_IsHidden(Graph* graphPtr)
-{
-  Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-  return (ops->hide);
-}
-
-int Blt_Legend_IsRaised(Graph* graphPtr)
-{
-  Legend* legendPtr = graphPtr->legend;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
-  return (ops->raised);
-}
-
-int Blt_Legend_X(Graph* graphPtr)
-{
-  return graphPtr->legend->x_;
-}
-
-int Blt_Legend_Y(Graph* graphPtr)
-{
-  return graphPtr->legend->y_;
-}
-
-void Blt_Legend_RemoveElement(Graph* graphPtr, Element* elemPtr)
-{
-  Blt_DeleteBindings(graphPtr->legend->bindTable_, elemPtr);
 }
 
 static int SelectionProc(ClientData clientData, int offset, 

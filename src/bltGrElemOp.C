@@ -107,7 +107,7 @@ static void DestroyElement(Element* elemPtr)
   Graph* graphPtr = elemPtr->graphPtr();
 
   Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
-  Blt_Legend_RemoveElement(graphPtr, elemPtr);
+  graphPtr->legend->removeElement(elemPtr);
 
   if (elemPtr->link)
     Blt_Chain_DeleteLink(graphPtr->elements.displayList, elemPtr->link);

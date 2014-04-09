@@ -156,18 +156,17 @@ class Legend {
   void configure();
   void map(int, int);
   void draw(Drawable drawable);
+  void removeElement(Element*);
+  void eventuallyRedraw();
+
   int width() {return width_;}
   int height() {return height_;}
   int site() {return site_;}
-};
+  int x() {return x_;}
+  int y() {return y_;}
 
-extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
-	Tcl_Obj* const objv[]);
-extern int Blt_Legend_IsHidden(Graph *graphPtr);
-extern int Blt_Legend_IsRaised(Graph *graphPtr);
-extern int Blt_Legend_X(Graph *graphPtr);
-extern int Blt_Legend_Y(Graph *graphPtr);
-extern void Blt_Legend_RemoveElement(Graph *graphPtr, Element *elemPtr);
-extern void Blt_Legend_EventuallyRedraw(Graph *graphPtr);
+  int isRaised() {return ((LegendOptions*)ops_)->raised;}
+  int isHidden() {return ((LegendOptions*)ops_)->hide;}
+};
 
 #endif
