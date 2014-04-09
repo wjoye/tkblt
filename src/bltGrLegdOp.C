@@ -35,10 +35,6 @@ extern "C" {
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
 
-extern int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, 
-			     Element **elemPtrPtr);
-extern int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr);
-
 static void SelectCmdProc(ClientData clientData);
 static void EventuallyInvokeSelectCmd(Legend* legendPtr);
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
@@ -270,7 +266,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
   if (objc == 4) {
     Element* elemPtr;
 
-    if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK)
+    if (legendPtr->getElementFromObj(objv[3], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
     if ((elemPtr != NULL) && (elemPtr != legendPtr->focusPtr_)) {
@@ -298,7 +294,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (((ops->hide) == 0) && (legendPtr->nEntries_ > 0)) {
     Element* elemPtr;
 
-    if (GetElementFromObj(graphPtr, objv[3], &elemPtr) != TCL_OK)
+    if (legendPtr->getElementFromObj(objv[3], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (elemPtr)
@@ -339,7 +335,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend;
   Element* elemPtr;
 
-  if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK)
+  if (legendPtr->getElementFromObj(objv[4], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   // Set both the anchor and the mark. Indicates that a single entry
@@ -368,7 +364,7 @@ static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Legend* legendPtr = graphPtr->legend;
   Element* elemPtr;
-  if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK)
+  if (legendPtr->getElementFromObj(objv[4], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   int boo = legendPtr->entryIsSelected(elemPtr);
@@ -383,7 +379,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
   LegendOptions* ops = (LegendOptions*)legendPtr->ops_;
   Element* elemPtr;
 
-  if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK)
+  if (legendPtr->getElementFromObj(objv[4], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (legendPtr->selAnchorPtr_ == NULL) {
@@ -406,7 +402,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
 
     legendPtr->flags &= ~SELECT_TOGGLE;
     legendPtr->flags |= SELECT_SET;
-    SelectRange(legendPtr, legendPtr->selAnchorPtr_, elemPtr);
+    legendPtr->selectRange(legendPtr->selAnchorPtr_, elemPtr);
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
     legendPtr->selMarkPtr_ = elemPtr;
 
@@ -448,7 +444,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   Element *firstPtr;
-  if (GetElementFromObj(graphPtr, objv[4], &firstPtr) != TCL_OK)
+  if (legendPtr->getElementFromObj(objv[4], &firstPtr) != TCL_OK)
     return TCL_ERROR;
 
   if ((firstPtr->hide()) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
@@ -459,7 +455,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Element* lastPtr = firstPtr;
   if (objc > 5) {
-    if (GetElementFromObj(graphPtr, objv[5], &lastPtr) != TCL_OK)
+    if (legendPtr->getElementFromObj(objv[5], &lastPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (lastPtr->hide() && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
@@ -472,7 +468,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (firstPtr == lastPtr)
     legendPtr->selectEntry(firstPtr);
   else
-    SelectRange(legendPtr, firstPtr, lastPtr);
+    legendPtr->selectRange(firstPtr, lastPtr);
 
   // Set both the anchor and the mark. Indicates that a single entry is
   // selected

@@ -869,7 +869,176 @@ int Legend::entryIsSelected(Element* elemPtr)
   return (hPtr != NULL);
 }
 
-// Tk Procs
+int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
+{
+  const char *string = Tcl_GetString(objPtr);
+  Element* elemPtr = NULL;
+
+  if (!strcmp(string, "anchor"))
+    elemPtr = selAnchorPtr_;
+  else if (!strcmp(string, "current"))
+    elemPtr = (Element*)Blt_GetCurrentItem(bindTable_);
+  else if (!strcmp(string, "first"))
+    elemPtr = getFirstElement();
+  else if (!strcmp(string, "focus"))
+    elemPtr = focusPtr_;
+  else if (!strcmp(string, "last"))
+    elemPtr = getLastElement();
+  else if (!strcmp(string, "end"))
+    elemPtr = getLastElement();
+  else if (!strcmp(string, "next.row"))
+    elemPtr = getNextRow(focusPtr_);
+  else if (!strcmp(string, "next.column"))
+    elemPtr = getNextColumn(focusPtr_);
+  else if (!strcmp(string, "previous.row"))
+    elemPtr = getPreviousRow(focusPtr_);
+  else if (!strcmp(string, "previous.column"))
+    elemPtr = getPreviousColumn(focusPtr_);
+  else if (!strcmp(string, "sel.first"))
+    elemPtr = selFirstPtr_;
+  else if (!strcmp(string, "sel.last"))
+    elemPtr = selLastPtr_;
+  else if (string[0] == '@') {
+    int x, y;
+    if (Blt_GetXY(graphPtr_->interp, graphPtr_->tkwin, string, &x, &y) !=TCL_OK)
+      return TCL_ERROR;
+
+    elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, NULL);
+  }
+  else {
+    if (Blt_GetElement(graphPtr_->interp, graphPtr_, objPtr, &elemPtr) !=TCL_OK)
+      return TCL_ERROR;
+
+    if (elemPtr->link == NULL) {
+      Tcl_AppendResult(graphPtr_->interp, "bad legend index \"", string, "\"",
+		       (char *)NULL);
+      return TCL_ERROR;
+    }
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label == NULL)
+      elemPtr = NULL;
+  }
+
+  *elemPtrPtr = elemPtr;
+  return TCL_OK;
+}
+
+Element* Legend::getNextRow(Element* focusPtr)
+{
+  int col = focusPtr->col_;
+  int row = focusPtr->row_ + 1;
+  for (Blt_ChainLink link=focusPtr->link; link; link=Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+
+    if (elemOps->label == NULL)
+      continue;
+
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
+      return elemPtr;	
+  }
+  return NULL;
+}
+
+Element* Legend::getNextColumn(Element* focusPtr)
+{
+  int col = focusPtr->col_ + 1;
+  int row = focusPtr->row_;
+  for (Blt_ChainLink link=focusPtr->link; link; link=Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+
+    if (elemOps->label == NULL)
+      continue;
+
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
+      return elemPtr;
+  }
+  return NULL;
+}
+
+Element* Legend::getPreviousRow(Element* focusPtr)
+{
+  int col = focusPtr->col_;
+  int row = focusPtr->row_ - 1;
+  for (Blt_ChainLink link=focusPtr->link; link; link=Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+
+    if (elemOps->label == NULL)
+      continue;
+
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
+      return elemPtr;	
+  }
+  return NULL;
+}
+
+Element* Legend::getPreviousColumn(Element* focusPtr)
+{
+  int col = focusPtr->col_ - 1;
+  int row = focusPtr->row_;
+  for (Blt_ChainLink link=focusPtr->link; link; link=Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+
+    if (elemOps->label == NULL)
+      continue;
+
+    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
+      return elemPtr;	
+  }
+  return NULL;
+}
+
+Element* Legend::getFirstElement()
+{
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList);link; link=Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label)
+      return elemPtr;
+  }
+  return NULL;
+}
+
+Element* Legend::getLastElement()
+{
+  for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr_->elements.displayList); 
+       link; link=Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+    if (elemOps->label)
+      return elemPtr;
+  }
+  return NULL;
+}
+
+int Legend::selectRange(Element *fromPtr, Element *toPtr)
+{
+  if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
+    for (Blt_ChainLink link=fromPtr->link; link; 
+	 link=Blt_Chain_NextLink(link)) {
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      selectEntry(elemPtr);
+      if (link == toPtr->link)
+	break;
+    }
+  } 
+  else {
+    for (Blt_ChainLink link=fromPtr->link; link;
+	 link=Blt_Chain_PrevLink(link)) {
+      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      selectEntry(elemPtr);
+      if (link == toPtr->link)
+	break;
+    }
+  }
+
+  return TCL_OK;
+}
+
+// Support
 
 static void DisplayProc(ClientData clientData)
 {
@@ -939,23 +1108,17 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   h -= 2 * ops->borderWidth + 2*ops->yPad;
 
   if ((x >= 0) && (x < w) && (y >= 0) && (y < h)) {
-    int row, column;
-    int n;
 
-    /*
-     * It's in the bounding box, so compute the index.
-     */
-    row    = y / legendPtr->entryHeight_;
-    column = x / legendPtr->entryWidth_;
-    n = (column * legendPtr->nRows_) + row;
+    // It's in the bounding box, so compute the index.
+    int row    = y / legendPtr->entryHeight_;
+    int column = x / legendPtr->entryWidth_;
+    int n = (column * legendPtr->nRows_) + row;
+
     if (n < legendPtr->nEntries_) {
+      // Legend entries are stored in bottom-to-top
+      int count = 0;
       Blt_ChainLink link;
-      int count;
-
-      /* Legend entries are stored in bottom-to-top. */
-      count = 0;
-      for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-	   link != NULL; link = Blt_Chain_NextLink(link)) {
+      for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 	if (elemOps->label) {
@@ -968,186 +1131,9 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 	return Blt_Chain_GetValue(link);
     }
   }
+
   return NULL;
 }
 
-// Support
 
-static Element *GetNextRow(Graph* graphPtr, Element *focusPtr)
-{
-  Blt_ChainLink link;
-  int row, col;
-
-  col = focusPtr->col_;
-  row = focusPtr->row_ + 1;
-  for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      continue;
-
-    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
-      return elemPtr;	
-  }
-  return NULL;
-}
-
-static Element *GetNextColumn(Graph* graphPtr, Element *focusPtr)
-{
-  Blt_ChainLink link;
-  int row, col;
-
-  col = focusPtr->col_ + 1;
-  row = focusPtr->row_;
-  for (link = focusPtr->link; link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      continue;
-
-    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
-      return elemPtr;
-  }
-  return NULL;
-}
-
-static Element *GetPreviousRow(Graph* graphPtr, Element *focusPtr)
-{
-  int col = focusPtr->col_;
-  int row = focusPtr->row_ - 1;
-  for (Blt_ChainLink link = focusPtr->link; link != NULL; 
-       link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      continue;
-
-    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
-      return elemPtr;	
-  }
-  return NULL;
-}
-
-static Element *GetPreviousColumn(Graph* graphPtr, Element *focusPtr)
-{
-  int col = focusPtr->col_ - 1;
-  int row = focusPtr->row_;
-  for (Blt_ChainLink link = focusPtr->link; link != NULL;
-       link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      continue;
-
-    if ((elemPtr->col_ == col) && (elemPtr->row_ == row))
-      return elemPtr;	
-  }
-  return NULL;
-}
-
-static Element *GetFirstElement(Graph* graphPtr)
-{
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label)
-      return elemPtr;
-  }
-  return NULL;
-}
-
-static Element *GetLastElement(Graph* graphPtr)
-{
-  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->elements.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label)
-      return elemPtr;
-  }
-  return NULL;
-}
-
-int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, Element **elemPtrPtr)
-{
-  Legend* legendPtr = graphPtr->legend;
-  Tcl_Interp* interp = graphPtr->interp;
-  const char *string = Tcl_GetString(objPtr);
-  char c = string[0];
-  Element* elemPtr = NULL;
-
-  //  int last = Blt_Chain_GetLength(graphPtr->elements.displayList) - 1;
-  if ((c == 'a') && (strcmp(string, "anchor") == 0))
-    elemPtr = legendPtr->selAnchorPtr_;
-  else if ((c == 'c') && (strcmp(string, "current") == 0))
-    elemPtr = (Element *)Blt_GetCurrentItem(legendPtr->bindTable_);
-  else if ((c == 'f') && (strcmp(string, "first") == 0))
-    elemPtr = GetFirstElement(graphPtr);
-  else if ((c == 'f') && (strcmp(string, "focus") == 0))
-    elemPtr = legendPtr->focusPtr_;
-  else if ((c == 'l') && (strcmp(string, "last") == 0))
-    elemPtr = GetLastElement(graphPtr);
-  else if ((c == 'e') && (strcmp(string, "end") == 0))
-    elemPtr = GetLastElement(graphPtr);
-  else if ((c == 'n') && (strcmp(string, "next.row") == 0))
-    elemPtr = GetNextRow(graphPtr, legendPtr->focusPtr_);
-  else if ((c == 'n') && (strcmp(string, "next.column") == 0))
-    elemPtr = GetNextColumn(graphPtr, legendPtr->focusPtr_);
-  else if ((c == 'p') && (strcmp(string, "previous.row") == 0))
-    elemPtr = GetPreviousRow(graphPtr, legendPtr->focusPtr_);
-  else if ((c == 'p') && (strcmp(string, "previous.column") == 0))
-    elemPtr = GetPreviousColumn(graphPtr, legendPtr->focusPtr_);
-  else if ((c == 's') && (strcmp(string, "sel.first") == 0))
-    elemPtr = legendPtr->selFirstPtr_;
-  else if ((c == 's') && (strcmp(string, "sel.last") == 0))
-    elemPtr = legendPtr->selLastPtr_;
-  else if (c == '@') {
-    int x, y;
-
-    if (Blt_GetXY(interp, graphPtr->tkwin, string, &x, &y) != TCL_OK)
-      return TCL_ERROR;
-
-    elemPtr = (Element *)PickEntryProc(graphPtr, x, y, NULL);
-  }
-  else {
-    if (Blt_GetElement(interp, graphPtr, objPtr, &elemPtr) != TCL_OK)
-      return TCL_ERROR;
-
-    if (elemPtr->link == NULL) {
-      Tcl_AppendResult(interp, "bad legend index \"", string, "\"",
-		       (char *)NULL);
-      return TCL_ERROR;
-    }
-    ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-    if (elemOps->label == NULL)
-      elemPtr = NULL;
-  }
-  *elemPtrPtr = elemPtr;
-  return TCL_OK;
-}
-
-int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr)
-{
-  if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
-    for (Blt_ChainLink link = fromPtr->link; link != NULL; 
-	 link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      legendPtr->selectEntry(elemPtr);
-      if (link == toPtr->link) {
-	break;
-      }
-    }
-  } 
-  else {
-    for (Blt_ChainLink link = fromPtr->link; link != NULL;
-	 link = Blt_Chain_PrevLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      legendPtr->selectEntry(elemPtr);
-      if (link == toPtr->link) {
-	break;
-      }
-    }
-  }
-  return TCL_OK;
-}
 

@@ -151,6 +151,12 @@ class Legend {
 
  protected:
   void setOrigin();
+  Element* getNextRow(Element*);
+  Element* getNextColumn(Element*);
+  Element* getPreviousRow(Element*);
+  Element* getPreviousColumn(Element*);
+  Element* getFirstElement();
+  Element* getLastElement();
 
  public:
   Legend(Graph*);
@@ -160,9 +166,10 @@ class Legend {
   void map(int, int);
   void draw(Drawable drawable);
   void print(Blt_Ps ps);
+  void eventuallyRedraw();
 
   void removeElement(Element*);
-  void eventuallyRedraw();
+  int getElementFromObj(Tcl_Obj*, Element**);
 
   int width() {return width_;}
   int height() {return height_;}
@@ -171,6 +178,7 @@ class Legend {
   int y() {return y_;}
 
   void selectEntry(Element*);
+  int selectRange(Element*, Element*);
   void selectElement(Element*);
   void deselectElement(Element*);
   int entryIsSelected(Element*);
