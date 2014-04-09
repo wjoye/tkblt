@@ -75,28 +75,6 @@ extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable,
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 	const char *text, int textLen, TextStyle *tsPtr, int x, int y);
 
-#define Blt_Ts_GetAnchor(ts)		((ts).anchor)
-#define Blt_Ts_GetAngle(ts)		((ts).angle)
-#define Blt_Ts_GetBackground(ts)	((ts).bg)
-#define Blt_Ts_GetFont(ts)		((ts).font)
-#define Blt_Ts_GetForeground(ts)	((ts).color)
-#define Blt_Ts_GetJustify(ts)		((ts).justify)
-#define Blt_Ts_GetLeader(ts)		((ts).leader)
-
-#define Blt_Ts_SetAnchor(ts, a)	((ts).anchor = (a))
-#define Blt_Ts_SetAngle(ts, r)		((ts).angle = (double)(r))
-#define Blt_Ts_SetBackground(ts, b)	((ts).bg = (b))
-#define Blt_Ts_SetFont(ts, f)		\
-	(((ts).font != (f)) ? ((ts).font = (f), (ts).flags |= UPDATE_GC) : 0)
-#define Blt_Ts_SetForeground(ts, c)    \
-	(((ts).color != (c)) ? ((ts).color = (c), (ts).flags |= UPDATE_GC) : 0)
-#define Blt_Ts_SetJustify(ts, j)	((ts).justify = (j))
-#define Blt_Ts_SetLeader(ts, l)	((ts).leader = (l))
-#define Blt_Ts_SetMaxLength(ts, l)	((ts).maxLength = (l))
-#define Blt_Ts_SetPadding(ts, x, y)     ((ts).xPad = (x), (ts).yPad = (y))
-#define Blt_Ts_SetState(ts, s)		((ts).state = (s))
-#define Blt_Ts_SetUnderline(ts, ul)	((ts).underline = (ul))
-
 #define Blt_Ts_InitStyle(ts)		\
     ((ts).anchor = TK_ANCHOR_NW,	\
      (ts).color = (XColor*)NULL,	\
@@ -112,4 +90,4 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
      (ts).maxLength = -1,		       \
      (ts).angle = 0.0)
 
-#endif /* _BLT_TEXT_H */
+#endif

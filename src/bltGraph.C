@@ -297,7 +297,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   graphPtr->rightMargin.site = MARGIN_RIGHT;
 
   Blt_Ts_InitStyle(graphPtr->titleTextStyle);
-  Blt_Ts_SetAnchor(graphPtr->titleTextStyle, TK_ANCHOR_N);
+  graphPtr->titleTextStyle.anchor = TK_ANCHOR_N;
 
   Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
@@ -527,8 +527,7 @@ static void ConfigureGraph(Graph* graphPtr)
   // clearing the margins with XFillRectangle
   // Margin
   XGCValues gcValues;
-  gcValues.foreground = 
-    Blt_Ts_GetForeground(graphPtr->titleTextStyle)->pixel;
+  gcValues.foreground = graphPtr->titleTextStyle.color->pixel;
   gcValues.background = colorPtr->pixel;
   unsigned long gcMask = (GCForeground | GCBackground);
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);

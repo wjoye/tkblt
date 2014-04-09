@@ -161,7 +161,8 @@ static Tk_OptionSpec optionSpecs[] = {
    "ActiveBorderWidth", 
    STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, entryBW), 0, NULL, 0}, 
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, activeFgColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, activeFgColor), 
+   0, NULL, 0},
   {TK_OPTION_RELIEF, "-activerelief", "activeRelief", "ActiveRelief",
    "flat", -1, Tk_Offset(LegendOptions, activeRelief), 0, NULL, 0},
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
@@ -194,10 +195,12 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LegendOptions, iyPad), 0, NULL, 0},
   {TK_OPTION_BORDER, "-nofocusselectbackground", "noFocusSelectBackground", 
    "NoFocusSelectBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selOutFocusBg), 0, NULL, 0},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selOutFocusBg), 
+   0, NULL, 0},
   {TK_OPTION_COLOR, "-nofocusselectforeground", "noFocusSelectForeground", 
    "NoFocusSelectForeground", 
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selOutFocusFgColor), 0, NULL,0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selOutFocusFgColor), 
+   0, NULL,0},
   {TK_OPTION_PIXELS, "-padx", "padX", "Pad", 
    "1", -1, Tk_Offset(LegendOptions, xPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pady", "padY", "Pad", 
@@ -212,26 +215,28 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(LegendOptions, reqRows), 0, NULL, 0},
   {TK_OPTION_BORDER, "-selectbackground", "selectBackground", 
    "SelectBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selInFocusBg), 0, NULL, 0},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, selInFocusBg), 
+   0, NULL, 0},
   {TK_OPTION_PIXELS, "-selectborderwidth", "selectBorderWidth", 
    "SelectBorderWidth", 
    "1", -1, Tk_Offset(LegendOptions, selBW), 0, NULL, 0},
   {TK_OPTION_STRING, "-selectcommand", "selectCommand", "SelectCommand",
    NULL, -1, Tk_Offset(LegendOptions, selectCmd), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-selectforeground", "selectForeground", "SelectForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selInFocusFgColor), 0, NULL, 0},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, selInFocusFgColor), 
+   0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-selectmode", "selectMode", "SelectMode",
-   "multiple", -1, Tk_Offset(LegendOptions, selectMode), 0, &selectmodeObjOption, 0},
+   "multiple", -1, Tk_Offset(LegendOptions, selectMode), 
+   0, &selectmodeObjOption, 0},
   {TK_OPTION_RELIEF, "-selectrelief", "selectRelief", "SelectRelief",
    "flat", -1, Tk_Offset(LegendOptions, selRelief), 0, NULL, 0},
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus", 
    NULL, -1, Tk_Offset(LegendOptions, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
    NULL, -1, Tk_Offset(LegendOptions, title), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_ANCHOR, "-titleanchor", "titleAnchor", "TitleAnchor", 
-   "nw", -1, Tk_Offset(LegendOptions, titleStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-titlecolor", "titleColor", "TitleColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, titleStyle.color), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, titleStyle.color), 
+   0, NULL, 0},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, titleStyle.font), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -320,7 +325,7 @@ void Legend::configure()
 {
   LegendOptions* ops = (LegendOptions*)ops_;
 
-  /* GC for active label. Dashed outline. */
+  // GC for active label, Dashed outline
   unsigned long gcMask = GCForeground | GCLineStyle;
   XGCValues gcValues;
   gcValues.foreground = ops->focusColor->pixel;
@@ -496,6 +501,10 @@ void Legend::draw(Drawable drawable)
   Pixmap pixmap = Tk_GetPixmap(graphPtr_->display, Tk_WindowId(tkwin), w, h, 
 			       Tk_Depth(tkwin));
 
+  // be sure to update style->gc, things might have changed
+  ops->style.flags |= UPDATE_GC;
+  ops->titleStyle.flags |= UPDATE_GC;
+
   if (ops->normalBg)
     Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
@@ -535,7 +544,8 @@ void Legend::draw(Drawable drawable)
 
   int count = 0;
   int yStart = y;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
     if (elemOps->label == NULL)
@@ -552,13 +562,13 @@ void Legend::draw(Drawable drawable)
 	ops->selInFocusFgColor : ops->selOutFocusFgColor;
       Tk_3DBorder bg = (flags & FOCUS) ?
 	ops->selInFocusBg : ops->selOutFocusBg;
-      Blt_Ts_SetForeground(ops->style, fg);
+      ops->style.color = fg;
       Tk_Fill3DRectangle(tkwin, pixmap, bg, x, y, 
 			 entryWidth_, entryHeight_, 
 			 ops->selBW, ops->selRelief);
     }
     else {
-      Blt_Ts_SetForeground(ops->style, ops->fgColor);
+      ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT)
 	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 
 			   x, y, entryWidth_, 
@@ -570,7 +580,7 @@ void Legend::draw(Drawable drawable)
 		 x + xLabel, 
 		 y + ops->entryBW + ops->iyPad);
     count++;
-    if (focusPtr_ == elemPtr) { /* Focus outline */
+    if (focusPtr_ == elemPtr) {
       if (isSelected) {
 	XColor* color = (flags & FOCUS) ?
 	  ops->selInFocusFgColor : ops->selOutFocusFgColor;
@@ -585,6 +595,7 @@ void Legend::draw(Drawable drawable)
 		       ops->focusColor->pixel);
       }
     }
+
     // Check when to move to the next column
     if ((count % nRows_) > 0)
       y += entryHeight_;
@@ -668,13 +679,13 @@ void Legend::print(Blt_Ps ps)
       continue;
 
     if (elemPtr->flags & LABEL_ACTIVE) {
-      Blt_Ts_SetForeground(ops->style, ops->activeFgColor);
+      ops->style.color = ops->activeFgColor;
       Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, entryWidth_, 
 			     entryHeight_, ops->entryBW, 
 			     ops->activeRelief);
     }
     else {
-      Blt_Ts_SetForeground(ops->style, ops->fgColor);
+      ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
 	Blt_Ps_Draw3DRectangle(ps, graphPtr_->normalBg, x, y, 
 			       entryWidth_,

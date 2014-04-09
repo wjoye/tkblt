@@ -2444,20 +2444,23 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    Blt_Ts_SetAngle(ts, axisPtr->titleAngle);
-    Blt_Ts_SetFont(ts, axisPtr->titleFont);
-    Blt_Ts_SetPadding(ts, 1, 0);
-    Blt_Ts_SetAnchor(ts, axisPtr->titleAnchor);
-    Blt_Ts_SetJustify(ts, axisPtr->titleJustify);
+    ts.flags |= UPDATE_GC;
+
+    ts.angle = axisPtr->titleAngle;
+    ts.font = axisPtr->titleFont;
+    ts.xPad = 1;
+    ts.yPad = 0;
+    ts.anchor = axisPtr->titleAnchor;
+    ts.justify = axisPtr->titleJustify;
     if (axisPtr->flags & ACTIVE)
-      Blt_Ts_SetForeground(ts, axisPtr->activeFgColor);
+      ts.color = axisPtr->activeFgColor;
     else
-      Blt_Ts_SetForeground(ts, axisPtr->titleColor);
+      ts.color = axisPtr->titleColor;
 
     if ((axisPtr->titleAngle == 90.0) || (axisPtr->titleAngle == 270.0))
-      Blt_Ts_SetMaxLength(ts, axisPtr->height);
+      ts.maxLength = axisPtr->height;
     else
-      Blt_Ts_SetMaxLength(ts, axisPtr->width);
+      ts.maxLength = axisPtr->width;
 
     Blt_Ts_DrawText(graphPtr->tkwin, drawable, axisPtr->title, -1, &ts, 
 		    (int)axisPtr->titlePos.x, (int)axisPtr->titlePos.y);
@@ -2530,27 +2533,28 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    Blt_Ts_SetAngle(ts, axisPtr->tickAngle);
-    Blt_Ts_SetFont(ts, axisPtr->tickFont);
-    Blt_Ts_SetPadding(ts, 2, 0);
-    Blt_Ts_SetAnchor(ts, axisPtr->tickAnchor);
+    ts.flags |= UPDATE_GC;
+
+    ts.angle = axisPtr->tickAngle;
+    ts.font = axisPtr->tickFont;
+    ts.xPad = 2;
+    ts.yPad = 0;
+    ts.anchor = axisPtr->tickAnchor;
     if (axisPtr->flags & ACTIVE)
-      Blt_Ts_SetForeground(ts, axisPtr->activeFgColor);
+      ts.color = axisPtr->activeFgColor;
     else
-      Blt_Ts_SetForeground(ts, axisPtr->tickColor);
+      ts.color = axisPtr->tickColor;
 
     for (link = Blt_Chain_FirstLink(axisPtr->tickLabels); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {	
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      /* Draw major tick labels */
       Blt_DrawText(graphPtr->tkwin, drawable, labelPtr->string, &ts, 
 		   (int)labelPtr->anchorPos.x, (int)labelPtr->anchorPos.y);
     }
   }
+
   if ((axisPtr->nSegments > 0) && (axisPtr->lineWidth > 0)) {	
     GC gc = (axisPtr->flags & ACTIVE) ? axisPtr->activeTickGC : axisPtr->tickGC;
-
-    // Draw the tick marks and axis line.
     Blt_Draw2DSegments(graphPtr->display, drawable, gc, axisPtr->segments, 
 		       axisPtr->nSegments);
   }
@@ -2570,27 +2574,33 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    Blt_Ts_SetAngle(ts, axisPtr->titleAngle);
-    Blt_Ts_SetFont(ts, axisPtr->titleFont);
-    Blt_Ts_SetPadding(ts, 1, 0);
-    Blt_Ts_SetAnchor(ts, axisPtr->titleAnchor);
-    Blt_Ts_SetJustify(ts, axisPtr->titleJustify);
-    Blt_Ts_SetForeground(ts, axisPtr->titleColor);
+    ts.flags |= UPDATE_GC;
+
+    ts.angle = axisPtr->titleAngle;
+    ts.font = axisPtr->titleFont;
+    ts.xPad = 1;
+    ts.yPad = 0;
+    ts.anchor = axisPtr->titleAnchor;
+    ts.justify = axisPtr->titleJustify;
+    ts.color = axisPtr->titleColor;
     Blt_Ps_DrawText(ps, axisPtr->title, &ts, axisPtr->titlePos.x, 
 		    axisPtr->titlePos.y);
   }
+
   if (axisPtr->showTicks) {
-    Blt_ChainLink link;
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    Blt_Ts_SetAngle(ts, axisPtr->tickAngle);
-    Blt_Ts_SetFont(ts, axisPtr->tickFont);
-    Blt_Ts_SetPadding(ts, 2, 0);
-    Blt_Ts_SetAnchor(ts, axisPtr->tickAnchor);
-    Blt_Ts_SetForeground(ts, axisPtr->tickColor);
+    ts.flags |= UPDATE_GC;
 
-    for (link = Blt_Chain_FirstLink(axisPtr->tickLabels); link != NULL; 
+    ts.angle = axisPtr->tickAngle;
+    ts.font = axisPtr->tickFont;
+    ts.xPad = 2;
+    ts.yPad = 0;
+    ts.anchor = axisPtr->tickAnchor;
+    ts.color = axisPtr->tickColor;
+
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(axisPtr->tickLabels); link; 
 	 link = Blt_Chain_NextLink(link)) {
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
       Blt_Ps_DrawText(ps, labelPtr->string, &ts, labelPtr->anchorPos.x, 
@@ -3548,34 +3558,45 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
     }
     if (maxPtr) {
       if (isHoriz) {
-	Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 90.0);
-	Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_SE);
+	axisPtr->limitsTextStyle.angle = 90.0;
+	axisPtr->limitsTextStyle.anchor = TK_ANCHOR_SE;
+
 	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
-		      &axisPtr->limitsTextStyle, graphPtr->right, hMax, &textDim);
+		      &axisPtr->limitsTextStyle, graphPtr->right, 
+		      hMax, &textDim);
 	hMax -= (textDim.height + SPACING);
-      } else {
-	Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 0.0);
-	Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_NW);
+      } 
+      else {
+	axisPtr->limitsTextStyle.angle = 0.0;
+	axisPtr->limitsTextStyle.anchor = TK_ANCHOR_NW;
+
 	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
-		      &axisPtr->limitsTextStyle, vMax, graphPtr->top, &textDim);
+		      &axisPtr->limitsTextStyle, vMax, 
+		      graphPtr->top, &textDim);
 	vMax += (textDim.width + SPACING);
       }
     }
     if (minPtr) {
-      Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_SW);
+      axisPtr->limitsTextStyle.anchor = TK_ANCHOR_SW;
+
       if (isHoriz) {
-	Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 90.0);
+	axisPtr->limitsTextStyle.angle = 90.0;
+
 	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
-		      &axisPtr->limitsTextStyle, graphPtr->left, hMin, &textDim);
+		      &axisPtr->limitsTextStyle, graphPtr->left, 
+		      hMin, &textDim);
 	hMin -= (textDim.height + SPACING);
-      } else {
-	Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 0.0);
+      } 
+      else {
+	axisPtr->limitsTextStyle.angle = 0.0;
+
 	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
-		      &axisPtr->limitsTextStyle, vMin, graphPtr->bottom, &textDim);
+		      &axisPtr->limitsTextStyle, vMin, 
+		      graphPtr->bottom, &textDim);
 	vMin += (textDim.width + SPACING);
       }
     }
-  } /* Loop on axes */
+  }
 }
 
 void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
@@ -3607,14 +3628,17 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {
 	if (axisPtr->obj.classId == CID_AXIS_X) {
-	  Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 90.0);
-	  Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_SE);
+	  axisPtr->limitsTextStyle.angle = 90.0;
+	  axisPtr->limitsTextStyle.anchor = TK_ANCHOR_SE;
+
 	  Blt_Ps_DrawText(ps, string, &axisPtr->limitsTextStyle, 
 			  (double)graphPtr->right, hMax);
 	  hMax -= (textWidth + SPACING);
-	} else {
-	  Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 0.0);
-	  Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_NW);
+	} 
+	else {
+	  axisPtr->limitsTextStyle.angle = 0.0;
+	  axisPtr->limitsTextStyle.anchor = TK_ANCHOR_NW;
+
 	  Blt_Ps_DrawText(ps, string, &axisPtr->limitsTextStyle,
 			  vMax, (double)graphPtr->top);
 	  vMax += (textWidth + SPACING);
@@ -3626,14 +3650,17 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
       Blt_GetTextExtents(axisPtr->tickFont, 0, string, -1, &textWidth,
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {
-	Blt_Ts_SetAnchor(axisPtr->limitsTextStyle, TK_ANCHOR_SW);
+	axisPtr->limitsTextStyle.anchor = TK_ANCHOR_SW;
 	if (axisPtr->obj.classId == CID_AXIS_X) {
-	  Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 90.0);
+	  axisPtr->limitsTextStyle.angle = 90.0;
+
 	  Blt_Ps_DrawText(ps, string, &axisPtr->limitsTextStyle, 
 			  (double)graphPtr->left, hMin);
 	  hMin -= (textWidth + SPACING);
-	} else {
-	  Blt_Ts_SetAngle(axisPtr->limitsTextStyle, 0.0);
+	}
+	else {
+	  axisPtr->limitsTextStyle.angle = 0.0;
+
 	  Blt_Ps_DrawText(ps, string, &axisPtr->limitsTextStyle, 
 			  vMin, (double)graphPtr->bottom);
 	  vMin += (textWidth + SPACING);

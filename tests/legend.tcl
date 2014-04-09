@@ -3,6 +3,10 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
+$graph legend selection set data2
+$graph legend focus data1
+$graph legend configure -selectrelief groove
+
 echo "Testing Legend..."
 
 #bltTest2 $graph legend -activebackground
@@ -16,8 +20,8 @@ bltTest2 $graph legend -borderwidth 20
 bltTest2 $graph legend -bd 20
 bltTest2 $graph legend -columns 2
 #bltTest2 $graph legend -exportselection
-#bltTest2 $graph legend -focusdashes
-#bltTest2 $graph legend -focusforeground
+bltTest2 $graph legend -focusdashes "8 3"
+bltTest2 $graph legend -focusforeground red
 bltTest2 $graph legend -font "times 18 bold italic"
 bltTest2 $graph legend -fg yellow
 bltTest2 $graph legend -foreground purple
@@ -37,15 +41,14 @@ bltTest2 $graph legend -raised yes
 bltTest2 $graph legend -relief groove
 bltTest2 $graph legend -rows 1
 #bltTest2 $graph legend -selectbackground
-#bltTest2 $graph legend -selectborderwidth
+bltTest2 $graph legend -selectborderwidth 3
 #bltTest2 $graph legend -selectcommand
 #bltTest2 $graph legend -selectforeground
 #bltTest2 $graph legend -selectmode
-#bltTest2 $graph legend -selectrelief
-#bltTest2 $graph legend -takefocus
+bltTest2 $graph legend -selectrelief flat
+bltTest2 $graph legend -takefocus yes
 bltTest2 $graph legend -title "Hello World"
-##bltTest2 $graph legend -titleanchor center
-##bltTest2 $graph legend -titlecolor red
+bltTest2 $graph legend -titlecolor red
 bltTest2 $graph legend -titlefont "times 24 bold italic"
 
 #bltCmd $graph legend activate
