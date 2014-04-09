@@ -35,9 +35,6 @@ extern "C" {
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
 
-extern void SelectEntry(Legend* legendPtr, Element* elemPtr);
-extern void DeselectElement(Legend* legendPtr, Element* elemPtr);
-extern int EntryIsSelected(Legend* legendPtr, Element* elemPtr);
 extern int GetElementFromObj(Graph* graphPtr, Tcl_Obj *objPtr, 
 			     Element **elemPtrPtr);
 extern int SelectRange(Legend* legendPtr, Element *fromPtr, Element *toPtr);
@@ -251,14 +248,12 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
     }
   }
   else {
-    /* List of selected entries is in stacking order. */
+    // List of selected entries is in stacking order
     for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
-      if (EntryIsSelected(legendPtr, elemPtr)) {
-	Tcl_Obj *objPtr;
-
-	objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+      if (legendPtr->entryIsSelected(elemPtr)) {
+	Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
 	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
       }
     }
@@ -376,7 +371,7 @@ static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp,
   if (GetElementFromObj(graphPtr, objv[4], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
-  int boo = EntryIsSelected(legendPtr, elemPtr);
+  int boo = legendPtr->entryIsSelected(elemPtr);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }
@@ -406,7 +401,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
       if (selectPtr == legendPtr->selAnchorPtr_)
 	break;
 
-      DeselectElement(legendPtr, selectPtr);
+      legendPtr->deselectElement(selectPtr);
     }
 
     legendPtr->flags &= ~SELECT_TOGGLE;
@@ -475,7 +470,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   if (firstPtr == lastPtr)
-    SelectEntry(legendPtr, firstPtr);
+    legendPtr->selectEntry(firstPtr);
   else
     SelectRange(legendPtr, firstPtr, lastPtr);
 

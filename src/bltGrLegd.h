@@ -149,6 +149,9 @@ class Legend {
  public:
   unsigned int flags;
 
+ protected:
+  void setOrigin();
+
  public:
   Legend(Graph*);
   virtual ~Legend();
@@ -156,6 +159,8 @@ class Legend {
   void configure();
   void map(int, int);
   void draw(Drawable drawable);
+  void print(Blt_Ps ps);
+
   void removeElement(Element*);
   void eventuallyRedraw();
 
@@ -164,6 +169,11 @@ class Legend {
   int site() {return site_;}
   int x() {return x_;}
   int y() {return y_;}
+
+  void selectEntry(Element*);
+  void selectElement(Element*);
+  void deselectElement(Element*);
+  int entryIsSelected(Element*);
 
   int isRaised() {return ((LegendOptions*)ops_)->raised;}
   int isHidden() {return ((LegendOptions*)ops_)->hide;}

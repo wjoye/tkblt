@@ -417,9 +417,6 @@ extern void Blt_DestroyCrosshairs(Graph* graphPtr);
 extern void Blt_DisableCrosshairs(Graph* graphPtr);
 extern void Blt_EnableCrosshairs(Graph* graphPtr);
 
-// Legend
-extern void Blt_LegendToPostScript(Graph* graphPtr, Blt_Ps ps);
-
 // Postscript
 extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj* const objv[]);
