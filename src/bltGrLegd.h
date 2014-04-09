@@ -108,11 +108,12 @@ class Legend {
  public:
   enum Position {RIGHT, LEFT, TOP, BOTTOM, PLOT, XY};
 
- public:
-  Graph* graphPtr_;
+ protected:
   Tk_OptionTable optionTable_;
   void* ops_;
 
+ public:
+  Graph* graphPtr_;
 
   int nEntries_;
   int nColumns_;
@@ -141,7 +142,6 @@ class Legend {
   unsigned int titleWidth_;
   unsigned int titleHeight_;
 
- public:
   unsigned int flags;
 
  protected:
@@ -178,6 +178,9 @@ class Legend {
   int selectRange(Element*, Element*);
   void clearSelection();
   int entryIsSelected(Element*);
+
+  void* ops() {return ops_;}
+  Tk_OptionTable optionTable() {return optionTable_;}
 
   Position position() {return (Position)((LegendOptions*)ops_)->position;}
   int isRaised() {return ((LegendOptions*)ops_)->raised;}
