@@ -55,21 +55,6 @@ using namespace Blt;
 #define MARKER_ABOVE	0	/* Draw markers designated to rest above
 				 * elements, grids, legend, etc. */
 
-static const char* objectClassNames[] = {
-  "none",
-  "XAxis", 
-  "YAxis",
-  "BarElement", 
-  "LineElement", 
-  "BitmapMarker", 
-  "ImageMarker", 
-  "LineMarker", 
-  "PolygonMarker",
-  "TextMarker", 
-  "WindowMarker",
-  "LegendEntry"
-};
-
 // Defs
 
 extern "C" {
@@ -932,20 +917,6 @@ void Blt_EventuallyRedrawGraph(Graph* graphPtr)
   }
 }
 
-const char* Blt_GraphClassName(ClassId classId) 
-{
-  if ((classId >= CID_NONE) && (classId <= CID_MARKER_WINDOW))
-    return objectClassNames[classId];
-
-  return NULL;
-}
-
-void Blt_GraphSetObjectClass(GraphObj* graphObjPtr, ClassId classId)
-{
-  graphObjPtr->classId = classId;
-  graphObjPtr->className = Blt_GraphClassName(classId);
-}
-
 static void AdjustAxisPointers(Graph* graphPtr) 
 {
   if (graphPtr->inverted) {
@@ -985,12 +956,13 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_AXIS_X:
   case CID_AXIS_Y:
     {
-      GraphObj* graphObjPtr = (GraphObj*)object;
+      Axis* axisPtr = (Axis*)object;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       MakeTagProc* tagProc = Blt_MakeAxisTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->name), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, graphObjPtr->className), 0);
-      if (graphObjPtr->tags)
-	for (const char** p = graphObjPtr->tags; *p != NULL; p++)
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->name()), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->className()), 0);
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
 	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
     }
     break;
@@ -1038,7 +1010,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
       (y >= exts.bottom) || (y < exts.top)) {
     Axis* axisPtr = Blt_NearestAxis(graphPtr, x, y);
     if (axisPtr) {
-      *contextPtr = (ClientData)axisPtr->obj.classId;
+      *contextPtr = (ClientData)axisPtr->classId();
       return axisPtr;
     }
   }

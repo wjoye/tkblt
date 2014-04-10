@@ -141,15 +141,20 @@ typedef struct {
 
 } AxisOptions;
 
-typedef struct _Axis {
-  GraphObj obj;
-  int use;
-  unsigned int flags;		
-  Tk_OptionTable optionTable;
-  void* ops;
-  Tcl_HashEntry *hashPtr;
+class Axis {
+ public:
+  Graph* graphPtr_;
+  ClassId classId_;
+  const char* name_;
+  const char* className_;
+  Tk_OptionTable optionTable_;
+  void* ops_;
 
-  /* Fields specific to axes. */
+  int use;
+  Tcl_HashEntry *hashPtr;
+  unsigned int flags;		
+
+  // Fields specific to axes
 
   const char *detail;
   int refCount;
@@ -169,9 +174,9 @@ typedef struct _Axis {
   TickSweep minorSweep;
   TickSweep majorSweep;
 
-  /* The following fields are specific to logical axes */
+  // The following fields are specific to logical axes
 
-  int margin;
+  int margin_;
   Blt_ChainLink link;
   Blt_Chain chain;
   Segment2d *segments;
@@ -190,10 +195,21 @@ typedef struct _Axis {
   GC activeTickGC;
   double titleAngle;	
   Tk_Anchor titleAnchor;
-  Grid major;
-  Grid minor;
   double screenScale;
-  int screenMin, screenRange;
-} Axis;
+  int screenMin;
+  int screenRange;
+
+ public:
+  Axis(Graph*, const char*, int);
+  virtual ~Axis();
+
+  ClassId classId() {return classId_;}
+  const char* name() {return name_;}
+  const char* className() {return className_;}
+  Tk_OptionTable optionTable() {return optionTable_;}
+  void* ops() {return ops_;}
+
+  void setClass(ClassId);
+};
 
 #endif

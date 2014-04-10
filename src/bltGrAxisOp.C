@@ -47,7 +47,6 @@ extern void GetDataLimits(Axis *axisPtr, double min, double max);
 extern void FixAxisRange(Axis *axisPtr);
 extern void LogScaleAxis(Axis *axisPtr, double min, double max);
 extern void LinearScaleAxis(Axis *axisPtr, double min, double max);
-extern void DestroyAxis(Axis *axisPtr);
 extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
@@ -72,18 +71,59 @@ static int lastMargin;
 
 // Default
 
+int Blt_CreateAxes(Graph* graphPtr)
+{
+  for (int ii = 0; ii < 4; ii++) {
+    int isNew;
+    Tcl_HashEntry* hPtr = 
+      Tcl_CreateHashEntry(&graphPtr->axes.table, axisNames[ii].name, &isNew);
+    Blt_Chain chain = Blt_Chain_Create();
+
+    Axis* axisPtr = new Axis(graphPtr, axisNames[ii].name, ii);
+    if (!axisPtr)
+      return TCL_ERROR;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+
+    axisPtr->hashPtr = hPtr;
+    Tcl_SetHashValue(hPtr, axisPtr);
+
+    axisPtr->refCount = 1;	/* Default axes are assumed in use. */
+    axisPtr->margin_ = ii;
+    axisPtr->use =1;
+    
+    axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
+
+    if (Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), 
+		       axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK)
+      return TCL_ERROR;
+
+    if (ConfigureAxis(axisPtr) != TCL_OK)
+      return TCL_ERROR;
+
+    if ((axisPtr->margin_ == MARGIN_RIGHT) || (axisPtr->margin_ == MARGIN_TOP))
+      ops->hide = 1;
+
+    graphPtr->axisChain[ii] = chain;
+    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
+    axisPtr->chain = chain;
+  }
+  return TCL_OK;
+}
+
+// Configure
+
 static int CgetOp(Tcl_Interp* interp, Axis *axisPtr, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (objc != 4) {
     Tcl_WrongNumArgs(interp, 2, objv, "cget option");
     return TCL_ERROR;
   }
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops,
-				      axisPtr->optionTable,
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops(),
+				      axisPtr->optionTable(),
 				      objv[3], graphPtr->tkwin);
   if (!objPtr)
     return TCL_ERROR;
@@ -95,11 +135,11 @@ static int CgetOp(Tcl_Interp* interp, Axis *axisPtr,
 static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr, 
 		       int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)axisPtr->ops, 
-				       axisPtr->optionTable, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)axisPtr->ops(), 
+				       axisPtr->optionTable(), 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
     if (!objPtr)
@@ -117,8 +157,8 @@ static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr,
 static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr, 
 		      int objc, Tcl_Obj* const objv[])
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
   const char *string;
 
   string = Tcl_GetString(objv[2]);
@@ -138,15 +178,15 @@ static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr,
 static int BindOp(Tcl_Interp* interp, Axis *axisPtr, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeAxisTag(graphPtr, axisPtr->obj.name), objc-3, objv+3);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeAxisTag(graphPtr, axisPtr->name()), objc-3, objv+3);
 }
           
 static int InvTransformOp(Tcl_Interp* interp, Axis *axisPtr, 
 			  int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
@@ -175,8 +215,8 @@ static int InvTransformOp(Tcl_Interp* interp, Axis *axisPtr,
 static int LimitsOp(Tcl_Interp* interp, Axis *axisPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
@@ -204,7 +244,7 @@ static int MarginOp(Tcl_Interp* interp, Axis *axisPtr,
 {
   const char *marginName = "";
   if (axisPtr->use)
-    marginName = axisNames[axisPtr->margin].name;
+    marginName = axisNames[axisPtr->margin_].name;
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), marginName, -1);
   return TCL_OK;
@@ -213,7 +253,7 @@ static int MarginOp(Tcl_Interp* interp, Axis *axisPtr,
 static int TransformOp(Tcl_Interp* interp, Axis *axisPtr, 
 		       int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
@@ -238,9 +278,9 @@ static int TypeOp(Tcl_Interp* interp, Axis *axisPtr,
 
   typeName = "";
   if (axisPtr->use) {
-    if (axisNames[axisPtr->margin].classId == CID_AXIS_X)
+    if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
       typeName = "x";
-    else if (axisNames[axisPtr->margin].classId == CID_AXIS_Y)
+    else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
       typeName = "y";
   }
   Tcl_SetStringObj(Tcl_GetObjResult(interp), typeName, -1);
@@ -261,7 +301,7 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
-			       Tcl_NewStringObj(axisPtr->obj.name, -1));
+			       Tcl_NewStringObj(axisPtr->name(), -1));
     }
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
@@ -287,7 +327,7 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
     axisPtr->use =0;
     /* Clear the axis type if it's not currently used.*/
     if (axisPtr->refCount == 0)
-      Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
+      axisPtr->setClass(CID_NONE);
   }
   Blt_Chain_Reset(chain);
   for (int i=0; i<axisObjc; i++) {
@@ -295,12 +335,12 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
     if (GetAxisFromObj(interp, graphPtr, axisObjv[i], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (axisPtr->obj.classId == CID_NONE)
-      Blt_GraphSetObjectClass(&axisPtr->obj, classId);
-    else if (axisPtr->obj.classId != classId) {
+    if (axisPtr->classId() == CID_NONE)
+      axisPtr->setClass(classId);
+    else if (axisPtr->classId() != classId) {
       Tcl_AppendResult(interp, "wrong type axis \"", 
-		       axisPtr->obj.name, "\": can't use ", 
-		       axisPtr->obj.className, " type axis.", NULL); 
+		       axisPtr->name(), "\": can't use ", 
+		       axisPtr->className(), " type axis.", NULL); 
       return TCL_ERROR;
     }
     if (axisPtr->link) {
@@ -324,8 +364,8 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
 static int ViewOp(Tcl_Interp* interp, Axis *axisPtr, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
   double worldMin = axisPtr->valueRange.min;
   double worldMax = axisPtr->valueRange.max;
   /* Override data dimensions with user-selected limits. */
@@ -434,6 +474,40 @@ int Blt_DefAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin,
 
 // Axis
 
+int CreateAxis(Tcl_Interp* interp, Graph* graphPtr, 
+		      int objc, Tcl_Obj* const objv[])
+{
+  char *string = Tcl_GetString(objv[3]);
+  if (string[0] == '-') {
+    Tcl_AppendResult(graphPtr->interp, "name of axis \"", string, 
+		     "\" can't start with a '-'", NULL);
+    return TCL_ERROR;
+  }
+
+  int isNew;
+  Tcl_HashEntry* hPtr = 
+    Tcl_CreateHashEntry(&graphPtr->axes.table, string, &isNew);
+  if (!isNew) {
+    Tcl_AppendResult(graphPtr->interp, "axis \"", string,
+		     "\" already exists in \"", Tcl_GetString(objv[0]),
+		     "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  Axis* axisPtr = new Axis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
+  if (!axisPtr)
+    return TCL_ERROR;
+  axisPtr->hashPtr = hPtr;
+  Tcl_SetHashValue(hPtr, axisPtr);
+
+  if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
+    delete axisPtr;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
 static int AxisCgetOp(Tcl_Interp* interp, Graph* graphPtr, 
 		      int objc, Tcl_Obj* const objv[])
 {
@@ -457,7 +531,7 @@ static int AxisConfigureOp(Tcl_Interp* interp, Graph* graphPtr, int objc,
 int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
   Tk_SavedOptions savedOptions;
   int mask =0;
   int error;
@@ -465,7 +539,7 @@ int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)axisPtr->ops, axisPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -568,7 +642,7 @@ static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr,
     if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     if (axisPtr && !ops->hide && axisPtr->use)
       graphPtr->focusPtr = axisPtr;
   }
@@ -576,7 +650,7 @@ static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr,
   Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr, NULL);
 
   if (graphPtr->focusPtr)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr->obj.name,-1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr->name(),-1);
 
   return TCL_OK;
 }
@@ -587,13 +661,13 @@ static int AxisGetOp(Tcl_Interp* interp, Graph* graphPtr,
   Axis *axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable);
   /* Report only on axes. */
   if ((axisPtr) && 
-      ((axisPtr->obj.classId == CID_AXIS_X) || 
-       (axisPtr->obj.classId == CID_AXIS_Y) || 
-       (axisPtr->obj.classId == CID_NONE))) {
+      ((axisPtr->classId() == CID_AXIS_X) || 
+       (axisPtr->classId() == CID_AXIS_Y) || 
+       (axisPtr->classId() == CID_NONE))) {
     char  *string = Tcl_GetString(objv[3]);
     char c = string[0];
     if ((c == 'c') && (strcmp(string, "current") == 0))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->obj.name,-1);
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->name(),-1);
     else if ((c == 'd') && (strcmp(string, "detail") == 0))
       Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->detail, -1);
   }
@@ -642,7 +716,7 @@ static int AxisNamesOp(Tcl_Interp* interp, Graph* graphPtr,
       if (axisPtr->flags & DELETE_PENDING)
 	continue;
 
-      Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(axisPtr->obj.name, -1));
+      Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(axisPtr->name(), -1));
     }
   } 
   else {
@@ -651,9 +725,9 @@ static int AxisNamesOp(Tcl_Interp* interp, Graph* graphPtr,
       Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
       for (int ii=3; ii<objc; ii++) {
 	const char *pattern = (const char*)Tcl_GetString(objv[ii]);
-	if (Tcl_StringMatch(axisPtr->obj.name, pattern)) {
+	if (Tcl_StringMatch(axisPtr->name(), pattern)) {
 	  Tcl_ListObjAppendElement(interp, listObjPtr, 
-				   Tcl_NewStringObj(axisPtr->obj.name, -1));
+				   Tcl_NewStringObj(axisPtr->name(), -1));
 	  break;
 	}
       }
@@ -754,7 +828,7 @@ int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 void FreeAxis(char* data)
 {
   Axis* axisPtr = (Axis*)data;
-  DestroyAxis(axisPtr);
+  delete axisPtr;
 }
 
 void Blt_ResetAxes(Graph* graphPtr)
@@ -794,10 +868,10 @@ void Blt_ResetAxes(Graph* graphPtr)
     Region2d exts;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
+    ElementOptions* elemops = (ElementOptions*)elemPtr->ops();
     elemPtr->extents(&exts);
-    GetDataLimits(ops->axes.x, exts.left, exts.right);
-    GetDataLimits(ops->axes.y, exts.top, exts.bottom);
+    GetDataLimits(elemops->axes.x, exts.left, exts.right);
+    GetDataLimits(elemops->axes.y, exts.top, exts.bottom);
   }
   /*
    * Step 3:  Now that we know the range of data values for each axis,
@@ -808,7 +882,7 @@ void Blt_ResetAxes(Graph* graphPtr)
     double min, max;
 
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     FixAxisRange(axisPtr);
 
     /* Calculate min/max tick (major/minor) layouts */

@@ -67,13 +67,11 @@ AxisName axisNames[] = {
 
 // Defs
 
-extern void DestroyAxis(Axis *axisPtr);
 extern int ConfigureAxis(Axis *axisPtr);
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);
 
 static void FreeTickLabels(Blt_Chain chain);
-static Axis *NewAxis(Graph* graphPtr, const char *name, int margin);
 static int Round(double x)
 {
   return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
@@ -203,157 +201,159 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-// Create
-
-int Blt_CreateAxes(Graph* graphPtr)
+Axis::Axis(Graph* graphPtr, const char* name, int margin)
 {
-  for (int ii = 0; ii < 4; ii++) {
-    int isNew;
-    Tcl_HashEntry* hPtr = 
-      Tcl_CreateHashEntry(&graphPtr->axes.table, axisNames[ii].name, &isNew);
-    Blt_Chain chain = Blt_Chain_Create();
+  ops_ = (AxisOptions*)calloc(1, sizeof(AxisOptions));
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-    Axis* axisPtr = NewAxis(graphPtr, axisNames[ii].name, ii);
-    if (!axisPtr)
-      return TCL_ERROR;
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  graphPtr_ = graphPtr;
+  classId_ = CID_NONE;
+  name_ = dupstr(name);
+  className_ = dupstr("none");
 
-    axisPtr->hashPtr = hPtr;
-    Tcl_SetHashValue(hPtr, axisPtr);
+  use =0;
+  hashPtr =NULL;
+  flags =0;		
 
-    axisPtr->refCount = 1;	/* Default axes are assumed in use. */
-    axisPtr->margin = ii;
-    axisPtr->use =1;
-    Blt_GraphSetObjectClass(&axisPtr->obj, axisNames[ii].classId);
+  /* Fields specific to axes. */
 
-    if (Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops, 
-		       axisPtr->optionTable, graphPtr->tkwin) != TCL_OK)
-      return TCL_ERROR;
+  detail =NULL;
+  refCount =0;
+  titlePos.x =0;
+  titlePos.y =0;
+  titleWidth =0;
+  titleHeight =0;	
+  min =0;
+  max =0;
+  scrollMin =0;
+  scrollMax =0;
+  valueRange.min =0;
+  valueRange.max =0;
+  valueRange.range =0;
+  valueRange.scale =0;
+  axisRange.min =0;
+  axisRange.max =0;
+  axisRange.range =0;
+  axisRange.scale =0;
+  prevMin =0;
+  prevMax =0;
+  t1Ptr =NULL;
+  t2Ptr =NULL;
+  minorSweep.initial =0;
+  minorSweep.step =0;
+  minorSweep.nSteps =0;
+  majorSweep.initial =0;
+  majorSweep.step =0;
+  majorSweep.nSteps =0;
 
-    if (ConfigureAxis(axisPtr) != TCL_OK)
-      return TCL_ERROR;
+  /* The following fields are specific to logical axes */
 
-    if ((axisPtr->margin == MARGIN_RIGHT) || (axisPtr->margin == MARGIN_TOP))
-      ops->hide = 1;
+  margin_ = margin;
+  link =NULL;
+  chain =NULL;
+  segments =NULL;
+  nSegments =0;
+  tickLabels = Blt_Chain_Create();
+  left =0;
+  right =0;
+  top =0;
+  bottom =0;
+  width =0;
+  height =0;
+  maxTickWidth =0;
+  maxTickHeight =0; 
+  tickAnchor = TK_ANCHOR_N;
+  tickGC =NULL;
+  activeTickGC =NULL;
+  titleAngle =0;	
+  titleAnchor = TK_ANCHOR_N;
+  screenScale =0;
+  screenMin =0;
+  screenRange =0;
 
-    graphPtr->axisChain[ii] = chain;
-    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
-    axisPtr->chain = chain;
-  }
-  return TCL_OK;
-}
-
-int CreateAxis(Tcl_Interp* interp, Graph* graphPtr, 
-		      int objc, Tcl_Obj* const objv[])
-{
-  char *string = Tcl_GetString(objv[3]);
-  if (string[0] == '-') {
-    Tcl_AppendResult(graphPtr->interp, "name of axis \"", string, 
-		     "\" can't start with a '-'", NULL);
-    return TCL_ERROR;
-  }
-
-  int isNew;
-  Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->axes.table, string, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(graphPtr->interp, "axis \"", string,
-		     "\" already exists in \"", Tcl_GetString(objv[0]),
-		     "\"", NULL);
-    return TCL_ERROR;
-  }
-
-  Axis* axisPtr = NewAxis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
-  if (!axisPtr)
-    return TCL_ERROR;
-  axisPtr->hashPtr = hPtr;
-  Tcl_SetHashValue(hPtr, axisPtr);
-
-  if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops, axisPtr->optionTable, graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
-    DestroyAxis(axisPtr);
-    return TCL_ERROR;
-  }
-
-  return TCL_OK;
-}
-
-static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
-{
-  Axis *axisPtr = (Axis*)calloc(1, sizeof(Axis));
-  axisPtr->ops = (AxisOptions*)calloc(1, sizeof(AxisOptions));
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-
-  axisPtr->obj.name = Blt_Strdup(name);
-  Blt_GraphSetObjectClass(&axisPtr->obj, CID_NONE);
-  axisPtr->obj.graphPtr = graphPtr;
   ops->reqMin =NAN;
   ops->reqMax =NAN;
   ops->reqScrollMin =NAN;
   ops->reqScrollMax =NAN;
-  axisPtr->margin =margin;
-  axisPtr->use =0;
-  axisPtr->flags = 0;
-
   Blt_Ts_InitStyle(ops->limitsTextStyle);
-  axisPtr->tickLabels = Blt_Chain_Create();
 
-  axisPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  return axisPtr;
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, optionSpecs);
 }
 
-void DestroyAxis(Axis *axisPtr)
+Axis::~Axis()
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (graphPtr->bindTable)
-    Blt_DeleteBindings(graphPtr->bindTable, axisPtr);
+  if (graphPtr_->bindTable)
+    Blt_DeleteBindings(graphPtr_->bindTable, this);
 
-  if (axisPtr->link)
-    Blt_Chain_DeleteLink(axisPtr->chain, axisPtr->link);
+  if (link)
+    Blt_Chain_DeleteLink(chain, link);
 
-  if (axisPtr->obj.name)
-    free((void*)(axisPtr->obj.name));
+  if (name_)
+    delete [] name_;
+  if (className_)
+    delete [] className_;
 
-  if (axisPtr->hashPtr)
-    Tcl_DeleteHashEntry(axisPtr->hashPtr);
+  if (hashPtr)
+    Tcl_DeleteHashEntry(hashPtr);
 
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->limitsTextStyle);
+  Blt_Ts_FreeStyle(graphPtr_->display, &ops->limitsTextStyle);
 
-  if (axisPtr->tickGC)
-    Tk_FreeGC(graphPtr->display, axisPtr->tickGC);
+  if (tickGC)
+    Tk_FreeGC(graphPtr_->display, tickGC);
 
-  if (axisPtr->activeTickGC)
-    Tk_FreeGC(graphPtr->display, axisPtr->activeTickGC);
+  if (activeTickGC)
+    Tk_FreeGC(graphPtr_->display, activeTickGC);
 
-  if (axisPtr->major.segments) 
-    free(axisPtr->major.segments);
-  if (axisPtr->major.gc) 
-    Blt_FreePrivateGC(graphPtr->display, axisPtr->major.gc);
+  if (ops->major.segments) 
+    free(ops->major.segments);
+  if (ops->major.gc) 
+    Blt_FreePrivateGC(graphPtr_->display, ops->major.gc);
 
-  if (axisPtr->minor.segments) 
-    free(axisPtr->minor.segments);
-  if (axisPtr->minor.gc)
-    Blt_FreePrivateGC(graphPtr->display, axisPtr->minor.gc);
+  if (ops->minor.segments) 
+    free(ops->minor.segments);
+  if (ops->minor.gc)
+    Blt_FreePrivateGC(graphPtr_->display, ops->minor.gc);
 
-  if (axisPtr->t1Ptr)
-    free(axisPtr->t1Ptr);
-  if (axisPtr->t2Ptr)
-    free(axisPtr->t2Ptr);
+  if (t1Ptr)
+    free(t1Ptr);
+  if (t2Ptr)
+    free(t2Ptr);
 
-  FreeTickLabels(axisPtr->tickLabels);
+  FreeTickLabels(tickLabels);
 
-  Blt_Chain_Destroy(axisPtr->tickLabels);
+  Blt_Chain_Destroy(tickLabels);
 
-  if (axisPtr->segments)
-    free(axisPtr->segments);
+  if (segments)
+    free(segments);
 
-  Tk_FreeConfigOptions((char*)axisPtr->ops, axisPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
 
-  if (axisPtr->ops)
-    free(axisPtr->ops);
+  if (ops_)
+    free(ops_);
+}
 
-  free(axisPtr);
+void Axis::setClass(ClassId classId)
+{
+  if (className_)
+    delete [] className_;
+  className_ =NULL;
+
+  classId_ = classId;
+  switch (classId) {
+  case CID_NONE:
+    className_ = dupstr("none");
+    break;
+  case CID_AXIS_X:
+    className_ = dupstr("XAxis");
+    break;
+  case CID_AXIS_Y:
+    className_ = dupstr("YAxis");
+    break;
+  default:
+    break;
+  }
 }
 
 // Support
@@ -383,9 +383,9 @@ static int InRange(double x, AxisRange *rangePtr)
 
 int AxisIsHorizontal(Axis *axisPtr)
 {
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
-  return ((axisPtr->obj.classId == CID_AXIS_Y) == graphPtr->inverted);
+  return ((axisPtr->classId() == CID_AXIS_Y) == graphPtr->inverted);
 }
 
 static void FreeTickLabels(Blt_Chain chain)
@@ -404,7 +404,7 @@ static TickLabel *MakeLabel(Axis *axisPtr, double value)
 {
 #define TICK_LABEL_SIZE		200
 
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   char string[TICK_LABEL_SIZE + 1];
   TickLabel *labelPtr;
 
@@ -420,7 +420,7 @@ static TickLabel *MakeLabel(Axis *axisPtr, double value)
     Tcl_Interp* interp;
     Tk_Window tkwin;
 	
-    graphPtr = axisPtr->obj.graphPtr;
+    graphPtr = axisPtr->graphPtr_;
     interp = graphPtr->interp;
     tkwin = graphPtr->tkwin;
     /*
@@ -452,7 +452,7 @@ static TickLabel *MakeLabel(Axis *axisPtr, double value)
 
 double Blt_InvHMap(Axis *axisPtr, double x)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double value;
 
   x = (double)(x - axisPtr->screenMin) * axisPtr->screenScale;
@@ -468,7 +468,7 @@ double Blt_InvHMap(Axis *axisPtr, double x)
 
 double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double value;
 
   y = (double)(y - axisPtr->screenMin) * axisPtr->screenScale;
@@ -484,7 +484,7 @@ double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
 
 double Blt_HMap(Axis *axisPtr, double x)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   if ((ops->logScale) && (x != 0.0)) {
     x = log10(fabs(x));
   }
@@ -498,7 +498,7 @@ double Blt_HMap(Axis *axisPtr, double x)
 
 double Blt_VMap(Axis *axisPtr, double y)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   if ((ops->logScale) && (y != 0.0)) {
     y = log10(fabs(y));
   }
@@ -550,7 +550,7 @@ void GetDataLimits(Axis *axisPtr, double min, double max)
 
 void FixAxisRange(Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double min, max;
 
   /*
@@ -729,7 +729,7 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
 
 void LogScaleAxis(Axis *axisPtr, double min, double max)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   double range;
   double tickMin, tickMax;
@@ -795,7 +795,7 @@ void LogScaleAxis(Axis *axisPtr, double min, double max)
 
 void LinearScaleAxis(Axis *axisPtr, double min, double max)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   double step;
   double tickMin, tickMax;
@@ -868,9 +868,9 @@ void LinearScaleAxis(Axis *axisPtr, double min, double max)
 
 static void ResetTextStyles(Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
   GC newGC;
   XGCValues gcValues;
   unsigned long gcMask;
@@ -908,10 +908,10 @@ static void ResetTextStyles(Axis *axisPtr)
   if (LineIsDashed(ops->major.dashes)) {
     Blt_SetDashes(graphPtr->display, newGC, &ops->major.dashes);
   }
-  if (axisPtr->major.gc) {
-    Blt_FreePrivateGC(graphPtr->display, axisPtr->major.gc);
+  if (ops->major.gc) {
+    Blt_FreePrivateGC(graphPtr->display, ops->major.gc);
   }
-  axisPtr->major.gc = newGC;
+  ops->major.gc = newGC;
 
   gcValues.background = gcValues.foreground = ops->minor.color->pixel;
   gcValues.line_width = LineWidth(ops->minor.lineWidth);
@@ -924,10 +924,10 @@ static void ResetTextStyles(Axis *axisPtr)
   if (LineIsDashed(ops->minor.dashes)) {
     Blt_SetDashes(graphPtr->display, newGC, &ops->minor.dashes);
   }
-  if (axisPtr->minor.gc) {
-    Blt_FreePrivateGC(graphPtr->display, axisPtr->minor.gc);
+  if (ops->minor.gc) {
+    Blt_FreePrivateGC(graphPtr->display, ops->minor.gc);
   }
-  axisPtr->minor.gc = newGC;
+  ops->minor.gc = newGC;
 }
 
 static float titleAngle[4] =		/* Rotation for each axis title */
@@ -938,8 +938,8 @@ static float titleAngle[4] =		/* Rotation for each axis title */
 static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 			AxisInfo *infoPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
   Margin *marginPtr;
   int pad;				/* Offset of axis from interior
 					 * region. This includes a possible
@@ -1237,7 +1237,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 
 static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double min, max;
 
   min = axisPtr->axisRange.min;
@@ -1260,7 +1260,7 @@ static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
 static void MakeTick(Axis *axisPtr, double value, int tick, int line, 
 		     Segment2d *sp)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   if (ops->logScale)
     value = EXP10(value);
@@ -1279,7 +1279,7 @@ static void MakeTick(Axis *axisPtr, double value, int tick, int line,
 
 static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   if (axisPtr->segments) {
     free(axisPtr->segments);
@@ -1353,7 +1353,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 static void MapAxis(Axis *axisPtr, int offset, int margin)
 {
   AxisInfo info;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (AxisIsHorizontal(axisPtr)) {
     axisPtr->screenMin = graphPtr->hOffset;
@@ -1372,13 +1372,13 @@ static void MapAxis(Axis *axisPtr, int offset, int margin)
 
 static void MapStackedAxis(Axis *axisPtr, int count, int margin)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   AxisInfo info;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  Graph* graphPtr = axisPtr->graphPtr_;
   unsigned int slice, w, h;
 
-  if ((graphPtr->margins[axisPtr->margin].axes->nLinks > 1) ||
+  if ((graphPtr->margins[axisPtr->margin_].axes->nLinks > 1) ||
       (ops->reqNumMajorTicks <= 0)) {
     ops->reqNumMajorTicks = 4;
   }
@@ -1485,8 +1485,8 @@ int GetAxisScrollInfo(Tcl_Interp* interp,
 
 static void DrawAxis(Axis *axisPtr, Drawable drawable)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (ops->normalBg) {
     Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
@@ -1619,8 +1619,8 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
 
 static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->obj.name);
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->name());
   if (ops->normalBg)
     Blt_Ps_Fill3DRectangle(ps, ops->normalBg, 
 			   (double)axisPtr->left, (double)axisPtr->top, 
@@ -1672,8 +1672,8 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 
 static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
 
   if (ops->logScale) {
     value = EXP10(value);
@@ -1692,7 +1692,7 @@ static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
 
 static void MapGridlines(Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   Segment2d *s1, *s2;
   Ticks *t1Ptr, *t2Ptr;
   int needed;
@@ -1723,24 +1723,24 @@ static void MapGridlines(Axis *axisPtr)
   }
 
   needed = t1Ptr->nTicks;
-  if (needed != axisPtr->major.nAllocated) {
-    if (axisPtr->major.segments) {
-      free(axisPtr->major.segments);
-      axisPtr->major.segments = NULL;
+  if (needed != ops->major.nAllocated) {
+    if (ops->major.segments) {
+      free(ops->major.segments);
+      ops->major.segments = NULL;
     }
-    axisPtr->major.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
-    axisPtr->major.nAllocated = needed;
+    ops->major.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->major.nAllocated = needed;
   }
   needed = (t1Ptr->nTicks * t2Ptr->nTicks);
-  if (needed != axisPtr->minor.nAllocated) {
-    if (axisPtr->minor.segments) {
-      free(axisPtr->minor.segments);
-      axisPtr->minor.segments = NULL;
+  if (needed != ops->minor.nAllocated) {
+    if (ops->minor.segments) {
+      free(ops->minor.segments);
+      ops->minor.segments = NULL;
     }
-    axisPtr->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
-    axisPtr->minor.nAllocated = needed;
+    ops->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->minor.nAllocated = needed;
   }
-  s1 = axisPtr->major.segments, s2 = axisPtr->minor.segments;
+  s1 = ops->major.segments, s2 = ops->minor.segments;
   for (i = 0; i < t1Ptr->nTicks; i++) {
     double value;
 
@@ -1769,13 +1769,13 @@ static void MapGridlines(Axis *axisPtr)
   if (t2Ptr != axisPtr->t2Ptr)
     free(t2Ptr);
 
-  axisPtr->major.nUsed = s1 - axisPtr->major.segments;
-  axisPtr->minor.nUsed = s2 - axisPtr->minor.segments;
+  ops->major.nUsed = s1 - ops->major.segments;
+  ops->minor.nUsed = s2 - ops->minor.segments;
 }
 
 static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   FreeTickLabels(axisPtr->tickLabels);
 
   // Leave room for axis baseline and padding
@@ -1887,7 +1887,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
     for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY)
@@ -1913,7 +1913,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
     for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY)
@@ -2310,8 +2310,8 @@ void Blt_LayoutGraph(Graph* graphPtr)
 
 int ConfigureAxis(Axis *axisPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
-  Graph* graphPtr = axisPtr->obj.graphPtr;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
   float angle;
 
   /* Check the requested axis limits. Can't allow -min to be greater than
@@ -2322,7 +2322,7 @@ int ConfigureAxis(Axis *axisPtr)
     char msg[200];
     sprintf_s(msg, 200, 
 	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
-	      ops->reqMin, ops->reqMax, axisPtr->obj.name);
+	      ops->reqMin, ops->reqMax, axisPtr->name());
     Tcl_AppendResult(graphPtr->interp, msg, NULL);
     return TCL_ERROR;
   }
@@ -2334,7 +2334,7 @@ int ConfigureAxis(Axis *axisPtr)
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
 	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
 			 Blt_Dtoa(graphPtr->interp, ops->reqMin), 
-			 "\" for axis \"", axisPtr->obj.name, "\"", 
+			 "\" for axis \"", axisPtr->name(), "\"", 
 			 NULL);
 	return TCL_ERROR;
       }
@@ -2384,7 +2384,7 @@ void Blt_DestroyAxes(Graph* graphPtr)
   for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     axisPtr->hashPtr = NULL;
-    DestroyAxis(axisPtr);
+    delete axisPtr;
   }
   Tcl_DeleteHashTable(&graphPtr->axes.table);
 
@@ -2417,7 +2417,7 @@ void Blt_MapAxes(Graph* graphPtr)
     for (link = Blt_Chain_FirstLink(chain); link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!axisPtr->use || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
@@ -2450,7 +2450,7 @@ void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
     for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->margins[i].axes); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use && !(axisPtr->flags & DELETE_PENDING))
 	DrawAxis(axisPtr, drawable);
     }
@@ -2463,19 +2463,19 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
     for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (ops->hide || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
       if (axisPtr->use && ops->showGrid) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, 
-			   axisPtr->major.gc, axisPtr->major.segments, 
-			   axisPtr->major.nUsed);
+			   ops->major.gc, ops->major.segments, 
+			   ops->major.nUsed);
 
 	if (ops->showGridMinor)
 	  Blt_Draw2DSegments(graphPtr->display, drawable, 
-			     axisPtr->minor.gc, axisPtr->minor.segments, 
-			     axisPtr->minor.nUsed);
+			     ops->minor.gc, ops->minor.segments, 
+			     ops->minor.nUsed);
       }
     }
   }
@@ -2486,30 +2486,30 @@ void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
   for (int i = 0; i < 4; i++) {
     for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (ops->hide || !ops->showGrid || !axisPtr->use || 
 	  (axisPtr->flags & DELETE_PENDING))
 	continue;
 
       Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n",
-		    axisPtr->obj.name);
-      Blt_Ps_XSetLineAttributes(ps, axisPtr->major.color, 
-				axisPtr->major.lineWidth, 
-				&axisPtr->major.dashes, CapButt, 
+		    axisPtr->name());
+      Blt_Ps_XSetLineAttributes(ps, ops->major.color, 
+				ops->major.lineWidth, 
+				&ops->major.dashes, CapButt, 
 				JoinMiter);
       Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n",
-		    axisPtr->obj.name);
-      Blt_Ps_Draw2DSegments(ps, axisPtr->major.segments, 
-			    axisPtr->major.nUsed);
+		    axisPtr->name());
+      Blt_Ps_Draw2DSegments(ps, ops->major.segments, 
+			    ops->major.nUsed);
       if (ops->showGridMinor) {
-	Blt_Ps_XSetLineAttributes(ps, axisPtr->minor.color, 
-				  axisPtr->minor.lineWidth, 
-				  &axisPtr->minor.dashes, CapButt, 
+	Blt_Ps_XSetLineAttributes(ps, ops->minor.color, 
+				  ops->minor.lineWidth, 
+				  &ops->minor.dashes, CapButt, 
 				  JoinMiter);
 	Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n",
-		      axisPtr->obj.name);
-	Blt_Ps_Draw2DSegments(ps, axisPtr->minor.segments, 
-			      axisPtr->minor.nUsed);
+		      axisPtr->name());
+	Blt_Ps_Draw2DSegments(ps, ops->minor.segments, 
+			      ops->minor.nUsed);
       }
     }
   }
@@ -2525,7 +2525,7 @@ void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
     for (link = Blt_Chain_FirstLink(mp->axes); link != NULL; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use && !(axisPtr->flags & DELETE_PENDING))
 	AxisToPostScript(ps, axisPtr);
     }
@@ -2551,7 +2551,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
     int isHoriz;
 
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     ops->limitsTextStyle.flags |= UPDATE_GC;
 
     if (axisPtr->flags & DELETE_PENDING)
@@ -2635,7 +2635,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
     unsigned int textWidth, textHeight;
 
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
     if (axisPtr->flags & DELETE_PENDING)
       continue;
@@ -2649,7 +2649,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
       Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {
-	if (axisPtr->obj.classId == CID_AXIS_X) {
+	if (axisPtr->classId() == CID_AXIS_X) {
 	  ops->limitsTextStyle.angle = 90.0;
 	  ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
@@ -2673,7 +2673,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
-	if (axisPtr->obj.classId == CID_AXIS_X) {
+	if (axisPtr->classId() == CID_AXIS_X) {
 	  ops->limitsTextStyle.angle = 90.0;
 
 	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
@@ -2709,7 +2709,7 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); 
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     if (ops->hide || !axisPtr->use || (axisPtr->flags & DELETE_PENDING))
       continue;
 

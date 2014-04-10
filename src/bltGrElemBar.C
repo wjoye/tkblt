@@ -259,7 +259,7 @@ void BarElement::map()
   //  double barWidth = graphPtr->barWidth;
   double barWidth = (ops->barWidth > 0.0f) ? 
     ops->barWidth : graphPtr_->barWidth;
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
   double baseline = (axisyops->logScale) ? 0.0 : graphPtr_->baseline;
   double barOffset = barWidth * 0.5;
 
@@ -309,7 +309,7 @@ void BarElement::map()
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->axes.y->obj.name;
+	  ops->groupName : ops->axes.y->name();
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
 	  double slice, width, offset;
@@ -503,8 +503,8 @@ void BarElement::extents(Region2d *regPtr)
     CheckBarStacks(&ops->axes, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
-  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
   if (axisxops->logScale)
     regPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN) + middle;
 
@@ -1465,8 +1465,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 	else
 	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 
-	name = (ops->groupName) ? ops->groupName : 
-	  ops->axes.y->obj.name;
+	name = (ops->groupName) ? ops->groupName : ops->axes.y->name();
 	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	if (isNew)
 	  count = 1;
@@ -1575,8 +1574,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 	  continue;
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	name = (ops->groupName) ? ops->groupName : 
-	  ops->axes.y->obj.name;
+	name = (ops->groupName) ? ops->groupName : ops->axes.y->name();
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (!hPtr)
 	  continue;

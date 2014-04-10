@@ -439,14 +439,14 @@ void LineElement::extents(Region2d *extsPtr)
   int np = NUMBEROFPOINTS(ops);
 
   extsPtr->right = ops->coords.x->max;
-  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
+  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
   if ((ops->coords.x->min <= 0.0) && (axisxops->logScale))
     extsPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN);
   else
     extsPtr->left = ops->coords.x->min;
 
   extsPtr->bottom = ops->coords.y->max;
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
   if ((ops->coords.y->min <= 0.0) && (axisyops->logScale))
     extsPtr->top = FindElemValuesMinimum(ops->coords.y, DBL_MIN);
   else
@@ -465,7 +465,7 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->right = x;
       }
       x = ops->coords.x->values[i] - ops->xError->values[i];
-      AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
+      AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
       if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
@@ -509,7 +509,7 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->bottom = y;
       }
       y = ops->coords.y->values[i] - ops->yError->values[i];
-      AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+      AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
       if (axisyops->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of

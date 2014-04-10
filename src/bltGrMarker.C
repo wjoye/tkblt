@@ -66,7 +66,7 @@ Marker::~Marker()
 
 double Marker::HMap(Axis *axisPtr, double x)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   if (x == DBL_MAX)
     x = 1.0;
@@ -90,7 +90,7 @@ double Marker::HMap(Axis *axisPtr, double x)
 
 double Marker::VMap(Axis *axisPtr, double y)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
   if (y == DBL_MAX)
     y = 1.0;

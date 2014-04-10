@@ -48,7 +48,7 @@
 
 typedef struct _Graph Graph;
 typedef struct _Crosshairs Crosshairs;
-typedef struct _Axis Axis;
+class Axis;
 class Element;
 class Legend;
 
@@ -434,6 +434,5 @@ extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
 extern void Blt_MapGraph(Graph* graphPtr);
 extern int Blt_GraphUpdateNeeded(Graph* graphPtr);
 extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
-extern const char *Blt_GraphClassName(ClassId classId);
 
 #endif
