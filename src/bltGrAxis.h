@@ -199,6 +199,9 @@ class Axis {
   int screenMin;
   int screenRange;
 
+ protected:
+  double niceNum(double, int);
+
  public:
   Axis(Graph*, const char*, int);
   virtual ~Axis();
@@ -210,6 +213,10 @@ class Axis {
   void* ops() {return ops_;}
 
   void setClass(ClassId);
+
+  void logScale(double, double);
+  void linearScale(double, double);
+  void setAxisRange(AxisRange*, double, double);
 };
 
 #endif
