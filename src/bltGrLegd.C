@@ -167,8 +167,6 @@ Legend::Legend(Graph* graphPtr)
   focusPtr_ =NULL;
   selAnchorPtr_ =NULL;
   selMarkPtr_ =NULL;
-  selFirstPtr_ =NULL;
-  selLastPtr_ =NULL;
   selected_ = Blt_Chain_Create();
   titleWidth_ =0;
   titleHeight_ =0;
@@ -862,10 +860,6 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     elemPtr = getPreviousRow(focusPtr_);
   else if (!strcmp(string, "previous.column"))
     elemPtr = getPreviousColumn(focusPtr_);
-  else if (!strcmp(string, "sel.first"))
-    elemPtr = selFirstPtr_;
-  else if (!strcmp(string, "sel.last"))
-    elemPtr = selLastPtr_;
   else if (string[0] == '@') {
     int x, y;
     if (Blt_GetXY(graphPtr_->interp, graphPtr_->tkwin, string, &x, &y) !=TCL_OK)
