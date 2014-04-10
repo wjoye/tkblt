@@ -37,6 +37,14 @@
 #include "bltConfig.h"
 
 typedef struct {
+  const char *name;
+  ClassId classId;
+  int margin, invertMargin;
+} AxisName;
+
+extern AxisName axisNames[];
+
+typedef struct {
   Blt_Dashes dashes;		/* Dash style of the grid. This represents an
 				 * array of alternatingly drawn pixel
 				 * values. */

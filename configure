@@ -5530,6 +5530,7 @@ done
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C
+	bltGrAxisOp.C
 	bltGrElemOp.C
 	bltGrElemOption.C
 	bltGrElem.C
