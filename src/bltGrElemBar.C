@@ -259,7 +259,8 @@ void BarElement::map()
   //  double barWidth = graphPtr->barWidth;
   double barWidth = (ops->barWidth > 0.0f) ? 
     ops->barWidth : graphPtr_->barWidth;
-  double baseline = (ops->axes.y->logScale) ? 0.0 : graphPtr_->baseline;
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  double baseline = (axisyops->logScale) ? 0.0 : graphPtr_->baseline;
   double barOffset = barWidth * 0.5;
 
   // Create an array of bars representing the screen coordinates of all the
@@ -366,7 +367,7 @@ void BarElement::map()
     double ybot = c2.y;
     c1 = Blt_Map2D(graphPtr_, c1.x, c1.y, &ops->axes);
     c2 = Blt_Map2D(graphPtr_, c2.x, c2.y, &ops->axes);
-    if ((ybot == 0.0) && (ops->axes.y->logScale)) {
+    if ((ybot == 0.0) && (axisyops->logScale)) {
       c2.y = graphPtr_->bottom;
     }
 	    
@@ -502,11 +503,13 @@ void BarElement::extents(Region2d *regPtr)
     CheckBarStacks(&ops->axes, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
-  if (ops->axes.x->logScale)
+  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  if (axisxops->logScale)
     regPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN) + middle;
 
   // Fix y-min limits for barchart
-  if (ops->axes.y->logScale) {
+  if (axisyops->logScale) {
     if ((regPtr->top <= 0.0) || (regPtr->top > 1.0))
       regPtr->top = 1.0;
   }
@@ -524,7 +527,7 @@ void BarElement::extents(Region2d *regPtr)
 	regPtr->right = x;
 
       x = ops->coords.x->values[ii] - ops->xError->values[ii];
-      if (ops->axes.x->logScale) {
+      if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
 	  x = -x;
@@ -545,7 +548,7 @@ void BarElement::extents(Region2d *regPtr)
 
     if (ops->xLow && (ops->xLow->nValues > 0)) {
       double left;
-      if ((ops->xLow->min <= 0.0) && (ops->axes.x->logScale))
+      if ((ops->xLow->min <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
 	left = ops->xLow->min;
@@ -564,7 +567,7 @@ void BarElement::extents(Region2d *regPtr)
 	regPtr->bottom = y;
 
       y = ops->coords.y->values[ii] - ops->yError->values[ii];
-      if (ops->axes.y->logScale) {
+      if (axisyops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (y < 0.0) 
 	  y = -y;
@@ -586,7 +589,7 @@ void BarElement::extents(Region2d *regPtr)
     if (ops->yLow && ops->yLow->nValues > 0) {
       double top;
       if ((ops->yLow->min <= 0.0) && 
-	  (ops->axes.y->logScale))
+	  (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
 	top = ops->yLow->min;

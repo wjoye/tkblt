@@ -66,12 +66,14 @@ Marker::~Marker()
 
 double Marker::HMap(Axis *axisPtr, double x)
 {
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+
   if (x == DBL_MAX)
     x = 1.0;
   else if (x == -DBL_MAX)
     x = 0.0;
   else {
-    if (axisPtr->logScale) {
+    if (ops->logScale) {
       if (x > 0.0)
 	x = log10(x);
       else if (x < 0.0)
@@ -79,7 +81,7 @@ double Marker::HMap(Axis *axisPtr, double x)
     }
     x = (x - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
   }
-  if (axisPtr->descending)
+  if (ops->descending)
     x = 1.0 - x;
 
   // Horizontal transformation
@@ -88,12 +90,14 @@ double Marker::HMap(Axis *axisPtr, double x)
 
 double Marker::VMap(Axis *axisPtr, double y)
 {
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+
   if (y == DBL_MAX)
     y = 1.0;
   else if (y == -DBL_MAX)
     y = 0.0;
   else {
-    if (axisPtr->logScale) {
+    if (ops->logScale) {
       if (y > 0.0)
 	y = log10(y);
       else if (y < 0.0)
@@ -101,7 +105,7 @@ double Marker::VMap(Axis *axisPtr, double y)
     }
     y = (y - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
   }
-  if (axisPtr->descending)
+  if (ops->descending)
     y = 1.0 - y;
 
   // Vertical transformation

@@ -82,8 +82,7 @@ static int CgetOp(Tcl_Interp* interp, Axis *axisPtr,
     return TCL_ERROR;
   }
 
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)axisPtr, 
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops,
 				      axisPtr->optionTable,
 				      objv[3], graphPtr->tkwin);
   if (!objPtr)
@@ -99,8 +98,7 @@ static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr,
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)axisPtr, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)axisPtr->ops, 
 				       axisPtr->optionTable, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
@@ -119,6 +117,7 @@ static int ConfigureOp(Tcl_Interp* interp, Axis *axisPtr,
 static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr, 
 		      int objc, Tcl_Obj* const objv[])
 {
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
   Graph* graphPtr = axisPtr->obj.graphPtr;
   const char *string;
 
@@ -128,7 +127,7 @@ static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr,
   else
     axisPtr->flags &= ~ACTIVE;
 
-  if (!axisPtr->hide && axisPtr->use) {
+  if (!ops->hide && axisPtr->use) {
     graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
     Blt_EventuallyRedrawGraph(graphPtr);
   }
@@ -176,13 +175,14 @@ static int InvTransformOp(Tcl_Interp* interp, Axis *axisPtr,
 static int LimitsOp(Tcl_Interp* interp, Axis *axisPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
   if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
 
   double min, max;
-  if (axisPtr->logScale) {
+  if (ops->logScale) {
     min = EXP10(axisPtr->axisRange.min);
     max = EXP10(axisPtr->axisRange.max);
   } 
@@ -324,6 +324,7 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
 static int ViewOp(Tcl_Interp* interp, Axis *axisPtr, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops;
   Graph* graphPtr = axisPtr->obj.graphPtr;
   double worldMin = axisPtr->valueRange.min;
   double worldMax = axisPtr->valueRange.max;
@@ -343,7 +344,7 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
   if (viewMax > worldMax)
     viewMax = worldMax;
 
-  if (axisPtr->logScale) {
+  if (ops->logScale) {
     worldMin = log10(worldMin);
     worldMax = log10(worldMax);
     viewMin  = log10(viewMin);
@@ -357,7 +358,7 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
    * around, we move the maximum instead. */
   double axisOffset;
   double axisScale;
-  if (AxisIsHorizontal(axisPtr) != axisPtr->descending) {
+  if (AxisIsHorizontal(axisPtr) != ops->descending) {
     axisOffset  = viewMin - worldMin;
     axisScale = graphPtr->hScale;
   } else {
@@ -374,20 +375,21 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
     return TCL_OK;
   }
   double fract = axisOffset / worldWidth;
-  if (GetAxisScrollInfo(interp, objc, objv, &fract, viewWidth / worldWidth, axisPtr->scrollUnits, axisScale) != TCL_OK)
+  if (GetAxisScrollInfo(interp, objc, objv, &fract, viewWidth / worldWidth, 
+			ops->scrollUnits, axisScale) != TCL_OK)
     return TCL_ERROR;
 
-  if (AxisIsHorizontal(axisPtr) != axisPtr->descending) {
-    axisPtr->reqMin = (fract * worldWidth) + worldMin;
-    axisPtr->reqMax = axisPtr->reqMin + viewWidth;
+  if (AxisIsHorizontal(axisPtr) != ops->descending) {
+    ops->reqMin = (fract * worldWidth) + worldMin;
+    ops->reqMax = ops->reqMin + viewWidth;
   }
   else {
-    axisPtr->reqMax = worldMax - (fract * worldWidth);
-    axisPtr->reqMin = axisPtr->reqMax - viewWidth;
+    ops->reqMax = worldMax - (fract * worldWidth);
+    ops->reqMin = ops->reqMax - viewWidth;
   }
-  if (axisPtr->logScale) {
-    axisPtr->reqMin = EXP10(axisPtr->reqMin);
-    axisPtr->reqMax = EXP10(axisPtr->reqMax);
+  if (ops->logScale) {
+    ops->reqMin = EXP10(ops->reqMin);
+    ops->reqMax = EXP10(ops->reqMax);
   }
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
   Blt_EventuallyRedrawGraph(graphPtr);
@@ -463,7 +465,7 @@ int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)axisPtr, axisPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)axisPtr->ops, axisPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -566,7 +568,8 @@ static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr,
     if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (axisPtr && !axisPtr->hide && axisPtr->use)
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
+    if (axisPtr && !ops->hide && axisPtr->use)
       graphPtr->focusPtr = axisPtr;
   }
 
@@ -805,6 +808,7 @@ void Blt_ResetAxes(Graph* graphPtr)
     double min, max;
 
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops;
     FixAxisRange(axisPtr);
 
     /* Calculate min/max tick (major/minor) layouts */
@@ -816,7 +820,7 @@ void Blt_ResetAxes(Graph* graphPtr)
     if ((!isnan(axisPtr->scrollMax)) && (max > axisPtr->scrollMax)) {
       max = axisPtr->scrollMax;
     }
-    if (axisPtr->logScale)
+    if (ops->logScale)
       LogScaleAxis(axisPtr, min, max);
     else
       LinearScaleAxis(axisPtr, min, max);

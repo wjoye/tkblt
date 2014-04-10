@@ -30,64 +30,62 @@
 #ifndef _BLT_TEXT_H
 #define _BLT_TEXT_H
 
-#define UPDATE_GC	1
+#define UPDATE_GC 1
 
 typedef struct {
-    unsigned int state;			/* If non-zero, indicates to draw text
-					 * in the active color */
-    XColor* color;			/* Color to draw the text. */
-    Tk_Font font;			/* Font to use to draw text */
-    double angle;			/* Rotation of text in degrees. */
-    Tk_Justify justify;			/* Justification of the text
-					 * string. This only matters if the
-					 * text is composed of multiple
-					 * lines. */
-    Tk_Anchor anchor;			/* Indicates how the text is anchored
-					 * around its x,y coordinates. */
-    int xPad, yPad;			/* # pixels padding of around text
-					 * region. */
-    unsigned short int leader;		/* # pixels spacing between lines of
-					 * text. */
-    short int underline;		/* Index of character to be underlined,
-					 * -1 if no underline. */
-    int maxLength;			/* Maximum length in pixels of text */
-    /* Private fields. */
-    unsigned short flags;
-    GC gc;			/* GC used to draw the text */
+  unsigned int state;
+  XColor* color;
+  Tk_Font font;
+  double angle;
+  Tk_Justify justify;
+  Tk_Anchor anchor;
+  int xPad;
+  int yPad;
+  unsigned short int leader;
+  short int underline;
+  int maxLength;
+
+  /* Private fields. */
+  unsigned short flags;
+  GC gc;
 } TextStyle;
 
 extern void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, 
-	int textLen, unsigned int *widthPtr, unsigned int *heightPtr);
+			       int textLen, unsigned int *widthPtr, 
+			       unsigned int *heightPtr);
 
 extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
-	unsigned int *widthPtr, unsigned int *heightPtr);
+			      unsigned int *widthPtr, unsigned int *heightPtr);
 
 extern void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *tsPtr);
 
 extern void Blt_Ts_FreeStyle(Display *display, TextStyle *tsPtr);
 
 extern void Blt_DrawText(Tk_Window tkwin, Drawable drawable, 
-	const char *string, TextStyle *tsPtr, int x, int y);
+			 const char *string, TextStyle *tsPtr, 
+			 int x, int y);
 
 extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, 
-	const char *string, TextStyle *tsPtr, int x, int y, Dim2D * dimPtr);
+			  const char *string, TextStyle *tsPtr, 
+			  int x, int y, Dim2D * dimPtr);
 
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
-	const char *text, int textLen, TextStyle *tsPtr, int x, int y);
+			    const char *text, int textLen, TextStyle *tsPtr,
+			    int x, int y);
 
-#define Blt_Ts_InitStyle(ts)		\
-    ((ts).anchor = TK_ANCHOR_NW,	\
-     (ts).color = (XColor*)NULL,	\
-     (ts).font = NULL,			\
-     (ts).justify = TK_JUSTIFY_LEFT,	\
-     (ts).leader = 0,			\
-     (ts).underline = -1,		       \
-     (ts).xPad = 0,    \
-     (ts).yPad = 0,    \
-     (ts).state = 0,			       \
-     (ts).flags = 0,			       \
-     (ts).gc = NULL,			       \
-     (ts).maxLength = -1,		       \
-     (ts).angle = 0.0)
+#define Blt_Ts_InitStyle(ts)			\
+  ((ts).anchor = TK_ANCHOR_NW,			\
+   (ts).color = (XColor*)NULL,			\
+   (ts).font = NULL,				\
+   (ts).justify = TK_JUSTIFY_LEFT,		\
+   (ts).leader = 0,				\
+   (ts).underline = -1,				\
+   (ts).xPad = 0,				\
+   (ts).yPad = 0,				\
+   (ts).state = 0,				\
+   (ts).flags = 0,				\
+   (ts).gc = NULL,				\
+   (ts).maxLength = -1,				\
+   (ts).angle = 0.0)
 
 #endif

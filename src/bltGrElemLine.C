@@ -439,13 +439,15 @@ void LineElement::extents(Region2d *extsPtr)
   int np = NUMBEROFPOINTS(ops);
 
   extsPtr->right = ops->coords.x->max;
-  if ((ops->coords.x->min <= 0.0) && (ops->axes.x->logScale))
+  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
+  if ((ops->coords.x->min <= 0.0) && (axisxops->logScale))
     extsPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN);
   else
     extsPtr->left = ops->coords.x->min;
 
   extsPtr->bottom = ops->coords.y->max;
-  if ((ops->coords.y->min <= 0.0) && (ops->axes.y->logScale))
+  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+  if ((ops->coords.y->min <= 0.0) && (axisyops->logScale))
     extsPtr->top = FindElemValuesMinimum(ops->coords.y, DBL_MIN);
   else
     extsPtr->top = ops->coords.y->min;
@@ -463,7 +465,8 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->right = x;
       }
       x = ops->coords.x->values[i] - ops->xError->values[i];
-      if (ops->axes.x->logScale) {
+      AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops;
+      if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
 	  x = -x;
@@ -484,7 +487,7 @@ void LineElement::extents(Region2d *extsPtr)
       double left;
 	    
       if ((ops->xLow->min <= 0.0) && 
-	  (ops->axes.x->logScale))
+	  (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
 	left = ops->xLow->min;
@@ -506,7 +509,8 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->bottom = y;
       }
       y = ops->coords.y->values[i] - ops->yError->values[i];
-      if (ops->axes.y->logScale) {
+      AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops;
+      if (axisyops->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of
 				 * ignoring them. */
@@ -528,7 +532,7 @@ void LineElement::extents(Region2d *extsPtr)
     if (ops->yLow && ops->yLow->nValues > 0) {
       double top;
       if ((ops->yLow->min <= 0.0) && 
-	  (ops->axes.y->logScale))
+	  (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
 	top = ops->yLow->min;

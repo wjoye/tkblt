@@ -86,67 +86,88 @@ typedef struct {
 } TickSweep;
 
 typedef struct {
+  const char** tags;
+  int checkLimits;
+  int exterior;
+  int showGrid;
+  int showGridMinor;
+  int hide;
+  int showTicks;
+
+  // Fields specific to axes
+
+  double windowSize;
+  const char *formatCmd;
+  int descending;
+  int labelOffset;
+  TextStyle limitsTextStyle;
+  const char *limitsFormat;
+  int lineWidth;
+  int logScale;
+  int looseMin;
+  int looseMax;
+  Ticks* t1UPtr;
+  Ticks* t2UPtr;
+  double reqMin;
+  double reqMax;
+  Tcl_Obj *scrollCmdObjPtr;
+  int scrollUnits;
+  double reqScrollMin;
+  double reqScrollMax;
+  double shiftBy;
+  double reqStep;
+  int reqNumMajorTicks;
+  int reqNumMinorTicks;
+  int tickLength;
+  const char *title;
+  int titleAlternate;
+
+  // The following fields are specific to logical axes
+
+  XColor* activeFgColor;
+  int activeRelief;
+  Tk_3DBorder normalBg;
+  int borderWidth;
+  XColor* tickColor;
+  Grid major;
+  Grid minor;
+  Tk_Justify titleJustify;
+  int relief;
+  double tickAngle;	
+  Tk_Anchor reqTickAnchor;
+  Tk_Font tickFont;
+  Tk_Font titleFont;
+  XColor* titleColor;
+
 } AxisOptions;
 
 typedef struct _Axis {
   GraphObj obj;
-
   int use;
-  int hide;
-  int showTicks;
-  int showGrid;
-  int showGridMinor;
-  int exterior;
-  int checkLimits;
   unsigned int flags;		
-
   Tk_OptionTable optionTable;
+  void* ops;
   Tcl_HashEntry *hashPtr;
 
   /* Fields specific to axes. */
 
   const char *detail;
   int refCount;
-  int logScale;
-  int descending;
-  int looseMin;
-  int looseMax;
-  const char *title;
-  int titleAlternate;
   Point2d titlePos;
   unsigned short int titleWidth;
   unsigned short int titleHeight;	
-  int lineWidth;
-  const char *limitsFormat;
-  TextStyle limitsTextStyle;
-  double windowSize;
-  double shiftBy;
-  int tickLength;
-  const char *formatCmd;
-  Tcl_Obj *scrollCmdObjPtr;
-  int scrollUnits;
   double min;
   double max;
-  double reqMin;
-  double reqMax;
-  double reqScrollMin;
-  double reqScrollMax;
   double scrollMin;
   double scrollMax;
   AxisRange valueRange;
   AxisRange axisRange;
   double prevMin;
   double prevMax;
-  double reqStep;
   Ticks* t1Ptr;
-  Ticks* t1UPtr;
   Ticks* t2Ptr;
-  Ticks* t2UPtr;
   TickSweep minorSweep;
   TickSweep majorSweep;
-  int reqNumMajorTicks;
-  int reqNumMinorTicks;
-  int labelOffset;
 
   /* The following fields are specific to logical axes */
 
@@ -163,24 +184,12 @@ typedef struct _Axis {
   short int width;
   short int height;
   short int maxTickWidth;
-  short int maxTickHeight;
-  Tk_3DBorder normalBg;
-  XColor* activeFgColor;
-  int relief;
-  int borderWidth;
-  int activeRelief;
-  double tickAngle;	
-  Tk_Font tickFont;
+  short int maxTickHeight; 
   Tk_Anchor tickAnchor;
-  Tk_Anchor reqTickAnchor;
-  XColor* tickColor;
   GC tickGC;
   GC activeTickGC;
   double titleAngle;	
-  Tk_Font titleFont;
   Tk_Anchor titleAnchor;
-  Tk_Justify titleJustify;
-  XColor* titleColor;
   Grid major;
   Grid minor;
   double screenScale;
