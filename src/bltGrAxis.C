@@ -519,7 +519,7 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
   return point;
 }
 
-static void GetDataLimits(Axis *axisPtr, double min, double max)
+void GetDataLimits(Axis *axisPtr, double min, double max)
 {
   if (axisPtr->valueRange.min > min) {
     axisPtr->valueRange.min = min;
@@ -529,7 +529,7 @@ static void GetDataLimits(Axis *axisPtr, double min, double max)
   }
 }
 
-static void FixAxisRange(Axis *axisPtr)
+void FixAxisRange(Axis *axisPtr)
 {
   double min, max;
 
@@ -707,7 +707,7 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
   return ticksPtr;
 }
 
-static void LogScaleAxis(Axis *axisPtr, double min, double max)
+void LogScaleAxis(Axis *axisPtr, double min, double max)
 {
   double range;
   double tickMin, tickMax;
@@ -771,7 +771,7 @@ static void LogScaleAxis(Axis *axisPtr, double min, double max)
   SetAxisRange(&axisPtr->axisRange, tickMin, tickMax);
 }
 
-static void LinearScaleAxis(Axis *axisPtr, double min, double max)
+void LinearScaleAxis(Axis *axisPtr, double min, double max)
 {
   double step;
   double tickMin, tickMax;
@@ -840,86 +840,6 @@ static void LinearScaleAxis(Axis *axisPtr, double min, double max)
   }
   axisPtr->minorSweep.initial = axisPtr->minorSweep.step = step;
   axisPtr->minorSweep.nSteps = nTicks;
-}
-
-void Blt_ResetAxes(Graph* graphPtr)
-{
-  Blt_ChainLink link;
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch cursor;
-
-  /* FIXME: This should be called whenever the display list of
-   *	      elements change. Maybe yet another flag INIT_STACKS to
-   *	      indicate that the element display list has changed.
-   *	      Needs to be done before the axis limits are set.
-   */
-  Blt_InitBarSetTable(graphPtr);
-  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
-    Blt_ComputeBarStacks(graphPtr);
-
-  /*
-   * Step 1:  Reset all axes. Initialize the data limits of the axis to
-   *		impossible values.
-   */
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->min = axisPtr->valueRange.min = DBL_MAX;
-    axisPtr->max = axisPtr->valueRange.max = -DBL_MAX;
-  }
-
-  /*
-   * Step 2:  For each element that's to be displayed, get the smallest
-   *		and largest data values mapped to each X and Y-axis.  This
-   *		will be the axis limits if the user doesn't override them 
-   *		with -min and -max options.
-   */
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    Region2d exts;
-
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-    elemPtr->extents(&exts);
-    GetDataLimits(ops->axes.x, exts.left, exts.right);
-    GetDataLimits(ops->axes.y, exts.top, exts.bottom);
-  }
-  /*
-   * Step 3:  Now that we know the range of data values for each axis,
-   *		set axis limits and compute a sweep to generate tick values.
-   */
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    double min, max;
-
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    FixAxisRange(axisPtr);
-
-    /* Calculate min/max tick (major/minor) layouts */
-    min = axisPtr->min;
-    max = axisPtr->max;
-    if ((!isnan(axisPtr->scrollMin)) && (min < axisPtr->scrollMin)) {
-      min = axisPtr->scrollMin;
-    }
-    if ((!isnan(axisPtr->scrollMax)) && (max > axisPtr->scrollMax)) {
-      max = axisPtr->scrollMax;
-    }
-    if (axisPtr->logScale)
-      LogScaleAxis(axisPtr, min, max);
-    else
-      LinearScaleAxis(axisPtr, min, max);
-
-    if (axisPtr->use && (axisPtr->flags & DIRTY))
-      graphPtr->flags |= CACHE_DIRTY;
-  }
-
-  graphPtr->flags &= ~RESET_AXES;
-
-  /*
-   * When any axis changes, we need to layout the entire graph.
-   */
-  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | 
-		      REDRAW_WORLD);
 }
 
 static void ResetTextStyles(Axis *axisPtr)

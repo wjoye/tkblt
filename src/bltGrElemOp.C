@@ -32,6 +32,8 @@ extern "C" {
 #include "bltOp.h"
 };
 
+#include "bltGrAxis.h"
+#include "bltGrAxisOp.h"
 #include "bltGrElem.h"
 #include "bltGrElemBar.h"
 #include "bltGrElemLine.h"
