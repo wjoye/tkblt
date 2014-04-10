@@ -250,7 +250,7 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
   if (classId != CID_NONE) {
     // Set the axis type on the first use of it.
-    if ((axisPtr->refCount == 0) || (axisPtr->classId() == CID_NONE))
+    if ((axisPtr->refCount_ == 0) || (axisPtr->classId() == CID_NONE))
       axisPtr->setClass(classId);
 
     else if (axisPtr->classId() != classId) {
@@ -260,7 +260,7 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 		       NULL);
       return TCL_ERROR;
     }
-    axisPtr->refCount++;
+    axisPtr->refCount_++;
   }
 
   *axisPtrPtr = axisPtr;
@@ -270,8 +270,8 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 static void ReleaseAxis(Axis *axisPtr)
 {
   if (axisPtr) {
-    axisPtr->refCount--;
-    if (axisPtr->refCount == 0) {
+    axisPtr->refCount_--;
+    if (axisPtr->refCount_ == 0) {
       axisPtr->flags |= DELETE_PENDING;
       Tcl_EventuallyFree(axisPtr, FreeAxis);
     }

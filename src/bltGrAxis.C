@@ -211,18 +211,18 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin)
   name_ = dupstr(name);
   className_ = dupstr("none");
 
-  use =0;
-  hashPtr =NULL;
+  use_ =0;
+  hashPtr_ =NULL;
   flags =0;		
 
   /* Fields specific to axes. */
 
-  detail =NULL;
-  refCount =0;
-  titlePos.x =0;
-  titlePos.y =0;
-  titleWidth =0;
-  titleHeight =0;	
+  detail_ =NULL;
+  refCount_ =0;
+  titlePos_.x =0;
+  titlePos_.y =0;
+  titleWidth_ =0;
+  titleHeight_ =0;	
   min =0;
   max =0;
   scrollMin =0;
@@ -295,8 +295,8 @@ Axis::~Axis()
   if (className_)
     delete [] className_;
 
-  if (hashPtr)
-    Tcl_DeleteHashEntry(hashPtr);
+  if (hashPtr_)
+    Tcl_DeleteHashEntry(hashPtr_);
 
   Blt_Ts_FreeStyle(graphPtr_->display, &ops->limitsTextStyle);
 
@@ -1020,8 +1020,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       }
       axisPtr->titleAnchor = TK_ANCHOR_N;
     }
-    axisPtr->titlePos.x = x;
-    axisPtr->titlePos.y = y;
+    axisPtr->titlePos_.x = x;
+    axisPtr->titlePos_.y = y;
     break;
 
   case MARGIN_BOTTOM:
@@ -1087,8 +1087,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       }
       axisPtr->titleAnchor = TK_ANCHOR_S; 
     }
-    axisPtr->titlePos.x = x;
-    axisPtr->titlePos.y = y;
+    axisPtr->titlePos_.x = x;
+    axisPtr->titlePos_.y = y;
     break;
 
   case MARGIN_LEFT:
@@ -1166,8 +1166,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       y = (axisPtr->bottom + axisPtr->top) / 2;
       axisPtr->titleAnchor = TK_ANCHOR_W; 
     } 
-    axisPtr->titlePos.x = x;
-    axisPtr->titlePos.y = y;
+    axisPtr->titlePos_.x = x;
+    axisPtr->titlePos_.y = y;
     break;
 
   case MARGIN_RIGHT:
@@ -1209,8 +1209,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       y = (axisPtr->bottom + axisPtr->top) / 2;
       axisPtr->titleAnchor = TK_ANCHOR_E;
     }
-    axisPtr->titlePos.x = x;
-    axisPtr->titlePos.y = y;
+    axisPtr->titlePos_.x = x;
+    axisPtr->titlePos_.y = y;
     break;
 
   case MARGIN_NONE:
@@ -1521,7 +1521,7 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
       ts.maxLength = axisPtr->width;
 
     Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->title, -1, &ts, 
-		    (int)axisPtr->titlePos.x, (int)axisPtr->titlePos.y);
+		    (int)axisPtr->titlePos_.x, (int)axisPtr->titlePos_.y);
   }
   if (ops->scrollCmdObjPtr) {
     double viewWidth, viewMin, viewMax;
@@ -1641,8 +1641,8 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
     ts.anchor = axisPtr->titleAnchor;
     ts.justify = ops->titleJustify;
     ts.color = ops->titleColor;
-    Blt_Ps_DrawText(ps, ops->title, &ts, axisPtr->titlePos.x, 
-		    axisPtr->titlePos.y);
+    Blt_Ps_DrawText(ps, ops->title, &ts, axisPtr->titlePos_.x, 
+		    axisPtr->titlePos_.y);
   }
 
   if (ops->showTicks) {
@@ -1857,11 +1857,11 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 
   if (ops->title) {
     if (ops->titleAlternate) {
-      if (y < axisPtr->titleHeight)
-	y = axisPtr->titleHeight;
+      if (y < axisPtr->titleHeight_)
+	y = axisPtr->titleHeight_;
     } 
     else
-      y += axisPtr->titleHeight + AXIS_PAD_TITLE;
+      y += axisPtr->titleHeight_ + AXIS_PAD_TITLE;
   }
 
   // Correct for orientation of the axis
@@ -1889,7 +1889,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use) {
+      if (!ops->hide && axisPtr->use_) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY)
 	  GetAxisGeometry(graphPtr, axisPtr);
@@ -1915,13 +1915,13 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use) {
+      if (!ops->hide && axisPtr->use_) {
 	nVisible++;
 	if (graphPtr->flags & GET_AXIS_GEOMETRY)
 	  GetAxisGeometry(graphPtr, axisPtr);
 
-	if ((ops->titleAlternate) && (l < axisPtr->titleWidth))
-	  l = axisPtr->titleWidth;
+	if ((ops->titleAlternate) && (l < axisPtr->titleWidth_))
+	  l = axisPtr->titleWidth_;
 
 	if (isHoriz)
 	  h += axisPtr->height;
@@ -2354,13 +2354,13 @@ int ConfigureAxis(Axis *axisPtr)
   ops->tickAngle = angle;
   ResetTextStyles(axisPtr);
 
-  axisPtr->titleWidth = axisPtr->titleHeight = 0;
+  axisPtr->titleWidth_ = axisPtr->titleHeight_ = 0;
   if (ops->title) {
     unsigned int w, h;
 
     Blt_GetTextExtents(ops->titleFont, 0, ops->title, -1, &w, &h);
-    axisPtr->titleWidth = (unsigned short int)w;
-    axisPtr->titleHeight = (unsigned short int)h;
+    axisPtr->titleWidth_ = (unsigned short int)w;
+    axisPtr->titleHeight_ = (unsigned short int)h;
   }
 
   /* 
@@ -2384,7 +2384,7 @@ void Blt_DestroyAxes(Graph* graphPtr)
   Tcl_HashSearch cursor;
   for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->hashPtr = NULL;
+    axisPtr->hashPtr_ = NULL;
     delete axisPtr;
   }
   Tcl_DeleteHashTable(&graphPtr->axes.table);
@@ -2419,7 +2419,7 @@ void Blt_MapAxes(Graph* graphPtr)
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!axisPtr->use || (axisPtr->flags & DELETE_PENDING))
+      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
       if (graphPtr->stackAxes) {
@@ -2452,7 +2452,7 @@ void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use && !(axisPtr->flags & DELETE_PENDING))
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
 	DrawAxis(axisPtr, drawable);
     }
   }
@@ -2468,7 +2468,7 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
       if (ops->hide || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
-      if (axisPtr->use && ops->showGrid) {
+      if (axisPtr->use_ && ops->showGrid) {
 	Blt_Draw2DSegments(graphPtr->display, drawable, 
 			   ops->major.gc, ops->major.segments, 
 			   ops->major.nUsed);
@@ -2488,7 +2488,7 @@ void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps)
     for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (ops->hide || !ops->showGrid || !axisPtr->use || 
+      if (ops->hide || !ops->showGrid || !axisPtr->use_ || 
 	  (axisPtr->flags & DELETE_PENDING))
 	continue;
 
@@ -2527,7 +2527,7 @@ void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use && !(axisPtr->flags & DELETE_PENDING))
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
 	AxisToPostScript(ps, axisPtr);
     }
   }
@@ -2711,7 +2711,7 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    if (ops->hide || !axisPtr->use || (axisPtr->flags & DELETE_PENDING))
+    if (ops->hide || !axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
       continue;
 
     if (ops->showTicks) {
@@ -2733,7 +2733,7 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
 
 	bbox[4] = bbox[0];
 	if (Blt_PointInPolygon(&t, bbox, 5)) {
-	  axisPtr->detail = "label";
+	  axisPtr->detail_ = "label";
 	  return axisPtr;
 	}
       }
@@ -2746,7 +2746,7 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
 
       Blt_GetTextExtents(ops->titleFont, 0, ops->title,-1,&w,&h);
       Blt_GetBoundingBox(w, h, axisPtr->titleAngle, &rw, &rh, bbox);
-      t = Blt_AnchorPoint(axisPtr->titlePos.x, axisPtr->titlePos.y, 
+      t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
 			  rw, rh, axisPtr->titleAnchor);
       /* Translate the point so that the 0,0 is the upper left 
        * corner of the bounding box.  */
@@ -2755,14 +2755,14 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
 	    
       bbox[4] = bbox[0];
       if (Blt_PointInPolygon(&t, bbox, 5)) {
-	axisPtr->detail = "title";
+	axisPtr->detail_ = "title";
 	return axisPtr;
       }
     }
     if (ops->lineWidth > 0) {	/* Check for the axis region */
       if ((x <= axisPtr->right) && (x >= axisPtr->left) && 
 	  (y <= axisPtr->bottom) && (y >= axisPtr->top)) {
-	axisPtr->detail = "line";
+	axisPtr->detail_ = "line";
 	return axisPtr;
       }
     }

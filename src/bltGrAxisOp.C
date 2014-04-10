@@ -82,12 +82,12 @@ int Blt_CreateAxes(Graph* graphPtr)
       return TCL_ERROR;
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
-    axisPtr->hashPtr = hPtr;
+    axisPtr->hashPtr_ = hPtr;
     Tcl_SetHashValue(hPtr, axisPtr);
 
-    axisPtr->refCount = 1;	/* Default axes are assumed in use. */
+    axisPtr->refCount_ = 1;	/* Default axes are assumed in use. */
     axisPtr->margin_ = ii;
-    axisPtr->use =1;
+    axisPtr->use_ =1;
     
     axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
 
@@ -165,7 +165,7 @@ static int ActivateOp(Tcl_Interp* interp, Axis *axisPtr,
   else
     axisPtr->flags &= ~ACTIVE;
 
-  if (!ops->hide && axisPtr->use) {
+  if (!ops->hide && axisPtr->use_) {
     graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
     Blt_EventuallyRedrawGraph(graphPtr);
   }
@@ -241,7 +241,7 @@ static int MarginOp(Tcl_Interp* interp, Axis *axisPtr,
 		    int objc, Tcl_Obj* const objv[])
 {
   const char *marginName = "";
-  if (axisPtr->use)
+  if (axisPtr->use_)
     marginName = axisNames[axisPtr->margin_].name;
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), marginName, -1);
@@ -275,7 +275,7 @@ static int TypeOp(Tcl_Interp* interp, Axis *axisPtr,
   const char *typeName;
 
   typeName = "";
-  if (axisPtr->use) {
+  if (axisPtr->use_) {
     if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
       typeName = "x";
     else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
@@ -322,9 +322,9 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
 
     axisPtr = (Axis*)Blt_Chain_GetValue(link);
     axisPtr->link = NULL;
-    axisPtr->use =0;
+    axisPtr->use_ =0;
     /* Clear the axis type if it's not currently used.*/
-    if (axisPtr->refCount == 0)
+    if (axisPtr->refCount_ == 0)
       axisPtr->setClass(CID_NONE);
   }
   Blt_Chain_Reset(chain);
@@ -349,7 +349,7 @@ static int UseOp(Tcl_Interp* interp, Axis *axisPtr,
       axisPtr->link = Blt_Chain_Append(chain, axisPtr);
     }
     axisPtr->chain = chain;
-    axisPtr->use =1;
+    axisPtr->use_ =1;
   }
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
   /* When any axis changes, we need to layout the entire graph.  */
@@ -495,7 +495,7 @@ int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
   Axis* axisPtr = new Axis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
   if (!axisPtr)
     return TCL_ERROR;
-  axisPtr->hashPtr = hPtr;
+  axisPtr->hashPtr_ = hPtr;
   Tcl_SetHashValue(hPtr, axisPtr);
 
   if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
@@ -623,7 +623,7 @@ static int AxisDeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   }
 
   axisPtr->flags |= DELETE_PENDING;
-  if (axisPtr->refCount == 0) {
+  if (axisPtr->refCount_ == 0) {
     Tcl_EventuallyFree(axisPtr, FreeAxis);
     Blt_EventuallyRedrawGraph(graphPtr);
   }
@@ -641,7 +641,7 @@ static int AxisFocusOp(Tcl_Interp* interp, Graph* graphPtr,
       return TCL_ERROR;
 
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    if (axisPtr && !ops->hide && axisPtr->use)
+    if (axisPtr && !ops->hide && axisPtr->use_)
       graphPtr->focusPtr = axisPtr;
   }
 
@@ -657,17 +657,18 @@ static int AxisGetOp(Tcl_Interp* interp, Graph* graphPtr,
 		     int objc, Tcl_Obj* const objv[])
 {
   Axis *axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable);
-  /* Report only on axes. */
+
+  // Report only on axes
   if ((axisPtr) && 
       ((axisPtr->classId() == CID_AXIS_X) || 
        (axisPtr->classId() == CID_AXIS_Y) || 
        (axisPtr->classId() == CID_NONE))) {
+
     char  *string = Tcl_GetString(objv[3]);
-    char c = string[0];
-    if ((c == 'c') && (strcmp(string, "current") == 0))
+    if (!strcmp(string, "current"))
       Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->name(),-1);
-    else if ((c == 'd') && (strcmp(string, "detail") == 0))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->detail, -1);
+    else if (!strcmp(string, "detail"))
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->detail_, -1);
   }
 
   return TCL_OK;
@@ -897,7 +898,7 @@ void Blt_ResetAxes(Graph* graphPtr)
     else
       axisPtr->linearScale(min, max);
 
-    if (axisPtr->use && (axisPtr->flags & DIRTY))
+    if (axisPtr->use_ && (axisPtr->flags & DIRTY))
       graphPtr->flags |= CACHE_DIRTY;
   }
 

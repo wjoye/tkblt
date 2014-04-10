@@ -151,16 +151,16 @@ class Axis {
   void* ops_;
 
   int use_;
-  Tcl_HashEntry *hashPtr_;
+  Tcl_HashEntry* hashPtr_;
   unsigned int flags;		
 
   // Fields specific to axes
 
-  const char *detail;
-  int refCount;
-  Point2d titlePos;
-  unsigned short int titleWidth;
-  unsigned short int titleHeight;	
+  const char *detail_;
+  int refCount_;
+  Point2d titlePos_;
+  unsigned short int titleWidth_;
+  unsigned short int titleHeight_;	
   double min;
   double max;
   double scrollMin;
