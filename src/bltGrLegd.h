@@ -130,8 +130,6 @@ class Legend {
   Element *focusPtr_;
   Element *selAnchorPtr_;
   Element *selMarkPtr_;
-  Element *selFirstPtr_;
-  Element *selLastPtr_;
   Blt_Chain selected_;
   unsigned int titleWidth_;
   unsigned int titleHeight_;

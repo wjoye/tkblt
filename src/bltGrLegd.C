@@ -162,14 +162,8 @@ Legend::Legend(Graph* graphPtr)
   entryHeight_ =0;
   x_ =0;
   y_ =0;
-  maxSymSize_ =0;
   bindTable_ =NULL;
   focusGC_ =NULL;
-  focus_ =0;
-  cursorX_ =0;
-  cursorY_ =0;
-  cursorWidth_ =0;
-  cursorHeight_ =0;
   focusPtr_ =NULL;
   selAnchorPtr_ =NULL;
   selMarkPtr_ =NULL;
@@ -1061,14 +1055,14 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
   Legend* legendPtr = graphPtr->legend;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
-  int w = legendPtr->width_;
-  int h = legendPtr->height_;
+  int w = legendPtr->width();
+  int h = legendPtr->height();
 
   if (legendPtr->titleHeight_ > 0)
     y -= legendPtr->titleHeight_ + ops->yPad;
 
-  x -= legendPtr->x_ + ops->borderWidth;
-  y -= legendPtr->y_ + ops->borderWidth;
+  x -= legendPtr->x() + ops->borderWidth;
+  y -= legendPtr->y() + ops->borderWidth;
   w -= 2 * ops->borderWidth + 2*ops->xPad;
   h -= 2 * ops->borderWidth + 2*ops->yPad;
 
