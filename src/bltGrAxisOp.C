@@ -41,6 +41,7 @@ typedef int (GraphDefAxisProc)(Tcl_Interp* interp, Axis *axisPtr,
 typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
 			    int objc, Tcl_Obj* const objv[]);
 
+extern void DestroyAxis(Axis *axisPtr);
 extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
@@ -714,5 +715,36 @@ int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   return (*proc)(interp, graphPtr, objc, objv);
+}
+
+// Support
+
+int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+			  Axis **axisPtrPtr)
+{
+  Tcl_HashEntry *hPtr;
+  const char *name;
+
+  *axisPtrPtr = NULL;
+  name = Tcl_GetString(objPtr);
+  hPtr = Tcl_FindHashEntry(&graphPtr->axes.table, name);
+  if (hPtr) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    if ((axisPtr->flags & DELETE_PENDING) == 0) {
+      *axisPtrPtr = axisPtr;
+      return TCL_OK;
+    }
+  }
+  if (interp)
+    Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
+		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
+
+  return TCL_ERROR;
+}
+
+void FreeAxis(char* data)
+{
+  Axis* axisPtr = (Axis*)data;
+  DestroyAxis(axisPtr);
 }
 

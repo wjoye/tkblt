@@ -48,8 +48,13 @@
 
 typedef struct _Graph Graph;
 typedef struct _Crosshairs Crosshairs;
+typedef struct _Axis Axis;
 class Element;
 class Legend;
+
+typedef struct {
+  Axis *x, *y;
+} Axis2d;
 
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
@@ -93,8 +98,6 @@ typedef struct {
 
   const char **tags;		/* Binding tags for the object. */
 } GraphObj;
-
-#include "bltGrAxis.h"
 
 typedef struct {
   Segment2d *segments;

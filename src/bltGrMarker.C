@@ -28,6 +28,7 @@
  */
 
 #include "bltGrMarker.h"
+#include "bltGrAxis.h"
 
 using namespace Blt;
 

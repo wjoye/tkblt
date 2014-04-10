@@ -36,6 +36,7 @@ extern "C" {
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
 #include "bltGrPenOp.h"
+#include "bltGrAxis.h"
 
 #define SEARCH_X	0
 #define SEARCH_Y	1

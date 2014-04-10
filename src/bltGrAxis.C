@@ -38,6 +38,7 @@ extern "C" {
 #include "bltGrElemBar.h"
 #include "bltGrElemLine.h"
 #include "bltGrAxis.h"
+#include "bltGrAxisOption.h"
 #include "bltGrLegd.h"
 
 #define AXIS_PAD_TITLE 2
@@ -68,229 +69,18 @@ AxisName axisNames[] = {
 
 // Defs
 
+extern void DestroyAxis(Axis *axisPtr);
 extern int ConfigureAxis(Axis *axisPtr);
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);
 
-extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			  Axis **axisPtrPtr);
-extern Tcl_FreeProc FreeAxis;
-
 static void FreeTickLabels(Blt_Chain chain);
-static void ReleaseAxis(Axis* axisPtr);
 static Axis *NewAxis(Graph* graphPtr, const char *name, int margin);
-static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
-			  ClassId classId, Axis **axisPtrPtr);
-static void DestroyAxis(Axis *axisPtr);
 static int Round(double x)
 {
   return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
 }
 
-
-
-// OptionSpecs
-
-static Tk_CustomOptionSetProc AxisSetProc;
-static Tk_CustomOptionGetProc AxisGetProc;
-static Tk_CustomOptionFreeProc AxisFreeProc;
-Tk_ObjCustomOption xAxisObjOption =
-  {
-    "xaxis", AxisSetProc, AxisGetProc, RestoreProc, AxisFreeProc,
-    (ClientData)CID_AXIS_X
-  };
-Tk_ObjCustomOption yAxisObjOption =
-  {
-    "yaxis", AxisSetProc, AxisGetProc, RestoreProc, AxisFreeProc,
-    (ClientData)CID_AXIS_Y
-  };
-
-static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
-		       Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-		       int offset, char* savePtr, int flags)
-{
-  Axis** axisPtrPtr = (Axis**)(widgRec + offset);
-  *(double*)savePtr = *(double*)axisPtrPtr;
-  
-  if (!axisPtrPtr)
-    return TCL_OK;
-
-  Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
-  ClassId classId = (ClassId)(long(clientData));
-  Axis* axisPtr;
-  if (GetAxisByClass(interp, graphPtr, *objPtr, classId, &axisPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  *axisPtrPtr = axisPtr;
-
-  return TCL_OK;
-};
-
-static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin, 
-			    char *widgRec, int offset)
-{
-  Axis* axisPtr = *(Axis**)(widgRec + offset);
-  if (!axisPtr)
-    return Tcl_NewStringObj("", -1);
-
-  return Tcl_NewStringObj(axisPtr->obj.name, -1);
-};
-
-static void AxisFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
-{
-  Axis* axisPtr = *(Axis**)ptr;
-  if (axisPtr)
-    ReleaseAxis(axisPtr);
-}
-
-static Tk_CustomOptionSetProc LimitSetProc;
-static Tk_CustomOptionGetProc LimitGetProc;
-Tk_ObjCustomOption limitObjOption =
-  {
-    "limit", LimitSetProc, LimitGetProc, NULL, NULL, NULL
-  };
-
-static int LimitSetProc(ClientData clientData, Tcl_Interp* interp,
-			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* save, int flags)
-{
-  double* limitPtr = (double*)(widgRec + offset);
-  const char* string = Tcl_GetString(*objPtr);
-  if (!string || !string[0]) {
-    *limitPtr = NAN;
-    return TCL_OK;
-  }
-
-  if (Blt_ExprDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* LimitGetProc(ClientData clientData, Tk_Window tkwin, 
-			     char *widgRec, int offset)
-{
-  double limit = *(double*)(widgRec + offset);
-  Tcl_Obj* objPtr;
-
-  if (!isnan(limit))
-    objPtr = Tcl_NewDoubleObj(limit);
-  else
-    objPtr = Tcl_NewStringObj("", -1);
-
-  return objPtr;
-}
-
-static Tk_CustomOptionSetProc TicksSetProc;
-static Tk_CustomOptionGetProc TicksGetProc;
-static Tk_CustomOptionFreeProc TicksFreeProc;
-Tk_ObjCustomOption ticksObjOption =
-  {
-    "ticks", TicksSetProc, TicksGetProc, RestoreProc, TicksFreeProc, NULL
-  };
-
-static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
-			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* savePtr, int flags)
-{
-  Ticks** ticksPtrPtr = (Ticks**)(widgRec + offset);
-  *(double*)savePtr = *(double*)ticksPtrPtr;
-
-  if (!ticksPtrPtr)
-    return TCL_OK;
-
-  int objc;
-  Tcl_Obj** objv;
-  if (Tcl_ListObjGetElements(interp, *objPtr, &objc, &objv) != TCL_OK)
-    return TCL_ERROR;
-
-  Ticks* ticksPtr = NULL;
-  if (objc > 0) {
-    ticksPtr = (Ticks*)malloc(sizeof(Ticks) + (objc*sizeof(double)));
-    for (int ii = 0; ii<objc; ii++) {
-      double value;
-      if (Blt_ExprDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
-	free(ticksPtr);
-	return TCL_ERROR;
-      }
-      ticksPtr->values[ii] = value;
-    }
-    ticksPtr->nTicks = objc;
-  }
-
-  *ticksPtrPtr = ticksPtr;
-
-  return TCL_OK;
-}
-
-static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin, 
-			     char *widgRec, int offset)
-{
-  Ticks* ticksPtr = *(Ticks**)(widgRec + offset);
-
-  if (!ticksPtr)
-    return Tcl_NewListObj(0, NULL);
-
-  int cnt = ticksPtr->nTicks;
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
-  for (int ii = 0; ii<cnt; ii++)
-    ll[ii] = Tcl_NewDoubleObj(ticksPtr->values[ii]);
-
-  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
-  return listObjPtr;
-}
-
-static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
-			 char *ptr)
-{
-  Ticks* ticksPtr = *(Ticks**)ptr;
-  if (ticksPtr)
-    free(ticksPtr);
-}
-
-static Tk_CustomOptionSetProc ObjectSetProc;
-static Tk_CustomOptionGetProc ObjectGetProc;
-static Tk_CustomOptionFreeProc ObjectFreeProc;
-Tk_ObjCustomOption objectObjOption =
-  {
-    "object", ObjectSetProc, ObjectGetProc, RestoreProc, ObjectFreeProc, NULL,
-  };
-
-static int ObjectSetProc(ClientData clientData, Tcl_Interp* interp,
-			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* savePtr, int flags)
-{
-  Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
-  *(double*)savePtr = *(double*)objectPtrPtr;
-
-  if (!objectPtrPtr)
-    return TCL_OK;
-
-  Tcl_IncrRefCount(*objPtr);
-  *objectPtrPtr = *objPtr;
-
-  return TCL_OK;
-}
-    
-static Tcl_Obj* ObjectGetProc(ClientData clientData, Tk_Window tkwin, 
-			      char *widgRec, int offset)
-{
-  Tcl_Obj** objectPtrPtr = (Tcl_Obj**)(widgRec + offset);
-
-  if (!objectPtrPtr)
-    return Tcl_NewObj();
-
-  return *objectPtrPtr;
-}
-
-static void ObjectFreeProc(ClientData clientData, Tk_Window tkwin,
-			   char *ptr)
-{
-  Tcl_Obj* objectPtr = *(Tcl_Obj**)ptr;
-  if (objectPtr)
-    Tcl_DecrRefCount(objectPtr);
-}
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
@@ -503,7 +293,7 @@ static Axis *NewAxis(Graph* graphPtr, const char *name, int margin)
   return axisPtr;
 }
 
-static void DestroyAxis(Axis *axisPtr)
+void DestroyAxis(Axis *axisPtr)
 {
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
@@ -583,17 +373,6 @@ int AxisIsHorizontal(Axis *axisPtr)
   Graph* graphPtr = axisPtr->obj.graphPtr;
 
   return ((axisPtr->obj.classId == CID_AXIS_Y) == graphPtr->inverted);
-}
-
-static void ReleaseAxis(Axis *axisPtr)
-{
-  if (axisPtr) {
-    axisPtr->refCount--;
-    if (axisPtr->refCount == 0) {
-      axisPtr->flags |= DELETE_PENDING;
-      Tcl_EventuallyFree(axisPtr, FreeAxis);
-    }
-  }
 }
 
 static void FreeTickLabels(Blt_Chain chain)
@@ -1203,12 +982,6 @@ static void ResetTextStyles(Axis *axisPtr)
     Blt_FreePrivateGC(graphPtr->display, axisPtr->minor.gc);
   }
   axisPtr->minor.gc = newGC;
-}
-
-void FreeAxis(char* data)
-{
-  Axis* axisPtr = (Axis*)data;
-  DestroyAxis(axisPtr);
 }
 
 static float titleAngle[4] =		/* Rotation for each axis title */
@@ -2642,56 +2415,6 @@ int ConfigureAxis(Axis *axisPtr)
   graphPtr->flags |= MAP_WORLD | RESET_AXES | CACHE_DIRTY;
   axisPtr->flags |= DIRTY;
   Blt_EventuallyRedrawGraph(graphPtr);
-  return TCL_OK;
-}
-
-int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			  Axis **axisPtrPtr)
-{
-  Tcl_HashEntry *hPtr;
-  const char *name;
-
-  *axisPtrPtr = NULL;
-  name = Tcl_GetString(objPtr);
-  hPtr = Tcl_FindHashEntry(&graphPtr->axes.table, name);
-  if (hPtr) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    if ((axisPtr->flags & DELETE_PENDING) == 0) {
-      *axisPtrPtr = axisPtr;
-      return TCL_OK;
-    }
-  }
-  if (interp)
-    Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
-
-  return TCL_ERROR;
-}
-
-static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
-			  ClassId classId, Axis **axisPtrPtr)
-{
-  Axis *axisPtr;
-
-  if (GetAxisFromObj(interp, graphPtr, objPtr, &axisPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (classId != CID_NONE) {
-    // Set the axis type on the first use of it.
-    if ((axisPtr->refCount == 0) || (axisPtr->obj.classId == CID_NONE))
-      Blt_GraphSetObjectClass(&axisPtr->obj, classId);
-
-    else if (axisPtr->obj.classId != classId) {
-      Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
-		       "\" is already in use on an opposite ", 
-		       axisPtr->obj.className, "-axis", 
-		       NULL);
-      return TCL_ERROR;
-    }
-    axisPtr->refCount++;
-  }
-
-  *axisPtrPtr = axisPtr;
   return TCL_OK;
 }
 

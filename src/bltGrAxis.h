@@ -33,6 +33,15 @@
 #ifndef _BLT_GR_AXIS_H
 #define _BLT_GR_AXIS_H
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
+extern "C" {
+#include "bltGraph.h"
+}
+
 #include "bltList.h"
 #include "bltConfig.h"
 
@@ -79,7 +88,7 @@ typedef struct {
   int nSteps;	/* Number of intervals. */
 } TickSweep;
 
-typedef struct {
+typedef struct _Axis {
   GraphObj obj;			/* Must be first field in axis. */
 
   int use;
@@ -243,8 +252,7 @@ typedef struct {
   Tk_Anchor tickAnchor;
   Tk_Anchor reqTickAnchor;
   XColor* tickColor;
-  GC tickGC;				/* Graphics context for axis and tick
-					 * labels */
+  GC tickGC;
   GC activeTickGC;
 
   double titleAngle;	
@@ -253,15 +261,12 @@ typedef struct {
   Tk_Justify titleJustify;
   XColor* titleColor;
     
-  Grid major, minor;			/* Axis grid information. */
+  Grid major;
+  Grid minor;
 
   double screenScale;
   int screenMin, screenRange;
 
 } Axis;
 
-typedef struct {
-  Axis *x, *y;
-} Axis2d;
-
-#endif /* _BLT_GR_AXIS_H */
+#endif
