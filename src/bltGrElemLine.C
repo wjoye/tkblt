@@ -1744,7 +1744,7 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
   else {
     int i;
 
-    double maxY = (double)ops->axes.y->bottom;
+    double maxY = (double)ops->axes.y->bottom_;
     for (i = 0; i < mapPtr->nScreenPts; i++) {
       origPts[i].x = mapPtr->screenPts[i].x + 1;
       origPts[i].y = mapPtr->screenPts[i].y;
