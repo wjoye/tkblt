@@ -237,14 +237,14 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin)
   axisRange_.scale =0;
   prevMin_ =0;
   prevMax_ =0;
-  t1Ptr =NULL;
-  t2Ptr =NULL;
-  minorSweep.initial =0;
-  minorSweep.step =0;
-  minorSweep.nSteps =0;
-  majorSweep.initial =0;
-  majorSweep.step =0;
-  majorSweep.nSteps =0;
+  t1Ptr_ =NULL;
+  t2Ptr_ =NULL;
+  minorSweep_.initial =0;
+  minorSweep_.step =0;
+  minorSweep_.nSteps =0;
+  majorSweep_.initial =0;
+  majorSweep_.step =0;
+  majorSweep_.nSteps =0;
 
   /* The following fields are specific to logical axes */
 
@@ -316,10 +316,10 @@ Axis::~Axis()
   if (ops->minor.gc)
     Blt_FreePrivateGC(graphPtr_->display, ops->minor.gc);
 
-  if (t1Ptr)
-    free(t1Ptr);
-  if (t2Ptr)
-    free(t2Ptr);
+  if (t1Ptr_)
+    free(t1Ptr_);
+  if (t2Ptr_)
+    free(t2Ptr_);
 
   FreeTickLabels(tickLabels);
 
@@ -415,11 +415,11 @@ void Axis::logScale(double min, double max)
       tickMax = max;
     }
   }
-  majorSweep.step = majorStep;
-  majorSweep.initial = floor(tickMin);
-  majorSweep.nSteps = nMajor;
-  minorSweep.initial = minorSweep.step = minorStep;
-  minorSweep.nSteps = nMinor;
+  majorSweep_.step = majorStep;
+  majorSweep_.initial = floor(tickMin);
+  majorSweep_.nSteps = nMajor;
+  minorSweep_.initial = minorSweep_.step = minorStep;
+  minorSweep_.nSteps = nMinor;
 
   setAxisRange(&axisRange_, tickMin, tickMax);
 }
@@ -461,9 +461,9 @@ void Axis::linearScale(double min, double max)
 	
     nTicks = Round((tickMax - tickMin) / step) + 1;
   } 
-  majorSweep.step = step;
-  majorSweep.initial = tickMin;
-  majorSweep.nSteps = nTicks;
+  majorSweep_.step = step;
+  majorSweep_.initial = tickMin;
+  majorSweep_.nSteps = nTicks;
 
   /*
    * The limits of the axis are either the range of the data ("tight") or at
@@ -494,8 +494,8 @@ void Axis::linearScale(double min, double max)
 				 * routine * create minor log-scale tick
 				 * marks.  */
   }
-  minorSweep.initial = minorSweep.step = step;
-  minorSweep.nSteps = nTicks;
+  minorSweep_.initial = minorSweep_.step = step;
+  minorSweep_.nSteps = nTicks;
 }
 
 void Axis::setAxisRange(AxisRange *rangePtr, double min, double max)
@@ -1287,8 +1287,8 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     axisPtr->segments = NULL;	
   }
 
-  Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr;
-  Ticks* t2Ptr = ops->t2UPtr ? ops->t2UPtr : axisPtr->t2Ptr;
+  Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr_;
+  Ticks* t2Ptr = ops->t2UPtr ? ops->t2UPtr : axisPtr->t2Ptr_;
 
   int nMajorTicks= t1Ptr ? t1Ptr->nTicks : 0;
   int nMinorTicks= t2Ptr ? t2Ptr->nTicks : 0;
@@ -1308,7 +1308,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       double t1 = t1Ptr->values[ii];
       /* Minor ticks */
       for (int jj=0; jj<nMinorTicks; jj++) {
-	double t2 = t1 + (axisPtr->majorSweep.step*t2Ptr->values[jj]);
+	double t2 = t1 + (axisPtr->majorSweep_.step*t2Ptr->values[jj]);
 	if (InRange(t2, &axisPtr->axisRange_)) {
 	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
@@ -1328,7 +1328,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
     for (int ii=0; ii< nMajorTicks; ii++) {
       double t1 = t1Ptr->values[ii];
       if (ops->labelOffset)
-	t1 += axisPtr->majorSweep.step * 0.5;
+	t1 += axisPtr->majorSweep_.step * 0.5;
 
       if (!InRange(t1, &axisPtr->axisRange_))
 	continue;
@@ -1702,13 +1702,13 @@ static void MapGridlines(Axis *axisPtr)
   if (!axisPtr)
     return;
 
-  t1Ptr = axisPtr->t1Ptr;
+  t1Ptr = axisPtr->t1Ptr_;
   if (!t1Ptr)
-    t1Ptr = GenerateTicks(&axisPtr->majorSweep);
+    t1Ptr = GenerateTicks(&axisPtr->majorSweep_);
  
-  t2Ptr = axisPtr->t2Ptr;
+  t2Ptr = axisPtr->t2Ptr_;
   if (!t2Ptr)
-    t2Ptr = GenerateTicks(&axisPtr->minorSweep);
+    t2Ptr = GenerateTicks(&axisPtr->minorSweep_);
 
   needed = t1Ptr->nTicks;
   if (ops->showGridMinor)
@@ -1716,9 +1716,9 @@ static void MapGridlines(Axis *axisPtr)
 
   if (needed == 0) {
     // Free generated ticks
-    if (t1Ptr != axisPtr->t1Ptr)
+    if (t1Ptr != axisPtr->t1Ptr_)
       free(t1Ptr);
-    if (t2Ptr != axisPtr->t2Ptr)
+    if (t2Ptr != axisPtr->t2Ptr_)
       free(t2Ptr);
     return;			
   }
@@ -1750,7 +1750,7 @@ static void MapGridlines(Axis *axisPtr)
       int j;
 
       for (j = 0; j < t2Ptr->nTicks; j++) {
-	double subValue = value + (axisPtr->majorSweep.step * 
+	double subValue = value + (axisPtr->majorSweep_.step * 
 				   t2Ptr->values[j]);
 	if (InRange(subValue, &axisPtr->axisRange_)) {
 	  MakeGridLine(axisPtr, subValue, s2);
@@ -1765,9 +1765,9 @@ static void MapGridlines(Axis *axisPtr)
   }
 
   // Free generated ticks
-  if (t1Ptr != axisPtr->t1Ptr)
+  if (t1Ptr != axisPtr->t1Ptr_)
     free(t1Ptr);
-  if (t2Ptr != axisPtr->t2Ptr)
+  if (t2Ptr != axisPtr->t2Ptr_)
     free(t2Ptr);
 
   ops->major.nUsed = s1 - ops->major.segments;
@@ -1786,15 +1786,15 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 
   axisPtr->maxTickHeight = axisPtr->maxTickWidth = 0;
 
-  if (axisPtr->t1Ptr)
-    free(axisPtr->t1Ptr);
-  axisPtr->t1Ptr = GenerateTicks(&axisPtr->majorSweep);
-  if (axisPtr->t2Ptr)
-    free(axisPtr->t2Ptr);
-  axisPtr->t2Ptr = GenerateTicks(&axisPtr->minorSweep);
+  if (axisPtr->t1Ptr_)
+    free(axisPtr->t1Ptr_);
+  axisPtr->t1Ptr_ = GenerateTicks(&axisPtr->majorSweep_);
+  if (axisPtr->t2Ptr_)
+    free(axisPtr->t2Ptr_);
+  axisPtr->t2Ptr_ = GenerateTicks(&axisPtr->minorSweep_);
 
   if (ops->showTicks) {
-    Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr;
+    Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr_;
 	
     int nTicks =0;
     if (t1Ptr)
@@ -1805,7 +1805,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
       double x = t1Ptr->values[ii];
       double x2 = t1Ptr->values[ii];
       if (ops->labelOffset)
-	x2 += axisPtr->majorSweep.step * 0.5;
+	x2 += axisPtr->majorSweep_.step * 0.5;
 
       if (!InRange(x2, &axisPtr->axisRange_))
 	continue;
