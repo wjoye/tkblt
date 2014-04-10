@@ -386,8 +386,8 @@ void BarElement::map()
     /* Bound the bars horizontally by the width of the graph window */
     /* Bound the bars vertically by the position of the axis. */
     if (graphPtr_->stackAxes) {
-      top = ops->axes.y->screenMin;
-      bottom = ops->axes.y->screenMin + ops->axes.y->screenRange;
+      top = ops->axes.y->screenMin_;
+      bottom = ops->axes.y->screenMin_ + ops->axes.y->screenRange_;
       left = graphPtr_->left;
       right = graphPtr_->right;
     } else {

@@ -265,11 +265,11 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin)
   tickAnchor_ = TK_ANCHOR_N;
   tickGC_ =NULL;
   activeTickGC_ =NULL;
-  titleAngle =0;	
-  titleAnchor = TK_ANCHOR_N;
-  screenScale =0;
-  screenMin =0;
-  screenRange =0;
+  titleAngle_ =0;	
+  titleAnchor_ = TK_ANCHOR_N;
+  screenScale_ =0;
+  screenMin_ =0;
+  screenRange_ =0;
 
   ops->reqMin =NAN;
   ops->reqMax =NAN;
@@ -737,7 +737,7 @@ double Blt_InvHMap(Axis *axisPtr, double x)
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double value;
 
-  x = (double)(x - axisPtr->screenMin) * axisPtr->screenScale;
+  x = (double)(x - axisPtr->screenMin_) * axisPtr->screenScale_;
   if (ops->descending) {
     x = 1.0 - x;
   }
@@ -753,7 +753,7 @@ double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double value;
 
-  y = (double)(y - axisPtr->screenMin) * axisPtr->screenScale;
+  y = (double)(y - axisPtr->screenMin_) * axisPtr->screenScale_;
   if (ops->descending) {
     y = 1.0 - y;
   }
@@ -775,7 +775,7 @@ double Blt_HMap(Axis *axisPtr, double x)
   if (ops->descending) {
     x = 1.0 - x;
   }
-  return (x * axisPtr->screenRange + axisPtr->screenMin);
+  return (x * axisPtr->screenRange_ + axisPtr->screenMin_);
 }
 
 double Blt_VMap(Axis *axisPtr, double y)
@@ -789,7 +789,7 @@ double Blt_VMap(Axis *axisPtr, double y)
   if (ops->descending) {
     y = 1.0 - y;
   }
-  return ((1.0 - y) * axisPtr->screenRange + axisPtr->screenMin);
+  return ((1.0 - y) * axisPtr->screenRange_ + axisPtr->screenMin_);
 }
 
 Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
@@ -952,7 +952,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
   int x, y;
   float fangle;
 
-  axisPtr->titleAngle = titleAngle[margin];
+  axisPtr->titleAngle_ = titleAngle[margin];
   marginPtr = graphPtr->margins + margin;
 
   tickLabel = axisLine = t1 = t2 = 0;
@@ -999,8 +999,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
     }
     mark = graphPtr->top - offset - pad;
     axisPtr->tickAnchor_ = TK_ANCHOR_S;
-    axisPtr->left_ = axisPtr->screenMin - inset - 2;
-    axisPtr->right_ = axisPtr->screenMin + axisPtr->screenRange + inset - 1;
+    axisPtr->left_ = axisPtr->screenMin_ - inset - 2;
+    axisPtr->right_ = axisPtr->screenMin_ + axisPtr->screenRange_ + inset - 1;
     if (graphPtr->stackAxes) {
       axisPtr->top_ = mark - marginPtr->axesOffset;
     } else {
@@ -1010,7 +1010,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
     if (ops->titleAlternate) {
       x = graphPtr->right + AXIS_PAD_TITLE;
       y = mark - (axisPtr->height_  / 2);
-      axisPtr->titleAnchor = TK_ANCHOR_W;
+      axisPtr->titleAnchor_ = TK_ANCHOR_W;
     } else {
       x = (axisPtr->right_ + axisPtr->left_) / 2;
       if (graphPtr->stackAxes) {
@@ -1018,7 +1018,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       } else {
 	y = mark - axisPtr->height_ + AXIS_PAD_TITLE;
       }
-      axisPtr->titleAnchor = TK_ANCHOR_N;
+      axisPtr->titleAnchor_ = TK_ANCHOR_N;
     }
     axisPtr->titlePos_.x = x;
     axisPtr->titlePos_.y = y;
@@ -1066,8 +1066,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 	axisPtr->tickAnchor_ = TK_ANCHOR_NW;
       }
     }
-    axisPtr->left_ = axisPtr->screenMin - inset - 2;
-    axisPtr->right_ = axisPtr->screenMin + axisPtr->screenRange + inset - 1;
+    axisPtr->left_ = axisPtr->screenMin_ - inset - 2;
+    axisPtr->right_ = axisPtr->screenMin_ + axisPtr->screenRange_ + inset - 1;
     axisPtr->top_ = graphPtr->bottom + labelOffset - t1;
     if (graphPtr->stackAxes) {
       axisPtr->bottom_ = mark + marginPtr->axesOffset - 1;
@@ -1077,7 +1077,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
     if (ops->titleAlternate) {
       x = graphPtr->right + AXIS_PAD_TITLE;
       y = mark + (axisPtr->height_ / 2);
-      axisPtr->titleAnchor = TK_ANCHOR_W; 
+      axisPtr->titleAnchor_ = TK_ANCHOR_W; 
     } else {
       x = (axisPtr->right_ + axisPtr->left_) / 2;
       if (graphPtr->stackAxes) {
@@ -1085,7 +1085,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       } else {
 	y = mark + axisPtr->height_ - AXIS_PAD_TITLE;
       }
-      axisPtr->titleAnchor = TK_ANCHOR_S; 
+      axisPtr->titleAnchor_ = TK_ANCHOR_S; 
     }
     axisPtr->titlePos_.x = x;
     axisPtr->titlePos_.y = y;
@@ -1151,12 +1151,12 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
       axisPtr->left_ = mark - axisPtr->width_;
     }
     axisPtr->right_ = mark - 3;
-    axisPtr->top_ = axisPtr->screenMin - inset - 2;
-    axisPtr->bottom_ = axisPtr->screenMin + axisPtr->screenRange + inset - 1;
+    axisPtr->top_ = axisPtr->screenMin_ - inset - 2;
+    axisPtr->bottom_ = axisPtr->screenMin_ + axisPtr->screenRange_ + inset - 1;
     if (ops->titleAlternate) {
       x = mark - (axisPtr->width_ / 2);
       y = graphPtr->top - AXIS_PAD_TITLE;
-      axisPtr->titleAnchor = TK_ANCHOR_SW; 
+      axisPtr->titleAnchor_ = TK_ANCHOR_SW; 
     } else {
       if (graphPtr->stackAxes) {
 	x = mark - marginPtr->axesOffset;
@@ -1164,7 +1164,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 	x = mark - axisPtr->width_ + AXIS_PAD_TITLE;
       }
       y = (axisPtr->bottom_ + axisPtr->top_) / 2;
-      axisPtr->titleAnchor = TK_ANCHOR_W; 
+      axisPtr->titleAnchor_ = TK_ANCHOR_W; 
     } 
     axisPtr->titlePos_.x = x;
     axisPtr->titlePos_.y = y;
@@ -1194,12 +1194,12 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
     } else {
       axisPtr->right_ = mark + axisPtr->width_ - 1;
     }
-    axisPtr->top_ = axisPtr->screenMin - inset - 2;
-    axisPtr->bottom_ = axisPtr->screenMin + axisPtr->screenRange + inset -1;
+    axisPtr->top_ = axisPtr->screenMin_ - inset - 2;
+    axisPtr->bottom_ = axisPtr->screenMin_ + axisPtr->screenRange_ + inset -1;
     if (ops->titleAlternate) {
       x = mark + (axisPtr->width_ / 2);
       y = graphPtr->top - AXIS_PAD_TITLE;
-      axisPtr->titleAnchor = TK_ANCHOR_SE; 
+      axisPtr->titleAnchor_ = TK_ANCHOR_SE; 
     } else {
       if (graphPtr->stackAxes) {
 	x = mark + marginPtr->axesOffset - AXIS_PAD_TITLE;
@@ -1207,7 +1207,7 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 	x = mark + axisPtr->width_ - AXIS_PAD_TITLE;
       }
       y = (axisPtr->bottom_ + axisPtr->top_) / 2;
-      axisPtr->titleAnchor = TK_ANCHOR_E;
+      axisPtr->titleAnchor_ = TK_ANCHOR_E;
     }
     axisPtr->titlePos_.x = x;
     axisPtr->titlePos_.y = y;
@@ -1357,16 +1357,16 @@ static void MapAxis(Axis *axisPtr, int offset, int margin)
   Graph* graphPtr = axisPtr->graphPtr_;
 
   if (AxisIsHorizontal(axisPtr)) {
-    axisPtr->screenMin = graphPtr->hOffset;
+    axisPtr->screenMin_ = graphPtr->hOffset;
     axisPtr->width_ = graphPtr->right - graphPtr->left;
-    axisPtr->screenRange = graphPtr->hRange;
+    axisPtr->screenRange_ = graphPtr->hRange;
   }
   else {
-    axisPtr->screenMin = graphPtr->vOffset;
+    axisPtr->screenMin_ = graphPtr->vOffset;
     axisPtr->height_ = graphPtr->bottom - graphPtr->top;
-    axisPtr->screenRange = graphPtr->vRange;
+    axisPtr->screenRange_ = graphPtr->vRange;
   }
-  axisPtr->screenScale = 1.0 / axisPtr->screenRange;
+  axisPtr->screenScale_ = 1.0 / axisPtr->screenRange_;
   AxisOffsets(axisPtr, margin, offset, &info);
   MakeSegments(axisPtr, &info);
 }
@@ -1385,18 +1385,19 @@ static void MapStackedAxis(Axis *axisPtr, int count, int margin)
   }
   if (AxisIsHorizontal(axisPtr)) {
     slice = graphPtr->hRange / graphPtr->margins[margin].axes->nLinks;
-    axisPtr->screenMin = graphPtr->hOffset;
+    axisPtr->screenMin_ = graphPtr->hOffset;
     axisPtr->width_ = slice;
-  } else {
+  }
+  else {
     slice = graphPtr->vRange / graphPtr->margins[margin].axes->nLinks;
-    axisPtr->screenMin = graphPtr->vOffset;
+    axisPtr->screenMin_ = graphPtr->vOffset;
     axisPtr->height_ = slice;
   }
 
   Blt_GetTextExtents(ops->tickFont, 0, "0", 1, &w, &h);
-  axisPtr->screenMin += (slice * count) + 2 + h / 2;
-  axisPtr->screenRange = slice - 2 * 2 - h;
-  axisPtr->screenScale = 1.0f / axisPtr->screenRange;
+  axisPtr->screenMin_ += (slice * count) + 2 + h / 2;
+  axisPtr->screenRange_ = slice - 2 * 2 - h;
+  axisPtr->screenScale_ = 1.0f / axisPtr->screenRange_;
   AxisOffsets(axisPtr, margin, 0, &info);
   MakeSegments(axisPtr, &info);
 }
@@ -1504,18 +1505,18 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     Blt_Ts_InitStyle(ts);
     ts.flags |= UPDATE_GC;
 
-    ts.angle = axisPtr->titleAngle;
+    ts.angle = axisPtr->titleAngle_;
     ts.font = ops->titleFont;
     ts.xPad = 1;
     ts.yPad = 0;
-    ts.anchor = axisPtr->titleAnchor;
+    ts.anchor = axisPtr->titleAnchor_;
     ts.justify = ops->titleJustify;
     if (axisPtr->flags & ACTIVE)
       ts.color = ops->activeFgColor;
     else
       ts.color = ops->titleColor;
 
-    if ((axisPtr->titleAngle == 90.0) || (axisPtr->titleAngle == 270.0))
+    if ((axisPtr->titleAngle_ == 90.0) || (axisPtr->titleAngle_ == 270.0))
       ts.maxLength = axisPtr->height_;
     else
       ts.maxLength = axisPtr->width_;
@@ -1635,11 +1636,11 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 
     Blt_Ts_InitStyle(ts);
 
-    ts.angle = axisPtr->titleAngle;
+    ts.angle = axisPtr->titleAngle_;
     ts.font = ops->titleFont;
     ts.xPad = 1;
     ts.yPad = 0;
-    ts.anchor = axisPtr->titleAnchor;
+    ts.anchor = axisPtr->titleAnchor_;
     ts.justify = ops->titleJustify;
     ts.color = ops->titleColor;
     Blt_Ps_DrawText(ps, ops->title, &ts, axisPtr->titlePos_.x, 
@@ -2746,9 +2747,9 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
       unsigned int w, h;
 
       Blt_GetTextExtents(ops->titleFont, 0, ops->title,-1,&w,&h);
-      Blt_GetBoundingBox(w, h, axisPtr->titleAngle, &rw, &rh, bbox);
+      Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
       t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
-			  rw, rh, axisPtr->titleAnchor);
+			  rw, rh, axisPtr->titleAnchor_);
       /* Translate the point so that the 0,0 is the upper left 
        * corner of the bounding box.  */
       t.x = x - t.x - (rw * 0.5);

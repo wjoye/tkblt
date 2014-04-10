@@ -85,7 +85,7 @@ double Marker::HMap(Axis *axisPtr, double x)
     x = 1.0 - x;
 
   // Horizontal transformation
-  return (x * axisPtr->screenRange + axisPtr->screenMin);
+  return (x * axisPtr->screenRange_ + axisPtr->screenMin_);
 }
 
 double Marker::VMap(Axis *axisPtr, double y)
@@ -109,7 +109,7 @@ double Marker::VMap(Axis *axisPtr, double y)
     y = 1.0 - y;
 
   // Vertical transformation
-  return (((1.0 - y) * axisPtr->screenRange) + axisPtr->screenMin);
+  return (((1.0 - y) * axisPtr->screenRange_) + axisPtr->screenMin_);
 }
 
 Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
