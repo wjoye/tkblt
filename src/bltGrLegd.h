@@ -110,37 +110,31 @@ class Legend {
   Tk_OptionTable optionTable_;
   void* ops_;
 
+  int width_;
+  int height_;
+  int x_;
+  int y_;
+  GC focusGC_;
+  Tcl_HashTable selectTable_;
+
  public:
   Graph* graphPtr_;
+  unsigned int flags;
 
   int nEntries_;
   int nColumns_;
   int nRows_;
-  int width_;
-  int height_;
   int entryWidth_;
   int entryHeight_;
-  int x_;
-  int y_;
-  int maxSymSize_;
   Blt_BindTable bindTable_;
-  GC focusGC_;
-  int focus_;
-  int cursorX_;
-  int cursorY_;
-  short int cursorWidth_;
-  short int cursorHeight_;
   Element *focusPtr_;
   Element *selAnchorPtr_;
   Element *selMarkPtr_;
   Element *selFirstPtr_;
   Element *selLastPtr_;
-  Tcl_HashTable selectTable_;
   Blt_Chain selected_;
   unsigned int titleWidth_;
   unsigned int titleHeight_;
-
-  unsigned int flags;
 
  protected:
   void setOrigin();
