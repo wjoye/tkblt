@@ -150,8 +150,8 @@ class Axis {
   Tk_OptionTable optionTable_;
   void* ops_;
 
-  int use;
-  Tcl_HashEntry *hashPtr;
+  int use_;
+  Tcl_HashEntry *hashPtr_;
   unsigned int flags;		
 
   // Fields specific to axes

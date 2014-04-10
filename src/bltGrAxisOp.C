@@ -45,8 +45,6 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr,
 
 extern void GetDataLimits(Axis *axisPtr, double min, double max);
 extern void FixAxisRange(Axis *axisPtr);
-extern void LogScaleAxis(Axis *axisPtr, double min, double max);
-extern void LinearScaleAxis(Axis *axisPtr, double min, double max);
 extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
@@ -895,9 +893,9 @@ void Blt_ResetAxes(Graph* graphPtr)
       max = axisPtr->scrollMax;
     }
     if (ops->logScale)
-      LogScaleAxis(axisPtr, min, max);
+      axisPtr->logScale(min, max);
     else
-      LinearScaleAxis(axisPtr, min, max);
+      axisPtr->linearScale(min, max);
 
     if (axisPtr->use && (axisPtr->flags & DIRTY))
       graphPtr->flags |= CACHE_DIRTY;

@@ -358,7 +358,147 @@ void Axis::setClass(ClassId classId)
 
 // Support
 
-static void SetAxisRange(AxisRange *rangePtr, double min, double max)
+void Axis::logScale(double min, double max)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  double range;
+  double tickMin, tickMax;
+  double majorStep, minorStep;
+  int nMajor, nMinor;
+
+  nMajor = nMinor = 0;
+  /* Suppress compiler warnings. */
+  majorStep = minorStep = 0.0;
+  tickMin = tickMax = NAN;
+  if (min < max) {
+    min = (min != 0.0) ? log10(fabs(min)) : 0.0;
+    max = (max != 0.0) ? log10(fabs(max)) : 1.0;
+
+    tickMin = floor(min);
+    tickMax = ceil(max);
+    range = tickMax - tickMin;
+	
+    if (range > 10) {
+      /* There are too many decades to display a major tick at every
+       * decade.  Instead, treat the axis as a linear scale.  */
+      range = niceNum(range, 0);
+      majorStep = niceNum(range / ops->reqNumMajorTicks, 1);
+      tickMin = UFLOOR(tickMin, majorStep);
+      tickMax = UCEIL(tickMax, majorStep);
+      nMajor = (int)((tickMax - tickMin) / majorStep) + 1;
+      minorStep = EXP10(floor(log10(majorStep)));
+      if (minorStep == majorStep) {
+	nMinor = 4, minorStep = 0.2;
+      } else {
+	nMinor = Round(majorStep / minorStep) - 1;
+      }
+    } else {
+      if (tickMin == tickMax) {
+	tickMax++;
+      }
+      majorStep = 1.0;
+      nMajor = (int)(tickMax - tickMin + 1); /* FIXME: Check this. */
+	    
+      minorStep = 0.0;		/* This is a special hack to pass
+				 * information to the GenerateTicks
+				 * routine. An interval of 0.0 tells 1)
+				 * this is a minor sweep and 2) the axis
+				 * is log scale. */
+      nMinor = 10;
+    }
+    if (!ops->looseMin || (ops->looseMin && !isnan(ops->reqMin))) {
+      tickMin = min;
+      nMajor++;
+    }
+    if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax))) {
+      tickMax = max;
+    }
+  }
+  majorSweep.step = majorStep;
+  majorSweep.initial = floor(tickMin);
+  majorSweep.nSteps = nMajor;
+  minorSweep.initial = minorSweep.step = minorStep;
+  minorSweep.nSteps = nMinor;
+
+  setAxisRange(&axisRange, tickMin, tickMax);
+}
+
+void Axis::linearScale(double min, double max)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  double step;
+  double tickMin, tickMax;
+  double axisMin, axisMax;
+  unsigned int nTicks;
+
+  nTicks = 0;
+  step = 1.0;
+  /* Suppress compiler warning. */
+  axisMin = axisMax = tickMin = tickMax = NAN;
+  if (min < max) {
+    double range;
+
+    range = max - min;
+    /* Calculate the major tick stepping. */
+    if (ops->reqStep > 0.0) {
+      /* An interval was designated by the user.  Keep scaling it until
+       * it fits comfortably within the current range of the axis.  */
+      step = ops->reqStep;
+      while ((2 * step) >= range) {
+	step *= 0.5;
+      }
+    } 
+    else {
+      range = niceNum(range, 0);
+      step = niceNum(range / ops->reqNumMajorTicks, 1);
+    }
+	
+    /* Find the outer tick values. Add 0.0 to prevent getting -0.0. */
+    axisMin = tickMin = floor(min / step) * step + 0.0;
+    axisMax = tickMax = ceil(max / step) * step + 0.0;
+	
+    nTicks = Round((tickMax - tickMin) / step) + 1;
+  } 
+  majorSweep.step = step;
+  majorSweep.initial = tickMin;
+  majorSweep.nSteps = nTicks;
+
+  /*
+   * The limits of the axis are either the range of the data ("tight") or at
+   * the next outer tick interval ("loose").  The looseness or tightness has
+   * to do with how the axis fits the range of data values.  This option is
+   * overridden when the user sets an axis limit (by either -min or -max
+   * option).  The axis limit is always at the selected limit (otherwise we
+   * assume that user would have picked a different number).
+   */
+  if (!ops->looseMin || (ops->looseMin && !isnan(ops->reqMin)))
+    axisMin = min;
+
+  if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax)))
+    axisMax = max;
+
+  setAxisRange(&axisRange, axisMin, axisMax);
+
+  /* Now calculate the minor tick step and number. */
+
+  if (ops->reqNumMinorTicks > 0) {
+    nTicks = ops->reqNumMinorTicks - 1;
+    step = 1.0 / (nTicks + 1);
+  } 
+  else {
+    nTicks = 0;			/* No minor ticks. */
+    step = 0.5;			/* Don't set the minor tick interval to
+				 * 0.0. It makes the GenerateTicks
+				 * routine * create minor log-scale tick
+				 * marks.  */
+  }
+  minorSweep.initial = minorSweep.step = step;
+  minorSweep.nSteps = nTicks;
+}
+
+void Axis::setAxisRange(AxisRange *rangePtr, double min, double max)
 {
   rangePtr->min = min;
   rangePtr->max = max;
@@ -367,6 +507,148 @@ static void SetAxisRange(AxisRange *rangePtr, double min, double max)
     rangePtr->range = 1.0;
   }
   rangePtr->scale = 1.0 / rangePtr->range;
+}
+
+void FixAxisRange(Axis *axisPtr)
+{
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  double min, max;
+
+  /*
+   * When auto-scaling, the axis limits are the bounds of the element data.
+   * If no data exists, set arbitrary limits (wrt to log/linear scale).
+   */
+  min = axisPtr->valueRange.min;
+  max = axisPtr->valueRange.max;
+
+  /* Check the requested axis limits. Can't allow -min to be greater
+   * than -max, or have undefined log scale limits.  */
+  if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
+      (ops->reqMin >= ops->reqMax)) {
+    ops->reqMin = ops->reqMax = NAN;
+  }
+  if (ops->logScale) {
+    if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
+      ops->reqMin = NAN;
+    }
+    if ((!isnan(ops->reqMax)) && (ops->reqMax <= 0.0)) {
+      ops->reqMax = NAN;
+    }
+  }
+
+  if (min == DBL_MAX) {
+    if (!isnan(ops->reqMin)) {
+      min = ops->reqMin;
+    } else {
+      min = (ops->logScale) ? 0.001 : 0.0;
+    }
+  }
+  if (max == -DBL_MAX) {
+    if (!isnan(ops->reqMax)) {
+      max = ops->reqMax;
+    } else {
+      max = 1.0;
+    }
+  }
+  if (min >= max) {
+    /*
+     * There is no range of data (i.e. min is not less than max), so
+     * manufacture one.
+     */
+    if (min == 0.0) {
+      min = 0.0, max = 1.0;
+    } else {
+      max = min + (fabs(min) * 0.1);
+    }
+  }
+  axisPtr->setAxisRange(&axisPtr->valueRange, min, max);
+
+  /*   
+   * The axis limits are either the current data range or overridden by the
+   * values selected by the user with the -min or -max options.
+   */
+  axisPtr->min = min;
+  axisPtr->max = max;
+  if (!isnan(ops->reqMin)) {
+    axisPtr->min = ops->reqMin;
+  }
+  if (!isnan(ops->reqMax)) { 
+    axisPtr->max = ops->reqMax;
+  }
+  if (axisPtr->max < axisPtr->min) {
+    /*   
+     * If the limits still don't make sense, it's because one limit
+     * configuration option (-min or -max) was set and the other default
+     * (based upon the data) is too small or large.  Remedy this by making
+     * up a new min or max from the user-defined limit.
+     */
+    if (isnan(ops->reqMin)) {
+      axisPtr->min = axisPtr->max - (fabs(axisPtr->max) * 0.1);
+    }
+    if (isnan(ops->reqMax)) {
+      axisPtr->max = axisPtr->min + (fabs(axisPtr->max) * 0.1);
+    }
+  }
+  /* 
+   * If a window size is defined, handle auto ranging by shifting the axis
+   * limits.
+   */
+  if ((ops->windowSize > 0.0) && 
+      (isnan(ops->reqMin)) && (isnan(ops->reqMax))) {
+    if (ops->shiftBy < 0.0) {
+      ops->shiftBy = 0.0;
+    }
+    max = axisPtr->min + ops->windowSize;
+    if (axisPtr->max >= max) {
+      if (ops->shiftBy > 0.0) {
+	max = UCEIL(axisPtr->max, ops->shiftBy);
+      }
+      axisPtr->min = max - ops->windowSize;
+    }
+    axisPtr->max = max;
+  }
+  if ((axisPtr->max != axisPtr->prevMax) || 
+      (axisPtr->min != axisPtr->prevMin)) {
+    /* Indicate if the axis limits have changed */
+    axisPtr->flags |= DIRTY;
+    /* and save the previous minimum and maximum values */
+    axisPtr->prevMin = axisPtr->min;
+    axisPtr->prevMax = axisPtr->max;
+  }
+}
+
+// Reference: Paul Heckbert, "Nice Numbers for Graph Labels",
+// Graphics Gems, pp 61-63.  
+double Axis::niceNum(double x, int round)
+{
+  double expt;			/* Exponent of x */
+  double frac;			/* Fractional part of x */
+  double nice;			/* Nice, rounded fraction */
+
+  expt = floor(log10(x));
+  frac = x / EXP10(expt);		/* between 1 and 10 */
+  if (round) {
+    if (frac < 1.5) {
+      nice = 1.0;
+    } else if (frac < 3.0) {
+      nice = 2.0;
+    } else if (frac < 7.0) {
+      nice = 5.0;
+    } else {
+      nice = 10.0;
+    }
+  } else {
+    if (frac <= 1.0) {
+      nice = 1.0;
+    } else if (frac <= 2.0) {
+      nice = 2.0;
+    } else if (frac <= 5.0) {
+      nice = 5.0;
+    } else {
+      nice = 10.0;
+    }
+  }
+  return nice * EXP10(expt);
 }
 
 static int InRange(double x, AxisRange *rangePtr)
@@ -548,148 +830,6 @@ void GetDataLimits(Axis *axisPtr, double min, double max)
   }
 }
 
-void FixAxisRange(Axis *axisPtr)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  double min, max;
-
-  /*
-   * When auto-scaling, the axis limits are the bounds of the element data.
-   * If no data exists, set arbitrary limits (wrt to log/linear scale).
-   */
-  min = axisPtr->valueRange.min;
-  max = axisPtr->valueRange.max;
-
-  /* Check the requested axis limits. Can't allow -min to be greater
-   * than -max, or have undefined log scale limits.  */
-  if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
-      (ops->reqMin >= ops->reqMax)) {
-    ops->reqMin = ops->reqMax = NAN;
-  }
-  if (ops->logScale) {
-    if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
-      ops->reqMin = NAN;
-    }
-    if ((!isnan(ops->reqMax)) && (ops->reqMax <= 0.0)) {
-      ops->reqMax = NAN;
-    }
-  }
-
-  if (min == DBL_MAX) {
-    if (!isnan(ops->reqMin)) {
-      min = ops->reqMin;
-    } else {
-      min = (ops->logScale) ? 0.001 : 0.0;
-    }
-  }
-  if (max == -DBL_MAX) {
-    if (!isnan(ops->reqMax)) {
-      max = ops->reqMax;
-    } else {
-      max = 1.0;
-    }
-  }
-  if (min >= max) {
-    /*
-     * There is no range of data (i.e. min is not less than max), so
-     * manufacture one.
-     */
-    if (min == 0.0) {
-      min = 0.0, max = 1.0;
-    } else {
-      max = min + (fabs(min) * 0.1);
-    }
-  }
-  SetAxisRange(&axisPtr->valueRange, min, max);
-
-  /*   
-   * The axis limits are either the current data range or overridden by the
-   * values selected by the user with the -min or -max options.
-   */
-  axisPtr->min = min;
-  axisPtr->max = max;
-  if (!isnan(ops->reqMin)) {
-    axisPtr->min = ops->reqMin;
-  }
-  if (!isnan(ops->reqMax)) { 
-    axisPtr->max = ops->reqMax;
-  }
-  if (axisPtr->max < axisPtr->min) {
-    /*   
-     * If the limits still don't make sense, it's because one limit
-     * configuration option (-min or -max) was set and the other default
-     * (based upon the data) is too small or large.  Remedy this by making
-     * up a new min or max from the user-defined limit.
-     */
-    if (isnan(ops->reqMin)) {
-      axisPtr->min = axisPtr->max - (fabs(axisPtr->max) * 0.1);
-    }
-    if (isnan(ops->reqMax)) {
-      axisPtr->max = axisPtr->min + (fabs(axisPtr->max) * 0.1);
-    }
-  }
-  /* 
-   * If a window size is defined, handle auto ranging by shifting the axis
-   * limits.
-   */
-  if ((ops->windowSize > 0.0) && 
-      (isnan(ops->reqMin)) && (isnan(ops->reqMax))) {
-    if (ops->shiftBy < 0.0) {
-      ops->shiftBy = 0.0;
-    }
-    max = axisPtr->min + ops->windowSize;
-    if (axisPtr->max >= max) {
-      if (ops->shiftBy > 0.0) {
-	max = UCEIL(axisPtr->max, ops->shiftBy);
-      }
-      axisPtr->min = max - ops->windowSize;
-    }
-    axisPtr->max = max;
-  }
-  if ((axisPtr->max != axisPtr->prevMax) || 
-      (axisPtr->min != axisPtr->prevMin)) {
-    /* Indicate if the axis limits have changed */
-    axisPtr->flags |= DIRTY;
-    /* and save the previous minimum and maximum values */
-    axisPtr->prevMin = axisPtr->min;
-    axisPtr->prevMax = axisPtr->max;
-  }
-}
-
-// Reference: Paul Heckbert, "Nice Numbers for Graph Labels",
-// Graphics Gems, pp 61-63.  
-double NiceNum(double x, int round)
-{
-  double expt;			/* Exponent of x */
-  double frac;			/* Fractional part of x */
-  double nice;			/* Nice, rounded fraction */
-
-  expt = floor(log10(x));
-  frac = x / EXP10(expt);		/* between 1 and 10 */
-  if (round) {
-    if (frac < 1.5) {
-      nice = 1.0;
-    } else if (frac < 3.0) {
-      nice = 2.0;
-    } else if (frac < 7.0) {
-      nice = 5.0;
-    } else {
-      nice = 10.0;
-    }
-  } else {
-    if (frac <= 1.0) {
-      nice = 1.0;
-    } else if (frac <= 2.0) {
-      nice = 2.0;
-    } else if (frac <= 5.0) {
-      nice = 5.0;
-    } else {
-      nice = 10.0;
-    }
-  }
-  return nice * EXP10(expt);
-}
-
 static Ticks *GenerateTicks(TickSweep *sweepPtr)
 {
   Ticks* ticksPtr = 
@@ -725,145 +865,6 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
   }
   ticksPtr->nTicks = sweepPtr->nSteps;
   return ticksPtr;
-}
-
-void LogScaleAxis(Axis *axisPtr, double min, double max)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-  double range;
-  double tickMin, tickMax;
-  double majorStep, minorStep;
-  int nMajor, nMinor;
-
-  nMajor = nMinor = 0;
-  /* Suppress compiler warnings. */
-  majorStep = minorStep = 0.0;
-  tickMin = tickMax = NAN;
-  if (min < max) {
-    min = (min != 0.0) ? log10(fabs(min)) : 0.0;
-    max = (max != 0.0) ? log10(fabs(max)) : 1.0;
-
-    tickMin = floor(min);
-    tickMax = ceil(max);
-    range = tickMax - tickMin;
-	
-    if (range > 10) {
-      /* There are too many decades to display a major tick at every
-       * decade.  Instead, treat the axis as a linear scale.  */
-      range = NiceNum(range, 0);
-      majorStep = NiceNum(range / ops->reqNumMajorTicks, 1);
-      tickMin = UFLOOR(tickMin, majorStep);
-      tickMax = UCEIL(tickMax, majorStep);
-      nMajor = (int)((tickMax - tickMin) / majorStep) + 1;
-      minorStep = EXP10(floor(log10(majorStep)));
-      if (minorStep == majorStep) {
-	nMinor = 4, minorStep = 0.2;
-      } else {
-	nMinor = Round(majorStep / minorStep) - 1;
-      }
-    } else {
-      if (tickMin == tickMax) {
-	tickMax++;
-      }
-      majorStep = 1.0;
-      nMajor = (int)(tickMax - tickMin + 1); /* FIXME: Check this. */
-	    
-      minorStep = 0.0;		/* This is a special hack to pass
-				 * information to the GenerateTicks
-				 * routine. An interval of 0.0 tells 1)
-				 * this is a minor sweep and 2) the axis
-				 * is log scale. */
-      nMinor = 10;
-    }
-    if (!ops->looseMin || (ops->looseMin && !isnan(ops->reqMin))) {
-      tickMin = min;
-      nMajor++;
-    }
-    if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax))) {
-      tickMax = max;
-    }
-  }
-  axisPtr->majorSweep.step = majorStep;
-  axisPtr->majorSweep.initial = floor(tickMin);
-  axisPtr->majorSweep.nSteps = nMajor;
-  axisPtr->minorSweep.initial = axisPtr->minorSweep.step = minorStep;
-  axisPtr->minorSweep.nSteps = nMinor;
-
-  SetAxisRange(&axisPtr->axisRange, tickMin, tickMax);
-}
-
-void LinearScaleAxis(Axis *axisPtr, double min, double max)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-  double step;
-  double tickMin, tickMax;
-  double axisMin, axisMax;
-  unsigned int nTicks;
-
-  nTicks = 0;
-  step = 1.0;
-  /* Suppress compiler warning. */
-  axisMin = axisMax = tickMin = tickMax = NAN;
-  if (min < max) {
-    double range;
-
-    range = max - min;
-    /* Calculate the major tick stepping. */
-    if (ops->reqStep > 0.0) {
-      /* An interval was designated by the user.  Keep scaling it until
-       * it fits comfortably within the current range of the axis.  */
-      step = ops->reqStep;
-      while ((2 * step) >= range) {
-	step *= 0.5;
-      }
-    } else {
-      range = NiceNum(range, 0);
-      step = NiceNum(range / ops->reqNumMajorTicks, 1);
-    }
-	
-    /* Find the outer tick values. Add 0.0 to prevent getting -0.0. */
-    axisMin = tickMin = floor(min / step) * step + 0.0;
-    axisMax = tickMax = ceil(max / step) * step + 0.0;
-	
-    nTicks = Round((tickMax - tickMin) / step) + 1;
-  } 
-  axisPtr->majorSweep.step = step;
-  axisPtr->majorSweep.initial = tickMin;
-  axisPtr->majorSweep.nSteps = nTicks;
-
-  /*
-   * The limits of the axis are either the range of the data ("tight") or at
-   * the next outer tick interval ("loose").  The looseness or tightness has
-   * to do with how the axis fits the range of data values.  This option is
-   * overridden when the user sets an axis limit (by either -min or -max
-   * option).  The axis limit is always at the selected limit (otherwise we
-   * assume that user would have picked a different number).
-   */
-  if (!ops->looseMin || (ops->looseMin && !isnan(ops->reqMin)))
-    axisMin = min;
-
-  if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax)))
-    axisMax = max;
-
-  SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
-
-  /* Now calculate the minor tick step and number. */
-
-  if (ops->reqNumMinorTicks > 0) {
-    nTicks = ops->reqNumMinorTicks - 1;
-    step = 1.0 / (nTicks + 1);
-  } 
-  else {
-    nTicks = 0;			/* No minor ticks. */
-    step = 0.5;			/* Don't set the minor tick interval to
-				 * 0.0. It makes the GenerateTicks
-				 * routine * create minor log-scale tick
-				 * marks.  */
-  }
-  axisPtr->minorSweep.initial = axisPtr->minorSweep.step = step;
-  axisPtr->minorSweep.nSteps = nTicks;
 }
 
 static void ResetTextStyles(Axis *axisPtr)
