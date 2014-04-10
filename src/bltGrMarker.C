@@ -79,7 +79,7 @@ double Marker::HMap(Axis *axisPtr, double x)
       else if (x < 0.0)
 	x = 0.0;
     }
-    x = (x - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
+    x = (x - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
   }
   if (ops->descending)
     x = 1.0 - x;
@@ -103,7 +103,7 @@ double Marker::VMap(Axis *axisPtr, double y)
       else if (y < 0.0)
 	y = 0.0;
     }
-    y = (y - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
+    y = (y - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
   }
   if (ops->descending)
     y = 1.0 - y;

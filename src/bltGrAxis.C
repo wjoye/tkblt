@@ -223,20 +223,20 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin)
   titlePos_.y =0;
   titleWidth_ =0;
   titleHeight_ =0;	
-  min =0;
-  max =0;
-  scrollMin =0;
-  scrollMax =0;
-  valueRange.min =0;
-  valueRange.max =0;
-  valueRange.range =0;
-  valueRange.scale =0;
-  axisRange.min =0;
-  axisRange.max =0;
-  axisRange.range =0;
-  axisRange.scale =0;
-  prevMin =0;
-  prevMax =0;
+  min_ =0;
+  max_ =0;
+  scrollMin_ =0;
+  scrollMax_ =0;
+  valueRange_.min =0;
+  valueRange_.max =0;
+  valueRange_.range =0;
+  valueRange_.scale =0;
+  axisRange_.min =0;
+  axisRange_.max =0;
+  axisRange_.range =0;
+  axisRange_.scale =0;
+  prevMin_ =0;
+  prevMax_ =0;
   t1Ptr =NULL;
   t2Ptr =NULL;
   minorSweep.initial =0;
@@ -421,7 +421,7 @@ void Axis::logScale(double min, double max)
   minorSweep.initial = minorSweep.step = minorStep;
   minorSweep.nSteps = nMinor;
 
-  setAxisRange(&axisRange, tickMin, tickMax);
+  setAxisRange(&axisRange_, tickMin, tickMax);
 }
 
 void Axis::linearScale(double min, double max)
@@ -479,7 +479,7 @@ void Axis::linearScale(double min, double max)
   if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax)))
     axisMax = max;
 
-  setAxisRange(&axisRange, axisMin, axisMax);
+  setAxisRange(&axisRange_, axisMin, axisMax);
 
   /* Now calculate the minor tick step and number. */
 
@@ -518,8 +518,8 @@ void FixAxisRange(Axis *axisPtr)
    * When auto-scaling, the axis limits are the bounds of the element data.
    * If no data exists, set arbitrary limits (wrt to log/linear scale).
    */
-  min = axisPtr->valueRange.min;
-  max = axisPtr->valueRange.max;
+  min = axisPtr->valueRange_.min;
+  max = axisPtr->valueRange_.max;
 
   /* Check the requested axis limits. Can't allow -min to be greater
    * than -max, or have undefined log scale limits.  */
@@ -561,21 +561,21 @@ void FixAxisRange(Axis *axisPtr)
       max = min + (fabs(min) * 0.1);
     }
   }
-  axisPtr->setAxisRange(&axisPtr->valueRange, min, max);
+  axisPtr->setAxisRange(&axisPtr->valueRange_, min, max);
 
   /*   
    * The axis limits are either the current data range or overridden by the
    * values selected by the user with the -min or -max options.
    */
-  axisPtr->min = min;
-  axisPtr->max = max;
+  axisPtr->min_ = min;
+  axisPtr->max_ = max;
   if (!isnan(ops->reqMin)) {
-    axisPtr->min = ops->reqMin;
+    axisPtr->min_ = ops->reqMin;
   }
   if (!isnan(ops->reqMax)) { 
-    axisPtr->max = ops->reqMax;
+    axisPtr->max_ = ops->reqMax;
   }
-  if (axisPtr->max < axisPtr->min) {
+  if (axisPtr->max_ < axisPtr->min_) {
     /*   
      * If the limits still don't make sense, it's because one limit
      * configuration option (-min or -max) was set and the other default
@@ -583,10 +583,10 @@ void FixAxisRange(Axis *axisPtr)
      * up a new min or max from the user-defined limit.
      */
     if (isnan(ops->reqMin)) {
-      axisPtr->min = axisPtr->max - (fabs(axisPtr->max) * 0.1);
+      axisPtr->min_ = axisPtr->max_ - (fabs(axisPtr->max_) * 0.1);
     }
     if (isnan(ops->reqMax)) {
-      axisPtr->max = axisPtr->min + (fabs(axisPtr->max) * 0.1);
+      axisPtr->max_ = axisPtr->min_ + (fabs(axisPtr->max_) * 0.1);
     }
   }
   /* 
@@ -598,22 +598,22 @@ void FixAxisRange(Axis *axisPtr)
     if (ops->shiftBy < 0.0) {
       ops->shiftBy = 0.0;
     }
-    max = axisPtr->min + ops->windowSize;
-    if (axisPtr->max >= max) {
+    max = axisPtr->min_ + ops->windowSize;
+    if (axisPtr->max_ >= max) {
       if (ops->shiftBy > 0.0) {
-	max = UCEIL(axisPtr->max, ops->shiftBy);
+	max = UCEIL(axisPtr->max_, ops->shiftBy);
       }
-      axisPtr->min = max - ops->windowSize;
+      axisPtr->min_ = max - ops->windowSize;
     }
-    axisPtr->max = max;
+    axisPtr->max_ = max;
   }
-  if ((axisPtr->max != axisPtr->prevMax) || 
-      (axisPtr->min != axisPtr->prevMin)) {
+  if ((axisPtr->max_ != axisPtr->prevMax_) || 
+      (axisPtr->min_ != axisPtr->prevMin_)) {
     /* Indicate if the axis limits have changed */
     axisPtr->flags |= DIRTY;
     /* and save the previous minimum and maximum values */
-    axisPtr->prevMin = axisPtr->min;
-    axisPtr->prevMax = axisPtr->max;
+    axisPtr->prevMin_ = axisPtr->min_;
+    axisPtr->prevMax_ = axisPtr->max_;
   }
 }
 
@@ -741,7 +741,7 @@ double Blt_InvHMap(Axis *axisPtr, double x)
   if (ops->descending) {
     x = 1.0 - x;
   }
-  value = (x * axisPtr->axisRange.range) + axisPtr->axisRange.min;
+  value = (x * axisPtr->axisRange_.range) + axisPtr->axisRange_.min;
   if (ops->logScale) {
     value = EXP10(value);
   }
@@ -757,7 +757,7 @@ double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
   if (ops->descending) {
     y = 1.0 - y;
   }
-  value = ((1.0 - y) * axisPtr->axisRange.range) + axisPtr->axisRange.min;
+  value = ((1.0 - y) * axisPtr->axisRange_.range) + axisPtr->axisRange_.min;
   if (ops->logScale) {
     value = EXP10(value);
   }
@@ -771,7 +771,7 @@ double Blt_HMap(Axis *axisPtr, double x)
     x = log10(fabs(x));
   }
   /* Map graph coordinate to normalized coordinates [0..1] */
-  x = (x - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
+  x = (x - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
   if (ops->descending) {
     x = 1.0 - x;
   }
@@ -785,7 +785,7 @@ double Blt_VMap(Axis *axisPtr, double y)
     y = log10(fabs(y));
   }
   /* Map graph coordinate to normalized coordinates [0..1] */
-  y = (y - axisPtr->axisRange.min) * axisPtr->axisRange.scale;
+  y = (y - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
   if (ops->descending) {
     y = 1.0 - y;
   }
@@ -822,11 +822,11 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 
 void GetDataLimits(Axis *axisPtr, double min, double max)
 {
-  if (axisPtr->valueRange.min > min) {
-    axisPtr->valueRange.min = min;
+  if (axisPtr->valueRange_.min > min) {
+    axisPtr->valueRange_.min = min;
   }
-  if (axisPtr->valueRange.max < max) {
-    axisPtr->valueRange.max = max;
+  if (axisPtr->valueRange_.max < max) {
+    axisPtr->valueRange_.max = max;
   }
 }
 
@@ -1241,8 +1241,8 @@ static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   double min, max;
 
-  min = axisPtr->axisRange.min;
-  max = axisPtr->axisRange.max;
+  min = axisPtr->axisRange_.min;
+  max = axisPtr->axisRange_.max;
   if (ops->logScale) {
     min = EXP10(min);
     max = EXP10(max);
@@ -1309,12 +1309,12 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       /* Minor ticks */
       for (int jj=0; jj<nMinorTicks; jj++) {
 	double t2 = t1 + (axisPtr->majorSweep.step*t2Ptr->values[jj]);
-	if (InRange(t2, &axisPtr->axisRange)) {
+	if (InRange(t2, &axisPtr->axisRange_)) {
 	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
 	}
       }
-      if (!InRange(t1, &axisPtr->axisRange))
+      if (!InRange(t1, &axisPtr->axisRange_))
 	continue;
 
       /* Major tick */
@@ -1330,7 +1330,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       if (ops->labelOffset)
 	t1 += axisPtr->majorSweep.step * 0.5;
 
-      if (!InRange(t1, &axisPtr->axisRange))
+      if (!InRange(t1, &axisPtr->axisRange_))
 	continue;
 
       TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
@@ -1529,16 +1529,16 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     double fract;
     int isHoriz;
 
-    worldMin = axisPtr->valueRange.min;
-    worldMax = axisPtr->valueRange.max;
-    if (!isnan(axisPtr->scrollMin)) {
-      worldMin = axisPtr->scrollMin;
+    worldMin = axisPtr->valueRange_.min;
+    worldMax = axisPtr->valueRange_.max;
+    if (!isnan(axisPtr->scrollMin_)) {
+      worldMin = axisPtr->scrollMin_;
     }
-    if (!isnan(axisPtr->scrollMax)) {
-      worldMax = axisPtr->scrollMax;
+    if (!isnan(axisPtr->scrollMax_)) {
+      worldMax = axisPtr->scrollMax_;
     }
-    viewMin = axisPtr->min;
-    viewMax = axisPtr->max;
+    viewMin = axisPtr->min_;
+    viewMax = axisPtr->max_;
     if (viewMin < worldMin) {
       viewMin = worldMin;
     }
@@ -1564,23 +1564,23 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
 
     if (isHoriz != ops->descending) {
       viewMin = (fract * worldWidth);
-      axisPtr->min = viewMin + worldMin;
-      axisPtr->max = axisPtr->min + viewWidth;
+      axisPtr->min_ = viewMin + worldMin;
+      axisPtr->max_ = axisPtr->min_ + viewWidth;
       viewMax = viewMin + viewWidth;
       if (ops->logScale) {
-	axisPtr->min = EXP10(axisPtr->min);
-	axisPtr->max = EXP10(axisPtr->max);
+	axisPtr->min_ = EXP10(axisPtr->min_);
+	axisPtr->max_ = EXP10(axisPtr->max_);
       }
       Blt_UpdateScrollbar(graphPtr->interp, ops->scrollCmdObjPtr,
 			  viewMin, viewMax, worldWidth);
     } else {
       viewMax = (fract * worldWidth);
-      axisPtr->max = worldMax - viewMax;
-      axisPtr->min = axisPtr->max - viewWidth;
+      axisPtr->max_ = worldMax - viewMax;
+      axisPtr->min_ = axisPtr->max_ - viewWidth;
       viewMin = viewMax + viewWidth;
       if (ops->logScale) {
-	axisPtr->min = EXP10(axisPtr->min);
-	axisPtr->max = EXP10(axisPtr->max);
+	axisPtr->min_ = EXP10(axisPtr->min_);
+	axisPtr->max_ = EXP10(axisPtr->max_);
       }
       Blt_UpdateScrollbar(graphPtr->interp, ops->scrollCmdObjPtr,
 			  viewMax, viewMin, worldWidth);
@@ -1752,13 +1752,13 @@ static void MapGridlines(Axis *axisPtr)
       for (j = 0; j < t2Ptr->nTicks; j++) {
 	double subValue = value + (axisPtr->majorSweep.step * 
 				   t2Ptr->values[j]);
-	if (InRange(subValue, &axisPtr->axisRange)) {
+	if (InRange(subValue, &axisPtr->axisRange_)) {
 	  MakeGridLine(axisPtr, subValue, s2);
 	  s2++;
 	}
       }
     }
-    if (InRange(value, &axisPtr->axisRange)) {
+    if (InRange(value, &axisPtr->axisRange_)) {
       MakeGridLine(axisPtr, value, s1);
       s1++;
     }
@@ -1807,7 +1807,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
       if (ops->labelOffset)
 	x2 += axisPtr->majorSweep.step * 0.5;
 
-      if (!InRange(x2, &axisPtr->axisRange))
+      if (!InRange(x2, &axisPtr->axisRange_))
 	continue;
 
       TickLabel* labelPtr = MakeLabel(axisPtr, x);
@@ -2327,8 +2327,8 @@ int ConfigureAxis(Axis *axisPtr)
     Tcl_AppendResult(graphPtr->interp, msg, NULL);
     return TCL_ERROR;
   }
-  axisPtr->scrollMin = ops->reqScrollMin;
-  axisPtr->scrollMax = ops->reqScrollMax;
+  axisPtr->scrollMin_ = ops->reqScrollMin;
+  axisPtr->scrollMax_ = ops->reqScrollMax;
   if (ops->logScale) {
     if (ops->checkLimits) {
       /* Check that the logscale limits are positive.  */
@@ -2340,11 +2340,11 @@ int ConfigureAxis(Axis *axisPtr)
 	return TCL_ERROR;
       }
     }
-    if ((!isnan(axisPtr->scrollMin)) && (axisPtr->scrollMin <= 0.0)) {
-      axisPtr->scrollMin = NAN;
+    if ((!isnan(axisPtr->scrollMin_)) && (axisPtr->scrollMin_ <= 0.0)) {
+      axisPtr->scrollMin_ = NAN;
     }
-    if ((!isnan(axisPtr->scrollMax)) && (axisPtr->scrollMax <= 0.0)) {
-      axisPtr->scrollMax = NAN;
+    if ((!isnan(axisPtr->scrollMax_)) && (axisPtr->scrollMax_ <= 0.0)) {
+      axisPtr->scrollMax_ = NAN;
     }
   }
   angle = fmod(ops->tickAngle, 360.0);
@@ -2566,11 +2566,11 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
     minFmt = maxFmt = ops->limitsFormat;
     if (minFmt[0] != '\0') {
       minPtr = minString;
-      sprintf_s(minString, 200, minFmt, axisPtr->axisRange.min);
+      sprintf_s(minString, 200, minFmt, axisPtr->axisRange_.min);
     }
     if (maxFmt[0] != '\0') {
       maxPtr = maxString;
-      sprintf_s(maxString, 200, maxFmt, axisPtr->axisRange.max);
+      sprintf_s(maxString, 200, maxFmt, axisPtr->axisRange_.max);
     }
     if (ops->descending) {
       char *tmp;
@@ -2646,7 +2646,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 
     minFmt = maxFmt = ops->limitsFormat;
     if (*maxFmt != '\0') {
-      sprintf_s(string, 200, maxFmt, axisPtr->axisRange.max);
+      sprintf_s(string, 200, maxFmt, axisPtr->axisRange_.max);
       Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {
@@ -2669,7 +2669,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
       }
     }
     if (*minFmt != '\0') {
-      sprintf_s(string, 200, minFmt, axisPtr->axisRange.min);
+      sprintf_s(string, 200, minFmt, axisPtr->axisRange_.min);
       Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
 			 &textHeight);
       if ((textWidth > 0) && (textHeight > 0)) {

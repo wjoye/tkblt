@@ -281,8 +281,8 @@ void BarElement::map()
     int height;
     double right, left, top, bottom;
 
-    if (((x[i] - barWidth) > ops->axes.x->axisRange.max) ||
-	((x[i] + barWidth) < ops->axes.x->axisRange.min)) {
+    if (((x[i] - barWidth) > ops->axes.x->axisRange_.max) ||
+	((x[i] + barWidth) < ops->axes.x->axisRange_.min)) {
       continue;			/* Abscissa is out of range of the
 				 * x-axis */
     }

@@ -169,10 +169,10 @@ class Axis {
   AxisRange axisRange_;
   double prevMin_;
   double prevMax_;
-  Ticks* t1Ptr;
-  Ticks* t2Ptr;
-  TickSweep minorSweep;
-  TickSweep majorSweep;
+  Ticks* t1Ptr_;
+  Ticks* t2Ptr_;
+  TickSweep minorSweep_;
+  TickSweep majorSweep_;
 
   // The following fields are specific to logical axes
 

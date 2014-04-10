@@ -1015,8 +1015,8 @@ int LineElement::ScaleSymbol(int normalSize)
 
   double scale = 1.0;
   if (ops->scaleSymbols) {
-    double xRange = (ops->axes.x->max - ops->axes.x->min);
-    double yRange = (ops->axes.y->max - ops->axes.y->min);
+    double xRange = (ops->axes.x->max_ - ops->axes.x->min_);
+    double yRange = (ops->axes.y->max_ - ops->axes.y->min_);
     // Save the ranges as a baseline for future scaling
     if (flags & SCALE_SYMBOL) {
       xRange_ = xRange;

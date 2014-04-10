@@ -221,12 +221,12 @@ static int LimitsOp(Tcl_Interp* interp, Axis *axisPtr,
 
   double min, max;
   if (ops->logScale) {
-    min = EXP10(axisPtr->axisRange.min);
-    max = EXP10(axisPtr->axisRange.max);
+    min = EXP10(axisPtr->axisRange_.min);
+    max = EXP10(axisPtr->axisRange_.max);
   } 
   else {
-    min = axisPtr->axisRange.min;
-    max = axisPtr->axisRange.max;
+    min = axisPtr->axisRange_.min;
+    max = axisPtr->axisRange_.max;
   }
 
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
@@ -364,17 +364,17 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
 {
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   Graph* graphPtr = axisPtr->graphPtr_;
-  double worldMin = axisPtr->valueRange.min;
-  double worldMax = axisPtr->valueRange.max;
+  double worldMin = axisPtr->valueRange_.min;
+  double worldMax = axisPtr->valueRange_.max;
   /* Override data dimensions with user-selected limits. */
-  if (!isnan(axisPtr->scrollMin))
-    worldMin = axisPtr->scrollMin;
+  if (!isnan(axisPtr->scrollMin_))
+    worldMin = axisPtr->scrollMin_;
 
-  if (!isnan(axisPtr->scrollMax))
-    worldMax = axisPtr->scrollMax;
+  if (!isnan(axisPtr->scrollMax_))
+    worldMax = axisPtr->scrollMax_;
 
-  double viewMin = axisPtr->min;
-  double viewMax = axisPtr->max;
+  double viewMin = axisPtr->min_;
+  double viewMax = axisPtr->max_;
   /* Bound the view within scroll region. */ 
   if (viewMin < worldMin)
     viewMin = worldMin;
@@ -852,8 +852,8 @@ void Blt_ResetAxes(Graph* graphPtr)
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->min = axisPtr->valueRange.min = DBL_MAX;
-    axisPtr->max = axisPtr->valueRange.max = -DBL_MAX;
+    axisPtr->min_ = axisPtr->valueRange_.min = DBL_MAX;
+    axisPtr->max_ = axisPtr->valueRange_.max = -DBL_MAX;
   }
 
   /*
@@ -885,13 +885,13 @@ void Blt_ResetAxes(Graph* graphPtr)
     FixAxisRange(axisPtr);
 
     /* Calculate min/max tick (major/minor) layouts */
-    min = axisPtr->min;
-    max = axisPtr->max;
-    if ((!isnan(axisPtr->scrollMin)) && (min < axisPtr->scrollMin)) {
-      min = axisPtr->scrollMin;
+    min = axisPtr->min_;
+    max = axisPtr->max_;
+    if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_)) {
+      min = axisPtr->scrollMin_;
     }
-    if ((!isnan(axisPtr->scrollMax)) && (max > axisPtr->scrollMax)) {
-      max = axisPtr->scrollMax;
+    if ((!isnan(axisPtr->scrollMax_)) && (max > axisPtr->scrollMax_)) {
+      max = axisPtr->scrollMax_;
     }
     if (ops->logScale)
       axisPtr->logScale(min, max);
