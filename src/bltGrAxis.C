@@ -52,12 +52,10 @@ extern "C" {
 #define HORIZMARGIN(m)	(!((m)->site & 0x1)) /* Even sites are horizontal */
 
 typedef struct {
-  int axis;				/* Length of the axis.  */
-  int t1;			        /* Length of a major tick (in
-					 * pixels). */
-  int t2;			        /* Length of a minor tick (in
-					 * pixels). */
-  int label;				/* Distance from axis to tick label. */
+  int axis;
+  int t1;
+  int t2;
+  int label;
 } AxisInfo;
 
 AxisName axisNames[] = { 
@@ -80,7 +78,6 @@ static int Round(double x)
 {
   return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
 }
-
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
