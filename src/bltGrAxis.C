@@ -1195,23 +1195,22 @@ void Axis::offsets(int margin, int offset, AxisInfo *infoPtr)
   } 
 }
 
-static void MakeTick(Axis *axisPtr, double value, int tick, int line, 
-		     Segment2d *sp)
+void Axis::makeTick(double value, int tick, int line, Segment2d *sp)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
 
   if (ops->logScale)
     value = EXP10(value);
 
-  if (axisPtr->isHorizontal()) {
-    sp->p.x = axisPtr->hMap(value);
+  if (isHorizontal()) {
+    sp->p.x = hMap(value);
     sp->p.y = line;
     sp->q.x = sp->p.x;
     sp->q.y = tick;
   }
   else {
     sp->p.x = line;
-    sp->p.y = axisPtr->vMap(value);
+    sp->p.y = vMap(value);
     sp->q.x = tick;
     sp->q.y = sp->p.y;
   }
@@ -1248,7 +1247,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       for (int jj=0; jj<nMinorTicks; jj++) {
 	double t2 = t1 + (axisPtr->majorSweep_.step*t2Ptr->values[jj]);
 	if (axisPtr->inRange(t2, &axisPtr->axisRange_)) {
-	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
+	  axisPtr->makeTick(t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
 	}
       }
@@ -1256,7 +1255,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
 	continue;
 
       /* Major tick */
-      MakeTick(axisPtr, t1, infoPtr->t1, infoPtr->axis, sp);
+      axisPtr->makeTick(t1, infoPtr->t1, infoPtr->axis, sp);
       sp++;
     }
 
@@ -1274,7 +1273,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
       link = Blt_Chain_NextLink(link);
       Segment2d seg;
-      MakeTick(axisPtr, t1, infoPtr->t1, infoPtr->axis, &seg);
+      axisPtr->makeTick(t1, infoPtr->t1, infoPtr->axis, &seg);
       /* Save tick label X-Y position. */
       if (isHoriz) {
 	labelPtr->anchorPos.x = seg.p.x;

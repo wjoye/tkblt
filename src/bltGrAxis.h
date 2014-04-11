@@ -238,6 +238,7 @@ class Axis {
   void resetTextStyles();
   void makeLine(int, Segment2d*);
   void offsets(int, int, AxisInfo*);
+  void makeTick(double, int, int, Segment2d*);
 };
 
 #endif
