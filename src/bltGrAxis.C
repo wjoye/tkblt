@@ -1216,17 +1216,17 @@ void Axis::makeTick(double value, int tick, int line, Segment2d *sp)
   }
 }
 
-static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
+void Axis::makeSegments(AxisInfo *infoPtr)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (axisPtr->segments_) {
-    free(axisPtr->segments_);
-    axisPtr->segments_ = NULL;	
+  if (segments_) {
+    free(segments_);
+    segments_ = NULL;	
   }
 
-  Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr_;
-  Ticks* t2Ptr = ops->t2UPtr ? ops->t2UPtr : axisPtr->t2Ptr_;
+  Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : t1Ptr_;
+  Ticks* t2Ptr = ops->t2UPtr ? ops->t2UPtr : t2Ptr_;
 
   int nMajorTicks= t1Ptr ? t1Ptr->nTicks : 0;
   int nMinorTicks= t2Ptr ? t2Ptr->nTicks : 0;
@@ -1235,45 +1235,45 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
   Segment2d* segments = (Segment2d*)malloc(arraySize * sizeof(Segment2d));
   Segment2d* sp = segments;
   if (ops->lineWidth > 0) {
-    axisPtr->makeLine(infoPtr->axis, sp);
+    makeLine(infoPtr->axis, sp);
     sp++;
   }
 
   if (ops->showTicks) {
-    int isHoriz = axisPtr->isHorizontal();
+    int isHoriz = isHorizontal();
     for (int ii=0; ii<nMajorTicks; ii++) {
       double t1 = t1Ptr->values[ii];
       /* Minor ticks */
       for (int jj=0; jj<nMinorTicks; jj++) {
-	double t2 = t1 + (axisPtr->majorSweep_.step*t2Ptr->values[jj]);
-	if (axisPtr->inRange(t2, &axisPtr->axisRange_)) {
-	  axisPtr->makeTick(t2, infoPtr->t2, infoPtr->axis, sp);
+	double t2 = t1 + (majorSweep_.step*t2Ptr->values[jj]);
+	if (inRange(t2, &axisRange_)) {
+	  makeTick(t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
 	}
       }
-      if (!axisPtr->inRange(t1, &axisPtr->axisRange_))
+      if (!inRange(t1, &axisRange_))
 	continue;
 
       /* Major tick */
-      axisPtr->makeTick(t1, infoPtr->t1, infoPtr->axis, sp);
+      makeTick(t1, infoPtr->t1, infoPtr->axis, sp);
       sp++;
     }
 
-    Blt_ChainLink link = Blt_Chain_FirstLink(axisPtr->tickLabels_);
+    Blt_ChainLink link = Blt_Chain_FirstLink(tickLabels_);
     double labelPos = (double)infoPtr->label;
 
     for (int ii=0; ii< nMajorTicks; ii++) {
       double t1 = t1Ptr->values[ii];
       if (ops->labelOffset)
-	t1 += axisPtr->majorSweep_.step * 0.5;
+	t1 += majorSweep_.step * 0.5;
 
-      if (!axisPtr->inRange(t1, &axisPtr->axisRange_))
+      if (!inRange(t1, &axisRange_))
 	continue;
 
       TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
       link = Blt_Chain_NextLink(link);
       Segment2d seg;
-      axisPtr->makeTick(t1, infoPtr->t1, infoPtr->axis, &seg);
+      makeTick(t1, infoPtr->t1, infoPtr->axis, &seg);
       /* Save tick label X-Y position. */
       if (isHoriz) {
 	labelPtr->anchorPos.x = seg.p.x;
@@ -1284,8 +1284,8 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       }
     }
   }
-  axisPtr->segments_ = segments;
-  axisPtr->nSegments_ = sp - segments;
+  segments_ = segments;
+  nSegments_ = sp - segments;
 }
 
 static void MapAxis(Axis *axisPtr, int offset, int margin)
@@ -1305,7 +1305,7 @@ static void MapAxis(Axis *axisPtr, int offset, int margin)
   }
   axisPtr->screenScale_ = 1.0 / axisPtr->screenRange_;
   axisPtr->offsets(margin, offset, &info);
-  MakeSegments(axisPtr, &info);
+  axisPtr->makeSegments(&info);
 }
 
 static void MapStackedAxis(Axis *axisPtr, int count, int margin)
@@ -1336,7 +1336,7 @@ static void MapStackedAxis(Axis *axisPtr, int count, int margin)
   axisPtr->screenRange_ = slice - 2 * 2 - h;
   axisPtr->screenScale_ = 1.0f / axisPtr->screenRange_;
   axisPtr->offsets(margin, 0, &info);
-  MakeSegments(axisPtr, &info);
+  axisPtr->makeSegments(&info);
 }
 
 static double AdjustViewport(double offset, double windowSize)
