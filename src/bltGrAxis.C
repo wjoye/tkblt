@@ -764,17 +764,75 @@ double Axis::vMap(double y)
   return ((1.0 - y) * screenRange_ + screenMin_);
 }
 
-// Support
-
-void GetDataLimits(Axis *axisPtr, double min, double max)
+void Axis::getDataLimits(double min, double max)
 {
-  if (axisPtr->valueRange_.min > min) {
-    axisPtr->valueRange_.min = min;
-  }
-  if (axisPtr->valueRange_.max < max) {
-    axisPtr->valueRange_.max = max;
-  }
+  if (valueRange_.min > min)
+    valueRange_.min = min;
+
+  if (valueRange_.max < max)
+    valueRange_.max = max;
 }
+
+void Axis::resetTextStyles()
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  Blt_Ts_ResetStyle(graphPtr_->tkwin, &ops->limitsTextStyle);
+
+  XGCValues gcValues;
+  unsigned long gcMask;
+  gcMask = (GCForeground | GCLineWidth | GCCapStyle);
+  gcValues.foreground = ops->tickColor->pixel;
+  gcValues.font = Tk_FontId(ops->tickFont);
+  gcValues.line_width = LineWidth(ops->lineWidth);
+  gcValues.cap_style = CapProjecting;
+
+  GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  if (tickGC_)
+    Tk_FreeGC(graphPtr_->display, tickGC_);
+  tickGC_ = newGC;
+
+  // Assuming settings from above GC
+  gcValues.foreground = ops->activeFgColor->pixel;
+  newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  if (activeTickGC_)
+    Tk_FreeGC(graphPtr_->display, activeTickGC_);
+  activeTickGC_ = newGC;
+
+  gcValues.background = gcValues.foreground = ops->major.color->pixel;
+  gcValues.line_width = LineWidth(ops->major.lineWidth);
+  gcMask = (GCForeground | GCBackground | GCLineWidth);
+  if (LineIsDashed(ops->major.dashes)) {
+    gcValues.line_style = LineOnOffDash;
+    gcMask |= GCLineStyle;
+  }
+  newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  if (LineIsDashed(ops->major.dashes))
+    Blt_SetDashes(graphPtr_->display, newGC, &ops->major.dashes);
+
+  if (ops->major.gc)
+    Blt_FreePrivateGC(graphPtr_->display, ops->major.gc);
+
+  ops->major.gc = newGC;
+
+  gcValues.background = gcValues.foreground = ops->minor.color->pixel;
+  gcValues.line_width = LineWidth(ops->minor.lineWidth);
+  gcMask = (GCForeground | GCBackground | GCLineWidth);
+  if (LineIsDashed(ops->minor.dashes)) {
+    gcValues.line_style = LineOnOffDash;
+    gcMask |= GCLineStyle;
+  }
+  newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  if (LineIsDashed(ops->minor.dashes))
+    Blt_SetDashes(graphPtr_->display, newGC, &ops->minor.dashes);
+
+  if (ops->minor.gc)
+    Blt_FreePrivateGC(graphPtr_->display, ops->minor.gc);
+
+  ops->minor.gc = newGC;
+}
+
+// Support
 
 static Ticks *GenerateTicks(TickSweep *sweepPtr)
 {
@@ -813,75 +871,6 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
   return ticksPtr;
 }
 
-static void ResetTextStyles(Axis *axisPtr)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-  Graph* graphPtr = axisPtr->graphPtr_;
-  GC newGC;
-  XGCValues gcValues;
-  unsigned long gcMask;
-
-  Blt_Ts_ResetStyle(graphPtr->tkwin, &ops->limitsTextStyle);
-
-  gcMask = (GCForeground | GCLineWidth | GCCapStyle);
-  gcValues.foreground = ops->tickColor->pixel;
-  gcValues.font = Tk_FontId(ops->tickFont);
-  gcValues.line_width = LineWidth(ops->lineWidth);
-  gcValues.cap_style = CapProjecting;
-
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (axisPtr->tickGC_) {
-    Tk_FreeGC(graphPtr->display, axisPtr->tickGC_);
-  }
-  axisPtr->tickGC_ = newGC;
-
-  /* Assuming settings from above GC */
-  gcValues.foreground = ops->activeFgColor->pixel;
-  newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (axisPtr->activeTickGC_) {
-    Tk_FreeGC(graphPtr->display, axisPtr->activeTickGC_);
-  }
-  axisPtr->activeTickGC_ = newGC;
-
-  gcValues.background = gcValues.foreground = ops->major.color->pixel;
-  gcValues.line_width = LineWidth(ops->major.lineWidth);
-  gcMask = (GCForeground | GCBackground | GCLineWidth);
-  if (LineIsDashed(ops->major.dashes)) {
-    gcValues.line_style = LineOnOffDash;
-    gcMask |= GCLineStyle;
-  }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(ops->major.dashes)) {
-    Blt_SetDashes(graphPtr->display, newGC, &ops->major.dashes);
-  }
-  if (ops->major.gc) {
-    Blt_FreePrivateGC(graphPtr->display, ops->major.gc);
-  }
-  ops->major.gc = newGC;
-
-  gcValues.background = gcValues.foreground = ops->minor.color->pixel;
-  gcValues.line_width = LineWidth(ops->minor.lineWidth);
-  gcMask = (GCForeground | GCBackground | GCLineWidth);
-  if (LineIsDashed(ops->minor.dashes)) {
-    gcValues.line_style = LineOnOffDash;
-    gcMask |= GCLineStyle;
-  }
-  newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(ops->minor.dashes)) {
-    Blt_SetDashes(graphPtr->display, newGC, &ops->minor.dashes);
-  }
-  if (ops->minor.gc) {
-    Blt_FreePrivateGC(graphPtr->display, ops->minor.gc);
-  }
-  ops->minor.gc = newGC;
-}
-
-static float titleAngle[4] =		/* Rotation for each axis title */
-  {
-    0.0, 90.0, 0.0, 270.0
-  };
-
 static void AxisOffsets(Axis *axisPtr, int margin, int offset,
 			AxisInfo *infoPtr)
 {
@@ -897,6 +886,8 @@ static void AxisOffsets(Axis *axisPtr, int margin, int offset,
   int inset, mark;
   int x, y;
   float fangle;
+
+  float titleAngle[4] = {0.0, 90.0, 0.0, 270.0};
 
   axisPtr->titleAngle_ = titleAngle[margin];
   marginPtr = graphPtr->margins + margin;
@@ -2306,7 +2297,7 @@ int ConfigureAxis(Axis *axisPtr)
     angle += 360.0f;
 
   ops->tickAngle = angle;
-  ResetTextStyles(axisPtr);
+  axisPtr->resetTextStyles();
 
   axisPtr->titleWidth_ = axisPtr->titleHeight_ = 0;
   if (ops->title) {

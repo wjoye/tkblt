@@ -43,7 +43,6 @@ typedef int (GraphDefAxisProc)(Tcl_Interp* interp, Axis *axisPtr,
 typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
 			    int objc, Tcl_Obj* const objv[]);
 
-extern void GetDataLimits(Axis *axisPtr, double min, double max);
 extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
@@ -861,8 +860,8 @@ void Blt_ResetAxes(Graph* graphPtr)
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemops = (ElementOptions*)elemPtr->ops();
     elemPtr->extents(&exts);
-    GetDataLimits(elemops->axes.x, exts.left, exts.right);
-    GetDataLimits(elemops->axes.y, exts.top, exts.bottom);
+    elemops->axes.x->getDataLimits(exts.left, exts.right);
+    elemops->axes.y->getDataLimits(exts.top, exts.bottom);
   }
   /*
    * Step 3:  Now that we know the range of data values for each axis,

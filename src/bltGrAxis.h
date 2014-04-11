@@ -227,6 +227,8 @@ class Axis {
   double invVMap(double y);
   double hMap(double x);
   double vMap(double y);
+  void getDataLimits(double, double);
+  void resetTextStyles();
 };
 
 #endif
