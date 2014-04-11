@@ -887,24 +887,17 @@ static Ticks *GenerateTicks(TickSweep *sweepPtr)
 void Axis::offsets(int margin, int offset, AxisInfo *infoPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
-  Margin *marginPtr;
-  int pad;				/* Offset of axis from interior
-					 * region. This includes a possible
-					 * border and the axis line width. */
-  int axisLine;
-  int t1, t2, labelOffset;
-  int tickLabel, axisPad;
-  int inset, mark;
-  int x, y;
-  float fangle;
+
+  int axisLine =0;
+  int t1 =0;
+  int t2 =0;
+  int labelOffset =AXIS_PAD_TITLE;
+  int tickLabel =0;
 
   float titleAngle[4] = {0.0, 90.0, 0.0, 270.0};
-
   titleAngle_ = titleAngle[margin];
-  marginPtr = graphPtr_->margins + margin;
+  Margin *marginPtr = graphPtr_->margins + margin;
 
-  tickLabel = axisLine = t1 = t2 = 0;
-  labelOffset = AXIS_PAD_TITLE;
   if (ops->lineWidth > 0) {
     if (ops->showTicks) {
       t1 = ops->tickLength;
@@ -914,271 +907,289 @@ void Axis::offsets(int margin, int offset, AxisInfo *infoPtr)
     if (ops->exterior)
       labelOffset += ops->lineWidth;
   }
-  axisPad = 0;
-  if (graphPtr_->plotRelief != TK_RELIEF_SOLID) {
-    axisPad = 0;
-  }
-  /* Adjust offset for the interior border width and the line width */
-  pad = 1;
-  if (graphPtr_->plotBW > 0) {
-    pad += graphPtr_->plotBW + 1;
-  }
-  pad = 0;				/* FIXME: test */
-  /*
-   * Pre-calculate the x-coordinate positions of the axis, tick labels, and
-   * the individual major and minor ticks.
-   */
-  inset = pad + ops->lineWidth / 2;
+
+  int axisPad =0;
+  //  if (graphPtr_->plotRelief != TK_RELIEF_SOLID)
+  //    axisPad = 0;
+
+  // Adjust offset for the interior border width and the line width */
+  // fixme
+  int pad = 0;
+  //  int pad = 1;
+  //  if (graphPtr_->plotBW > 0)
+  //    pad += graphPtr_->plotBW + 1;
+
+  // Pre-calculate the x-coordinate positions of the axis, tick labels, and
+  // the individual major and minor ticks.
+  int inset = pad + ops->lineWidth / 2;
+
   switch (margin) {
   case MARGIN_TOP:
-    axisLine = graphPtr_->top;
-    if (ops->exterior) {
-      axisLine -= graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
-      tickLabel = axisLine - 2;
-      if (ops->lineWidth > 0) {
-	tickLabel -= ops->tickLength;
-      }
-    } else {
-      if (graphPtr_->plotRelief == TK_RELIEF_SOLID) {
-	axisLine--;
+    {
+      axisLine = graphPtr_->top;
+      if (ops->exterior) {
+	axisLine -= graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
+	tickLabel = axisLine - 2;
+	if (ops->lineWidth > 0)
+	  tickLabel -= ops->tickLength;
       } 
-      axisLine -= axisPad + ops->lineWidth / 2;
-      tickLabel = graphPtr_->top -  graphPtr_->plotBW - 2;
-    }
-    mark = graphPtr_->top - offset - pad;
-    tickAnchor_ = TK_ANCHOR_S;
-    left_ = screenMin_ - inset - 2;
-    right_ = screenMin_ + screenRange_ + inset - 1;
-    if (graphPtr_->stackAxes) {
-      top_ = mark - marginPtr->axesOffset;
-    } else {
-      top_ = mark - height_;
-    }
-    bottom_ = mark;
-    if (ops->titleAlternate) {
-      x = graphPtr_->right + AXIS_PAD_TITLE;
-      y = mark - (height_  / 2);
-      titleAnchor_ = TK_ANCHOR_W;
-    } else {
-      x = (right_ + left_) / 2;
-      if (graphPtr_->stackAxes) {
-	y = mark - marginPtr->axesOffset + AXIS_PAD_TITLE;
-      } else {
-	y = mark - height_ + AXIS_PAD_TITLE;
+      else {
+	if (graphPtr_->plotRelief == TK_RELIEF_SOLID)
+	  axisLine--;
+
+	axisLine -= axisPad + ops->lineWidth / 2;
+	tickLabel = graphPtr_->top -  graphPtr_->plotBW - 2;
       }
-      titleAnchor_ = TK_ANCHOR_N;
+
+      int mark = graphPtr_->top - offset - pad;
+      tickAnchor_ = TK_ANCHOR_S;
+      left_ = screenMin_ - inset - 2;
+      right_ = screenMin_ + screenRange_ + inset - 1;
+      if (graphPtr_->stackAxes)
+	top_ = mark - marginPtr->axesOffset;
+      else
+	top_ = mark - height_;
+      bottom_ = mark;
+
+      int x, y;
+      if (ops->titleAlternate) {
+	x = graphPtr_->right + AXIS_PAD_TITLE;
+	y = mark - (height_  / 2);
+	titleAnchor_ = TK_ANCHOR_W;
+      }
+      else {
+	x = (right_ + left_) / 2;
+	if (graphPtr_->stackAxes)
+	  y = mark - marginPtr->axesOffset + AXIS_PAD_TITLE;
+	else
+	  y = mark - height_ + AXIS_PAD_TITLE;
+
+	titleAnchor_ = TK_ANCHOR_N;
+      }
+      titlePos_.x = x;
+      titlePos_.y = y;
     }
-    titlePos_.x = x;
-    titlePos_.y = y;
     break;
 
   case MARGIN_BOTTOM:
-    /*
-     *  ----------- bottom + plot borderwidth
-     *      mark --------------------------------------------
-     *          ===================== axisLine (linewidth)
-     *                   tick
-     *		    title
-     *
-     *          ===================== axisLine (linewidth)
-     *  ----------- bottom + plot borderwidth
-     *      mark --------------------------------------------
-     *                   tick
-     *		    title
-     */
-    axisLine = graphPtr_->bottom;
-    if (graphPtr_->plotRelief == TK_RELIEF_SOLID) {
-      axisLine++;
-    } 
-    if (ops->exterior) {
-      axisLine += graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
-      tickLabel = axisLine + 2;
-      if (ops->lineWidth > 0) {
-	tickLabel += ops->tickLength;
-      }
-    } else {
-      axisLine -= axisPad + ops->lineWidth / 2;
-      tickLabel = graphPtr_->bottom +  graphPtr_->plotBW + 2;
-    }
-    mark = graphPtr_->bottom + offset;
-    fangle = fmod(ops->tickAngle, 90.0);
-    if (fangle == 0.0) {
-      tickAnchor_ = TK_ANCHOR_N;
-    } else {
-      int quadrant;
+    {
+      /*
+       *  ----------- bottom + plot borderwidth
+       *      mark --------------------------------------------
+       *          ===================== axisLine (linewidth)
+       *                   tick
+       *		    title
+       *
+       *          ===================== axisLine (linewidth)
+       *  ----------- bottom + plot borderwidth
+       *      mark --------------------------------------------
+       *                   tick
+       *		    title
+       */
+      axisLine = graphPtr_->bottom;
+      if (graphPtr_->plotRelief == TK_RELIEF_SOLID)
+	axisLine++;
 
-      quadrant = (int)(ops->tickAngle / 90.0);
-      if ((quadrant == 0) || (quadrant == 2)) {
-	tickAnchor_ = TK_ANCHOR_NE;
-      } else {
-	tickAnchor_ = TK_ANCHOR_NW;
+      if (ops->exterior) {
+	axisLine += graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
+	tickLabel = axisLine + 2;
+	if (ops->lineWidth > 0)
+	  tickLabel += ops->tickLength;
       }
-    }
-    left_ = screenMin_ - inset - 2;
-    right_ = screenMin_ + screenRange_ + inset - 1;
-    top_ = graphPtr_->bottom + labelOffset - t1;
-    if (graphPtr_->stackAxes) {
-      bottom_ = mark + marginPtr->axesOffset - 1;
-    } else {
-      bottom_ = mark + height_ - 1;
-    }
-    if (ops->titleAlternate) {
-      x = graphPtr_->right + AXIS_PAD_TITLE;
-      y = mark + (height_ / 2);
-      titleAnchor_ = TK_ANCHOR_W; 
-    } else {
-      x = (right_ + left_) / 2;
-      if (graphPtr_->stackAxes) {
-	y = mark + marginPtr->axesOffset - AXIS_PAD_TITLE;
-      } else {
-	y = mark + height_ - AXIS_PAD_TITLE;
+      else {
+	axisLine -= axisPad + ops->lineWidth / 2;
+	tickLabel = graphPtr_->bottom +  graphPtr_->plotBW + 2;
       }
-      titleAnchor_ = TK_ANCHOR_S; 
+
+      int mark = graphPtr_->bottom + offset;
+      float fangle = fmod(ops->tickAngle, 90.0);
+      if (fangle == 0.0)
+	tickAnchor_ = TK_ANCHOR_N;
+      else {
+	int quadrant = (int)(ops->tickAngle / 90.0);
+	if ((quadrant == 0) || (quadrant == 2))
+	  tickAnchor_ = TK_ANCHOR_NE;
+	else
+	  tickAnchor_ = TK_ANCHOR_NW;
+      }
+
+      left_ = screenMin_ - inset - 2;
+      right_ = screenMin_ + screenRange_ + inset - 1;
+      top_ = graphPtr_->bottom + labelOffset - t1;
+      if (graphPtr_->stackAxes)
+	bottom_ = mark + marginPtr->axesOffset - 1;
+      else
+	bottom_ = mark + height_ - 1;
+
+      int x, y;
+      if (ops->titleAlternate) {
+	x = graphPtr_->right + AXIS_PAD_TITLE;
+	y = mark + (height_ / 2);
+	titleAnchor_ = TK_ANCHOR_W; 
+      }
+      else {
+	x = (right_ + left_) / 2;
+	if (graphPtr_->stackAxes)
+	  y = mark + marginPtr->axesOffset - AXIS_PAD_TITLE;
+	else
+	  y = mark + height_ - AXIS_PAD_TITLE;
+	titleAnchor_ = TK_ANCHOR_S; 
+      }
+      titlePos_.x = x;
+      titlePos_.y = y;
     }
-    titlePos_.x = x;
-    titlePos_.y = y;
     break;
 
   case MARGIN_LEFT:
-    /*
-     *                    mark
-     *                  |  : 
-     *                  |  :      
-     *                  |  : 
-     *                  |  :
-     *                  |  : 
-     *     axisLine
-     */
-    /* 
-     * Exterior axis 
-     *     + plotarea right
-     *     |A|B|C|D|E|F|G|H
-     *           |right
-     * A = plot pad 
-     * B = plot border width
-     * C = axis pad
-     * D = axis line
-     * E = tick length
-     * F = tick label 
-     * G = graph border width
-     * H = highlight thickness
-     */
-    /* 
-     * Interior axis 
-     *     + plotarea right
-     *     |A|B|C|D|E|F|G|H
-     *           |right
-     * A = plot pad 
-     * B = tick length
-     * C = axis line width
-     * D = axis pad
-     * E = plot border width
-     * F = tick label 
-     * G = graph border width
-     * H = highlight thickness
-     */
-    axisLine = graphPtr_->left;
-    if (ops->exterior) {
-      axisLine -= graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
-      tickLabel = axisLine - 2;
-      if (ops->lineWidth > 0) {
-	tickLabel -= ops->tickLength;
+    {
+      /*
+       *                    mark
+       *                  |  : 
+       *                  |  :      
+       *                  |  : 
+       *                  |  :
+       *                  |  : 
+       *     axisLine
+       */
+      /* 
+       * Exterior axis 
+       *     + plotarea right
+       *     |A|B|C|D|E|F|G|H
+       *           |right
+       * A = plot pad 
+       * B = plot border width
+       * C = axis pad
+       * D = axis line
+       * E = tick length
+       * F = tick label 
+       * G = graph border width
+       * H = highlight thickness
+       */
+      /* 
+       * Interior axis 
+       *     + plotarea right
+       *     |A|B|C|D|E|F|G|H
+       *           |right
+       * A = plot pad 
+       * B = tick length
+       * C = axis line width
+       * D = axis pad
+       * E = plot border width
+       * F = tick label 
+       * G = graph border width
+       * H = highlight thickness
+       */
+      axisLine = graphPtr_->left;
+      if (ops->exterior) {
+	axisLine -= graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
+	tickLabel = axisLine - 2;
+	if (ops->lineWidth > 0)
+	  tickLabel -= ops->tickLength;
       }
-    } else {
-      if (graphPtr_->plotRelief == TK_RELIEF_SOLID) {
-	axisLine--;
+      else {
+	if (graphPtr_->plotRelief == TK_RELIEF_SOLID)
+	  axisLine--;
+	axisLine += axisPad + ops->lineWidth / 2;
+	tickLabel = graphPtr_->left - graphPtr_->plotBW - 2;
+      }
+
+      int mark = graphPtr_->left - offset;
+      tickAnchor_ = TK_ANCHOR_E;
+      if (graphPtr_->stackAxes)
+	left_ = mark - marginPtr->axesOffset;
+      else
+	left_ = mark - width_;
+      right_ = mark - 3;
+      top_ = screenMin_ - inset - 2;
+      bottom_ = screenMin_ + screenRange_ + inset - 1;
+
+      int x, y;
+      if (ops->titleAlternate) {
+	x = mark - (width_ / 2);
+	y = graphPtr_->top - AXIS_PAD_TITLE;
+	titleAnchor_ = TK_ANCHOR_SW; 
+      }
+      else {
+	if (graphPtr_->stackAxes)
+	  x = mark - marginPtr->axesOffset;
+	else
+	  x = mark - width_ + AXIS_PAD_TITLE;
+	y = (bottom_ + top_) / 2;
+	titleAnchor_ = TK_ANCHOR_W; 
       } 
-      axisLine += axisPad + ops->lineWidth / 2;
-      tickLabel = graphPtr_->left - graphPtr_->plotBW - 2;
+      titlePos_.x = x;
+      titlePos_.y = y;
     }
-    mark = graphPtr_->left - offset;
-    tickAnchor_ = TK_ANCHOR_E;
-    if (graphPtr_->stackAxes) {
-      left_ = mark - marginPtr->axesOffset;
-    } else {
-      left_ = mark - width_;
-    }
-    right_ = mark - 3;
-    top_ = screenMin_ - inset - 2;
-    bottom_ = screenMin_ + screenRange_ + inset - 1;
-    if (ops->titleAlternate) {
-      x = mark - (width_ / 2);
-      y = graphPtr_->top - AXIS_PAD_TITLE;
-      titleAnchor_ = TK_ANCHOR_SW; 
-    } else {
-      if (graphPtr_->stackAxes) {
-	x = mark - marginPtr->axesOffset;
-      } else {
-	x = mark - width_ + AXIS_PAD_TITLE;
-      }
-      y = (bottom_ + top_) / 2;
-      titleAnchor_ = TK_ANCHOR_W; 
-    } 
-    titlePos_.x = x;
-    titlePos_.y = y;
     break;
 
   case MARGIN_RIGHT:
-    axisLine = graphPtr_->right;
-    if (graphPtr_->plotRelief == TK_RELIEF_SOLID) {
-      axisLine++;			/* Draw axis line within solid plot
-					 * border. */
-    } 
-    if (ops->exterior) {
-      axisLine += graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
-      tickLabel = axisLine + 2;
-      if (ops->lineWidth > 0) {
-	tickLabel += ops->tickLength;
+    {
+      axisLine = graphPtr_->right;
+      if (graphPtr_->plotRelief == TK_RELIEF_SOLID)
+	axisLine++;
+
+      if (ops->exterior) {
+	axisLine += graphPtr_->plotBW + axisPad + ops->lineWidth / 2;
+	tickLabel = axisLine + 2;
+	if (ops->lineWidth > 0)
+	  tickLabel += ops->tickLength;
       }
-    } else {
-      axisLine -= axisPad + ops->lineWidth / 2;
-      tickLabel = graphPtr_->right + graphPtr_->plotBW + 2;
-    }
-    mark = graphPtr_->right + offset + pad;
-    tickAnchor_ = TK_ANCHOR_W;
-    left_ = mark;
-    if (graphPtr_->stackAxes) {
-      right_ = mark + marginPtr->axesOffset - 1;
-    } else {
-      right_ = mark + width_ - 1;
-    }
-    top_ = screenMin_ - inset - 2;
-    bottom_ = screenMin_ + screenRange_ + inset -1;
-    if (ops->titleAlternate) {
-      x = mark + (width_ / 2);
-      y = graphPtr_->top - AXIS_PAD_TITLE;
-      titleAnchor_ = TK_ANCHOR_SE; 
-    } else {
-      if (graphPtr_->stackAxes) {
-	x = mark + marginPtr->axesOffset - AXIS_PAD_TITLE;
-      } else {
-	x = mark + width_ - AXIS_PAD_TITLE;
+      else {
+	axisLine -= axisPad + ops->lineWidth / 2;
+	tickLabel = graphPtr_->right + graphPtr_->plotBW + 2;
       }
-      y = (bottom_ + top_) / 2;
-      titleAnchor_ = TK_ANCHOR_E;
+
+      int mark = graphPtr_->right + offset + pad;
+      tickAnchor_ = TK_ANCHOR_W;
+      left_ = mark;
+      if (graphPtr_->stackAxes)
+	right_ = mark + marginPtr->axesOffset - 1;
+      else
+	right_ = mark + width_ - 1;
+
+      top_ = screenMin_ - inset - 2;
+      bottom_ = screenMin_ + screenRange_ + inset -1;
+
+      int x, y;
+      if (ops->titleAlternate) {
+	x = mark + (width_ / 2);
+	y = graphPtr_->top - AXIS_PAD_TITLE;
+	titleAnchor_ = TK_ANCHOR_SE; 
+      }
+      else {
+	if (graphPtr_->stackAxes)
+	  x = mark + marginPtr->axesOffset - AXIS_PAD_TITLE;
+	else
+	  x = mark + width_ - AXIS_PAD_TITLE;
+
+	y = (bottom_ + top_) / 2;
+	titleAnchor_ = TK_ANCHOR_E;
+      }
+      titlePos_.x = x;
+      titlePos_.y = y;
     }
-    titlePos_.x = x;
-    titlePos_.y = y;
     break;
 
   case MARGIN_NONE:
     axisLine = 0;
     break;
   }
+
   if ((margin == MARGIN_LEFT) || (margin == MARGIN_TOP)) {
-    t1 = -t1, t2 = -t2;
+    t1 = -t1;
+    t2 = -t2;
     labelOffset = -labelOffset;
   }
+
   infoPtr->axis = axisLine;
   infoPtr->t1 = axisLine + t1;
   infoPtr->t2 = axisLine + t2;
-  if (tickLabel > 0) {
+  if (tickLabel > 0)
     infoPtr->label = tickLabel;
-  } else {
+  else
     infoPtr->label = axisLine + labelOffset;
-  }
+
   if (!ops->exterior) {
-    /*infoPtr->label = axisLine + labelOffset - t1; */
     infoPtr->t1 = axisLine - t1;
     infoPtr->t2 = axisLine - t2;
   } 
