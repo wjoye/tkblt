@@ -43,6 +43,13 @@ extern "C" {
 }
 
 typedef struct {
+  int axis;
+  int t1;
+  int t2;
+  int label;
+} AxisInfo;
+
+typedef struct {
   const char *name;
   ClassId classId;
   int margin, invertMargin;
@@ -229,6 +236,8 @@ class Axis {
   double vMap(double y);
   void getDataLimits(double, double);
   void resetTextStyles();
+  void makeLine(int, Segment2d*);
+  void offsets(int, int, AxisInfo*);
 };
 
 #endif
