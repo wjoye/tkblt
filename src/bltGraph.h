@@ -411,10 +411,6 @@ extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
-extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
-			    Axis2d *pairPtr);
-extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 
-			 Axis2d *pairPtr);
 extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
 extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			    int nInputPts, Point2d *outputPts);

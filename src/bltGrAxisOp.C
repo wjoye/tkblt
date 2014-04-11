@@ -903,3 +903,33 @@ void Blt_ResetAxes(Graph* graphPtr)
 		      REDRAW_WORLD);
 }
 
+Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
+{
+  Point2d point;
+
+  if (graphPtr->inverted) {
+    point.x = axesPtr->y->hMap(y);
+    point.y = axesPtr->x->vMap(x);
+  }
+  else {
+    point.x = axesPtr->x->hMap(x);
+    point.y = axesPtr->y->vMap(y);
+  }
+  return point;
+}
+
+Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
+{
+  Point2d point;
+
+  if (graphPtr->inverted) {
+    point.x = axesPtr->x->invVMap(y);
+    point.y = axesPtr->y->invHMap(x);
+  }
+  else {
+    point.x = axesPtr->x->invHMap(x);
+    point.y = axesPtr->y->invVMap(y);
+  }
+  return point;
+}
+

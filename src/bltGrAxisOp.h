@@ -51,5 +51,9 @@ extern void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps);
 
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 extern Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y);
+extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
+			    Axis2d *pairPtr);
+extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 
+			 Axis2d *pairPtr);
 
 #endif
