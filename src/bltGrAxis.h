@@ -201,6 +201,7 @@ class Axis {
 
  protected:
   double niceNum(double, int);
+  void setRange(AxisRange*, double, double);
 
  public:
   Axis(Graph*, const char*, int);
@@ -216,7 +217,7 @@ class Axis {
 
   void logScale(double, double);
   void linearScale(double, double);
-  void setAxisRange(AxisRange*, double, double);
+  void fixRange();
 };
 
 #endif

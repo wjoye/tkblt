@@ -44,7 +44,6 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr,
 			    int objc, Tcl_Obj* const objv[]);
 
 extern void GetDataLimits(Axis *axisPtr, double min, double max);
-extern void FixAxisRange(Axis *axisPtr);
 extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
@@ -882,7 +881,7 @@ void Blt_ResetAxes(Graph* graphPtr)
 
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    FixAxisRange(axisPtr);
+    axisPtr->fixRange();
 
     /* Calculate min/max tick (major/minor) layouts */
     min = axisPtr->min_;

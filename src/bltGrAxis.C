@@ -421,7 +421,7 @@ void Axis::logScale(double min, double max)
   minorSweep_.initial = minorSweep_.step = minorStep;
   minorSweep_.nSteps = nMinor;
 
-  setAxisRange(&axisRange_, tickMin, tickMax);
+  setRange(&axisRange_, tickMin, tickMax);
 }
 
 void Axis::linearScale(double min, double max)
@@ -479,7 +479,7 @@ void Axis::linearScale(double min, double max)
   if (!ops->looseMax || (ops->looseMax && !isnan(ops->reqMax)))
     axisMax = max;
 
-  setAxisRange(&axisRange_, axisMin, axisMax);
+  setRange(&axisRange_, axisMin, axisMax);
 
   /* Now calculate the minor tick step and number. */
 
@@ -498,7 +498,7 @@ void Axis::linearScale(double min, double max)
   minorSweep_.nSteps = nTicks;
 }
 
-void Axis::setAxisRange(AxisRange *rangePtr, double min, double max)
+void Axis::setRange(AxisRange *rangePtr, double min, double max)
 {
   rangePtr->min = min;
   rangePtr->max = max;
@@ -509,111 +509,96 @@ void Axis::setAxisRange(AxisRange *rangePtr, double min, double max)
   rangePtr->scale = 1.0 / rangePtr->range;
 }
 
-void FixAxisRange(Axis *axisPtr)
+void Axis::fixRange()
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  double min, max;
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  /*
-   * When auto-scaling, the axis limits are the bounds of the element data.
-   * If no data exists, set arbitrary limits (wrt to log/linear scale).
-   */
-  min = axisPtr->valueRange_.min;
-  max = axisPtr->valueRange_.max;
+  // When auto-scaling, the axis limits are the bounds of the element data.
+  // If no data exists, set arbitrary limits (wrt to log/linear scale).
+  double min = valueRange_.min;
+  double max = valueRange_.max;
 
-  /* Check the requested axis limits. Can't allow -min to be greater
-   * than -max, or have undefined log scale limits.  */
+  // Check the requested axis limits. Can't allow -min to be greater
+  // than -max, or have undefined log scale limits.  */
   if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
       (ops->reqMin >= ops->reqMax)) {
     ops->reqMin = ops->reqMax = NAN;
   }
   if (ops->logScale) {
-    if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
+    if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0))
       ops->reqMin = NAN;
-    }
-    if ((!isnan(ops->reqMax)) && (ops->reqMax <= 0.0)) {
+
+    if ((!isnan(ops->reqMax)) && (ops->reqMax <= 0.0))
       ops->reqMax = NAN;
-    }
   }
 
   if (min == DBL_MAX) {
-    if (!isnan(ops->reqMin)) {
+    if (!isnan(ops->reqMin))
       min = ops->reqMin;
-    } else {
+    else
       min = (ops->logScale) ? 0.001 : 0.0;
-    }
   }
   if (max == -DBL_MAX) {
-    if (!isnan(ops->reqMax)) {
+    if (!isnan(ops->reqMax))
       max = ops->reqMax;
-    } else {
+    else
       max = 1.0;
-    }
   }
   if (min >= max) {
-    /*
-     * There is no range of data (i.e. min is not less than max), so
-     * manufacture one.
-     */
-    if (min == 0.0) {
-      min = 0.0, max = 1.0;
-    } else {
-      max = min + (fabs(min) * 0.1);
-    }
-  }
-  axisPtr->setAxisRange(&axisPtr->valueRange_, min, max);
 
-  /*   
-   * The axis limits are either the current data range or overridden by the
-   * values selected by the user with the -min or -max options.
-   */
-  axisPtr->min_ = min;
-  axisPtr->max_ = max;
-  if (!isnan(ops->reqMin)) {
-    axisPtr->min_ = ops->reqMin;
+    // There is no range of data (i.e. min is not less than max), so
+    // manufacture one.
+    if (min == 0.0)
+      min = 0.0, max = 1.0;
+    else
+      max = min + (fabs(min) * 0.1);
   }
-  if (!isnan(ops->reqMax)) { 
-    axisPtr->max_ = ops->reqMax;
+  setRange(&valueRange_, min, max);
+
+  // The axis limits are either the current data range or overridden by the
+  // values selected by the user with the -min or -max options.
+  min_ = min;
+  max_ = max;
+  if (!isnan(ops->reqMin))
+    min_ = ops->reqMin;
+
+  if (!isnan(ops->reqMax))
+    max_ = ops->reqMax;
+
+  if (max_ < min_) {
+    // If the limits still don't make sense, it's because one limit
+    // configuration option (-min or -max) was set and the other default
+    // (based upon the data) is too small or large.  Remedy this by making
+    // up a new min or max from the user-defined limit.
+    if (isnan(ops->reqMin))
+      min_ = max_ - (fabs(max_) * 0.1);
+
+    if (isnan(ops->reqMax))
+      max_ = min_ + (fabs(max_) * 0.1);
   }
-  if (axisPtr->max_ < axisPtr->min_) {
-    /*   
-     * If the limits still don't make sense, it's because one limit
-     * configuration option (-min or -max) was set and the other default
-     * (based upon the data) is too small or large.  Remedy this by making
-     * up a new min or max from the user-defined limit.
-     */
-    if (isnan(ops->reqMin)) {
-      axisPtr->min_ = axisPtr->max_ - (fabs(axisPtr->max_) * 0.1);
-    }
-    if (isnan(ops->reqMax)) {
-      axisPtr->max_ = axisPtr->min_ + (fabs(axisPtr->max_) * 0.1);
-    }
-  }
-  /* 
-   * If a window size is defined, handle auto ranging by shifting the axis
-   * limits.
-   */
+
+  // If a window size is defined, handle auto ranging by shifting the axis
+  // limits.
   if ((ops->windowSize > 0.0) && 
       (isnan(ops->reqMin)) && (isnan(ops->reqMax))) {
-    if (ops->shiftBy < 0.0) {
+    if (ops->shiftBy < 0.0)
       ops->shiftBy = 0.0;
+
+    max = min_ + ops->windowSize;
+    if (max_ >= max) {
+      if (ops->shiftBy > 0.0)
+	max = UCEIL(max_, ops->shiftBy);
+      min_ = max - ops->windowSize;
     }
-    max = axisPtr->min_ + ops->windowSize;
-    if (axisPtr->max_ >= max) {
-      if (ops->shiftBy > 0.0) {
-	max = UCEIL(axisPtr->max_, ops->shiftBy);
-      }
-      axisPtr->min_ = max - ops->windowSize;
-    }
-    axisPtr->max_ = max;
+    max_ = max;
   }
-  if ((axisPtr->max_ != axisPtr->prevMax_) || 
-      (axisPtr->min_ != axisPtr->prevMin_)) {
+  if ((max_ != prevMax_) || 
+      (min_ != prevMin_)) {
     /* Indicate if the axis limits have changed */
-    axisPtr->flags |= DIRTY;
+    flags |= DIRTY;
     /* and save the previous minimum and maximum values */
-    axisPtr->prevMin_ = axisPtr->min_;
-    axisPtr->prevMax_ = axisPtr->max_;
+    prevMin_ = min_;
+    prevMax_ = max_;
   }
 }
 
