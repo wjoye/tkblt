@@ -932,3 +932,211 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
   return point;
 }
 
+void Blt_MapAxes(Graph* graphPtr)
+{
+  for (int margin = 0; margin < 4; margin++) {
+    int count =0;
+    int offset =0;
+    Blt_Chain chain = graphPtr->margins[margin].axes;
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
+	 link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
+	continue;
+
+      if (graphPtr->stackAxes) {
+	if (ops->reqNumMajorTicks <= 0)
+	  ops->reqNumMajorTicks = 4;
+
+	axisPtr->mapStacked(count, margin);
+      } 
+      else {
+	if (ops->reqNumMajorTicks <= 0)
+	  ops->reqNumMajorTicks = 4;
+
+	axisPtr->map(offset, margin);
+      }
+
+      if (ops->showGrid)
+	axisPtr->mapGridlines();
+
+      offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
+      count++;
+    }
+  }
+}
+
+void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
+{
+  for (int i = 0; i < 4; i++) {
+    for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->margins[i].axes); 
+	 link != NULL; link = Blt_Chain_PrevLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
+	axisPtr->draw(drawable);
+    }
+  }
+}
+
+void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
+{
+  Tcl_HashEntry *hPtr;
+  Tcl_HashSearch cursor;
+  char minString[200], maxString[200];
+  int vMin, hMin, vMax, hMax;
+
+#define SPACING 8
+  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
+  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
+
+  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Dim2D textDim;
+    const char *minFmt, *maxFmt;
+    char *minPtr, *maxPtr;
+    int isHoriz;
+
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+    ops->limitsTextStyle.flags |= UPDATE_GC;
+
+    if (axisPtr->flags & DELETE_PENDING)
+      continue;
+
+    if (!ops->limitsFormat)
+      continue;
+
+    isHoriz = axisPtr->isHorizontal();
+    minPtr = maxPtr = NULL;
+    minFmt = maxFmt = ops->limitsFormat;
+    if (minFmt[0] != '\0') {
+      minPtr = minString;
+      sprintf_s(minString, 200, minFmt, axisPtr->axisRange_.min);
+    }
+    if (maxFmt[0] != '\0') {
+      maxPtr = maxString;
+      sprintf_s(maxString, 200, maxFmt, axisPtr->axisRange_.max);
+    }
+    if (ops->descending) {
+      char *tmp;
+
+      tmp = minPtr, minPtr = maxPtr, maxPtr = tmp;
+    }
+    if (maxPtr) {
+      if (isHoriz) {
+	ops->limitsTextStyle.angle = 90.0;
+	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
+
+	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
+		      &ops->limitsTextStyle, graphPtr->right, 
+		      hMax, &textDim);
+	hMax -= (textDim.height + SPACING);
+      } 
+      else {
+	ops->limitsTextStyle.angle = 0.0;
+	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
+
+	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
+		      &ops->limitsTextStyle, vMax, 
+		      graphPtr->top, &textDim);
+	vMax += (textDim.width + SPACING);
+      }
+    }
+    if (minPtr) {
+      ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
+
+      if (isHoriz) {
+	ops->limitsTextStyle.angle = 90.0;
+
+	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
+		      &ops->limitsTextStyle, graphPtr->left, 
+		      hMin, &textDim);
+	hMin -= (textDim.height + SPACING);
+      } 
+      else {
+	ops->limitsTextStyle.angle = 0.0;
+
+	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
+		      &ops->limitsTextStyle, vMin, 
+		      graphPtr->bottom, &textDim);
+	vMin += (textDim.width + SPACING);
+      }
+    }
+  }
+}
+
+void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
+{
+  Tcl_HashEntry *hPtr;
+  Tcl_HashSearch cursor;
+  double vMin, hMin, vMax, hMax;
+  char string[200];
+
+#define SPACING 8
+  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
+  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
+  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
+    const char *minFmt, *maxFmt;
+    unsigned int textWidth, textHeight;
+
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+
+    if (axisPtr->flags & DELETE_PENDING)
+      continue;
+
+    if (!ops->limitsFormat)
+      continue;
+
+    minFmt = maxFmt = ops->limitsFormat;
+    if (*maxFmt != '\0') {
+      sprintf_s(string, 200, maxFmt, axisPtr->axisRange_.max);
+      Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
+			 &textHeight);
+      if ((textWidth > 0) && (textHeight > 0)) {
+	if (axisPtr->classId() == CID_AXIS_X) {
+	  ops->limitsTextStyle.angle = 90.0;
+	  ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
+
+	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
+			  (double)graphPtr->right, hMax);
+	  hMax -= (textWidth + SPACING);
+	} 
+	else {
+	  ops->limitsTextStyle.angle = 0.0;
+	  ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
+
+	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle,
+			  vMax, (double)graphPtr->top);
+	  vMax += (textWidth + SPACING);
+	}
+      }
+    }
+    if (*minFmt != '\0') {
+      sprintf_s(string, 200, minFmt, axisPtr->axisRange_.min);
+      Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
+			 &textHeight);
+      if ((textWidth > 0) && (textHeight > 0)) {
+	ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
+	if (axisPtr->classId() == CID_AXIS_X) {
+	  ops->limitsTextStyle.angle = 90.0;
+
+	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
+			  (double)graphPtr->left, hMin);
+	  hMin -= (textWidth + SPACING);
+	}
+	else {
+	  ops->limitsTextStyle.angle = 0.0;
+
+	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
+			  vMin, (double)graphPtr->bottom);
+	  vMin += (textWidth + SPACING);
+	}
+      }
+    }
+  }
+}
+

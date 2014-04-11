@@ -220,6 +220,11 @@ class Axis {
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 
+  void map(int, int);
+  void mapStacked(int, int);
+  void mapGridlines();
+  void draw(Drawable);
+
   void setClass(ClassId);
 
   void logScale(double, double);

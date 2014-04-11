@@ -60,6 +60,7 @@ AxisName axisNames[] = {
 
 // Defs
 
+static double AdjustViewport(double, double);
 extern int ConfigureAxis(Axis *axisPtr);
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);
@@ -324,6 +325,184 @@ Axis::~Axis()
 
   if (ops_)
     free(ops_);
+}
+
+void Axis::map(int offset, int margin)
+{
+  if (isHorizontal()) {
+    screenMin_ = graphPtr_->hOffset;
+    width_ = graphPtr_->right - graphPtr_->left;
+    screenRange_ = graphPtr_->hRange;
+  }
+  else {
+    screenMin_ = graphPtr_->vOffset;
+    height_ = graphPtr_->bottom - graphPtr_->top;
+    screenRange_ = graphPtr_->vRange;
+  }
+  screenScale_ = 1.0 / screenRange_;
+
+  AxisInfo info;
+  offsets(margin, offset, &info);
+  makeSegments(&info);
+}
+
+void Axis::mapStacked(int count, int margin)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  if ((graphPtr_->margins[margin_].axes->nLinks > 1) ||
+      (ops->reqNumMajorTicks <= 0)) {
+    ops->reqNumMajorTicks = 4;
+  }
+
+  unsigned int slice;
+  if (isHorizontal()) {
+    slice = graphPtr_->hRange / graphPtr_->margins[margin].axes->nLinks;
+    screenMin_ = graphPtr_->hOffset;
+    width_ = slice;
+  }
+  else {
+    slice = graphPtr_->vRange / graphPtr_->margins[margin].axes->nLinks;
+    screenMin_ = graphPtr_->vOffset;
+    height_ = slice;
+  }
+
+  unsigned int w, h;
+  Blt_GetTextExtents(ops->tickFont, 0, "0", 1, &w, &h);
+  screenMin_ += (slice * count) + 2 + h / 2;
+  screenRange_ = slice - 2 * 2 - h;
+  screenScale_ = 1.0f / screenRange_;
+
+  AxisInfo info;
+  offsets(margin, 0, &info);
+  makeSegments(&info);
+}
+
+void Axis::draw(Drawable drawable)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  if (ops->normalBg) {
+    Tk_Fill3DRectangle(graphPtr_->tkwin, drawable, ops->normalBg, 
+		       left_, top_, right_ - left_, bottom_ - top_,
+		       ops->borderWidth, ops->relief);
+  }
+  if (ops->title) {
+    TextStyle ts;
+
+    Blt_Ts_InitStyle(ts);
+    ts.flags |= UPDATE_GC;
+
+    ts.angle = titleAngle_;
+    ts.font = ops->titleFont;
+    ts.xPad = 1;
+    ts.yPad = 0;
+    ts.anchor = titleAnchor_;
+    ts.justify = ops->titleJustify;
+    if (flags & ACTIVE)
+      ts.color = ops->activeFgColor;
+    else
+      ts.color = ops->titleColor;
+
+    if ((titleAngle_ == 90.0) || (titleAngle_ == 270.0))
+      ts.maxLength = height_;
+    else
+      ts.maxLength = width_;
+
+    Blt_Ts_DrawText(graphPtr_->tkwin, drawable, ops->title, -1, &ts, 
+		    (int)titlePos_.x, (int)titlePos_.y);
+  }
+
+  if (ops->scrollCmdObjPtr) {
+    double worldMin = valueRange_.min;
+    double worldMax = valueRange_.max;
+    if (!isnan(scrollMin_))
+      worldMin = scrollMin_;
+    if (!isnan(scrollMax_))
+      worldMax = scrollMax_;
+
+    double viewMin = min_;
+    double viewMax = max_;
+    if (viewMin < worldMin)
+      viewMin = worldMin;
+    if (viewMax > worldMax)
+      viewMax = worldMax;
+
+    if (ops->logScale) {
+      worldMin = log10(worldMin);
+      worldMax = log10(worldMax);
+      viewMin = log10(viewMin);
+      viewMax = log10(viewMax);
+    }
+
+    double worldWidth = worldMax - worldMin;	
+    double viewWidth = viewMax - viewMin;
+    int isHoriz = isHorizontal();
+
+    double fract;
+    if (isHoriz != ops->descending)
+      fract = (viewMin - worldMin) / worldWidth;
+    else
+      fract = (worldMax - viewMax) / worldWidth;
+
+    fract = AdjustViewport(fract, viewWidth / worldWidth);
+
+    if (isHoriz != ops->descending) {
+      viewMin = (fract * worldWidth);
+      min_ = viewMin + worldMin;
+      max_ = min_ + viewWidth;
+      viewMax = viewMin + viewWidth;
+      if (ops->logScale) {
+	min_ = EXP10(min_);
+	max_ = EXP10(max_);
+      }
+      Blt_UpdateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+			  viewMin, viewMax, worldWidth);
+    }
+    else {
+      viewMax = (fract * worldWidth);
+      max_ = worldMax - viewMax;
+      min_ = max_ - viewWidth;
+      viewMin = viewMax + viewWidth;
+      if (ops->logScale) {
+	min_ = EXP10(min_);
+	max_ = EXP10(max_);
+      }
+      Blt_UpdateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+			  viewMax, viewMin, worldWidth);
+    }
+  }
+
+  if (ops->showTicks) {
+    TextStyle ts;
+
+    Blt_Ts_InitStyle(ts);
+    ts.flags |= UPDATE_GC;
+
+    ts.angle = ops->tickAngle;
+    ts.font = ops->tickFont;
+    ts.xPad = 2;
+    ts.yPad = 0;
+    ts.anchor = tickAnchor_;
+    if (flags & ACTIVE)
+      ts.color = ops->activeFgColor;
+    else
+      ts.color = ops->tickColor;
+
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link;
+	 link = Blt_Chain_NextLink(link)) {	
+      TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+      Blt_DrawText(graphPtr_->tkwin, drawable, labelPtr->string, &ts, 
+		   (int)labelPtr->anchorPos.x, (int)labelPtr->anchorPos.y);
+    }
+  }
+
+  if ((nSegments_ > 0) && (ops->lineWidth > 0)) {	
+    GC gc = (flags & ACTIVE) ? 
+      activeTickGC_ : tickGC_;
+    Blt_Draw2DSegments(graphPtr_->display, drawable, gc, segments_, 
+		       nSegments_);
+  }
 }
 
 void Axis::setClass(ClassId classId)
@@ -1288,57 +1467,6 @@ void Axis::makeSegments(AxisInfo *infoPtr)
   nSegments_ = sp - segments;
 }
 
-static void MapAxis(Axis *axisPtr, int offset, int margin)
-{
-  AxisInfo info;
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (axisPtr->isHorizontal()) {
-    axisPtr->screenMin_ = graphPtr->hOffset;
-    axisPtr->width_ = graphPtr->right - graphPtr->left;
-    axisPtr->screenRange_ = graphPtr->hRange;
-  }
-  else {
-    axisPtr->screenMin_ = graphPtr->vOffset;
-    axisPtr->height_ = graphPtr->bottom - graphPtr->top;
-    axisPtr->screenRange_ = graphPtr->vRange;
-  }
-  axisPtr->screenScale_ = 1.0 / axisPtr->screenRange_;
-  axisPtr->offsets(margin, offset, &info);
-  axisPtr->makeSegments(&info);
-}
-
-static void MapStackedAxis(Axis *axisPtr, int count, int margin)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-  AxisInfo info;
-  Graph* graphPtr = axisPtr->graphPtr_;
-  unsigned int slice, w, h;
-
-  if ((graphPtr->margins[axisPtr->margin_].axes->nLinks > 1) ||
-      (ops->reqNumMajorTicks <= 0)) {
-    ops->reqNumMajorTicks = 4;
-  }
-  if (axisPtr->isHorizontal()) {
-    slice = graphPtr->hRange / graphPtr->margins[margin].axes->nLinks;
-    axisPtr->screenMin_ = graphPtr->hOffset;
-    axisPtr->width_ = slice;
-  }
-  else {
-    slice = graphPtr->vRange / graphPtr->margins[margin].axes->nLinks;
-    axisPtr->screenMin_ = graphPtr->vOffset;
-    axisPtr->height_ = slice;
-  }
-
-  Blt_GetTextExtents(ops->tickFont, 0, "0", 1, &w, &h);
-  axisPtr->screenMin_ += (slice * count) + 2 + h / 2;
-  axisPtr->screenRange_ = slice - 2 * 2 - h;
-  axisPtr->screenScale_ = 1.0f / axisPtr->screenRange_;
-  axisPtr->offsets(margin, 0, &info);
-  axisPtr->makeSegments(&info);
-}
-
 static double AdjustViewport(double offset, double windowSize)
 {
   // Canvas-style scrolling allows the world to be scrolled within the window.
@@ -1422,141 +1550,6 @@ int GetAxisScrollInfo(Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static void DrawAxis(Axis *axisPtr, Drawable drawable)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (ops->normalBg) {
-    Tk_Fill3DRectangle(graphPtr->tkwin, drawable, 
-		       ops->normalBg, 
-		       axisPtr->left_, axisPtr->top_, 
-		       axisPtr->right_ - axisPtr->left_, 
-		       axisPtr->bottom_ - axisPtr->top_,
-		       ops->borderWidth, 
-		       ops->relief);
-  }
-  if (ops->title) {
-    TextStyle ts;
-
-    Blt_Ts_InitStyle(ts);
-    ts.flags |= UPDATE_GC;
-
-    ts.angle = axisPtr->titleAngle_;
-    ts.font = ops->titleFont;
-    ts.xPad = 1;
-    ts.yPad = 0;
-    ts.anchor = axisPtr->titleAnchor_;
-    ts.justify = ops->titleJustify;
-    if (axisPtr->flags & ACTIVE)
-      ts.color = ops->activeFgColor;
-    else
-      ts.color = ops->titleColor;
-
-    if ((axisPtr->titleAngle_ == 90.0) || (axisPtr->titleAngle_ == 270.0))
-      ts.maxLength = axisPtr->height_;
-    else
-      ts.maxLength = axisPtr->width_;
-
-    Blt_Ts_DrawText(graphPtr->tkwin, drawable, ops->title, -1, &ts, 
-		    (int)axisPtr->titlePos_.x, (int)axisPtr->titlePos_.y);
-  }
-  if (ops->scrollCmdObjPtr) {
-    double viewWidth, viewMin, viewMax;
-    double worldWidth, worldMin, worldMax;
-    double fract;
-    int isHoriz;
-
-    worldMin = axisPtr->valueRange_.min;
-    worldMax = axisPtr->valueRange_.max;
-    if (!isnan(axisPtr->scrollMin_)) {
-      worldMin = axisPtr->scrollMin_;
-    }
-    if (!isnan(axisPtr->scrollMax_)) {
-      worldMax = axisPtr->scrollMax_;
-    }
-    viewMin = axisPtr->min_;
-    viewMax = axisPtr->max_;
-    if (viewMin < worldMin) {
-      viewMin = worldMin;
-    }
-    if (viewMax > worldMax) {
-      viewMax = worldMax;
-    }
-    if (ops->logScale) {
-      worldMin = log10(worldMin);
-      worldMax = log10(worldMax);
-      viewMin = log10(viewMin);
-      viewMax = log10(viewMax);
-    }
-    worldWidth = worldMax - worldMin;	
-    viewWidth = viewMax - viewMin;
-    isHoriz = axisPtr->isHorizontal();
-
-    if (isHoriz != ops->descending) {
-      fract = (viewMin - worldMin) / worldWidth;
-    } else {
-      fract = (worldMax - viewMax) / worldWidth;
-    }
-    fract = AdjustViewport(fract, viewWidth / worldWidth);
-
-    if (isHoriz != ops->descending) {
-      viewMin = (fract * worldWidth);
-      axisPtr->min_ = viewMin + worldMin;
-      axisPtr->max_ = axisPtr->min_ + viewWidth;
-      viewMax = viewMin + viewWidth;
-      if (ops->logScale) {
-	axisPtr->min_ = EXP10(axisPtr->min_);
-	axisPtr->max_ = EXP10(axisPtr->max_);
-      }
-      Blt_UpdateScrollbar(graphPtr->interp, ops->scrollCmdObjPtr,
-			  viewMin, viewMax, worldWidth);
-    } else {
-      viewMax = (fract * worldWidth);
-      axisPtr->max_ = worldMax - viewMax;
-      axisPtr->min_ = axisPtr->max_ - viewWidth;
-      viewMin = viewMax + viewWidth;
-      if (ops->logScale) {
-	axisPtr->min_ = EXP10(axisPtr->min_);
-	axisPtr->max_ = EXP10(axisPtr->max_);
-      }
-      Blt_UpdateScrollbar(graphPtr->interp, ops->scrollCmdObjPtr,
-			  viewMax, viewMin, worldWidth);
-    }
-  }
-  if (ops->showTicks) {
-    Blt_ChainLink link;
-    TextStyle ts;
-
-    Blt_Ts_InitStyle(ts);
-    ts.flags |= UPDATE_GC;
-
-    ts.angle = ops->tickAngle;
-    ts.font = ops->tickFont;
-    ts.xPad = 2;
-    ts.yPad = 0;
-    ts.anchor = axisPtr->tickAnchor_;
-    if (axisPtr->flags & ACTIVE)
-      ts.color = ops->activeFgColor;
-    else
-      ts.color = ops->tickColor;
-
-    for (link = Blt_Chain_FirstLink(axisPtr->tickLabels_); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {	
-      TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      Blt_DrawText(graphPtr->tkwin, drawable, labelPtr->string, &ts, 
-		   (int)labelPtr->anchorPos.x, (int)labelPtr->anchorPos.y);
-    }
-  }
-
-  if ((axisPtr->nSegments_ > 0) && (ops->lineWidth > 0)) {	
-    GC gc = (axisPtr->flags & ACTIVE) ? 
-      axisPtr->activeTickGC_ : axisPtr->tickGC_;
-    Blt_Draw2DSegments(graphPtr->display, drawable, gc, axisPtr->segments_, 
-		       axisPtr->nSegments_);
-  }
-}
-
 static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
@@ -1633,34 +1626,26 @@ static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
   }
 }
 
-static void MapGridlines(Axis *axisPtr)
+void Axis::mapGridlines()
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Segment2d *s1, *s2;
-  Ticks *t1Ptr, *t2Ptr;
-  int needed;
-  int i;
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (!axisPtr)
-    return;
-
-  t1Ptr = axisPtr->t1Ptr_;
+  Ticks* t1Ptr = t1Ptr_;
   if (!t1Ptr)
-    t1Ptr = GenerateTicks(&axisPtr->majorSweep_);
+    t1Ptr = GenerateTicks(&majorSweep_);
  
-  t2Ptr = axisPtr->t2Ptr_;
+  Ticks* t2Ptr = t2Ptr_;
   if (!t2Ptr)
-    t2Ptr = GenerateTicks(&axisPtr->minorSweep_);
+    t2Ptr = GenerateTicks(&minorSweep_);
 
-  needed = t1Ptr->nTicks;
+  int needed = t1Ptr->nTicks;
   if (ops->showGridMinor)
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
 
   if (needed == 0) {
-    // Free generated ticks
-    if (t1Ptr != axisPtr->t1Ptr_)
+    if (t1Ptr != t1Ptr_)
       free(t1Ptr);
-    if (t2Ptr != axisPtr->t2Ptr_)
+    if (t2Ptr != t2Ptr_)
       free(t2Ptr);
     return;			
   }
@@ -1683,33 +1668,29 @@ static void MapGridlines(Axis *axisPtr)
     ops->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
     ops->minor.nAllocated = needed;
   }
-  s1 = ops->major.segments, s2 = ops->minor.segments;
-  for (i = 0; i < t1Ptr->nTicks; i++) {
-    double value;
 
-    value = t1Ptr->values[i];
+  Segment2d* s1 = ops->major.segments;
+  Segment2d* s2 = ops->minor.segments;
+  for (int ii=0; ii<t1Ptr->nTicks; ii++) {
+    double value = t1Ptr->values[ii];
     if (ops->showGridMinor) {
-      int j;
-
-      for (j = 0; j < t2Ptr->nTicks; j++) {
-	double subValue = value + (axisPtr->majorSweep_.step * 
-				   t2Ptr->values[j]);
-	if (axisPtr->inRange(subValue, &axisPtr->axisRange_)) {
-	  MakeGridLine(axisPtr, subValue, s2);
+      for (int jj=0; jj<t2Ptr->nTicks; jj++) {
+	double subValue = value + (majorSweep_.step * t2Ptr->values[jj]);
+	if (inRange(subValue, &axisRange_)) {
+	  MakeGridLine(this, subValue, s2);
 	  s2++;
 	}
       }
     }
-    if (axisPtr->inRange(value, &axisPtr->axisRange_)) {
-      MakeGridLine(axisPtr, value, s1);
+    if (inRange(value, &axisRange_)) {
+      MakeGridLine(this, value, s1);
       s1++;
     }
   }
 
-  // Free generated ticks
-  if (t1Ptr != axisPtr->t1Ptr_)
+  if (t1Ptr != t1Ptr_)
     free(t1Ptr);
-  if (t2Ptr != axisPtr->t2Ptr_)
+  if (t2Ptr != t2Ptr_)
     free(t2Ptr);
 
   ops->major.nUsed = s1 - ops->major.segments;
@@ -2348,57 +2329,6 @@ void Blt_ConfigureAxes(Graph* graphPtr)
   }
 }
 
-void Blt_MapAxes(Graph* graphPtr)
-{
-  for (int margin = 0; margin < 4; margin++) {
-    Blt_Chain chain;
-    Blt_ChainLink link;
-    int count, offset;
-
-    chain = graphPtr->margins[margin].axes;
-    count = offset = 0;
-    for (link = Blt_Chain_FirstLink(chain); link != NULL; 
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      if (graphPtr->stackAxes) {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
-
-	MapStackedAxis(axisPtr, count, margin);
-      } 
-      else {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
-
-	MapAxis(axisPtr, offset, margin);
-      }
-
-      if (ops->showGrid)
-	MapGridlines(axisPtr);
-
-      offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
-      count++;
-    }
-  }
-}
-
-void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
-{
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->margins[i].axes); 
-	 link != NULL; link = Blt_Chain_PrevLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	DrawAxis(axisPtr, drawable);
-    }
-  }
-}
-
 void Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
 {
   for (int i = 0; i < 4; i++) {
@@ -2470,166 +2400,6 @@ void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
 	AxisToPostScript(ps, axisPtr);
-    }
-  }
-}
-
-void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
-{
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch cursor;
-  char minString[200], maxString[200];
-  int vMin, hMin, vMax, hMax;
-
-#define SPACING 8
-  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
-  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
-
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Dim2D textDim;
-    const char *minFmt, *maxFmt;
-    char *minPtr, *maxPtr;
-    int isHoriz;
-
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    ops->limitsTextStyle.flags |= UPDATE_GC;
-
-    if (axisPtr->flags & DELETE_PENDING)
-      continue;
-
-    if (!ops->limitsFormat)
-      continue;
-
-    isHoriz = axisPtr->isHorizontal();
-    minPtr = maxPtr = NULL;
-    minFmt = maxFmt = ops->limitsFormat;
-    if (minFmt[0] != '\0') {
-      minPtr = minString;
-      sprintf_s(minString, 200, minFmt, axisPtr->axisRange_.min);
-    }
-    if (maxFmt[0] != '\0') {
-      maxPtr = maxString;
-      sprintf_s(maxString, 200, maxFmt, axisPtr->axisRange_.max);
-    }
-    if (ops->descending) {
-      char *tmp;
-
-      tmp = minPtr, minPtr = maxPtr, maxPtr = tmp;
-    }
-    if (maxPtr) {
-      if (isHoriz) {
-	ops->limitsTextStyle.angle = 90.0;
-	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
-
-	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
-		      &ops->limitsTextStyle, graphPtr->right, 
-		      hMax, &textDim);
-	hMax -= (textDim.height + SPACING);
-      } 
-      else {
-	ops->limitsTextStyle.angle = 0.0;
-	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
-
-	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
-		      &ops->limitsTextStyle, vMax, 
-		      graphPtr->top, &textDim);
-	vMax += (textDim.width + SPACING);
-      }
-    }
-    if (minPtr) {
-      ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
-
-      if (isHoriz) {
-	ops->limitsTextStyle.angle = 90.0;
-
-	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
-		      &ops->limitsTextStyle, graphPtr->left, 
-		      hMin, &textDim);
-	hMin -= (textDim.height + SPACING);
-      } 
-      else {
-	ops->limitsTextStyle.angle = 0.0;
-
-	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
-		      &ops->limitsTextStyle, vMin, 
-		      graphPtr->bottom, &textDim);
-	vMin += (textDim.width + SPACING);
-      }
-    }
-  }
-}
-
-void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
-{
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch cursor;
-  double vMin, hMin, vMax, hMax;
-  char string[200];
-
-#define SPACING 8
-  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
-  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    const char *minFmt, *maxFmt;
-    unsigned int textWidth, textHeight;
-
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-    if (axisPtr->flags & DELETE_PENDING)
-      continue;
-
-    if (!ops->limitsFormat)
-      continue;
-
-    minFmt = maxFmt = ops->limitsFormat;
-    if (*maxFmt != '\0') {
-      sprintf_s(string, 200, maxFmt, axisPtr->axisRange_.max);
-      Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
-			 &textHeight);
-      if ((textWidth > 0) && (textHeight > 0)) {
-	if (axisPtr->classId() == CID_AXIS_X) {
-	  ops->limitsTextStyle.angle = 90.0;
-	  ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
-
-	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  (double)graphPtr->right, hMax);
-	  hMax -= (textWidth + SPACING);
-	} 
-	else {
-	  ops->limitsTextStyle.angle = 0.0;
-	  ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
-
-	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle,
-			  vMax, (double)graphPtr->top);
-	  vMax += (textWidth + SPACING);
-	}
-      }
-    }
-    if (*minFmt != '\0') {
-      sprintf_s(string, 200, minFmt, axisPtr->axisRange_.min);
-      Blt_GetTextExtents(ops->tickFont, 0, string, -1, &textWidth,
-			 &textHeight);
-      if ((textWidth > 0) && (textHeight > 0)) {
-	ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
-	if (axisPtr->classId() == CID_AXIS_X) {
-	  ops->limitsTextStyle.angle = 90.0;
-
-	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  (double)graphPtr->left, hMin);
-	  hMin -= (textWidth + SPACING);
-	}
-	else {
-	  ops->limitsTextStyle.angle = 0.0;
-
-	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  vMin, (double)graphPtr->bottom);
-	  vMin += (textWidth + SPACING);
-	}
-      }
     }
   }
 }
