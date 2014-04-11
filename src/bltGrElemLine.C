@@ -1064,8 +1064,8 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   if (graphPtr_->inverted) {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = Blt_HMap(ops->axes.y, y[i]);
-	points[count].y = Blt_VMap(ops->axes.x, x[i]);
+	points[count].x = ops->axes.y->hMap(y[i]);
+	points[count].y = ops->axes.x->vMap(x[i]);
 	map[count] = i;
 	count++;
       }
@@ -1074,8 +1074,8 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   else {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = Blt_HMap(ops->axes.x, x[i]);
-	points[count].y = Blt_VMap(ops->axes.y, y[i]);
+	points[count].x = ops->axes.x->hMap(x[i]);
+	points[count].y = ops->axes.y->vMap(y[i]);
 	map[count] = i;
 	count++;
       }

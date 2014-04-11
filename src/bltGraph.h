@@ -411,10 +411,6 @@ extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
-extern double Blt_InvHMap(Axis *axisPtr, double x);
-extern double Blt_InvVMap(Axis *axisPtr, double x);
-extern double Blt_HMap(Axis *axisPtr, double x);
-extern double Blt_VMap(Axis *axisPtr, double y);
 extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
 			    Axis2d *pairPtr);
 extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 

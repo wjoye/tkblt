@@ -71,7 +71,6 @@ extern int ConfigureAxis(Axis *axisPtr);
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);
 
-static void FreeTickLabels(Blt_Chain chain);
 static int Round(double x)
 {
   return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
@@ -321,7 +320,7 @@ Axis::~Axis()
   if (t2Ptr_)
     free(t2Ptr_);
 
-  FreeTickLabels(tickLabels_);
+  freeTickLabels();
 
   Blt_Chain_Destroy(tickLabels_);
 
@@ -355,8 +354,6 @@ void Axis::setClass(ClassId classId)
     break;
   }
 }
-
-// Support
 
 void Axis::logScale(double min, double max)
 {
@@ -636,11 +633,11 @@ double Axis::niceNum(double x, int round)
   return nice * EXP10(expt);
 }
 
-static int InRange(double x, AxisRange *rangePtr)
+int Axis::inRange(double x, AxisRange *rangePtr)
 {
-  if (rangePtr->range < DBL_EPSILON) {
+  if (rangePtr->range < DBL_EPSILON)
     return (fabs(rangePtr->max - x) >= DBL_EPSILON);
-  } else {
+  else {
     double norm;
 
     norm = (x - rangePtr->min) * rangePtr->scale;
@@ -648,18 +645,15 @@ static int InRange(double x, AxisRange *rangePtr)
   }
 }
 
-int AxisIsHorizontal(Axis *axisPtr)
+int Axis::isHorizontal()
 {
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  return ((axisPtr->classId() == CID_AXIS_Y) == graphPtr->inverted);
+  return ((classId_ == CID_AXIS_Y) == graphPtr_->inverted);
 }
 
-static void FreeTickLabels(Blt_Chain chain)
+void Axis::freeTickLabels()
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_FirstLink(chain); link != NULL; 
+  Blt_Chain chain = tickLabels_;
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link;
        link = Blt_Chain_NextLink(link)) {
     TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
     free(labelPtr);
@@ -667,126 +661,122 @@ static void FreeTickLabels(Blt_Chain chain)
   Blt_Chain_Reset(chain);
 }
 
-static TickLabel *MakeLabel(Axis *axisPtr, double value)
+TickLabel* Axis::makeLabel(double value)
 {
 #define TICK_LABEL_SIZE		200
 
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
   char string[TICK_LABEL_SIZE + 1];
-  TickLabel *labelPtr;
+  TickLabel* labelPtr;
 
-  /* Generate a default tick label based upon the tick value.  */
-  if (ops->logScale) {
+  if (ops->logScale)
     sprintf_s(string, TICK_LABEL_SIZE, "1E%d", ROUND(value));
-  } else {
+  else
     sprintf_s(string, TICK_LABEL_SIZE, "%.*G", NUMDIGITS, value);
-  }
 
   if (ops->formatCmd) {
-    Graph* graphPtr;
-    Tcl_Interp* interp;
-    Tk_Window tkwin;
-	
-    graphPtr = axisPtr->graphPtr_;
-    interp = graphPtr->interp;
-    tkwin = graphPtr->tkwin;
-    /*
-     * A TCL proc was designated to format tick labels. Append the path
-     * name of the widget and the default tick label as arguments when
-     * invoking it. Copy and save the new label from interp->result.
-     */
+    Tcl_Interp* interp = graphPtr_->interp;
+    Tk_Window tkwin = graphPtr_->tkwin;
+
+    // A TCL proc was designated to format tick labels. Append the path
+    // name of the widget and the default tick label as arguments when
+    // invoking it. Copy and save the new label from interp->result.
     Tcl_ResetResult(interp);
     if (Tcl_VarEval(interp, ops->formatCmd, " ", Tk_PathName(tkwin),
 		    " ", string, NULL) != TCL_OK) {
       Tcl_BackgroundError(interp);
-    } else {
-      /* 
-       * The proc could return a string of any length, so arbitrarily
-       * limit it to what will fit in the return string.
-       */
+    }
+    else {
+      // The proc could return a string of any length, so arbitrarily
+      // limit it to what will fit in the return string.
       strncpy(string, Tcl_GetStringResult(interp), TICK_LABEL_SIZE);
       string[TICK_LABEL_SIZE] = '\0';
 	    
       Tcl_ResetResult(interp); /* Clear the interpreter's result. */
     }
   }
+
   labelPtr = (TickLabel*)malloc(sizeof(TickLabel) + strlen(string));
   strcpy(labelPtr->string, string);
   labelPtr->anchorPos.x = DBL_MAX;
   labelPtr->anchorPos.y = DBL_MAX;
+
   return labelPtr;
 }
 
-double Blt_InvHMap(Axis *axisPtr, double x)
+double Axis::invHMap(double x)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
   double value;
 
-  x = (double)(x - axisPtr->screenMin_) * axisPtr->screenScale_;
+  x = (double)(x - screenMin_) * screenScale_;
   if (ops->descending) {
     x = 1.0 - x;
   }
-  value = (x * axisPtr->axisRange_.range) + axisPtr->axisRange_.min;
+  value = (x * axisRange_.range) + axisRange_.min;
   if (ops->logScale) {
     value = EXP10(value);
   }
   return value;
 }
 
-double Blt_InvVMap(Axis *axisPtr, double y) /* Screen coordinate */
+double Axis::invVMap(double y)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
   double value;
 
-  y = (double)(y - axisPtr->screenMin_) * axisPtr->screenScale_;
+  y = (double)(y - screenMin_) * screenScale_;
   if (ops->descending) {
     y = 1.0 - y;
   }
-  value = ((1.0 - y) * axisPtr->axisRange_.range) + axisPtr->axisRange_.min;
+  value = ((1.0 - y) * axisRange_.range) + axisRange_.min;
   if (ops->logScale) {
     value = EXP10(value);
   }
   return value;
 }
 
-double Blt_HMap(Axis *axisPtr, double x)
+double Axis::hMap(double x)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
   if ((ops->logScale) && (x != 0.0)) {
     x = log10(fabs(x));
   }
   /* Map graph coordinate to normalized coordinates [0..1] */
-  x = (x - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
+  x = (x - axisRange_.min) * axisRange_.scale;
   if (ops->descending) {
     x = 1.0 - x;
   }
-  return (x * axisPtr->screenRange_ + axisPtr->screenMin_);
+  return (x * screenRange_ + screenMin_);
 }
 
-double Blt_VMap(Axis *axisPtr, double y)
+double Axis::vMap(double y)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  AxisOptions* ops = (AxisOptions*)ops_;
   if ((ops->logScale) && (y != 0.0)) {
     y = log10(fabs(y));
   }
   /* Map graph coordinate to normalized coordinates [0..1] */
-  y = (y - axisPtr->axisRange_.min) * axisPtr->axisRange_.scale;
+  y = (y - axisRange_.min) * axisRange_.scale;
   if (ops->descending) {
     y = 1.0 - y;
   }
-  return ((1.0 - y) * axisPtr->screenRange_ + axisPtr->screenMin_);
+  return ((1.0 - y) * screenRange_ + screenMin_);
 }
+
+// Support
 
 Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 {
   Point2d point;
 
   if (graphPtr->inverted) {
-    point.x = Blt_HMap(axesPtr->y, y);
-    point.y = Blt_VMap(axesPtr->x, x);
-  } else {
-    point.x = Blt_HMap(axesPtr->x, x);
-    point.y = Blt_VMap(axesPtr->y, y);
+    point.x = axesPtr->y->hMap(y);
+    point.y = axesPtr->x->vMap(x);
+  }
+  else {
+    point.x = axesPtr->x->hMap(x);
+    point.y = axesPtr->y->vMap(y);
   }
   return point;
 }
@@ -796,11 +786,12 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
   Point2d point;
 
   if (graphPtr->inverted) {
-    point.x = Blt_InvVMap(axesPtr->x, y);
-    point.y = Blt_InvHMap(axesPtr->y, x);
-  } else {
-    point.x = Blt_InvHMap(axesPtr->x, x);
-    point.y = Blt_InvVMap(axesPtr->y, y);
+    point.x = axesPtr->x->invVMap(y);
+    point.y = axesPtr->y->invHMap(x);
+  }
+  else {
+    point.x = axesPtr->x->invHMap(x);
+    point.y = axesPtr->y->invVMap(y);
   }
   return point;
 }
@@ -1232,14 +1223,15 @@ static void MakeAxisLine(Axis *axisPtr, int line, Segment2d *sp)
     min = EXP10(min);
     max = EXP10(max);
   }
-  if (AxisIsHorizontal(axisPtr)) {
-    sp->p.x = Blt_HMap(axisPtr, min);
-    sp->q.x = Blt_HMap(axisPtr, max);
+  if (axisPtr->isHorizontal()) {
+    sp->p.x = axisPtr->hMap(min);
+    sp->q.x = axisPtr->hMap(max);
     sp->p.y = sp->q.y = line;
-  } else {
+  }
+  else {
     sp->q.x = sp->p.x = line;
-    sp->p.y = Blt_VMap(axisPtr, min);
-    sp->q.y = Blt_VMap(axisPtr, max);
+    sp->p.y = axisPtr->vMap(min);
+    sp->q.y = axisPtr->vMap(max);
   }
 }
 
@@ -1251,15 +1243,17 @@ static void MakeTick(Axis *axisPtr, double value, int tick, int line,
   if (ops->logScale)
     value = EXP10(value);
 
-  if (AxisIsHorizontal(axisPtr)) {
-    sp->p.x = sp->q.x = Blt_HMap(axisPtr, value);
+  if (axisPtr->isHorizontal()) {
+    sp->p.x = axisPtr->hMap(value);
     sp->p.y = line;
+    sp->q.x = sp->p.x;
     sp->q.y = tick;
   }
   else {
     sp->p.x = line;
-    sp->p.y = sp->q.y = Blt_VMap(axisPtr, value);
+    sp->p.y = axisPtr->vMap(value);
     sp->q.x = tick;
+    sp->q.y = sp->p.y;
   }
 }
 
@@ -1288,18 +1282,18 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
   }
 
   if (ops->showTicks) {
-    int isHoriz = AxisIsHorizontal(axisPtr);
+    int isHoriz = axisPtr->isHorizontal();
     for (int ii=0; ii<nMajorTicks; ii++) {
       double t1 = t1Ptr->values[ii];
       /* Minor ticks */
       for (int jj=0; jj<nMinorTicks; jj++) {
 	double t2 = t1 + (axisPtr->majorSweep_.step*t2Ptr->values[jj]);
-	if (InRange(t2, &axisPtr->axisRange_)) {
+	if (axisPtr->inRange(t2, &axisPtr->axisRange_)) {
 	  MakeTick(axisPtr, t2, infoPtr->t2, infoPtr->axis, sp);
 	  sp++;
 	}
       }
-      if (!InRange(t1, &axisPtr->axisRange_))
+      if (!axisPtr->inRange(t1, &axisPtr->axisRange_))
 	continue;
 
       /* Major tick */
@@ -1315,7 +1309,7 @@ static void MakeSegments(Axis *axisPtr, AxisInfo *infoPtr)
       if (ops->labelOffset)
 	t1 += axisPtr->majorSweep_.step * 0.5;
 
-      if (!InRange(t1, &axisPtr->axisRange_))
+      if (!axisPtr->inRange(t1, &axisPtr->axisRange_))
 	continue;
 
       TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
@@ -1341,7 +1335,7 @@ static void MapAxis(Axis *axisPtr, int offset, int margin)
   AxisInfo info;
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  if (AxisIsHorizontal(axisPtr)) {
+  if (axisPtr->isHorizontal()) {
     axisPtr->screenMin_ = graphPtr->hOffset;
     axisPtr->width_ = graphPtr->right - graphPtr->left;
     axisPtr->screenRange_ = graphPtr->hRange;
@@ -1368,7 +1362,7 @@ static void MapStackedAxis(Axis *axisPtr, int count, int margin)
       (ops->reqNumMajorTicks <= 0)) {
     ops->reqNumMajorTicks = 4;
   }
-  if (AxisIsHorizontal(axisPtr)) {
+  if (axisPtr->isHorizontal()) {
     slice = graphPtr->hRange / graphPtr->margins[margin].axes->nLinks;
     axisPtr->screenMin_ = graphPtr->hOffset;
     axisPtr->width_ = slice;
@@ -1539,7 +1533,7 @@ static void DrawAxis(Axis *axisPtr, Drawable drawable)
     }
     worldWidth = worldMax - worldMin;	
     viewWidth = viewMax - viewMin;
-    isHoriz = AxisIsHorizontal(axisPtr);
+    isHoriz = axisPtr->isHorizontal();
 
     if (isHoriz != ops->descending) {
       fract = (viewMin - worldMin) / worldWidth;
@@ -1666,15 +1660,18 @@ static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
   if (ops->logScale) {
     value = EXP10(value);
   }
-  /* Grid lines run orthogonally to the axis */
-  if (AxisIsHorizontal(axisPtr)) {
+
+  if (axisPtr->isHorizontal()) {
+    sp->p.x = axisPtr->hMap(value);
     sp->p.y = graphPtr->top;
+    sp->q.x = sp->p.x;
     sp->q.y = graphPtr->bottom;
-    sp->p.x = sp->q.x = Blt_HMap(axisPtr, value);
-  } else {
+  }
+  else {
     sp->p.x = graphPtr->left;
+    sp->p.y = axisPtr->vMap(value);
     sp->q.x = graphPtr->right;
-    sp->p.y = sp->q.y = Blt_VMap(axisPtr, value);
+    sp->q.y = sp->p.y;
   }
 }
 
@@ -1739,13 +1736,13 @@ static void MapGridlines(Axis *axisPtr)
       for (j = 0; j < t2Ptr->nTicks; j++) {
 	double subValue = value + (axisPtr->majorSweep_.step * 
 				   t2Ptr->values[j]);
-	if (InRange(subValue, &axisPtr->axisRange_)) {
+	if (axisPtr->inRange(subValue, &axisPtr->axisRange_)) {
 	  MakeGridLine(axisPtr, subValue, s2);
 	  s2++;
 	}
       }
     }
-    if (InRange(value, &axisPtr->axisRange_)) {
+    if (axisPtr->inRange(value, &axisPtr->axisRange_)) {
       MakeGridLine(axisPtr, value, s1);
       s1++;
     }
@@ -1764,7 +1761,7 @@ static void MapGridlines(Axis *axisPtr)
 static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  FreeTickLabels(axisPtr->tickLabels_);
+  axisPtr->freeTickLabels();
 
   // Leave room for axis baseline and padding
   unsigned int y =0;
@@ -1794,10 +1791,10 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
       if (ops->labelOffset)
 	x2 += axisPtr->majorSweep_.step * 0.5;
 
-      if (!InRange(x2, &axisPtr->axisRange_))
+      if (!axisPtr->inRange(x2, &axisPtr->axisRange_))
 	continue;
 
-      TickLabel* labelPtr = MakeLabel(axisPtr, x);
+      TickLabel* labelPtr = axisPtr->makeLabel(x);
       Blt_Chain_Append(axisPtr->tickLabels_, labelPtr);
       nLabels++;
       /* 
@@ -1827,7 +1824,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
        * account for an extra 1.5 linewidth at the end of each line.  */
       pad = ((ops->lineWidth * 12) / 8);
     }
-    if (AxisIsHorizontal(axisPtr))
+    if (axisPtr->isHorizontal())
       y += axisPtr->maxTickHeight_ + pad;
     else {
       y += axisPtr->maxTickWidth_ + pad;
@@ -1852,7 +1849,7 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
   }
 
   // Correct for orientation of the axis
-  if (AxisIsHorizontal(axisPtr))
+  if (axisPtr->isHorizontal())
     axisPtr->height_ = y;
   else
     axisPtr->width_ = y;
@@ -2425,7 +2422,7 @@ void Blt_MapAxes(Graph* graphPtr)
       if (ops->showGrid)
 	MapGridlines(axisPtr);
 
-      offset += (AxisIsHorizontal(axisPtr)) ? axisPtr->height_:axisPtr->width_;
+      offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
       count++;
     }
   }
@@ -2547,7 +2544,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
     if (!ops->limitsFormat)
       continue;
 
-    isHoriz = AxisIsHorizontal(axisPtr);
+    isHoriz = axisPtr->isHorizontal();
     minPtr = maxPtr = NULL;
     minFmt = maxFmt = ops->limitsFormat;
     if (minFmt[0] != '\0') {

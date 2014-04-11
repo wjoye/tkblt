@@ -218,6 +218,15 @@ class Axis {
   void logScale(double, double);
   void linearScale(double, double);
   void fixRange();
+  int inRange(double, AxisRange*);
+  int isHorizontal();
+  void freeTickLabels();
+  TickLabel* makeLabel(double);
+
+  double invHMap(double x);
+  double invVMap(double y);
+  double hMap(double x);
+  double vMap(double y);
 };
 
 #endif

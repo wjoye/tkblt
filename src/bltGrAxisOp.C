@@ -48,7 +48,6 @@ extern Tcl_FreeProc FreeAxis;
 extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr);
-extern int AxisIsHorizontal(Axis *axisPtr);
 extern int GetAxisScrollInfo(Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[],
 			     double *offsetPtr, double windowSize,
@@ -192,18 +191,12 @@ static int InvTransformOp(Tcl_Interp* interp, Axis *axisPtr,
   if (Tcl_GetIntFromObj(interp, objv[3], &sy) != TCL_OK)
     return TCL_ERROR;
 
-  /*
-   * Is the axis vertical or horizontal?
-   *
-   * Check the site where the axis was positioned.  If the axis is
-   * virtual, all we have to go on is how it was mapped to an
-   * element (using either -mapx or -mapy options).  
-   */
-  double y;
-  if (AxisIsHorizontal(axisPtr))
-    y = Blt_InvHMap(axisPtr, (double)sy);
-  else
-    y = Blt_InvVMap(axisPtr, (double)sy);
+  // Is the axis vertical or horizontal?
+  // Check the site where the axis was positioned.  If the axis is
+  // virtual, all we have to go on is how it was mapped to an
+  // element (using either -mapx or -mapy options).  
+  double y = axisPtr->isHorizontal() ? 
+    axisPtr->invHMap(sy) : axisPtr->invVMap(sy);
 
   Tcl_SetDoubleObj(Tcl_GetObjResult(interp), y);
   return TCL_OK;
@@ -259,10 +252,10 @@ static int TransformOp(Tcl_Interp* interp, Axis *axisPtr,
   if (Blt_ExprDoubleFromObj(interp, objv[3], &x) != TCL_OK)
     return TCL_ERROR;
 
-  if (AxisIsHorizontal(axisPtr))
-    x = Blt_HMap(axisPtr, x);
+  if (axisPtr->isHorizontal())
+    x = axisPtr->hMap(x);
   else
-    x = Blt_VMap(axisPtr, x);
+    x = axisPtr->vMap(x);
 
   Tcl_SetIntObj(Tcl_GetObjResult(interp), (int)x);
   return TCL_OK;
@@ -395,7 +388,7 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
    * around, we move the maximum instead. */
   double axisOffset;
   double axisScale;
-  if (AxisIsHorizontal(axisPtr) != ops->descending) {
+  if (axisPtr->isHorizontal() != ops->descending) {
     axisOffset  = viewMin - worldMin;
     axisScale = graphPtr->hScale;
   } else {
@@ -416,7 +409,7 @@ static int ViewOp(Tcl_Interp* interp, Axis *axisPtr,
 			ops->scrollUnits, axisScale) != TCL_OK)
     return TCL_ERROR;
 
-  if (AxisIsHorizontal(axisPtr) != ops->descending) {
+  if (axisPtr->isHorizontal() != ops->descending) {
     ops->reqMin = (fract * worldWidth) + worldMin;
     ops->reqMax = ops->reqMin + viewWidth;
   }
