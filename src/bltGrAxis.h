@@ -209,6 +209,12 @@ class Axis {
  protected:
   double niceNum(double, int);
   void setRange(AxisRange*, double, double);
+  void makeGridLine(double, Segment2d*);
+  void makeSegments(AxisInfo*);
+  void resetTextStyles();
+  void makeLine(int, Segment2d*);
+  void makeTick(double, int, int, Segment2d*);
+  void offsets(int, int, AxisInfo*);
 
  public:
   Axis(Graph*, const char*, int);
@@ -220,35 +226,28 @@ class Axis {
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 
+  int configure();
   void map(int, int);
   void draw(Drawable);
   void print(Blt_Ps);
 
   void mapStacked(int, int);
   void mapGridlines();
-
   void setClass(ClassId);
-
   void logScale(double, double);
   void linearScale(double, double);
   void fixRange();
-  int inRange(double, AxisRange*);
   int isHorizontal();
   void freeTickLabels();
   TickLabel* makeLabel(double);
+  void getDataLimits(double, double);
+  Ticks* generateTicks(TickSweep*);
+  int inRange(double, AxisRange*);
 
   double invHMap(double x);
   double invVMap(double y);
   double hMap(double x);
   double vMap(double y);
-  void getDataLimits(double, double);
-  void resetTextStyles();
-  void makeLine(int, Segment2d*);
-  void offsets(int, int, AxisInfo*);
-  void makeTick(double, int, int, Segment2d*);
-  void makeSegments(AxisInfo*);
-  Ticks* generateTicks(TickSweep*);
-  void makeGridLine(double, Segment2d*);
 };
 
 #endif

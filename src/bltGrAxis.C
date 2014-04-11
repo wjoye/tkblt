@@ -33,17 +33,10 @@ extern "C" {
 #include "bltGraph.h"
 }
 
-#include "bltConfig.h"
-#include "bltGrElem.h"
-#include "bltGrElemBar.h"
-#include "bltGrElemLine.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
 
 #define AXIS_PAD_TITLE 2
-#define NUMDIGITS 15	/* Specifies the number of digits of
-			 * accuracy used when outputting axis
-			 * tick labels. */
 
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
@@ -59,10 +52,6 @@ AxisName axisNames[] = {
 // Defs
 
 extern double AdjustViewport(double offset, double windowSize);
-extern int ConfigureAxis(Axis *axisPtr);
-extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
-			    int objc, Tcl_Obj* const objv[]);
-
 static int Round(double x)
 {
   return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
@@ -325,73 +314,59 @@ Axis::~Axis()
     free(ops_);
 }
 
-int ConfigureAxis(Axis *axisPtr)
+int Axis::configure()
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-  float angle;
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  /* Check the requested axis limits. Can't allow -min to be greater than
-   * -max.  Do this regardless of -checklimits option. We want to always 
-   * detect when the user has zoomed in beyond the precision of the data.*/
+  // Check the requested axis limits. Can't allow -min to be greater than
+  // -max.  Do this regardless of -checklimits option. We want to always 
+  // detect when the user has zoomed in beyond the precision of the data
+
   if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
       (ops->reqMin >= ops->reqMax)) {
     char msg[200];
     sprintf_s(msg, 200, 
 	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
-	      ops->reqMin, ops->reqMax, axisPtr->name());
-    Tcl_AppendResult(graphPtr->interp, msg, NULL);
+	      ops->reqMin, ops->reqMax, name());
+    Tcl_AppendResult(graphPtr_->interp, msg, NULL);
     return TCL_ERROR;
   }
-  axisPtr->scrollMin_ = ops->reqScrollMin;
-  axisPtr->scrollMax_ = ops->reqScrollMax;
+
+  scrollMin_ = ops->reqScrollMin;
+  scrollMax_ = ops->reqScrollMax;
   if (ops->logScale) {
     if (ops->checkLimits) {
-      /* Check that the logscale limits are positive.  */
+      // Check that the logscale limits are positive.
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
-	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
-			 Blt_Dtoa(graphPtr->interp, ops->reqMin), 
-			 "\" for axis \"", axisPtr->name(), "\"", 
+	Tcl_AppendResult(graphPtr_->interp,"bad logscale -min limit \"", 
+			 Blt_Dtoa(graphPtr_->interp, ops->reqMin), 
+			 "\" for axis \"", name(), "\"", 
 			 NULL);
 	return TCL_ERROR;
       }
     }
-    if ((!isnan(axisPtr->scrollMin_)) && (axisPtr->scrollMin_ <= 0.0)) {
-      axisPtr->scrollMin_ = NAN;
-    }
-    if ((!isnan(axisPtr->scrollMax_)) && (axisPtr->scrollMax_ <= 0.0)) {
-      axisPtr->scrollMax_ = NAN;
-    }
+    if ((!isnan(scrollMin_)) && (scrollMin_ <= 0.0))
+      scrollMin_ = NAN;
+
+    if ((!isnan(scrollMax_)) && (scrollMax_ <= 0.0))
+      scrollMax_ = NAN;
   }
-  angle = fmod(ops->tickAngle, 360.0);
+
+  float angle = fmod(ops->tickAngle, 360.0);
   if (angle < 0.0f)
     angle += 360.0f;
 
   ops->tickAngle = angle;
-  axisPtr->resetTextStyles();
+  resetTextStyles();
 
-  axisPtr->titleWidth_ = axisPtr->titleHeight_ = 0;
+  titleWidth_ = titleHeight_ = 0;
   if (ops->title) {
     unsigned int w, h;
-
     Blt_GetTextExtents(ops->titleFont, 0, ops->title, -1, &w, &h);
-    axisPtr->titleWidth_ = (unsigned short int)w;
-    axisPtr->titleHeight_ = (unsigned short int)h;
+    titleWidth_ = (unsigned short int)w;
+    titleHeight_ = (unsigned short int)h;
   }
 
-  /* 
-   * Don't bother to check what configuration options have changed.  Almost
-   * every option changes the size of the plotting area (except for -color
-   * and -titlecolor), requiring the graph and its contents to be completely
-   * redrawn.
-   *
-   * Recompute the scale and offset of the axis in case -min, -max options
-   * have changed.
-   */
-  graphPtr->flags |= REDRAW_WORLD;
-  graphPtr->flags |= MAP_WORLD | RESET_AXES | CACHE_DIRTY;
-  axisPtr->flags |= DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 
@@ -698,7 +673,7 @@ void Axis::logScale(double min, double max)
       if (minorStep == majorStep) {
 	nMinor = 4, minorStep = 0.2;
       } else {
-	nMinor = Round(majorStep / minorStep) - 1;
+	nMinor = ROUND(majorStep / minorStep) - 1;
       }
     } else {
       if (tickMin == tickMax) {
@@ -735,37 +710,29 @@ void Axis::linearScale(double min, double max)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  double step;
-  double tickMin, tickMax;
-  double axisMin, axisMax;
-  unsigned int nTicks;
+  unsigned int nTicks = 0;
+  double step = 1.0;
+  double axisMin =NAN;
+  double axisMax =NAN;
+  double tickMin =NAN;
+  double tickMax =NAN;
 
-  nTicks = 0;
-  step = 1.0;
-  axisMin = axisMax = tickMin = tickMax = NAN;
   if (min < max) {
-    double range;
-
-    range = max - min;
-    /* Calculate the major tick stepping. */
+    double range = max - min;
     if (ops->reqStep > 0.0) {
-      /* An interval was designated by the user.  Keep scaling it until
-       * it fits comfortably within the current range of the axis.  */
       step = ops->reqStep;
-      while ((2 * step) >= range) {
+      while ((2 * step) >= range)
 	step *= 0.5;
-      }
     } 
     else {
       range = niceNum(range, 0);
       step = niceNum(range / ops->reqNumMajorTicks, 1);
     }
 	
-    /* Find the outer tick values. Add 0.0 to prevent getting -0.0. */
     axisMin = tickMin = floor(min / step) * step + 0.0;
     axisMax = tickMax = ceil(max / step) * step + 0.0;
 	
-    nTicks = Round((tickMax - tickMin) / step) + 1;
+    nTicks = ROUND((tickMax - tickMin) / step) + 1;
   } 
   majorSweep_.step = step;
   majorSweep_.initial = tickMin;
@@ -787,18 +754,13 @@ void Axis::linearScale(double min, double max)
 
   setRange(&axisRange_, axisMin, axisMax);
 
-  /* Now calculate the minor tick step and number. */
-
   if (ops->reqNumMinorTicks > 0) {
     nTicks = ops->reqNumMinorTicks - 1;
     step = 1.0 / (nTicks + 1);
   } 
   else {
-    nTicks = 0;			/* No minor ticks. */
-    step = 0.5;			/* Don't set the minor tick interval to
-				 * 0.0. It makes the GenerateTicks
-				 * routine * create minor log-scale tick
-				 * marks.  */
+    nTicks = 0;
+    step = 0.5;
   }
   minorSweep_.initial = minorSweep_.step = step;
   minorSweep_.nSteps = nTicks;
@@ -981,7 +943,7 @@ TickLabel* Axis::makeLabel(double value)
   if (ops->logScale)
     sprintf_s(string, TICK_LABEL_SIZE, "1E%d", ROUND(value));
   else
-    sprintf_s(string, TICK_LABEL_SIZE, "%.*G", NUMDIGITS, value);
+    sprintf_s(string, TICK_LABEL_SIZE, "%.*G", 15, value);
 
   if (ops->formatCmd) {
     Tcl_Interp* interp = graphPtr_->interp;

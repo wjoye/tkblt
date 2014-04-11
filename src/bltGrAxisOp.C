@@ -55,7 +55,6 @@ static int GetAxisScrollInfo(Tcl_Interp* interp,
 			     double scrollUnits, double scale);
 extern Tcl_FreeProc FreeAxis;
 extern double AdjustViewport(double offset, double windowSize);
-extern int ConfigureAxis(Axis *axisPtr);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr);
 extern int CreateAxis(Tcl_Interp* interp, Graph* graphPtr, 
@@ -99,7 +98,7 @@ int Blt_CreateAxes(Graph* graphPtr)
 		       axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK)
       return TCL_ERROR;
 
-    if (ConfigureAxis(axisPtr) != TCL_OK)
+    if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
     if ((axisPtr->margin_ == MARGIN_RIGHT) || (axisPtr->margin_ == MARGIN_TOP))
@@ -563,9 +562,10 @@ int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
-    graphPtr->flags |= CACHE_DIRTY;
-    if (ConfigureAxis(axisPtr) != TCL_OK)
+    axisPtr->flags |= mask;
+    axisPtr->flags |= DIRTY;
+    graphPtr->flags |= REDRAW_WORLD | MAP_WORLD | RESET_AXES | CACHE_DIRTY;
+    if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
     Blt_EventuallyRedrawGraph(graphPtr);
 
@@ -919,9 +919,7 @@ void Blt_ResetAxes(Graph* graphPtr)
 
   graphPtr->flags &= ~RESET_AXES;
 
-  /*
-   * When any axis changes, we need to layout the entire graph.
-   */
+  // When any axis changes, we need to layout the entire graph.
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | 
 		      REDRAW_WORLD);
 }
@@ -1233,7 +1231,7 @@ void Blt_ConfigureAxes(Graph* graphPtr)
   for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    ConfigureAxis(axisPtr);
+    axisPtr->configure();
   }
 }
 
