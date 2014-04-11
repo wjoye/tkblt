@@ -221,9 +221,11 @@ class Axis {
   void* ops() {return ops_;}
 
   void map(int, int);
+  void draw(Drawable);
+  void print(Blt_Ps);
+
   void mapStacked(int, int);
   void mapGridlines();
-  void draw(Drawable);
 
   void setClass(ClassId);
 

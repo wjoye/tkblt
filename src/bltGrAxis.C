@@ -39,7 +39,6 @@ extern "C" {
 #include "bltGrElemLine.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
-#include "bltGrLegd.h"
 
 #define AXIS_PAD_TITLE 2
 #define NUMDIGITS 15	/* Specifies the number of digits of
@@ -49,7 +48,6 @@ extern "C" {
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
 #define UFLOOR(x,u)		(floor((x)/(u))*(u))
-#define HORIZMARGIN(m)	(!((m)->site & 0x1)) /* Even sites are horizontal */
 
 AxisName axisNames[] = { 
   { "x",  CID_AXIS_X, MARGIN_BOTTOM, MARGIN_LEFT   },
@@ -325,6 +323,76 @@ Axis::~Axis()
 
   if (ops_)
     free(ops_);
+}
+
+int ConfigureAxis(Axis *axisPtr)
+{
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
+  float angle;
+
+  /* Check the requested axis limits. Can't allow -min to be greater than
+   * -max.  Do this regardless of -checklimits option. We want to always 
+   * detect when the user has zoomed in beyond the precision of the data.*/
+  if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
+      (ops->reqMin >= ops->reqMax)) {
+    char msg[200];
+    sprintf_s(msg, 200, 
+	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
+	      ops->reqMin, ops->reqMax, axisPtr->name());
+    Tcl_AppendResult(graphPtr->interp, msg, NULL);
+    return TCL_ERROR;
+  }
+  axisPtr->scrollMin_ = ops->reqScrollMin;
+  axisPtr->scrollMax_ = ops->reqScrollMax;
+  if (ops->logScale) {
+    if (ops->checkLimits) {
+      /* Check that the logscale limits are positive.  */
+      if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
+	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
+			 Blt_Dtoa(graphPtr->interp, ops->reqMin), 
+			 "\" for axis \"", axisPtr->name(), "\"", 
+			 NULL);
+	return TCL_ERROR;
+      }
+    }
+    if ((!isnan(axisPtr->scrollMin_)) && (axisPtr->scrollMin_ <= 0.0)) {
+      axisPtr->scrollMin_ = NAN;
+    }
+    if ((!isnan(axisPtr->scrollMax_)) && (axisPtr->scrollMax_ <= 0.0)) {
+      axisPtr->scrollMax_ = NAN;
+    }
+  }
+  angle = fmod(ops->tickAngle, 360.0);
+  if (angle < 0.0f)
+    angle += 360.0f;
+
+  ops->tickAngle = angle;
+  axisPtr->resetTextStyles();
+
+  axisPtr->titleWidth_ = axisPtr->titleHeight_ = 0;
+  if (ops->title) {
+    unsigned int w, h;
+
+    Blt_GetTextExtents(ops->titleFont, 0, ops->title, -1, &w, &h);
+    axisPtr->titleWidth_ = (unsigned short int)w;
+    axisPtr->titleHeight_ = (unsigned short int)h;
+  }
+
+  /* 
+   * Don't bother to check what configuration options have changed.  Almost
+   * every option changes the size of the plotting area (except for -color
+   * and -titlecolor), requiring the graph and its contents to be completely
+   * redrawn.
+   *
+   * Recompute the scale and offset of the axis in case -min, -max options
+   * have changed.
+   */
+  graphPtr->flags |= REDRAW_WORLD;
+  graphPtr->flags |= MAP_WORLD | RESET_AXES | CACHE_DIRTY;
+  axisPtr->flags |= DIRTY;
+  Blt_EventuallyRedrawGraph(graphPtr);
+  return TCL_OK;
 }
 
 void Axis::map(int offset, int margin)
@@ -1557,17 +1625,14 @@ void Axis::makeGridLine(double value, Segment2d *sp)
   }
 }
 
-// Support
-
-static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
+void Axis::print(Blt_Ps ps)
 {
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", axisPtr->name());
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name());
   if (ops->normalBg)
-    Blt_Ps_Fill3DRectangle(ps, ops->normalBg, 
-			   (double)axisPtr->left_, (double)axisPtr->top_, 
-			   axisPtr->right_ - axisPtr->left_, 
-			   axisPtr->bottom_ - axisPtr->top_, 
+    Blt_Ps_Fill3DRectangle(ps, ops->normalBg, left_, top_, 
+			   right_ - left_, bottom_ - top_, 
 			   ops->borderWidth, ops->relief);
 
   if (ops->title) {
@@ -1575,15 +1640,14 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 
     Blt_Ts_InitStyle(ts);
 
-    ts.angle = axisPtr->titleAngle_;
+    ts.angle = titleAngle_;
     ts.font = ops->titleFont;
     ts.xPad = 1;
     ts.yPad = 0;
-    ts.anchor = axisPtr->titleAnchor_;
+    ts.anchor = titleAnchor_;
     ts.justify = ops->titleJustify;
     ts.color = ops->titleColor;
-    Blt_Ps_DrawText(ps, ops->title, &ts, axisPtr->titlePos_.x, 
-		    axisPtr->titlePos_.y);
+    Blt_Ps_DrawText(ps, ops->title, &ts, titlePos_.x, titlePos_.y);
   }
 
   if (ops->showTicks) {
@@ -1595,812 +1659,21 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
     ts.font = ops->tickFont;
     ts.xPad = 2;
     ts.yPad = 0;
-    ts.anchor = axisPtr->tickAnchor_;
+    ts.anchor = tickAnchor_;
     ts.color = ops->tickColor;
 
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(axisPtr->tickLabels_); link; 
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link; 
 	 link = Blt_Chain_NextLink(link)) {
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
       Blt_Ps_DrawText(ps, labelPtr->string, &ts, labelPtr->anchorPos.x, 
 		      labelPtr->anchorPos.y);
     }
   }
-  if ((axisPtr->nSegments_ > 0) && (ops->lineWidth > 0)) {
+
+  if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
     Blt_Ps_XSetLineAttributes(ps, ops->tickColor, ops->lineWidth, 
 			      (Blt_Dashes *)NULL, CapButt, JoinMiter);
-    Blt_Ps_Draw2DSegments(ps, axisPtr->segments_, axisPtr->nSegments_);
+    Blt_Ps_Draw2DSegments(ps, segments_, nSegments_);
   }
 }
 
-static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  axisPtr->freeTickLabels();
-
-  // Leave room for axis baseline and padding
-  unsigned int y =0;
-  if (ops->exterior && (graphPtr->plotRelief != TK_RELIEF_SOLID))
-    y += ops->lineWidth + 2;
-
-  axisPtr->maxTickHeight_ = axisPtr->maxTickWidth_ = 0;
-
-  if (axisPtr->t1Ptr_)
-    free(axisPtr->t1Ptr_);
-  axisPtr->t1Ptr_ = axisPtr->generateTicks(&axisPtr->majorSweep_);
-  if (axisPtr->t2Ptr_)
-    free(axisPtr->t2Ptr_);
-  axisPtr->t2Ptr_ = axisPtr->generateTicks(&axisPtr->minorSweep_);
-
-  if (ops->showTicks) {
-    Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr_;
-	
-    int nTicks =0;
-    if (t1Ptr)
-      nTicks = t1Ptr->nTicks;
-	
-    unsigned int nLabels =0;
-    for (int ii=0; ii<nTicks; ii++) {
-      double x = t1Ptr->values[ii];
-      double x2 = t1Ptr->values[ii];
-      if (ops->labelOffset)
-	x2 += axisPtr->majorSweep_.step * 0.5;
-
-      if (!axisPtr->inRange(x2, &axisPtr->axisRange_))
-	continue;
-
-      TickLabel* labelPtr = axisPtr->makeLabel(x);
-      Blt_Chain_Append(axisPtr->tickLabels_, labelPtr);
-      nLabels++;
-      /* 
-       * Get the dimensions of each tick label.  Remember tick labels
-       * can be multi-lined and/or rotated.
-       */
-      unsigned int lw, lh;	/* Label width and height. */
-      Blt_GetTextExtents(ops->tickFont, 0, labelPtr->string, -1, &lw, &lh);
-      labelPtr->width  = lw;
-      labelPtr->height = lh;
-
-      if (ops->tickAngle != 0.0f) {
-	double rlw, rlh;	/* Rotated label width and height. */
-	Blt_GetBoundingBox(lw, lh, ops->tickAngle, &rlw, &rlh, NULL);
-	lw = ROUND(rlw), lh = ROUND(rlh);
-      }
-      if (axisPtr->maxTickWidth_ < int(lw))
-	axisPtr->maxTickWidth_ = lw;
-
-      if (axisPtr->maxTickHeight_ < int(lh))
-	axisPtr->maxTickHeight_ = lh;
-    }
-	
-    unsigned int pad =0;
-    if (ops->exterior) {
-      /* Because the axis cap style is "CapProjecting", we need to
-       * account for an extra 1.5 linewidth at the end of each line.  */
-      pad = ((ops->lineWidth * 12) / 8);
-    }
-    if (axisPtr->isHorizontal())
-      y += axisPtr->maxTickHeight_ + pad;
-    else {
-      y += axisPtr->maxTickWidth_ + pad;
-      if (axisPtr->maxTickWidth_ > 0)
-	// Pad either size of label.
-	y += 5;
-    }
-    y += 2 * AXIS_PAD_TITLE;
-    if ((ops->lineWidth > 0) && ops->exterior)
-      // Distance from axis line to tick label.
-      y += ops->tickLength;
-
-  } // showTicks
-
-  if (ops->title) {
-    if (ops->titleAlternate) {
-      if (y < axisPtr->titleHeight_)
-	y = axisPtr->titleHeight_;
-    } 
-    else
-      y += axisPtr->titleHeight_ + AXIS_PAD_TITLE;
-  }
-
-  // Correct for orientation of the axis
-  if (axisPtr->isHorizontal())
-    axisPtr->height_ = y;
-  else
-    axisPtr->width_ = y;
-}
-
-static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
-{
-  int isHoriz = HORIZMARGIN(marginPtr);
-
-  // Count the visible axes.
-  unsigned int nVisible = 0;
-  unsigned int l =0;
-  int w =0;
-  int h =0;
-
-  marginPtr->maxTickWidth =0;
-  marginPtr->maxTickHeight =0;
-
-  if (graphPtr->stackAxes) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_) {
-	nVisible++;
-	if (graphPtr->flags & GET_AXIS_GEOMETRY)
-	  GetAxisGeometry(graphPtr, axisPtr);
-
-	if (isHoriz) {
-	  if (h < axisPtr->height_)
-	    h = axisPtr->height_;
-	}
-	else {
-	  if (w < axisPtr->width_)
-	    w = axisPtr->width_;
-	}
-	if (axisPtr->maxTickWidth_ > marginPtr->maxTickWidth)
-	  marginPtr->maxTickWidth = axisPtr->maxTickWidth_;
-
-	if (axisPtr->maxTickHeight_ > marginPtr->maxTickHeight)
-	  marginPtr->maxTickHeight = axisPtr->maxTickHeight_;
-      }
-    }
-  }
-  else {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_) {
-	nVisible++;
-	if (graphPtr->flags & GET_AXIS_GEOMETRY)
-	  GetAxisGeometry(graphPtr, axisPtr);
-
-	if ((ops->titleAlternate) && (l < axisPtr->titleWidth_))
-	  l = axisPtr->titleWidth_;
-
-	if (isHoriz)
-	  h += axisPtr->height_;
-	else
-	  w += axisPtr->width_;
-
-	if (axisPtr->maxTickWidth_ > marginPtr->maxTickWidth)
-	  marginPtr->maxTickWidth = axisPtr->maxTickWidth_;
-
-	if (axisPtr->maxTickHeight_ > marginPtr->maxTickHeight)
-	  marginPtr->maxTickHeight = axisPtr->maxTickHeight_;
-      }
-    }
-  }
-  // Enforce a minimum size for margins.
-  if (w < 3)
-    w = 3;
-
-  if (h < 3)
-    h = 3;
-
-  marginPtr->nAxes = nVisible;
-  marginPtr->axesTitleLength = l;
-  marginPtr->width = w;
-  marginPtr->height = h;
-  marginPtr->axesOffset = (isHoriz) ? h : w;
-  return marginPtr->axesOffset;
-}
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_LayoutGraph --
- *
- *	Calculate the layout of the graph.  Based upon the data, axis limits,
- *	X and Y titles, and title height, determine the cavity left which is
- *	the plotting surface.  The first step get the data and axis limits for
- *	calculating the space needed for the top, bottom, left, and right
- *	margins.
- *
- * 	1) The LEFT margin is the area from the left border to the Y axis 
- *	   (not including ticks). It composes the border width, the width an 
- *	   optional Y axis label and its padding, and the tick numeric labels. 
- *	   The Y axis label is rotated 90 degrees so that the width is the 
- *	   font height.
- *
- * 	2) The RIGHT margin is the area from the end of the graph
- *	   to the right window border. It composes the border width,
- *	   some padding, the font height (this may be dubious. It
- *	   appears to provide a more even border), the max of the
- *	   legend width and 1/2 max X tick number. This last part is
- *	   so that the last tick label is not clipped.
- *
- *           Window Width
- *      ___________________________________________________________
- *      |          |                               |               |
- *      |          |   TOP  height of title        |               |
- *      |          |                               |               |
- *      |          |           x2 title            |               |
- *      |          |                               |               |
- *      |          |        height of x2-axis      |               |
- *      |__________|_______________________________|_______________|  W
- *      |          | -plotpady                     |               |  i
- *      |__________|_______________________________|_______________|  n
- *      |          | top                   right   |               |  d
- *      |          |                               |               |  o
- *      |   LEFT   |                               |     RIGHT     |  w
- *      |          |                               |               |
- *      | y        |     Free area = 104%          |      y2       |  H
- *      |          |     Plotting surface = 100%   |               |  e
- *      | t        |     Tick length = 2 + 2%      |      t        |  i
- *      | i        |                               |      i        |  g
- *      | t        |                               |      t  legend|  h
- *      | l        |                               |      l   width|  t
- *      | e        |                               |      e        |
- *      |    height|                               |height         |
- *      |       of |                               | of            |
- *      |    y-axis|                               |y2-axis        |
- *      |          |                               |               |
- *      |          |origin 0,0                     |               |
- *      |__________|_left_________________bottom___|_______________|
- *      |          |-plotpady                      |               |
- *      |__________|_______________________________|_______________|
- *      |          | (xoffset, yoffset)            |               |
- *      |          |                               |               |
- *      |          |       height of x-axis        |               |
- *      |          |                               |               |
- *      |          |   BOTTOM   x title            |               |
- *      |__________|_______________________________|_______________|
- *
- * 3) The TOP margin is the area from the top window border to the top
- *    of the graph. It composes the border width, twice the height of
- *    the title font (if one is given) and some padding between the
- *    title.
- *
- * 4) The BOTTOM margin is area from the bottom window border to the
- *    X axis (not including ticks). It composes the border width, the height
- *    an optional X axis label and its padding, the height of the font
- *    of the tick labels.
- *
- * The plotting area is between the margins which includes the X and Y axes
- * including the ticks but not the tick numeric labels. The length of the
- * ticks and its padding is 5% of the entire plotting area.  Hence the entire
- * plotting area is scaled as 105% of the width and height of the area.
- *
- * The axis labels, ticks labels, title, and legend may or may not be
- * displayed which must be taken into account.
- *
- * if reqWidth > 0 : set outer size
- * if reqPlotWidth > 0 : set plot size
- *---------------------------------------------------------------------------
- */
-
-void Blt_LayoutGraph(Graph* graphPtr)
-{
-  int titleY;
-  int plotWidth, plotHeight;
-  int inset, inset2;
-
-  int width = graphPtr->width;
-  int height = graphPtr->height;
-
-  /* 
-   * Step 1:  Compute the amount of space needed to display the axes
-   *		associated with each margin.  They can be overridden by 
-   *		-leftmargin, -rightmargin, -bottommargin, and -topmargin
-   *		graph options, respectively.
-   */
-  int left   = GetMarginGeometry(graphPtr, &graphPtr->leftMargin);
-  int right  = GetMarginGeometry(graphPtr, &graphPtr->rightMargin);
-  int top    = GetMarginGeometry(graphPtr, &graphPtr->topMargin);
-  int bottom = GetMarginGeometry(graphPtr, &graphPtr->bottomMargin);
-
-  int pad = graphPtr->bottomMargin.maxTickWidth;
-  if (pad < graphPtr->topMargin.maxTickWidth)
-    pad = graphPtr->topMargin.maxTickWidth;
-
-  pad = pad / 2 + 3;
-  if (right < pad)
-    right = pad;
-
-  if (left < pad)
-    left = pad;
-
-  pad = graphPtr->leftMargin.maxTickHeight;
-  if (pad < graphPtr->rightMargin.maxTickHeight)
-    pad = graphPtr->rightMargin.maxTickHeight;
-
-  pad = pad / 2;
-  if (top < pad)
-    top = pad;
-
-  if (bottom < pad)
-    bottom = pad;
-
-  if (graphPtr->leftMargin.reqSize > 0)
-    left = graphPtr->leftMargin.reqSize;
-
-  if (graphPtr->rightMargin.reqSize > 0)
-    right = graphPtr->rightMargin.reqSize;
-
-  if (graphPtr->topMargin.reqSize > 0)
-    top = graphPtr->topMargin.reqSize;
-
-  if (graphPtr->bottomMargin.reqSize > 0)
-    bottom = graphPtr->bottomMargin.reqSize;
-
-  /* 
-   * Step 2:  Add the graph title height to the top margin. 
-   */
-  if (graphPtr->title)
-    top += graphPtr->titleHeight + 6;
-
-  inset = (graphPtr->inset + graphPtr->plotBW);
-  inset2 = 2 * inset;
-
-  /* 
-   * Step 3: Estimate the size of the plot area from the remaining
-   *	       space.  This may be overridden by the -plotwidth and
-   *	       -plotheight graph options.  We use this to compute the
-   *	       size of the legend. 
-   */
-  if (width == 0)
-    width = 400;
-
-  if (height == 0)
-    height = 400;
-
-  plotWidth  = (graphPtr->reqPlotWidth > 0) ? graphPtr->reqPlotWidth :
-    width - (inset2 + left + right); /* Plot width. */
-  plotHeight = (graphPtr->reqPlotHeight > 0) ? graphPtr->reqPlotHeight : 
-    height - (inset2 + top + bottom); /* Plot height. */
-  graphPtr->legend->map(plotWidth, plotHeight);
-
-  /* 
-   * Step 2:  Add the legend to the appropiate margin. 
-   */
-  if (!graphPtr->legend->isHidden()) {
-    switch (graphPtr->legend->position()) {
-    case Legend::RIGHT:
-      right += graphPtr->legend->width() + 2;
-      break;
-    case Legend::LEFT:
-      left += graphPtr->legend->width() + 2;
-      break;
-    case Legend::TOP:
-      top += graphPtr->legend->height() + 2;
-      break;
-    case Legend::BOTTOM:
-      bottom += graphPtr->legend->height() + 2;
-      break;
-    case Legend::XY:
-    case Legend::PLOT:
-      /* Do nothing. */
-      break;
-    }
-  }
-
-  /* 
-   * Recompute the plotarea or graph size, now accounting for the legend. 
-   */
-  if (graphPtr->reqPlotWidth == 0) {
-    plotWidth = width  - (inset2 + left + right);
-    if (plotWidth < 1)
-      plotWidth = 1;
-  }
-  if (graphPtr->reqPlotHeight == 0) {
-    plotHeight = height - (inset2 + top + bottom);
-    if (plotHeight < 1)
-      plotHeight = 1;
-  }
-
-  /*
-   * Step 5: If necessary, correct for the requested plot area aspect
-   *	       ratio.
-   */
-  if ((graphPtr->reqPlotWidth == 0) && (graphPtr->reqPlotHeight == 0) && 
-      (graphPtr->aspect > 0.0f)) {
-    float ratio;
-
-    /* 
-     * Shrink one dimension of the plotarea to fit the requested
-     * width/height aspect ratio.
-     */
-    ratio = (float)plotWidth / (float)plotHeight;
-    if (ratio > graphPtr->aspect) {
-      // Shrink the width
-      int scaledWidth = (int)(plotHeight * graphPtr->aspect);
-      if (scaledWidth < 1)
-	scaledWidth = 1;
-
-      // Add the difference to the right margin.
-      // CHECK THIS: w = scaledWidth
-      right += (plotWidth - scaledWidth);
-    }
-    else {
-      // Shrink the height
-      int scaledHeight = (int)(plotWidth / graphPtr->aspect);
-      if (scaledHeight < 1)
-	scaledHeight = 1;
-
-      // Add the difference to the top margin
-      // CHECK THIS: h = scaledHeight;
-      top += (plotHeight - scaledHeight); 
-    }
-  }
-
-  /* 
-   * Step 6: If there's multiple axes in a margin, the axis titles will be
-   *	       displayed in the adjoining margins.  Make sure there's room 
-   *	       for the longest axis titles.
-   */
-
-  if (top < graphPtr->leftMargin.axesTitleLength)
-    top = graphPtr->leftMargin.axesTitleLength;
-
-  if (right < graphPtr->bottomMargin.axesTitleLength)
-    right = graphPtr->bottomMargin.axesTitleLength;
-
-  if (top < graphPtr->rightMargin.axesTitleLength)
-    top = graphPtr->rightMargin.axesTitleLength;
-
-  if (right < graphPtr->topMargin.axesTitleLength)
-    right = graphPtr->topMargin.axesTitleLength;
-
-  /* 
-   * Step 7: Override calculated values with requested margin sizes.
-   */
-  if (graphPtr->leftMargin.reqSize > 0)
-    left = graphPtr->leftMargin.reqSize;
-
-  if (graphPtr->rightMargin.reqSize > 0)
-    right = graphPtr->rightMargin.reqSize;
-
-  if (graphPtr->topMargin.reqSize > 0)
-    top = graphPtr->topMargin.reqSize;
-
-  if (graphPtr->bottomMargin.reqSize > 0)
-    bottom = graphPtr->bottomMargin.reqSize;
-
-  if (graphPtr->reqPlotWidth > 0) {	
-    /* 
-     * Width of plotarea is constained.  If there's extra space, add it to
-     * th left and/or right margins.  If there's too little, grow the
-     * graph width to accomodate it.
-     */
-    int w = plotWidth + inset2 + left + right;
-    if (width > w) {		/* Extra space in window. */
-      int extra = (width - w) / 2;
-      if (graphPtr->leftMargin.reqSize == 0) { 
-	left += extra;
-	if (graphPtr->rightMargin.reqSize == 0) { 
-	  right += extra;
-	}
-	else {
-	  left += extra;
-	}
-      }
-      else if (graphPtr->rightMargin.reqSize == 0) {
-	right += extra + extra;
-      }
-    }
-    else if (width < w) {
-      width = w;
-    }
-  } 
-  if (graphPtr->reqPlotHeight > 0) {	/* Constrain the plotarea height. */
-    /* 
-     * Height of plotarea is constained.  If there's extra space, 
-     * add it to th top and/or bottom margins.  If there's too little,
-     * grow the graph height to accomodate it.
-     */
-    int h = plotHeight + inset2 + top + bottom;
-    if (height > h) {		/* Extra space in window. */
-      int extra;
-
-      extra = (height - h) / 2;
-      if (graphPtr->topMargin.reqSize == 0) { 
-	top += extra;
-	if (graphPtr->bottomMargin.reqSize == 0) { 
-	  bottom += extra;
-	}
-	else {
-	  top += extra;
-	}
-      }
-      else if (graphPtr->bottomMargin.reqSize == 0) {
-	bottom += extra + extra;
-      }
-    }
-    else if (height < h) {
-      height = h;
-    }
-  }	
-  graphPtr->width  = width;
-  graphPtr->height = height;
-  graphPtr->left   = left + inset;
-  graphPtr->top    = top + inset;
-  graphPtr->right  = width - right - inset;
-  graphPtr->bottom = height - bottom - inset;
-
-  graphPtr->leftMargin.width    = left   + graphPtr->inset;
-  graphPtr->rightMargin.width   = right  + graphPtr->inset;
-  graphPtr->topMargin.height    = top    + graphPtr->inset;
-  graphPtr->bottomMargin.height = bottom + graphPtr->inset;
-	    
-  graphPtr->vOffset = graphPtr->top + graphPtr->yPad;
-  graphPtr->vRange  = plotHeight - 2*graphPtr->yPad;
-  graphPtr->hOffset = graphPtr->left + graphPtr->xPad;
-  graphPtr->hRange  = plotWidth  - 2*graphPtr->xPad;
-
-  if (graphPtr->vRange < 1)
-    graphPtr->vRange = 1;
-
-  if (graphPtr->hRange < 1)
-    graphPtr->hRange = 1;
-
-  graphPtr->hScale = 1.0f / (float)graphPtr->hRange;
-  graphPtr->vScale = 1.0f / (float)graphPtr->vRange;
-
-  // Calculate the placement of the graph title so it is centered within the
-  // space provided for it in the top margin
-  titleY = graphPtr->titleHeight;
-  graphPtr->titleY = 3 + graphPtr->inset;
-  graphPtr->titleX = (graphPtr->right + graphPtr->left) / 2;
-}
-
-int ConfigureAxis(Axis *axisPtr)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-  float angle;
-
-  /* Check the requested axis limits. Can't allow -min to be greater than
-   * -max.  Do this regardless of -checklimits option. We want to always 
-   * detect when the user has zoomed in beyond the precision of the data.*/
-  if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
-      (ops->reqMin >= ops->reqMax)) {
-    char msg[200];
-    sprintf_s(msg, 200, 
-	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
-	      ops->reqMin, ops->reqMax, axisPtr->name());
-    Tcl_AppendResult(graphPtr->interp, msg, NULL);
-    return TCL_ERROR;
-  }
-  axisPtr->scrollMin_ = ops->reqScrollMin;
-  axisPtr->scrollMax_ = ops->reqScrollMax;
-  if (ops->logScale) {
-    if (ops->checkLimits) {
-      /* Check that the logscale limits are positive.  */
-      if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
-	Tcl_AppendResult(graphPtr->interp,"bad logscale -min limit \"", 
-			 Blt_Dtoa(graphPtr->interp, ops->reqMin), 
-			 "\" for axis \"", axisPtr->name(), "\"", 
-			 NULL);
-	return TCL_ERROR;
-      }
-    }
-    if ((!isnan(axisPtr->scrollMin_)) && (axisPtr->scrollMin_ <= 0.0)) {
-      axisPtr->scrollMin_ = NAN;
-    }
-    if ((!isnan(axisPtr->scrollMax_)) && (axisPtr->scrollMax_ <= 0.0)) {
-      axisPtr->scrollMax_ = NAN;
-    }
-  }
-  angle = fmod(ops->tickAngle, 360.0);
-  if (angle < 0.0f)
-    angle += 360.0f;
-
-  ops->tickAngle = angle;
-  axisPtr->resetTextStyles();
-
-  axisPtr->titleWidth_ = axisPtr->titleHeight_ = 0;
-  if (ops->title) {
-    unsigned int w, h;
-
-    Blt_GetTextExtents(ops->titleFont, 0, ops->title, -1, &w, &h);
-    axisPtr->titleWidth_ = (unsigned short int)w;
-    axisPtr->titleHeight_ = (unsigned short int)h;
-  }
-
-  /* 
-   * Don't bother to check what configuration options have changed.  Almost
-   * every option changes the size of the plotting area (except for -color
-   * and -titlecolor), requiring the graph and its contents to be completely
-   * redrawn.
-   *
-   * Recompute the scale and offset of the axis in case -min, -max options
-   * have changed.
-   */
-  graphPtr->flags |= REDRAW_WORLD;
-  graphPtr->flags |= MAP_WORLD | RESET_AXES | CACHE_DIRTY;
-  axisPtr->flags |= DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
-  return TCL_OK;
-}
-
-void Blt_DestroyAxes(Graph* graphPtr)
-{
-  Tcl_HashSearch cursor;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->hashPtr_ = NULL;
-    delete axisPtr;
-  }
-  Tcl_DeleteHashTable(&graphPtr->axes.table);
-
-  for (int ii=0; ii<4; ii++)
-    Blt_Chain_Destroy(graphPtr->axisChain[ii]);
-
-  Tcl_DeleteHashTable(&graphPtr->axes.tagTable);
-  Blt_Chain_Destroy(graphPtr->axes.displayList);
-}
-
-void Blt_ConfigureAxes(Graph* graphPtr)
-{
-  Tcl_HashSearch cursor;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    ConfigureAxis(axisPtr);
-  }
-}
-
-void Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
-{
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (ops->hide || (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      if (axisPtr->use_ && ops->showGrid) {
-	Blt_Draw2DSegments(graphPtr->display, drawable, 
-			   ops->major.gc, ops->major.segments, 
-			   ops->major.nUsed);
-
-	if (ops->showGridMinor)
-	  Blt_Draw2DSegments(graphPtr->display, drawable, 
-			     ops->minor.gc, ops->minor.segments, 
-			     ops->minor.nUsed);
-      }
-    }
-  }
-}
-
-void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
-{
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (ops->hide || !ops->showGrid || !axisPtr->use_ || 
-	  (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n",
-		    axisPtr->name());
-      Blt_Ps_XSetLineAttributes(ps, ops->major.color, 
-				ops->major.lineWidth, 
-				&ops->major.dashes, CapButt, 
-				JoinMiter);
-      Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n",
-		    axisPtr->name());
-      Blt_Ps_Draw2DSegments(ps, ops->major.segments, 
-			    ops->major.nUsed);
-      if (ops->showGridMinor) {
-	Blt_Ps_XSetLineAttributes(ps, ops->minor.color, 
-				  ops->minor.lineWidth, 
-				  &ops->minor.dashes, CapButt, 
-				  JoinMiter);
-	Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n",
-		      axisPtr->name());
-	Blt_Ps_Draw2DSegments(ps, ops->minor.segments, 
-			      ops->minor.nUsed);
-      }
-    }
-  }
-}
-
-void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
-{
-  Margin *mp, *mend;
-
-  for (mp = graphPtr->margins, mend = mp + 4; mp < mend; mp++) {
-    Blt_ChainLink link;
-
-    for (link = Blt_Chain_FirstLink(mp->axes); link != NULL; 
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	AxisToPostScript(ps, axisPtr);
-    }
-  }
-}
-
-Axis *Blt_GetFirstAxis(Blt_Chain chain)
-{
-  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
-  if (!link)
-    return NULL;
-
-  return (Axis*)Blt_Chain_GetValue(link);
-}
-
-Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
-{
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch cursor;
-    
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor); 
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    if (ops->hide || !axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
-      continue;
-
-    if (ops->showTicks) {
-      Blt_ChainLink link;
-
-      for (link = Blt_Chain_FirstLink(axisPtr->tickLabels_); link != NULL; 
-	   link = Blt_Chain_NextLink(link)) {	
-	Point2d t;
-	double rw, rh;
-	Point2d bbox[5];
-
-	TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-	Blt_GetBoundingBox(labelPtr->width, labelPtr->height, 
-			   ops->tickAngle, &rw, &rh, bbox);
-	t = Blt_AnchorPoint(labelPtr->anchorPos.x, 
-			    labelPtr->anchorPos.y, rw, rh, 
-			    axisPtr->tickAnchor_);
-	t.x = x - t.x - (rw * 0.5);
-	t.y = y - t.y - (rh * 0.5);
-
-	bbox[4] = bbox[0];
-	if (Blt_PointInPolygon(&t, bbox, 5)) {
-	  axisPtr->detail_ = "label";
-	  return axisPtr;
-	}
-      }
-    }
-    if (ops->title) {	/* and then the title string. */
-      Point2d bbox[5];
-      Point2d t;
-      double rw, rh;
-      unsigned int w, h;
-
-      Blt_GetTextExtents(ops->titleFont, 0, ops->title,-1,&w,&h);
-      Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
-      t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
-			  rw, rh, axisPtr->titleAnchor_);
-      /* Translate the point so that the 0,0 is the upper left 
-       * corner of the bounding box.  */
-      t.x = x - t.x - (rw * 0.5);
-      t.y = y - t.y - (rh * 0.5);
-	    
-      bbox[4] = bbox[0];
-      if (Blt_PointInPolygon(&t, bbox, 5)) {
-	axisPtr->detail_ = "title";
-	return axisPtr;
-      }
-    }
-    if (ops->lineWidth > 0) {	/* Check for the axis region */
-      if ((x <= axisPtr->right_) && (x >= axisPtr->left_) && 
-	  (y <= axisPtr->bottom_) && (y >= axisPtr->top_)) {
-	axisPtr->detail_ = "line";
-	return axisPtr;
-      }
-    }
-  }
-  return NULL;
-}
- 
-ClientData Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
-{
-  int isNew;
-  Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->axes.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->axes.tagTable, hPtr);
-}
