@@ -43,14 +43,15 @@ typedef int (GraphDefAxisProc)(Tcl_Interp* interp, Axis *axisPtr,
 typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
 			    int objc, Tcl_Obj* const objv[]);
 
-extern Tcl_FreeProc FreeAxis;
-extern int ConfigureAxis(Axis *axisPtr);
-extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			  Axis **axisPtrPtr);
-extern int GetAxisScrollInfo(Tcl_Interp* interp, 
+static int GetAxisScrollInfo(Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[],
 			     double *offsetPtr, double windowSize,
 			     double scrollUnits, double scale);
+extern Tcl_FreeProc FreeAxis;
+extern double AdjustViewport(double offset, double windowSize);
+extern int ConfigureAxis(Axis *axisPtr);
+extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
+			  Axis **axisPtrPtr);
 extern int CreateAxis(Tcl_Interp* interp, Graph* graphPtr, 
 		      int objc, Tcl_Obj* const objv[]);
 
@@ -1138,5 +1139,88 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
       }
     }
   }
+}
+
+int GetAxisScrollInfo(Tcl_Interp* interp, 
+			     int objc, Tcl_Obj* const objv[],
+			     double *offsetPtr, double windowSize,
+			     double scrollUnits, double scale)
+{
+  const char *string;
+  char c;
+  double offset;
+  int length;
+
+  offset = *offsetPtr;
+  string = Tcl_GetStringFromObj(objv[0], &length);
+  c = string[0];
+  scrollUnits *= scale;
+  if ((c == 's') && (strncmp(string, "scroll", length) == 0)) {
+    int count;
+    double fract;
+
+    /* Scroll number unit/page */
+    if (Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK)
+      return TCL_ERROR;
+
+    string = Tcl_GetStringFromObj(objv[2], &length);
+    c = string[0];
+    if ((c == 'u') && (strncmp(string, "units", length) == 0))
+      fract = count * scrollUnits;
+    else if ((c == 'p') && (strncmp(string, "pages", length) == 0))
+      /* A page is 90% of the view-able window. */
+      fract = (int)(count * windowSize * 0.9 + 0.5);
+    else if ((c == 'p') && (strncmp(string, "pixels", length) == 0))
+      fract = count * scale;
+    else {
+      Tcl_AppendResult(interp, "unknown \"scroll\" units \"", string,
+		       "\"", NULL);
+      return TCL_ERROR;
+    }
+    offset += fract;
+  } 
+  else if ((c == 'm') && (strncmp(string, "moveto", length) == 0)) {
+    double fract;
+
+    /* moveto fraction */
+    if (Tcl_GetDoubleFromObj(interp, objv[1], &fract) != TCL_OK) {
+      return TCL_ERROR;
+    }
+    offset = fract;
+  } 
+  else {
+    int count;
+    double fract;
+
+    /* Treat like "scroll units" */
+    if (Tcl_GetIntFromObj(interp, objv[0], &count) != TCL_OK) {
+      return TCL_ERROR;
+    }
+    fract = (double)count * scrollUnits;
+    offset += fract;
+    /* CHECK THIS: return TCL_OK; */
+  }
+  *offsetPtr = AdjustViewport(offset, windowSize);
+  return TCL_OK;
+}
+
+double AdjustViewport(double offset, double windowSize)
+{
+  // Canvas-style scrolling allows the world to be scrolled within the window.
+  if (windowSize > 1.0) {
+    if (windowSize < (1.0 - offset))
+      offset = 1.0 - windowSize;
+
+    if (offset > 0.0)
+      offset = 0.0;
+  }
+  else {
+    if ((offset + windowSize) > 1.0)
+      offset = 1.0 - windowSize;
+
+    if (offset < 0.0)
+      offset = 0.0;
+  }
+  return offset;
 }
 

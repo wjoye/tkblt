@@ -245,6 +245,8 @@ class Axis {
   void offsets(int, int, AxisInfo*);
   void makeTick(double, int, int, Segment2d*);
   void makeSegments(AxisInfo*);
+  Ticks* generateTicks(TickSweep*);
+  void makeGridLine(double, Segment2d*);
 };
 
 #endif

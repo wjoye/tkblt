@@ -60,7 +60,7 @@ AxisName axisNames[] = {
 
 // Defs
 
-static double AdjustViewport(double, double);
+extern double AdjustViewport(double offset, double windowSize);
 extern int ConfigureAxis(Axis *axisPtr);
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);
@@ -376,6 +376,77 @@ void Axis::mapStacked(int count, int margin)
   AxisInfo info;
   offsets(margin, 0, &info);
   makeSegments(&info);
+}
+
+void Axis::mapGridlines()
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  Ticks* t1Ptr = t1Ptr_;
+  if (!t1Ptr)
+    t1Ptr = generateTicks(&majorSweep_);
+ 
+  Ticks* t2Ptr = t2Ptr_;
+  if (!t2Ptr)
+    t2Ptr = generateTicks(&minorSweep_);
+
+  int needed = t1Ptr->nTicks;
+  if (ops->showGridMinor)
+    needed += (t1Ptr->nTicks * t2Ptr->nTicks);
+
+  if (needed == 0) {
+    if (t1Ptr != t1Ptr_)
+      free(t1Ptr);
+    if (t2Ptr != t2Ptr_)
+      free(t2Ptr);
+    return;			
+  }
+
+  needed = t1Ptr->nTicks;
+  if (needed != ops->major.nAllocated) {
+    if (ops->major.segments) {
+      free(ops->major.segments);
+      ops->major.segments = NULL;
+    }
+    ops->major.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->major.nAllocated = needed;
+  }
+  needed = (t1Ptr->nTicks * t2Ptr->nTicks);
+  if (needed != ops->minor.nAllocated) {
+    if (ops->minor.segments) {
+      free(ops->minor.segments);
+      ops->minor.segments = NULL;
+    }
+    ops->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->minor.nAllocated = needed;
+  }
+
+  Segment2d* s1 = ops->major.segments;
+  Segment2d* s2 = ops->minor.segments;
+  for (int ii=0; ii<t1Ptr->nTicks; ii++) {
+    double value = t1Ptr->values[ii];
+    if (ops->showGridMinor) {
+      for (int jj=0; jj<t2Ptr->nTicks; jj++) {
+	double subValue = value + (majorSweep_.step * t2Ptr->values[jj]);
+	if (inRange(subValue, &axisRange_)) {
+	  makeGridLine(subValue, s2);
+	  s2++;
+	}
+      }
+    }
+    if (inRange(value, &axisRange_)) {
+      makeGridLine(value, s1);
+      s1++;
+    }
+  }
+
+  if (t1Ptr != t1Ptr_)
+    free(t1Ptr);
+  if (t2Ptr != t2Ptr_)
+    free(t2Ptr);
+
+  ops->major.nUsed = s1 - ops->major.segments;
+  ops->minor.nUsed = s2 - ops->minor.segments;
 }
 
 void Axis::draw(Drawable drawable)
@@ -1024,45 +1095,6 @@ void Axis::makeLine(int line, Segment2d *sp)
   }
 }
 
-// Support
-
-static Ticks *GenerateTicks(TickSweep *sweepPtr)
-{
-  Ticks* ticksPtr = 
-    (Ticks*)malloc(sizeof(Ticks) + (sweepPtr->nSteps * sizeof(double)));
-  ticksPtr->nTicks = 0;
-
-  if (sweepPtr->step == 0.0) { 
-    /* Hack: A zero step indicates to use log values. */
-    int i;
-    /* Precomputed log10 values [1..10] */
-    static double logTable[] = {
-      0.0, 
-      0.301029995663981, 
-      0.477121254719662, 
-      0.602059991327962, 
-      0.698970004336019, 
-      0.778151250383644, 
-      0.845098040014257,
-      0.903089986991944, 
-      0.954242509439325, 
-      1.0
-    };
-    for (i = 0; i < sweepPtr->nSteps; i++)
-      ticksPtr->values[i] = logTable[i];
-  }
-  else {
-    double value = sweepPtr->initial;	/* Start from smallest axis tick */
-    for (int ii=0; ii<sweepPtr->nSteps; ii++) {
-      value = UROUND(value, sweepPtr->step);
-      ticksPtr->values[ii] = value;
-      value += sweepPtr->step;
-    }
-  }
-  ticksPtr->nTicks = sweepPtr->nSteps;
-  return ticksPtr;
-}
-
 void Axis::offsets(int margin, int offset, AxisInfo *infoPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
@@ -1467,88 +1499,65 @@ void Axis::makeSegments(AxisInfo *infoPtr)
   nSegments_ = sp - segments;
 }
 
-static double AdjustViewport(double offset, double windowSize)
+Ticks* Axis::generateTicks(TickSweep *sweepPtr)
 {
-  // Canvas-style scrolling allows the world to be scrolled within the window.
-  if (windowSize > 1.0) {
-    if (windowSize < (1.0 - offset))
-      offset = 1.0 - windowSize;
+  Ticks* ticksPtr = 
+    (Ticks*)malloc(sizeof(Ticks) + (sweepPtr->nSteps * sizeof(double)));
+  ticksPtr->nTicks = 0;
 
-    if (offset > 0.0)
-      offset = 0.0;
+  if (sweepPtr->step == 0.0) { 
+    /* Hack: A zero step indicates to use log values. */
+    int i;
+    /* Precomputed log10 values [1..10] */
+    static double logTable[] = {
+      0.0, 
+      0.301029995663981, 
+      0.477121254719662, 
+      0.602059991327962, 
+      0.698970004336019, 
+      0.778151250383644, 
+      0.845098040014257,
+      0.903089986991944, 
+      0.954242509439325, 
+      1.0
+    };
+    for (i = 0; i < sweepPtr->nSteps; i++)
+      ticksPtr->values[i] = logTable[i];
   }
   else {
-    if ((offset + windowSize) > 1.0)
-      offset = 1.0 - windowSize;
-
-    if (offset < 0.0)
-      offset = 0.0;
+    double value = sweepPtr->initial;	/* Start from smallest axis tick */
+    for (int ii=0; ii<sweepPtr->nSteps; ii++) {
+      value = UROUND(value, sweepPtr->step);
+      ticksPtr->values[ii] = value;
+      value += sweepPtr->step;
+    }
   }
-  return offset;
+  ticksPtr->nTicks = sweepPtr->nSteps;
+  return ticksPtr;
 }
 
-int GetAxisScrollInfo(Tcl_Interp* interp, 
-			     int objc, Tcl_Obj* const objv[],
-			     double *offsetPtr, double windowSize,
-			     double scrollUnits, double scale)
+void Axis::makeGridLine(double value, Segment2d *sp)
 {
-  const char *string;
-  char c;
-  double offset;
-  int length;
+  AxisOptions* ops = (AxisOptions*)ops_;
 
-  offset = *offsetPtr;
-  string = Tcl_GetStringFromObj(objv[0], &length);
-  c = string[0];
-  scrollUnits *= scale;
-  if ((c == 's') && (strncmp(string, "scroll", length) == 0)) {
-    int count;
-    double fract;
+  if (ops->logScale)
+    value = EXP10(value);
 
-    /* Scroll number unit/page */
-    if (Tcl_GetIntFromObj(interp, objv[1], &count) != TCL_OK)
-      return TCL_ERROR;
-
-    string = Tcl_GetStringFromObj(objv[2], &length);
-    c = string[0];
-    if ((c == 'u') && (strncmp(string, "units", length) == 0))
-      fract = count * scrollUnits;
-    else if ((c == 'p') && (strncmp(string, "pages", length) == 0))
-      /* A page is 90% of the view-able window. */
-      fract = (int)(count * windowSize * 0.9 + 0.5);
-    else if ((c == 'p') && (strncmp(string, "pixels", length) == 0))
-      fract = count * scale;
-    else {
-      Tcl_AppendResult(interp, "unknown \"scroll\" units \"", string,
-		       "\"", NULL);
-      return TCL_ERROR;
-    }
-    offset += fract;
-  } 
-  else if ((c == 'm') && (strncmp(string, "moveto", length) == 0)) {
-    double fract;
-
-    /* moveto fraction */
-    if (Tcl_GetDoubleFromObj(interp, objv[1], &fract) != TCL_OK) {
-      return TCL_ERROR;
-    }
-    offset = fract;
-  } 
-  else {
-    int count;
-    double fract;
-
-    /* Treat like "scroll units" */
-    if (Tcl_GetIntFromObj(interp, objv[0], &count) != TCL_OK) {
-      return TCL_ERROR;
-    }
-    fract = (double)count * scrollUnits;
-    offset += fract;
-    /* CHECK THIS: return TCL_OK; */
+  if (isHorizontal()) {
+    sp->p.x = hMap(value);
+    sp->p.y = graphPtr_->top;
+    sp->q.x = sp->p.x;
+    sp->q.y = graphPtr_->bottom;
   }
-  *offsetPtr = AdjustViewport(offset, windowSize);
-  return TCL_OK;
+  else {
+    sp->p.x = graphPtr_->left;
+    sp->p.y = vMap(value);
+    sp->q.x = graphPtr_->right;
+    sp->q.y = sp->p.y;
+  }
 }
+
+// Support
 
 static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
 {
@@ -1603,100 +1612,6 @@ static void AxisToPostScript(Blt_Ps ps, Axis *axisPtr)
   }
 }
 
-static void MakeGridLine(Axis *axisPtr, double value, Segment2d *sp)
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (ops->logScale) {
-    value = EXP10(value);
-  }
-
-  if (axisPtr->isHorizontal()) {
-    sp->p.x = axisPtr->hMap(value);
-    sp->p.y = graphPtr->top;
-    sp->q.x = sp->p.x;
-    sp->q.y = graphPtr->bottom;
-  }
-  else {
-    sp->p.x = graphPtr->left;
-    sp->p.y = axisPtr->vMap(value);
-    sp->q.x = graphPtr->right;
-    sp->q.y = sp->p.y;
-  }
-}
-
-void Axis::mapGridlines()
-{
-  AxisOptions* ops = (AxisOptions*)ops_;
-
-  Ticks* t1Ptr = t1Ptr_;
-  if (!t1Ptr)
-    t1Ptr = GenerateTicks(&majorSweep_);
- 
-  Ticks* t2Ptr = t2Ptr_;
-  if (!t2Ptr)
-    t2Ptr = GenerateTicks(&minorSweep_);
-
-  int needed = t1Ptr->nTicks;
-  if (ops->showGridMinor)
-    needed += (t1Ptr->nTicks * t2Ptr->nTicks);
-
-  if (needed == 0) {
-    if (t1Ptr != t1Ptr_)
-      free(t1Ptr);
-    if (t2Ptr != t2Ptr_)
-      free(t2Ptr);
-    return;			
-  }
-
-  needed = t1Ptr->nTicks;
-  if (needed != ops->major.nAllocated) {
-    if (ops->major.segments) {
-      free(ops->major.segments);
-      ops->major.segments = NULL;
-    }
-    ops->major.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
-    ops->major.nAllocated = needed;
-  }
-  needed = (t1Ptr->nTicks * t2Ptr->nTicks);
-  if (needed != ops->minor.nAllocated) {
-    if (ops->minor.segments) {
-      free(ops->minor.segments);
-      ops->minor.segments = NULL;
-    }
-    ops->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
-    ops->minor.nAllocated = needed;
-  }
-
-  Segment2d* s1 = ops->major.segments;
-  Segment2d* s2 = ops->minor.segments;
-  for (int ii=0; ii<t1Ptr->nTicks; ii++) {
-    double value = t1Ptr->values[ii];
-    if (ops->showGridMinor) {
-      for (int jj=0; jj<t2Ptr->nTicks; jj++) {
-	double subValue = value + (majorSweep_.step * t2Ptr->values[jj]);
-	if (inRange(subValue, &axisRange_)) {
-	  MakeGridLine(this, subValue, s2);
-	  s2++;
-	}
-      }
-    }
-    if (inRange(value, &axisRange_)) {
-      MakeGridLine(this, value, s1);
-      s1++;
-    }
-  }
-
-  if (t1Ptr != t1Ptr_)
-    free(t1Ptr);
-  if (t2Ptr != t2Ptr_)
-    free(t2Ptr);
-
-  ops->major.nUsed = s1 - ops->major.segments;
-  ops->minor.nUsed = s2 - ops->minor.segments;
-}
-
 static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
@@ -1711,10 +1626,10 @@ static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 
   if (axisPtr->t1Ptr_)
     free(axisPtr->t1Ptr_);
-  axisPtr->t1Ptr_ = GenerateTicks(&axisPtr->majorSweep_);
+  axisPtr->t1Ptr_ = axisPtr->generateTicks(&axisPtr->majorSweep_);
   if (axisPtr->t2Ptr_)
     free(axisPtr->t2Ptr_);
-  axisPtr->t2Ptr_ = GenerateTicks(&axisPtr->minorSweep_);
+  axisPtr->t2Ptr_ = axisPtr->generateTicks(&axisPtr->minorSweep_);
 
   if (ops->showTicks) {
     Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : axisPtr->t1Ptr_;
