@@ -75,7 +75,6 @@ TEA_ADD_SOURCES([
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C
-	bltGrAxisOp.C
 	bltGrAxisOption.C
 	bltGrVAxis.C
 	bltGrVAxisOp.C
