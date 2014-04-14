@@ -156,8 +156,6 @@ class Axis {
   Tcl_HashEntry* hashPtr_;
   unsigned int flags;		
 
-  // Fields specific to axes
-
   const char *detail_;
   int refCount_;
   Point2d titlePos_;
@@ -175,8 +173,6 @@ class Axis {
   Ticks* t2Ptr_;
   TickSweep minorSweep_;
   TickSweep majorSweep_;
-
-  // The following fields are specific to logical axes
 
   int margin_;
   Blt_ChainLink link;
@@ -212,7 +208,7 @@ class Axis {
   void offsets(int, int, AxisInfo*);
 
  public:
-  Axis(Graph*, const char*, int);
+  Axis(Graph*, const char*, int, Tcl_HashEntry*);
   virtual ~Axis();
 
   ClassId classId() {return classId_;}

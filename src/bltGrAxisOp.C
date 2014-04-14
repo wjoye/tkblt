@@ -314,10 +314,10 @@ static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
   }
 
-  Axis* axisPtr = new Axis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE);
+  Axis* axisPtr = new Axis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE, hPtr);
   if (!axisPtr)
     return TCL_ERROR;
-  axisPtr->hashPtr_ = hPtr;
+
   Tcl_SetHashValue(hPtr, axisPtr);
 
   if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {

@@ -181,7 +181,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-Axis::Axis(Graph* graphPtr, const char* name, int margin)
+Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
 {
   ops_ = (AxisOptions*)calloc(1, sizeof(AxisOptions));
   AxisOptions* ops = (AxisOptions*)ops_;
@@ -192,7 +192,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin)
   className_ = dupstr("none");
 
   use_ =0;
-  hashPtr_ =NULL;
+  hashPtr_ = hPtr;
   flags =0;		
 
   /* Fields specific to axes. */

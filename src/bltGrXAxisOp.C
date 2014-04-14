@@ -65,16 +65,14 @@ int Blt_CreateAxes(Graph* graphPtr)
       Tcl_CreateHashEntry(&graphPtr->axes.table, axisNames[ii].name, &isNew);
     Blt_Chain chain = Blt_Chain_Create();
 
-    Axis* axisPtr = new Axis(graphPtr, axisNames[ii].name, ii);
+    Axis* axisPtr = new Axis(graphPtr, axisNames[ii].name, ii, hPtr);
     if (!axisPtr)
       return TCL_ERROR;
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
 
-    axisPtr->hashPtr_ = hPtr;
     Tcl_SetHashValue(hPtr, axisPtr);
 
     axisPtr->refCount_ = 1;
-    axisPtr->margin_ = ii;
     axisPtr->use_ =1;
     
     axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
