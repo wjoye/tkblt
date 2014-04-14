@@ -805,10 +805,10 @@ Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y)
       continue;
 
     if (ops->showTicks) {
-      Blt_ChainLink link;
+      
 
-      for (link = Blt_Chain_FirstLink(axisPtr->tickLabels_); link != NULL; 
-	   link = Blt_Chain_NextLink(link)) {	
+      for (Blt_ChainLink link=Blt_Chain_FirstLink(axisPtr->tickLabels_);
+	   link; link = Blt_Chain_NextLink(link)) {	
 	Point2d t;
 	double rw, rh;
 	Point2d bbox[5];
