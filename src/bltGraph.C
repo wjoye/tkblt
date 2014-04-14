@@ -57,8 +57,6 @@ using namespace Blt;
 #define MARKER_ABOVE	0	/* Draw markers designated to rest above
 				 * elements, grids, legend, etc. */
 
-// Defs
-
 extern "C" {
   int Blt_GraphCmdInitProc(Tcl_Interp* interp);
   Tcl_ObjCmdProc Blt_GraphInstCmdProc;
@@ -302,9 +300,8 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
 					       PickEntry, Blt_GraphTags);
   graphPtr->legend = new Legend(graphPtr);
+  graphPtr->crosshairs = new Crosshairs(graphPtr);
 
-  if (Blt_CreateCrosshairs(graphPtr) != TCL_OK)
-    goto error;
   if (Blt_CreatePen(graphPtr, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
       TCL_OK)
     goto error;
@@ -351,11 +348,14 @@ static void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
 
-  Blt_DestroyCrosshairs(graphPtr);
   Blt::DestroyMarkers(graphPtr);
+
+  if (graphPtr->crosshairs)
+    delete graphPtr->crosshairs;
   Blt_DestroyElements(graphPtr);  // must come before legend and others
   if (graphPtr->legend)
     delete graphPtr->legend;
+
   Blt_DestroyAxes(graphPtr);
   Blt_DestroyPens(graphPtr);
   Blt_DestroyPageSetup(graphPtr);

@@ -50,13 +50,18 @@ typedef struct {
   XPoint hotSpot;
 } CrosshairsOptions;
 
-struct _Crosshairs {
+class Crosshairs {
+ public:
   Graph* graphPtr_;
   Tk_OptionTable optionTable_;
   void* ops_;
-  int visible;
-  XSegment segArr[2];
-  GC gc;
+  int visible_;
+  XSegment segArr_[2];
+  GC gc_;
+
+ public:
+  Crosshairs(Graph*);
+  virtual ~Crosshairs();
 };
 
 #endif
