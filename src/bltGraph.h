@@ -391,14 +391,6 @@ extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts,
 			      int nScreenPts);
 
 
-// Crosshairs
-extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			    Tcl_Obj* const objv[]);
-extern int Blt_CreateCrosshairs(Graph* graphPtr);
-extern void Blt_DestroyCrosshairs(Graph* graphPtr);
-extern void Blt_DisableCrosshairs(Graph* graphPtr);
-extern void Blt_EnableCrosshairs(Graph* graphPtr);
-
 // Postscript
 extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj* const objv[]);

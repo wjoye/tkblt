@@ -27,7 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
@@ -48,6 +47,8 @@ extern "C" {
 #include "bltGrMarkerOp.h"
 #include "bltGrLegd.h"
 #include "bltGrLegdOp.h"
+#include "bltGrHairs.h"
+#include "bltGrHairsOp.h"
 
 using namespace Blt;
 

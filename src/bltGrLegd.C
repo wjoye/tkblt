@@ -29,13 +29,12 @@
 
 extern "C" {
 #include "bltGraph.h"
-#include "bltOp.h"
 };
 
 #include "bltGrLegd.h"
-#include "bltConfig.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
+#include "bltGrHairsOp.h"
 
 static void SelectCmdProc(ClientData);
 static Tcl_IdleProc DisplayProc;
