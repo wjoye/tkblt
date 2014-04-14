@@ -62,6 +62,10 @@ class Crosshairs {
  public:
   Crosshairs(Graph*);
   virtual ~Crosshairs();
+
+  void configure();
+  void on();
+  void off();
 };
 
 #endif

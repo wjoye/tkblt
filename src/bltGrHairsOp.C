@@ -37,10 +37,6 @@ extern "C" {
 
 #include "bltGrHairs.h"
 
-extern void ConfigureCrosshairs(Graph* graphPtr);
-extern void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr);
-extern void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr);
-
 static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[])
 {
@@ -64,7 +60,7 @@ static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     }
 
     graphPtr->flags |= mask;
-    ConfigureCrosshairs(graphPtr);
+    chPtr->configure();
 
     break; 
   }
@@ -127,7 +123,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   if (ops->hide) {
-    TurnOnHairs(graphPtr, chPtr);
+    chPtr->on();
     ops->hide = 0;
   }
   return TCL_OK;
@@ -140,7 +136,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   if (!ops->hide) {
-    TurnOffHairs(graphPtr->tkwin, chPtr);
+    chPtr->off();
     ops->hide = 1;
   }
   return TCL_OK;
@@ -154,9 +150,9 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 
   ops->hide = (ops->hide == 0);
   if (ops->hide)
-    TurnOffHairs(graphPtr->tkwin, chPtr);
+    chPtr->off();
   else
-    TurnOnHairs(graphPtr, chPtr);
+    chPtr->on();
 
   return TCL_OK;
 }
@@ -184,5 +180,20 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
   return (*proc)(graphPtr, interp, objc, objv);
 }
 
-// Support
+void Blt_EnableCrosshairs(Graph* graphPtr)
+{
+  Crosshairs* chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  if (!ops->hide)
+    graphPtr->crosshairs->on();
+}
+
+void Blt_DisableCrosshairs(Graph* graphPtr)
+{
+  Crosshairs* chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  if (!ops->hide)
+    graphPtr->crosshairs->off();
+}
+
 
