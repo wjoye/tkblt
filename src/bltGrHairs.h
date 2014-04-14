@@ -42,15 +42,20 @@ extern "C" {
 #include "bltGraph.h"
 };
 
-struct _Crosshairs {
-  Tk_OptionTable optionTable;
-  XPoint hotSpot;
-  int visible;
-  int hide;
-  Blt_Dashes dashes;
-  int lineWidth;
-  XSegment segArr[2];
+typedef struct {
   XColor* colorPtr;
+  Blt_Dashes dashes;
+  int hide;
+  int lineWidth;
+  XPoint hotSpot;
+} CrosshairsOptions;
+
+struct _Crosshairs {
+  Graph* graphPtr_;
+  Tk_OptionTable optionTable_;
+  void* ops_;
+  int visible;
+  XSegment segArr[2];
   GC gc;
 };
 

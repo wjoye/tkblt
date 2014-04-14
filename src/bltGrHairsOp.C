@@ -52,7 +52,7 @@ static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)chPtr, chPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)chPtr->ops_, chPtr->optionTable_, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -90,8 +90,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Crosshairs* chPtr = graphPtr->crosshairs;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)chPtr, 
-				      chPtr->optionTable,
+				      (char*)chPtr->ops_, 
+				      chPtr->optionTable_,
 				      objv[3], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -106,8 +106,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   Crosshairs* chPtr = graphPtr->crosshairs;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)chPtr, 
-				       chPtr->optionTable, 
+				       (char*)chPtr->ops_, 
+				       chPtr->optionTable_, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)
@@ -124,10 +124,11 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
 		int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
-  if (chPtr->hide) {
+  if (ops->hide) {
     TurnOnHairs(graphPtr, chPtr);
-    chPtr->hide = 0;
+    ops->hide = 0;
   }
   return TCL_OK;
 }
@@ -136,10 +137,11 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
-  if (!chPtr->hide) {
+  if (!ops->hide) {
     TurnOffHairs(graphPtr->tkwin, chPtr);
-    chPtr->hide = 1;
+    ops->hide = 1;
   }
   return TCL_OK;
 }
@@ -148,9 +150,10 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
-  chPtr->hide = (chPtr->hide == 0);
-  if (chPtr->hide)
+  ops->hide = (ops->hide == 0);
+  if (ops->hide)
     TurnOffHairs(graphPtr->tkwin, chPtr);
   else
     TurnOnHairs(graphPtr, chPtr);

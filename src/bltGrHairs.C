@@ -41,36 +41,38 @@ extern void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr);
 
 #define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
 
-// OptionSpecs
-
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
-   "green", -1, Tk_Offset(Crosshairs, colorPtr), 0, NULL, 0},
+   "green", -1, Tk_Offset(CrosshairsOptions, colorPtr), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
-   NULL, -1, Tk_Offset(Crosshairs, dashes), 
+   NULL, -1, Tk_Offset(CrosshairsOptions, dashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "yes", -1, Tk_Offset(Crosshairs, hide), 0, NULL, 0},
+   "yes", -1, Tk_Offset(CrosshairsOptions, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
-   "0", -1, Tk_Offset(Crosshairs, lineWidth), 0, NULL, 0},
+   "0", -1, Tk_Offset(CrosshairsOptions, lineWidth), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-position", "position", "Position", 
-   NULL, -1, Tk_Offset(Crosshairs, hotSpot), 
+   NULL, -1, Tk_Offset(CrosshairsOptions, hotSpot), 
    TK_OPTION_NULL_OK, &pointObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-// Create
-
 int Blt_CreateCrosshairs(Graph* graphPtr)
 {
   Crosshairs* chPtr = (Crosshairs*)calloc(1, sizeof(Crosshairs));
-  chPtr->hide = 1;
-  chPtr->hotSpot.x = chPtr->hotSpot.y = -1;
+  chPtr->ops_ = (CrosshairsOptions*)calloc(1, sizeof(CrosshairsOptions));
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+
+  chPtr->graphPtr_ = graphPtr;
   graphPtr->crosshairs = chPtr;
 
-  chPtr->optionTable = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  return Tk_InitOptions(graphPtr->interp, (char*)chPtr, chPtr->optionTable, 
-			graphPtr->tkwin);
+  ops->hotSpot.x =-1;
+  ops->hotSpot.y = -1;
+
+  chPtr->optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  Tk_InitOptions(graphPtr->interp, (char*)chPtr->ops_, chPtr->optionTable_, graphPtr->tkwin);
+
+  return TCL_OK;
 }
 
 void Blt_DestroyCrosshairs(Graph* graphPtr)
@@ -82,7 +84,11 @@ void Blt_DestroyCrosshairs(Graph* graphPtr)
   if (chPtr->gc)
     Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
 
-  Tk_FreeConfigOptions((char*)chPtr, chPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)chPtr->ops_, chPtr->optionTable_, graphPtr->tkwin);
+
+  if (chPtr->ops_)
+    free(chPtr->ops_);
+
   free(chPtr);
 }
 
@@ -91,6 +97,7 @@ void Blt_DestroyCrosshairs(Graph* graphPtr)
 void ConfigureCrosshairs(Graph* graphPtr)
 {
   Crosshairs *chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   // Turn off the crosshairs temporarily. This is in case the new
   // configuration changes the size, style, or position of the lines.
@@ -101,18 +108,18 @@ void ConfigureCrosshairs(Graph* graphPtr)
 
   unsigned long int pixel = Tk_3DBorderColor(graphPtr->plotBg)->pixel;
   gcValues.background = pixel;
-  gcValues.foreground = (pixel ^ chPtr->colorPtr->pixel);
+  gcValues.foreground = (pixel ^ ops->colorPtr->pixel);
 
-  gcValues.line_width = LineWidth(chPtr->lineWidth);
+  gcValues.line_width = LineWidth(ops->lineWidth);
   unsigned long gcMask = 
     (GCForeground | GCBackground | GCFunction | GCLineWidth);
-  if (LineIsDashed(chPtr->dashes)) {
+  if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
   GC newGC = Blt_GetPrivateGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (LineIsDashed(chPtr->dashes))
-    Blt_SetDashes(graphPtr->display, newGC, &chPtr->dashes);
+  if (LineIsDashed(ops->dashes))
+    Blt_SetDashes(graphPtr->display, newGC, &ops->dashes);
 
   if (chPtr->gc != NULL)
     Blt_FreePrivateGC(graphPtr->display, chPtr->gc);
@@ -120,14 +127,14 @@ void ConfigureCrosshairs(Graph* graphPtr)
   chPtr->gc = newGC;
 
   // Are the new coordinates on the graph?
-  chPtr->segArr[0].x2 = chPtr->segArr[0].x1 = chPtr->hotSpot.x;
+  chPtr->segArr[0].x2 = chPtr->segArr[0].x1 = ops->hotSpot.x;
   chPtr->segArr[0].y1 = graphPtr->bottom;
   chPtr->segArr[0].y2 = graphPtr->top;
-  chPtr->segArr[1].y2 = chPtr->segArr[1].y1 = chPtr->hotSpot.y;
+  chPtr->segArr[1].y2 = chPtr->segArr[1].y1 = ops->hotSpot.y;
   chPtr->segArr[1].x1 = graphPtr->left;
   chPtr->segArr[1].x2 = graphPtr->right;
 
-  if (!chPtr->hide)
+  if (!ops->hide)
     TurnOnHairs(graphPtr, chPtr);
 }
 
@@ -135,13 +142,17 @@ void ConfigureCrosshairs(Graph* graphPtr)
 
 void Blt_EnableCrosshairs(Graph* graphPtr)
 {
-  if (!graphPtr->crosshairs->hide)
+  Crosshairs* chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  if (!ops->hide)
     TurnOnHairs(graphPtr, graphPtr->crosshairs);
 }
 
 void Blt_DisableCrosshairs(Graph* graphPtr)
 {
-  if (!graphPtr->crosshairs->hide)
+  Crosshairs* chPtr = graphPtr->crosshairs;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  if (!ops->hide)
     TurnOffHairs(graphPtr->tkwin, graphPtr->crosshairs);
 }
 
@@ -156,10 +167,11 @@ void TurnOffHairs(Tk_Window tkwin, Crosshairs *chPtr)
 
 void TurnOnHairs(Graph* graphPtr, Crosshairs *chPtr)
 {
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
   if (Tk_IsMapped(graphPtr->tkwin) && (!chPtr->visible)) {
-    if (!PointInGraph(graphPtr, chPtr->hotSpot.x, chPtr->hotSpot.y)) {
-      return;		/* Coordinates are off the graph */
-    }
+    if (!PointInGraph(graphPtr, ops->hotSpot.x, ops->hotSpot.y))
+      return;
+
     XDrawSegments(graphPtr->display, Tk_WindowId(graphPtr->tkwin),
 		  chPtr->gc, chPtr->segArr, 2);
     chPtr->visible = 1;
