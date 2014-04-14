@@ -30,8 +30,8 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GR_AXIS_H
-#define _BLT_GR_AXIS_H
+#ifndef ___Blt_GrAxis_h__
+#define ___Blt_GrAxis_h__
 
 #include <iostream>
 #include <sstream>
@@ -145,7 +145,6 @@ typedef struct {
   Tk_Font tickFont;
   Tk_Font titleFont;
   XColor* titleColor;
-
 } AxisOptions;
 
 class Axis {

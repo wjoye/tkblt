@@ -5532,6 +5532,10 @@ done
 	bltGrAxis.C
 	bltGrAxisOp.C
 	bltGrAxisOption.C
+	bltGrVAxis.C
+	bltGrVAxisOp.C
+	bltGrXAxis.C
+	bltGrXAxisOp.C
 	bltGrElemOp.C
 	bltGrElemOption.C
 	bltGrElem.C
