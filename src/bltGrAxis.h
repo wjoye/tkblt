@@ -101,8 +101,6 @@ typedef struct {
   int hide;
   int showTicks;
 
-  // Fields specific to axes
-
   double windowSize;
   const char *formatCmd;
   int descending;
@@ -128,8 +126,6 @@ typedef struct {
   int tickLength;
   const char *title;
   int titleAlternate;
-
-  // The following fields are specific to logical axes
 
   XColor* activeFgColor;
   int activeRelief;

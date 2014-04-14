@@ -77,7 +77,6 @@ TEA_ADD_SOURCES([
 	bltGrAxis.C
 	bltGrAxisOp.C
 	bltGrAxisOption.C
-	bltGrVAxisOp.C
 	bltGrXAxisOp.C
 	bltGrElemOp.C
 	bltGrElemOption.C

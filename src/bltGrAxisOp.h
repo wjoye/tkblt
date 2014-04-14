@@ -30,31 +30,12 @@
 #ifndef __BltGrAxisOp_h__
 #define __BltGrAxisOp_h__
 
-extern int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
-		      int objc, Tcl_Obj* const objv[]);
-extern int AxisConfigureOp(Tcl_Interp* interp, Axis* axisPtr, 
-			   int objc, Tcl_Obj* const objv[]);
-extern int AxisActivateOp(Tcl_Interp* interp, Axis* axisPtr, 
-			  int objc, Tcl_Obj* const objv[]);
-extern int AxisInvTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-			      int objc, Tcl_Obj* const objv[]);
-extern int AxisLimitsOp(Tcl_Interp* interp, Axis* axisPtr, 
-			int objc, Tcl_Obj* const objv[]);
-extern int AxisMarginOp(Tcl_Interp* interp, Axis* axisPtr, 
-			int objc, Tcl_Obj* const objv[]);
-extern int AxisTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-			   int objc, Tcl_Obj* const objv[]);
-extern int AxisTypeOp(Tcl_Interp* interp, Axis* axisPtr, 
-		      int objc, Tcl_Obj* const objv[]);
-extern int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr, 
+extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 
 extern Tcl_FreeProc FreeAxis;
-extern double AdjustViewport(double offset, double windowSize);
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr);
-extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axis,
-			    int objc, Tcl_Obj* const objv[]);
 
 extern void Blt_ResetAxes(Graph* graphPtr);
 extern void Blt_MapAxes(Graph* graphPtr);

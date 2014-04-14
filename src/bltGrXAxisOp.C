@@ -35,9 +35,27 @@ extern "C" {
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 
+extern int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
+		      int objc, Tcl_Obj* const objv[]);
+extern int AxisConfigureOp(Tcl_Interp* interp, Axis* axisPtr, 
+			   int objc, Tcl_Obj* const objv[]);
+extern int AxisActivateOp(Tcl_Interp* interp, Axis* axisPtr, 
+			  int objc, Tcl_Obj* const objv[]);
+extern int AxisInvTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
+			      int objc, Tcl_Obj* const objv[]);
+extern int AxisLimitsOp(Tcl_Interp* interp, Axis* axisPtr, 
+			int objc, Tcl_Obj* const objv[]);
+extern int AxisMarginOp(Tcl_Interp* interp, Axis* axisPtr, 
+			int objc, Tcl_Obj* const objv[]);
+extern int AxisTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
+			   int objc, Tcl_Obj* const objv[]);
+extern int AxisTypeOp(Tcl_Interp* interp, Axis* axisPtr, 
+		      int objc, Tcl_Obj* const objv[]);
+extern int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr, 
+		      int objc, Tcl_Obj* const objv[]);
+
 static int lastMargin;
 
-// Default
 
 int Blt_CreateAxes(Graph* graphPtr)
 {

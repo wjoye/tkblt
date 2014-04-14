@@ -40,7 +40,6 @@ extern "C" {
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 #include "bltGrXAxisOp.h"
-#include "bltGrVAxisOp.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"
 #include "bltGrElem.h"
@@ -870,7 +869,7 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
 static Blt_OpSpec graphOps[] =
   {
-    {"axis",         1, (void*)Blt_VAxisOp,        2, 0, "oper ?args?",},
+    {"axis",         1, (void*)Blt_AxisOp,        2, 0, "oper ?args?",},
     {"bar",          2, (void*)BarOp,             2, 0, "oper ?args?",},
     {"cget",         2, (void*)CgetOp,            3, 3, "option",},
     {"configure",    2, (void*)ConfigureOp,       2, 0, "?option value?...",},
