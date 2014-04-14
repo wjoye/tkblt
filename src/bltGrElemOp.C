@@ -47,16 +47,54 @@ extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr,
 
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 static void DestroyElement(Element* elemPtr);
-static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[]);
 static void FreeElement(char* data);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
-typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			       Tcl_Obj *const *objv);
 
 // Create
+
+static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+			       Element* elemPtr, 
+			       int objc, Tcl_Obj* const objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    elemPtr->flags |= mask;
+    elemPtr->flags |= MAP_ITEM;
+    graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
+    if (elemPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
 
 static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj *const *objv, ClassId classId)
@@ -163,49 +201,6 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   } 
   else
     return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
-}
-
-static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[])
-{
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    elemPtr->flags |= mask;
-    elemPtr->flags |= MAP_ITEM;
-    graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
-    if (elemPtr->configure() != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
 }
 
 // Ops
@@ -581,6 +576,9 @@ static Blt_OpSpec elemOps[] = {
   {"type",       1, (void*)TypeOp,       4, 4, "elemName",},
 };
 static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);
+
+typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+			       Tcl_Obj *const *objv);
 
 int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[], ClassId classId)

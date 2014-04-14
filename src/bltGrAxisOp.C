@@ -47,15 +47,56 @@ static int GetAxisScrollInfo(Tcl_Interp* interp,
 			     int objc, Tcl_Obj* const objv[],
 			     double *offsetPtr, double windowSize,
 			     double scrollUnits, double scale);
-static int AxisObjConfigure(Tcl_Interp* interp, Axis* axis,
-			    int objc, Tcl_Obj* const objv[]);
 
 static double Clamp(double x) 
 {
   return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
 }
 
-// Ops
+static int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
+			    int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = axisPtr->graphPtr_;
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    axisPtr->flags |= mask;
+    axisPtr->flags |= DIRTY;
+    graphPtr->flags |= REDRAW_WORLD | MAP_WORLD | RESET_AXES | CACHE_DIRTY;
+    if (axisPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
+
+// Common Ops
 
 int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
 	       int objc, Tcl_Obj* const objv[])
@@ -598,49 +639,6 @@ void Blt_DestroyAxes(Graph* graphPtr)
 
   Tcl_DeleteHashTable(&graphPtr->axes.tagTable);
   Blt_Chain_Destroy(graphPtr->axes.displayList);
-}
-
-static int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
-			    int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = axisPtr->graphPtr_;
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    axisPtr->flags |= mask;
-    axisPtr->flags |= DIRTY;
-    graphPtr->flags |= REDRAW_WORLD | MAP_WORLD | RESET_AXES | CACHE_DIRTY;
-    if (axisPtr->configure() != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
 }
 
 int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 

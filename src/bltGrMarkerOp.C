@@ -42,19 +42,54 @@ extern "C" {
 
 using namespace Blt;
 
-// Defs
-
-typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			      Tcl_Obj* const objv[]);
-static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
-			       Marker* markerPtr,
-			       int objc, Tcl_Obj* const objv[]);
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
 static int IsElementHidden(Graph*, Marker*);
 static void FreeMarker(char* dataPtr);
 
-// Create
+static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
+			       Marker* markerPtr,
+			       int objc, Tcl_Obj* const objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)markerPtr->ops(), 
+			markerPtr->optionTable(), 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    markerPtr->flags |= mask;
+    markerPtr->flags |= MAP_ITEM;
+    graphPtr->flags |= CACHE_DIRTY;
+    if (markerPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
 
 static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp, 
 			int objc, Tcl_Obj* const objv[])
@@ -156,50 +191,6 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   } 
   else
     return MarkerObjConfigure(interp, graphPtr, markerPtr, objc-4, objv+4);
-}
-
-static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
-			       Marker* markerPtr,
-			       int objc, Tcl_Obj* const objv[])
-{
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)markerPtr->ops(), 
-			markerPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    markerPtr->flags |= mask;
-    markerPtr->flags |= MAP_ITEM;
-    graphPtr->flags |= CACHE_DIRTY;
-    if (markerPtr->configure() != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
 }
 
 // Ops
@@ -438,6 +429,9 @@ static Blt_OpSpec markerOps[] =
     {"type",      1, (void*)TypeOp,   4, 4, "marker",},
   };
 static int nMarkerOps = sizeof(markerOps) / sizeof(Blt_OpSpec);
+
+typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+			      Tcl_Obj* const objv[]);
 
 int Blt::MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])

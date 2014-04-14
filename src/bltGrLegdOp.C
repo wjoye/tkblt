@@ -38,51 +38,6 @@ extern "C" {
 static Tk_LostSelProc LostSelectionProc;
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[]);
-static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			      int objc, Tcl_Obj* const objv[]);
-typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
-			      int objc, Tcl_Obj* const objv[]);
-
-
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
-		  int objc, Tcl_Obj* const objv[])
-{
-  if (objc != 4) {
-    Tcl_WrongNumArgs(interp, 2, objv, "cget option");
-    return TCL_ERROR;
-  }
-
-  Legend* legendPtr = graphPtr->legend;
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)legendPtr->ops(), 
-				      legendPtr->optionTable(),
-				      objv[3], graphPtr->tkwin);
-  if (objPtr == NULL)
-    return TCL_ERROR;
-  else
-    Tcl_SetObjResult(interp, objPtr);
-  return TCL_OK;
-}
-
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
-		       int objc, Tcl_Obj* const objv[])
-{
-  Legend* legendPtr = graphPtr->legend;
-  if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)legendPtr->ops(), 
-				       legendPtr->optionTable(), 
-				       (objc == 4) ? objv[3] : NULL, 
-				       graphPtr->tkwin);
-    if (objPtr == NULL)
-      return TCL_ERROR;
-    else
-      Tcl_SetObjResult(interp, objPtr);
-    return TCL_OK;
-  } 
-  else
-    return LegendObjConfigure(interp, graphPtr, objc-3, objv+3);
-}
 
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[])
@@ -124,6 +79,46 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     Tcl_DecrRefCount(errorResult);
     return TCL_ERROR;
   }
+}
+
+static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+		  int objc, Tcl_Obj* const objv[])
+{
+  if (objc != 4) {
+    Tcl_WrongNumArgs(interp, 2, objv, "cget option");
+    return TCL_ERROR;
+  }
+
+  Legend* legendPtr = graphPtr->legend;
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
+				      (char*)legendPtr->ops(), 
+				      legendPtr->optionTable(),
+				      objv[3], graphPtr->tkwin);
+  if (objPtr == NULL)
+    return TCL_ERROR;
+  else
+    Tcl_SetObjResult(interp, objPtr);
+  return TCL_OK;
+}
+
+static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
+		       int objc, Tcl_Obj* const objv[])
+{
+  Legend* legendPtr = graphPtr->legend;
+  if (objc <= 4) {
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
+				       (char*)legendPtr->ops(), 
+				       legendPtr->optionTable(), 
+				       (objc == 4) ? objv[3] : NULL, 
+				       graphPtr->tkwin);
+    if (objPtr == NULL)
+      return TCL_ERROR;
+    else
+      Tcl_SetObjResult(interp, objPtr);
+    return TCL_OK;
+  } 
+  else
+    return LegendObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
 // Ops
@@ -310,6 +305,9 @@ static Blt_OpSpec legendOps[] =
     {"selection",    1, (void*)SelectionOp,     3, 0, "args"},
   };
 static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
+
+typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
+			      int objc, Tcl_Obj* const objv[]);
 
 int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])

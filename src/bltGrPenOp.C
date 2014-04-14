@@ -37,16 +37,49 @@ extern "C" {
 #include "bltGrPenLine.h"
 #include "bltGrPenBar.h"
 
-// Defs
-
 static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			 Pen **penPtrPtr);
-static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
-			   int objc, Tcl_Obj* const objv[]);
-typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc, 
-			   Tcl_Obj* const objv[]);
 
-// Create
+static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
+			   int objc, Tcl_Obj* const objv[])
+{
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)penPtr->ops(), penPtr->optionTable(), 
+			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    graphPtr->flags |= mask;
+    graphPtr->flags |= CACHE_DIRTY;
+    if (penPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+    Blt_EventuallyRedrawGraph(graphPtr);
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
 
 int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp, 
 		  const char* penName, ClassId classId,
@@ -138,49 +171,6 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
     return PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4);
 }
 
-static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
-			   int objc, Tcl_Obj* const objv[])
-{
-  Tk_SavedOptions savedOptions;
-  int mask =0;
-  int error;
-  Tcl_Obj* errorResult;
-
-  for (error=0; error<=1; error++) {
-    if (!error) {
-      if (Tk_SetOptions(interp, (char*)penPtr->ops(), penPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
-	  != TCL_OK)
-	continue;
-    }
-    else {
-      errorResult = Tcl_GetObjResult(interp);
-      Tcl_IncrRefCount(errorResult);
-      Tk_RestoreSavedOptions(&savedOptions);
-    }
-
-    graphPtr->flags |= mask;
-    graphPtr->flags |= CACHE_DIRTY;
-    if (penPtr->configure() != TCL_OK)
-      return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
-
-    break; 
-  }
-
-  if (!error) {
-    Tk_FreeSavedOptions(&savedOptions);
-    return TCL_OK;
-  }
-  else {
-    Tcl_SetObjResult(interp, errorResult);
-    Tcl_DecrRefCount(errorResult);
-    return TCL_ERROR;
-  }
-}
-
-// Ops
-
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
@@ -269,6 +259,9 @@ static Blt_OpSpec penOps[] =
     {"type", 1, (void*)TypeOp, 4, 4, "penName",},
   };
 static int nPenOps = sizeof(penOps) / sizeof(Blt_OpSpec);
+
+typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc, 
+			   Tcl_Obj* const objv[]);
 
 int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, 
 	      int objc, Tcl_Obj* const objv[])
