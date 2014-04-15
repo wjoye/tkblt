@@ -289,6 +289,4 @@ extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
-extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
-
 #endif

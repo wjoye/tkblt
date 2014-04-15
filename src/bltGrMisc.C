@@ -96,28 +96,6 @@ int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
   return (count & 0x01);
 }
 
-/*
- *---------------------------------------------------------------------------
- * Generates a bounding box representing the plotting area of the
- * graph. This data structure is used to clip the points and line
- * segments of the line element.
- * The clip region is the plotting area plus such arbitrary extra space.
- * The reason we clip with a bounding box larger than the plot area is so
- * that symbols will be drawn even if their center point isn't in the
- * plotting area.
- *---------------------------------------------------------------------------
- */
-
-void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
-{
-  regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
-  regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);
-  regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
-			      graphPtr->xPad);
-  regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
-			       graphPtr->yPad);
-}
-
 static int ClipTest (double ds, double dr, double *t1, double *t2)
 {
   double t;

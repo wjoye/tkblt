@@ -40,6 +40,17 @@
 #include <tkInt.h>
 #endif
 
+#define MARGIN_NONE	-1
+#define MARGIN_BOTTOM	0		/* x */
+#define MARGIN_LEFT	1 		/* y */
+#define MARGIN_TOP	2		/* x2 */
+#define MARGIN_RIGHT	3		/* y2 */
+
+#define rightMargin	margins[MARGIN_RIGHT]
+#define leftMargin	margins[MARGIN_LEFT]
+#define topMargin	margins[MARGIN_TOP]
+#define bottomMargin	margins[MARGIN_BOTTOM]
+
 class Graph;
 
 typedef struct {
