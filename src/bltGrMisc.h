@@ -30,6 +30,16 @@
 #ifndef __BltGrMisc_h__
 #define __BltGrMisc_h__
 
+#include <tcl.h>
+#ifdef USE_TCL_STUBS
+#include <tclInt.h>
+#endif
+
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
 extern int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, 
@@ -44,6 +54,5 @@ extern GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask,
 extern void Blt_FreePrivateGC(Display *display, GC gc);
 extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
 extern long Blt_MaxRequestSize (Display *display, size_t elemSize);
-
 
 #endif
