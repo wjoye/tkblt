@@ -27,6 +27,10 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+extern "C" {
+#include "bltInt.h"
+};
+
 #include "bltGrMarker.h"
 #include "bltGrMarkerOption.h"
 

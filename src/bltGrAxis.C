@@ -30,6 +30,7 @@
 #include "bltMath.h"
 
 extern "C" {
+#include "bltInt.h"
 #include "bltGraph.h"
 }
 

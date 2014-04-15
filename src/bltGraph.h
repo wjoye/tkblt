@@ -30,7 +30,6 @@
 #ifndef __BltGraph_h__
 #define __BltGraph_h__
 
-#include "bltInt.h"
 #include "bltGrMisc.h"
 #include "bltBind.h"
 #include "bltChain.h"
@@ -48,7 +47,7 @@
 #define topMargin	margins[MARGIN_TOP]
 #define bottomMargin	margins[MARGIN_BOTTOM]
 
-typedef struct _Graph Graph;
+class Graph;
 class Crosshairs;
 class Axis;
 class Element;
@@ -109,7 +108,8 @@ typedef struct {
   Tcl_HashTable tagTable;
 } Component;
 
-struct _Graph {
+class Graph {
+ public:
   Tcl_Interp* interp;
   Tk_Window tkwin;
   Display *display;

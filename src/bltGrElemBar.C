@@ -29,6 +29,10 @@
 
 #include "bltMath.h"
 
+extern "C" {
+#include "bltInt.h"
+};
+
 #include "bltGrElemBar.h"
 #include "bltGrElemOption.h"
 #include "bltGrPenOp.h"

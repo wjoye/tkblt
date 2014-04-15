@@ -42,6 +42,8 @@ extern "C" {
 #include "bltGraph.h"
 }
 
+#include "bltGrMisc.h"
+
 typedef struct {
   int axis;
   int t1;
