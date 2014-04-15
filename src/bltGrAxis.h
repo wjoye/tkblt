@@ -52,7 +52,8 @@ typedef struct {
 typedef struct {
   const char *name;
   ClassId classId;
-  int margin, invertMargin;
+  int margin;
+  int invertMargin;
 } AxisName;
 
 extern AxisName axisNames[];

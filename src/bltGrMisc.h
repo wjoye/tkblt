@@ -62,6 +62,12 @@ typedef struct {
   short int height;
 } Dim2D;
 
+typedef enum {
+  CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
+  CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,
+  CID_MARKER_TEXT, CID_MARKER_WINDOW, CID_LEGEND_ENTRY,
+} ClassId;
+
 extern char* dupstr(const char*);
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
