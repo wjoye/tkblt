@@ -571,7 +571,7 @@ void Axis::draw(Drawable drawable)
 	min_ = EXP10(min_);
 	max_ = EXP10(max_);
       }
-      Blt_UpdateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+      updateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
 			  viewMin, viewMax, worldWidth);
     }
     else {
@@ -583,7 +583,7 @@ void Axis::draw(Drawable drawable)
 	min_ = EXP10(min_);
 	max_ = EXP10(max_);
       }
-      Blt_UpdateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+      updateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
 			  viewMax, viewMin, worldWidth);
     }
   }
@@ -1638,5 +1638,24 @@ void Axis::print(Blt_Ps ps)
 			      (Blt_Dashes *)NULL, CapButt, JoinMiter);
     Blt_Ps_Draw2DSegments(ps, segments_, nSegments_);
   }
+}
+
+void Axis::updateScrollbar(Tcl_Interp* interp, Tcl_Obj *scrollCmdObjPtr,
+			   int first, int last, int width)
+{
+  double firstFract =0.0;
+  double lastFract = 1.0;
+  if (width > 0) {
+    firstFract = (double)first / (double)width;
+    lastFract = (double)last / (double)width;
+  }
+  Tcl_Obj *cmdObjPtr = Tcl_DuplicateObj(scrollCmdObjPtr);
+  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(firstFract));
+  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(lastFract));
+  Tcl_IncrRefCount(cmdObjPtr);
+  if (Tcl_EvalObjEx(interp, cmdObjPtr, TCL_EVAL_GLOBAL) != TCL_OK) {
+    Tcl_BackgroundError(interp);
+  }
+  Tcl_DecrRefCount(cmdObjPtr);
 }
 

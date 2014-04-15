@@ -43,5 +43,7 @@ extern GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask,
 	XGCValues *valuePtr);
 extern void Blt_FreePrivateGC(Display *display, GC gc);
 extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
+extern long Blt_MaxRequestSize (Display *display, size_t elemSize);
+
 
 #endif

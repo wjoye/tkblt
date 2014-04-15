@@ -206,6 +206,7 @@ class Axis {
   void makeLine(int, Segment2d*);
   void makeTick(double, int, int, Segment2d*);
   void offsets(int, int, AxisInfo*);
+  void updateScrollbar(Tcl_Interp*, Tcl_Obj*, int, int, int);
 
  public:
   Axis(Graph*, const char*, int, Tcl_HashEntry*);

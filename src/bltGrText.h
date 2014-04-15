@@ -68,6 +68,8 @@ extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable,
 			    int x, int y);
 extern void Blt_GetBoundingBox (int width, int height, float angle, 
 	double *widthPtr, double *heightPtr, Point2d *points);
+extern Point2d Blt_AnchorPoint (double x, double y, double width, 
+	double height, Tk_Anchor anchor);
 
 #define Blt_Ts_InitStyle(ts)			\
   ((ts).anchor = TK_ANCHOR_NW,			\

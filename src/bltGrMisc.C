@@ -384,27 +384,6 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
  * 	valid.
  *---------------------------------------------------------------------------
  */
-void Blt_UpdateScrollbar(Tcl_Interp* interp, Tcl_Obj *scrollCmdObjPtr,
-			 int first, int last, int width)
-{
-  Tcl_Obj *cmdObjPtr;
-  double firstFract, lastFract;
-
-  firstFract = 0.0, lastFract = 1.0;
-  if (width > 0) {
-    firstFract = (double)first / (double)width;
-    lastFract = (double)last / (double)width;
-  }
-  cmdObjPtr = Tcl_DuplicateObj(scrollCmdObjPtr);
-  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(firstFract));
-  Tcl_ListObjAppendElement(interp, cmdObjPtr, Tcl_NewDoubleObj(lastFract));
-  Tcl_IncrRefCount(cmdObjPtr);
-  if (Tcl_EvalObjEx(interp, cmdObjPtr, TCL_EVAL_GLOBAL) != TCL_OK) {
-    Tcl_BackgroundError(interp);
-  }
-  Tcl_DecrRefCount(cmdObjPtr);
-}
-
 /*
  *---------------------------------------------------------------------------
  *      Like Tk_GetGC, but doesn't share the GC with any other widget.  This

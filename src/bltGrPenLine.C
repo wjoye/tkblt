@@ -28,6 +28,7 @@
  */
 
 #include "bltGrPenLine.h"
+#include "bltGrMisc.h"
 
 typedef struct {
   const char* name;

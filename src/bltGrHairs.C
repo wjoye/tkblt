@@ -35,6 +35,7 @@ extern "C" {
 }
 
 #include "bltGrHairs.h"
+#include "bltGrMisc.h"
 
 #define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
 
