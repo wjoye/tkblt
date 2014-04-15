@@ -53,25 +53,21 @@ typedef struct {
 extern void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, 
 			       int textLen, unsigned int *widthPtr, 
 			       unsigned int *heightPtr);
-
 extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
 			      unsigned int *widthPtr, unsigned int *heightPtr);
-
 extern void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *tsPtr);
-
 extern void Blt_Ts_FreeStyle(Display *display, TextStyle *tsPtr);
-
 extern void Blt_DrawText(Tk_Window tkwin, Drawable drawable, 
 			 const char *string, TextStyle *tsPtr, 
 			 int x, int y);
-
 extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, 
 			  const char *string, TextStyle *tsPtr, 
 			  int x, int y, Dim2D * dimPtr);
-
 extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
 			    const char *text, int textLen, TextStyle *tsPtr,
 			    int x, int y);
+extern void Blt_GetBoundingBox (int width, int height, float angle, 
+	double *widthPtr, double *heightPtr, Point2d *points);
 
 #define Blt_Ts_InitStyle(ts)			\
   ((ts).anchor = TK_ANCHOR_NW,			\

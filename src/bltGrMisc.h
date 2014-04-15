@@ -38,5 +38,10 @@ extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			    int nInputPts, Point2d *outputPts);
 extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
 			       Segment2d *segments, int nSegments);
+extern int Blt_LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
+extern GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask,
+	XGCValues *valuePtr);
+extern void Blt_FreePrivateGC(Display *display, GC gc);
+extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
 
 #endif
