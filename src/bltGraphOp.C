@@ -55,6 +55,38 @@ extern "C" {
 using namespace Blt;
 
 extern void ConfigureGraph(Graph* graphPtr);
+extern int NewGraph(ClientData clientData, Tcl_Interp*interp, 
+		    int objc, Tcl_Obj* const objv[], ClassId classId);
+
+static Tcl_ObjCmdProc BarchartObjCmd;
+static Tcl_ObjCmdProc GraphObjCmd;
+
+int Blt_GraphCmdInitProc(Tcl_Interp* interp)
+{
+  static Blt_InitCmdSpec graphSpec = 
+    {"graph", GraphObjCmd, NULL, NULL};
+  static Blt_InitCmdSpec barchartSpec = 
+    {"barchart", BarchartObjCmd, NULL, NULL};
+
+  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
+    return TCL_ERROR;
+  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+
+static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+		       Tcl_Obj* const objv[])
+{
+  return NewGraph(clientData, interp, objc, objv, CID_ELEM_LINE);
+}
+
+static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+			  Tcl_Obj* const objv[])
+{
+  return NewGraph(clientData, interp, objc, objv, CID_ELEM_BAR);
+}
 
 int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 		      int objc, Tcl_Obj* const objv[])
@@ -377,8 +409,8 @@ static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
 typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			   Tcl_Obj* const objv[]);
 
-int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
-			 int objc, Tcl_Obj* const objv[])
+int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
+		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
   GraphCmdProc* proc = (GraphCmdProc*)Blt_GetOpFromObj(interp, nGraphOps, graphOps, BLT_OP_ARG1, objc, objv, 0);
@@ -391,3 +423,10 @@ int Blt_GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   return result;
 }
 
+// called by Tcl_DeleteCommand
+void GraphInstCmdDeleteProc(ClientData clientData)
+{
+  Graph* graphPtr = (Graph*)clientData;
+  if (!(graphPtr->flags & GRAPH_DELETED))
+    Tk_DestroyWindow(graphPtr->tkwin);
+}

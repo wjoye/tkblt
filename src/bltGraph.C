@@ -59,24 +59,14 @@ using namespace Blt;
 #define MARKER_ABOVE	0	/* Draw markers designated to rest above
 				 * elements, grids, legend, etc. */
 
-extern "C" {
-  int Blt_GraphCmdInitProc(Tcl_Interp* interp);
-};
-
 extern void ConfigureGraph(Graph* graphPtr);
 
 static Tcl_IdleProc DisplayGraph;
 static Tcl_FreeProc DestroyGraph;
 static Tk_EventProc GraphEventProc;
 
-static Tcl_ObjCmdProc BarchartObjCmd;
-static Tcl_ObjCmdProc GraphObjCmd;
-static Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
-
 static Blt_BindPickProc PickEntry;
 
-static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
-		    int objc, Tcl_Obj* const objv[], ClassId classId);
 static void AdjustAxisPointers(Graph* graphPtr);
 static void DrawPlot(Graph* graphPtr, Drawable drawable);
 static void UpdateMarginTraces(Graph* graphPtr);
@@ -200,35 +190,8 @@ static Tk_OptionSpec optionSpecs[] = {
 
 // Create
 
-int Blt_GraphCmdInitProc(Tcl_Interp* interp)
-{
-  static Blt_InitCmdSpec graphSpec = 
-    {"graph", GraphObjCmd, NULL, NULL};
-  static Blt_InitCmdSpec barchartSpec = 
-    {"barchart", BarchartObjCmd, NULL, NULL};
-
-  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
-    return TCL_ERROR;
-  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-		       Tcl_Obj* const objv[])
-{
-  return NewGraph(clientData, interp, objc, objv, CID_ELEM_LINE);
-}
-
-static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-			  Tcl_Obj* const objv[])
-{
-  return NewGraph(clientData, interp, objc, objv, CID_ELEM_BAR);
-}
-
-static int NewGraph(ClientData clientData, Tcl_Interp*interp, 
-		    int objc, Tcl_Obj* const objv[], ClassId classId)
+int NewGraph(ClientData clientData, Tcl_Interp*interp, 
+	     int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   if (objc < 2) {
     Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
@@ -261,7 +224,7 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
   graphPtr->interp = interp;
   graphPtr->cmdToken = Tcl_CreateObjCommand(interp, 
 					    Tk_PathName(graphPtr->tkwin), 
-					    Blt_GraphInstCmdProc, 
+					    GraphInstCmdProc, 
 					    graphPtr, 
 					    GraphInstCmdDeleteProc);
   graphPtr->optionTable = optionTable;
@@ -330,14 +293,6 @@ static int NewGraph(ClientData clientData, Tcl_Interp*interp,
  error:
   DestroyGraph((char*)graphPtr);
   return TCL_ERROR;
-}
-
-// called by Tcl_DeleteCommand
-static void GraphInstCmdDeleteProc(ClientData clientData)
-{
-  Graph* graphPtr = (Graph*)clientData;
-  if (!(graphPtr->flags & GRAPH_DELETED))
-    Tk_DestroyWindow(graphPtr->tkwin);
 }
 
 // called by Tcl_EventuallyFree and others
