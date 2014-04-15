@@ -139,7 +139,7 @@ int PolygonMarker::configure()
   gcValues.join_style = ops->joinStyle;
   gcValues.line_style = LineSolid;
   gcValues.dash_offset = 0;
-  gcValues.line_width = LineWidth(ops->lineWidth);
+  gcValues.line_width = ops->lineWidth;
   if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = (ops->outlineBg == NULL)
       ? LineOnOffDash : LineDoubleDash;

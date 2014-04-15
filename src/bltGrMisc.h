@@ -41,8 +41,21 @@
 #endif
 
 typedef struct {
-    Point2d p, q;
+  double left;
+  double right;
+  double top;
+  double bottom;
+} Region2d;
+
+typedef struct {
+  Point2d p;
+  Point2d q;
 } Segment2d;
+
+typedef struct {
+  short int width;
+  short int height;
+} Dim2D;
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);

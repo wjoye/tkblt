@@ -120,7 +120,7 @@ int BarPen::configure()
   {
     unsigned long gcMask = GCForeground | GCLineWidth;
     XGCValues gcValues;
-    gcValues.line_width = LineWidth(ops->errorBarLineWidth);
+    gcValues.line_width = ops->errorBarLineWidth;
     if (ops->outlineColor)
       gcValues.foreground = ops->outlineColor->pixel;
     else if (ops->fill)
@@ -163,7 +163,7 @@ int BarPen::configure()
       colorPtr = ops->outlineColor;
     XGCValues gcValues;
     gcValues.foreground = colorPtr->pixel;
-    gcValues.line_width = LineWidth(ops->errorBarLineWidth);
+    gcValues.line_width = ops->errorBarLineWidth;
     GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     if (errorBarGC_)
       Tk_FreeGC(graphPtr_->display, errorBarGC_);

@@ -1056,7 +1056,7 @@ void Axis::resetTextStyles()
   gcMask = (GCForeground | GCLineWidth | GCCapStyle);
   gcValues.foreground = ops->tickColor->pixel;
   gcValues.font = Tk_FontId(ops->tickFont);
-  gcValues.line_width = LineWidth(ops->lineWidth);
+  gcValues.line_width = ops->lineWidth;
   gcValues.cap_style = CapProjecting;
 
   GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
@@ -1072,7 +1072,7 @@ void Axis::resetTextStyles()
   activeTickGC_ = newGC;
 
   gcValues.background = gcValues.foreground = ops->major.color->pixel;
-  gcValues.line_width = LineWidth(ops->major.lineWidth);
+  gcValues.line_width = ops->major.lineWidth;
   gcMask = (GCForeground | GCBackground | GCLineWidth);
   if (LineIsDashed(ops->major.dashes)) {
     gcValues.line_style = LineOnOffDash;
@@ -1088,7 +1088,7 @@ void Axis::resetTextStyles()
   ops->major.gc = newGC;
 
   gcValues.background = gcValues.foreground = ops->minor.color->pixel;
-  gcValues.line_width = LineWidth(ops->minor.lineWidth);
+  gcValues.line_width = ops->minor.lineWidth;
   gcMask = (GCForeground | GCBackground | GCLineWidth);
   if (LineIsDashed(ops->minor.dashes)) {
     gcValues.line_style = LineOnOffDash;

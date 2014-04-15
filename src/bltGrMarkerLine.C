@@ -119,7 +119,7 @@ int LineMarker::configure()
   }
   gcValues.cap_style = ops->capStyle;
   gcValues.join_style = ops->joinStyle;
-  gcValues.line_width = LineWidth(ops->lineWidth);
+  gcValues.line_width = ops->lineWidth;
   gcValues.line_style = LineSolid;
   if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = 

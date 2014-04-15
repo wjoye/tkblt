@@ -305,7 +305,7 @@ int LinePen::configure()
 	gcMask |= GCClipMask;
       }
     }
-    gcValues.line_width = LineWidth(ops->symbol.outlineWidth);
+    gcValues.line_width = ops->symbol.outlineWidth;
     GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     if (ops->symbol.outlineGC)
       Tk_FreeGC(graphPtr_->display, ops->symbol.outlineGC);
@@ -337,7 +337,7 @@ int LinePen::configure()
     gcValues.cap_style = CapButt;
     gcValues.join_style = JoinRound;
     gcValues.line_style = LineSolid;
-    gcValues.line_width = LineWidth(ops->traceWidth);
+    gcValues.line_width = ops->traceWidth;
 
     gcValues.foreground = ops->traceColor->pixel;
     XColor* colorPtr = ops->traceOffColor;
@@ -367,7 +367,7 @@ int LinePen::configure()
     if (!colorPtr)
       colorPtr = ops->traceColor;
     XGCValues gcValues;
-    gcValues.line_width = LineWidth(ops->errorBarLineWidth);
+    gcValues.line_width = ops->errorBarLineWidth;
     gcValues.foreground = colorPtr->pixel;
     GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
     if (errorBarGC_) {

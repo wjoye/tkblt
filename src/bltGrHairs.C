@@ -96,7 +96,7 @@ void Crosshairs::configure()
   gcValues.background = pixel;
   gcValues.foreground = (pixel ^ ops->colorPtr->pixel);
 
-  gcValues.line_width = LineWidth(ops->lineWidth);
+  gcValues.line_width = ops->lineWidth;
   unsigned long gcMask = 
     (GCForeground | GCBackground | GCFunction | GCLineWidth);
   if (LineIsDashed(ops->dashes)) {
