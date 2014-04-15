@@ -59,6 +59,12 @@ extern "C" {
 class Element;
 
 typedef struct {
+  Segment2d *segments;
+  int length;
+  int *map;
+} GraphSegments;
+
+typedef struct {
   Blt_VectorId vector;
 } VectorDataSource;
 

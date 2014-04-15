@@ -30,6 +30,7 @@
 #include "bltGrMarkerPolygon.h"
 #include "bltGrMarkerOption.h"
 #include "bltGrMisc.h"
+#include "bltGrDef.h"
 
 using namespace Blt;
 

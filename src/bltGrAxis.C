@@ -36,6 +36,7 @@ extern "C" {
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
 #include "bltGrMisc.h"
+#include "bltGrDef.h"
 
 #define AXIS_PAD_TITLE 2
 

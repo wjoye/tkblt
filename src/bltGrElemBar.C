@@ -35,6 +35,7 @@
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 #include "bltGrMisc.h"
+#include "bltGrDef.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 

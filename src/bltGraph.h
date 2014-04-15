@@ -78,12 +78,6 @@ typedef struct {
 } ClosestSearch;
 
 typedef struct {
-  Segment2d *segments;
-  int length;
-  int *map;
-} GraphSegments;
-
-typedef struct {
   int nSegments;
   Axis2d axes;
   float sum;
@@ -114,6 +108,12 @@ typedef struct {
   int reqSize;
   int site;
 } Margin;
+
+typedef struct {
+  Tcl_HashTable table;
+  Blt_Chain displayList;
+  Tcl_HashTable tagTable;
+} Component;
 
 struct _Graph {
   Tcl_Interp* interp;
@@ -147,11 +147,9 @@ struct _Graph {
   int height;
   Tcl_HashTable penTable;
 
-  struct Component {
-    Tcl_HashTable table;
-    Blt_Chain displayList;
-    Tcl_HashTable tagTable;
-  } elements, markers, axes;
+  Component elements;
+  Component markers;
+  Component axes;
 
   Tcl_HashTable dataTables;
   Blt_BindTable bindTable;
