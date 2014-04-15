@@ -31,7 +31,6 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltGraph.h"
 }
 
 #include "bltGrAxis.h"

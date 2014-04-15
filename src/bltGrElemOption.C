@@ -29,6 +29,7 @@
 
 extern "C" {
 #include "bltInt.h"
+#include "bltChain.h"
 };
 
 #include "bltGrElem.h"

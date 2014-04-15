@@ -68,7 +68,16 @@ typedef enum {
   CID_MARKER_TEXT, CID_MARKER_WINDOW, CID_LEGEND_ENTRY,
 } ClassId;
 
+typedef struct {
+  unsigned char values[12];
+  int offset;
+} Blt_Dashes;
+
+#define LineIsDashed(d) ((d).values[0] != 0)
+
 extern char* dupstr(const char*);
+
+extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);

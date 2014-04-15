@@ -40,20 +40,11 @@
 extern const char* fillObjOption[];
 extern const char* stateObjOption[];
 
-typedef struct {
-    unsigned char values[12];
-    int offset;
-} Blt_Dashes;
-
-#define LineIsDashed(d) ((d).values[0] != 0)
-
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
 
 extern "C" {
   Tk_CustomOptionRestoreProc RestoreProc;
 };
-
-extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
 #endif

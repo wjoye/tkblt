@@ -32,9 +32,11 @@
 
 #include "bltGrMisc.h"
 #include "bltBind.h"
-#include "bltChain.h"
 #include "bltPs.h"
-#include "bltText.h"
+
+extern "C" {
+#include "bltChain.h"
+};
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */
