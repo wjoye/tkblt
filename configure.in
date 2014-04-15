@@ -102,6 +102,7 @@ TEA_ADD_SOURCES([
 	bltGrPenLine.C
 	bltGrPs.C
 	bltGraph.C
+	bltGraphOp.C
 	bltInt.C
 	bltList.C
 	bltNsUtil.C

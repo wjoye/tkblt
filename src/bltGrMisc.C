@@ -423,6 +423,8 @@ GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
   pixmap = None;
   drawable = Tk_WindowId(tkwin);
   display = Tk_Display(tkwin);
+  if (drawable == None)
+    drawable = RootWindow(Tk_Display(tkwin),Tk_ScreenNumber(tkwin));
 
   gc = XCreateGC(display, drawable, gcMask, valuePtr);
   if (pixmap != None) {

@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_GRAPH_H
-#define _BLT_GRAPH_H
+#ifndef __BltGraph_h__
+#define __BltGraph_h__
 
 #include "bltInt.h"
 #include "bltBind.h"
