@@ -54,8 +54,10 @@ using namespace Blt;
 
 extern void GraphConfigure(Graph* graphPtr);
 extern void GraphDestroy(Graph* graphPtr);
+
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
+extern void Blt_LayoutGraph(Graph* graphPtr);
 
 static Blt_BindPickProc PickEntry;
 

@@ -63,41 +63,17 @@ typedef enum {
 } ClassId;
 
 typedef struct {
-  /* Inputs */
-  int halo;			/* Maximal screen distance a candidate point
-				 * can be from the sample window coordinate */
+  int halo;
+  int mode;
+  int x;
+  int y;
+  int along;
 
-  int mode;			/* Indicates whether to find the closest data
-				 * point or the closest point on the trace by
-				 * interpolating the line segments.  Can also
-				 * be SEARCH_AUTO, indicating to choose how to
-				 * search.*/
-
-  int x, y;			/* Screen coordinates of test point */
-
-  int along;			/* Indicates to let search run along a
-				 * particular axis: x, y, or both. */
-
-  /* Outputs */
-  Element* elemPtr;		/* Name of the closest element */
-
-  Point2d point;		/* Graph coordinates of closest point */
-
-  int index;			/* Index of closest data point */
-
-  double dist;		/* Distance in screen coordinates */
-
+  Element* elemPtr;
+  Point2d point;
+  int index;
+  double dist;
 } ClosestSearch;
-
-typedef struct {
-  ClassId classId;		/* Class type of object. */
-  const char *name;		/* Identifier to refer the object. */
-  const char *className;	/* Class name of object. */
-
-  Graph* graphPtr;		/* Graph containing of the object. */
-
-  const char **tags;		/* Binding tags for the object. */
-} GraphObj;
 
 typedef struct {
   Segment2d *segments;
@@ -106,26 +82,17 @@ typedef struct {
 } GraphSegments;
 
 typedef struct {
-  int nSegments;			/* Number of occurrences of
-					 * x-coordinate */
-  Axis2d axes;			/* The axes associated with this
-				 * group. (mapped to the x-value) */
-  float sum;				/* Sum of the ordinates (y-coorinate) of
-					 * each duplicate abscissa. Used to
-					 * determine height of stacked bars. */
-  int count;				/* Current number of bars seen.  Used to
-					 * position of the next bar in the
-					 * group. */
-  float lastY;			/* y-cooridinate position of the
-				 * last bar seen. */
-  size_t index;			/* Order of group in set (an unique
-				 * abscissa may have more than one
-				 * group). */
+  int nSegments;
+  Axis2d axes;
+  float sum;
+  int count;
+  float lastY;
+  size_t index;
 } BarGroup;
 
 typedef struct {
-  float value;			/* Duplicated abscissa */
-  Axis2d axes;			/* Axis mapping of element */
+  float value;
+  Axis2d axes;
 } BarSetKey;
 
 typedef enum BarModes {
@@ -133,172 +100,101 @@ typedef enum BarModes {
 } BarMode;
 
 typedef struct {
-  short int width, height;		/* Dimensions of the margin */
+  short int width;
+  short int height;
   short int axesOffset;
-  short int axesTitleLength;		/* Width of the widest title to be
-					 * shown.  Multiple titles are displayed
-					 * in another margin. This is the
-					 * minimum space requirement. */
+  short int axesTitleLength;
   short int maxTickWidth;
   short int maxTickHeight;
-  unsigned int nAxes;			/* # of axes to be displayed */
-  Blt_Chain axes;			/* Axes associated with this margin */
-  const char *varName;		/* If non-NULL, name of variable to be
-				 * updated when the margin size
-				 * changes */
-  int reqSize;			/* Requested size of margin */
-  int site;				/* Indicates where margin is located:
-					 * left, right, top, or bottom. */
+  unsigned int nAxes;
+  Blt_Chain axes;
+  const char *varName;
+  int reqSize;
+  int site;
 } Margin;
 
 struct _Graph {
-  Tcl_Interp* interp;			/* Interpreter associated with graph */
-  Tk_Window tkwin;			/* Window that embodies the graph.
-					 * NULL means that the window has been
-					 * destroyed but the data structures
-					 * haven't yet been cleaned up. */
-  Display *display;			/* Display containing widget; used to
-					 * release resources after tkwin has
-					 * already gone away. */
-  Tcl_Command cmdToken;		/* Token for graph's widget command. */
+  Tcl_Interp* interp;
+  Tk_Window tkwin;
+  Display *display;
+  Tcl_Command cmdToken;
   Tk_OptionTable optionTable;
-
-  ClassId classId;			/* Default element type */
+  ClassId classId;
   Tk_Cursor cursor;
-  int inset;				/* Sum of focus highlight and 3-D
-					 * border.  Indicates how far to
-					 * offset the graph from outside edge
-					 * of the window. */
-  int borderWidth;			/* Width of the exterior border */
-  int relief;				/* Relief of the exterior border. */
-  unsigned int flags;			/* Flags;  see below for definitions. */
-  Tk_3DBorder normalBg;		/* 3-D border used to delineate the
-					 * plot surface and outer edge of
-					 * window. */
-  int highlightWidth;			/* Width in pixels of highlight to
-					 * draw around widget when it has the
-					 * focus.  <= 0 means don't draw a
-					 * highlight. */
-  XColor* highlightBgColor;		/* Color for drawing traversal
-					 * highlight area when highlight is
-					 * off. */
-  XColor* highlightColor;		/* Color for drawing traversal
-					 * highlight. */
-  const char *title;			/* Graph title */
-  short int titleX, titleY;		/* Position of title on graph. */
-  short int titleWidth, titleHeight;	/* Dimensions of title. */
-  TextStyle titleTextStyle;		/* Title attributes: font, color,
-					 * etc.*/
-    
+  int inset;
+  int borderWidth;
+  int relief;
+  unsigned int flags;
+  Tk_3DBorder normalBg;
+  int highlightWidth;
+  XColor* highlightBgColor;
+  XColor* highlightColor;
+  const char *title;
+  short int titleX;
+  short int titleY;
+  short int titleWidth;
+  short int titleHeight;
+  TextStyle titleTextStyle;
+  const char *takeFocus; // nor used in C code
+  Axis *focusPtr;
+  int reqWidth;
+  int reqHeight;
+  int reqPlotWidth;
+  int reqPlotHeight;
+  int width;
+  int height;
+  Tcl_HashTable penTable;
 
-  const char *takeFocus;		/* Not used in C code */
-  Axis *focusPtr;			/* The axis that currently has focus. */
-    
-  int reqWidth, reqHeight;		/* Requested size of graph window */
-  int reqPlotWidth, reqPlotHeight;	/* Requested size of plot area. Zero
-					 * means to adjust the dimension
-					 * according to the available space
-					 * left in the window. */
-  int width, height;			/* Actual size (in pixels) of graph
-					 * window or PostScript page. */
-  Tcl_HashTable penTable;		/* Table of pens */
   struct Component {
-    Tcl_HashTable table;		/* Hash table of ids. */
-    Blt_Chain displayList;		/* Display list. */
-    Tcl_HashTable tagTable;		/* Table of bind tags. */
+    Tcl_HashTable table;
+    Blt_Chain displayList;
+    Tcl_HashTable tagTable;
   } elements, markers, axes;
 
-  Tcl_HashTable dataTables;		/* Hash table of datatable clients. */
+  Tcl_HashTable dataTables;
   Blt_BindTable bindTable;
-  int nextMarkerId;			/* Tracks next marker identifier
-					 * available */
-  Blt_Chain axisChain[4];		/* Chain of axes for each of the
-					 * margins.  They're separate from the
-					 * margin structures to make it easier
-					 * to invert the X-Y axes by simply
-					 * switching chain pointers. */
+  int nextMarkerId;
+  Blt_Chain axisChain[4];
   Margin margins[4];
-  PageSetup *pageSetup;		/* Page layout options: see bltGrPS.c */
-  Legend *legend;			/* Legend information: see
-					 * bltGrLegd.c */
-  Crosshairs *crosshairs;		/* Crosshairs information: see
-					 * bltGrHairs.c */
-  int halo;				/* Maximum distance allowed between
-					 * points when searching for a point */
-  int inverted;			/* If non-zero, indicates the x and y
-				 * axis positions should be inverted. */
-  int stackAxes;			/* If non-zero, indicates to stack
-					 * mulitple axes in a margin, rather
-					 * than layering them one on top of
-					 * another. */
-  GC drawGC;				/* GC for drawing on the margins. This
-					 * includes the axis lines */  
-  int plotBW;				/* Width of interior 3-D border. */
-  int plotRelief;			/* 3-d effect: TK_RELIEF_RAISED etc. */
-  Tk_3DBorder plotBg;		/* Color of plotting surface */
+  PageSetup *pageSetup;
+  Legend *legend;
+  Crosshairs *crosshairs;
 
-  /* If non-zero, force plot to conform to aspect ratio W/H */
+  int halo;
+  int inverted;
+  int stackAxes;
+  GC drawGC;
+  int plotBW;
+  int plotRelief;
+  Tk_3DBorder plotBg;
   double aspect;
-
-  short int left, right;		/* Coordinates of plot bbox */
-  short int top, bottom;	
-
-  int xPad;			/* Vertical padding for plotarea */
-  int vRange, vOffset;		/* Vertical axis range and offset from
-				 * the left side of the graph
-				 * window. Used to transform coordinates
-				 * to vertical axes. */
-  int yPad;			/* Horizontal padding for plotarea */
-  int hRange, hOffset;		/* Horizontal axis range and offset from
-				 * the top of the graph window. Used to
-				 * transform horizontal axes */
-  float vScale, hScale;
-
-  int doubleBuffer;			/* If non-zero, draw the graph into a
-					 * pixmap first to reduce flashing. */
-  int backingStore;			/* If non-zero, cache elements by
-					 * drawing them into a pixmap */
-  Pixmap cache;			/* Pixmap used to cache elements
-				 * displayed.  If *backingStore* is
-				 * non-zero, each element is drawn into
-				 * this pixmap before it is copied onto
-				 * the screen.  The pixmap then acts as
-				 * a cache (only the pixmap is
-				 * redisplayed if the none of elements
-				 * have changed). This is done so that
-				 * markers can be redrawn quickly over
-				 * elements without redrawing each
-				 * element. */
-  short int cacheWidth, cacheHeight;	/* Size of element backing store
-					 * pixmap. */
-
-  /*
-   * barchart specific information
-   */
-  double baseline;			/* Baseline from bar chart.  */
-  double barWidth;			/* Default width of each bar in graph
-					 * units.  The default width is 1.0
-					 * units. */
-  BarMode barMode;			/* Mode describing how to display bars
-				 * with the same x-coordinates. Mode can
-				 * be "stacked", "aligned", "overlap",
-				 * or "infront" */
-  BarGroup *barGroups;		/* Contains information about duplicate
-				 * x-values in bar elements (malloc-ed).
-				 * This information can also be accessed
-				 * by the group hash table */
-  int nBarGroups;			/* # of entries in barGroups array.  If 
-					 * zero, indicates nothing special
-					 * needs to be * done for "stack" or
-					 * "align" modes */
-  Tcl_HashTable setTable;		/* Table managing sets of bars with
-					 * the same abscissas. The bars in a
-					 * set may be displayed is various
-					 * ways: aligned, overlap, infront, or
-					 * stacked. */
-  int maxBarSetSize;
-
+  short int left;
+  short int right;
+  short int top;
+  short int bottom;	
+  int xPad;
+  int vRange;
+  int vOffset;
+  int yPad;
+  int hRange;
+  int hOffset;
+  float vScale;
+  float hScale;
+  int doubleBuffer;
+  int backingStore;
+  Pixmap cache;
+  short int cacheWidth;
+  short int cacheHeight;
   ClosestSearch search;
+
+  // barchart specific information
+  double baseline;
+  double barWidth;
+  BarMode barMode;
+  BarGroup *barGroups;
+  int nBarGroups;
+  Tcl_HashTable setTable;
+  int maxBarSetSize;
 };
 
 /*
@@ -386,6 +282,11 @@ struct _Graph {
 #define REDRAW_WORLD		(DRAW_LEGEND)
 #define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
 
+extern void Blt_MapGraph(Graph* graphPtr);
+extern void Blt_ReconfigureGraph(Graph* graphPtr);
+extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
+extern void Blt_EventuallyRedrawGraph(Graph* graphPtr);
+
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern MakeTagProc Blt_MakeElementTag;
 extern MakeTagProc Blt_MakeAxisTag;
@@ -393,14 +294,5 @@ extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
 extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
-extern void Blt_ReconfigureGraph(Graph* graphPtr);
-extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
-			       Segment2d *segments, int nSegments);
-extern void Blt_LayoutGraph(Graph* graphPtr);
-extern void Blt_EventuallyRedrawGraph(Graph* graphPtr);
-extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
-extern void Blt_MapGraph(Graph* graphPtr);
-extern int Blt_GraphUpdateNeeded(Graph* graphPtr);
-extern void Blt_GraphSetObjectClass(GraphObj *graphObjPtr,ClassId classId);
 
 #endif

@@ -29,6 +29,7 @@
 
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerOption.h"
+#include "bltGrMisc.h"
 
 #define BOUND(x, lo, hi) (((x) > (hi)) ? (hi) : ((x) < (lo)) ? (lo) : (x))
 

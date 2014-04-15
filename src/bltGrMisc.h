@@ -36,5 +36,7 @@ extern int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin,
 		     const char *string, int *xPtr, int *yPtr);
 extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			    int nInputPts, Point2d *outputPts);
+extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
+			       Segment2d *segments, int nSegments);
 
 #endif
