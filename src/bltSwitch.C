@@ -36,6 +36,35 @@ extern "C" {
 #include "bltSwitch.h"
 };
 
+static int Blt_GetCountFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int check,
+			long *valuePtr)
+{
+  long count;
+  if (Tcl_GetLongFromObj(interp, objPtr, &count) != TCL_OK)
+    return TCL_ERROR;
+
+  switch (check) {
+  case COUNT_NNEG:
+    if (count < 0) {
+      Tcl_AppendResult(interp, "bad value \"", Tcl_GetString(objPtr), 
+		       "\": can't be negative", (char *)NULL);
+      return TCL_ERROR;
+    }
+    break;
+  case COUNT_POS:
+    if (count <= 0) {
+      Tcl_AppendResult(interp, "bad value \"", Tcl_GetString(objPtr), 
+		       "\": must be positive", (char *)NULL);
+      return TCL_ERROR;
+    }
+    break;
+  case COUNT_ANY:
+    break;
+  }
+  *valuePtr = count;
+  return TCL_OK;
+}
+
 static void DoHelp(Tcl_Interp* interp, Blt_SwitchSpec *specs)
 {
   Tcl_DString ds;

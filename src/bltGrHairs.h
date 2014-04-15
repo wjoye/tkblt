@@ -51,13 +51,15 @@ typedef struct {
 } CrosshairsOptions;
 
 class Crosshairs {
+ private:
+  GC gc_;
+
  public:
   Graph* graphPtr_;
   Tk_OptionTable optionTable_;
   void* ops_;
   int visible_;
   XSegment segArr_[2];
-  GC gc_;
 
  public:
   Crosshairs(Graph*);
