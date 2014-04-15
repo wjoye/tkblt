@@ -11,7 +11,7 @@ echo "Testing Polygon Marker..."
 #bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round
 bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
-bltTest3 $graph marker $mm -dashes dashdot
+bltTest3 $graph marker $mm -dashes "8 3"
 bltTest3 $graph marker $mm -element data2
 bltTest3 $graph marker $mm -fill yellow
 bltTest3 $graph marker $mm -fillbg blue

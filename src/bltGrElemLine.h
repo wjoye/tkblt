@@ -152,6 +152,8 @@ class LineElement : public Element {
   double DistanceToY(int, int, Point2d*, Point2d*, Point2d*);
   void GetSymbolPostScriptInfo(Blt_Ps, LinePen*, int);
   void SymbolsToPostScript(Blt_Ps, LinePen*, int, int, Point2d*);
+  int simplify(Point2d*, int, int, double, int*);
+  double findSplit(Point2d*, int, int, int*);
 
  public:
   LineElement(Graph*, const char*, Tcl_HashEntry*);

@@ -41,6 +41,11 @@
 #endif
 
 typedef struct {
+  double x;
+  double y;
+} Point2d;
+
+typedef struct {
   double left;
   double right;
   double top;

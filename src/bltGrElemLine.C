@@ -121,7 +121,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
+   "6", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, 0},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.symbol.fillColor), 
@@ -1093,8 +1093,8 @@ void LineElement::ReducePoints(MapInfo *mapPtr, double tolerance)
   int* simple = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
   int* map = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
   Point2d *screenPts = (Point2d*)malloc(mapPtr->nScreenPts * sizeof(Point2d));
-  int np = Blt_SimplifyLine(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
-			    tolerance, simple);
+  int np = simplify(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
+		    tolerance, simple);
   for (int ii=0; ii<np; ii++) {
     int kk = simple[ii];
     screenPts[ii] = mapPtr->screenPts[kk];
@@ -1106,6 +1106,60 @@ void LineElement::ReducePoints(MapInfo *mapPtr, double tolerance)
   mapPtr->screenPts = screenPts;
   mapPtr->map = map;
   mapPtr->nScreenPts = np;
+}
+
+/* Douglas-Peucker line simplification algorithm */
+int LineElement::simplify(Point2d *inputPts, int low, int high, 
+			  double tolerance, int *indices)
+{
+#define StackPush(a)	s++, stack[s] = (a)
+#define StackPop(a)	(a) = stack[s], s--
+#define StackEmpty()	(s < 0)
+#define StackTop()	stack[s]
+    int split = -1; 
+    double dist2, tolerance2;
+    int s = -1;			/* Points to top stack item. */
+
+    int* stack = (int*)malloc(sizeof(int) * (high - low + 1));
+    StackPush(high);
+    int count = 0;
+    indices[count++] = 0;
+    tolerance2 = tolerance * tolerance;
+    while (!StackEmpty()) {
+	dist2 = findSplit(inputPts, low, StackTop(), &split);
+	if (dist2 > tolerance2)
+	    StackPush(split);
+	else {
+	    indices[count++] = StackTop();
+	    StackPop(low);
+	}
+    } 
+    free(stack);
+    return count;
+}
+
+double LineElement::findSplit(Point2d *points, int i, int j, int *split)	
+{    
+    double maxDist2 = -1.0;
+    if ((i + 1) < j) {
+	int k;
+	double a = points[i].y - points[j].y;
+	double b = points[j].x - points[i].x;
+	double c = (points[i].x * points[j].y) - (points[i].y * points[j].x);
+	for (k = (i + 1); k < j; k++) {
+	    double dist2 = (points[k].x * a) + (points[k].y * b) + c;
+	    if (dist2 < 0.0)
+		dist2 = -dist2;	
+
+	    if (dist2 > maxDist2) {
+		maxDist2 = dist2;	/* Track the maximum. */
+		*split = k;
+	    }
+	}
+	/* Correction for segment length---should be redone if can == 0 */
+	maxDist2 *= maxDist2 / (a * a + b * b);
+    } 
+    return maxDist2;
 }
 
 void LineElement::GenerateSteps(MapInfo *mapPtr)

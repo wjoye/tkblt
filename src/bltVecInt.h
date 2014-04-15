@@ -52,6 +52,11 @@
 #define FFT_SPECTRUM		(1<<2)
 
 typedef struct {
+  double x;
+  double y;
+} Point2d;
+
+typedef struct {
     Tcl_HashTable vectorTable;	/* Table of vectors */
     Tcl_HashTable mathProcTable; /* Table of vector math functions */
     Tcl_HashTable indexProcTable;

@@ -55,6 +55,9 @@
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
 
+extern int Blt_SimplifyLine (Point2d *origPts, int low, int high, 
+	double tolerance, int *indices);
+
 typedef int (VectorCmdProc)(Vector *vPtr, Tcl_Interp* interp, int objc, 
 	Tcl_Obj* const objv[]);
 
