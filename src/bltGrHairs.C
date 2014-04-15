@@ -49,23 +49,20 @@ static Tk_OptionSpec optionSpecs[] = {
    "yes", -1, Tk_Offset(CrosshairsOptions, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
    "0", -1, Tk_Offset(CrosshairsOptions, lineWidth), 0, NULL, 0},
-  {TK_OPTION_CUSTOM, "-position", "position", "Position", 
-   NULL, -1, Tk_Offset(CrosshairsOptions, hotSpot), 
-   TK_OPTION_NULL_OK, &pointObjOption, 0},
+  {TK_OPTION_PIXELS, "-x", "x", "X",
+   "0", -1, Tk_Offset(CrosshairsOptions, x), 0, NULL, 0},
+  {TK_OPTION_PIXELS, "-y", "y", "Y",
+   "0", -1, Tk_Offset(CrosshairsOptions, y), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
 Crosshairs::Crosshairs(Graph* graphPtr)
 {
   ops_ = (CrosshairsOptions*)calloc(1, sizeof(CrosshairsOptions));
-  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
 
   graphPtr_ = graphPtr;
   visible_ =0;
   gc_ =NULL;
-
-  ops->hotSpot.x =-1;
-  ops->hotSpot.y =-1;
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
   Tk_InitOptions(graphPtr->interp, (char*)ops_, optionTable_, graphPtr->tkwin);
@@ -116,12 +113,12 @@ void Crosshairs::configure()
   gc_ = newGC;
 
   // Are the new coordinates on the graph?
-  segArr_[0].x1 = ops->hotSpot.x;
-  segArr_[0].x2 = ops->hotSpot.x;
+  segArr_[0].x1 = ops->x;
+  segArr_[0].x2 = ops->x;
   segArr_[0].y1 = graphPtr_->bottom;
   segArr_[0].y2 = graphPtr_->top;
-  segArr_[1].y1 = ops->hotSpot.y;
-  segArr_[1].y2 = ops->hotSpot.y;
+  segArr_[1].y1 = ops->y;
+  segArr_[1].y2 = ops->y;
   segArr_[1].x1 = graphPtr_->left;
   segArr_[1].x2 = graphPtr_->right;
 
@@ -143,7 +140,7 @@ void Crosshairs::on()
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
 
   if (Tk_IsMapped(graphPtr_->tkwin) && (!visible_)) {
-    if (!PointInGraph(graphPtr_, ops->hotSpot.x, ops->hotSpot.y))
+    if (!PointInGraph(graphPtr_, ops->x, ops->y))
       return;
 
     XDrawSegments(graphPtr_->display, Tk_WindowId(graphPtr_->tkwin),

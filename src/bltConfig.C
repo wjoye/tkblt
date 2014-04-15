@@ -38,8 +38,6 @@
 
 #include <stdarg.h>
 
-#include "bltC.h"
-
 extern "C" {
 #include "bltInt.h"
 };
@@ -58,44 +56,6 @@ const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
 // State
 const char* stateObjOption[] = {"normal", "active", "disabled", NULL};
-
-// Point
-static Tk_CustomOptionSetProc PointSetProc;
-static Tk_CustomOptionGetProc PointGetProc;
-Tk_ObjCustomOption pointObjOption =
-  {
-    "point", PointSetProc, PointGetProc, NULL, NULL, NULL
-  };
-
-static int PointSetProc(ClientData clientData, Tcl_Interp *interp,
-			Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			int offset, char* save, int flags)
-{
-  XPoint* pointPtr = (XPoint*)(widgRec + offset);
-
-  int x, y;
-  if (Blt_GetXY(interp, tkwin, Tcl_GetString(*objPtr), &x, &y) != TCL_OK)
-    return TCL_ERROR;
-
-  pointPtr->x = x;
-  pointPtr->y = y;
-
-  return TCL_OK;
-};
-
-static Tcl_Obj* PointGetProc(ClientData clientData, Tk_Window tkwin, 
-			     char *widgRec, int offset)
-{
-  XPoint* pointPtr = (XPoint*)(widgRec + offset);
-
-  if ((pointPtr->x != -SHRT_MAX) && (pointPtr->y != -SHRT_MAX)) {
-    char string[200];
-    sprintf_s(string, 200, "@%d,%d", pointPtr->x, pointPtr->y);
-    return Tcl_NewStringObj(string, -1);
-  } 
-  else
-    return Tcl_NewStringObj("", -1);
-};
 
 // Dashes
 static Tk_CustomOptionSetProc DashesSetProc;

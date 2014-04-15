@@ -47,7 +47,8 @@ typedef struct {
   Blt_Dashes dashes;
   int hide;
   int lineWidth;
-  XPoint hotSpot;
+  int x;
+  int y;
 } CrosshairsOptions;
 
 class Crosshairs {

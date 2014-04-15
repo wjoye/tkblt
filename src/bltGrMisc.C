@@ -29,52 +29,43 @@
 
 #include <stdarg.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include "bltC.h"
-
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 };
 
-// Converts a string in the form "@x,y" into an XPoint structure of the x
-// and y coordinates.
 int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 
 	      int* xPtr, int* yPtr)
 {
-  char *comma;
-  int result;
-  int x, y;
-
   if ((string == NULL) || (*string == '\0')) {
     *xPtr = *yPtr = -SHRT_MAX;
     return TCL_OK;
   }
+
   if (*string != '@') {
-    goto badFormat;
+    Tcl_AppendResult(interp, "bad position \"", string, 
+		     "\": should be \"@x,y\"", (char *)NULL);
+    return TCL_ERROR;
   }
-  comma = (char*)strchr(string + 1, ',');
+
+  char *comma = (char*)strchr(string + 1, ',');
   if (comma == NULL) {
-    goto badFormat;
   }
+
   *comma = '\0';
-  result = ((Tk_GetPixels(interp, tkwin, string + 1, &x) == TCL_OK) &&
-	    (Tk_GetPixels(interp, tkwin, comma + 1, &y) == TCL_OK));
+  int x, y;
+  int result = ((Tk_GetPixels(interp, tkwin, string + 1, &x) == TCL_OK) &&
+		(Tk_GetPixels(interp, tkwin, comma + 1, &y) == TCL_OK));
   *comma = ',';
   if (!result) {
     Tcl_AppendResult(interp, ": can't parse position \"", string, "\"",
 		     (char *)NULL);
     return TCL_ERROR;
   }
-  *xPtr = x, *yPtr = y;
-  return TCL_OK;
 
- badFormat:
-  Tcl_AppendResult(interp, "bad position \"", string, 
-		   "\": should be \"@x,y\"", (char *)NULL);
-  return TCL_ERROR;
+  *xPtr = x;
+  *yPtr = y;
+  return TCL_OK;
 }
 
 int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)

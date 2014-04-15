@@ -47,7 +47,6 @@ typedef struct {
 
 #define LineIsDashed(d) ((d).values[0] != 0)
 
-extern Tk_ObjCustomOption pointObjOption;
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
 
@@ -57,4 +56,4 @@ extern "C" {
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
-#endif /* BLT_CONFIG_H */
+#endif

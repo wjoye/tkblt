@@ -31,6 +31,7 @@
 #define __BltGraph_h__
 
 #include "bltInt.h"
+#include "bltGrMisc.h"
 #include "bltBind.h"
 #include "bltChain.h"
 #include "bltPs.h"

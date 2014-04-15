@@ -30,12 +30,6 @@
 
 #include <stdarg.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
-#include "bltC.h"
-
 extern "C" {
 #include <tkPort.h>
 #include <tkInt.h>
@@ -46,6 +40,11 @@ extern "C" {
 
 extern "C" {
 #include "bltInt.h"
+};
+
+#include "bltGrMisc.h"
+
+extern "C" {
 #include "bltPsInt.h"
 };
 
