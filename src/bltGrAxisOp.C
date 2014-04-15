@@ -38,6 +38,7 @@ extern "C" {
 #include "bltGrAxisOp.h"
 #include "bltGrElem.h"
 #include "bltGrLegd.h"
+#include "bltGrMisc.h"
 
 #define AXIS_PAD_TITLE 2
 

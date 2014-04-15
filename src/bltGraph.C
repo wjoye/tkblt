@@ -27,13 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
-
 extern "C" {
-#include "bltInt.h"
-#include "bltList.h"
 #include "bltGraph.h"
-#include "bltOp.h"
 }
 
 #include "bltGraphOp.h"
@@ -54,13 +49,13 @@ extern "C" {
 
 using namespace Blt;
 
-#define MARKER_UNDER	1	/* Draw markers designated to lie underneath
-				 * elements, grids, legend, etc. */
-#define MARKER_ABOVE	0	/* Draw markers designated to rest above
-				 * elements, grids, legend, etc. */
+#define MARKER_ABOVE	0
+#define MARKER_UNDER	1
 
-extern void ConfigureGraph(Graph* graphPtr);
-
+extern void GraphConfigure(Graph* graphPtr);
+extern void GraphDestroy(Graph* graphPtr);
+extern int Blt_CreatePageSetup(Graph* graphPtr);
+extern void Blt_DestroyPageSetup(Graph* graphPtr);
 
 static Blt_BindPickProc PickEntry;
 
@@ -190,17 +185,10 @@ static Tk_OptionSpec optionSpecs[] = {
 int NewGraph(ClientData clientData, Tcl_Interp*interp, 
 	     int objc, Tcl_Obj* const objv[], ClassId classId)
 {
-  if (objc < 2) {
-    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
-    return TCL_ERROR;
-  }
-
   Tk_Window tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
 					    Tcl_GetString(objv[1]), NULL);
   if (!tkwin)
     return TCL_ERROR;
-
-  Tk_OptionTable optionTable = Tk_CreateOptionTable(interp, optionSpecs);
 
   switch (classId) {
   case CID_ELEM_LINE:
@@ -212,6 +200,8 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
   default:
     break;
   }
+
+  Tk_OptionTable optionTable = Tk_CreateOptionTable(interp, optionSpecs);
 
   Graph* graphPtr = (Graph*)calloc(1, sizeof(Graph));
   ((TkWindow*)tkwin)->instanceData = graphPtr;
@@ -288,7 +278,7 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
   return TCL_OK;
 
  error:
-  DestroyGraph((char*)graphPtr);
+  GraphDestroy(graphPtr);
   return TCL_ERROR;
 }
 
@@ -323,7 +313,7 @@ void GraphDestroy(Graph* graphPtr)
   free(graphPtr);
 }
 
-void ConfigureGraph(Graph* graphPtr)	
+void GraphConfigure(Graph* graphPtr)	
 {
   // Don't allow negative bar widths. Reset to an arbitrary value (0.1)
   if (graphPtr->barWidth <= 0.0f) {
@@ -370,8 +360,6 @@ void ConfigureGraph(Graph* graphPtr)
     graphPtr->cache = None;
   }
 }
-
-// Support
 
 void GraphDisplay(Graph* graphPtr)
 {
@@ -480,8 +468,6 @@ void GraphDisplay(Graph* graphPtr)
   graphPtr->flags &= ~REDRAW_WORLD;
   UpdateMarginTraces(graphPtr);
 }
-
-// Ops
 
 // Support
 
@@ -797,43 +783,6 @@ void Blt_MapGraph(Graph* graphPtr)
   }
 }
 
-void Blt_DrawGraph(Graph* graphPtr, Drawable drawable)
-{
-  DrawPlot(graphPtr, drawable);
-  // Draw markers above elements
-  Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
-  Blt_DrawActiveElements(graphPtr, drawable);
-
-  // Don't draw legend in the plot area
-  if (graphPtr->legend->isRaised()) {
-    switch (graphPtr->legend->position()) {
-    case Legend::PLOT:
-    case Legend::XY:
-      graphPtr->legend->draw(drawable);
-      break;
-    default:
-      break;
-    }
-  }
-
-  // Draw 3D border just inside of the focus highlight ring
-  if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		       graphPtr->highlightWidth, graphPtr->highlightWidth, 
-		       graphPtr->width  - 2*graphPtr->highlightWidth, 
-		       graphPtr->height - 2*graphPtr->highlightWidth, 
-		       graphPtr->borderWidth, graphPtr->relief);
-  }
-  /* Draw focus highlight ring. */
-  if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
-    GC gc;
-
-    gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
-    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
-			  drawable);
-  }
-}
-
 static void UpdateMarginTraces(Graph* graphPtr)
 {
   Margin* marginPtr;
@@ -872,7 +821,7 @@ Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
 
 void Blt_ReconfigureGraph(Graph* graphPtr)	
 {
-  ConfigureGraph(graphPtr);
+  GraphConfigure(graphPtr);
   graphPtr->legend->configure();
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);

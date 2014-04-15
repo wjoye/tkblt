@@ -56,12 +56,15 @@ using namespace Blt;
 
 extern void GraphDisplay(Graph* graphPtr);
 extern void GraphDestroy(Graph* graphPtr);
-extern void ConfigureGraph(Graph* graphPtr);
+extern void GraphConfigure(Graph* graphPtr);
 extern int NewGraph(ClientData clientData, Tcl_Interp*interp, 
 		    int objc, Tcl_Obj* const objv[], ClassId classId);
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
+
+extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+			    Tcl_Obj* const objv[]);
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
@@ -81,12 +84,22 @@ int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
 		       Tcl_Obj* const objv[])
 {
+  if (objc < 2) {
+    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
+    return TCL_ERROR;
+  }
+
   return NewGraph(clientData, interp, objc, objv, CID_ELEM_LINE);
 }
 
 static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
 			  Tcl_Obj* const objv[])
 {
+  if (objc < 2) {
+    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
+    return TCL_ERROR;
+  }
+
   return NewGraph(clientData, interp, objc, objv, CID_ELEM_BAR);
 }
 
@@ -112,7 +125,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     }
 
     graphPtr->flags |= mask;
-    ConfigureGraph(graphPtr);
+    GraphConfigure(graphPtr);
     Blt_EventuallyRedrawGraph(graphPtr);
 
     break; 

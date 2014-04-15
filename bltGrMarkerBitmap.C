@@ -29,6 +29,7 @@
 
 #include "bltGrMarkerBitmap.h"
 #include "bltGrMarkerOption.h"
+#include "bltGrMisc.h"
 
 using namespace Blt;
 

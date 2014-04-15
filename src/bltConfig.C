@@ -45,6 +45,7 @@ extern "C" {
 };
 
 #include "bltConfig.h"
+#include "bltGrMisc.h"
 
 void RestoreProc(ClientData clientData, Tk_Window tkwin,
 		 char *ptr, char *savePtr)

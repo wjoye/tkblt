@@ -386,17 +386,6 @@ struct _Graph {
 #define REDRAW_WORLD		(DRAW_LEGEND)
 #define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
 
-// Misc
-extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
-			      int nScreenPts);
-
-
-// Postscript
-extern int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			    Tcl_Obj* const objv[]);
-extern int Blt_CreatePageSetup(Graph* graphPtr);
-extern void Blt_DestroyPageSetup(Graph* graphPtr);
-
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern MakeTagProc Blt_MakeElementTag;
 extern MakeTagProc Blt_MakeAxisTag;
@@ -404,14 +393,9 @@ extern Blt_BindTagProc Blt_GraphTags;
 extern Blt_BindTagProc Blt_AxisTags;
 
 extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
-extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
-			    int nInputPts, Point2d *outputPts);
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
-extern void Blt_DrawGraph(Graph* graphPtr, Drawable drawable);
 extern void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc, 
 			       Segment2d *segments, int nSegments);
-extern int Blt_GetCoordinate(Tcl_Interp* interp, const char *string, 
-			     double *valuePtr);
 extern void Blt_LayoutGraph(Graph* graphPtr);
 extern void Blt_EventuallyRedrawGraph(Graph* graphPtr);
 extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
