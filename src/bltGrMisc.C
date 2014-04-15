@@ -461,3 +461,17 @@ long Blt_MaxRequestSize(Display *display, size_t elemSize)
   return (maxSizeBytes / elemSize);
 }
 
+Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
+{
+  while (tkwin) {
+    TkWindow* winPtr = (TkWindow*)tkwin;
+    if (winPtr->instanceData != NULL) {
+      Graph* graphPtr = (Graph*)winPtr->instanceData;
+      if (graphPtr)
+	return graphPtr;
+    }
+    tkwin = Tk_Parent(tkwin);
+  }
+  return NULL;
+}
+

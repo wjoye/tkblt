@@ -40,6 +40,8 @@
 #include <tkInt.h>
 #endif
 
+class Graph;
+
 typedef struct {
   double x;
   double y;
@@ -93,5 +95,6 @@ extern GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask,
 extern void Blt_FreePrivateGC(Display *display, GC gc);
 extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
 extern long Blt_MaxRequestSize (Display *display, size_t elemSize);
+extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
 
 #endif
