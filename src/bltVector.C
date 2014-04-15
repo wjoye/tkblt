@@ -115,6 +115,16 @@ static Blt_SwitchSpec createSwitches[] =
 typedef int (VectorCmdProc)(Vector *vecObjPtr, Tcl_Interp* interp, 
 	int objc, Tcl_Obj* const objv[]);
 
+static char* Blt_Strdup(const char *string)
+{
+  size_t size = strlen(string) + 1;
+  char* ptr = (char*)malloc(size * sizeof(char));
+  if (ptr != NULL) {
+    strcpy(ptr, string);
+  }
+  return ptr;
+}
+
 static Vector *
 FindVectorInNamespace(
     VectorInterpData *dataPtr,	/* Interpreter-specific data. */

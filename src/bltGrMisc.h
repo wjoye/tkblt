@@ -62,6 +62,8 @@ typedef struct {
   short int height;
 } Dim2D;
 
+extern char* dupstr(const char*);
+
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);
 extern int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, 

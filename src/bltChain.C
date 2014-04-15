@@ -39,6 +39,8 @@ extern "C" {
   (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
 #endif /* ALIGN */
 
+typedef int (QSortCompareProc) (const void *, const void *);
+
 typedef struct _Blt_ChainLink ChainLink;
 typedef struct _Blt_Chain Chain;
 

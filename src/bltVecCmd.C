@@ -60,6 +60,7 @@ extern int Blt_SimplifyLine (Point2d *origPts, int low, int high,
 
 typedef int (VectorCmdProc)(Vector *vPtr, Tcl_Interp* interp, int objc, 
 	Tcl_Obj* const objv[]);
+typedef int (QSortCompareProc) (const void *, const void *);
 
 static Blt_SwitchParseProc ObjToFFTVector;
 static Blt_SwitchCustom fftVectorSwitch = {

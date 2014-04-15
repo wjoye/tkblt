@@ -48,6 +48,12 @@ extern "C" {
 #include "bltPsInt.h"
 };
 
+#ifdef TCL_UTF_MAX
+#  define HAVE_UTF	1
+#else
+#  define HAVE_UTF	0
+#endif
+
 #define FONT_ITALIC	(1<<0)
 #define FONT_BOLD	(1<<1)
 

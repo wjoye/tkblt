@@ -38,6 +38,16 @@ extern "C" {
 #define COUNT_POS		1
 #define COUNT_ANY		2
 
+static char* Blt_Strdup(const char *string)
+{
+  size_t size = strlen(string) + 1;
+  char* ptr = (char*)malloc(size * sizeof(char));
+  if (ptr != NULL) {
+    strcpy(ptr, string);
+  }
+  return ptr;
+}
+
 static int Blt_GetCountFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int check,
 			long *valuePtr)
 {
