@@ -61,9 +61,6 @@ using namespace Blt;
 
 extern void ConfigureGraph(Graph* graphPtr);
 
-static Tcl_IdleProc DisplayGraph;
-static Tcl_FreeProc DestroyGraph;
-static Tk_EventProc GraphEventProc;
 
 static Blt_BindPickProc PickEntry;
 
@@ -295,11 +292,8 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
   return TCL_ERROR;
 }
 
-// called by Tcl_EventuallyFree and others
-static void DestroyGraph(char* dataPtr)
+void GraphDestroy(Graph* graphPtr)
 {
-  Graph* graphPtr = (Graph*)dataPtr;
-
   Blt::DestroyMarkers(graphPtr);
 
   if (graphPtr->crosshairs)
@@ -327,40 +321,6 @@ static void DestroyGraph(char* dataPtr)
   Tcl_Release(graphPtr->tkwin);
   graphPtr->tkwin = NULL;
   free(graphPtr);
-}
-
-static void GraphEventProc(ClientData clientData, XEvent* eventPtr)
-{
-  Graph* graphPtr = (Graph*)clientData;
-
-  if (eventPtr->type == Expose) {
-    if (eventPtr->xexpose.count == 0) {
-      graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
-    }
-
-  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
-    if (eventPtr->xfocus.detail != NotifyInferior) {
-      if (eventPtr->type == FocusIn)
-	graphPtr->flags |= FOCUS;
-      else
-	graphPtr->flags &= ~FOCUS;
-      graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
-    }
-
-  } else if (eventPtr->type == DestroyNotify) {
-    if (!(graphPtr->flags & GRAPH_DELETED)) {
-      graphPtr->flags |= GRAPH_DELETED;
-      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
-      if (graphPtr->flags & REDRAW_PENDING)
-	Tcl_CancelIdleCall(DisplayGraph, graphPtr);
-      Tcl_EventuallyFree(graphPtr, DestroyGraph);
-    }
-  } else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_EventuallyRedrawGraph(graphPtr);
-  }
 }
 
 void ConfigureGraph(Graph* graphPtr)	
@@ -413,9 +373,8 @@ void ConfigureGraph(Graph* graphPtr)
 
 // Support
 
-static void DisplayGraph(ClientData clientData)
+void GraphDisplay(Graph* graphPtr)
 {
-  Graph* graphPtr = (Graph*)clientData;
   Tk_Window tkwin = graphPtr->tkwin;
 
   graphPtr->flags &= ~REDRAW_PENDING;

@@ -54,6 +54,8 @@ extern "C" {
 
 using namespace Blt;
 
+extern void GraphDisplay(Graph* graphPtr);
+extern void GraphDestroy(Graph* graphPtr);
 extern void ConfigureGraph(Graph* graphPtr);
 extern int NewGraph(ClientData clientData, Tcl_Interp*interp, 
 		    int objc, Tcl_Obj* const objv[], ClassId classId);
@@ -429,4 +431,51 @@ void GraphInstCmdDeleteProc(ClientData clientData)
   Graph* graphPtr = (Graph*)clientData;
   if (!(graphPtr->flags & GRAPH_DELETED))
     Tk_DestroyWindow(graphPtr->tkwin);
+}
+
+void GraphEventProc(ClientData clientData, XEvent* eventPtr)
+{
+  Graph* graphPtr = (Graph*)clientData;
+
+  if (eventPtr->type == Expose) {
+    if (eventPtr->xexpose.count == 0) {
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
+    }
+
+  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+    if (eventPtr->xfocus.detail != NotifyInferior) {
+      if (eventPtr->type == FocusIn)
+	graphPtr->flags |= FOCUS;
+      else
+	graphPtr->flags &= ~FOCUS;
+      graphPtr->flags |= REDRAW_WORLD;
+      Blt_EventuallyRedrawGraph(graphPtr);
+    }
+
+  } else if (eventPtr->type == DestroyNotify) {
+    if (!(graphPtr->flags & GRAPH_DELETED)) {
+      graphPtr->flags |= GRAPH_DELETED;
+      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
+      if (graphPtr->flags & REDRAW_PENDING)
+	Tcl_CancelIdleCall(DisplayGraph, graphPtr);
+      Tcl_EventuallyFree(graphPtr, DestroyGraph);
+    }
+  } else if (eventPtr->type == ConfigureNotify) {
+    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    Blt_EventuallyRedrawGraph(graphPtr);
+  }
+}
+
+void DisplayGraph(ClientData clientData)
+{
+  Graph* graphPtr = (Graph*)clientData;
+  GraphDisplay(graphPtr);
+}
+
+// called by Tcl_EventuallyFree and others
+void DestroyGraph(char* dataPtr)
+{
+  Graph* graphPtr = (Graph*)dataPtr;
+  GraphDestroy(graphPtr);
 }
