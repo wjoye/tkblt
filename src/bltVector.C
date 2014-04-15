@@ -49,9 +49,9 @@
 
 #include "bltInt.h"
 #include "bltVecInt.h"
-#include "bltOp.h"
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
+#include "bltOp.h"
 
 #define DEF_ARRAY_SIZE		64
 #define TRACE_ALL  (TCL_TRACE_WRITES | TCL_TRACE_READS | TCL_TRACE_UNSETS)

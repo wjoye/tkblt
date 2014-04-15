@@ -29,12 +29,14 @@
 
 #include <stdarg.h>
 
-#include "bltC.h"
-
 extern "C" {
 #include "bltInt.h"
 #include "bltSwitch.h"
 };
+
+#define COUNT_NNEG		0
+#define COUNT_POS		1
+#define COUNT_ANY		2
 
 static int Blt_GetCountFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int check,
 			long *valuePtr)

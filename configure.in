@@ -109,6 +109,7 @@ TEA_ADD_SOURCES([
 	bltParse.C
 	bltPs.C
 	bltPsAfm.C
+	bltOp.C
 	bltSpline.C
 	bltSwitch.C
 	bltText.C

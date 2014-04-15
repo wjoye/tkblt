@@ -31,8 +31,8 @@ extern "C" {
 #include "bltGraph.h"
 #include "bltOp.h"
 };
-#include "bltGrElem.h"
 
+#include "bltGrElem.h"
 #include "bltGrMarkerOp.h"
 #include "bltGrMarker.h"
 #include "bltGrMarkerBitmap.h"
