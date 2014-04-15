@@ -27,12 +27,21 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdarg.h>
-
 extern "C" {
 #include "bltInt.h"
 #include "bltGraph.h"
 };
+
+char* dupstr(const char* str)
+{
+  char* copy =NULL;
+  if (str) {
+    copy=new char[strlen(str)+1];
+    strcpy(copy,str);
+  }
+
+  return copy;
+}
 
 int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 
 	      int* xPtr, int* yPtr)
