@@ -140,15 +140,31 @@ typedef struct {
 
 class Graph {
  public:
+  int valid_;
   Tcl_Interp* interp;
   Tk_Window tkwin;
   Display *display;
   Tcl_Command cmdToken;
   Tk_OptionTable optionTable_;
   void* ops_;
+
   ClassId classId;
-  int inset;
   unsigned int flags;
+  int nextMarkerId;
+
+  Component axes;
+  Component elements;
+  Component markers;
+  Tcl_HashTable dataTables;
+  Tcl_HashTable penTable;
+  Blt_BindTable bindTable;
+  Blt_Chain axisChain[4];
+
+  Legend *legend;
+  Crosshairs *crosshairs;
+  PageSetup *pageSetup;
+
+  int inset;
   short int titleX;
   short int titleY;
   short int titleWidth;
@@ -156,20 +172,6 @@ class Graph {
   Axis *focusPtr;
   int width;
   int height;
-  Tcl_HashTable penTable;
-
-  Component elements;
-  Component markers;
-  Component axes;
-
-  Tcl_HashTable dataTables;
-  Blt_BindTable bindTable;
-  int nextMarkerId;
-  Blt_Chain axisChain[4];
-  PageSetup *pageSetup;
-  Legend *legend;
-  Crosshairs *crosshairs;
-
   int halo;
   GC drawGC;
   short int left;
@@ -191,6 +193,11 @@ class Graph {
   int nBarGroups;
   Tcl_HashTable setTable;
   int maxBarSetSize;
+
+ public:
+  Graph(ClientData clientData, Tcl_Interp*interp, 
+	int objc, Tcl_Obj* const objv[], ClassId classId);
+  virtual ~Graph();
 };
 
 extern void Blt_MapGraph(Graph* graphPtr);

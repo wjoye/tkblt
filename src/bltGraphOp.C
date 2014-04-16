@@ -55,10 +55,7 @@ extern "C" {
 using namespace Blt;
 
 extern void GraphDisplay(Graph* graphPtr);
-extern void GraphDestroy(Graph* graphPtr);
 extern void GraphConfigure(Graph* graphPtr);
-extern int NewGraph(ClientData clientData, Tcl_Interp*interp, 
-		    int objc, Tcl_Obj* const objv[], ClassId classId);
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
@@ -89,7 +86,8 @@ static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
   }
 
-  return NewGraph(clientData, interp, objc, objv, CID_ELEM_LINE);
+  Graph* graphPtr = new Graph(clientData, interp, objc, objv, CID_ELEM_LINE);
+  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
 }
 
 static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
@@ -100,7 +98,8 @@ static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
   }
 
-  return NewGraph(clientData, interp, objc, objv, CID_ELEM_BAR);
+  Graph* graphPtr = new Graph(clientData, interp, objc, objv, CID_ELEM_BAR);
+  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
 }
 
 int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
@@ -495,5 +494,5 @@ void DisplayGraph(ClientData clientData)
 void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
-  GraphDestroy(graphPtr);
+  delete graphPtr;
 }

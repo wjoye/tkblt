@@ -55,7 +55,6 @@ using namespace Blt;
 #define MARKER_UNDER	1
 
 extern void GraphConfigure(Graph* graphPtr);
-extern void GraphDestroy(Graph* graphPtr);
 
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
@@ -201,13 +200,25 @@ static Tk_OptionSpec optionSpecs[] = {
 
 // Create
 
-int NewGraph(ClientData clientData, Tcl_Interp*interp, 
-	     int objc, Tcl_Obj* const objv[], ClassId classId)
+Graph::Graph(ClientData clientData, Tcl_Interp* interpp, 
+	     int objc, Tcl_Obj* const objv[], ClassId classIdd)
 {
-  Tk_Window tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
-					    Tcl_GetString(objv[1]), NULL);
-  if (!tkwin)
-    return TCL_ERROR;
+  valid_ =1;
+  interp = interpp;
+  tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
+				  Tcl_GetString(objv[1]), NULL);
+  if (!tkwin) {
+    valid_ =0;
+    return;
+  }
+  display = Tk_Display(tkwin);
+  ((TkWindow*)tkwin)->instanceData = this;
+
+  cmdToken = Tcl_CreateObjCommand(interp, Tk_PathName(tkwin), GraphInstCmdProc, 
+				  this, GraphInstCmdDeleteProc);
+  optionTable_ = Tk_CreateOptionTable(interp, optionSpecs);
+  ops_ = (GraphOptions*)calloc(1, sizeof(GraphOptions));
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   switch (classId) {
   case CID_ELEM_LINE:
@@ -220,23 +231,40 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
     break;
   }
 
-  Graph* graphPtr = (Graph*)calloc(1, sizeof(Graph));
-  ((TkWindow*)tkwin)->instanceData = graphPtr;
+  classId = classIdd;
+  flags = MAP_WORLD | REDRAW_WORLD;
+  nextMarkerId = 1;
 
-  graphPtr->ops_ = (GraphOptions*)calloc(1, sizeof(GraphOptions));
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  legend = new Legend(this);
+  crosshairs = new Crosshairs(this);
 
-  graphPtr->tkwin = tkwin;
-  graphPtr->display = Tk_Display(tkwin);
-  graphPtr->interp = interp;
-  graphPtr->cmdToken = Tcl_CreateObjCommand(interp, 
-					    Tk_PathName(graphPtr->tkwin), 
-					    GraphInstCmdProc, 
-					    graphPtr, 
-					    GraphInstCmdDeleteProc);
-  graphPtr->classId = classId;
-  graphPtr->flags = MAP_WORLD | REDRAW_WORLD;
-  graphPtr->nextMarkerId = 1;
+  inset =0;
+  titleX =0;
+  titleY =0;
+  titleWidth =0;
+  titleHeight =0;
+  focusPtr =NULL;
+  width =0;
+  height =0;
+  halo =0;
+  drawGC =NULL;
+  left =0;
+  right =0;
+  top =0;
+  bottom =0;
+  vRange =0;
+  vOffset =0;
+  hRange =0;
+  hOffset =0;
+  vScale =0;
+  hScale =0;
+  cache =None;
+  cacheWidth =0;
+  cacheHeight =0;
+  barGroups =NULL;
+  nBarGroups =0;
+  maxBarSetSize =0;
+
   ops->bottomMargin.site = MARGIN_BOTTOM;
   ops->leftMargin.site = MARGIN_LEFT;
   ops->topMargin.site = MARGIN_TOP;
@@ -245,91 +273,89 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
   Blt_Ts_InitStyle(ops->titleTextStyle);
   ops->titleTextStyle.anchor = TK_ANCHOR_N;
 
-  Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->elements.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->elements.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->markers.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->markers.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->dataTables, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&graphPtr->penTable, TCL_STRING_KEYS);
-  graphPtr->elements.displayList = Blt_Chain_Create();
-  graphPtr->markers.displayList = Blt_Chain_Create();
-  graphPtr->axes.displayList = Blt_Chain_Create();
-  graphPtr->bindTable = Blt_CreateBindingTable(interp, tkwin, graphPtr, 
-					       PickEntry, Blt_GraphTags);
-  graphPtr->legend = new Legend(graphPtr);
-  graphPtr->crosshairs = new Crosshairs(graphPtr);
+  Tcl_InitHashTable(&axes.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&axes.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&elements.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&elements.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&dataTables, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&penTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
+  elements.displayList = Blt_Chain_Create();
+  markers.displayList = Blt_Chain_Create();
+  axes.displayList = Blt_Chain_Create();
+  bindTable = Blt_CreateBindingTable(interp, tkwin, this, PickEntry, Blt_GraphTags);
 
-  if (Blt_CreatePen(graphPtr, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
-      TCL_OK)
-    goto error;
-  if (Blt_CreatePen(graphPtr, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
-      TCL_OK)
-    goto error;
-  if (Blt_CreateAxes(graphPtr) != TCL_OK)
-    goto error;
-  if (Blt_CreatePageSetup(graphPtr) != TCL_OK)
-    goto error;
+  if (Blt_CreatePen(this, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
+      TCL_OK) {
+    valid_ =0;
+    return;
+  }
+  if (Blt_CreatePen(this, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
+      TCL_OK) {
+    valid_ =0;
+    return;
+  }
+  if (Blt_CreateAxes(this) != TCL_OK) {
+    valid_ =0;
+    return;
+  }
+  if (Blt_CreatePageSetup(this) != TCL_OK) {
+    valid_ =0;
+    return;
+  }
 
   // Keep a hold of the associated tkwin until we destroy the graph,
   // otherwise Tk might free it while we still need it.
-  Tcl_Preserve(graphPtr->tkwin);
+  Tcl_Preserve(tkwin);
 
-  Tk_CreateEventHandler(graphPtr->tkwin, 
-			ExposureMask|StructureNotifyMask|FocusChangeMask,
-			GraphEventProc, graphPtr);
+  Tk_CreateEventHandler(tkwin, ExposureMask|StructureNotifyMask|FocusChangeMask,
+			GraphEventProc, this);
 
-  graphPtr->optionTable_ = Tk_CreateOptionTable(interp, optionSpecs);
+  if ((Tk_InitOptions(interp, (char*)ops_, optionTable_, tkwin) != TCL_OK) || (GraphObjConfigure(interp, this, objc-2, objv+2) != TCL_OK)) {
+    valid_ =0;
+    return;
+  }
 
-  if ((Tk_InitOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable_, tkwin) != TCL_OK) || (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
-    return TCL_ERROR;
+  AdjustAxisPointers(this);
 
-  AdjustAxisPointers(graphPtr);
-
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_PathName(graphPtr->tkwin), -1);
-  return TCL_OK;
-
- error:
-  GraphDestroy(graphPtr);
-  return TCL_ERROR;
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_PathName(tkwin), -1);
 }
 
-void GraphDestroy(Graph* graphPtr)
+Graph::~Graph()
 {
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
-  Blt::DestroyMarkers(graphPtr);
+  Blt::DestroyMarkers(this);
 
-  if (graphPtr->crosshairs)
-    delete graphPtr->crosshairs;
-  Blt_DestroyElements(graphPtr);  // must come before legend and others
-  if (graphPtr->legend)
-    delete graphPtr->legend;
+  if (crosshairs)
+    delete crosshairs;
+  Blt_DestroyElements(this);  // must come before legend and others
+  if (legend)
+    delete legend;
 
-  Blt_DestroyAxes(graphPtr);
-  Blt_DestroyPens(graphPtr);
-  Blt_DestroyPageSetup(graphPtr);
-  Blt_DestroyBarSets(graphPtr);
+  Blt_DestroyAxes(this);
+  Blt_DestroyPens(this);
+  Blt_DestroyPageSetup(this);
+  Blt_DestroyBarSets(this);
 
-  if (graphPtr->bindTable)
-    Blt_DestroyBindingTable(graphPtr->bindTable);
+  if (bindTable)
+    Blt_DestroyBindingTable(bindTable);
 
-  if (graphPtr->drawGC)
-    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
+  if (drawGC)
+    Tk_FreeGC(display, drawGC);
 
-  Blt_Ts_FreeStyle(graphPtr->display, &ops->titleTextStyle);
-  if (graphPtr->cache != None)
-    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
+  Blt_Ts_FreeStyle(display, &ops->titleTextStyle);
+  if (cache != None)
+    Tk_FreePixmap(display, cache);
 
-  Tk_FreeConfigOptions((char*)graphPtr->ops_, graphPtr->optionTable_, graphPtr->tkwin);
-  Tcl_Release(graphPtr->tkwin);
-  graphPtr->tkwin = NULL;
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, tkwin);
+  Tcl_Release(tkwin);
+  tkwin = NULL;
 
-  if (graphPtr->ops_)
-    free (graphPtr->ops_);
-
-  free(graphPtr);
+  if (ops_)
+    free (ops_);
 }
 
 void GraphConfigure(Graph* graphPtr)	
