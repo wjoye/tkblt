@@ -150,7 +150,7 @@ class Graph {
 
   ClassId classId_;
   unsigned int flags;
-  int nextMarkerId;
+  int nextMarkerId_;
 
   Component axes;
   Component elements;
@@ -164,11 +164,11 @@ class Graph {
   Crosshairs* crosshairs_;
   PageSetup* pageSetup_;
 
-  int inset;
-  short int titleX;
-  short int titleY;
-  short int titleWidth;
-  short int titleHeight;
+  int inset_;
+  short int titleX_;
+  short int titleY_;
+  short int titleWidth_;
+  short int titleHeight_;
   Axis *focusPtr;
   int width;
   int height;

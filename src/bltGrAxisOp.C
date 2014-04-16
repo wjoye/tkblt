@@ -1313,9 +1313,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
    * Step 2:  Add the graph title height to the top margin. 
    */
   if (gops->title)
-    top += graphPtr->titleHeight + 6;
+    top += graphPtr->titleHeight_ + 6;
 
-  inset = (graphPtr->inset + gops->plotBW);
+  inset = (graphPtr->inset_ + gops->plotBW);
   inset2 = 2 * inset;
 
   /* 
@@ -1503,10 +1503,10 @@ void Blt_LayoutGraph(Graph* graphPtr)
   graphPtr->right  = width - right - inset;
   graphPtr->bottom = height - bottom - inset;
 
-  gops->leftMargin.width    = left   + graphPtr->inset;
-  gops->rightMargin.width   = right  + graphPtr->inset;
-  gops->topMargin.height    = top    + graphPtr->inset;
-  gops->bottomMargin.height = bottom + graphPtr->inset;
+  gops->leftMargin.width    = left   + graphPtr->inset_;
+  gops->rightMargin.width   = right  + graphPtr->inset_;
+  gops->topMargin.height    = top    + graphPtr->inset_;
+  gops->bottomMargin.height = bottom + graphPtr->inset_;
 	    
   graphPtr->vOffset = graphPtr->top + gops->yPad;
   graphPtr->vRange  = plotHeight - 2*gops->yPad;
@@ -1524,9 +1524,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
 
   // Calculate the placement of the graph title so it is centered within the
   // space provided for it in the top margin
-  titleY = graphPtr->titleHeight;
-  graphPtr->titleY = 3 + graphPtr->inset;
-  graphPtr->titleX = (graphPtr->right + graphPtr->left) / 2;
+  titleY = graphPtr->titleHeight_;
+  graphPtr->titleY_ = 3 + graphPtr->inset_;
+  graphPtr->titleX_ = (graphPtr->right + graphPtr->left) / 2;
 }
 
 static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)

@@ -100,14 +100,14 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   char ident[128];
   if (objc == 4) {
     offset = 4;
-    sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId++);
+    sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId_++);
     name = ident;
   }
   else {
     name = Tcl_GetString(objv[4]);
     if (name[0] == '-') {
       offset = 4;
-      sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId++);
+      sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId_++);
       name = ident;
     }
   }

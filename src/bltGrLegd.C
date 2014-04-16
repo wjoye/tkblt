@@ -660,7 +660,7 @@ void Legend::setOrigin()
   case LEFT:
     w = gops->leftMargin.width - gops->leftMargin.axesOffset;
     h = graphPtr_->bottom - graphPtr_->top;
-    x = graphPtr_->inset;
+    x = graphPtr_->inset_;
     y = graphPtr_->top;
     break;
 
@@ -668,12 +668,12 @@ void Legend::setOrigin()
     w = graphPtr_->right - graphPtr_->left;
     h = gops->topMargin.height - gops->topMargin.axesOffset;
     if (gops->title)
-      h -= graphPtr_->titleHeight;
+      h -= graphPtr_->titleHeight_;
 
     x = graphPtr_->left;
-    y = graphPtr_->inset;
+    y = graphPtr_->inset_;
     if (gops->title)
-      y += graphPtr_->titleHeight;
+      y += graphPtr_->titleHeight_;
     break;
 
   case BOTTOM:

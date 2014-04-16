@@ -40,7 +40,7 @@ extern "C" {
 static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				  int objc, Tcl_Obj* const objv[])
 {
-  Crosshairs* chPtr = graphPtr->crosshairs;
+  Crosshairs* chPtr = graphPtr->crosshairs_;
   Tk_SavedOptions savedOptions;
   int mask =0;
   int error;
@@ -84,7 +84,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
   }
 
-  Crosshairs* chPtr = graphPtr->crosshairs;
+  Crosshairs* chPtr = graphPtr->crosshairs_;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)chPtr->ops_, 
 				      chPtr->optionTable_,
@@ -99,7 +99,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
-  Crosshairs* chPtr = graphPtr->crosshairs;
+  Crosshairs* chPtr = graphPtr->crosshairs_;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)chPtr->ops_, 
 				       chPtr->optionTable_, 
@@ -118,7 +118,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 static int OnOp(Graph* graphPtr, Tcl_Interp* interp, 
 		int objc, Tcl_Obj* const objv[])
 {
-  Crosshairs *chPtr = graphPtr->crosshairs;
+  Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   if (ops->hide) {
@@ -131,7 +131,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
 static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
-  Crosshairs *chPtr = graphPtr->crosshairs;
+  Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   if (!ops->hide) {
@@ -144,7 +144,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
-  Crosshairs *chPtr = graphPtr->crosshairs;
+  Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
 
   ops->hide = (ops->hide == 0);
@@ -181,18 +181,18 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
 
 void Blt_EnableCrosshairs(Graph* graphPtr)
 {
-  Crosshairs* chPtr = graphPtr->crosshairs;
+  Crosshairs* chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
   if (!ops->hide)
-    graphPtr->crosshairs->on();
+    graphPtr->crosshairs_->on();
 }
 
 void Blt_DisableCrosshairs(Graph* graphPtr)
 {
-  Crosshairs* chPtr = graphPtr->crosshairs;
+  Crosshairs* chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
   if (!ops->hide)
-    graphPtr->crosshairs->off();
+    graphPtr->crosshairs_->off();
 }
 
 

@@ -283,13 +283,13 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 	     (strncmp("legend", string, length) == 0)) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->legend->x()));
+			     Tcl_NewIntObj(graphPtr->legend_->x()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->legend->y()));
+			     Tcl_NewIntObj(graphPtr->legend_->y()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->legend->width()));
+			     Tcl_NewIntObj(graphPtr->legend_->width()));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->legend->height()));
+			     Tcl_NewIntObj(graphPtr->legend_->height()));
     Tcl_SetObjResult(interp, listObjPtr);
   }
   else if ((c == 'l') && (length > 2) &&

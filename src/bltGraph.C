@@ -232,16 +232,16 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 
   classId_ = classId;
   flags = MAP_WORLD | REDRAW_WORLD;
-  nextMarkerId = 1;
+  nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
   crosshairs_ = new Crosshairs(this);
 
-  inset =0;
-  titleX =0;
-  titleY =0;
-  titleWidth =0;
-  titleHeight =0;
+  inset_ =0;
+  titleX_ =0;
+  titleY_ =0;
+  titleWidth_ =0;
+  titleHeight_ =0;
   focusPtr =NULL;
   width =0;
   height =0;
@@ -367,7 +367,7 @@ void Graph::configure()
   if (ops->barWidth <= 0.0f)
     ops->barWidth = 0.8f;
 
-  inset = ops->borderWidth + ops->highlightWidth;
+  inset_ = ops->borderWidth + ops->highlightWidth;
   if ((ops->reqHeight != Tk_ReqHeight(tkwin_)) ||
       (ops->reqWidth != Tk_ReqWidth(tkwin_)))
     Tk_GeometryRequest(tkwin_, ops->reqWidth, ops->reqHeight);
@@ -375,12 +375,12 @@ void Graph::configure()
   Tk_SetInternalBorder(tkwin_, ops->borderWidth);
   XColor* colorPtr = Tk_3DBorderColor(ops->normalBg);
 
-  titleWidth =0;
-  titleHeight =0;
+  titleWidth_ =0;
+  titleHeight_ =0;
   if (ops->title != NULL) {
     unsigned int w, h;
     Blt_Ts_GetExtents(&ops->titleTextStyle, ops->title, &w, &h);
-    titleHeight = h;
+    titleHeight_ = h;
   }
 
   // Create GCs for interior and exterior regions, and a background GC for
@@ -646,7 +646,7 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
 
   if (ops->title != NULL)
     Blt_DrawText(graphPtr->tkwin_, drawable, ops->title,
-		 &ops->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
+		 &ops->titleTextStyle, graphPtr->titleX_, graphPtr->titleY_);
 
   Blt_DrawAxes(graphPtr, drawable);
   graphPtr->flags &= ~DRAW_MARGINS;
