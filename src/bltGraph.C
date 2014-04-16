@@ -273,18 +273,18 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Blt_Ts_InitStyle(ops->titleTextStyle);
   ops->titleTextStyle.anchor = TK_ANCHOR_N;
 
-  Tcl_InitHashTable(&axes.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&axes.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&elements.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&elements.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&markers.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&markers.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&axes_.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&axes_.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&elements_.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&elements_.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers_.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers_.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&dataTables, TCL_STRING_KEYS);
   Tcl_InitHashTable(&penTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
-  elements.displayList = Blt_Chain_Create();
-  markers.displayList = Blt_Chain_Create();
-  axes.displayList = Blt_Chain_Create();
+  axes_.displayList = Blt_Chain_Create();
+  elements_.displayList = Blt_Chain_Create();
+  markers_.displayList = Blt_Chain_Create();
   bindTable = Blt_CreateBindingTable(interp_, tkwin_, this, 
 				     PickEntry, Blt_GraphTags);
 
@@ -862,7 +862,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 	
   Blt_ChainLink link;
   Element* elemPtr;
-  for (link = Blt_Chain_LastLink(graphPtr->elements.displayList);
+  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->hide() || (elemPtr->flags & MAP_ITEM))

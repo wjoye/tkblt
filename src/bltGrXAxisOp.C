@@ -62,7 +62,7 @@ int Blt_CreateAxes(Graph* graphPtr)
   for (int ii=0; ii<4; ii++) {
     int isNew;
     Tcl_HashEntry* hPtr = 
-      Tcl_CreateHashEntry(&graphPtr->axes.table, axisNames[ii].name, &isNew);
+      Tcl_CreateHashEntry(&graphPtr->axes_.table, axisNames[ii].name, &isNew);
     Blt_Chain chain = Blt_Chain_Create();
 
     Axis* axisPtr = new Axis(graphPtr, axisNames[ii].name, ii, hPtr);

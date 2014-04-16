@@ -1443,7 +1443,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
    */
   Tcl_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
   nSegs = nStacks = 0;
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
+  for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     double *x, *xend;
     int nPoints;
@@ -1563,7 +1563,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
   /* Consider each bar x-y coordinate. Add the ordinates of duplicate
    * abscissas. */
 
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+  for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     double *x, *y, *xend;
 

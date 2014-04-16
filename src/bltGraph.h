@@ -152,9 +152,9 @@ class Graph {
   unsigned int flags;
   int nextMarkerId_;
 
-  Component axes;
-  Component elements;
-  Component markers;
+  Component axes_;
+  Component elements_;
+  Component markers_;
   Tcl_HashTable dataTables;
   Tcl_HashTable penTable;
   Blt_BindTable bindTable;

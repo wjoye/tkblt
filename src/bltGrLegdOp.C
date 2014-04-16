@@ -140,7 +140,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     const char *pattern;
 
     pattern = Tcl_GetString(objv[i]);
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+    for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (Tcl_StringMatch(elemPtr->name(), pattern)) {
@@ -182,7 +182,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 	
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     /* List active elements in stacking order. */
-    for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList); 
+    for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (elemPtr->flags & LABEL_ACTIVE) {
@@ -206,10 +206,10 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_Obj *listObjPtr;
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements.tagTable, &iter);
+    for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.tagTable, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       const char *tagName = 
-	(const char*)Tcl_GetHashKey(&graphPtr->elements.tagTable, hPtr);
+	(const char*)Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
       Tcl_Obj *objPtr = Tcl_NewStringObj(tagName, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
@@ -236,7 +236,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
   }
   else {
     // List of selected entries is in stacking order
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
       if (legendPtr->entryIsSelected(elemPtr)) {
