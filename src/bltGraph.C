@@ -202,28 +202,29 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interpp,
 	     int objc, Tcl_Obj* const objv[], ClassId classIdd)
 {
   valid_ =1;
-  interp = interpp;
-  tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), 
+  interp_ = interpp;
+  tkwin_ = Tk_CreateWindowFromPath(interp_, Tk_MainWindow(interp_), 
 				  Tcl_GetString(objv[1]), NULL);
-  if (!tkwin) {
+  if (!tkwin_) {
     valid_ =0;
     return;
   }
-  display = Tk_Display(tkwin);
-  ((TkWindow*)tkwin)->instanceData = this;
+  display_ = Tk_Display(tkwin_);
+  ((TkWindow*)tkwin_)->instanceData = this;
 
-  cmdToken = Tcl_CreateObjCommand(interp, Tk_PathName(tkwin), GraphInstCmdProc, 
-				  this, GraphInstCmdDeleteProc);
-  optionTable_ = Tk_CreateOptionTable(interp, optionSpecs);
+  cmdToken_ = Tcl_CreateObjCommand(interp_, Tk_PathName(tkwin_),
+				   GraphInstCmdProc, this,
+				   GraphInstCmdDeleteProc);
+  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
   ops_ = (GraphOptions*)calloc(1, sizeof(GraphOptions));
   GraphOptions* ops = (GraphOptions*)ops_;
 
   switch (classId) {
   case CID_ELEM_LINE:
-    Tk_SetClass(tkwin, "Graph");
+    Tk_SetClass(tkwin_, "Graph");
     break;
   case CID_ELEM_BAR:
-    Tk_SetClass(tkwin, "Barchart");
+    Tk_SetClass(tkwin_, "Barchart");
     break;
   default:
     break;
@@ -283,14 +284,15 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interpp,
   elements.displayList = Blt_Chain_Create();
   markers.displayList = Blt_Chain_Create();
   axes.displayList = Blt_Chain_Create();
-  bindTable = Blt_CreateBindingTable(interp, tkwin, this, PickEntry, Blt_GraphTags);
+  bindTable = Blt_CreateBindingTable(interp_, tkwin_, this, 
+				     PickEntry, Blt_GraphTags);
 
-  if (Blt_CreatePen(this, interp, "activeLine", CID_ELEM_LINE, 0, NULL) != 
+  if (Blt_CreatePen(this, interp_, "activeLine", CID_ELEM_LINE, 0, NULL) != 
       TCL_OK) {
     valid_ =0;
     return;
   }
-  if (Blt_CreatePen(this, interp, "activeBar", CID_ELEM_BAR, 0, NULL) != 
+  if (Blt_CreatePen(this, interp_, "activeBar", CID_ELEM_BAR, 0, NULL) != 
       TCL_OK) {
     valid_ =0;
     return;
@@ -306,19 +308,20 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interpp,
 
   // Keep a hold of the associated tkwin until we destroy the graph,
   // otherwise Tk might free it while we still need it.
-  Tcl_Preserve(tkwin);
+  Tcl_Preserve(tkwin_);
 
-  Tk_CreateEventHandler(tkwin, ExposureMask|StructureNotifyMask|FocusChangeMask,
+  Tk_CreateEventHandler(tkwin_, 
+			ExposureMask|StructureNotifyMask|FocusChangeMask,
 			GraphEventProc, this);
 
-  if ((Tk_InitOptions(interp, (char*)ops_, optionTable_, tkwin) != TCL_OK) || (GraphObjConfigure(interp, this, objc-2, objv+2) != TCL_OK)) {
+  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(interp_, this, objc-2, objv+2) != TCL_OK)) {
     valid_ =0;
     return;
   }
 
   AdjustAxisPointers(this);
 
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_PathName(tkwin), -1);
+  Tcl_SetStringObj(Tcl_GetObjResult(interp_), Tk_PathName(tkwin_), -1);
 }
 
 Graph::~Graph()
@@ -342,15 +345,15 @@ Graph::~Graph()
     Blt_DestroyBindingTable(bindTable);
 
   if (drawGC)
-    Tk_FreeGC(display, drawGC);
+    Tk_FreeGC(display_, drawGC);
 
-  Blt_Ts_FreeStyle(display, &ops->titleTextStyle);
+  Blt_Ts_FreeStyle(display_, &ops->titleTextStyle);
   if (cache != None)
-    Tk_FreePixmap(display, cache);
+    Tk_FreePixmap(display_, cache);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, tkwin);
-  Tcl_Release(tkwin);
-  tkwin = NULL;
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, tkwin_);
+  Tcl_Release(tkwin_);
+  tkwin_ = NULL;
 
   if (ops_)
     free (ops_);
@@ -365,11 +368,11 @@ void Graph::configure()
     ops->barWidth = 0.8f;
 
   inset = ops->borderWidth + ops->highlightWidth;
-  if ((ops->reqHeight != Tk_ReqHeight(tkwin)) ||
-      (ops->reqWidth != Tk_ReqWidth(tkwin)))
-    Tk_GeometryRequest(tkwin, ops->reqWidth, ops->reqHeight);
+  if ((ops->reqHeight != Tk_ReqHeight(tkwin_)) ||
+      (ops->reqWidth != Tk_ReqWidth(tkwin_)))
+    Tk_GeometryRequest(tkwin_, ops->reqWidth, ops->reqHeight);
 
-  Tk_SetInternalBorder(tkwin, ops->borderWidth);
+  Tk_SetInternalBorder(tkwin_, ops->borderWidth);
   XColor* colorPtr = Tk_3DBorderColor(ops->normalBg);
 
   titleWidth =0;
@@ -387,9 +390,9 @@ void Graph::configure()
   gcValues.foreground = ops->titleTextStyle.color->pixel;
   gcValues.background = colorPtr->pixel;
   unsigned long gcMask = (GCForeground | GCBackground);
-  GC newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
+  GC newGC = Tk_GetGC(tkwin_, gcMask, &gcValues);
   if (drawGC != NULL)
-    Tk_FreeGC(display, drawGC);
+    Tk_FreeGC(display_, drawGC);
   drawGC = newGC;
 
   // If the -inverted option changed, we need to readjust the pointers
@@ -399,7 +402,7 @@ void Graph::configure()
 
   // Free the pixmap if we're not buffering the display of elements anymore.
   if ((!ops->backingStore) && (cache != None)) {
-    Tk_FreePixmap(display, cache);
+    Tk_FreePixmap(display_, cache);
     cache = None;
   }
 }
@@ -407,21 +410,21 @@ void Graph::configure()
 void GraphDisplay(Graph* graphPtr)
 {
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-   Tk_Window tkwin = graphPtr->tkwin;
+   Tk_Window tkwin = graphPtr->tkwin_;
 
   graphPtr->flags &= ~REDRAW_PENDING;
-  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin))
+  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin_))
     return;
 
-  if ((Tk_Width(tkwin) <= 1) || (Tk_Height(tkwin) <= 1)) {
+  if ((Tk_Width(graphPtr->tkwin_) <= 1) || (Tk_Height(graphPtr->tkwin_) <= 1)) {
     /* Don't bother computing the layout until the size of the window is
      * something reasonable. */
     return;
   }
-  graphPtr->width = Tk_Width(tkwin);
-  graphPtr->height = Tk_Height(tkwin);
+  graphPtr->width = Tk_Width(graphPtr->tkwin_);
+  graphPtr->height = Tk_Height(graphPtr->tkwin_);
   Blt_MapGraph(graphPtr);
-  if (!Tk_IsMapped(tkwin)) {
+  if (!Tk_IsMapped(graphPtr->tkwin_)) {
     /* The graph's window isn't displayed, so don't bother drawing
      * anything.  By getting this far, we've at least computed the
      * coordinates of the graph's new layout.  */
@@ -430,24 +433,22 @@ void GraphDisplay(Graph* graphPtr)
   /* Create a pixmap the size of the window for double buffering. */
   Pixmap drawable;
   if (ops->doubleBuffer)
-    drawable = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), 
-			    graphPtr->width, graphPtr->height, Tk_Depth(tkwin));
+    drawable = Tk_GetPixmap(graphPtr->display_, Tk_WindowId(graphPtr->tkwin_), 
+			    graphPtr->width, graphPtr->height, Tk_Depth(graphPtr->tkwin_));
   else
-    drawable = Tk_WindowId(tkwin);
+    drawable = Tk_WindowId(graphPtr->tkwin_);
 
   if (ops->backingStore) {
     if ((graphPtr->cache == None) || 
 	(graphPtr->cacheWidth != graphPtr->width) ||
 	(graphPtr->cacheHeight != graphPtr->height)) {
-      if (graphPtr->cache != None) {
-	Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-      }
+      if (graphPtr->cache != None)
+	Tk_FreePixmap(graphPtr->display_, graphPtr->cache);
 
-
-      graphPtr->cache = Tk_GetPixmap(graphPtr->display, 
-				     Tk_WindowId(tkwin), 
+      graphPtr->cache = Tk_GetPixmap(graphPtr->display_, 
+				     Tk_WindowId(graphPtr->tkwin_), 
 				     graphPtr->width, graphPtr->height, 
-				     Tk_Depth(tkwin));
+				     Tk_Depth(graphPtr->tkwin_));
       graphPtr->cacheWidth  = graphPtr->width;
       graphPtr->cacheHeight = graphPtr->height;
       graphPtr->flags |= CACHE_DIRTY;
@@ -455,14 +456,14 @@ void GraphDisplay(Graph* graphPtr)
   }
   if (ops->backingStore) {
     if (graphPtr->flags & CACHE_DIRTY) {
-      /* The backing store is new or out-of-date. */
       DrawPlot(graphPtr, graphPtr->cache);
       graphPtr->flags &= ~CACHE_DIRTY;
     }
-    /* Copy the pixmap to the one used for drawing the entire graph. */
-    XCopyArea(graphPtr->display, graphPtr->cache, drawable,
-	      graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin),
-	      Tk_Height(graphPtr->tkwin), 0, 0);
+
+    // Copy the pixmap to the one used for drawing the entire graph
+    XCopyArea(graphPtr->display_, graphPtr->cache, drawable,
+	      graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin_),
+	      Tk_Height(graphPtr->tkwin_), 0, 0);
   }
   else
     DrawPlot(graphPtr, drawable);
@@ -484,29 +485,27 @@ void GraphDisplay(Graph* graphPtr)
   }
 
   // Draw 3D border just inside of the focus highlight ring
-  if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT)) {
-    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+  if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT))
+    Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		       ops->highlightWidth, ops->highlightWidth, 
 		       graphPtr->width - 2*ops->highlightWidth, 
 		       graphPtr->height - 2*ops->highlightWidth, 
 		       ops->borderWidth, ops->relief);
-  }
-  /* Draw focus highlight ring. */
-  if ((ops->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
-    GC gc;
 
-    gc = Tk_GCForColor(ops->highlightColor, drawable);
-    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, ops->highlightWidth,
+  // Draw focus highlight ring
+  if ((ops->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
+    GC gc = Tk_GCForColor(ops->highlightColor, drawable);
+    Tk_DrawFocusHighlight(graphPtr->tkwin_, gc, ops->highlightWidth,
 			  drawable);
   }
-  /* Disable crosshairs before redisplaying to the screen */
+
+  // Disable crosshairs before redisplaying to the screen
   Blt_DisableCrosshairs(graphPtr);
-  XCopyArea(graphPtr->display, drawable, Tk_WindowId(tkwin),
+  XCopyArea(graphPtr->display_, drawable, Tk_WindowId(tkwin),
 	    graphPtr->drawGC, 0, 0, graphPtr->width, graphPtr->height, 0, 0);
   Blt_EnableCrosshairs(graphPtr);
-  if (ops->doubleBuffer) {
-    Tk_FreePixmap(graphPtr->display, drawable);
-  }
+  if (ops->doubleBuffer)
+    Tk_FreePixmap(graphPtr->display_, drawable);
 
   graphPtr->flags &= ~MAP_WORLD;
   graphPtr->flags &= ~REDRAW_WORLD;
@@ -517,7 +516,7 @@ void GraphDisplay(Graph* graphPtr)
 
 void Blt_EventuallyRedrawGraph(Graph* graphPtr) 
 {
-  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin))
+  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin_))
     return;
 
   if (!(graphPtr->flags & REDRAW_PENDING)) {
@@ -608,16 +607,16 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   rects[2].x = graphPtr->right;
   rects[2].width = graphPtr->width - graphPtr->right;
 
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
 		     0, TK_RELIEF_FLAT);
 
@@ -630,7 +629,7 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
     y = graphPtr->top - ops->plotBW;
     w = (graphPtr->right - graphPtr->left) + (2*ops->plotBW);
     h = (graphPtr->bottom - graphPtr->top) + (2*ops->plotBW);
-    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+    Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		       x, y, w, h, ops->plotBW, ops->plotRelief);
   }
   
@@ -646,7 +645,7 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   }
 
   if (ops->title != NULL)
-    Blt_DrawText(graphPtr->tkwin, drawable, ops->title,
+    Blt_DrawText(graphPtr->tkwin_, drawable, ops->title,
 		 &ops->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
 
   Blt_DrawAxes(graphPtr, drawable);
@@ -659,7 +658,7 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   DrawMargins(graphPtr, drawable);
 
   // Draw the background of the plotting area with 3D border
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->plotBg,
+  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->plotBg,
 		     graphPtr->left-ops->plotBW, 
 		     graphPtr->top-ops->plotBW, 
 		     graphPtr->right - graphPtr->left + 1 +2*ops->plotBW,
@@ -723,7 +722,7 @@ static void UpdateMarginTraces(Graph* graphPtr)
       } else {
 	size = marginPtr->height;
       }
-      Tcl_SetVar(graphPtr->interp, marginPtr->varName, Blt_Itoa(size), 
+      Tcl_SetVar(graphPtr->interp_, marginPtr->varName, Blt_Itoa(size), 
 		 TCL_GLOBAL_ONLY);
     }
   }

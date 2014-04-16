@@ -76,7 +76,7 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Pen(graphPtr, name, hPtr)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
   ops_ = calloc(1, sizeof(BarPenOptions));
   manageOptions_ =1;
 
@@ -91,7 +91,7 @@ BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 BarPen::BarPen(Graph* graphPtr, const char* name, void* options)
   : Pen(graphPtr, name, NULL)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, barPenOptionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
   ops_ = options;
   manageOptions_ =0;
 
@@ -106,11 +106,11 @@ BarPen::BarPen(Graph* graphPtr, const char* name, void* options)
 BarPen::~BarPen()
 {
   if (outlineGC_)
-    Tk_FreeGC(graphPtr_->display, outlineGC_);
+    Tk_FreeGC(graphPtr_->display_, outlineGC_);
   if (fillGC_)
-    Tk_FreeGC(graphPtr_->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display_, fillGC_);
   if (errorBarGC_)
-    Tk_FreeGC(graphPtr_->display, errorBarGC_);
+    Tk_FreeGC(graphPtr_->display_, errorBarGC_);
 }
 
 int BarPen::configure()
@@ -126,9 +126,9 @@ int BarPen::configure()
       gcValues.foreground = ops->outlineColor->pixel;
     else if (ops->fill)
       gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
-    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     if (outlineGC_)
-      Tk_FreeGC(graphPtr_->display, outlineGC_);
+      Tk_FreeGC(graphPtr_->display_, outlineGC_);
     outlineGC_ = newGC;
   }
 
@@ -140,19 +140,19 @@ int BarPen::configure()
       unsigned long gcMask = 
 	GCForeground | GCBackground | GCFillStyle | GCStipple;
       XGCValues gcValues;
-      int screenNum = Tk_ScreenNumber(graphPtr_->tkwin);
-      gcValues.foreground = BlackPixel(graphPtr_->display, screenNum);
-      gcValues.background = WhitePixel(graphPtr_->display, screenNum);
+      int screenNum = Tk_ScreenNumber(graphPtr_->tkwin_);
+      gcValues.foreground = BlackPixel(graphPtr_->display_, screenNum);
+      gcValues.background = WhitePixel(graphPtr_->display_, screenNum);
       if (ops->fill)
 	gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
       else if (ops->outlineColor)
 	gcValues.foreground = ops->outlineColor->pixel;
       gcValues.stipple = ops->stipple;
       gcValues.fill_style = FillStippled;
-      newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+      newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     }
     if (fillGC_)
-      Tk_FreeGC(graphPtr_->display, fillGC_);
+      Tk_FreeGC(graphPtr_->display_, fillGC_);
     fillGC_ = newGC;
   }
 
@@ -165,9 +165,9 @@ int BarPen::configure()
     XGCValues gcValues;
     gcValues.foreground = colorPtr->pixel;
     gcValues.line_width = ops->errorBarLineWidth;
-    GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     if (errorBarGC_)
-      Tk_FreeGC(graphPtr_->display, errorBarGC_);
+      Tk_FreeGC(graphPtr_->display_, errorBarGC_);
     errorBarGC_ = newGC;
   }
 

@@ -81,7 +81,7 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
   : Marker(graphPtr, name, hPtr)
 {
   ops_ = (BitmapMarkerOptions*)calloc(1, sizeof(BitmapMarkerOptions));
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   anchorPt_.x =0;
   anchorPt_.y =0;
@@ -95,9 +95,9 @@ BitmapMarker::BitmapMarker(Graph* graphPtr, const char* name,
 BitmapMarker::~BitmapMarker()
 {
   if (gc_)
-    Tk_FreeGC(graphPtr_->display, gc_);
+    Tk_FreeGC(graphPtr_->display_, gc_);
   if (fillGC_)
-    Tk_FreeGC(graphPtr_->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display_, fillGC_);
 }
 
 int BitmapMarker::configure()
@@ -129,17 +129,17 @@ int BitmapMarker::configure()
   // origin anyways before we draw the bitmap.  This relies on the fact that
   // no other client will be allocated this GC with the GCClipMask set to
   // this particular bitmap.
-  GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (gc_)
-    Tk_FreeGC(graphPtr_->display, gc_);
+    Tk_FreeGC(graphPtr_->display_, gc_);
   gc_ = newGC;
 
   // Create the background GC containing the fill color
   if (ops->fillColor) {
     gcValues.foreground = ops->fillColor->pixel;
-    newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+    newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     if (fillGC_)
-      Tk_FreeGC(graphPtr_->display, fillGC_);
+      Tk_FreeGC(graphPtr_->display_, fillGC_);
     fillGC_ = newGC;
   }
 
@@ -154,14 +154,14 @@ void BitmapMarker::draw(Drawable drawable)
     return;
 
   if (ops->fillColor == NULL) {
-    XSetClipMask(graphPtr_->display, gc_, ops->bitmap);
-    XSetClipOrigin(graphPtr_->display, gc_, anchorPt_.x, anchorPt_.y);
+    XSetClipMask(graphPtr_->display_, gc_, ops->bitmap);
+    XSetClipOrigin(graphPtr_->display_, gc_, anchorPt_.x, anchorPt_.y);
   }
   else {
-    XSetClipMask(graphPtr_->display, gc_, None);
-    XSetClipOrigin(graphPtr_->display, gc_, 0, 0);
+    XSetClipMask(graphPtr_->display_, gc_, None);
+    XSetClipOrigin(graphPtr_->display_, gc_, 0, 0);
   }
-  XCopyPlane(graphPtr_->display, ops->bitmap, drawable, gc_, 0, 0,
+  XCopyPlane(graphPtr_->display_, ops->bitmap, drawable, gc_, 0, 0,
 	     width_, height_, anchorPt_.x, anchorPt_.y, 1);
 }
 
@@ -177,7 +177,7 @@ void BitmapMarker::map()
 
   int lwidth;
   int lheight;
-  Tk_SizeOfBitmap(graphPtr_->display, ops->bitmap, &lwidth, &lheight);
+  Tk_SizeOfBitmap(graphPtr_->display_, ops->bitmap, &lwidth, &lheight);
 
   Point2d lanchorPt = mapPoint(ops->worldPts->points, &ops->axes);
   lanchorPt = 
@@ -268,6 +268,6 @@ void BitmapMarker::postscript(Blt_Ps ps)
 		anchorPt_.x, anchorPt_.y + height_, width_, -height_);
   Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
 		width_, height_, width_, -height_, height_);
-  Blt_Ps_XSetBitmapData(ps, graphPtr_->display, ops->bitmap, width_, height_);
+  Blt_Ps_XSetBitmapData(ps, graphPtr_->display_, ops->bitmap, width_, height_);
   Blt_Ps_VarAppend(ps, "    } imagemask\n", "grestore\n", (char*)NULL);
 }

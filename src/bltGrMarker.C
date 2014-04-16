@@ -59,7 +59,7 @@ Marker::~Marker()
   if (link)
     Blt_Chain_DeleteLink(graphPtr_->markers.displayList, link);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 
   if (ops_)
     free(ops_);

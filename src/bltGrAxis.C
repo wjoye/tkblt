@@ -259,7 +259,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   ops->reqScrollMax =NAN;
   Blt_Ts_InitStyle(ops->limitsTextStyle);
 
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp, optionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, optionSpecs);
 }
 
 Axis::~Axis()
@@ -280,23 +280,23 @@ Axis::~Axis()
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  Blt_Ts_FreeStyle(graphPtr_->display, &ops->limitsTextStyle);
+  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->limitsTextStyle);
 
   if (tickGC_)
-    Tk_FreeGC(graphPtr_->display, tickGC_);
+    Tk_FreeGC(graphPtr_->display_, tickGC_);
 
   if (activeTickGC_)
-    Tk_FreeGC(graphPtr_->display, activeTickGC_);
+    Tk_FreeGC(graphPtr_->display_, activeTickGC_);
 
   if (ops->major.segments) 
     free(ops->major.segments);
   if (ops->major.gc) 
-    Blt_FreePrivateGC(graphPtr_->display, ops->major.gc);
+    Blt_FreePrivateGC(graphPtr_->display_, ops->major.gc);
 
   if (ops->minor.segments) 
     free(ops->minor.segments);
   if (ops->minor.gc)
-    Blt_FreePrivateGC(graphPtr_->display, ops->minor.gc);
+    Blt_FreePrivateGC(graphPtr_->display_, ops->minor.gc);
 
   if (t1Ptr_)
     free(t1Ptr_);
@@ -310,7 +310,7 @@ Axis::~Axis()
   if (segments_)
     free(segments_);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 
   if (ops_)
     free(ops_);
@@ -330,7 +330,7 @@ int Axis::configure()
     sprintf_s(msg, 200, 
 	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
 	      ops->reqMin, ops->reqMax, name());
-    Tcl_AppendResult(graphPtr_->interp, msg, NULL);
+    Tcl_AppendResult(graphPtr_->interp_, msg, NULL);
     return TCL_ERROR;
   }
 
@@ -340,8 +340,8 @@ int Axis::configure()
     if (ops->checkLimits) {
       // Check that the logscale limits are positive.
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
-	Tcl_AppendResult(graphPtr_->interp,"bad logscale -min limit \"", 
-			 Blt_Dtoa(graphPtr_->interp, ops->reqMin), 
+	Tcl_AppendResult(graphPtr_->interp_,"bad logscale -min limit \"", 
+			 Blt_Dtoa(graphPtr_->interp_, ops->reqMin), 
 			 "\" for axis \"", name(), "\"", 
 			 NULL);
 	return TCL_ERROR;
@@ -500,7 +500,7 @@ void Axis::draw(Drawable drawable)
   AxisOptions* ops = (AxisOptions*)ops_;
 
   if (ops->normalBg) {
-    Tk_Fill3DRectangle(graphPtr_->tkwin, drawable, ops->normalBg, 
+    Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, ops->normalBg, 
 		       left_, top_, right_ - left_, bottom_ - top_,
 		       ops->borderWidth, ops->relief);
   }
@@ -526,7 +526,7 @@ void Axis::draw(Drawable drawable)
     else
       ts.maxLength = width_;
 
-    Blt_Ts_DrawText(graphPtr_->tkwin, drawable, ops->title, -1, &ts, 
+    Blt_Ts_DrawText(graphPtr_->tkwin_, drawable, ops->title, -1, &ts, 
 		    (int)titlePos_.x, (int)titlePos_.y);
   }
 
@@ -573,7 +573,7 @@ void Axis::draw(Drawable drawable)
 	min_ = EXP10(min_);
 	max_ = EXP10(max_);
       }
-      updateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+      updateScrollbar(graphPtr_->interp_, ops->scrollCmdObjPtr,
 			  viewMin, viewMax, worldWidth);
     }
     else {
@@ -585,7 +585,7 @@ void Axis::draw(Drawable drawable)
 	min_ = EXP10(min_);
 	max_ = EXP10(max_);
       }
-      updateScrollbar(graphPtr_->interp, ops->scrollCmdObjPtr,
+      updateScrollbar(graphPtr_->interp_, ops->scrollCmdObjPtr,
 			  viewMax, viewMin, worldWidth);
     }
   }
@@ -609,7 +609,7 @@ void Axis::draw(Drawable drawable)
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link;
 	 link = Blt_Chain_NextLink(link)) {	
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      Blt_DrawText(graphPtr_->tkwin, drawable, labelPtr->string, &ts, 
+      Blt_DrawText(graphPtr_->tkwin_, drawable, labelPtr->string, &ts, 
 		   (int)labelPtr->anchorPos.x, (int)labelPtr->anchorPos.y);
     }
   }
@@ -617,7 +617,7 @@ void Axis::draw(Drawable drawable)
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {	
     GC gc = (flags & ACTIVE) ? 
       activeTickGC_ : tickGC_;
-    Blt_Draw2DSegments(graphPtr_->display, drawable, gc, segments_, 
+    Blt_Draw2DSegments(graphPtr_->display_, drawable, gc, segments_, 
 		       nSegments_);
   }
 }
@@ -950,8 +950,8 @@ TickLabel* Axis::makeLabel(double value)
     sprintf_s(string, TICK_LABEL_SIZE, "%.*G", 15, value);
 
   if (ops->formatCmd) {
-    Tcl_Interp* interp = graphPtr_->interp;
-    Tk_Window tkwin = graphPtr_->tkwin;
+    Tcl_Interp* interp = graphPtr_->interp_;
+    Tk_Window tkwin = graphPtr_->tkwin_;
 
     // A TCL proc was designated to format tick labels. Append the path
     // name of the widget and the default tick label as arguments when
@@ -1052,7 +1052,7 @@ void Axis::resetTextStyles()
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  Blt_Ts_ResetStyle(graphPtr_->tkwin, &ops->limitsTextStyle);
+  Blt_Ts_ResetStyle(graphPtr_->tkwin_, &ops->limitsTextStyle);
 
   XGCValues gcValues;
   unsigned long gcMask;
@@ -1062,16 +1062,16 @@ void Axis::resetTextStyles()
   gcValues.line_width = ops->lineWidth;
   gcValues.cap_style = CapProjecting;
 
-  GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (tickGC_)
-    Tk_FreeGC(graphPtr_->display, tickGC_);
+    Tk_FreeGC(graphPtr_->display_, tickGC_);
   tickGC_ = newGC;
 
   // Assuming settings from above GC
   gcValues.foreground = ops->activeFgColor->pixel;
-  newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (activeTickGC_)
-    Tk_FreeGC(graphPtr_->display, activeTickGC_);
+    Tk_FreeGC(graphPtr_->display_, activeTickGC_);
   activeTickGC_ = newGC;
 
   gcValues.background = gcValues.foreground = ops->major.color->pixel;
@@ -1081,12 +1081,12 @@ void Axis::resetTextStyles()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (LineIsDashed(ops->major.dashes))
-    Blt_SetDashes(graphPtr_->display, newGC, &ops->major.dashes);
+    Blt_SetDashes(graphPtr_->display_, newGC, &ops->major.dashes);
 
   if (ops->major.gc)
-    Blt_FreePrivateGC(graphPtr_->display, ops->major.gc);
+    Blt_FreePrivateGC(graphPtr_->display_, ops->major.gc);
 
   ops->major.gc = newGC;
 
@@ -1097,12 +1097,12 @@ void Axis::resetTextStyles()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (LineIsDashed(ops->minor.dashes))
-    Blt_SetDashes(graphPtr_->display, newGC, &ops->minor.dashes);
+    Blt_SetDashes(graphPtr_->display_, newGC, &ops->minor.dashes);
 
   if (ops->minor.gc)
-    Blt_FreePrivateGC(graphPtr_->display, ops->minor.gc);
+    Blt_FreePrivateGC(graphPtr_->display_, ops->minor.gc);
 
   ops->minor.gc = newGC;
 }

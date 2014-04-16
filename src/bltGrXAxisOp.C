@@ -77,8 +77,8 @@ int Blt_CreateAxes(Graph* graphPtr)
     
     axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
 
-    if (Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), 
-		       axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK)
+    if (Tk_InitOptions(graphPtr->interp_, (char*)axisPtr->ops(), 
+		       axisPtr->optionTable(), graphPtr->tkwin_) != TCL_OK)
       return TCL_ERROR;
 
     if (axisPtr->configure() != TCL_OK)

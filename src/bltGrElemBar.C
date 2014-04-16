@@ -201,10 +201,10 @@ BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   builtinPenPtr = new BarPen(graphPtr_, "builtin", &ops->builtinPen);
   ops->builtinPenPtr = builtinPenPtr;
 
-  Tk_InitOptions(graphPtr->interp, (char*)&(ops->builtinPen),
-		 builtinPenPtr->optionTable(), graphPtr->tkwin);
+  Tk_InitOptions(graphPtr_->interp_, (char*)&(ops->builtinPen),
+		 builtinPenPtr->optionTable(), graphPtr->tkwin_);
 
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   ops->stylePalette = Blt_Chain_Create();
   // this is an option and will be freed via Tk_FreeConfigOptions
@@ -403,12 +403,11 @@ void BarElement::map()
       /* Shouldn't really have a call to Tk_Width or Tk_Height in
        * mapping routine.  We only want to clamp the bar segment to the
        * size of the window if we're actually mapped onscreen. */
-      if (Tk_Height(graphPtr_->tkwin) > 1) {
-	bottom = Tk_Height(graphPtr_->tkwin);
-      }
-      if (Tk_Width(graphPtr_->tkwin) > 1) {
-	right = Tk_Width(graphPtr_->tkwin);
-      }
+      if (Tk_Height(graphPtr_->tkwin_) > 1)
+	bottom = Tk_Height(graphPtr_->tkwin_);
+
+      if (Tk_Width(graphPtr_->tkwin_) > 1)
+	right = Tk_Width(graphPtr_->tkwin_);
     }
     CLAMP(c1.y, top, bottom);
     CLAMP(c2.y, top, bottom);
@@ -707,11 +706,11 @@ void BarElement::drawNormal(Drawable drawable)
       DrawBarSegments(drawable, penPtr, stylePtr->bars, stylePtr->nBars);
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr_->display, drawable, penPtr->errorBarGC_, 
+      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr_->display, drawable, penPtr->errorBarGC_, 
+      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if (penOps->valueShow != SHOW_NONE)
@@ -738,19 +737,19 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
   x -= radius;
   y -= radius;
   if (penPtr->fillGC_)
-    XSetTSOrigin(graphPtr_->display, penPtr->fillGC_, x, y);
+    XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, x, y);
 
   if (penOps->stipple != None)
-    XFillRectangle(graphPtr_->display, drawable, penPtr->fillGC_, x, y, 
+    XFillRectangle(graphPtr_->display_, drawable, penPtr->fillGC_, x, y, 
 		   size, size);
   else
-    Tk_Fill3DRectangle(graphPtr_->tkwin, drawable, penOps->fill, 
+    Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, penOps->fill, 
 		       x, y, size, size, penOps->borderWidth, penOps->relief);
 
-  XDrawRectangle(graphPtr_->display, drawable, penPtr->outlineGC_, x, y, 
+  XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, x, y, 
 		 size, size);
   if (penPtr->fillGC_)
-    XSetTSOrigin(graphPtr_->display, penPtr->fillGC_, 0, 0);
+    XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, 0, 0);
 }
 
 void BarElement::printActive(Blt_Ps ps)
@@ -843,7 +842,7 @@ void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
     } else {
       Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
     }
-    Blt_Ps_XSetStipple(ps, graphPtr_->display, penOps->stipple);
+    Blt_Ps_XSetStipple(ps, graphPtr_->display_, penOps->stipple);
   } else if (penOps->outlineColor) {
     Blt_Ps_XSetForeground(ps, penOps->outlineColor);
     Blt_Ps_Append(ps, "    fill\n");
@@ -1239,42 +1238,42 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
 
     int hasOutline = ((relief == TK_RELIEF_FLAT) && penOps->outlineColor);
     if (penOps->stipple != None)
-      TkSetRegion(graphPtr_->display, penPtr->fillGC_, rgn);
+      TkSetRegion(graphPtr_->display_, penPtr->fillGC_, rgn);
 
-    SetBackgroundClipRegion(graphPtr_->tkwin, penOps->fill, rgn);
+    SetBackgroundClipRegion(graphPtr_->tkwin_, penOps->fill, rgn);
 
     if (hasOutline)
-      TkSetRegion(graphPtr_->display, penPtr->outlineGC_, rgn);
+      TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
 
     XRectangle *rp, *rend;
     for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
       if (penOps->stipple != None)
-	XFillRectangle(graphPtr_->display, drawable, penPtr->fillGC_, 
+	XFillRectangle(graphPtr_->display_, drawable, penPtr->fillGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
       else
-	Tk_Fill3DRectangle(graphPtr_->tkwin, drawable, 
+	Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
 			   penOps->fill, rp->x, rp->y, rp->width, rp->height, 
 			   penOps->borderWidth, relief);
 
       if (hasOutline)
-	XDrawRectangle(graphPtr_->display, drawable, penPtr->outlineGC_, 
+	XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
     }
 
-    UnsetBackgroundClipRegion(graphPtr_->tkwin, penOps->fill);
+    UnsetBackgroundClipRegion(graphPtr_->tkwin_, penOps->fill);
 
     if (hasOutline)
-      XSetClipMask(graphPtr_->display, penPtr->outlineGC_, None);
+      XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
 
     if (penOps->stipple != None)
-      XSetClipMask(graphPtr_->display, penPtr->fillGC_, None);
+      XSetClipMask(graphPtr_->display_, penPtr->fillGC_, None);
 
   }
   else if (penOps->outlineColor) {
-    TkSetRegion(graphPtr_->display, penPtr->outlineGC_, rgn);
-    XDrawRectangles(graphPtr_->display, drawable, penPtr->outlineGC_, bars, 
+    TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
+    XDrawRectangles(graphPtr_->display_, drawable, penPtr->outlineGC_, bars, 
 		    nBars);
-    XSetClipMask(graphPtr_->display, penPtr->outlineGC_, None);
+    XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
   }
 
   TkDestroyRegion(rgn);
@@ -1323,7 +1322,7 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
       if (y < gops->baseline)
 	anchorPos.y += rp->height;
     }
-    Blt_DrawText(graphPtr_->tkwin, drawable, string, &penOps->valueStyle, 
+    Blt_DrawText(graphPtr_->tkwin_, drawable, string, &penOps->valueStyle, 
 		 (int)anchorPos.x, (int)anchorPos.y);
   }
 }
@@ -1352,7 +1351,7 @@ void BarElement::SegmentsToPostScript(Blt_Ps ps, BarPen* penPtr,
       } else {
 	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
       }
-      Blt_Ps_XSetStipple(ps, graphPtr_->display, penOps->stipple);
+      Blt_Ps_XSetStipple(ps, graphPtr_->display_, penOps->stipple);
     } else if (penOps->outlineColor) {
       Blt_Ps_XSetForeground(ps, penOps->outlineColor);
       Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 

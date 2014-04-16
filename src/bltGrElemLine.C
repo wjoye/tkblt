@@ -268,10 +268,10 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   builtinPenPtr = new LinePen(graphPtr, "builtin", &ops->builtinPen);
   ops->builtinPenPtr = builtinPenPtr;
 
-  Tk_InitOptions(graphPtr->interp, (char*)&(ops->builtinPen),
-		 builtinPenPtr->optionTable(), graphPtr->tkwin);
+  Tk_InitOptions(graphPtr->interp_, (char*)&(ops->builtinPen),
+		 builtinPenPtr->optionTable(), graphPtr->tkwin_);
 
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   ops->stylePalette = Blt_Chain_Create();
   // this is an option and will be freed via Tk_FreeConfigOptions
@@ -304,7 +304,7 @@ LineElement::~LineElement()
   if (fillPts_)
     free(fillPts_);
   if (fillGC_)
-    Tk_FreeGC(graphPtr_->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display_, fillGC_);
 }
 
 int LineElement::configure()
@@ -336,9 +336,9 @@ int LineElement::configure()
     gcMask |= GCBackground;
     gcValues.background = fillBgColor_->pixel;
   }
-  GC newGC = Tk_GetGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (fillGC_)
-    Tk_FreeGC(graphPtr_->display, fillGC_);
+    Tk_FreeGC(graphPtr_->display_, fillGC_);
   fillGC_ = newGC;
 
   return TCL_OK;
@@ -600,7 +600,7 @@ void LineElement::drawActive(Drawable drawable)
   else if (nActiveIndices_ < 0) { 
     if (penOps->traceWidth > 0) {
       if (lines_.length > 0)
-	Blt_Draw2DSegments(graphPtr_->display, drawable, 
+	Blt_Draw2DSegments(graphPtr_->display_, drawable, 
 			   penPtr->traceGC_, lines_.segments, 
 			   lines_.length);
       else if (Blt_Chain_GetLength(traces_) > 0)
@@ -634,7 +634,7 @@ void LineElement::drawNormal(Drawable drawable)
       count++;
     }
     if (ops->fillBg)
-      Tk_Fill3DPolygon(graphPtr_->tkwin, drawable, ops->fillBg, points, 
+      Tk_Fill3DPolygon(graphPtr_->tkwin_, drawable, ops->fillBg, points, 
 		       nFillPts_, 0, TK_RELIEF_FLAT);
     free(points);
   }
@@ -649,7 +649,7 @@ void LineElement::drawNormal(Drawable drawable)
       LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
       if ((stylePtr->lines.length > 0) && 
 	  (penOps->errorBarLineWidth > 0)) {
-	Blt_Draw2DSegments(graphPtr_->display, drawable, penPtr->traceGC_,
+	Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->traceGC_,
 			   stylePtr->lines.segments, stylePtr->lines.length);
       }
     }
@@ -683,11 +683,11 @@ void LineElement::drawNormal(Drawable drawable)
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr_->display, drawable, penPtr->errorBarGC_, 
+      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr_->display, drawable, penPtr->errorBarGC_, 
+      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if ((stylePtr->symbolPts.length > 0) && 
@@ -718,9 +718,9 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
      * thicker appearance.  This is only for the legend entry.  This routine
      * is never called for drawing the actual line segments.
      */
-    XDrawLine(graphPtr_->display, drawable, penPtr->traceGC_, x - size, y, 
+    XDrawLine(graphPtr_->display_, drawable, penPtr->traceGC_, x - size, y, 
 	      x + size, y);
-    XDrawLine(graphPtr_->display, drawable, penPtr->traceGC_, x - size, y + 1,
+    XDrawLine(graphPtr_->display_, drawable, penPtr->traceGC_, x - size, y + 1,
 	      x + size, y + 1);
   }
   if (penOps->symbol.type != SYMBOL_NONE) {
@@ -2273,7 +2273,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	xpp->y = Round(pp->y);
 	xpp++;
       }
-      XDrawPoints(graphPtr_->display, drawable, penOps->symbol.fillGC, 
+      XDrawPoints(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
 		  points, nSymbolPts, CoordModeOrigin);
       free(points);
     }
@@ -2288,12 +2288,12 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
     break;
 
   case SYMBOL_SQUARE:
-    DrawSquares(graphPtr_->display, drawable, penPtr, nSymbolPts,
+    DrawSquares(graphPtr_->display_, drawable, penPtr, nSymbolPts,
 		symbolPts, r2);
     break;
 
   case SYMBOL_CIRCLE:
-    DrawCircles(graphPtr_->display, drawable, penPtr, nSymbolPts,
+    DrawCircles(graphPtr_->display_, drawable, penPtr, nSymbolPts,
 		symbolPts, r1);
     break;
 
@@ -2356,10 +2356,10 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
       }
       int nSegs = count * 2;
       // Always draw skinny symbols regardless of the outline width
-      int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display);
+      int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display_);
       for (int ii=0; ii<nSegs; ii+=reqSize) {
 	int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
-	XDrawSegments(graphPtr_->display, drawable, 
+	XDrawSegments(graphPtr_->display_, drawable, 
 		      penOps->symbol.outlineGC, segments + ii, chunk);
       }
       free(segments);
@@ -2443,7 +2443,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	int ii;
 	XPoint *xpp;
 	for (xpp = polygon, ii = 0; ii<count; ii++, xpp += 13)
-	  XFillPolygon(graphPtr_->display, drawable, 
+	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 13, Complex, 
 		       CoordModeOrigin);
       }
@@ -2451,7 +2451,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	int ii;
 	XPoint *xpp;
 	for (xpp = polygon, ii=0; ii<count; ii++, xpp += 13)
-	  XDrawLines(graphPtr_->display, drawable, 
+	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 13, CoordModeOrigin);
       }
       free(polygon);
@@ -2516,14 +2516,14 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	XPoint *xpp;
 	int i;
 	for (xpp = polygon, i = 0; i < count; i++, xpp += 5)
-	  XFillPolygon(graphPtr_->display, drawable, 
+	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 5, Convex, CoordModeOrigin);
       }
       if (penOps->symbol.outlineWidth > 0) {
 	XPoint *xpp;
 	int i;
 	for (xpp = polygon, i = 0; i < count; i++, xpp += 5) {
-	  XDrawLines(graphPtr_->display, drawable, 
+	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 5, CoordModeOrigin);
 	}
       }
@@ -2609,14 +2609,14 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	int i;
 	XPoint* xpp = polygon;
 	for (xpp = polygon, i = 0; i < count; i++, xpp += 4)
-	  XFillPolygon(graphPtr_->display, drawable, 
+	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 4, Convex, CoordModeOrigin);
       }
       if (penOps->symbol.outlineWidth > 0) {
 	int i;
 	XPoint* xpp = polygon;
 	for (xpp = polygon, i = 0; i < count; i++, xpp += 4) {
-	  XDrawLines(graphPtr_->display, drawable, 
+	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 4, CoordModeOrigin);
 	}
       }
@@ -2630,7 +2630,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
       double scale, sx, sy;
       int dx, dy;
 
-      Tk_SizeOfBitmap(graphPtr_->display, penOps->symbol.bitmap, &w, &h);
+      Tk_SizeOfBitmap(graphPtr_->display_, penOps->symbol.bitmap, &w, &h);
 
       // Compute the size of the scaled bitmap.  Stretch the bitmap to fit
       // a nxn bounding box.
@@ -2640,13 +2640,13 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
       bw = (int)(w * scale);
       bh = (int)(h * scale);
 
-      XSetClipMask(graphPtr_->display, penOps->symbol.outlineGC, None);
+      XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, None);
       if (penOps->symbol.mask != None)
-	XSetClipMask(graphPtr_->display, penOps->symbol.outlineGC,
+	XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC,
 		     penOps->symbol.mask);
 
       if (penOps->symbol.fillGC == NULL)
-	XSetClipMask(graphPtr_->display, penOps->symbol.outlineGC, 
+	XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, 
 		     penOps->symbol.bitmap);
 
       dx = bw / 2;
@@ -2660,9 +2660,9 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	    int y = Round(pp->y) - dy;
 	    if ((penOps->symbol.fillGC == NULL) || 
 		(penOps->symbol.mask != None))
-	      XSetClipOrigin(graphPtr_->display,
+	      XSetClipOrigin(graphPtr_->display_,
 			     penOps->symbol.outlineGC, x, y);
-	    XCopyPlane(graphPtr_->display, penOps->symbol.bitmap, drawable,
+	    XCopyPlane(graphPtr_->display_, penOps->symbol.bitmap, drawable,
 		       penOps->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	  }
 	  symbolCounter_++;
@@ -2675,9 +2675,9 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	  int y = Round(pp->y) - dy;
 	  if ((penOps->symbol.fillGC == NULL) || 
 	      (penOps->symbol.mask != None))
-	    XSetClipOrigin(graphPtr_->display, 
+	    XSetClipOrigin(graphPtr_->display_, 
 			   penOps->symbol.outlineGC, x, y);
-	  XCopyPlane(graphPtr_->display, penOps->symbol.bitmap, drawable,
+	  XCopyPlane(graphPtr_->display_, penOps->symbol.bitmap, drawable,
 		     penOps->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	}
       }
@@ -2688,7 +2688,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 
 void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
 {
-  int np = Blt_MaxRequestSize(graphPtr_->display, sizeof(XPoint)) - 1;
+  int np = Blt_MaxRequestSize(graphPtr_->display_, sizeof(XPoint)) - 1;
   XPoint *points = (XPoint*)malloc((np + 1) * sizeof(XPoint));
 	    
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
@@ -2711,7 +2711,7 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
       xpp->x = Round(tracePtr->screenPts.points[count].x);
       xpp->y = Round(tracePtr->screenPts.points[count].y);
     }
-    XDrawLines(graphPtr_->display, drawable, penPtr->traceGC_, points, 
+    XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);
 
     /* Step 2. Next handle any full-size chunks left. */
@@ -2727,7 +2727,7 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
 	xpp->x = Round(tracePtr->screenPts.points[count].x);
 	xpp->y = Round(tracePtr->screenPts.points[count].y);
       }
-      XDrawLines(graphPtr_->display, drawable, penPtr->traceGC_, points, 
+      XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 		 np + 1, CoordModeOrigin);
     }
 	
@@ -2743,7 +2743,7 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
 	xpp->x = Round(tracePtr->screenPts.points[count].x);
 	xpp->y = Round(tracePtr->screenPts.points[count].y);
       }	    
-      XDrawLines(graphPtr_->display, drawable, penPtr->traceGC_, points, 
+      XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 		 remaining + 1, CoordModeOrigin);
     }
   }
@@ -2784,7 +2784,7 @@ void LineElement::DrawValues(Drawable drawable, LinePen* penPtr,
       sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
-    Blt_DrawText(graphPtr_->tkwin, drawable, string, &penOps->valueStyle, 
+    Blt_DrawText(graphPtr_->tkwin_, drawable, string, &penOps->valueStyle, 
 		 Round(pp->x), Round(pp->y));
   } 
 }
@@ -2828,24 +2828,24 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
        * Compute how much to scale the bitmap.  Don't let the scaled
        * bitmap exceed the bounding square for the symbol.
        */
-      Tk_SizeOfBitmap(graphPtr_->display, penOps->symbol.bitmap, &w, &h);
+      Tk_SizeOfBitmap(graphPtr_->display_, penOps->symbol.bitmap, &w, &h);
       sx = (double)size / (double)w;
       sy = (double)size / (double)h;
       scale = MIN(sx, sy);
 
       if (penOps->symbol.mask != None) {
 	Blt_Ps_VarAppend(ps, "\n  % Bitmap mask is \"",
-			 Tk_NameOfBitmap(graphPtr_->display, penOps->symbol.mask),
+			 Tk_NameOfBitmap(graphPtr_->display_, penOps->symbol.mask),
 			 "\"\n\n  ", NULL);
 	Blt_Ps_XSetBackground(ps, fillColor);
-	Blt_Ps_DrawBitmap(ps, graphPtr_->display, penOps->symbol.mask, 
+	Blt_Ps_DrawBitmap(ps, graphPtr_->display_, penOps->symbol.mask, 
 			  scale, scale);
       }
       Blt_Ps_VarAppend(ps, "\n  % Bitmap symbol is \"",
-		       Tk_NameOfBitmap(graphPtr_->display, penOps->symbol.bitmap),
+		       Tk_NameOfBitmap(graphPtr_->display_, penOps->symbol.bitmap),
 		       "\"\n\n  ", NULL);
       Blt_Ps_XSetForeground(ps, outlineColor);
-      Blt_Ps_DrawBitmap(ps, graphPtr_->display, penOps->symbol.bitmap, 
+      Blt_Ps_DrawBitmap(ps, graphPtr_->display_, penOps->symbol.bitmap, 
 			scale, scale);
     }
     break;

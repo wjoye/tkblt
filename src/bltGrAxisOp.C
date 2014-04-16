@@ -67,7 +67,7 @@ static int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
   for (error=0; error<=1; error++) {
     if (!error) {
       if (Tk_SetOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -112,7 +112,7 @@ int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr,
 
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops(),
 				      axisPtr->optionTable(),
-				      objv[3], graphPtr->tkwin);
+				      objv[3], graphPtr->tkwin_);
   if (!objPtr)
     return TCL_ERROR;
   else
@@ -126,10 +126,10 @@ int AxisConfigureOp(Tcl_Interp* interp, Axis* axisPtr,
   Graph* graphPtr = axisPtr->graphPtr_;
 
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, (char*)axisPtr->ops(), 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)axisPtr->ops(), 
 				       axisPtr->optionTable(), 
 				       (objc == 4) ? objv[3] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (!objPtr)
       return TCL_ERROR;
     else
@@ -342,7 +342,7 @@ static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
 {
   char *string = Tcl_GetString(objv[3]);
   if (string[0] == '-') {
-    Tcl_AppendResult(graphPtr->interp, "name of axis \"", string, 
+    Tcl_AppendResult(interp, "name of axis \"", string, 
 		     "\" can't start with a '-'", NULL);
     return TCL_ERROR;
   }
@@ -351,7 +351,7 @@ static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
   Tcl_HashEntry* hPtr = 
     Tcl_CreateHashEntry(&graphPtr->axes.table, string, &isNew);
   if (!isNew) {
-    Tcl_AppendResult(graphPtr->interp, "axis \"", string,
+    Tcl_AppendResult(interp, "axis \"", string,
 		     "\" already exists in \"", Tcl_GetString(objv[0]),
 		     "\"", NULL);
     return TCL_ERROR;
@@ -363,7 +363,7 @@ static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr,
 
   Tcl_SetHashValue(hPtr, axisPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
     delete axisPtr;
     return TCL_ERROR;
   }
@@ -440,7 +440,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK) {
     Tcl_AppendResult(interp, "can't find axis \"", 
 		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
+		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
     return TCL_ERROR;
   }
 
@@ -661,7 +661,7 @@ int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   }
   if (interp)
     Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
+		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
 
   return TCL_ERROR;
 }
@@ -884,7 +884,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 	ops->limitsTextStyle.angle = 90.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
-	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
+	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
 		      &ops->limitsTextStyle, graphPtr->right, 
 		      hMax, &textDim);
 	hMax -= (textDim.height + SPACING);
@@ -893,7 +893,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 	ops->limitsTextStyle.angle = 0.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
-	Blt_DrawText2(graphPtr->tkwin, drawable, maxPtr,
+	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
 		      &ops->limitsTextStyle, vMax, 
 		      graphPtr->top, &textDim);
 	vMax += (textDim.width + SPACING);
@@ -905,7 +905,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 
-	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
+	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
 		      &ops->limitsTextStyle, graphPtr->left, 
 		      hMin, &textDim);
 	hMin -= (textDim.height + SPACING);
@@ -913,7 +913,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
       else {
 	ops->limitsTextStyle.angle = 0.0;
 
-	Blt_DrawText2(graphPtr->tkwin, drawable, minPtr,
+	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
 		      &ops->limitsTextStyle, vMin, 
 		      graphPtr->bottom, &textDim);
 	vMin += (textDim.width + SPACING);
@@ -1018,12 +1018,12 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
 	continue;
 
       if (axisPtr->use_ && ops->showGrid) {
-	Blt_Draw2DSegments(graphPtr->display, drawable, 
+	Blt_Draw2DSegments(graphPtr->display_, drawable, 
 			   ops->major.gc, ops->major.segments, 
 			   ops->major.nUsed);
 
 	if (ops->showGridMinor)
-	  Blt_Draw2DSegments(graphPtr->display, drawable, 
+	  Blt_Draw2DSegments(graphPtr->display_, drawable, 
 			     ops->minor.gc, ops->minor.segments, 
 			     ops->minor.nUsed);
       }

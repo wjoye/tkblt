@@ -51,7 +51,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
   for (error=0; error<=1; error++) {
     if (!error) {
       if (Tk_SetOptions(interp, (char*)penPtr->ops(), penPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -90,7 +90,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
   if (!isNew) {
     Tcl_AppendResult(interp, "pen \"", penName, 
-		     "\" already exists in \"", Tk_PathName(graphPtr->tkwin),
+		     "\" already exists in \"", Tk_PathName(graphPtr->tkwin_),
 		     "\"", (char *)NULL);
     return TCL_ERROR;
   }
@@ -111,7 +111,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
 
   Tcl_SetHashValue(hPtr, penPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)penPtr->ops(), penPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp_, (char*)penPtr->ops(), penPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
     delete penPtr;
     return TCL_ERROR;
   }
@@ -140,7 +140,7 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)penPtr->ops(), 
 				      penPtr->optionTable(),
-				      objv[4], graphPtr->tkwin);
+				      objv[4], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
@@ -156,11 +156,10 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)penPtr->ops(), 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)penPtr->ops(), 
 				       penPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (objPtr == NULL)
       return TCL_ERROR;
     else
@@ -192,7 +191,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK) {
     Tcl_AppendResult(interp, "can't find pen \"", 
 		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", NULL);
+		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
     return TCL_ERROR;
   }
 
@@ -309,7 +308,7 @@ int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
   if (!penPtr) {
     Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
+		     Tk_PathName(graphPtr->tkwin_), "\"", (char *)NULL);
     return TCL_ERROR;
   }
 
@@ -342,7 +341,7 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   if (penPtr == NULL) {
     if (interp != NULL) {
       Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin), "\"", (char *)NULL);
+		       Tk_PathName(graphPtr->tkwin_), "\"", (char *)NULL);
     }
     return TCL_ERROR;
   }

@@ -52,7 +52,7 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     if (!error) {
       if (Tk_SetOptions(interp, (char*)legendPtr->ops(),
 			legendPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -93,7 +93,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)legendPtr->ops(), 
 				      legendPtr->optionTable(),
-				      objv[3], graphPtr->tkwin);
+				      objv[3], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
@@ -106,11 +106,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Legend* legendPtr = graphPtr->legend;
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)legendPtr->ops(), 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)legendPtr->ops(), 
 				       legendPtr->optionTable(), 
 				       (objc == 4) ? objv[3] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (objPtr == NULL)
       return TCL_ERROR;
     else
@@ -469,7 +468,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->selAnchorPtr_ = firstPtr;
 
   if (ops->exportSelection)
-    Tk_OwnSelection(graphPtr->tkwin, XA_PRIMARY, LostSelectionProc, legendPtr);
+    Tk_OwnSelection(graphPtr->tkwin_, XA_PRIMARY, LostSelectionProc, legendPtr);
 
   graphPtr->legend->eventuallyRedraw();
 

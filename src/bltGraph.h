@@ -140,13 +140,13 @@ typedef struct {
 
 class Graph {
  public:
-  int valid_;
-  Tcl_Interp* interp;
-  Tk_Window tkwin;
-  Display *display;
-  Tcl_Command cmdToken;
+  Tcl_Interp* interp_;
+  Tk_Window tkwin_;
+  Display *display_;
+  Tcl_Command cmdToken_;
   Tk_OptionTable optionTable_;
   void* ops_;
+  int valid_;
 
   ClassId classId;
   unsigned int flags;

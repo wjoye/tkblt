@@ -112,7 +112,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   for (error=0; error<=1; error++) {
     if (!error) {
       if (Tk_SetOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable_, 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -150,7 +150,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)graphPtr->ops_, 
 				      graphPtr->optionTable_,
-				      objv[2], graphPtr->tkwin);
+				      objv[2], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
@@ -162,11 +162,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   if (objc <= 3) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, 
-				       (char*)graphPtr->ops_, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)graphPtr->ops_, 
 				       graphPtr->optionTable_, 
 				       (objc == 3) ? objv[2] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (objPtr == NULL)
       return TCL_ERROR;
     else
@@ -446,7 +445,7 @@ void GraphInstCmdDeleteProc(ClientData clientData)
 {
   Graph* graphPtr = (Graph*)clientData;
   if (!(graphPtr->flags & GRAPH_DELETED))
-    Tk_DestroyWindow(graphPtr->tkwin);
+    Tk_DestroyWindow(graphPtr->tkwin_);
 }
 
 void GraphEventProc(ClientData clientData, XEvent* eventPtr)
@@ -472,7 +471,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
   } else if (eventPtr->type == DestroyNotify) {
     if (!(graphPtr->flags & GRAPH_DELETED)) {
       graphPtr->flags |= GRAPH_DELETED;
-      Tcl_DeleteCommandFromToken(graphPtr->interp, graphPtr->cmdToken);
+      Tcl_DeleteCommandFromToken(graphPtr->interp_, graphPtr->cmdToken_);
       if (graphPtr->flags & REDRAW_PENDING)
 	Tcl_CancelIdleCall(DisplayGraph, graphPtr);
       Tcl_EventuallyFree(graphPtr, DestroyGraph);

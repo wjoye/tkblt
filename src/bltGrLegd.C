@@ -179,35 +179,35 @@ Legend::Legend(Graph* graphPtr)
   ops->titleStyle.justify = TK_JUSTIFY_LEFT;
   ops->titleStyle.anchor = TK_ANCHOR_NW;
 
-  bindTable_ = Blt_CreateBindingTable(graphPtr->interp, graphPtr->tkwin, 
+  bindTable_ = Blt_CreateBindingTable(graphPtr->interp_, graphPtr->tkwin_, 
 				      graphPtr, PickEntryProc, Blt_GraphTags);
 
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
-  Tk_CreateSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING, 
+  Tk_CreateSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING, 
 		      SelectionProc, this, XA_STRING);
 
-  optionTable_ =Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)ops_, optionTable_, graphPtr->tkwin);
+  optionTable_ =Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
+  Tk_InitOptions(graphPtr->interp_, (char*)ops_, optionTable_, graphPtr->tkwin_);
 }
 
 Legend::~Legend()
 {
   LegendOptions* ops = (LegendOptions*)ops_;
 
-  Blt_Ts_FreeStyle(graphPtr_->display, &ops->style);
-  Blt_Ts_FreeStyle(graphPtr_->display, &ops->titleStyle);
+  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->style);
+  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->titleStyle);
   Blt_DestroyBindingTable(bindTable_);
     
   if (focusGC_)
-    Blt_FreePrivateGC(graphPtr_->display, focusGC_);
+    Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
 
-    if (graphPtr_->tkwin)
-    Tk_DeleteSelHandler(graphPtr_->tkwin, XA_PRIMARY, XA_STRING);
+    if (graphPtr_->tkwin_)
+    Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
 
   Blt_Chain_Destroy(selected_);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   if (ops_)
     free(ops_);
 }
@@ -222,13 +222,13 @@ void Legend::configure()
   gcValues.foreground = ops->focusColor->pixel;
   gcValues.line_style = (LineIsDashed(ops->focusDashes))
     ? LineOnOffDash : LineSolid;
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (LineIsDashed(ops->focusDashes)) {
     ops->focusDashes.offset = 2;
-    Blt_SetDashes(graphPtr_->display, newGC, &ops->focusDashes);
+    Blt_SetDashes(graphPtr_->display_, newGC, &ops->focusDashes);
   }
   if (focusGC_)
-    Blt_FreePrivateGC(graphPtr_->display, focusGC_);
+    Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
 
   focusGC_ = newGC;
 }
@@ -385,11 +385,11 @@ void Legend::draw(Drawable drawable)
     return;
 
   setOrigin();
-  Tk_Window tkwin = graphPtr_->tkwin;
+  Tk_Window tkwin = graphPtr_->tkwin_;
   int w = width_;
   int h = height_;
 
-  Pixmap pixmap = Tk_GetPixmap(graphPtr_->display, Tk_WindowId(tkwin), w, h, 
+  Pixmap pixmap = Tk_GetPixmap(graphPtr_->display_, Tk_WindowId(tkwin), w, h, 
 			       Tk_Depth(tkwin));
 
   // be sure to update style->gc, things might have changed
@@ -415,7 +415,7 @@ void Legend::draw(Drawable drawable)
       // store pixmap or (if no backing store exists) just fill it with the
       // background color of the plot.
       if (graphPtr_->cache != None)
-	XCopyArea(graphPtr_->display, graphPtr_->cache, pixmap, 
+	XCopyArea(graphPtr_->display_, graphPtr_->cache, pixmap, 
 		  graphPtr_->drawGC, x_, y_, w, h, 0, 0);
       else 
 	Tk_Fill3DRectangle(tkwin, pixmap, gops->plotBg, 0, 0, 
@@ -482,14 +482,14 @@ void Legend::draw(Drawable drawable)
       if (isSelected) {
 	XColor* color = (flags & FOCUS) ?
 	  ops->selInFocusFgColor : ops->selOutFocusFgColor;
-	XSetForeground(graphPtr_->display, focusGC_, 
+	XSetForeground(graphPtr_->display_, focusGC_, 
 		       color->pixel);
       }
-      XDrawRectangle(graphPtr_->display, pixmap, focusGC_, 
+      XDrawRectangle(graphPtr_->display_, pixmap, focusGC_, 
 		     x + 1, y + 1, entryWidth_ - 3, 
 		     entryHeight_ - 3);
       if (isSelected) {
-	XSetForeground(graphPtr_->display, focusGC_, 
+	XSetForeground(graphPtr_->display_, focusGC_, 
 		       ops->focusColor->pixel);
       }
     }
@@ -519,7 +519,7 @@ void Legend::draw(Drawable drawable)
 
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
 		     ops->borderWidth, ops->relief);
-  XCopyArea(graphPtr_->display, pixmap, drawable, graphPtr_->drawGC, 0, 0, w, h,
+  XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC, 0, 0, w, h,
 	    x_, y_);
 
   switch ((Position)ops->position) {
@@ -531,7 +531,7 @@ void Legend::draw(Drawable drawable)
     break;
   }
 
-  Tk_FreePixmap(graphPtr_->display, pixmap);
+  Tk_FreePixmap(graphPtr_->display_, pixmap);
   graphPtr_->flags &= ~DRAW_LEGEND;
 }
 
@@ -626,7 +626,7 @@ void Legend::removeElement(Element* elemPtr)
 
 void Legend::eventuallyRedraw() 
 {
-  if ((graphPtr_->tkwin) && !(flags & REDRAW_PENDING)) {
+  if ((graphPtr_->tkwin_) && !(flags & REDRAW_PENDING)) {
     Tcl_DoWhenIdle(DisplayProc, this);
     flags |= REDRAW_PENDING;
   }
@@ -866,17 +866,17 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     elemPtr = getPreviousColumn(focusPtr_);
   else if (string[0] == '@') {
     int x, y;
-    if (Blt_GetXY(graphPtr_->interp, graphPtr_->tkwin, string, &x, &y) !=TCL_OK)
+    if (Blt_GetXY(graphPtr_->interp_, graphPtr_->tkwin_, string, &x, &y) !=TCL_OK)
       return TCL_ERROR;
 
     elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, NULL);
   }
   else {
-    if (Blt_GetElement(graphPtr_->interp, graphPtr_, objPtr, &elemPtr) !=TCL_OK)
+    if (Blt_GetElement(graphPtr_->interp_, graphPtr_, objPtr, &elemPtr) !=TCL_OK)
       return TCL_ERROR;
 
     if (!elemPtr->link) {
-      Tcl_AppendResult(graphPtr_->interp, "bad legend index \"", string, "\"",
+      Tcl_AppendResult(graphPtr_->interp_, "bad legend index \"", string, "\"",
 		       (char *)NULL);
       return TCL_ERROR;
     }
@@ -988,8 +988,8 @@ static void DisplayProc(ClientData clientData)
   Legend* legendPtr = (Legend*)clientData;
 
   legendPtr->flags &= ~REDRAW_PENDING;
-  if (Tk_IsMapped(legendPtr->graphPtr_->tkwin))
-    legendPtr->draw(Tk_WindowId(legendPtr->graphPtr_->tkwin));
+  if (Tk_IsMapped(legendPtr->graphPtr_->tkwin_))
+    legendPtr->draw(Tk_WindowId(legendPtr->graphPtr_->tkwin_));
 }
 
 static int SelectionProc(ClientData clientData, int offset, char *buffer,
@@ -1039,7 +1039,7 @@ static void SelectCmdProc(ClientData clientData)
   Tcl_Preserve(legendPtr);
   legendPtr->flags &= ~SELECT_PENDING;
   if (ops->selectCmd) {
-    Tcl_Interp* interp = legendPtr->graphPtr_->interp;
+    Tcl_Interp* interp = legendPtr->graphPtr_->interp_;
     if (Tcl_GlobalEval(interp, ops->selectCmd) != TCL_OK)
       Tcl_BackgroundError(interp);
   }

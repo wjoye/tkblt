@@ -66,7 +66,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   for (error=0; error<=1; error++) {
     if (!error) {
       if (Tk_SetOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -102,7 +102,7 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
 {
   char *name = Tcl_GetString(objv[3]);
   if (name[0] == '-') {
-    Tcl_AppendResult(graphPtr->interp, "name of element \"", name, 
+    Tcl_AppendResult(interp, "name of element \"", name, 
 		     "\" can't start with a '-'", NULL);
     return TCL_ERROR;
   }
@@ -133,7 +133,7 @@ static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
   Tcl_SetHashValue(hPtr, elemPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)elemPtr->ops(), elemPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
     DestroyElement(elemPtr);
     return TCL_ERROR;
   }
@@ -173,7 +173,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)elemPtr->ops(), 
 				      elemPtr->optionTable(),
-				      objv[4], graphPtr->tkwin);
+				      objv[4], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
@@ -189,11 +189,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)elemPtr->ops(), 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)elemPtr->ops(), 
 				       elemPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (objPtr == NULL)
       return TCL_ERROR;
     else
@@ -381,7 +380,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
     if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK) {
       Tcl_AppendResult(interp, "can't find element \"", 
 		       Tcl_GetString(objv[ii]), "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin), "\"", NULL);
+		       Tk_PathName(graphPtr->tkwin_), "\"", NULL);
       return TCL_ERROR;
     }
     elemPtr->flags |= DELETE_PENDING;
@@ -607,7 +606,7 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
-    Tcl_ListObjAppendElement(graphPtr->interp, listObjPtr, objPtr);
+    Tcl_ListObjAppendElement(graphPtr->interp_, listObjPtr, objPtr);
   }
 
   return listObjPtr;
@@ -646,7 +645,7 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   if (!hPtr) {
     if (interp)
       Tcl_AppendResult(interp, "can't find element \"", name,
-		       "\" in \"", Tk_PathName(graphPtr->tkwin), "\"", 
+		       "\" in \"", Tk_PathName(graphPtr->tkwin_), "\"", 
 		       NULL);
     return TCL_ERROR;
   }

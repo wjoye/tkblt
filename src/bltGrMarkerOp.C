@@ -61,7 +61,7 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
     if (!error) {
       if (Tk_SetOptions(interp, (char*)markerPtr->ops(), 
 			markerPtr->optionTable(), 
-			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
     }
@@ -116,7 +116,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_HashEntry* hPtr =
     Tcl_CreateHashEntry(&graphPtr->markers.table, name, &isNew);
   if (!isNew) {
-    Tcl_AppendResult(graphPtr->interp, "marker \"", name,
+    Tcl_AppendResult(graphPtr->interp_, "marker \"", name,
 		     "\" already exists in \"", Tcl_GetString(objv[0]),
 		     "\"", NULL);
     return TCL_ERROR;
@@ -139,7 +139,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   Tcl_SetHashValue(hPtr, markerPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp, (char*)markerPtr->ops(), markerPtr->optionTable(), graphPtr->tkwin) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp_, (char*)markerPtr->ops(), markerPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
     delete markerPtr;
     return TCL_ERROR;
   }
@@ -163,7 +163,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)markerPtr->ops(), 
 				      markerPtr->optionTable(),
-				      objv[4], graphPtr->tkwin);
+				      objv[4], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
   else
@@ -179,11 +179,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (objc <= 5) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(graphPtr->interp, 
-				       (char*)markerPtr->ops(), 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)markerPtr->ops(), 
 				       markerPtr->optionTable(), 
 				       (objc == 5) ? objv[4] : NULL, 
-				       graphPtr->tkwin);
+				       graphPtr->tkwin_);
     if (objPtr == NULL)
       return TCL_ERROR;
     else
@@ -239,7 +238,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
     if (GetMarkerFromObj(NULL, graphPtr, objv[ii], &markerPtr) != TCL_OK) {
       Tcl_AppendResult(interp, "can't find marker \"", 
 		       Tcl_GetString(objv[ii]), "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin), "\"", NULL);
+		       Tk_PathName(graphPtr->tkwin_), "\"", NULL);
       return TCL_ERROR;
     }
     markerPtr->flags |= DELETE_PENDING;
@@ -473,7 +472,7 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
   }
   if (interp) {
     Tcl_AppendResult(interp, "can't find marker \"", string, 
-		     "\" in \"", Tk_PathName(graphPtr->tkwin), NULL);
+		     "\" in \"", Tk_PathName(graphPtr->tkwin_), NULL);
   }
 
   return TCL_ERROR;

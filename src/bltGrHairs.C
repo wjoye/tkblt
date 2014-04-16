@@ -64,16 +64,16 @@ Crosshairs::Crosshairs(Graph* graphPtr)
   visible_ =0;
   gc_ =NULL;
 
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
-  Tk_InitOptions(graphPtr->interp, (char*)ops_, optionTable_, graphPtr->tkwin);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
+  Tk_InitOptions(graphPtr->interp_, (char*)ops_, optionTable_, graphPtr->tkwin_);
 }
 
 Crosshairs::~Crosshairs()
 {
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display_, gc_);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 
   if (ops_)
     free(ops_);
@@ -104,12 +104,12 @@ void Crosshairs::configure()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr_->display, newGC, &ops->dashes);
+    Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
 
   if (gc_ != NULL)
-    Blt_FreePrivateGC(graphPtr_->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display_, gc_);
 
   gc_ = newGC;
 
@@ -129,8 +129,8 @@ void Crosshairs::configure()
 
 void Crosshairs::off()
 {
-  if (Tk_IsMapped(graphPtr_->tkwin) && (visible_)) {
-    XDrawSegments(graphPtr_->display, Tk_WindowId(graphPtr_->tkwin),
+  if (Tk_IsMapped(graphPtr_->tkwin_) && (visible_)) {
+    XDrawSegments(graphPtr_->display_, Tk_WindowId(graphPtr_->tkwin_),
 		  gc_, segArr_, 2);
     visible_ = 0;
   }
@@ -140,11 +140,11 @@ void Crosshairs::on()
 {
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
 
-  if (Tk_IsMapped(graphPtr_->tkwin) && (!visible_)) {
+  if (Tk_IsMapped(graphPtr_->tkwin_) && (!visible_)) {
     if (!PointInGraph(graphPtr_, ops->x, ops->y))
       return;
 
-    XDrawSegments(graphPtr_->display, Tk_WindowId(graphPtr_->tkwin),
+    XDrawSegments(graphPtr_->display_, Tk_WindowId(graphPtr_->tkwin_),
 		  gc_, segArr_, 2);
     visible_ = 1;
   }

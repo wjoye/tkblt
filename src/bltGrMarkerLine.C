@@ -88,7 +88,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
   ops_ = (LineMarkerOptions*)calloc(1, sizeof(LineMarkerOptions));
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp, optionSpecs);
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   gc_ =NULL;
   segments_ =NULL;
@@ -98,7 +98,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 LineMarker::~LineMarker()
 {
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display_, gc_);
   if (segments_)
     delete [] segments_;
 }
@@ -108,7 +108,7 @@ int LineMarker::configure()
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  Drawable drawable = Tk_WindowId(graphPtr_->tkwin);
+  Drawable drawable = Tk_WindowId(graphPtr_->tkwin_);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
   XGCValues gcValues;
   if (ops->outlineColor) {
@@ -141,12 +141,12 @@ int LineMarker::configure()
       draw(drawable);
   }
 
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin, gcMask, &gcValues);
+  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display, gc_);
+    Blt_FreePrivateGC(graphPtr_->display_, gc_);
 
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr_->display, newGC, &ops->dashes);
+    Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
 
   gc_ = newGC;
   if (ops->xorr) {
@@ -163,7 +163,7 @@ int LineMarker::configure()
 void LineMarker::draw(Drawable drawable)
 {
   if (nSegments_ > 0)
-    Blt_Draw2DSegments(graphPtr_->display, drawable, gc_, segments_,nSegments_);
+    Blt_Draw2DSegments(graphPtr_->display_, drawable, gc_, segments_,nSegments_);
 }
 
 void LineMarker::map()

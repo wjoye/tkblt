@@ -62,7 +62,7 @@ Element::~Element()
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 
   if (ops_)
     free(ops_);

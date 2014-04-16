@@ -50,9 +50,9 @@ Pen::~Pen()
     Tcl_DeleteHashEntry(hashPtr_);
 
   PenOptions* ops = (PenOptions*)ops_;
-  Blt_Ts_FreeStyle(graphPtr_->display, &ops->valueStyle);
+  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->valueStyle);
 
-  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 
   if (manageOptions_)
     if (ops_)
