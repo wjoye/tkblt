@@ -242,15 +242,15 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   titleY_ =0;
   titleWidth_ =0;
   titleHeight_ =0;
-  focusPtr =NULL;
-  width =0;
-  height =0;
+  width_ =0;
+  height_ =0;
+  left_ =0;
+  right_ =0;
+  top_ =0;
+  bottom_ =0;
+  focusPtr_ =NULL;
   halo =0;
   drawGC =NULL;
-  left =0;
-  right =0;
-  top =0;
-  bottom =0;
   vRange =0;
   vOffset =0;
   hRange =0;
@@ -421,8 +421,8 @@ void GraphDisplay(Graph* graphPtr)
      * something reasonable. */
     return;
   }
-  graphPtr->width = Tk_Width(graphPtr->tkwin_);
-  graphPtr->height = Tk_Height(graphPtr->tkwin_);
+  graphPtr->width_ = Tk_Width(graphPtr->tkwin_);
+  graphPtr->height_ = Tk_Height(graphPtr->tkwin_);
   Blt_MapGraph(graphPtr);
   if (!Tk_IsMapped(graphPtr->tkwin_)) {
     /* The graph's window isn't displayed, so don't bother drawing
@@ -434,23 +434,23 @@ void GraphDisplay(Graph* graphPtr)
   Pixmap drawable;
   if (ops->doubleBuffer)
     drawable = Tk_GetPixmap(graphPtr->display_, Tk_WindowId(graphPtr->tkwin_), 
-			    graphPtr->width, graphPtr->height, Tk_Depth(graphPtr->tkwin_));
+			    graphPtr->width_, graphPtr->height_, Tk_Depth(graphPtr->tkwin_));
   else
     drawable = Tk_WindowId(graphPtr->tkwin_);
 
   if (ops->backingStore) {
     if ((graphPtr->cache == None) || 
-	(graphPtr->cacheWidth != graphPtr->width) ||
-	(graphPtr->cacheHeight != graphPtr->height)) {
+	(graphPtr->cacheWidth != graphPtr->width_) ||
+	(graphPtr->cacheHeight != graphPtr->height_)) {
       if (graphPtr->cache != None)
 	Tk_FreePixmap(graphPtr->display_, graphPtr->cache);
 
       graphPtr->cache = Tk_GetPixmap(graphPtr->display_, 
 				     Tk_WindowId(graphPtr->tkwin_), 
-				     graphPtr->width, graphPtr->height, 
+				     graphPtr->width_, graphPtr->height_, 
 				     Tk_Depth(graphPtr->tkwin_));
-      graphPtr->cacheWidth  = graphPtr->width;
-      graphPtr->cacheHeight = graphPtr->height;
+      graphPtr->cacheWidth  = graphPtr->width_;
+      graphPtr->cacheHeight = graphPtr->height_;
       graphPtr->flags |= CACHE_DIRTY;
     }
   }
@@ -488,8 +488,8 @@ void GraphDisplay(Graph* graphPtr)
   if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT))
     Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		       ops->highlightWidth, ops->highlightWidth, 
-		       graphPtr->width - 2*ops->highlightWidth, 
-		       graphPtr->height - 2*ops->highlightWidth, 
+		       graphPtr->width_ - 2*ops->highlightWidth, 
+		       graphPtr->height_ - 2*ops->highlightWidth, 
 		       ops->borderWidth, ops->relief);
 
   // Draw focus highlight ring
@@ -502,7 +502,7 @@ void GraphDisplay(Graph* graphPtr)
   // Disable crosshairs before redisplaying to the screen
   Blt_DisableCrosshairs(graphPtr);
   XCopyArea(graphPtr->display_, drawable, Tk_WindowId(tkwin),
-	    graphPtr->drawGC, 0, 0, graphPtr->width, graphPtr->height, 0, 0);
+	    graphPtr->drawGC, 0, 0, graphPtr->width_, graphPtr->height_, 0, 0);
   Blt_EnableCrosshairs(graphPtr);
   if (ops->doubleBuffer)
     Tk_FreePixmap(graphPtr->display_, drawable);
@@ -597,15 +597,15 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
    * surface. This clears the surrounding area and clips the plot.
    */
   rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-  rects[0].width = rects[3].width = (short int)graphPtr->width;
-  rects[0].height = (short int)graphPtr->top;
-  rects[3].y = graphPtr->bottom;
-  rects[3].height = graphPtr->height - graphPtr->bottom;
-  rects[2].y = rects[1].y = graphPtr->top;
-  rects[1].width = graphPtr->left;
-  rects[2].height = rects[1].height = graphPtr->bottom - graphPtr->top;
-  rects[2].x = graphPtr->right;
-  rects[2].width = graphPtr->width - graphPtr->right;
+  rects[0].width = rects[3].width = (short int)graphPtr->width_;
+  rects[0].height = (short int)graphPtr->top_;
+  rects[3].y = graphPtr->bottom_;
+  rects[3].height = graphPtr->height_ - graphPtr->bottom_;
+  rects[2].y = rects[1].y = graphPtr->top_;
+  rects[1].width = graphPtr->left_;
+  rects[2].height = rects[1].height = graphPtr->bottom_ - graphPtr->top_;
+  rects[2].x = graphPtr->right_;
+  rects[2].width = graphPtr->width_ - graphPtr->right_;
 
   Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
@@ -625,10 +625,10 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   if (ops->plotBW > 0) {
     int x, y, w, h;
 
-    x = graphPtr->left - ops->plotBW;
-    y = graphPtr->top - ops->plotBW;
-    w = (graphPtr->right - graphPtr->left) + (2*ops->plotBW);
-    h = (graphPtr->bottom - graphPtr->top) + (2*ops->plotBW);
+    x = graphPtr->left_ - ops->plotBW;
+    y = graphPtr->top_ - ops->plotBW;
+    w = (graphPtr->right_ - graphPtr->left_) + (2*ops->plotBW);
+    h = (graphPtr->bottom_ - graphPtr->top_) + (2*ops->plotBW);
     Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
 		       x, y, w, h, ops->plotBW, ops->plotRelief);
   }
@@ -659,10 +659,10 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
 
   // Draw the background of the plotting area with 3D border
   Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->plotBg,
-		     graphPtr->left-ops->plotBW, 
-		     graphPtr->top-ops->plotBW, 
-		     graphPtr->right - graphPtr->left + 1 +2*ops->plotBW,
-		     graphPtr->bottom - graphPtr->top  + 1 +2*ops->plotBW, 
+		     graphPtr->left_ - ops->plotBW, 
+		     graphPtr->top_ - ops->plotBW, 
+		     graphPtr->right_ - graphPtr->left_ + 1 + 2*ops->plotBW,
+		     graphPtr->bottom_ - graphPtr->top_  + 1 + 2*ops->plotBW, 
 		     ops->plotBW, ops->plotRelief);
   
   // Draw the elements, markers, legend, and axis limits

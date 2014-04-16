@@ -37,7 +37,7 @@ extern "C" {
 #include "bltGrHairs.h"
 #include "bltGrMisc.h"
 
-#define PointInGraph(g,x,y) (((x) <= (g)->right) && ((x) >= (g)->left) && ((y) <= (g)->bottom) && ((y) >= (g)->top))
+#define PointInGraph(g,x,y) (((x) <= (g)->right_) && ((x) >= (g)->left_) && ((y) <= (g)->bottom_) && ((y) >= (g)->top_))
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
@@ -116,12 +116,12 @@ void Crosshairs::configure()
   // Are the new coordinates on the graph?
   segArr_[0].x1 = ops->x;
   segArr_[0].x2 = ops->x;
-  segArr_[0].y1 = graphPtr_->bottom;
-  segArr_[0].y2 = graphPtr_->top;
+  segArr_[0].y1 = graphPtr_->bottom_;
+  segArr_[0].y2 = graphPtr_->top_;
   segArr_[1].y1 = ops->y;
   segArr_[1].y2 = ops->y;
-  segArr_[1].x1 = graphPtr_->left;
-  segArr_[1].x2 = graphPtr_->right;
+  segArr_[1].x1 = graphPtr_->left_;
+  segArr_[1].x2 = graphPtr_->right_;
 
   if (!ops->hide)
     on();

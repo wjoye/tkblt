@@ -375,7 +375,7 @@ void BarElement::map()
     c1 = Blt_Map2D(graphPtr_, c1.x, c1.y, &ops->axes);
     c2 = Blt_Map2D(graphPtr_, c2.x, c2.y, &ops->axes);
     if ((ybot == 0.0) && (axisyops->logScale)) {
-      c2.y = graphPtr_->bottom;
+      c2.y = graphPtr_->bottom_;
     }
 	    
     if (c2.y < c1.y) {
@@ -386,8 +386,8 @@ void BarElement::map()
       double t;
       t = c1.x, c1.x = c2.x, c2.x = t;
     }
-    if ((c1.x > graphPtr_->right) || (c2.x < graphPtr_->left) || 
-	(c1.y > graphPtr_->bottom) || (c2.y < graphPtr_->top)) {
+    if ((c1.x > graphPtr_->right_) || (c2.x < graphPtr_->left_) || 
+	(c1.y > graphPtr_->bottom_) || (c2.y < graphPtr_->top_)) {
       continue;
     }
     /* Bound the bars horizontally by the width of the graph window */
@@ -395,8 +395,8 @@ void BarElement::map()
     if (gops->stackAxes) {
       top = ops->axes.y->screenMin_;
       bottom = ops->axes.y->screenMin_ + ops->axes.y->screenRange_;
-      left = graphPtr_->left;
-      right = graphPtr_->right;
+      left = graphPtr_->left_;
+      right = graphPtr_->right_;
     } else {
       left = top = 0;
       bottom = right = 10000;
@@ -1225,10 +1225,10 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
   TkRegion rgn;
 
   XRectangle clip;
-  clip.x = graphPtr_->left;
-  clip.y = graphPtr_->top;
-  clip.width  = graphPtr_->right - graphPtr_->left + 1;
-  clip.height = graphPtr_->bottom - graphPtr_->top + 1;
+  clip.x = graphPtr_->left_;
+  clip.y = graphPtr_->top_;
+  clip.width  = graphPtr_->right_ - graphPtr_->left_ + 1;
+  clip.height = graphPtr_->bottom_ - graphPtr_->top_ + 1;
   rgn = TkCreateRegion();
   TkUnionRectWithRegion(&clip, rgn, rgn);
 

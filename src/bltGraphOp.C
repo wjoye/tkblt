@@ -258,25 +258,23 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   char c = string[0];
   if ((c == 'p') && (length > 4) && 
       (strncmp("plotheight", string, length) == 0)) {
-    int height = graphPtr->bottom - graphPtr->top + 1;
+    int height = graphPtr->bottom_ - graphPtr->top_ + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
   }
   else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotwidth", string, length) == 0)) {
-    int width = graphPtr->right - graphPtr->left + 1;
+    int width = graphPtr->right_ - graphPtr->left_ + 1;
     Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
   }
   else if ((c == 'p') && (length > 4) &&
 	     (strncmp("plotarea", string, length) == 0)) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->left));
+			     Tcl_NewIntObj(graphPtr->left_));
     Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->top));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->right - graphPtr->left+1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, 
-			     Tcl_NewIntObj(graphPtr->bottom - graphPtr->top+1));
+			     Tcl_NewIntObj(graphPtr->top_));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(graphPtr->right_ - graphPtr->left_+1));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(graphPtr->bottom_ - graphPtr->top_+1));
     Tcl_SetObjResult(interp, listObjPtr);
   }
   else if ((c == 'l') && (length > 2) &&

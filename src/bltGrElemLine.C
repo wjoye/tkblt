@@ -1209,17 +1209,16 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
 				 * increasing */
     }
   }
-  if (((origPts[0].x > (double)graphPtr_->right)) ||
-      ((origPts[mapPtr->nScreenPts - 1].x < (double)graphPtr_->left))) {
-    return;				/* All points are clipped */
-  }
+  if (((origPts[0].x > (double)graphPtr_->right_)) ||
+      ((origPts[mapPtr->nScreenPts - 1].x < (double)graphPtr_->left_)))
+    return;
 
   /*
    * The spline is computed in screen coordinates instead of data points so
    * that we can select the abscissas of the interpolated points from each
    * pixel horizontally across the plotting area.
    */
-  extra = (graphPtr_->right - graphPtr_->left) + 1;
+  extra = (graphPtr_->right_ - graphPtr_->left_) + 1;
   if (extra < 1) {
     return;
   }
@@ -1240,8 +1239,8 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
     count++;
 
     /* Is any part of the interval (line segment) in the plotting area?  */
-    if ((origPts[j].x >= (double)graphPtr_->left) || 
-	(origPts[i].x <= (double)graphPtr_->right)) {
+    if ((origPts[j].x >= (double)graphPtr_->left_) || 
+	(origPts[i].x <= (double)graphPtr_->right_)) {
       double x, last;
 
       x = origPts[i].x + 1.0;
@@ -1257,8 +1256,8 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
        * Pick the max of the starting X-coordinate and the left edge and
        * the min of the last X-coordinate and the right edge.
        */
-      x = MAX(x, (double)graphPtr_->left);
-      last = MIN(origPts[j].x, (double)graphPtr_->right);
+      x = MAX(x, (double)graphPtr_->left_);
+      last = MIN(origPts[j].x, (double)graphPtr_->right_);
 
       /* Add the extra x-coordinates to the interval. */
       while (x < last) {

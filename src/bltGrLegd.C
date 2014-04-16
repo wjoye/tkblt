@@ -652,42 +652,42 @@ void Legend::setOrigin()
   switch ((Position)ops->position) {
   case RIGHT:
     w = gops->rightMargin.width - gops->rightMargin.axesOffset;
-    h = graphPtr_->bottom - graphPtr_->top;
-    x = graphPtr_->right + gops->rightMargin.axesOffset;
-    y = graphPtr_->top;
+    h = graphPtr_->bottom_ - graphPtr_->top_;
+    x = graphPtr_->right_ + gops->rightMargin.axesOffset;
+    y = graphPtr_->top_;
     break;
 
   case LEFT:
     w = gops->leftMargin.width - gops->leftMargin.axesOffset;
-    h = graphPtr_->bottom - graphPtr_->top;
+    h = graphPtr_->bottom_ - graphPtr_->top_;
     x = graphPtr_->inset_;
-    y = graphPtr_->top;
+    y = graphPtr_->top_;
     break;
 
   case TOP:
-    w = graphPtr_->right - graphPtr_->left;
+    w = graphPtr_->right_ - graphPtr_->left_;
     h = gops->topMargin.height - gops->topMargin.axesOffset;
     if (gops->title)
       h -= graphPtr_->titleHeight_;
 
-    x = graphPtr_->left;
+    x = graphPtr_->left_;
     y = graphPtr_->inset_;
     if (gops->title)
       y += graphPtr_->titleHeight_;
     break;
 
   case BOTTOM:
-    w = graphPtr_->right - graphPtr_->left;
+    w = graphPtr_->right_ - graphPtr_->left_;
     h = gops->bottomMargin.height - gops->bottomMargin.axesOffset;
-    x = graphPtr_->left;
-    y = graphPtr_->bottom + gops->bottomMargin.axesOffset;
+    x = graphPtr_->left_;
+    y = graphPtr_->bottom_ + gops->bottomMargin.axesOffset;
     break;
 
   case PLOT:
-    w = graphPtr_->right - graphPtr_->left;
-    h = graphPtr_->bottom - graphPtr_->top;
-    x = graphPtr_->left;
-    y = graphPtr_->top;
+    w = graphPtr_->right_ - graphPtr_->left_;
+    h = graphPtr_->bottom_ - graphPtr_->top_;
+    x = graphPtr_->left_;
+    y = graphPtr_->top_;
     break;
 
   case XY:
@@ -696,10 +696,10 @@ void Legend::setOrigin()
     x = ops->xReq;
     y = ops->yReq;
     if (x < 0)
-      x += graphPtr_->width;
+      x += graphPtr_->width_;
 
     if (y < 0)
-      y += graphPtr_->height;
+      y += graphPtr_->height_;
     break;
   }
 

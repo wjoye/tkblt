@@ -131,10 +131,10 @@ Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
 
 int Marker::boxesDontOverlap(Graph* graphPtr_, Region2d *extsPtr)
 {
-  return (((double)graphPtr_->right < extsPtr->left) ||
-	  ((double)graphPtr_->bottom < extsPtr->top) ||
-	  (extsPtr->right < (double)graphPtr_->left) ||
-	  (extsPtr->bottom < (double)graphPtr_->top));
+  return (((double)graphPtr_->right_ < extsPtr->left) ||
+	  ((double)graphPtr_->bottom_ < extsPtr->top) ||
+	  (extsPtr->right < (double)graphPtr_->left_) ||
+	  (extsPtr->bottom < (double)graphPtr_->top_));
 }
 
 int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,

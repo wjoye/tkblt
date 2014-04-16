@@ -456,7 +456,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
 static int FocusOp(Tcl_Interp* interp, Graph* graphPtr, 
 		   int objc, Tcl_Obj* const objv[])
 {
-  graphPtr->focusPtr = NULL;
+  graphPtr->focusPtr_ = NULL;
   if (objc == 4) {
     Axis* axisPtr;
     if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
@@ -464,13 +464,13 @@ static int FocusOp(Tcl_Interp* interp, Graph* graphPtr,
 
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     if (axisPtr && !ops->hide && axisPtr->use_)
-      graphPtr->focusPtr = axisPtr;
+      graphPtr->focusPtr_ = axisPtr;
   }
 
-  Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr, NULL);
+  Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr_, NULL);
 
-  if (graphPtr->focusPtr)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr->name(),-1);
+  if (graphPtr->focusPtr_)
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr_->name(),-1);
 
   return TCL_OK;
 }
@@ -843,8 +843,8 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
   int vMin, hMin, vMax, hMax;
 
 #define SPACING 8
-  vMin = vMax = graphPtr->left + gops->xPad + 2;
-  hMin = hMax = graphPtr->bottom - gops->yPad - 2;	/* Offsets */
+  vMin = vMax = graphPtr->left_ + gops->xPad + 2;
+  hMin = hMax = graphPtr->bottom_ - gops->yPad - 2;	/* Offsets */
 
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
@@ -885,7 +885,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
 	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
-		      &ops->limitsTextStyle, graphPtr->right, 
+		      &ops->limitsTextStyle, graphPtr->right_, 
 		      hMax, &textDim);
 	hMax -= (textDim.height + SPACING);
       } 
@@ -895,7 +895,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 
 	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
 		      &ops->limitsTextStyle, vMax, 
-		      graphPtr->top, &textDim);
+		      graphPtr->top_, &textDim);
 	vMax += (textDim.width + SPACING);
       }
     }
@@ -906,7 +906,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 	ops->limitsTextStyle.angle = 90.0;
 
 	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
-		      &ops->limitsTextStyle, graphPtr->left, 
+		      &ops->limitsTextStyle, graphPtr->left_, 
 		      hMin, &textDim);
 	hMin -= (textDim.height + SPACING);
       } 
@@ -915,7 +915,7 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 
 	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
 		      &ops->limitsTextStyle, vMin, 
-		      graphPtr->bottom, &textDim);
+		      graphPtr->bottom_, &textDim);
 	vMin += (textDim.width + SPACING);
       }
     }
@@ -931,8 +931,8 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
   char string[200];
 
 #define SPACING 8
-  vMin = vMax = graphPtr->left + gops->xPad + 2;
-  hMin = hMax = graphPtr->bottom - gops->yPad - 2;	/* Offsets */
+  vMin = vMax = graphPtr->left_ + gops->xPad + 2;
+  hMin = hMax = graphPtr->bottom_ - gops->yPad - 2;	/* Offsets */
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     const char *minFmt, *maxFmt;
@@ -958,7 +958,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 	  ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
 	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  (double)graphPtr->right, hMax);
+			  (double)graphPtr->right_, hMax);
 	  hMax -= (textWidth + SPACING);
 	} 
 	else {
@@ -966,7 +966,7 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 	  ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
 	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle,
-			  vMax, (double)graphPtr->top);
+			  vMax, (double)graphPtr->top_);
 	  vMax += (textWidth + SPACING);
 	}
       }
@@ -981,14 +981,14 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 	  ops->limitsTextStyle.angle = 90.0;
 
 	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  (double)graphPtr->left, hMin);
+			  (double)graphPtr->left_, hMin);
 	  hMin -= (textWidth + SPACING);
 	}
 	else {
 	  ops->limitsTextStyle.angle = 0.0;
 
 	  Blt_Ps_DrawText(ps, string, &ops->limitsTextStyle, 
-			  vMin, (double)graphPtr->bottom);
+			  vMin, (double)graphPtr->bottom_);
 	  vMin += (textWidth + SPACING);
 	}
       }
@@ -1261,8 +1261,8 @@ void Blt_LayoutGraph(Graph* graphPtr)
   int plotWidth, plotHeight;
   int inset, inset2;
 
-  int width = graphPtr->width;
-  int height = graphPtr->height;
+  int width = graphPtr->width_;
+  int height = graphPtr->height_;
 
   /* 
    * Step 1:  Compute the amount of space needed to display the axes
@@ -1496,21 +1496,21 @@ void Blt_LayoutGraph(Graph* graphPtr)
       height = h;
     }
   }	
-  graphPtr->width  = width;
-  graphPtr->height = height;
-  graphPtr->left   = left + inset;
-  graphPtr->top    = top + inset;
-  graphPtr->right  = width - right - inset;
-  graphPtr->bottom = height - bottom - inset;
+  graphPtr->width_  = width;
+  graphPtr->height_ = height;
+  graphPtr->left_   = left + inset;
+  graphPtr->top_    = top + inset;
+  graphPtr->right_  = width - right - inset;
+  graphPtr->bottom_ = height - bottom - inset;
 
   gops->leftMargin.width    = left   + graphPtr->inset_;
   gops->rightMargin.width   = right  + graphPtr->inset_;
   gops->topMargin.height    = top    + graphPtr->inset_;
   gops->bottomMargin.height = bottom + graphPtr->inset_;
 	    
-  graphPtr->vOffset = graphPtr->top + gops->yPad;
+  graphPtr->vOffset = graphPtr->top_ + gops->yPad;
   graphPtr->vRange  = plotHeight - 2*gops->yPad;
-  graphPtr->hOffset = graphPtr->left + gops->xPad;
+  graphPtr->hOffset = graphPtr->left_ + gops->xPad;
   graphPtr->hRange  = plotWidth  - 2*gops->xPad;
 
   if (graphPtr->vRange < 1)
@@ -1526,7 +1526,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
   // space provided for it in the top margin
   titleY = graphPtr->titleHeight_;
   graphPtr->titleY_ = 3 + graphPtr->inset_;
-  graphPtr->titleX_ = (graphPtr->right + graphPtr->left) / 2;
+  graphPtr->titleX_ = (graphPtr->right_ + graphPtr->left_) / 2;
 }
 
 static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
