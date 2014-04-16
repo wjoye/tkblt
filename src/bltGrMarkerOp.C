@@ -467,29 +467,6 @@ static void FreeMarker(char* dataPtr)
   delete markerPtr;
 }
 
-void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
-{
-  Point2d point;
-  point.x = (double)x;
-  point.y = (double)y;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList);
-       link; link = Blt_Chain_NextLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-
-    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (ops->hide))
-      continue;
-
-    if (graphPtr->isElementHidden(markerPtr))
-      continue;
-
-    if ((ops->drawUnder == under) && (ops->state == BLT_STATE_NORMAL))
-      if (markerPtr->pointIn(&point))
-	return markerPtr;
-  }
-  return NULL;
-}
-
 ClientData Blt::MakeMarkerTag(Graph* graphPtr, const char* tagName)
 {
   int isNew;

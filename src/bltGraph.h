@@ -243,9 +243,8 @@ class Graph {
   void printAxes(Blt_Ps);
 
   int isElementHidden(Blt::Marker*);
+  Blt::Marker* nearestMarker(int, int, int);
 };
-
-extern void Blt_ReconfigureGraph(Graph* graphPtr);
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern MakeTagProc Blt_MakeElementTag;

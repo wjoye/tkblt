@@ -830,7 +830,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  Marker* markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, 0);
+  Marker* markerPtr = graphPtr->nearestMarker(x, y, 0);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
@@ -858,7 +858,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return searchPtr->elemPtr;
   }
 
-  markerPtr = (Marker*)Blt::NearestMarker(graphPtr, x, y, 1);
+  markerPtr = graphPtr->nearestMarker(x, y, 1);
   if (markerPtr) {
     *contextPtr = (ClientData)markerPtr->classId();
     return markerPtr;
@@ -1074,6 +1074,29 @@ void Graph::printMarkers(Blt_Ps ps, int under)
 		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
     markerPtr->postscript(ps);
   }
+}
+
+Marker* Graph::nearestMarker(int x, int y, int under)
+{
+  Point2d point;
+  point.x = (double)x;
+  point.y = (double)y;
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
+    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
+
+    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (mops->hide))
+      continue;
+
+    if (isElementHidden(markerPtr))
+      continue;
+
+    if ((mops->drawUnder == under) && (mops->state == BLT_STATE_NORMAL))
+      if (markerPtr->pointIn(&point))
+	return markerPtr;
+  }
+  return NULL;
 }
 
 int Graph::isElementHidden(Marker* markerPtr)

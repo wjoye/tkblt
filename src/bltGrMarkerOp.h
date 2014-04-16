@@ -35,7 +35,6 @@ namespace Blt {
 		      int objc, Tcl_Obj* const objv[]);
 
   extern ClientData MakeMarkerTag(Graph* graphPtr, const char* tagName);
-  extern void* NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
 
 #endif
