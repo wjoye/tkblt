@@ -206,6 +206,11 @@ class Graph {
   void printElements(Blt_Ps);
   void printActiveElements(Blt_Ps);
 
+  void destroyAxes();
+  void configureAxes();
+  void mapAxes();
+  void drawAxes(Drawable);
+
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
 	int objc, Tcl_Obj* const objv[], ClassId classId);
@@ -221,6 +226,8 @@ class Graph {
 
   void enableCrosshairs();
   void disableCrosshairs();
+
+  void resetAxes();
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);

@@ -342,12 +342,12 @@ static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 {
   double x, y;
   if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
+      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
-  }
-  if (graphPtr->flags & RESET_AXES) {
-    Blt_ResetAxes(graphPtr);
-  }
+
+  if (graphPtr->flags & RESET_AXES)
+    graphPtr->resetAxes();
+
   /* Perform the reverse transformation, converting from window coordinates
    * to graph data coordinates.  Note that the point is always mapped to the
    * bottom and left axes (which may not be what the user wants).  */
@@ -371,12 +371,12 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 {
   double x, y;
   if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK)) {
+      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
-  }
-  if (graphPtr->flags & RESET_AXES) {
-    Blt_ResetAxes(graphPtr);
-  }
+
+  if (graphPtr->flags & RESET_AXES)
+    graphPtr->resetAxes();
+
   /*
    * Perform the transformation from window to graph coordinates.  Note that
    * the points are always mapped onto the bottom and left axes (which may

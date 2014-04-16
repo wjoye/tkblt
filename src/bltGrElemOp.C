@@ -278,7 +278,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   ClosestSearch* searchPtr = &gops->search;
 
   if (graphPtr->flags & RESET_AXES)
-    Blt_ResetAxes(graphPtr);
+    graphPtr->resetAxes();
 
   int x;
   if (Tcl_GetIntFromObj(interp, objv[3], &x) != TCL_OK) {

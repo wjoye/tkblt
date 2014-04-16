@@ -334,7 +334,7 @@ Graph::~Graph()
   if (legend_)
     delete legend_;
 
-  Blt_DestroyAxes(this);
+  destroyAxes();
   Blt_DestroyPens(this);
   Blt_DestroyPageSetup(this);
   Blt_DestroyBarSets(this);
@@ -512,9 +512,9 @@ void Graph::display()
 
 void Graph::map()
 {
-  if (flags & RESET_AXES) {
-    Blt_ResetAxes(this);
-  }
+  if (flags & RESET_AXES)
+    resetAxes();
+
   if (flags & LAYOUT_NEEDED) {
     Blt_LayoutGraph(this);
     flags &= ~LAYOUT_NEEDED;
@@ -522,7 +522,7 @@ void Graph::map()
 
   if ((vRange_ > 1) && (hRange_ > 1)) {
     if (flags & MAP_WORLD)
-      Blt_MapAxes(this);
+      mapAxes();
 
     mapElements();
     Blt::MapMarkers(this);
@@ -544,7 +544,7 @@ void Graph::drawPlot(Drawable drawable)
 		     ops->plotBW, ops->plotRelief);
   
   // Draw the elements, markers, legend, and axis limits
-  Blt_DrawAxes(this, drawable);
+  drawAxes(drawable);
   Blt_DrawGrids(this, drawable);
   Blt::DrawMarkers(this, drawable, MARKER_UNDER);
 
@@ -669,7 +669,7 @@ void Graph::drawMargins(Drawable drawable)
     Blt_DrawText(tkwin_, drawable, ops->title,
 		 &ops->titleTextStyle, titleX_, titleY_);
 
-  Blt_DrawAxes(this, drawable);
+  drawAxes(drawable);
   flags &= ~DRAW_MARGINS;
 }
 
@@ -737,7 +737,7 @@ void Graph::reconfigure()
   configure();
   legend_->configure();
   configureElements();
-  Blt_ConfigureAxes(this);
+  configureAxes();
   Blt::ConfigureMarkers(this);
 }
 
@@ -977,5 +977,159 @@ void Graph::printActiveElements(Blt_Ps ps)
       elemPtr->printActive(ps);
     }
   }
+}
+
+// Axis
+
+void Graph::destroyAxes()
+{
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    axisPtr->hashPtr_ = NULL;
+    delete axisPtr;
+  }
+  Tcl_DeleteHashTable(&axes_.table);
+
+  for (int ii=0; ii<4; ii++)
+    Blt_Chain_Destroy(axisChain_[ii]);
+
+  Tcl_DeleteHashTable(&axes_.tagTable);
+  Blt_Chain_Destroy(axes_.displayList);
+}
+
+void Graph::configureAxes()
+{
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry *hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    axisPtr->configure();
+  }
+}
+
+void Graph::mapAxes()
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  for (int margin = 0; margin < 4; margin++) {
+    int count =0;
+    int offset =0;
+    Blt_Chain chain = gops->margins[margin].axes;
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
+	 link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
+	continue;
+
+      if (gops->stackAxes) {
+	if (ops->reqNumMajorTicks <= 0)
+	  ops->reqNumMajorTicks = 4;
+
+	axisPtr->mapStacked(count, margin);
+      } 
+      else {
+	if (ops->reqNumMajorTicks <= 0)
+	  ops->reqNumMajorTicks = 4;
+
+	axisPtr->map(offset, margin);
+      }
+
+      if (ops->showGrid)
+	axisPtr->mapGridlines();
+
+      offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
+      count++;
+    }
+  }
+}
+
+void Graph::drawAxes(Drawable drawable)
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  for (int i = 0; i < 4; i++) {
+    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[i].axes); 
+	 link != NULL; link = Blt_Chain_PrevLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
+	axisPtr->draw(drawable);
+    }
+  }
+}
+
+void Graph::resetAxes()
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  
+  /* FIXME: This should be called whenever the display list of
+   *	      elements change. Maybe yet another flag INIT_STACKS to
+   *	      indicate that the element display list has changed.
+   *	      Needs to be done before the axis limits are set.
+   */
+  Blt_InitBarSetTable(this);
+  if ((gops->barMode == BARS_STACKED) && (nBarGroups_ > 0))
+    Blt_ComputeBarStacks(this);
+
+  /*
+   * Step 1:  Reset all axes. Initialize the data limits of the axis to
+   *		impossible values.
+   */
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    axisPtr->min_ = axisPtr->valueRange_.min = DBL_MAX;
+    axisPtr->max_ = axisPtr->valueRange_.max = -DBL_MAX;
+  }
+
+  /*
+   * Step 2:  For each element that's to be displayed, get the smallest
+   *		and largest data values mapped to each X and Y-axis.  This
+   *		will be the axis limits if the user doesn't override them 
+   *		with -min and -max options.
+   */
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(elements_.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
+    Region2d exts;
+
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    ElementOptions* elemops = (ElementOptions*)elemPtr->ops();
+    elemPtr->extents(&exts);
+    elemops->axes.x->getDataLimits(exts.left, exts.right);
+    elemops->axes.y->getDataLimits(exts.top, exts.bottom);
+  }
+  /*
+   * Step 3:  Now that we know the range of data values for each axis,
+   *		set axis limits and compute a sweep to generate tick values.
+   */
+  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+    axisPtr->fixRange();
+
+    /* Calculate min/max tick (major/minor) layouts */
+    double min = axisPtr->min_;
+    double max = axisPtr->max_;
+    if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_))
+      min = axisPtr->scrollMin_;
+
+    if ((!isnan(axisPtr->scrollMax_)) && (max > axisPtr->scrollMax_))
+      max = axisPtr->scrollMax_;
+
+    if (ops->logScale)
+      axisPtr->logScale(min, max);
+    else
+      axisPtr->linearScale(min, max);
+
+    if (axisPtr->use_ && (axisPtr->flags & DIRTY))
+      flags |= CACHE_DIRTY;
+  }
+
+  flags &= ~RESET_AXES;
+
+  // When any axis changes, we need to layout the entire graph.
+  flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 

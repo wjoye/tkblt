@@ -167,7 +167,7 @@ int AxisInvTransformOp(Tcl_Interp* interp, Axis* axisPtr,
   Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
-    Blt_ResetAxes(graphPtr);
+    graphPtr->resetAxes();
 
   int sy;
   if (Tcl_GetIntFromObj(interp, objv[3], &sy) != TCL_OK)
@@ -191,7 +191,7 @@ int AxisLimitsOp(Tcl_Interp* interp, Axis* axisPtr,
   Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
-    Blt_ResetAxes(graphPtr);
+    graphPtr->resetAxes();
 
   double min, max;
   if (ops->logScale) {
@@ -228,7 +228,7 @@ int AxisTransformOp(Tcl_Interp* interp, Axis* axisPtr,
   Graph* graphPtr = axisPtr->graphPtr_;
 
   if (graphPtr->flags & RESET_AXES)
-    Blt_ResetAxes(graphPtr);
+    graphPtr->resetAxes();
 
   double x;
   if (Blt_ExprDoubleFromObj(interp, objv[3], &x) != TCL_OK)
@@ -626,23 +626,6 @@ int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-void Blt_DestroyAxes(Graph* graphPtr)
-{
-  Tcl_HashSearch cursor;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->hashPtr_ = NULL;
-    delete axisPtr;
-  }
-  Tcl_DeleteHashTable(&graphPtr->axes_.table);
-
-  for (int ii=0; ii<4; ii++)
-    Blt_Chain_Destroy(graphPtr->axisChain_[ii]);
-
-  Tcl_DeleteHashTable(&graphPtr->axes_.tagTable);
-  Blt_Chain_Destroy(graphPtr->axes_.displayList);
-}
-
 int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr)
 {
@@ -670,82 +653,6 @@ void FreeAxis(char* data)
 {
   Axis* axisPtr = (Axis*)data;
   delete axisPtr;
-}
-
-void Blt_ResetAxes(Graph* graphPtr)
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  
-  /* FIXME: This should be called whenever the display list of
-   *	      elements change. Maybe yet another flag INIT_STACKS to
-   *	      indicate that the element display list has changed.
-   *	      Needs to be done before the axis limits are set.
-   */
-  Blt_InitBarSetTable(graphPtr);
-  if ((gops->barMode == BARS_STACKED) && (graphPtr->nBarGroups_ > 0))
-    Blt_ComputeBarStacks(graphPtr);
-
-  /*
-   * Step 1:  Reset all axes. Initialize the data limits of the axis to
-   *		impossible values.
-   */
-  Tcl_HashSearch cursor;
-  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor);
-       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->min_ = axisPtr->valueRange_.min = DBL_MAX;
-    axisPtr->max_ = axisPtr->valueRange_.max = -DBL_MAX;
-  }
-
-  /*
-   * Step 2:  For each element that's to be displayed, get the smallest
-   *		and largest data values mapped to each X and Y-axis.  This
-   *		will be the axis limits if the user doesn't override them 
-   *		with -min and -max options.
-   */
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements_.displayList);
-       link; link = Blt_Chain_NextLink(link)) {
-    Region2d exts;
-
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    ElementOptions* elemops = (ElementOptions*)elemPtr->ops();
-    elemPtr->extents(&exts);
-    elemops->axes.x->getDataLimits(exts.left, exts.right);
-    elemops->axes.y->getDataLimits(exts.top, exts.bottom);
-  }
-  /*
-   * Step 3:  Now that we know the range of data values for each axis,
-   *		set axis limits and compute a sweep to generate tick values.
-   */
-  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor);
-       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    axisPtr->fixRange();
-
-    /* Calculate min/max tick (major/minor) layouts */
-    double min = axisPtr->min_;
-    double max = axisPtr->max_;
-    if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_))
-      min = axisPtr->scrollMin_;
-
-    if ((!isnan(axisPtr->scrollMax_)) && (max > axisPtr->scrollMax_))
-      max = axisPtr->scrollMax_;
-
-    if (ops->logScale)
-      axisPtr->logScale(min, max);
-    else
-      axisPtr->linearScale(min, max);
-
-    if (axisPtr->use_ && (axisPtr->flags & DIRTY))
-      graphPtr->flags |= CACHE_DIRTY;
-  }
-
-  graphPtr->flags &= ~RESET_AXES;
-
-  // When any axis changes, we need to layout the entire graph.
-  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | 
-		      REDRAW_WORLD);
 }
 
 Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
@@ -778,56 +685,6 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
     point.y = axesPtr->y->invVMap(y);
   }
   return point;
-}
-
-void Blt_MapAxes(Graph* graphPtr)
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  for (int margin = 0; margin < 4; margin++) {
-    int count =0;
-    int offset =0;
-    Blt_Chain chain = gops->margins[margin].axes;
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      if (gops->stackAxes) {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
-
-	axisPtr->mapStacked(count, margin);
-      } 
-      else {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
-
-	axisPtr->map(offset, margin);
-      }
-
-      if (ops->showGrid)
-	axisPtr->mapGridlines();
-
-      offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
-      count++;
-    }
-  }
-}
-
-void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[i].axes); 
-	 link != NULL; link = Blt_Chain_PrevLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	axisPtr->draw(drawable);
-    }
-  }
 }
 
 void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
@@ -989,16 +846,6 @@ void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 	}
       }
     }
-  }
-}
-
-void Blt_ConfigureAxes(Graph* graphPtr)
-{
-  Tcl_HashSearch cursor;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->configure();
   }
 }
 

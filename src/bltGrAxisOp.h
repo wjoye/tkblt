@@ -37,12 +37,7 @@ extern Tcl_FreeProc FreeAxis;
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr);
 
-extern void Blt_ResetAxes(Graph* graphPtr);
-extern void Blt_MapAxes(Graph* graphPtr);
-extern void Blt_ConfigureAxes(Graph* graphPtr);
 extern void Blt_AdjustAxisPointers(Graph* graphPtr);
-extern void Blt_DestroyAxes(Graph* graphPtr);
-extern void Blt_DrawAxes(Graph* graphPtr, Drawable drawable);
 extern void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable);
 extern void Blt_DrawGrids(Graph* graphPtr, Drawable drawable);
 extern void Blt_UpdateAxisBackgrounds(Graph* graphPtr);
