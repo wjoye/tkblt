@@ -147,12 +147,12 @@ class Element {
   virtual int configure() =0;
   virtual void map() =0;
   virtual void extents(Region2d*) =0;
+  virtual void draw(Drawable) =0;
   virtual void drawActive(Drawable) =0;
-  virtual void drawNormal(Drawable) =0;
   virtual void drawSymbol(Drawable, int, int, int) =0;
   virtual void closest() =0;
+  virtual void print(Blt_Ps) =0;
   virtual void printActive(Blt_Ps) =0;
-  virtual void printNormal(Blt_Ps) =0;
   virtual void printSymbol(Blt_Ps, double, double, int) =0;
 
   virtual ClassId classId() =0;

@@ -199,9 +199,12 @@ class Graph {
   void updateMarginTraces();
 
   void destroyElements();
-  void drawElements(Drawable);
-  void mapElements();
   void configureElements();
+  void mapElements();
+  void drawElements(Drawable);
+  void drawActiveElements(Drawable);
+  void printElements(Blt_Ps);
+  void printActiveElements(Blt_Ps);
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
@@ -209,9 +212,10 @@ class Graph {
   virtual ~Graph();
 
   void configure();
-  void display();
   void map();
+  void display();
   void eventuallyRedraw();
+  int print(const char *ident, Blt_Ps ps);
   void extents(Region2d*);
   void reconfigure();
 };

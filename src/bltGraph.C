@@ -467,7 +467,7 @@ void Graph::display()
 
   // Draw markers above elements
   Blt::DrawMarkers(this, drawable, MARKER_ABOVE);
-  Blt_DrawActiveElements(this, drawable);
+  drawActiveElements(drawable);
 
   // Don't draw legend in the plot area.
   if (legend_->isRaised()) {

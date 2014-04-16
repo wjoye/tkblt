@@ -118,11 +118,11 @@ class BarElement : public Element {
   void map();
   void extents(Region2d*);
   void closest();
+  void draw(Drawable);
   void drawActive(Drawable);
-  void drawNormal(Drawable);
   void drawSymbol(Drawable, int, int, int);
+  void print(Blt_Ps);
   void printActive(Blt_Ps);
-  void printNormal(Blt_Ps);
   void printSymbol(Blt_Ps, double, double, int);
 };
 

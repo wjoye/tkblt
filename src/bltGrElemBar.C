@@ -690,7 +690,7 @@ void BarElement::drawActive(Drawable drawable)
   }
 }
 
-void BarElement::drawNormal(Drawable drawable)
+void BarElement::draw(Drawable drawable)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -775,7 +775,7 @@ void BarElement::printActive(Blt_Ps ps)
   }
 }
 
-void BarElement::printNormal(Blt_Ps ps)
+void BarElement::print(Blt_Ps ps)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   

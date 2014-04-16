@@ -648,16 +648,14 @@ void Graph::drawElements(Drawable drawable)
        link; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
-      elemPtr->drawNormal(drawable);
+      elemPtr->draw(drawable);
   }
 }
 
-void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
+void Graph::drawActiveElements(Drawable drawable)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
 	!elemPtr->hide())
@@ -665,28 +663,24 @@ void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
   }
 }
 
-void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
+void Graph::printElements(Blt_Ps ps)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide()) {
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
       continue;
-    }
-    /* Comment the PostScript to indicate the start of the element */
+
+    // Comment the PostScript to indicate the start of the element
     Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->name());
-    elemPtr->printNormal(ps);
+    elemPtr->print(ps);
   }
 }
 
-void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
+void Graph::printActiveElements(Blt_Ps ps)
 {
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (!(elemPtr->flags & DELETE_PENDING) && 
 	(elemPtr->flags & ACTIVE) && 

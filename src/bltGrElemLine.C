@@ -617,7 +617,7 @@ void LineElement::drawActive(Drawable drawable)
   }
 }
 
-void LineElement::drawNormal(Drawable drawable)
+void LineElement::draw(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -772,7 +772,7 @@ void LineElement::printActive(Blt_Ps ps)
   }
 }
 
-void LineElement::printNormal(Blt_Ps ps)
+void LineElement::print(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
