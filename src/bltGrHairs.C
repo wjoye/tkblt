@@ -84,6 +84,7 @@ Crosshairs::~Crosshairs()
 void Crosshairs::configure()
 {
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   // Turn off the crosshairs temporarily. This is in case the new
   // configuration changes the size, style, or position of the lines.
@@ -92,7 +93,7 @@ void Crosshairs::configure()
   XGCValues gcValues;
   gcValues.function = GXxor;
 
-  unsigned long int pixel = Tk_3DBorderColor(graphPtr_->plotBg)->pixel;
+  unsigned long int pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
   gcValues.background = pixel;
   gcValues.foreground = (pixel ^ ops->colorPtr->pixel);
 

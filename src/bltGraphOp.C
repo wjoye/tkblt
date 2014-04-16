@@ -113,7 +113,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)graphPtr, graphPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -150,7 +150,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
   }
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)graphPtr, 
+				      (char*)graphPtr->ops_, 
 				      graphPtr->optionTable,
 				      objv[2], graphPtr->tkwin);
   if (objPtr == NULL)
@@ -165,7 +165,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   if (objc <= 3) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, 
-				       (char*)graphPtr, 
+				       (char*)graphPtr->ops_, 
 				       graphPtr->optionTable, 
 				       (objc == 3) ? objv[2] : NULL, 
 				       graphPtr->tkwin);
@@ -182,28 +182,32 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 static int XAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
-  int margin = (graphPtr->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  int margin = (ops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int X2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
-  int margin = (graphPtr->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  int margin = (ops->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int YAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
-  int margin = (graphPtr->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  int margin = (ops->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
 static int Y2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
-  int margin = (graphPtr->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  int margin = (ops->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
@@ -251,6 +255,7 @@ static int ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int length;
   const char* string = Tcl_GetStringFromObj(objv[2], &length);
   char c = string[0];
@@ -292,19 +297,19 @@ static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   }
   else if ((c == 'l') && (length > 2) &&
 	   (strncmp("leftmargin", string, length) == 0)) {
-    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->leftMargin.width);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ops->leftMargin.width);
   }
   else if ((c == 'r') && (length > 1) &&
 	     (strncmp("rightmargin", string, length) == 0)) {
-    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->rightMargin.width);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ops->rightMargin.width);
   }
   else if ((c == 't') && (length > 1) &&
 	     (strncmp("topmargin", string, length) == 0)) {
-    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->topMargin.height);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ops->topMargin.height);
   }
   else if ((c == 'b') && (length > 1) &&
 	     (strncmp("bottommargin", string, length) == 0)) {
-    Tcl_SetIntObj(Tcl_GetObjResult(interp), graphPtr->bottomMargin.height);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ops->bottomMargin.height);
   }
   else {
     Tcl_AppendResult(interp, "bad extent item \"", objv[2],

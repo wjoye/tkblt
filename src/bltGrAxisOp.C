@@ -674,6 +674,7 @@ void FreeAxis(char* data)
 
 void Blt_ResetAxes(Graph* graphPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Blt_ChainLink link;
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -684,7 +685,7 @@ void Blt_ResetAxes(Graph* graphPtr)
    *	      Needs to be done before the axis limits are set.
    */
   Blt_InitBarSetTable(graphPtr);
-  if ((graphPtr->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
+  if ((gops->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
     Blt_ComputeBarStacks(graphPtr);
 
   /*
@@ -753,9 +754,10 @@ void Blt_ResetAxes(Graph* graphPtr)
 
 Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Point2d point;
 
-  if (graphPtr->inverted) {
+  if (gops->inverted) {
     point.x = axesPtr->y->hMap(y);
     point.y = axesPtr->x->vMap(x);
   }
@@ -768,9 +770,10 @@ Point2d Blt_Map2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 
 Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Point2d point;
 
-  if (graphPtr->inverted) {
+  if (gops->inverted) {
     point.x = axesPtr->x->invVMap(y);
     point.y = axesPtr->y->invHMap(x);
   }
@@ -783,10 +786,11 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 
 void Blt_MapAxes(Graph* graphPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   for (int margin = 0; margin < 4; margin++) {
     int count =0;
     int offset =0;
-    Blt_Chain chain = graphPtr->margins[margin].axes;
+    Blt_Chain chain = gops->margins[margin].axes;
     for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
@@ -794,7 +798,7 @@ void Blt_MapAxes(Graph* graphPtr)
       if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
-      if (graphPtr->stackAxes) {
+      if (gops->stackAxes) {
 	if (ops->reqNumMajorTicks <= 0)
 	  ops->reqNumMajorTicks = 4;
 
@@ -818,8 +822,9 @@ void Blt_MapAxes(Graph* graphPtr)
 
 void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->margins[i].axes); 
+    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[i].axes); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
@@ -831,14 +836,15 @@ void Blt_DrawAxes(Graph* graphPtr, Drawable drawable)
 
 void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
   char minString[200], maxString[200];
   int vMin, hMin, vMax, hMax;
 
 #define SPACING 8
-  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
-  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
+  vMin = vMax = graphPtr->left + gops->xPad + 2;
+  hMin = hMax = graphPtr->bottom - gops->yPad - 2;	/* Offsets */
 
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
@@ -918,14 +924,15 @@ void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 
 void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
   double vMin, hMin, vMax, hMax;
   char string[200];
 
 #define SPACING 8
-  vMin = vMax = graphPtr->left + graphPtr->xPad + 2;
-  hMin = hMax = graphPtr->bottom - graphPtr->yPad - 2;	/* Offsets */
+  vMin = vMax = graphPtr->left + gops->xPad + 2;
+  hMin = hMax = graphPtr->bottom - gops->yPad - 2;	/* Offsets */
   for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     const char *minFmt, *maxFmt;
@@ -1001,8 +1008,9 @@ void Blt_ConfigureAxes(Graph* graphPtr)
 
 void Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL;
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[i].axes); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
@@ -1025,9 +1033,10 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
 
 void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Margin *mp, *mend;
 
-  for (mp = graphPtr->margins, mend = mp + 4; mp < mend; mp++) {
+  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
     Blt_ChainLink link;
 
     for (link = Blt_Chain_FirstLink(mp->axes); link != NULL; 
@@ -1042,8 +1051,9 @@ void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps)
 
 void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (ops->hide || !ops->showGrid || !axisPtr->use_ || 
@@ -1246,6 +1256,7 @@ ClientData Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
 
 void Blt_LayoutGraph(Graph* graphPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   int titleY;
   int plotWidth, plotHeight;
   int inset, inset2;
@@ -1259,14 +1270,14 @@ void Blt_LayoutGraph(Graph* graphPtr)
    *		-leftmargin, -rightmargin, -bottommargin, and -topmargin
    *		graph options, respectively.
    */
-  int left   = GetMarginGeometry(graphPtr, &graphPtr->leftMargin);
-  int right  = GetMarginGeometry(graphPtr, &graphPtr->rightMargin);
-  int top    = GetMarginGeometry(graphPtr, &graphPtr->topMargin);
-  int bottom = GetMarginGeometry(graphPtr, &graphPtr->bottomMargin);
+  int left   = GetMarginGeometry(graphPtr, &gops->leftMargin);
+  int right  = GetMarginGeometry(graphPtr, &gops->rightMargin);
+  int top    = GetMarginGeometry(graphPtr, &gops->topMargin);
+  int bottom = GetMarginGeometry(graphPtr, &gops->bottomMargin);
 
-  int pad = graphPtr->bottomMargin.maxTickWidth;
-  if (pad < graphPtr->topMargin.maxTickWidth)
-    pad = graphPtr->topMargin.maxTickWidth;
+  int pad = gops->bottomMargin.maxTickWidth;
+  if (pad < gops->topMargin.maxTickWidth)
+    pad = gops->topMargin.maxTickWidth;
 
   pad = pad / 2 + 3;
   if (right < pad)
@@ -1275,9 +1286,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
   if (left < pad)
     left = pad;
 
-  pad = graphPtr->leftMargin.maxTickHeight;
-  if (pad < graphPtr->rightMargin.maxTickHeight)
-    pad = graphPtr->rightMargin.maxTickHeight;
+  pad = gops->leftMargin.maxTickHeight;
+  if (pad < gops->rightMargin.maxTickHeight)
+    pad = gops->rightMargin.maxTickHeight;
 
   pad = pad / 2;
   if (top < pad)
@@ -1286,25 +1297,25 @@ void Blt_LayoutGraph(Graph* graphPtr)
   if (bottom < pad)
     bottom = pad;
 
-  if (graphPtr->leftMargin.reqSize > 0)
-    left = graphPtr->leftMargin.reqSize;
+  if (gops->leftMargin.reqSize > 0)
+    left = gops->leftMargin.reqSize;
 
-  if (graphPtr->rightMargin.reqSize > 0)
-    right = graphPtr->rightMargin.reqSize;
+  if (gops->rightMargin.reqSize > 0)
+    right = gops->rightMargin.reqSize;
 
-  if (graphPtr->topMargin.reqSize > 0)
-    top = graphPtr->topMargin.reqSize;
+  if (gops->topMargin.reqSize > 0)
+    top = gops->topMargin.reqSize;
 
-  if (graphPtr->bottomMargin.reqSize > 0)
-    bottom = graphPtr->bottomMargin.reqSize;
+  if (gops->bottomMargin.reqSize > 0)
+    bottom = gops->bottomMargin.reqSize;
 
   /* 
    * Step 2:  Add the graph title height to the top margin. 
    */
-  if (graphPtr->title)
+  if (gops->title)
     top += graphPtr->titleHeight + 6;
 
-  inset = (graphPtr->inset + graphPtr->plotBW);
+  inset = (graphPtr->inset + gops->plotBW);
   inset2 = 2 * inset;
 
   /* 
@@ -1319,9 +1330,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
   if (height == 0)
     height = 400;
 
-  plotWidth  = (graphPtr->reqPlotWidth > 0) ? graphPtr->reqPlotWidth :
+  plotWidth  = (gops->reqPlotWidth > 0) ? gops->reqPlotWidth :
     width - (inset2 + left + right); /* Plot width. */
-  plotHeight = (graphPtr->reqPlotHeight > 0) ? graphPtr->reqPlotHeight : 
+  plotHeight = (gops->reqPlotHeight > 0) ? gops->reqPlotHeight : 
     height - (inset2 + top + bottom); /* Plot height. */
   graphPtr->legend->map(plotWidth, plotHeight);
 
@@ -1352,12 +1363,12 @@ void Blt_LayoutGraph(Graph* graphPtr)
   /* 
    * Recompute the plotarea or graph size, now accounting for the legend. 
    */
-  if (graphPtr->reqPlotWidth == 0) {
+  if (gops->reqPlotWidth == 0) {
     plotWidth = width  - (inset2 + left + right);
     if (plotWidth < 1)
       plotWidth = 1;
   }
-  if (graphPtr->reqPlotHeight == 0) {
+  if (gops->reqPlotHeight == 0) {
     plotHeight = height - (inset2 + top + bottom);
     if (plotHeight < 1)
       plotHeight = 1;
@@ -1367,8 +1378,8 @@ void Blt_LayoutGraph(Graph* graphPtr)
    * Step 5: If necessary, correct for the requested plot area aspect
    *	       ratio.
    */
-  if ((graphPtr->reqPlotWidth == 0) && (graphPtr->reqPlotHeight == 0) && 
-      (graphPtr->aspect > 0.0f)) {
+  if ((gops->reqPlotWidth == 0) && (gops->reqPlotHeight == 0) && 
+      (gops->aspect > 0.0f)) {
     float ratio;
 
     /* 
@@ -1376,9 +1387,9 @@ void Blt_LayoutGraph(Graph* graphPtr)
      * width/height aspect ratio.
      */
     ratio = (float)plotWidth / (float)plotHeight;
-    if (ratio > graphPtr->aspect) {
+    if (ratio > gops->aspect) {
       // Shrink the width
-      int scaledWidth = (int)(plotHeight * graphPtr->aspect);
+      int scaledWidth = (int)(plotHeight * gops->aspect);
       if (scaledWidth < 1)
 	scaledWidth = 1;
 
@@ -1388,7 +1399,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
     }
     else {
       // Shrink the height
-      int scaledHeight = (int)(plotWidth / graphPtr->aspect);
+      int scaledHeight = (int)(plotWidth / gops->aspect);
       if (scaledHeight < 1)
 	scaledHeight = 1;
 
@@ -1404,34 +1415,34 @@ void Blt_LayoutGraph(Graph* graphPtr)
    *	       for the longest axis titles.
    */
 
-  if (top < graphPtr->leftMargin.axesTitleLength)
-    top = graphPtr->leftMargin.axesTitleLength;
+  if (top < gops->leftMargin.axesTitleLength)
+    top = gops->leftMargin.axesTitleLength;
 
-  if (right < graphPtr->bottomMargin.axesTitleLength)
-    right = graphPtr->bottomMargin.axesTitleLength;
+  if (right < gops->bottomMargin.axesTitleLength)
+    right = gops->bottomMargin.axesTitleLength;
 
-  if (top < graphPtr->rightMargin.axesTitleLength)
-    top = graphPtr->rightMargin.axesTitleLength;
+  if (top < gops->rightMargin.axesTitleLength)
+    top = gops->rightMargin.axesTitleLength;
 
-  if (right < graphPtr->topMargin.axesTitleLength)
-    right = graphPtr->topMargin.axesTitleLength;
+  if (right < gops->topMargin.axesTitleLength)
+    right = gops->topMargin.axesTitleLength;
 
   /* 
    * Step 7: Override calculated values with requested margin sizes.
    */
-  if (graphPtr->leftMargin.reqSize > 0)
-    left = graphPtr->leftMargin.reqSize;
+  if (gops->leftMargin.reqSize > 0)
+    left = gops->leftMargin.reqSize;
 
-  if (graphPtr->rightMargin.reqSize > 0)
-    right = graphPtr->rightMargin.reqSize;
+  if (gops->rightMargin.reqSize > 0)
+    right = gops->rightMargin.reqSize;
 
-  if (graphPtr->topMargin.reqSize > 0)
-    top = graphPtr->topMargin.reqSize;
+  if (gops->topMargin.reqSize > 0)
+    top = gops->topMargin.reqSize;
 
-  if (graphPtr->bottomMargin.reqSize > 0)
-    bottom = graphPtr->bottomMargin.reqSize;
+  if (gops->bottomMargin.reqSize > 0)
+    bottom = gops->bottomMargin.reqSize;
 
-  if (graphPtr->reqPlotWidth > 0) {	
+  if (gops->reqPlotWidth > 0) {	
     /* 
      * Width of plotarea is constained.  If there's extra space, add it to
      * th left and/or right margins.  If there's too little, grow the
@@ -1440,16 +1451,16 @@ void Blt_LayoutGraph(Graph* graphPtr)
     int w = plotWidth + inset2 + left + right;
     if (width > w) {		/* Extra space in window. */
       int extra = (width - w) / 2;
-      if (graphPtr->leftMargin.reqSize == 0) { 
+      if (gops->leftMargin.reqSize == 0) { 
 	left += extra;
-	if (graphPtr->rightMargin.reqSize == 0) { 
+	if (gops->rightMargin.reqSize == 0) { 
 	  right += extra;
 	}
 	else {
 	  left += extra;
 	}
       }
-      else if (graphPtr->rightMargin.reqSize == 0) {
+      else if (gops->rightMargin.reqSize == 0) {
 	right += extra + extra;
       }
     }
@@ -1457,7 +1468,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
       width = w;
     }
   } 
-  if (graphPtr->reqPlotHeight > 0) {	/* Constrain the plotarea height. */
+  if (gops->reqPlotHeight > 0) {	/* Constrain the plotarea height. */
     /* 
      * Height of plotarea is constained.  If there's extra space, 
      * add it to th top and/or bottom margins.  If there's too little,
@@ -1468,16 +1479,16 @@ void Blt_LayoutGraph(Graph* graphPtr)
       int extra;
 
       extra = (height - h) / 2;
-      if (graphPtr->topMargin.reqSize == 0) { 
+      if (gops->topMargin.reqSize == 0) { 
 	top += extra;
-	if (graphPtr->bottomMargin.reqSize == 0) { 
+	if (gops->bottomMargin.reqSize == 0) { 
 	  bottom += extra;
 	}
 	else {
 	  top += extra;
 	}
       }
-      else if (graphPtr->bottomMargin.reqSize == 0) {
+      else if (gops->bottomMargin.reqSize == 0) {
 	bottom += extra + extra;
       }
     }
@@ -1492,15 +1503,15 @@ void Blt_LayoutGraph(Graph* graphPtr)
   graphPtr->right  = width - right - inset;
   graphPtr->bottom = height - bottom - inset;
 
-  graphPtr->leftMargin.width    = left   + graphPtr->inset;
-  graphPtr->rightMargin.width   = right  + graphPtr->inset;
-  graphPtr->topMargin.height    = top    + graphPtr->inset;
-  graphPtr->bottomMargin.height = bottom + graphPtr->inset;
+  gops->leftMargin.width    = left   + graphPtr->inset;
+  gops->rightMargin.width   = right  + graphPtr->inset;
+  gops->topMargin.height    = top    + graphPtr->inset;
+  gops->bottomMargin.height = bottom + graphPtr->inset;
 	    
-  graphPtr->vOffset = graphPtr->top + graphPtr->yPad;
-  graphPtr->vRange  = plotHeight - 2*graphPtr->yPad;
-  graphPtr->hOffset = graphPtr->left + graphPtr->xPad;
-  graphPtr->hRange  = plotWidth  - 2*graphPtr->xPad;
+  graphPtr->vOffset = graphPtr->top + gops->yPad;
+  graphPtr->vRange  = plotHeight - 2*gops->yPad;
+  graphPtr->hOffset = graphPtr->left + gops->xPad;
+  graphPtr->hRange  = plotWidth  - 2*gops->xPad;
 
   if (graphPtr->vRange < 1)
     graphPtr->vRange = 1;
@@ -1520,6 +1531,7 @@ void Blt_LayoutGraph(Graph* graphPtr)
 
 static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   int isHoriz = !(marginPtr->site & 0x1); /* Even sites are horizontal */
 
   // Count the visible axes.
@@ -1531,7 +1543,7 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
   marginPtr->maxTickWidth =0;
   marginPtr->maxTickHeight =0;
 
-  if (graphPtr->stackAxes) {
+  if (gops->stackAxes) {
     for (Blt_ChainLink link = Blt_Chain_FirstLink(marginPtr->axes);
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
@@ -1601,11 +1613,12 @@ static int GetMarginGeometry(Graph* graphPtr, Margin *marginPtr)
 static void GetAxisGeometry(Graph* graphPtr, Axis *axisPtr)
 {
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   axisPtr->freeTickLabels();
 
   // Leave room for axis baseline and padding
   unsigned int y =0;
-  if (ops->exterior && (graphPtr->plotRelief != TK_RELIEF_SOLID))
+  if (ops->exterior && (gops->plotRelief != TK_RELIEF_SOLID))
     y += ops->lineWidth + 2;
 
   axisPtr->maxTickHeight_ = axisPtr->maxTickWidth_ = 0;

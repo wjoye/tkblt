@@ -108,8 +108,9 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph *)axisPtr;
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
 
-  Blt_Chain chain = graphPtr->margins[lastMargin].axes;
+  Blt_Chain chain = gops->margins[lastMargin].axes;
   if (objc == 3) {
     Tcl_Obj *listObjPtr;
 
@@ -125,9 +126,9 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
   }
   ClassId classId;
   if ((lastMargin == MARGIN_BOTTOM) || (lastMargin == MARGIN_TOP))
-    classId = (graphPtr->inverted) ? CID_AXIS_Y : CID_AXIS_X;
+    classId = (gops->inverted) ? CID_AXIS_Y : CID_AXIS_X;
   else
-    classId = (graphPtr->inverted) ? CID_AXIS_X : CID_AXIS_Y;
+    classId = (gops->inverted) ? CID_AXIS_X : CID_AXIS_Y;
 
   int axisObjc;  
   Tcl_Obj **axisObjv;
@@ -199,6 +200,7 @@ typedef int (GraphAxisProc)(Tcl_Interp* interp, Axis* axisPtr,
 int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   GraphAxisProc* proc = (GraphAxisProc*)Blt_GetOpFromObj(interp, nAxisOps, axisOps, BLT_OP_ARG2, objc, objv, 0);
   if (!proc)
     return TCL_ERROR;
@@ -208,7 +210,7 @@ int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin,
     return (*proc)(interp, (Axis*)graphPtr, objc, objv);
   } 
   else {
-    Axis* axisPtr = Blt_GetFirstAxis(graphPtr->margins[margin].axes);
+    Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
     if (!axisPtr)
       return TCL_OK;
     return (*proc)(interp, axisPtr, objc, objv);

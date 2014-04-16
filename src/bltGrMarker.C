@@ -115,8 +115,9 @@ double Marker::VMap(Axis *axisPtr, double y)
 
 Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
   Point2d result;
-  if (graphPtr_->inverted) {
+  if (gops->inverted) {
     result.x = HMap(axesPtr->y, pointPtr->y);
     result.y = VMap(axesPtr->x, pointPtr->x);
   }

@@ -549,8 +549,9 @@ void LineElement::extents(Region2d *extsPtr)
 void LineElement::closest()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  ClosestSearch* searchPtr = &graphPtr_->search;
+  ClosestSearch* searchPtr = &gops->search;
   int mode = searchPtr->mode;
   if (mode == SEARCH_AUTO) {
     LinePen* penPtr = NORMALPEN(ops);
@@ -1050,6 +1051,7 @@ int LineElement::ScaleSymbol(int normalSize)
 void LineElement::GetScreenPoints(MapInfo *mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   if (!ops->coords.x || !ops->coords.y) {
     mapPtr->screenPts = NULL;
@@ -1064,7 +1066,7 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   int* map = (int*)malloc(sizeof(int) * np);
 
   int count = 0;
-  if (graphPtr_->inverted) {
+  if (gops->inverted) {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
 	points[count].x = ops->axes.y->hMap(y[i]);
@@ -1762,6 +1764,7 @@ void LineElement::MapTraces(MapInfo *mapPtr)
 void LineElement::MapFillArea(MapInfo *mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   if (fillPts_) {
     free(fillPts_);
@@ -1776,7 +1779,7 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
   Blt_GraphExtents(graphPtr_, &exts);
 
   Point2d* origPts = (Point2d*)malloc(sizeof(Point2d) * np);
-  if (graphPtr_->inverted) {
+  if (gops->inverted) {
     double minX;
     int i;
 
@@ -2044,7 +2047,8 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
 int LineElement::ClosestTrace()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
-  ClosestSearch* searchPtr = &graphPtr_->search;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  ClosestSearch* searchPtr = &gops->search;
 
   Blt_ChainLink link;
   Point2d closest;

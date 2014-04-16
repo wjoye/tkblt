@@ -379,6 +379,7 @@ void Legend::map(int plotWidth, int plotHeight)
 void Legend::draw(Drawable drawable)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   if ((ops->hide) || (nEntries_ == 0))
     return;
@@ -404,7 +405,7 @@ void Legend::draw(Drawable drawable)
     case BOTTOM:
     case RIGHT:
     case LEFT:
-      Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 0, 0, 
+      Tk_Fill3DRectangle(tkwin, pixmap, gops->normalBg, 0, 0, 
 			 w, h, 0, TK_RELIEF_FLAT);
       break;
     case PLOT:
@@ -417,7 +418,7 @@ void Legend::draw(Drawable drawable)
 	XCopyArea(graphPtr_->display, graphPtr_->cache, pixmap, 
 		  graphPtr_->drawGC, x_, y_, w, h, 0, 0);
       else 
-	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->plotBg, 0, 0, 
+	Tk_Fill3DRectangle(tkwin, pixmap, gops->plotBg, 0, 0, 
 			   w, h, TK_RELIEF_FLAT, 0);
       break;
     };
@@ -467,7 +468,7 @@ void Legend::draw(Drawable drawable)
     else {
       ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT)
-	Tk_Fill3DRectangle(tkwin, pixmap, graphPtr_->normalBg, 
+	Tk_Fill3DRectangle(tkwin, pixmap, gops->normalBg, 
 			   x, y, entryWidth_, 
 			   entryHeight_, ops->entryBW, 
 			   elemOps->legendRelief);
@@ -504,7 +505,7 @@ void Legend::draw(Drawable drawable)
 
   Tk_3DBorder bg = ops->normalBg;
   if (!bg)
-    bg = graphPtr_->normalBg;
+    bg = gops->normalBg;
 
   // Disable crosshairs before redisplaying to the screen
   switch ((Position)ops->position) {
@@ -537,6 +538,7 @@ void Legend::draw(Drawable drawable)
 void Legend::print(Blt_Ps ps)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   if ((ops->hide) || (nEntries_ == 0))
     return;
@@ -554,7 +556,7 @@ void Legend::print(Blt_Ps ps)
       Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
     else
-      Blt_Ps_Draw3DRectangle(ps, graphPtr_->normalBg, x, y, width, height, 
+      Blt_Ps_Draw3DRectangle(ps, gops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
 
   }
@@ -597,7 +599,7 @@ void Legend::print(Blt_Ps ps)
     else {
       ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
-	Blt_Ps_Draw3DRectangle(ps, graphPtr_->normalBg, x, y, 
+	Blt_Ps_Draw3DRectangle(ps, gops->normalBg, x, y, 
 			       entryWidth_,
 			       entryHeight_, ops->entryBW, 
 			       elemOps->legendRelief);
@@ -641,6 +643,7 @@ void Legend::eventuallyInvokeSelectCmd()
 void Legend::setOrigin()
 {
   LegendOptions* ops = (LegendOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   int x =0;
   int y =0;
@@ -648,14 +651,14 @@ void Legend::setOrigin()
   int h =0;
   switch ((Position)ops->position) {
   case RIGHT:
-    w = graphPtr_->rightMargin.width - graphPtr_->rightMargin.axesOffset;
+    w = gops->rightMargin.width - gops->rightMargin.axesOffset;
     h = graphPtr_->bottom - graphPtr_->top;
-    x = graphPtr_->right + graphPtr_->rightMargin.axesOffset;
+    x = graphPtr_->right + gops->rightMargin.axesOffset;
     y = graphPtr_->top;
     break;
 
   case LEFT:
-    w = graphPtr_->leftMargin.width - graphPtr_->leftMargin.axesOffset;
+    w = gops->leftMargin.width - gops->leftMargin.axesOffset;
     h = graphPtr_->bottom - graphPtr_->top;
     x = graphPtr_->inset;
     y = graphPtr_->top;
@@ -663,21 +666,21 @@ void Legend::setOrigin()
 
   case TOP:
     w = graphPtr_->right - graphPtr_->left;
-    h = graphPtr_->topMargin.height - graphPtr_->topMargin.axesOffset;
-    if (graphPtr_->title)
+    h = gops->topMargin.height - gops->topMargin.axesOffset;
+    if (gops->title)
       h -= graphPtr_->titleHeight;
 
     x = graphPtr_->left;
     y = graphPtr_->inset;
-    if (graphPtr_->title)
+    if (gops->title)
       y += graphPtr_->titleHeight;
     break;
 
   case BOTTOM:
     w = graphPtr_->right - graphPtr_->left;
-    h = graphPtr_->bottomMargin.height - graphPtr_->bottomMargin.axesOffset;
+    h = gops->bottomMargin.height - gops->bottomMargin.axesOffset;
     x = graphPtr_->left;
-    y = graphPtr_->bottom + graphPtr_->bottomMargin.axesOffset;
+    y = graphPtr_->bottom + gops->bottomMargin.axesOffset;
     break;
 
   case PLOT:

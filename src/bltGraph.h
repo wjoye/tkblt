@@ -104,6 +104,40 @@ typedef struct {
 #define topMargin	margins[MARGIN_TOP]
 #define bottomMargin	margins[MARGIN_BOTTOM]
 
+typedef struct {
+  double aspect;
+  Tk_3DBorder normalBg;
+  int borderWidth;
+  Margin margins[4];
+  int backingStore;
+  int doubleBuffer;
+  Tk_Cursor cursor;
+  TextStyle titleTextStyle;
+  int reqHeight;
+  XColor* highlightBgColor;
+  XColor* highlightColor;
+  int highlightWidth;
+  int inverted;
+  Tk_3DBorder plotBg;
+  int plotBW;
+  int xPad;
+  int yPad;
+  int plotRelief;
+  int relief;
+  ClosestSearch search;
+  int stackAxes;
+  const char *takeFocus; // nor used in C code
+  const char *title;
+  int reqWidth;
+  int reqPlotWidth;
+  int reqPlotHeight;
+
+  // bar graph
+  BarMode barMode;
+  double barWidth;
+  double baseline;
+} GraphOptions;
+
 class Graph {
  public:
   Tcl_Interp* interp;
@@ -111,28 +145,15 @@ class Graph {
   Display *display;
   Tcl_Command cmdToken;
   Tk_OptionTable optionTable;
+  void* ops_;
   ClassId classId;
-  Tk_Cursor cursor;
   int inset;
-  int borderWidth;
-  int relief;
   unsigned int flags;
-  Tk_3DBorder normalBg;
-  int highlightWidth;
-  XColor* highlightBgColor;
-  XColor* highlightColor;
-  const char *title;
   short int titleX;
   short int titleY;
   short int titleWidth;
   short int titleHeight;
-  TextStyle titleTextStyle;
-  const char *takeFocus; // nor used in C code
   Axis *focusPtr;
-  int reqWidth;
-  int reqHeight;
-  int reqPlotWidth;
-  int reqPlotHeight;
   int width;
   int height;
   Tcl_HashTable penTable;
@@ -145,42 +166,27 @@ class Graph {
   Blt_BindTable bindTable;
   int nextMarkerId;
   Blt_Chain axisChain[4];
-  Margin margins[4];
   PageSetup *pageSetup;
   Legend *legend;
   Crosshairs *crosshairs;
 
   int halo;
-  int inverted;
-  int stackAxes;
   GC drawGC;
-  int plotBW;
-  int plotRelief;
-  Tk_3DBorder plotBg;
-  double aspect;
   short int left;
   short int right;
   short int top;
   short int bottom;	
-  int xPad;
   int vRange;
   int vOffset;
-  int yPad;
   int hRange;
   int hOffset;
   float vScale;
   float hScale;
-  int doubleBuffer;
-  int backingStore;
   Pixmap cache;
   short int cacheWidth;
   short int cacheHeight;
-  ClosestSearch search;
 
   // barchart specific information
-  double baseline;
-  double barWidth;
-  BarMode barMode;
   BarGroup *barGroups;
   int nBarGroups;
   Tcl_HashTable setTable;

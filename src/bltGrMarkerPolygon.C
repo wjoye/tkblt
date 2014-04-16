@@ -123,6 +123,7 @@ PolygonMarker::~PolygonMarker()
 int PolygonMarker::configure()
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   Drawable drawable = Tk_WindowId(graphPtr_->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle);
@@ -150,7 +151,7 @@ int PolygonMarker::configure()
     gcValues.function = GXxor;
 
     gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr_->plotBg)->pixel;
+    pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
     if (gcMask & GCBackground)
       gcValues.background ^= pixel;
 

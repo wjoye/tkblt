@@ -106,6 +106,7 @@ LineMarker::~LineMarker()
 int LineMarker::configure()
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   Drawable drawable = Tk_WindowId(graphPtr_->tkwin);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
@@ -131,7 +132,7 @@ int LineMarker::configure()
     gcValues.function = GXxor;
 
     gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(graphPtr_->plotBg)->pixel;
+    pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
     if (gcMask & GCBackground)
       gcValues.background ^= pixel;
 
@@ -213,8 +214,9 @@ void LineMarker::map()
 
 int LineMarker::pointIn(Point2d *samplePtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
   return pointInSegments(samplePtr, segments_, nSegments_, 
-			 (double)graphPtr_->search.halo);
+			 (double)gops->search.halo);
 }
 
 int LineMarker::pointInSegments(Point2d* samplePtr, Segment2d* segments,

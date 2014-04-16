@@ -256,6 +256,7 @@ int BarElement::configure()
 void BarElement::map()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   ResetBar();
   if (!ops->coords.x || !ops->coords.y ||
@@ -264,10 +265,9 @@ void BarElement::map()
   int nPoints = NUMBEROFPOINTS(ops);
 
   //  double barWidth = graphPtr->barWidth;
-  double barWidth = (ops->barWidth > 0.0f) ? 
-    ops->barWidth : graphPtr_->barWidth;
+  double barWidth = (ops->barWidth > 0.0f) ? ops->barWidth : gops->barWidth;
   AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
-  double baseline = (axisyops->logScale) ? 0.0 : graphPtr_->baseline;
+  double baseline = (axisyops->logScale) ? 0.0 : gops->baseline;
   double barOffset = barWidth * 0.5;
 
   // Create an array of bars representing the screen coordinates of all the
@@ -303,8 +303,8 @@ void BarElement::map()
      * coordinates of the two corners.
      */
 
-    if ((graphPtr_->nBarGroups > 0) && (graphPtr_->barMode != BARS_INFRONT) && 
-	(!graphPtr_->stackAxes)) {
+    if ((graphPtr_->nBarGroups > 0) && (gops->barMode != BARS_INFRONT) && 
+	(!gops->stackAxes)) {
       Tcl_HashEntry *hPtr;
       BarSetKey key;
 
@@ -328,7 +328,7 @@ void BarElement::map()
 	    offset += slice * 0.05;
 	    slice *= 0.90;
 	  }
-	  switch (graphPtr_->barMode) {
+	  switch (gops->barMode) {
 	  case BARS_STACKED:
 	    groupPtr->count++;
 	    c2.y = groupPtr->lastY;
@@ -392,7 +392,7 @@ void BarElement::map()
     }
     /* Bound the bars horizontally by the width of the graph window */
     /* Bound the bars vertically by the position of the axis. */
-    if (graphPtr_->stackAxes) {
+    if (gops->stackAxes) {
       top = ops->axes.y->screenMin_;
       bottom = ops->axes.y->screenMin_ + ops->axes.y->screenRange_;
       left = graphPtr_->left;
@@ -481,6 +481,7 @@ void BarElement::map()
 void BarElement::extents(Region2d *regPtr)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   regPtr->top = regPtr->left = DBL_MAX;
   regPtr->bottom = regPtr->right = -DBL_MAX;
@@ -490,7 +491,7 @@ void BarElement::extents(Region2d *regPtr)
     return;
 
   int nPoints = NUMBEROFPOINTS(ops);
-  double barWidth = graphPtr_->barWidth;
+  double barWidth = gops->barWidth;
   if (ops->barWidth > 0.0f)
     barWidth = ops->barWidth;
 
@@ -500,13 +501,13 @@ void BarElement::extents(Region2d *regPtr)
 
   regPtr->top = ops->coords.y->min;
   regPtr->bottom = ops->coords.y->max;
-  if (regPtr->bottom < graphPtr_->baseline)
-    regPtr->bottom = graphPtr_->baseline;
+  if (regPtr->bottom < gops->baseline)
+    regPtr->bottom = gops->baseline;
 
   // Handle stacked bar elements specially.
   // If element is stacked, the sum of its ordinates may be outside the
   // minimum/maximum limits of the element's data points.
-  if ((graphPtr_->barMode == BARS_STACKED) && (graphPtr_->nBarGroups > 0))
+  if ((gops->barMode == BARS_STACKED) && (graphPtr_->nBarGroups > 0))
     CheckBarStacks(&ops->axes, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
@@ -610,8 +611,9 @@ void BarElement::extents(Region2d *regPtr)
 void BarElement::closest()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  ClosestSearch* searchPtr = &graphPtr_->search;
+  ClosestSearch* searchPtr = &gops->search;
   double minDist = searchPtr->dist;
   int imin = 0;
     
@@ -866,7 +868,8 @@ void BarElement::ResetStylePalette(Blt_Chain stylePalette)
 
 void BarElement::CheckBarStacks(Axis2d *pairPtr, double *minPtr, double *maxPtr)
 {
-  if ((graphPtr_->barMode != BARS_STACKED) || (graphPtr_->nBarGroups == 0))
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  if ((gops->barMode != BARS_STACKED) || (graphPtr_->nBarGroups == 0))
     return;
 
   BarGroup *gp, *gend;
@@ -1282,6 +1285,7 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   const char *fmt = penOps->valueFormat;
   if (!fmt)
@@ -1307,16 +1311,16 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
       sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
-    if (graphPtr_->inverted) {
+    if (gops->inverted) {
       anchorPos.y = rp->y + rp->height * 0.5;
       anchorPos.x = rp->x + rp->width;
-      if (x < graphPtr_->baseline)
+      if (x < gops->baseline)
 	anchorPos.x -= rp->width;
     }
     else {
       anchorPos.x = rp->x + rp->width * 0.5;
       anchorPos.y = rp->y;
-      if (y < graphPtr_->baseline)
+      if (y < gops->baseline)
 	anchorPos.y += rp->height;
     }
     Blt_DrawText(graphPtr_->tkwin, drawable, string, &penOps->valueStyle, 
@@ -1369,6 +1373,7 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
 {
   BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   XRectangle *rp, *rend;
   char string[TCL_DOUBLE_SPACE * 2 + 2];
@@ -1393,16 +1398,16 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
       strcat(string, ",");
       sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
-    if (graphPtr_->inverted) {
+    if (gops->inverted) {
       anchorPos.y = rp->y + rp->height * 0.5;
       anchorPos.x = rp->x + rp->width;
-      if (x < graphPtr_->baseline) {
+      if (x < gops->baseline) {
 	anchorPos.x -= rp->width;
       } 
     } else {
       anchorPos.x = rp->x + rp->width * 0.5;
       anchorPos.y = rp->y;
-      if (y < graphPtr_->baseline) {			
+      if (y < gops->baseline) {			
 	anchorPos.y += rp->height;
       }
     }
@@ -1415,6 +1420,7 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
 
 void Blt_InitBarSetTable(Graph* graphPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   Blt_ChainLink link;
   int nStacks, nSegs;
   Tcl_HashTable setTable;
@@ -1427,7 +1433,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
    * the array of frequency information and the table itself
    */
   Blt_DestroyBarSets(graphPtr);
-  if (graphPtr->barMode == BARS_INFRONT)
+  if (gops->barMode == BARS_INFRONT)
     return;
   Tcl_InitHashTable(&graphPtr->setTable, sizeof(BarSetKey) / sizeof(int));
 
@@ -1540,8 +1546,10 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 
 void Blt_ComputeBarStacks(Graph* graphPtr)
 {
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+
   Blt_ChainLink link;
-  if ((graphPtr->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
+  if ((gops->barMode != BARS_STACKED) || (graphPtr->nBarGroups == 0))
     return;
 
   /* Initialize the stack sums to zero. */

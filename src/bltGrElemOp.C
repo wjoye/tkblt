@@ -276,7 +276,8 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
 static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
-  ClosestSearch* searchPtr = &graphPtr->search;
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  ClosestSearch* searchPtr = &gops->search;
 
   if (graphPtr->flags & RESET_AXES)
     Blt_ResetAxes(graphPtr);
@@ -680,7 +681,8 @@ void Blt_ConfigureElements(Graph* graphPtr)
 
 void Blt_MapElements(Graph* graphPtr)
 {
-  if (graphPtr->barMode != BARS_INFRONT)
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  if (gops->barMode != BARS_INFRONT)
     Blt_ResetBarGroups(graphPtr);
 
   for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements.displayList); 

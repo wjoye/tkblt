@@ -76,111 +76,126 @@ const char* searchAlongObjOption[] = {"x", "y", "both", NULL};
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
-   "0", -1, Tk_Offset(Graph, aspect), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, aspect), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(Graph, normalBg), 0, NULL, CACHE_DIRTY},
+   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, normalBg), 
+   0, NULL, CACHE_DIRTY},
   {TK_OPTION_STRING_TABLE, "-barmode", "barMode", "BarMode", 
-   "normal", -1, Tk_Offset(Graph, barMode), 0, &barmodeObjOption, 
-   RESET_WORLD | CACHE_DIRTY},
+   "normal", -1, Tk_Offset(GraphOptions, barMode), 
+   0, &barmodeObjOption, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
-   ".9", -1, Tk_Offset(Graph, barWidth), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   ".9", -1, Tk_Offset(GraphOptions, barWidth), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_DOUBLE, "-baseline", "baseline", "Baseline", 
-   "0", -1, Tk_Offset(Graph, baseline), 0, NULL, 0},
+   "0", -1, Tk_Offset(GraphOptions, baseline), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_SYNONYM, "-bm", NULL, NULL, NULL, -1, 0, 0, "-bottommargin", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(Graph, borderWidth), 0, NULL, 
+   STD_BORDERWIDTH, -1, Tk_Offset(GraphOptions, borderWidth), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "BottomMargin",
-   "0", -1, Tk_Offset(Graph, bottomMargin.reqSize), 0, NULL, 
+   "0", -1, Tk_Offset(GraphOptions, bottomMargin.reqSize), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-bottomvariable", "bottomVariable", "BottomVariable",
-   NULL, -1, Tk_Offset(Graph, bottomMargin.varName), 
+   NULL, -1, Tk_Offset(GraphOptions, bottomMargin.varName), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-bufferelements", "bufferElements", "BufferElements",
-   "yes", -1, Tk_Offset(Graph, backingStore), 0, NULL, 0},
+   "yes", -1, Tk_Offset(GraphOptions, backingStore), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
-   "yes", -1, Tk_Offset(Graph, doubleBuffer), 0, NULL, 0},
+   "yes", -1, Tk_Offset(GraphOptions, doubleBuffer), 0, NULL, 0},
   {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", 
-   "crosshair", -1, Tk_Offset(Graph, cursor), TK_OPTION_NULL_OK, NULL, 0},
+   "crosshair", -1, Tk_Offset(GraphOptions, cursor), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
-   STD_FONT_MEDIUM, -1, Tk_Offset(Graph, titleTextStyle.font), 0, NULL, 
+   STD_FONT_MEDIUM, -1, Tk_Offset(GraphOptions, titleTextStyle.font), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Graph, titleTextStyle.color), 0, NULL, 
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(GraphOptions, titleTextStyle.color), 
+   0, NULL, 
    CACHE_DIRTY},
   {TK_OPTION_SYNONYM, "-halo", NULL, NULL, NULL, -1, 0, 0, "-searchhalo", 0},
   {TK_OPTION_PIXELS, "-height", "height", "Height", 
-   "4i", -1, Tk_Offset(Graph, reqHeight), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "4i", -1, Tk_Offset(GraphOptions, reqHeight), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
    "HighlightBackground", 
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(Graph, highlightBgColor), 0, NULL, 
+   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, highlightBgColor), 
+   0, NULL, 
    CACHE_DIRTY},
   {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(Graph, highlightColor), 0, NULL, 0},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(GraphOptions, highlightColor), 
+   0, NULL, 0},
   {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
    "HighlightThickness", 
-   "2", -1, Tk_Offset(Graph, highlightWidth), 0, NULL, 0},
+   "2", -1, Tk_Offset(GraphOptions, highlightWidth), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
-   "no", -1, Tk_Offset(Graph, inverted), 0, NULL, 
+   "no", -1, Tk_Offset(GraphOptions, inverted), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY | RESET_AXES},
   {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", 
-   "center", -1, Tk_Offset(Graph, titleTextStyle.justify), 0, NULL, 0},
+   "center", -1, Tk_Offset(GraphOptions, titleTextStyle.justify), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", 
-   "0", -1, Tk_Offset(Graph, leftMargin.reqSize), 0, NULL, 
+   "0", -1, Tk_Offset(GraphOptions, leftMargin.reqSize), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
-   NULL, -1, Tk_Offset(Graph, leftMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(GraphOptions, leftMargin.varName), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, -1, 0, 0, "-leftmargin", 0},
   {TK_OPTION_BORDER, "-plotbackground", "plotbackground", "PlotBackground",
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(Graph, plotBg), 0, NULL,
+   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, plotBg), 0, NULL,
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(Graph, plotBW), 0, NULL, 
+   STD_BORDERWIDTH, -1, Tk_Offset(GraphOptions, plotBW), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", 
-   "0", -1, Tk_Offset(Graph, xPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, xPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", 
-   "0", -1, Tk_Offset(Graph, yPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, yPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_RELIEF, "-plotrelief", "plotRelief", "Relief", 
-   "flat", -1, Tk_Offset(Graph, plotRelief), 0, NULL, 
+   "flat", -1, Tk_Offset(GraphOptions, plotRelief), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
-   "flat", -1, Tk_Offset(Graph, relief), 0, NULL, 0},
+   "flat", -1, Tk_Offset(GraphOptions, relief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", 
-   "0", -1, Tk_Offset(Graph, rightMargin.reqSize), 0, NULL, 
+   "0", -1, Tk_Offset(GraphOptions, rightMargin.reqSize), 0, NULL, 
    RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
-   NULL, -1, Tk_Offset(Graph, rightMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(GraphOptions, rightMargin.varName), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL, -1, 0, 0, "-rightmargin", 0},
   {TK_OPTION_PIXELS, "-searchhalo", "searchhalo", "SearchHalo", 
-   "2m", -1, Tk_Offset(Graph, search.halo), 0, NULL, 0},
+   "2m", -1, Tk_Offset(GraphOptions, search.halo), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-searchmode", "searchMode", "SearchMode",
-   "points", -1, Tk_Offset(Graph, search.mode), 0, &searchModeObjOption, 0}, 
+   "points", -1, Tk_Offset(GraphOptions, search.mode), 
+   0, &searchModeObjOption, 0}, 
   {TK_OPTION_STRING_TABLE, "-searchalong", "searchAlong", "SearchAlong",
-   "both", -1, Tk_Offset(Graph, search.along), 0, &searchAlongObjOption, 0},
+   "both", -1, Tk_Offset(GraphOptions, search.along), 
+   0, &searchAlongObjOption, 0},
   {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
-   "no", -1, Tk_Offset(Graph, stackAxes), 0, NULL, 0},
+   "no", -1, Tk_Offset(GraphOptions, stackAxes), 0, NULL, 0},
   {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
-   NULL, -1, Tk_Offset(Graph, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(GraphOptions, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title", 
-   NULL, -1, Tk_Offset(Graph, title), TK_OPTION_NULL_OK, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
+   NULL, -1, Tk_Offset(GraphOptions, title), 
+   TK_OPTION_NULL_OK, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_SYNONYM, "-tm", NULL, NULL, NULL, -1, 0, 0, "-topmargin", 0},
   {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", 
-   "0", -1, Tk_Offset(Graph, topMargin.reqSize), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, topMargin.reqSize), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
-   NULL, -1, Tk_Offset(Graph, topMargin.varName), TK_OPTION_NULL_OK, NULL, 0},
+   NULL, -1, Tk_Offset(GraphOptions, topMargin.varName), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_PIXELS, "-width", "width", "Width", 
-   "5i", -1, Tk_Offset(Graph, reqWidth), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "5i", -1, Tk_Offset(GraphOptions, reqWidth), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotwidth", "plotWidth", "PlotWidth", 
-   "0", -1, Tk_Offset(Graph, reqPlotWidth), 0, NULL, RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, reqPlotWidth), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_PIXELS, "-plotheight", "plotHeight", "PlotHeight", 
-   "0", -1, Tk_Offset(Graph, reqPlotHeight), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
+   "0", -1, Tk_Offset(GraphOptions, reqPlotHeight), 
+   0, NULL, RESET_WORLD | CACHE_DIRTY},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -210,6 +225,9 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
   Graph* graphPtr = (Graph*)calloc(1, sizeof(Graph));
   ((TkWindow*)tkwin)->instanceData = graphPtr;
 
+  graphPtr->ops_ = (GraphOptions*)calloc(1, sizeof(GraphOptions));
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+
   graphPtr->tkwin = tkwin;
   graphPtr->display = Tk_Display(tkwin);
   graphPtr->interp = interp;
@@ -220,22 +238,15 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
 					    GraphInstCmdDeleteProc);
   graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
-  graphPtr->backingStore = 1;
-  graphPtr->doubleBuffer = 1;
-  graphPtr->borderWidth = 2;
-  graphPtr->plotBW = 1;
-  graphPtr->highlightWidth = 2;
-  graphPtr->plotRelief = TK_RELIEF_SOLID;
-  graphPtr->relief = TK_RELIEF_FLAT;
   graphPtr->flags = MAP_WORLD | REDRAW_WORLD;
   graphPtr->nextMarkerId = 1;
-  graphPtr->bottomMargin.site = MARGIN_BOTTOM;
-  graphPtr->leftMargin.site = MARGIN_LEFT;
-  graphPtr->topMargin.site = MARGIN_TOP;
-  graphPtr->rightMargin.site = MARGIN_RIGHT;
+  ops->bottomMargin.site = MARGIN_BOTTOM;
+  ops->leftMargin.site = MARGIN_LEFT;
+  ops->topMargin.site = MARGIN_TOP;
+  ops->rightMargin.site = MARGIN_RIGHT;
 
-  Blt_Ts_InitStyle(graphPtr->titleTextStyle);
-  graphPtr->titleTextStyle.anchor = TK_ANCHOR_N;
+  Blt_Ts_InitStyle(ops->titleTextStyle);
+  ops->titleTextStyle.anchor = TK_ANCHOR_N;
 
   Tcl_InitHashTable(&graphPtr->axes.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&graphPtr->axes.tagTable, TCL_STRING_KEYS);
@@ -272,7 +283,7 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
 			GraphEventProc, graphPtr);
 
-  if ((Tk_InitOptions(interp, (char*)graphPtr, optionTable, tkwin) != TCL_OK) ||
+  if ((Tk_InitOptions(interp, (char*)graphPtr->ops_, optionTable, tkwin) != TCL_OK) ||
       (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     return TCL_ERROR;
 
@@ -288,6 +299,8 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
 
 void GraphDestroy(Graph* graphPtr)
 {
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+
   Blt::DestroyMarkers(graphPtr);
 
   if (graphPtr->crosshairs)
@@ -307,36 +320,42 @@ void GraphDestroy(Graph* graphPtr)
   if (graphPtr->drawGC)
     Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
 
-  Blt_Ts_FreeStyle(graphPtr->display, &graphPtr->titleTextStyle);
+  Blt_Ts_FreeStyle(graphPtr->display, &ops->titleTextStyle);
   if (graphPtr->cache != None)
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
 
-  Tk_FreeConfigOptions((char*)graphPtr, graphPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)graphPtr->ops_, graphPtr->optionTable, graphPtr->tkwin);
   Tcl_Release(graphPtr->tkwin);
   graphPtr->tkwin = NULL;
+
+  if (graphPtr->ops_)
+    free (graphPtr->ops_);
+
   free(graphPtr);
 }
 
 void GraphConfigure(Graph* graphPtr)	
 {
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+
   // Don't allow negative bar widths. Reset to an arbitrary value (0.1)
-  if (graphPtr->barWidth <= 0.0f) {
-    graphPtr->barWidth = 0.8f;
+  if (ops->barWidth <= 0.0f)
+    ops->barWidth = 0.8f;
+
+  graphPtr->inset = ops->borderWidth + ops->highlightWidth;
+  if ((ops->reqHeight != Tk_ReqHeight(graphPtr->tkwin)) ||
+      (ops->reqWidth != Tk_ReqWidth(graphPtr->tkwin))) {
+    Tk_GeometryRequest(graphPtr->tkwin, ops->reqWidth,
+		       ops->reqHeight);
   }
-  graphPtr->inset = graphPtr->borderWidth + graphPtr->highlightWidth;
-  if ((graphPtr->reqHeight != Tk_ReqHeight(graphPtr->tkwin)) ||
-      (graphPtr->reqWidth != Tk_ReqWidth(graphPtr->tkwin))) {
-    Tk_GeometryRequest(graphPtr->tkwin, graphPtr->reqWidth,
-		       graphPtr->reqHeight);
-  }
-  Tk_SetInternalBorder(graphPtr->tkwin, graphPtr->borderWidth);
-  XColor* colorPtr = Tk_3DBorderColor(graphPtr->normalBg);
+  Tk_SetInternalBorder(graphPtr->tkwin, ops->borderWidth);
+  XColor* colorPtr = Tk_3DBorderColor(ops->normalBg);
 
   graphPtr->titleWidth = graphPtr->titleHeight = 0;
-  if (graphPtr->title != NULL) {
+  if (ops->title != NULL) {
     unsigned int w, h;
 
-    Blt_Ts_GetExtents(&graphPtr->titleTextStyle, graphPtr->title, &w, &h);
+    Blt_Ts_GetExtents(&ops->titleTextStyle, ops->title, &w, &h);
     graphPtr->titleHeight = h;
   }
 
@@ -344,7 +363,7 @@ void GraphConfigure(Graph* graphPtr)
   // clearing the margins with XFillRectangle
   // Margin
   XGCValues gcValues;
-  gcValues.foreground = graphPtr->titleTextStyle.color->pixel;
+  gcValues.foreground = ops->titleTextStyle.color->pixel;
   gcValues.background = colorPtr->pixel;
   unsigned long gcMask = (GCForeground | GCBackground);
   GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
@@ -359,7 +378,7 @@ void GraphConfigure(Graph* graphPtr)
     AdjustAxisPointers(graphPtr);
 
   // Free the pixmap if we're not buffering the display of elements anymore.
-  if ((!graphPtr->backingStore) && (graphPtr->cache != None)) {
+  if ((!ops->backingStore) && (graphPtr->cache != None)) {
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
     graphPtr->cache = None;
   }
@@ -367,7 +386,8 @@ void GraphConfigure(Graph* graphPtr)
 
 void GraphDisplay(Graph* graphPtr)
 {
-  Tk_Window tkwin = graphPtr->tkwin;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+   Tk_Window tkwin = graphPtr->tkwin;
 
   graphPtr->flags &= ~REDRAW_PENDING;
   if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin))
@@ -389,13 +409,13 @@ void GraphDisplay(Graph* graphPtr)
   }
   /* Create a pixmap the size of the window for double buffering. */
   Pixmap drawable;
-  if (graphPtr->doubleBuffer)
+  if (ops->doubleBuffer)
     drawable = Tk_GetPixmap(graphPtr->display, Tk_WindowId(tkwin), 
 			    graphPtr->width, graphPtr->height, Tk_Depth(tkwin));
   else
     drawable = Tk_WindowId(tkwin);
 
-  if (graphPtr->backingStore) {
+  if (ops->backingStore) {
     if ((graphPtr->cache == None) || 
 	(graphPtr->cacheWidth != graphPtr->width) ||
 	(graphPtr->cacheHeight != graphPtr->height)) {
@@ -413,7 +433,7 @@ void GraphDisplay(Graph* graphPtr)
       graphPtr->flags |= CACHE_DIRTY;
     }
   }
-  if (graphPtr->backingStore) {
+  if (ops->backingStore) {
     if (graphPtr->flags & CACHE_DIRTY) {
       /* The backing store is new or out-of-date. */
       DrawPlot(graphPtr, graphPtr->cache);
@@ -444,19 +464,19 @@ void GraphDisplay(Graph* graphPtr)
   }
 
   // Draw 3D border just inside of the focus highlight ring
-  if ((graphPtr->borderWidth > 0) && (graphPtr->relief != TK_RELIEF_FLAT)) {
-    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		       graphPtr->highlightWidth, graphPtr->highlightWidth, 
-		       graphPtr->width - 2*graphPtr->highlightWidth, 
-		       graphPtr->height - 2*graphPtr->highlightWidth, 
-		       graphPtr->borderWidth, graphPtr->relief);
+  if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT)) {
+    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		       ops->highlightWidth, ops->highlightWidth, 
+		       graphPtr->width - 2*ops->highlightWidth, 
+		       graphPtr->height - 2*ops->highlightWidth, 
+		       ops->borderWidth, ops->relief);
   }
   /* Draw focus highlight ring. */
-  if ((graphPtr->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
+  if ((ops->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
     GC gc;
 
-    gc = Tk_GCForColor(graphPtr->highlightColor, drawable);
-    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, graphPtr->highlightWidth,
+    gc = Tk_GCForColor(ops->highlightColor, drawable);
+    Tk_DrawFocusHighlight(graphPtr->tkwin, gc, ops->highlightWidth,
 			  drawable);
   }
   /* Disable crosshairs before redisplaying to the screen */
@@ -464,7 +484,7 @@ void GraphDisplay(Graph* graphPtr)
   XCopyArea(graphPtr->display, drawable, Tk_WindowId(tkwin),
 	    graphPtr->drawGC, 0, 0, graphPtr->width, graphPtr->height, 0, 0);
   Blt_EnableCrosshairs(graphPtr);
-  if (graphPtr->doubleBuffer) {
+  if (ops->doubleBuffer) {
     Tk_FreePixmap(graphPtr->display, drawable);
   }
 
@@ -488,18 +508,237 @@ void Blt_EventuallyRedrawGraph(Graph* graphPtr)
 
 static void AdjustAxisPointers(Graph* graphPtr) 
 {
-  if (graphPtr->inverted) {
-    graphPtr->leftMargin.axes   = graphPtr->axisChain[0];
-    graphPtr->bottomMargin.axes = graphPtr->axisChain[1];
-    graphPtr->rightMargin.axes  = graphPtr->axisChain[2];
-    graphPtr->topMargin.axes    = graphPtr->axisChain[3];
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  if (ops->inverted) {
+    ops->leftMargin.axes   = graphPtr->axisChain[0];
+    ops->bottomMargin.axes = graphPtr->axisChain[1];
+    ops->rightMargin.axes  = graphPtr->axisChain[2];
+    ops->topMargin.axes    = graphPtr->axisChain[3];
   }
   else {
-    graphPtr->leftMargin.axes   = graphPtr->axisChain[1];
-    graphPtr->bottomMargin.axes = graphPtr->axisChain[0];
-    graphPtr->rightMargin.axes  = graphPtr->axisChain[3];
-    graphPtr->topMargin.axes    = graphPtr->axisChain[2];
+    ops->leftMargin.axes   = graphPtr->axisChain[1];
+    ops->bottomMargin.axes = graphPtr->axisChain[0];
+    ops->rightMargin.axes  = graphPtr->axisChain[3];
+    ops->topMargin.axes    = graphPtr->axisChain[2];
   }
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * DrawMargins --
+ *
+ * 	Draws the exterior region of the graph (axes, ticks, titles, etc) 
+ * 	onto a pixmap. The interior region is defined by the given rectangle
+ * 	structure.
+ *
+ *	---------------------------------
+ *      |                               |
+ *      |           rectArr[0]          |
+ *      |                               |
+ *	---------------------------------
+ *      |     |top           right|     |
+ *      |     |                   |     |
+ *      |     |                   |     |
+ *      | [1] |                   | [2] |
+ *      |     |                   |     |
+ *      |     |                   |     |
+ *      |     |                   |     |
+ *      |     |                   |     |
+ *      |     |                   |     |
+ *      |     |left         bottom|     |
+ *	---------------------------------
+ *      |                               |
+ *      |          rectArr[3]           |
+ *      |                               |
+ *	---------------------------------
+ *
+ *		X coordinate axis
+ *		Y coordinate axis
+ *		legend
+ *		interior border
+ *		exterior border
+ *		titles (X and Y axis, graph)
+ *
+ * Returns:
+ *	None.
+ *
+ * Side Effects:
+ *	Exterior of graph is displayed in its window.
+ *
+ *---------------------------------------------------------------------------
+ */
+static void DrawMargins(Graph* graphPtr, Drawable drawable)
+{
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  XRectangle rects[4];
+
+  /*
+   * Draw the four outer rectangles which encompass the plotting
+   * surface. This clears the surrounding area and clips the plot.
+   */
+  rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
+  rects[0].width = rects[3].width = (short int)graphPtr->width;
+  rects[0].height = (short int)graphPtr->top;
+  rects[3].y = graphPtr->bottom;
+  rects[3].height = graphPtr->height - graphPtr->bottom;
+  rects[2].y = rects[1].y = graphPtr->top;
+  rects[1].width = graphPtr->left;
+  rects[2].height = rects[1].height = graphPtr->bottom - graphPtr->top;
+  rects[2].x = graphPtr->right;
+  rects[2].width = graphPtr->width - graphPtr->right;
+
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
+		     0, TK_RELIEF_FLAT);
+
+  /* Draw 3D border around the plotting area */
+
+  if (ops->plotBW > 0) {
+    int x, y, w, h;
+
+    x = graphPtr->left - ops->plotBW;
+    y = graphPtr->top - ops->plotBW;
+    w = (graphPtr->right - graphPtr->left) + (2*ops->plotBW);
+    h = (graphPtr->bottom - graphPtr->top) + (2*ops->plotBW);
+    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, ops->normalBg, 
+		       x, y, w, h, ops->plotBW, ops->plotRelief);
+  }
+  
+  switch (graphPtr->legend->position()) {
+  case Legend::TOP:
+  case Legend::BOTTOM:
+  case Legend::RIGHT:
+  case Legend::LEFT:
+    graphPtr->legend->draw(drawable);
+    break;
+  default:
+    break;
+  }
+
+  if (ops->title != NULL)
+    Blt_DrawText(graphPtr->tkwin, drawable, ops->title,
+		 &ops->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
+
+  Blt_DrawAxes(graphPtr, drawable);
+  graphPtr->flags &= ~DRAW_MARGINS;
+}
+
+static void DrawPlot(Graph* graphPtr, Drawable drawable)
+{
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  DrawMargins(graphPtr, drawable);
+
+  // Draw the background of the plotting area with 3D border
+  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, ops->plotBg,
+		     graphPtr->left-ops->plotBW, 
+		     graphPtr->top-ops->plotBW, 
+		     graphPtr->right - graphPtr->left + 1 +2*ops->plotBW,
+		     graphPtr->bottom - graphPtr->top  + 1 +2*ops->plotBW, 
+		     ops->plotBW, ops->plotRelief);
+  
+  // Draw the elements, markers, legend, and axis limits
+  Blt_DrawAxes(graphPtr, drawable);
+  Blt_DrawGrids(graphPtr, drawable);
+  Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
+
+  if (!graphPtr->legend->isRaised()) {
+    switch (graphPtr->legend->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      graphPtr->legend->draw(drawable);
+      break;
+    default:
+      break;
+    }
+  }
+
+  Blt_DrawAxisLimits(graphPtr, drawable);
+  Blt_DrawElements(graphPtr, drawable);
+}
+
+void Blt_MapGraph(Graph* graphPtr)
+{
+  if (graphPtr->flags & RESET_AXES) {
+    Blt_ResetAxes(graphPtr);
+  }
+  if (graphPtr->flags & LAYOUT_NEEDED) {
+    Blt_LayoutGraph(graphPtr);
+    graphPtr->flags &= ~LAYOUT_NEEDED;
+  }
+
+  if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
+    if (graphPtr->flags & MAP_WORLD)
+      Blt_MapAxes(graphPtr);
+
+    Blt_MapElements(graphPtr);
+    Blt::MapMarkers(graphPtr);
+    graphPtr->flags &= ~(MAP_ALL);
+  }
+}
+
+static void UpdateMarginTraces(Graph* graphPtr)
+{
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  Margin* marginPtr;
+  Margin* endPtr;
+
+  for (marginPtr = ops->margins, endPtr = marginPtr + 4; 
+       marginPtr < endPtr; marginPtr++) {
+    if (marginPtr->varName != NULL) { /* Trigger variable traces */
+      int size;
+
+      if ((marginPtr->site == MARGIN_LEFT) || 
+	  (marginPtr->site == MARGIN_RIGHT)) {
+	size = marginPtr->width;
+      } else {
+	size = marginPtr->height;
+      }
+      Tcl_SetVar(graphPtr->interp, marginPtr->varName, Blt_Itoa(size), 
+		 TCL_GLOBAL_ONLY);
+    }
+  }
+}
+
+/*
+ *---------------------------------------------------------------------------
+ * Generates a bounding box representing the plotting area of the
+ * graph. This data structure is used to clip the points and line
+ * segments of the line element.
+ * The clip region is the plotting area plus such arbitrary extra space.
+ * The reason we clip with a bounding box larger than the plot area is so
+ * that symbols will be drawn even if their center point isn't in the
+ * plotting area.
+ *---------------------------------------------------------------------------
+ */
+
+void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
+{
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  regionPtr->left = (double)(graphPtr->hOffset - ops->xPad);
+  regionPtr->top = (double)(graphPtr->vOffset - ops->yPad);
+  regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
+			      ops->xPad);
+  regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
+			       ops->yPad);
+}
+
+void Blt_ReconfigureGraph(Graph* graphPtr)	
+{
+  GraphConfigure(graphPtr);
+  graphPtr->legend->configure();
+  //  Blt_ConfigureElements(graphPtr);
+  Blt_ConfigureAxes(graphPtr);
+  Blt::ConfigureMarkers(graphPtr);
 }
 
 void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
@@ -565,6 +804,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 			    ClientData* contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
   if (graphPtr->flags & MAP_ALL) {
     *contextPtr = (ClientData)NULL;
@@ -594,7 +834,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return markerPtr;
   }
 
-  ClosestSearch* searchPtr = &graphPtr->search;
+  ClosestSearch* searchPtr = &ops->search;
   searchPtr->index = -1;
   searchPtr->x = x;
   searchPtr->y = y;
@@ -626,216 +866,3 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   return NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawMargins --
- *
- * 	Draws the exterior region of the graph (axes, ticks, titles, etc) 
- * 	onto a pixmap. The interior region is defined by the given rectangle
- * 	structure.
- *
- *	---------------------------------
- *      |                               |
- *      |           rectArr[0]          |
- *      |                               |
- *	---------------------------------
- *      |     |top           right|     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      | [1] |                   | [2] |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |left         bottom|     |
- *	---------------------------------
- *      |                               |
- *      |          rectArr[3]           |
- *      |                               |
- *	---------------------------------
- *
- *		X coordinate axis
- *		Y coordinate axis
- *		legend
- *		interior border
- *		exterior border
- *		titles (X and Y axis, graph)
- *
- * Returns:
- *	None.
- *
- * Side Effects:
- *	Exterior of graph is displayed in its window.
- *
- *---------------------------------------------------------------------------
- */
-static void DrawMargins(Graph* graphPtr, Drawable drawable)
-{
-  XRectangle rects[4];
-
-  /*
-   * Draw the four outer rectangles which encompass the plotting
-   * surface. This clears the surrounding area and clips the plot.
-   */
-  rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-  rects[0].width = rects[3].width = (short int)graphPtr->width;
-  rects[0].height = (short int)graphPtr->top;
-  rects[3].y = graphPtr->bottom;
-  rects[3].height = graphPtr->height - graphPtr->bottom;
-  rects[2].y = rects[1].y = graphPtr->top;
-  rects[1].width = graphPtr->left;
-  rects[2].height = rects[1].height = graphPtr->bottom - graphPtr->top;
-  rects[2].x = graphPtr->right;
-  rects[2].width = graphPtr->width - graphPtr->right;
-
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
-		     0, TK_RELIEF_FLAT);
-
-  /* Draw 3D border around the plotting area */
-
-  if (graphPtr->plotBW > 0) {
-    int x, y, w, h;
-
-    x = graphPtr->left - graphPtr->plotBW;
-    y = graphPtr->top - graphPtr->plotBW;
-    w = (graphPtr->right - graphPtr->left) + (2*graphPtr->plotBW);
-    h = (graphPtr->bottom - graphPtr->top) + (2*graphPtr->plotBW);
-    Tk_Draw3DRectangle(graphPtr->tkwin, drawable, graphPtr->normalBg, 
-		       x, y, w, h, graphPtr->plotBW, graphPtr->plotRelief);
-  }
-  
-  switch (graphPtr->legend->position()) {
-  case Legend::TOP:
-  case Legend::BOTTOM:
-  case Legend::RIGHT:
-  case Legend::LEFT:
-    graphPtr->legend->draw(drawable);
-    break;
-  default:
-    break;
-  }
-
-  if (graphPtr->title != NULL)
-    Blt_DrawText(graphPtr->tkwin, drawable, graphPtr->title,
-		 &graphPtr->titleTextStyle, graphPtr->titleX, graphPtr->titleY);
-
-  Blt_DrawAxes(graphPtr, drawable);
-  graphPtr->flags &= ~DRAW_MARGINS;
-}
-
-static void DrawPlot(Graph* graphPtr, Drawable drawable)
-{
-  DrawMargins(graphPtr, drawable);
-
-  // Draw the background of the plotting area with 3D border
-  Tk_Fill3DRectangle(graphPtr->tkwin, drawable, graphPtr->plotBg,
-		     graphPtr->left-graphPtr->plotBW, 
-		     graphPtr->top-graphPtr->plotBW, 
-		     graphPtr->right - graphPtr->left + 1 +2*graphPtr->plotBW,
-		     graphPtr->bottom - graphPtr->top  + 1 +2*graphPtr->plotBW, 
-		     graphPtr->plotBW, graphPtr->plotRelief);
-  
-  // Draw the elements, markers, legend, and axis limits
-  Blt_DrawAxes(graphPtr, drawable);
-  Blt_DrawGrids(graphPtr, drawable);
-  Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
-
-  if (!graphPtr->legend->isRaised()) {
-    switch (graphPtr->legend->position()) {
-    case Legend::PLOT:
-    case Legend::XY:
-      graphPtr->legend->draw(drawable);
-      break;
-    default:
-      break;
-    }
-  }
-
-  Blt_DrawAxisLimits(graphPtr, drawable);
-  Blt_DrawElements(graphPtr, drawable);
-}
-
-void Blt_MapGraph(Graph* graphPtr)
-{
-  if (graphPtr->flags & RESET_AXES) {
-    Blt_ResetAxes(graphPtr);
-  }
-  if (graphPtr->flags & LAYOUT_NEEDED) {
-    Blt_LayoutGraph(graphPtr);
-    graphPtr->flags &= ~LAYOUT_NEEDED;
-  }
-
-  if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
-    if (graphPtr->flags & MAP_WORLD)
-      Blt_MapAxes(graphPtr);
-
-    Blt_MapElements(graphPtr);
-    Blt::MapMarkers(graphPtr);
-    graphPtr->flags &= ~(MAP_ALL);
-  }
-}
-
-static void UpdateMarginTraces(Graph* graphPtr)
-{
-  Margin* marginPtr;
-  Margin* endPtr;
-
-  for (marginPtr = graphPtr->margins, endPtr = marginPtr + 4; 
-       marginPtr < endPtr; marginPtr++) {
-    if (marginPtr->varName != NULL) { /* Trigger variable traces */
-      int size;
-
-      if ((marginPtr->site == MARGIN_LEFT) || 
-	  (marginPtr->site == MARGIN_RIGHT)) {
-	size = marginPtr->width;
-      } else {
-	size = marginPtr->height;
-      }
-      Tcl_SetVar(graphPtr->interp, marginPtr->varName, Blt_Itoa(size), 
-		 TCL_GLOBAL_ONLY);
-    }
-  }
-}
-
-/*
- *---------------------------------------------------------------------------
- * Generates a bounding box representing the plotting area of the
- * graph. This data structure is used to clip the points and line
- * segments of the line element.
- * The clip region is the plotting area plus such arbitrary extra space.
- * The reason we clip with a bounding box larger than the plot area is so
- * that symbols will be drawn even if their center point isn't in the
- * plotting area.
- *---------------------------------------------------------------------------
- */
-
-void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
-{
-  regionPtr->left = (double)(graphPtr->hOffset - graphPtr->xPad);
-  regionPtr->top = (double)(graphPtr->vOffset - graphPtr->yPad);
-  regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
-			      graphPtr->xPad);
-  regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
-			       graphPtr->yPad);
-}
-
-void Blt_ReconfigureGraph(Graph* graphPtr)	
-{
-  GraphConfigure(graphPtr);
-  graphPtr->legend->configure();
-  //  Blt_ConfigureElements(graphPtr);
-  Blt_ConfigureAxes(graphPtr);
-  Blt::ConfigureMarkers(graphPtr);
-}
