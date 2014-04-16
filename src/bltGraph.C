@@ -701,6 +701,16 @@ static void AdjustAxisPointers(Graph* graphPtr)
   }
 }
 
+void Graph::extents(Region2d* regionPtr)
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+
+  regionPtr->left = (double)(hOffset_ - ops->xPad);
+  regionPtr->top = (double)(vOffset_ - ops->yPad);
+  regionPtr->right = (double)(hOffset_ + hRange_ + ops->xPad);
+  regionPtr->bottom = (double)(vOffset_ + vRange_ + ops->yPad);
+}
+
 // Support
 
 static void UpdateMarginTraces(Graph* graphPtr)
@@ -724,29 +734,6 @@ static void UpdateMarginTraces(Graph* graphPtr)
 		 TCL_GLOBAL_ONLY);
     }
   }
-}
-
-/*
- *---------------------------------------------------------------------------
- * Generates a bounding box representing the plotting area of the
- * graph. This data structure is used to clip the points and line
- * segments of the line element.
- * The clip region is the plotting area plus such arbitrary extra space.
- * The reason we clip with a bounding box larger than the plot area is so
- * that symbols will be drawn even if their center point isn't in the
- * plotting area.
- *---------------------------------------------------------------------------
- */
-
-void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
-{
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  regionPtr->left = (double)(graphPtr->hOffset_ - ops->xPad);
-  regionPtr->top = (double)(graphPtr->vOffset_ - ops->yPad);
-  regionPtr->right = (double)(graphPtr->hOffset_ + graphPtr->hRange_ + 
-			      ops->xPad);
-  regionPtr->bottom = (double)(graphPtr->vOffset_ + graphPtr->vRange_ + 
-			       ops->yPad);
 }
 
 void Blt_ReconfigureGraph(Graph* graphPtr)	
@@ -829,7 +816,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   }
 
   Region2d exts;
-  Blt_GraphExtents(graphPtr, &exts);
+  graphPtr->extents(&exts);
 
   // Sample coordinate is in one of the graph margins. Can only pick an axis.
   if ((x >= exts.right) || (x < exts.left) || 

@@ -178,7 +178,7 @@ void LineMarker::map()
     return;
 
   Region2d extents;
-  Blt_GraphExtents(graphPtr_, &extents);
+  graphPtr_->extents(&extents);
 
   // Allow twice the number of world coordinates. The line will represented
   // as series of line segments, not one continous polyline.  This is

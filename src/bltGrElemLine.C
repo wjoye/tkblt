@@ -1292,22 +1292,23 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
 
 void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
 {
-  Region2d exts;
   Point2d *origPts, *iPts;
   int *map;
   int niPts, nOrigPts;
   int result;
-  int i, j, count;
+  int i, j;
 
   nOrigPts = mapPtr->nScreenPts;
   origPts = mapPtr->screenPts;
-  Blt_GraphExtents(graphPtr_, &exts);
+
+  Region2d exts;
+  graphPtr_->extents(&exts);
 
   /* 
    * Populate the x2 array with both the original X-coordinates and extra
    * X-coordinates for each horizontal pixel that the line segment contains.
    */
-  count = 1;
+  int count = 1;
   for (i = 0, j = 1; j < nOrigPts; i++, j++) {
     Point2d p, q;
 
@@ -1400,16 +1401,16 @@ void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
 
 void LineElement::MapSymbols(MapInfo *mapPtr)
 {
-  Region2d exts;
   Point2d *pp;
   int i;
 
   Point2d* points = (Point2d*)malloc(sizeof(Point2d) * mapPtr->nScreenPts);
   int *map = (int*)malloc(sizeof(int) * mapPtr->nScreenPts);
 
-  Blt_GraphExtents(graphPtr_, &exts);
-  int count = 0;
+  Region2d exts;
+  graphPtr_->extents(&exts);
 
+  int count = 0;
   for (pp = mapPtr->screenPts, i = 0; i < mapPtr->nScreenPts; i++, pp++) {
     if (PointInRegion(&exts, pp->x, pp->y)) {
       points[count].x = pp->x;
@@ -1437,7 +1438,7 @@ void LineElement::MapActiveSymbols()
   }
 
   Region2d exts;
-  Blt_GraphExtents(graphPtr_, &exts);
+  graphPtr_->extents(&exts);
 
   Point2d *points = (Point2d*)malloc(sizeof(Point2d) * nActiveIndices_);
   int* map = (int*)malloc(sizeof(int) * nActiveIndices_);
@@ -1702,7 +1703,8 @@ void LineElement::MapTraces(MapInfo *mapPtr)
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
   Region2d exts;
-  Blt_GraphExtents(graphPtr_, &exts);
+  graphPtr_->extents(&exts);
+
   int count = 1;
   int code1 = OutCode(&exts, mapPtr->screenPts);
   Point2d* p = mapPtr->screenPts;
@@ -1775,7 +1777,7 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
 
   int np = mapPtr->nScreenPts + 3;
   Region2d exts;
-  Blt_GraphExtents(graphPtr_, &exts);
+  graphPtr_->extents(&exts);
 
   Point2d* origPts = (Point2d*)malloc(sizeof(Point2d) * np);
   if (gops->inverted) {
@@ -1901,7 +1903,7 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
   Region2d exts;
-  Blt_GraphExtents(graphPtr_, &exts);
+  graphPtr_->extents(&exts);
 
   int n =0;
   int np = NUMBEROFPOINTS(ops);

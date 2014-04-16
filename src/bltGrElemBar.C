@@ -1066,7 +1066,7 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
   Region2d reg;
-  Blt_GraphExtents(graphPtr_, &reg);
+  graphPtr_->extents(&reg);
 
   int nPoints = NUMBEROFPOINTS(ops);
   int n =0;

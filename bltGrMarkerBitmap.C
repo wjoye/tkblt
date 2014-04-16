@@ -213,7 +213,9 @@ void BitmapMarker::map()
     polygon[ii].x = (polygon[ii].x) + tx;
     polygon[ii].y = (polygon[ii].y) + ty;
   }
-  Blt_GraphExtents(graphPtr_, &extents);
+
+  graphPtr_->extents(&extents);
+
   int nn = Blt_PolyRectClip(&extents, polygon, 4, outline_); 
   if (nn < 3) { 
     memcpy(&outline_, polygon, sizeof(Point2d) * 4);

@@ -273,7 +273,8 @@ void PolygonMarker::map()
     *dp = screenPts[0];
   }
   Region2d extents;
-  Blt_GraphExtents(graphPtr_, &extents);
+  graphPtr_->extents(&extents);
+
   clipped_ = 1;
   if (ops->fill) {
     Point2d* lfillPts = new Point2d[nScreenPts * 3];

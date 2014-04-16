@@ -329,7 +329,8 @@ static int InsideOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
 
   Region2d exts;
-  Blt_GraphExtents(graphPtr, &exts);
+  graphPtr->extents(&exts);
+
   int result = PointInRegion(&exts, x, y);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), result);
 

@@ -5563,7 +5563,6 @@ done
 	bltNsUtil.C
 	bltParse.C
 	bltPs.C
-	bltPsAfm.C
 	bltOp.C
 	bltSpline.C
 	bltSwitch.C

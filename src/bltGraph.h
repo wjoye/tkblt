@@ -206,10 +206,10 @@ class Graph {
   void display();
   void map();
   void eventuallyRedraw();
+  void extents(Region2d*);
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
-extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern MakeTagProc Blt_MakeElementTag;

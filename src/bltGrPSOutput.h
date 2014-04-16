@@ -187,10 +187,6 @@ extern void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 extern void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
 extern int Blt_Ps_IsPrinting(void);
 
-extern int Blt_Ps_TextWidth(Tk_Font font, const char *string, int nBytes);
-
-extern int Blt_Ps_GetFontMetrics(Tk_Font font, Tk_FontMetrics *fmPtr);
-
 extern void Blt_Ps_FontName(const char *family, int flags, 
 			    Tcl_DString *resultPtr);
 
