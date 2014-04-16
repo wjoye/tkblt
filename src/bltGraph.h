@@ -144,7 +144,7 @@ class Graph {
   Tk_Window tkwin;
   Display *display;
   Tcl_Command cmdToken;
-  Tk_OptionTable optionTable;
+  Tk_OptionTable optionTable_;
   void* ops_;
   ClassId classId;
   int inset;

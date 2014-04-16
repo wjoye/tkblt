@@ -113,7 +113,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable, 
+      if (Tk_SetOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable_, 
 			objc, objv, graphPtr->tkwin, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -151,7 +151,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)graphPtr->ops_, 
-				      graphPtr->optionTable,
+				      graphPtr->optionTable_,
 				      objv[2], graphPtr->tkwin);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -166,7 +166,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
   if (objc <= 3) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, 
 				       (char*)graphPtr->ops_, 
-				       graphPtr->optionTable, 
+				       graphPtr->optionTable_, 
 				       (objc == 3) ? objv[2] : NULL, 
 				       graphPtr->tkwin);
     if (objPtr == NULL)

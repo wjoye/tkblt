@@ -220,8 +220,6 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
     break;
   }
 
-  Tk_OptionTable optionTable = Tk_CreateOptionTable(interp, optionSpecs);
-
   Graph* graphPtr = (Graph*)calloc(1, sizeof(Graph));
   ((TkWindow*)tkwin)->instanceData = graphPtr;
 
@@ -236,7 +234,6 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
 					    GraphInstCmdProc, 
 					    graphPtr, 
 					    GraphInstCmdDeleteProc);
-  graphPtr->optionTable = optionTable;
   graphPtr->classId = classId;
   graphPtr->flags = MAP_WORLD | REDRAW_WORLD;
   graphPtr->nextMarkerId = 1;
@@ -283,8 +280,9 @@ int NewGraph(ClientData clientData, Tcl_Interp*interp,
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
 			GraphEventProc, graphPtr);
 
-  if ((Tk_InitOptions(interp, (char*)graphPtr->ops_, optionTable, tkwin) != TCL_OK) ||
-      (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
+  graphPtr->optionTable_ = Tk_CreateOptionTable(interp, optionSpecs);
+
+  if ((Tk_InitOptions(interp, (char*)graphPtr->ops_, graphPtr->optionTable_, tkwin) != TCL_OK) || (GraphObjConfigure(interp, graphPtr, objc-2, objv+2) != TCL_OK))
     return TCL_ERROR;
 
   AdjustAxisPointers(graphPtr);
@@ -324,7 +322,7 @@ void GraphDestroy(Graph* graphPtr)
   if (graphPtr->cache != None)
     Tk_FreePixmap(graphPtr->display, graphPtr->cache);
 
-  Tk_FreeConfigOptions((char*)graphPtr->ops_, graphPtr->optionTable, graphPtr->tkwin);
+  Tk_FreeConfigOptions((char*)graphPtr->ops_, graphPtr->optionTable_, graphPtr->tkwin);
   Tcl_Release(graphPtr->tkwin);
   graphPtr->tkwin = NULL;
 
