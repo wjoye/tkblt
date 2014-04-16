@@ -7,8 +7,6 @@ echo "Testing LineGraph..."
 
 bltTest $graph -aspect 2
 bltTest $graph -background red
-bltTest $graph -barmode overlap
-bltTest $graph -barwidth .15
 #bltTest $graph -baseline
 bltTest $graph -bd 50
 bltTest $graph -bg green

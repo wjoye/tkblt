@@ -75,7 +75,7 @@ typedef struct {
   Axis2d axes;
 } BarSetKey;
 
-typedef enum BarModes {
+typedef enum {
   BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
 } BarMode;
 

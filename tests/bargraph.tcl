@@ -8,6 +8,8 @@ echo "Testing BarGraph..."
 # Graph
 bltTest $graph -aspect 2
 bltTest $graph -background red
+bltTest $graph -barmode stacked
+bltTest $graph -barmode aligned
 bltTest $graph -barmode overlap
 bltTest $graph -barwidth .15
 #bltTest $graph -baseline
