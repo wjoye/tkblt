@@ -179,20 +179,4 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
   return (*proc)(graphPtr, interp, objc, objv);
 }
 
-void Blt_EnableCrosshairs(Graph* graphPtr)
-{
-  Crosshairs* chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
-  if (!ops->hide)
-    graphPtr->crosshairs_->on();
-}
-
-void Blt_DisableCrosshairs(Graph* graphPtr)
-{
-  Crosshairs* chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
-  if (!ops->hide)
-    graphPtr->crosshairs_->off();
-}
-
 

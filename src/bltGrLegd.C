@@ -511,7 +511,7 @@ void Legend::draw(Drawable drawable)
   switch ((Position)ops->position) {
   case PLOT:
   case XY:
-    Blt_DisableCrosshairs(graphPtr_);
+    graphPtr_->disableCrosshairs();
     break;
   default:
     break;
@@ -525,7 +525,7 @@ void Legend::draw(Drawable drawable)
   switch ((Position)ops->position) {
   case PLOT:
   case XY:
-    Blt_EnableCrosshairs(graphPtr_);
+    graphPtr_->enableCrosshairs();
     break;
   default:
     break;

@@ -497,10 +497,11 @@ void Graph::display()
   }
 
   // Disable crosshairs before redisplaying to the screen
-  Blt_DisableCrosshairs(this);
+  disableCrosshairs();
   XCopyArea(display_, drawable, Tk_WindowId(tkwin_),
 	    drawGC_, 0, 0, width_, height_, 0, 0);
-  Blt_EnableCrosshairs(this);
+
+  enableCrosshairs();
   if (ops->doubleBuffer)
     Tk_FreePixmap(display_, drawable);
 
@@ -865,5 +866,116 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
 
   *contextPtr = (ClientData)NULL;
   return NULL;
+}
+
+// Crosshairs
+
+void Graph::enableCrosshairs()
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)crosshairs_->ops_;
+  if (!ops->hide)
+    crosshairs_->on();
+}
+
+void Graph::disableCrosshairs()
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)crosshairs_->ops_;
+  if (!ops->hide)
+    crosshairs_->off();
+}
+
+// Elements
+
+void Graph::destroyElements()
+{
+  Tcl_HashEntry *hPtr;
+  Tcl_HashSearch iter;
+  for (hPtr = Tcl_FirstHashEntry(&elements_.table, &iter);
+       hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+    Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
+    if (elemPtr)
+      Blt_DestroyElement(elemPtr);
+  }
+  Tcl_DeleteHashTable(&elements_.table);
+  Tcl_DeleteHashTable(&elements_.tagTable);
+  Blt_Chain_Destroy(elements_.displayList);
+}
+
+void Graph::configureElements()
+{
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(elements_.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    elemPtr->configure();
+  }
+}
+
+void Graph::mapElements()
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  if (gops->barMode != BARS_INFRONT)
+    Blt_ResetBarGroups(this);
+
+  for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
+       link != NULL; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!elemPtr->link || (elemPtr->flags & DELETE_PENDING))
+      continue;
+
+    if ((flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
+      elemPtr->map();
+      elemPtr->flags &= ~MAP_ITEM;
+    }
+  }
+}
+
+void Graph::drawElements(Drawable drawable)
+{
+  // Draw with respect to the stacking order
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
+      elemPtr->draw(drawable);
+  }
+}
+
+void Graph::drawActiveElements(Drawable drawable)
+{
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide())
+      elemPtr->drawActive(drawable);
+  }
+}
+
+void Graph::printElements(Blt_Ps ps)
+{
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link != NULL; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
+      continue;
+
+    // Comment the PostScript to indicate the start of the element
+    Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->name());
+    elemPtr->print(ps);
+  }
+}
+
+void Graph::printActiveElements(Blt_Ps ps)
+{
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && 
+	(elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide()) {
+      Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", elemPtr->name());
+      elemPtr->printActive(ps);
+    }
+  }
 }
 

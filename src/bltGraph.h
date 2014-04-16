@@ -218,6 +218,9 @@ class Graph {
   int print(const char *ident, Blt_Ps ps);
   void extents(Region2d*);
   void reconfigure();
+
+  void enableCrosshairs();
+  void disableCrosshairs();
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
