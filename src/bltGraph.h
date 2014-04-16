@@ -176,17 +176,17 @@ class Graph {
   short int top_;
   short int bottom_;	
   Axis *focusPtr_;
-  int halo;
-  GC drawGC;
-  int vRange;
-  int vOffset;
-  int hRange;
-  int hOffset;
-  float vScale;
-  float hScale;
-  Pixmap cache;
-  short int cacheWidth;
-  short int cacheHeight;
+  int halo_;
+  GC drawGC_;
+  int vRange_;
+  int hRange_;
+  int vOffset_;
+  int hOffset_;
+  float vScale_;
+  float hScale_;
+  Pixmap cache_;
+  short int cacheWidth_;
+  short int cacheHeight_;
 
   // barchart specific information
   BarGroup *barGroups;

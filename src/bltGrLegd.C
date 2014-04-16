@@ -414,9 +414,9 @@ void Legend::draw(Drawable drawable)
       // plot area.  Either copy the part of the background from the backing
       // store pixmap or (if no backing store exists) just fill it with the
       // background color of the plot.
-      if (graphPtr_->cache != None)
-	XCopyArea(graphPtr_->display_, graphPtr_->cache, pixmap, 
-		  graphPtr_->drawGC, x_, y_, w, h, 0, 0);
+      if (graphPtr_->cache_ != None)
+	XCopyArea(graphPtr_->display_, graphPtr_->cache_, pixmap, 
+		  graphPtr_->drawGC_, x_, y_, w, h, 0, 0);
       else 
 	Tk_Fill3DRectangle(tkwin, pixmap, gops->plotBg, 0, 0, 
 			   w, h, TK_RELIEF_FLAT, 0);
@@ -519,7 +519,7 @@ void Legend::draw(Drawable drawable)
 
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
 		     ops->borderWidth, ops->relief);
-  XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC, 0, 0, w, h,
+  XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC_, 0, 0, w, h,
 	    x_, y_);
 
   switch ((Position)ops->position) {

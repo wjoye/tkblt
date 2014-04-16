@@ -1038,7 +1038,7 @@ int LineElement::ScaleSymbol(int normalSize)
 
   // Don't let the size of symbols go unbounded. Both X and Win32 drawing
   // routines assume coordinates to be a signed short int.
-  int maxSize = (int)MIN(graphPtr_->hRange, graphPtr_->vRange);
+  int maxSize = (int)MIN(graphPtr_->hRange_, graphPtr_->vRange_);
   if (newSize > maxSize)
     newSize = maxSize;
 

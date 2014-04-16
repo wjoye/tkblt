@@ -298,10 +298,10 @@ int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr,
   double axisScale;
   if (axisPtr->isHorizontal() != ops->descending) {
     axisOffset  = viewMin - worldMin;
-    axisScale = graphPtr->hScale;
+    axisScale = graphPtr->hScale_;
   } else {
     axisOffset  = worldMax - viewMax;
-    axisScale = graphPtr->vScale;
+    axisScale = graphPtr->vScale_;
   }
   if (objc == 4) {
     double first = Clamp(axisOffset / worldWidth);
@@ -1508,19 +1508,19 @@ void Blt_LayoutGraph(Graph* graphPtr)
   gops->topMargin.height    = top    + graphPtr->inset_;
   gops->bottomMargin.height = bottom + graphPtr->inset_;
 	    
-  graphPtr->vOffset = graphPtr->top_ + gops->yPad;
-  graphPtr->vRange  = plotHeight - 2*gops->yPad;
-  graphPtr->hOffset = graphPtr->left_ + gops->xPad;
-  graphPtr->hRange  = plotWidth  - 2*gops->xPad;
+  graphPtr->vOffset_ = graphPtr->top_ + gops->yPad;
+  graphPtr->vRange_  = plotHeight - 2*gops->yPad;
+  graphPtr->hOffset_ = graphPtr->left_ + gops->xPad;
+  graphPtr->hRange_  = plotWidth  - 2*gops->xPad;
 
-  if (graphPtr->vRange < 1)
-    graphPtr->vRange = 1;
+  if (graphPtr->vRange_ < 1)
+    graphPtr->vRange_ = 1;
 
-  if (graphPtr->hRange < 1)
-    graphPtr->hRange = 1;
+  if (graphPtr->hRange_ < 1)
+    graphPtr->hRange_ = 1;
 
-  graphPtr->hScale = 1.0f / (float)graphPtr->hRange;
-  graphPtr->vScale = 1.0f / (float)graphPtr->vRange;
+  graphPtr->hScale_ = 1.0f / (float)graphPtr->hRange_;
+  graphPtr->vScale_ = 1.0f / (float)graphPtr->vRange_;
 
   // Calculate the placement of the graph title so it is centered within the
   // space provided for it in the top margin

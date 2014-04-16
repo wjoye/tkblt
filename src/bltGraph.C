@@ -249,17 +249,18 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   top_ =0;
   bottom_ =0;
   focusPtr_ =NULL;
-  halo =0;
-  drawGC =NULL;
-  vRange =0;
-  vOffset =0;
-  hRange =0;
-  hOffset =0;
-  vScale =0;
-  hScale =0;
-  cache =None;
-  cacheWidth =0;
-  cacheHeight =0;
+  halo_ =0;
+  drawGC_ =NULL;
+  vRange_ =0;
+  hRange_ =0;
+  vOffset_ =0;
+  hOffset_ =0;
+  vScale_ =0;
+  hScale_ =0;
+  cache_ =None;
+  cacheWidth_ =0;
+  cacheHeight_ =0;
+
   barGroups =NULL;
   nBarGroups =0;
   maxBarSetSize =0;
@@ -344,12 +345,12 @@ Graph::~Graph()
   if (bindTable)
     Blt_DestroyBindingTable(bindTable);
 
-  if (drawGC)
-    Tk_FreeGC(display_, drawGC);
+  if (drawGC_)
+    Tk_FreeGC(display_, drawGC_);
 
   Blt_Ts_FreeStyle(display_, &ops->titleTextStyle);
-  if (cache != None)
-    Tk_FreePixmap(display_, cache);
+  if (cache_ != None)
+    Tk_FreePixmap(display_, cache_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, tkwin_);
   Tcl_Release(tkwin_);
@@ -391,9 +392,9 @@ void Graph::configure()
   gcValues.background = colorPtr->pixel;
   unsigned long gcMask = (GCForeground | GCBackground);
   GC newGC = Tk_GetGC(tkwin_, gcMask, &gcValues);
-  if (drawGC != NULL)
-    Tk_FreeGC(display_, drawGC);
-  drawGC = newGC;
+  if (drawGC_ != NULL)
+    Tk_FreeGC(display_, drawGC_);
+  drawGC_ = newGC;
 
   // If the -inverted option changed, we need to readjust the pointers
   // to the axes and recompute the their scales.
@@ -401,9 +402,9 @@ void Graph::configure()
     AdjustAxisPointers(this);
 
   // Free the pixmap if we're not buffering the display of elements anymore.
-  if ((!ops->backingStore) && (cache != None)) {
-    Tk_FreePixmap(display_, cache);
-    cache = None;
+  if ((!ops->backingStore) && (cache_ != None)) {
+    Tk_FreePixmap(display_, cache_);
+    cache_ = None;
   }
 }
 
@@ -439,30 +440,30 @@ void GraphDisplay(Graph* graphPtr)
     drawable = Tk_WindowId(graphPtr->tkwin_);
 
   if (ops->backingStore) {
-    if ((graphPtr->cache == None) || 
-	(graphPtr->cacheWidth != graphPtr->width_) ||
-	(graphPtr->cacheHeight != graphPtr->height_)) {
-      if (graphPtr->cache != None)
-	Tk_FreePixmap(graphPtr->display_, graphPtr->cache);
+    if ((graphPtr->cache_ == None) || 
+	(graphPtr->cacheWidth_ != graphPtr->width_) ||
+	(graphPtr->cacheHeight_ != graphPtr->height_)) {
+      if (graphPtr->cache_ != None)
+	Tk_FreePixmap(graphPtr->display_, graphPtr->cache_);
 
-      graphPtr->cache = Tk_GetPixmap(graphPtr->display_, 
+      graphPtr->cache_ = Tk_GetPixmap(graphPtr->display_, 
 				     Tk_WindowId(graphPtr->tkwin_), 
 				     graphPtr->width_, graphPtr->height_, 
 				     Tk_Depth(graphPtr->tkwin_));
-      graphPtr->cacheWidth  = graphPtr->width_;
-      graphPtr->cacheHeight = graphPtr->height_;
+      graphPtr->cacheWidth_  = graphPtr->width_;
+      graphPtr->cacheHeight_ = graphPtr->height_;
       graphPtr->flags |= CACHE_DIRTY;
     }
   }
   if (ops->backingStore) {
     if (graphPtr->flags & CACHE_DIRTY) {
-      DrawPlot(graphPtr, graphPtr->cache);
+      DrawPlot(graphPtr, graphPtr->cache_);
       graphPtr->flags &= ~CACHE_DIRTY;
     }
 
     // Copy the pixmap to the one used for drawing the entire graph
-    XCopyArea(graphPtr->display_, graphPtr->cache, drawable,
-	      graphPtr->drawGC, 0, 0, Tk_Width(graphPtr->tkwin_),
+    XCopyArea(graphPtr->display_, graphPtr->cache_, drawable,
+	      graphPtr->drawGC_, 0, 0, Tk_Width(graphPtr->tkwin_),
 	      Tk_Height(graphPtr->tkwin_), 0, 0);
   }
   else
@@ -502,7 +503,7 @@ void GraphDisplay(Graph* graphPtr)
   // Disable crosshairs before redisplaying to the screen
   Blt_DisableCrosshairs(graphPtr);
   XCopyArea(graphPtr->display_, drawable, Tk_WindowId(tkwin),
-	    graphPtr->drawGC, 0, 0, graphPtr->width_, graphPtr->height_, 0, 0);
+	    graphPtr->drawGC_, 0, 0, graphPtr->width_, graphPtr->height_, 0, 0);
   Blt_EnableCrosshairs(graphPtr);
   if (ops->doubleBuffer)
     Tk_FreePixmap(graphPtr->display_, drawable);
@@ -695,7 +696,7 @@ void Blt_MapGraph(Graph* graphPtr)
     graphPtr->flags &= ~LAYOUT_NEEDED;
   }
 
-  if ((graphPtr->vRange > 1) && (graphPtr->hRange > 1)) {
+  if ((graphPtr->vRange_ > 1) && (graphPtr->hRange_ > 1)) {
     if (graphPtr->flags & MAP_WORLD)
       Blt_MapAxes(graphPtr);
 
@@ -743,11 +744,11 @@ static void UpdateMarginTraces(Graph* graphPtr)
 void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
 {
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  regionPtr->left = (double)(graphPtr->hOffset - ops->xPad);
-  regionPtr->top = (double)(graphPtr->vOffset - ops->yPad);
-  regionPtr->right = (double)(graphPtr->hOffset + graphPtr->hRange + 
+  regionPtr->left = (double)(graphPtr->hOffset_ - ops->xPad);
+  regionPtr->top = (double)(graphPtr->vOffset_ - ops->yPad);
+  regionPtr->right = (double)(graphPtr->hOffset_ + graphPtr->hRange_ + 
 			      ops->xPad);
-  regionPtr->bottom = (double)(graphPtr->vOffset + graphPtr->vRange + 
+  regionPtr->bottom = (double)(graphPtr->vOffset_ + graphPtr->vRange_ + 
 			       ops->yPad);
 }
 

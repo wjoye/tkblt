@@ -375,14 +375,14 @@ int Axis::configure()
 void Axis::map(int offset, int margin)
 {
   if (isHorizontal()) {
-    screenMin_ = graphPtr_->hOffset;
+    screenMin_ = graphPtr_->hOffset_;
     width_ = graphPtr_->right_ - graphPtr_->left_;
-    screenRange_ = graphPtr_->hRange;
+    screenRange_ = graphPtr_->hRange_;
   }
   else {
-    screenMin_ = graphPtr_->vOffset;
+    screenMin_ = graphPtr_->vOffset_;
     height_ = graphPtr_->bottom_ - graphPtr_->top_;
-    screenRange_ = graphPtr_->vRange;
+    screenRange_ = graphPtr_->vRange_;
   }
   screenScale_ = 1.0 / screenRange_;
 
@@ -403,13 +403,13 @@ void Axis::mapStacked(int count, int margin)
 
   unsigned int slice;
   if (isHorizontal()) {
-    slice = graphPtr_->hRange / gops->margins[margin].axes->nLinks;
-    screenMin_ = graphPtr_->hOffset;
+    slice = graphPtr_->hRange_ / gops->margins[margin].axes->nLinks;
+    screenMin_ = graphPtr_->hOffset_;
     width_ = slice;
   }
   else {
-    slice = graphPtr_->vRange / gops->margins[margin].axes->nLinks;
-    screenMin_ = graphPtr_->vOffset;
+    slice = graphPtr_->vRange_ / gops->margins[margin].axes->nLinks;
+    screenMin_ = graphPtr_->vOffset_;
     height_ = slice;
   }
 
