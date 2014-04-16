@@ -54,8 +54,6 @@ extern "C" {
 
 using namespace Blt;
 
-extern void GraphDisplay(Graph* graphPtr);
-
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
 
@@ -483,7 +481,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 void DisplayGraph(ClientData clientData)
 {
   Graph* graphPtr = (Graph*)clientData;
-  GraphDisplay(graphPtr);
+  graphPtr->display();
 }
 
 // called by Tcl_EventuallyFree and others

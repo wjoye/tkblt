@@ -193,15 +193,20 @@ class Graph {
   Tcl_HashTable setTable_;
   int maxBarSetSize_;
 
+ protected:
+  void drawPlot(Drawable);
+
+
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
 	int objc, Tcl_Obj* const objv[], ClassId classId);
   virtual ~Graph();
 
   void configure();
+  void display();
+  void map();
 };
 
-extern void Blt_MapGraph(Graph* graphPtr);
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
 extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
 extern void Blt_EventuallyRedrawGraph(Graph* graphPtr);

@@ -61,8 +61,8 @@ extern void Blt_LayoutGraph(Graph* graphPtr);
 static Blt_BindPickProc PickEntry;
 
 static void AdjustAxisPointers(Graph* graphPtr);
-static void DrawPlot(Graph* graphPtr, Drawable drawable);
 static void UpdateMarginTraces(Graph* graphPtr);
+static void DrawMargins(Graph*, Drawable);
 
 // OptionSpecs
 
@@ -407,24 +407,24 @@ void Graph::configure()
   }
 }
 
-void GraphDisplay(Graph* graphPtr)
+void Graph::display()
 {
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-   Tk_Window tkwin = graphPtr->tkwin_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
-  graphPtr->flags &= ~REDRAW_PENDING;
-  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin_))
+  flags &= ~REDRAW_PENDING;
+  if ((flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin_))
     return;
 
-  if ((Tk_Width(graphPtr->tkwin_) <= 1) || (Tk_Height(graphPtr->tkwin_) <= 1)) {
+  if ((Tk_Width(tkwin_) <= 1) || (Tk_Height(tkwin_) <= 1)) {
     /* Don't bother computing the layout until the size of the window is
      * something reasonable. */
     return;
   }
-  graphPtr->width_ = Tk_Width(graphPtr->tkwin_);
-  graphPtr->height_ = Tk_Height(graphPtr->tkwin_);
-  Blt_MapGraph(graphPtr);
-  if (!Tk_IsMapped(graphPtr->tkwin_)) {
+  width_ = Tk_Width(tkwin_);
+  height_ = Tk_Height(tkwin_);
+  map();
+
+  if (!Tk_IsMapped(tkwin_)) {
     /* The graph's window isn't displayed, so don't bother drawing
      * anything.  By getting this far, we've at least computed the
      * coordinates of the graph's new layout.  */
@@ -433,51 +433,50 @@ void GraphDisplay(Graph* graphPtr)
   /* Create a pixmap the size of the window for double buffering. */
   Pixmap drawable;
   if (ops->doubleBuffer)
-    drawable = Tk_GetPixmap(graphPtr->display_, Tk_WindowId(graphPtr->tkwin_), 
-			    graphPtr->width_, graphPtr->height_, Tk_Depth(graphPtr->tkwin_));
+    drawable = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), 
+			    width_, height_, Tk_Depth(tkwin_));
   else
-    drawable = Tk_WindowId(graphPtr->tkwin_);
+    drawable = Tk_WindowId(tkwin_);
 
   if (ops->backingStore) {
-    if ((graphPtr->cache_ == None) || 
-	(graphPtr->cacheWidth_ != graphPtr->width_) ||
-	(graphPtr->cacheHeight_ != graphPtr->height_)) {
-      if (graphPtr->cache_ != None)
-	Tk_FreePixmap(graphPtr->display_, graphPtr->cache_);
+    if ((cache_ == None) || 
+	(cacheWidth_ != width_) ||
+	(cacheHeight_ != height_)) {
+      if (cache_ != None)
+	Tk_FreePixmap(display_, cache_);
 
-      graphPtr->cache_ = Tk_GetPixmap(graphPtr->display_, 
-				     Tk_WindowId(graphPtr->tkwin_), 
-				     graphPtr->width_, graphPtr->height_, 
-				     Tk_Depth(graphPtr->tkwin_));
-      graphPtr->cacheWidth_  = graphPtr->width_;
-      graphPtr->cacheHeight_ = graphPtr->height_;
-      graphPtr->flags |= CACHE_DIRTY;
+      cache_ = Tk_GetPixmap(display_, 
+				     Tk_WindowId(tkwin_), 
+				     width_, height_, 
+				     Tk_Depth(tkwin_));
+      cacheWidth_  = width_;
+      cacheHeight_ = height_;
+      flags |= CACHE_DIRTY;
     }
   }
   if (ops->backingStore) {
-    if (graphPtr->flags & CACHE_DIRTY) {
-      DrawPlot(graphPtr, graphPtr->cache_);
-      graphPtr->flags &= ~CACHE_DIRTY;
+    if (flags & CACHE_DIRTY) {
+      drawPlot(cache_);
+      flags &= ~CACHE_DIRTY;
     }
 
     // Copy the pixmap to the one used for drawing the entire graph
-    XCopyArea(graphPtr->display_, graphPtr->cache_, drawable,
-	      graphPtr->drawGC_, 0, 0, Tk_Width(graphPtr->tkwin_),
-	      Tk_Height(graphPtr->tkwin_), 0, 0);
+    XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
+	      Tk_Height(tkwin_), 0, 0);
   }
   else
-    DrawPlot(graphPtr, drawable);
+    drawPlot(drawable);
 
   // Draw markers above elements
-  Blt::DrawMarkers(graphPtr, drawable, MARKER_ABOVE);
-  Blt_DrawActiveElements(graphPtr, drawable);
+  Blt::DrawMarkers(this, drawable, MARKER_ABOVE);
+  Blt_DrawActiveElements(this, drawable);
 
   // Don't draw legend in the plot area.
-  if (graphPtr->legend_->isRaised()) {
-    switch (graphPtr->legend_->position()) {
+  if (legend_->isRaised()) {
+    switch (legend_->position()) {
     case Legend::PLOT:
     case Legend::XY:
-      graphPtr->legend_->draw(drawable);
+      legend_->draw(drawable);
       break;
     default:
       break;
@@ -486,30 +485,83 @@ void GraphDisplay(Graph* graphPtr)
 
   // Draw 3D border just inside of the focus highlight ring
   if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT))
-    Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+    Tk_Draw3DRectangle(tkwin_, drawable, ops->normalBg, 
 		       ops->highlightWidth, ops->highlightWidth, 
-		       graphPtr->width_ - 2*ops->highlightWidth, 
-		       graphPtr->height_ - 2*ops->highlightWidth, 
+		       width_ - 2*ops->highlightWidth, 
+		       height_ - 2*ops->highlightWidth, 
 		       ops->borderWidth, ops->relief);
 
   // Draw focus highlight ring
-  if ((ops->highlightWidth > 0) && (graphPtr->flags & FOCUS)) {
+  if ((ops->highlightWidth > 0) && (flags & FOCUS)) {
     GC gc = Tk_GCForColor(ops->highlightColor, drawable);
-    Tk_DrawFocusHighlight(graphPtr->tkwin_, gc, ops->highlightWidth,
+    Tk_DrawFocusHighlight(tkwin_, gc, ops->highlightWidth,
 			  drawable);
   }
 
   // Disable crosshairs before redisplaying to the screen
-  Blt_DisableCrosshairs(graphPtr);
-  XCopyArea(graphPtr->display_, drawable, Tk_WindowId(tkwin),
-	    graphPtr->drawGC_, 0, 0, graphPtr->width_, graphPtr->height_, 0, 0);
-  Blt_EnableCrosshairs(graphPtr);
+  Blt_DisableCrosshairs(this);
+  XCopyArea(display_, drawable, Tk_WindowId(tkwin_),
+	    drawGC_, 0, 0, width_, height_, 0, 0);
+  Blt_EnableCrosshairs(this);
   if (ops->doubleBuffer)
-    Tk_FreePixmap(graphPtr->display_, drawable);
+    Tk_FreePixmap(display_, drawable);
 
-  graphPtr->flags &= ~MAP_WORLD;
-  graphPtr->flags &= ~REDRAW_WORLD;
-  UpdateMarginTraces(graphPtr);
+  flags &= ~MAP_WORLD;
+  flags &= ~REDRAW_WORLD;
+  UpdateMarginTraces(this);
+}
+
+void Graph::map()
+{
+  if (flags & RESET_AXES) {
+    Blt_ResetAxes(this);
+  }
+  if (flags & LAYOUT_NEEDED) {
+    Blt_LayoutGraph(this);
+    flags &= ~LAYOUT_NEEDED;
+  }
+
+  if ((vRange_ > 1) && (hRange_ > 1)) {
+    if (flags & MAP_WORLD)
+      Blt_MapAxes(this);
+
+    Blt_MapElements(this);
+    Blt::MapMarkers(this);
+    flags &= ~(MAP_ALL);
+  }
+}
+
+void Graph::drawPlot(Drawable drawable)
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+  DrawMargins(this, drawable);
+
+  // Draw the background of the plotting area with 3D border
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->plotBg,
+		     left_ - ops->plotBW, 
+		     top_ - ops->plotBW, 
+		     right_ - left_ + 1 + 2*ops->plotBW,
+		     bottom_ - top_  + 1 + 2*ops->plotBW, 
+		     ops->plotBW, ops->plotRelief);
+  
+  // Draw the elements, markers, legend, and axis limits
+  Blt_DrawAxes(this, drawable);
+  Blt_DrawGrids(this, drawable);
+  Blt::DrawMarkers(this, drawable, MARKER_UNDER);
+
+  if (!legend_->isRaised()) {
+    switch (legend_->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      legend_->draw(drawable);
+      break;
+    default:
+      break;
+    }
+  }
+
+  Blt_DrawAxisLimits(this, drawable);
+  Blt_DrawElements(this, drawable);
 }
 
 // Support
@@ -650,59 +702,6 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
 
   Blt_DrawAxes(graphPtr, drawable);
   graphPtr->flags &= ~DRAW_MARGINS;
-}
-
-static void DrawPlot(Graph* graphPtr, Drawable drawable)
-{
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  DrawMargins(graphPtr, drawable);
-
-  // Draw the background of the plotting area with 3D border
-  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->plotBg,
-		     graphPtr->left_ - ops->plotBW, 
-		     graphPtr->top_ - ops->plotBW, 
-		     graphPtr->right_ - graphPtr->left_ + 1 + 2*ops->plotBW,
-		     graphPtr->bottom_ - graphPtr->top_  + 1 + 2*ops->plotBW, 
-		     ops->plotBW, ops->plotRelief);
-  
-  // Draw the elements, markers, legend, and axis limits
-  Blt_DrawAxes(graphPtr, drawable);
-  Blt_DrawGrids(graphPtr, drawable);
-  Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
-
-  if (!graphPtr->legend_->isRaised()) {
-    switch (graphPtr->legend_->position()) {
-    case Legend::PLOT:
-    case Legend::XY:
-      graphPtr->legend_->draw(drawable);
-      break;
-    default:
-      break;
-    }
-  }
-
-  Blt_DrawAxisLimits(graphPtr, drawable);
-  Blt_DrawElements(graphPtr, drawable);
-}
-
-void Blt_MapGraph(Graph* graphPtr)
-{
-  if (graphPtr->flags & RESET_AXES) {
-    Blt_ResetAxes(graphPtr);
-  }
-  if (graphPtr->flags & LAYOUT_NEEDED) {
-    Blt_LayoutGraph(graphPtr);
-    graphPtr->flags &= ~LAYOUT_NEEDED;
-  }
-
-  if ((graphPtr->vRange_ > 1) && (graphPtr->hRange_ > 1)) {
-    if (graphPtr->flags & MAP_WORLD)
-      Blt_MapAxes(graphPtr);
-
-    Blt_MapElements(graphPtr);
-    Blt::MapMarkers(graphPtr);
-    graphPtr->flags &= ~(MAP_ALL);
-  }
 }
 
 static void UpdateMarginTraces(Graph* graphPtr)
