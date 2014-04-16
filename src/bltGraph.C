@@ -261,9 +261,9 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   cacheWidth_ =0;
   cacheHeight_ =0;
 
-  barGroups =NULL;
-  nBarGroups =0;
-  maxBarSetSize =0;
+  barGroups_ =NULL;
+  nBarGroups_ =0;
+  maxBarSetSize_ =0;
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
   ops->leftMargin.site = MARGIN_LEFT;
@@ -281,7 +281,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Tcl_InitHashTable(&markers.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&dataTables, TCL_STRING_KEYS);
   Tcl_InitHashTable(&penTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
+  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
   elements.displayList = Blt_Chain_Create();
   markers.displayList = Blt_Chain_Create();
   axes.displayList = Blt_Chain_Create();

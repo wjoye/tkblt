@@ -675,25 +675,23 @@ void FreeAxis(char* data)
 void Blt_ResetAxes(Graph* graphPtr)
 {
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  Blt_ChainLink link;
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch cursor;
-
+  
   /* FIXME: This should be called whenever the display list of
    *	      elements change. Maybe yet another flag INIT_STACKS to
    *	      indicate that the element display list has changed.
    *	      Needs to be done before the axis limits are set.
    */
   Blt_InitBarSetTable(graphPtr);
-  if ((gops->barMode == BARS_STACKED) && (graphPtr->nBarGroups > 0))
+  if ((gops->barMode == BARS_STACKED) && (graphPtr->nBarGroups_ > 0))
     Blt_ComputeBarStacks(graphPtr);
 
   /*
    * Step 1:  Reset all axes. Initialize the data limits of the axis to
    *		impossible values.
    */
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     axisPtr->min_ = axisPtr->valueRange_.min = DBL_MAX;
     axisPtr->max_ = axisPtr->valueRange_.max = -DBL_MAX;
@@ -705,8 +703,8 @@ void Blt_ResetAxes(Graph* graphPtr)
    *		will be the axis limits if the user doesn't override them 
    *		with -min and -max options.
    */
-  for (link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
-       link != NULL; link = Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
     Region2d exts;
 
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -719,23 +717,21 @@ void Blt_ResetAxes(Graph* graphPtr)
    * Step 3:  Now that we know the range of data values for each axis,
    *		set axis limits and compute a sweep to generate tick values.
    */
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    double min, max;
-
+  for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&graphPtr->axes.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     axisPtr->fixRange();
 
     /* Calculate min/max tick (major/minor) layouts */
-    min = axisPtr->min_;
-    max = axisPtr->max_;
-    if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_)) {
+    double min = axisPtr->min_;
+    double max = axisPtr->max_;
+    if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_))
       min = axisPtr->scrollMin_;
-    }
-    if ((!isnan(axisPtr->scrollMax_)) && (max > axisPtr->scrollMax_)) {
+
+    if ((!isnan(axisPtr->scrollMax_)) && (max > axisPtr->scrollMax_))
       max = axisPtr->scrollMax_;
-    }
+
     if (ops->logScale)
       axisPtr->logScale(min, max);
     else

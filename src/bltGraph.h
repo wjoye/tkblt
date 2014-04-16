@@ -189,10 +189,10 @@ class Graph {
   short int cacheHeight_;
 
   // barchart specific information
-  BarGroup *barGroups;
-  int nBarGroups;
-  Tcl_HashTable setTable;
-  int maxBarSetSize;
+  BarGroup *barGroups_;
+  int nBarGroups_;
+  Tcl_HashTable setTable_;
+  int maxBarSetSize_;
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
