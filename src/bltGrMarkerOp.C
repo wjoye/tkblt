@@ -215,7 +215,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   ClientData rr = Blt::MakeMarkerTag(graphPtr, Tcl_GetString(objv[3]));
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, rr, 
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, rr, 
 				      objc - 4, objv + 4);
 }
 
@@ -330,7 +330,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   const char* string = Tcl_GetString(objv[3]);
   if (!strcmp(string, "current")) {
-    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable);
+    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable_);
 
     if (markerPtr == NULL)
       return TCL_OK;

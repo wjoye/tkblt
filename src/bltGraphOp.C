@@ -355,8 +355,8 @@ static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
   /*  Pick the first pair of axes */
   Axis2d axes;
-  axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
-  axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
+  axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
+  axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
   Point2d point = Blt_InvMap2D(graphPtr, x, y, &axes);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
@@ -384,8 +384,8 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
    * not be the what the user wants).
    */
   Axis2d axes;
-  axes.x = Blt_GetFirstAxis(graphPtr->axisChain[0]);
-  axes.y = Blt_GetFirstAxis(graphPtr->axisChain[1]);
+  axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
+  axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
 
   Point2d point = Blt_Map2D(graphPtr, x, y, &axes);
 

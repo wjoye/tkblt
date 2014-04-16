@@ -529,16 +529,16 @@ static void AdjustAxisPointers(Graph* graphPtr)
 {
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   if (ops->inverted) {
-    ops->leftMargin.axes   = graphPtr->axisChain[0];
-    ops->bottomMargin.axes = graphPtr->axisChain[1];
-    ops->rightMargin.axes  = graphPtr->axisChain[2];
-    ops->topMargin.axes    = graphPtr->axisChain[3];
+    ops->leftMargin.axes   = graphPtr->axisChain_[0];
+    ops->bottomMargin.axes = graphPtr->axisChain_[1];
+    ops->rightMargin.axes  = graphPtr->axisChain_[2];
+    ops->topMargin.axes    = graphPtr->axisChain_[3];
   }
   else {
-    ops->leftMargin.axes   = graphPtr->axisChain[1];
-    ops->bottomMargin.axes = graphPtr->axisChain[0];
-    ops->rightMargin.axes  = graphPtr->axisChain[3];
-    ops->topMargin.axes    = graphPtr->axisChain[2];
+    ops->leftMargin.axes   = graphPtr->axisChain_[1];
+    ops->bottomMargin.axes = graphPtr->axisChain_[0];
+    ops->rightMargin.axes  = graphPtr->axisChain_[3];
+    ops->topMargin.axes    = graphPtr->axisChain_[2];
   }
 }
 

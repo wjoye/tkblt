@@ -637,7 +637,7 @@ void Blt_DestroyAxes(Graph* graphPtr)
   Tcl_DeleteHashTable(&graphPtr->axes_.table);
 
   for (int ii=0; ii<4; ii++)
-    Blt_Chain_Destroy(graphPtr->axisChain[ii]);
+    Blt_Chain_Destroy(graphPtr->axisChain_[ii]);
 
   Tcl_DeleteHashTable(&graphPtr->axes_.tagTable);
   Blt_Chain_Destroy(graphPtr->axes_.displayList);

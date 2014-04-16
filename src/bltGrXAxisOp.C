@@ -87,7 +87,7 @@ int Blt_CreateAxes(Graph* graphPtr)
     if ((axisPtr->margin_ == MARGIN_RIGHT) || (axisPtr->margin_ == MARGIN_TOP))
       ops->hide = 1;
 
-    graphPtr->axisChain[ii] = chain;
+    graphPtr->axisChain_[ii] = chain;
     axisPtr->link = Blt_Chain_Append(chain, axisPtr);
     axisPtr->chain = chain;
   }

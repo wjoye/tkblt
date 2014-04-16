@@ -87,7 +87,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
 {
   int isNew;
   Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->penTable, penName, &isNew);
+    Tcl_CreateHashEntry(&graphPtr->penTable_, penName, &isNew);
   if (!isNew) {
     Tcl_AppendResult(interp, "pen \"", penName, 
 		     "\" already exists in \"", Tk_PathName(graphPtr->tkwin_),
@@ -208,7 +208,7 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable, &iter);
+    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
       if ((penPtr->flags & DELETE_PENDING) == 0)
@@ -218,7 +218,7 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
   } 
   else {
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable, &iter);
+    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
 	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
       if ((penPtr->flags & DELETE_PENDING) == 0) {
@@ -277,12 +277,12 @@ int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp,
 void Blt_DestroyPens(Graph* graphPtr)
 {
   Tcl_HashSearch iter;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable, &iter);
+  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
     Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
     delete penPtr;
   }
-  Tcl_DeleteHashTable(&graphPtr->penTable);
+  Tcl_DeleteHashTable(&graphPtr->penTable_);
 }
 
 void Blt_FreePen(Pen* penPtr)
@@ -299,7 +299,7 @@ int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 {
   Pen* penPtr = NULL;
   const char *name = Tcl_GetString(objPtr);
-  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
+  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable_, name);
   if (hPtr != NULL) {
     penPtr = (Pen*)Tcl_GetHashValue(hPtr);
     if (penPtr->flags & DELETE_PENDING)
@@ -332,7 +332,7 @@ static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 {
   Pen* penPtr = NULL;
   const char *name = Tcl_GetString(objPtr);
-  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable, name);
+  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable_, name);
   if (hPtr != NULL) {
     penPtr = (Pen*)Tcl_GetHashValue(hPtr);
     if (penPtr->flags & DELETE_PENDING)

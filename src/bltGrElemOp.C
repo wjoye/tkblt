@@ -147,7 +147,7 @@ static void DestroyElement(Element* elemPtr)
 {
   Graph* graphPtr = elemPtr->graphPtr();
 
-  Blt_DeleteBindings(graphPtr->bindTable, elemPtr);
+  Blt_DeleteBindings(graphPtr->bindTable_, elemPtr);
   graphPtr->legend_->removeElement(elemPtr);
 
   if (elemPtr->link)
@@ -269,7 +269,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
@@ -407,7 +407,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   char *string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
-    Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable);
+    Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable_);
     if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0))
 	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
   }

@@ -266,8 +266,8 @@ Axis::~Axis()
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (graphPtr_->bindTable)
-    Blt_DeleteBindings(graphPtr_->bindTable, this);
+  if (graphPtr_->bindTable_)
+    Blt_DeleteBindings(graphPtr_->bindTable_, this);
 
   if (link)
     Blt_Chain_DeleteLink(chain, link);
