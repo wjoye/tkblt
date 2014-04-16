@@ -1334,24 +1334,24 @@ void Blt_LayoutGraph(Graph* graphPtr)
     width - (inset2 + left + right); /* Plot width. */
   plotHeight = (gops->reqPlotHeight > 0) ? gops->reqPlotHeight : 
     height - (inset2 + top + bottom); /* Plot height. */
-  graphPtr->legend->map(plotWidth, plotHeight);
+  graphPtr->legend_->map(plotWidth, plotHeight);
 
   /* 
    * Step 2:  Add the legend to the appropiate margin. 
    */
-  if (!graphPtr->legend->isHidden()) {
-    switch (graphPtr->legend->position()) {
+  if (!graphPtr->legend_->isHidden()) {
+    switch (graphPtr->legend_->position()) {
     case Legend::RIGHT:
-      right += graphPtr->legend->width() + 2;
+      right += graphPtr->legend_->width() + 2;
       break;
     case Legend::LEFT:
-      left += graphPtr->legend->width() + 2;
+      left += graphPtr->legend_->width() + 2;
       break;
     case Legend::TOP:
-      top += graphPtr->legend->height() + 2;
+      top += graphPtr->legend_->height() + 2;
       break;
     case Legend::BOTTOM:
-      bottom += graphPtr->legend->height() + 2;
+      bottom += graphPtr->legend_->height() + 2;
       break;
     case Legend::XY:
     case Legend::PLOT:

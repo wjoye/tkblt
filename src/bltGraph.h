@@ -160,9 +160,9 @@ class Graph {
   Blt_BindTable bindTable;
   Blt_Chain axisChain[4];
 
-  Legend *legend;
-  Crosshairs *crosshairs;
-  PageSetup *pageSetup;
+  Legend* legend_;
+  Crosshairs* crosshairs_;
+  PageSetup* pageSetup_;
 
   int inset;
   short int titleX;

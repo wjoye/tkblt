@@ -551,7 +551,7 @@ void Legend::print(Blt_Ps ps)
   int height = height_ - 2*ops->yPad;
 
   Blt_Ps_Append(ps, "% Legend\n");
-  if (graphPtr_->pageSetup->decorations) {
+  if (graphPtr_->pageSetup_->decorations) {
     if (ops->normalBg)
       Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
@@ -1050,7 +1050,7 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 				ClientData *contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
-  Legend* legendPtr = graphPtr->legend;
+  Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
   int w = legendPtr->width();

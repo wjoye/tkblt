@@ -234,8 +234,8 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   flags = MAP_WORLD | REDRAW_WORLD;
   nextMarkerId = 1;
 
-  legend = new Legend(this);
-  crosshairs = new Crosshairs(this);
+  legend_ = new Legend(this);
+  crosshairs_ = new Crosshairs(this);
 
   inset =0;
   titleX =0;
@@ -329,12 +329,12 @@ Graph::~Graph()
   GraphOptions* ops = (GraphOptions*)ops_;
 
   Blt::DestroyMarkers(this);
-
-  if (crosshairs)
-    delete crosshairs;
   Blt_DestroyElements(this);  // must come before legend and others
-  if (legend)
-    delete legend;
+
+  if (crosshairs_)
+    delete crosshairs_;
+  if (legend_)
+    delete legend_;
 
   Blt_DestroyAxes(this);
   Blt_DestroyPens(this);
@@ -473,11 +473,11 @@ void GraphDisplay(Graph* graphPtr)
   Blt_DrawActiveElements(graphPtr, drawable);
 
   // Don't draw legend in the plot area.
-  if (graphPtr->legend->isRaised()) {
-    switch (graphPtr->legend->position()) {
+  if (graphPtr->legend_->isRaised()) {
+    switch (graphPtr->legend_->position()) {
     case Legend::PLOT:
     case Legend::XY:
-      graphPtr->legend->draw(drawable);
+      graphPtr->legend_->draw(drawable);
       break;
     default:
       break;
@@ -633,12 +633,12 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
 		       x, y, w, h, ops->plotBW, ops->plotRelief);
   }
   
-  switch (graphPtr->legend->position()) {
+  switch (graphPtr->legend_->position()) {
   case Legend::TOP:
   case Legend::BOTTOM:
   case Legend::RIGHT:
   case Legend::LEFT:
-    graphPtr->legend->draw(drawable);
+    graphPtr->legend_->draw(drawable);
     break;
   default:
     break;
@@ -670,11 +670,11 @@ static void DrawPlot(Graph* graphPtr, Drawable drawable)
   Blt_DrawGrids(graphPtr, drawable);
   Blt::DrawMarkers(graphPtr, drawable, MARKER_UNDER);
 
-  if (!graphPtr->legend->isRaised()) {
-    switch (graphPtr->legend->position()) {
+  if (!graphPtr->legend_->isRaised()) {
+    switch (graphPtr->legend_->position()) {
     case Legend::PLOT:
     case Legend::XY:
-      graphPtr->legend->draw(drawable);
+      graphPtr->legend_->draw(drawable);
       break;
     default:
       break;
@@ -754,7 +754,7 @@ void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
 void Blt_ReconfigureGraph(Graph* graphPtr)	
 {
   graphPtr->configure();
-  graphPtr->legend->configure();
+  graphPtr->legend_->configure();
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);
   Blt::ConfigureMarkers(graphPtr);
