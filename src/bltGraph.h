@@ -228,6 +228,7 @@ class Graph {
   void disableCrosshairs();
 
   void resetAxes();
+  void printAxes(Blt_Ps);
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);

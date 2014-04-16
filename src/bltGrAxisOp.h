@@ -36,19 +36,18 @@ extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 extern Tcl_FreeProc FreeAxis;
 extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
 			  Axis **axisPtrPtr);
+extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
+			    Axis2d *pairPtr);
+extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 
+			 Axis2d *pairPtr);
 
 extern void Blt_AdjustAxisPointers(Graph* graphPtr);
 extern void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable);
 extern void Blt_DrawGrids(Graph* graphPtr, Drawable drawable);
 extern void Blt_UpdateAxisBackgrounds(Graph* graphPtr);
-extern void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_AxisLimitsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 extern Axis *Blt_NearestAxis(Graph* graphPtr, int x, int y);
-extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
-			    Axis2d *pairPtr);
-extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 
-			 Axis2d *pairPtr);
 
 #endif

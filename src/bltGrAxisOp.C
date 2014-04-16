@@ -874,24 +874,6 @@ void Blt_DrawGrids(Graph* graphPtr, Drawable drawable)
   }
 }
 
-void Blt_AxesToPostScript(Graph* graphPtr, Blt_Ps ps) 
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  Margin *mp, *mend;
-
-  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
-    Blt_ChainLink link;
-
-    for (link = Blt_Chain_FirstLink(mp->axes); link != NULL; 
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	axisPtr->print(ps);
-    }
-  }
-}
-
 void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
 {
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;

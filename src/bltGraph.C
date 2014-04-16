@@ -1133,3 +1133,19 @@ void Graph::resetAxes()
   flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 
+void Graph::printAxes(Blt_Ps ps) 
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+
+  Margin *mp, *mend;
+  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
+	 link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
+	axisPtr->print(ps);
+    }
+  }
+}
+
