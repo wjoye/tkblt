@@ -196,6 +196,12 @@ class Graph {
  protected:
   void drawPlot(Drawable);
   void drawMargins(Drawable);
+  void updateMarginTraces();
+
+  void destroyElements();
+  void drawElements(Drawable);
+  void mapElements();
+  void configureElements();
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
@@ -207,6 +213,7 @@ class Graph {
   void map();
   void eventuallyRedraw();
   void extents(Region2d*);
+  void reconfigure();
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);

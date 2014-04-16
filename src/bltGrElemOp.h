@@ -34,10 +34,7 @@ extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 			 Tcl_Obj* const objv[], ClassId classId);
 extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
 			  Tcl_Obj *objPtr, Element **elemPtrPtr);
-extern void Blt_DestroyElements(Graph* graphPtr);
-extern void Blt_DrawElements(Graph* graphPtr, Drawable drawable);
 extern void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable);
-extern void Blt_MapElements(Graph* graphPtr);
 extern void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps);
 

@@ -61,7 +61,6 @@ extern void Blt_LayoutGraph(Graph* graphPtr);
 static Blt_BindPickProc PickEntry;
 
 static void AdjustAxisPointers(Graph* graphPtr);
-static void UpdateMarginTraces(Graph* graphPtr);
 
 // OptionSpecs
 
@@ -328,7 +327,7 @@ Graph::~Graph()
   GraphOptions* ops = (GraphOptions*)ops_;
 
   Blt::DestroyMarkers(this);
-  Blt_DestroyElements(this);  // must come before legend and others
+  destroyElements();  // must come before legend and others
 
   if (crosshairs_)
     delete crosshairs_;
@@ -507,7 +506,7 @@ void Graph::display()
 
   flags &= ~MAP_WORLD;
   flags &= ~REDRAW_WORLD;
-  UpdateMarginTraces(this);
+  updateMarginTraces();
 }
 
 void Graph::map()
@@ -524,7 +523,7 @@ void Graph::map()
     if (flags & MAP_WORLD)
       Blt_MapAxes(this);
 
-    Blt_MapElements(this);
+    mapElements();
     Blt::MapMarkers(this);
     flags &= ~(MAP_ALL);
   }
@@ -560,7 +559,7 @@ void Graph::drawPlot(Drawable drawable)
   }
 
   Blt_DrawAxisLimits(this, drawable);
-  Blt_DrawElements(this, drawable);
+  drawElements(drawable);
 }
 
 /*
@@ -711,39 +710,37 @@ void Graph::extents(Region2d* regionPtr)
   regionPtr->bottom = (double)(vOffset_ + vRange_ + ops->yPad);
 }
 
-// Support
-
-static void UpdateMarginTraces(Graph* graphPtr)
+void Graph::updateMarginTraces()
 {
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
+
   Margin* marginPtr;
   Margin* endPtr;
-
   for (marginPtr = ops->margins, endPtr = marginPtr + 4; 
        marginPtr < endPtr; marginPtr++) {
-    if (marginPtr->varName != NULL) { /* Trigger variable traces */
+    if (marginPtr->varName) {
       int size;
-
-      if ((marginPtr->site == MARGIN_LEFT) || 
-	  (marginPtr->site == MARGIN_RIGHT)) {
+      if ((marginPtr->site == MARGIN_LEFT) || (marginPtr->site == MARGIN_RIGHT))
 	size = marginPtr->width;
-      } else {
+      else
 	size = marginPtr->height;
-      }
-      Tcl_SetVar(graphPtr->interp_, marginPtr->varName, Blt_Itoa(size), 
+
+      Tcl_SetVar(interp_, marginPtr->varName, Blt_Itoa(size), 
 		 TCL_GLOBAL_ONLY);
     }
   }
 }
 
-void Blt_ReconfigureGraph(Graph* graphPtr)	
+void Graph::reconfigure()	
 {
-  graphPtr->configure();
-  graphPtr->legend_->configure();
-  //  Blt_ConfigureElements(graphPtr);
-  Blt_ConfigureAxes(graphPtr);
-  Blt::ConfigureMarkers(graphPtr);
+  configure();
+  legend_->configure();
+  configureElements();
+  Blt_ConfigureAxes(this);
+  Blt::ConfigureMarkers(this);
 }
+
+// Support
 
 void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)

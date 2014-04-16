@@ -596,6 +596,107 @@ int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 }
 
+// Graph
+
+void Graph::destroyElements()
+{
+  Tcl_HashEntry *hPtr;
+  Tcl_HashSearch iter;
+  for (hPtr = Tcl_FirstHashEntry(&elements_.table, &iter);
+       hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+    Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
+    if (elemPtr)
+      DestroyElement(elemPtr);
+  }
+  Tcl_DeleteHashTable(&elements_.table);
+  Tcl_DeleteHashTable(&elements_.tagTable);
+  Blt_Chain_Destroy(elements_.displayList);
+}
+
+void Graph::configureElements()
+{
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(elements_.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    elemPtr->configure();
+  }
+}
+
+void Graph::mapElements()
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  if (gops->barMode != BARS_INFRONT)
+    Blt_ResetBarGroups(this);
+
+  for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
+       link != NULL; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!elemPtr->link || (elemPtr->flags & DELETE_PENDING))
+      continue;
+
+    if ((flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
+      elemPtr->map();
+      elemPtr->flags &= ~MAP_ITEM;
+    }
+  }
+}
+
+void Graph::drawElements(Drawable drawable)
+{
+  // Draw with respect to the stacking order
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
+      elemPtr->drawNormal(drawable);
+  }
+}
+
+void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
+{
+  Blt_ChainLink link;
+
+  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
+       link != NULL; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide())
+      elemPtr->drawActive(drawable);
+  }
+}
+
+void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
+{
+  Blt_ChainLink link;
+
+  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
+       link != NULL; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide()) {
+      continue;
+    }
+    /* Comment the PostScript to indicate the start of the element */
+    Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->name());
+    elemPtr->printNormal(ps);
+  }
+}
+
+void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
+{
+  Blt_ChainLink link;
+
+  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
+       link != NULL; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (!(elemPtr->flags & DELETE_PENDING) && 
+	(elemPtr->flags & ACTIVE) && 
+	!elemPtr->hide()) {
+      Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", elemPtr->name());
+      elemPtr->printActive(ps);
+    }
+  }
+}
+
 // Support
 
 static Tcl_Obj *DisplayListObj(Graph* graphPtr)
@@ -650,108 +751,6 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   }
   *elemPtrPtr = (Element*)Tcl_GetHashValue(hPtr);
   return TCL_OK;
-}
-
-void Blt_DestroyElements(Graph* graphPtr)
-{
-  Tcl_HashEntry *hPtr;
-  Tcl_HashSearch iter;
-
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.table, &iter);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-    Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-    if (elemPtr)
-      DestroyElement(elemPtr);
-  }
-  Tcl_DeleteHashTable(&graphPtr->elements_.table);
-  Tcl_DeleteHashTable(&graphPtr->elements_.tagTable);
-  Blt_Chain_Destroy(graphPtr->elements_.displayList);
-}
-
-void Blt_ConfigureElements(Graph* graphPtr)
-{
-  for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    elemPtr->configure();
-  }
-}
-
-void Blt_MapElements(Graph* graphPtr)
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  if (gops->barMode != BARS_INFRONT)
-    Blt_ResetBarGroups(graphPtr);
-
-  for (Blt_ChainLink link =Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!elemPtr->link || (elemPtr->flags & DELETE_PENDING))
-      continue;
-
-    if ((graphPtr->flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
-      elemPtr->map();
-      elemPtr->flags &= ~MAP_ITEM;
-    }
-  }
-}
-
-void Blt_DrawElements(Graph* graphPtr, Drawable drawable)
-{
-  Blt_ChainLink link;
-
-  /* Draw with respect to the stacking order. */
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide())
-      elemPtr->drawNormal(drawable);
-  }
-}
-
-void Blt_DrawActiveElements(Graph* graphPtr, Drawable drawable)
-{
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && (elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide())
-      elemPtr->drawActive(drawable);
-  }
-}
-
-void Blt_ElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
-{
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && !elemPtr->hide()) {
-      continue;
-    }
-    /* Comment the PostScript to indicate the start of the element */
-    Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", elemPtr->name());
-    elemPtr->printNormal(ps);
-  }
-}
-
-void Blt_ActiveElementsToPostScript(Graph* graphPtr, Blt_Ps ps)
-{
-  Blt_ChainLink link;
-
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (!(elemPtr->flags & DELETE_PENDING) && 
-	(elemPtr->flags & ACTIVE) && 
-	!elemPtr->hide()) {
-      Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", elemPtr->name());
-      elemPtr->printActive(ps);
-    }
-  }
 }
 
 ClientData Blt_MakeElementTag(Graph* graphPtr, const char *tagName)
