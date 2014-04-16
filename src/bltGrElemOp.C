@@ -81,7 +81,7 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -248,7 +248,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
   elemPtr->activeIndices_ = indices;
 
   elemPtr->flags |= ACTIVE | ACTIVE_PENDING;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -366,8 +366,7 @@ static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
     elemPtr->nActiveIndices_ = 0;
     elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
   }
-
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -388,7 +387,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   graphPtr->flags |= RESET_WORLD;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -439,7 +438,7 @@ static int LowerOp(Graph* graphPtr, Tcl_Interp* interp,
   Blt_Chain_Destroy(chain);
 
   graphPtr->flags |= RESET_WORLD;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
   return TCL_OK;
@@ -501,7 +500,7 @@ static int RaiseOp(Graph* graphPtr, Tcl_Interp* interp,
   Blt_Chain_Destroy(chain);
 
   graphPtr->flags |= RESET_WORLD;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
   return TCL_OK;
@@ -542,7 +541,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   graphPtr->flags |= RESET_WORLD;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
   return TCL_OK;

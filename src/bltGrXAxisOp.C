@@ -174,7 +174,7 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
   /* When any axis changes, we need to layout the entire graph.  */
   graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }

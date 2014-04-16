@@ -431,7 +431,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   elemPtr->flags |= MAP_ITEM;
   if (elemPtr->link && !(elemPtr->flags & DELETE_PENDING)) {
     graphPtr->flags |= CACHE_DIRTY;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
   }
 }
 

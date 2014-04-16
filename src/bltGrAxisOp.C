@@ -82,7 +82,7 @@ static int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
     graphPtr->flags |= REDRAW_WORLD | MAP_WORLD | RESET_AXES | CACHE_DIRTY;
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -155,7 +155,7 @@ int AxisActivateOp(Tcl_Interp* interp, Axis* axisPtr,
 
   if (!ops->hide && axisPtr->use_) {
     graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
   }
 
   return TCL_OK;
@@ -330,7 +330,7 @@ int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr,
     ops->reqMax = EXP10(ops->reqMax);
   }
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -447,7 +447,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   axisPtr->flags |= DELETE_PENDING;
   if (axisPtr->refCount_ == 0) {
     Tcl_EventuallyFree(axisPtr, FreeAxis);
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
   }
 
   return TCL_OK;

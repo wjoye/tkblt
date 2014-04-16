@@ -65,7 +65,7 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
     graphPtr->flags |= CACHE_DIRTY;
     if (penPtr->configure() != TCL_OK)
       return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -117,7 +117,7 @@ int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   graphPtr->flags |= CACHE_DIRTY;
-  Blt_EventuallyRedrawGraph(graphPtr);
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }

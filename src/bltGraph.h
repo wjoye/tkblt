@@ -195,7 +195,7 @@ class Graph {
 
  protected:
   void drawPlot(Drawable);
-
+  void drawMargins(Drawable);
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
@@ -205,11 +205,11 @@ class Graph {
   void configure();
   void display();
   void map();
+  void eventuallyRedraw();
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);
 extern void Blt_GraphExtents(Graph* graphPtr, Region2d *extsPtr);
-extern void Blt_EventuallyRedrawGraph(Graph* graphPtr);
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern MakeTagProc Blt_MakeElementTag;

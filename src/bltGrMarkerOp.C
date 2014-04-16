@@ -76,7 +76,7 @@ static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
     graphPtr->flags |= CACHE_DIRTY;
     if (markerPtr->configure() != TCL_OK)
       return TCL_ERROR;
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -244,8 +244,8 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
     markerPtr->flags |= DELETE_PENDING;
     Tcl_EventuallyFree(markerPtr, FreeMarker);
   }
+  graphPtr->eventuallyRedraw();
 
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 
@@ -397,8 +397,8 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
 
   if (ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
+    graphPtr->eventuallyRedraw();
 
-  Blt_EventuallyRedrawGraph(graphPtr);
   return TCL_OK;
 }
 

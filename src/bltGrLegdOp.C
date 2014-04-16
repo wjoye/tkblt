@@ -65,7 +65,7 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     graphPtr->flags |= mask;
     graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
     legendPtr->configure();
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }

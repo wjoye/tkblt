@@ -62,7 +62,6 @@ static Blt_BindPickProc PickEntry;
 
 static void AdjustAxisPointers(Graph* graphPtr);
 static void UpdateMarginTraces(Graph* graphPtr);
-static void DrawMargins(Graph*, Drawable);
 
 // OptionSpecs
 
@@ -534,7 +533,7 @@ void Graph::map()
 void Graph::drawPlot(Drawable drawable)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  DrawMargins(this, drawable);
+  drawMargins(drawable);
 
   // Draw the background of the plotting area with 3D border
   Tk_Fill3DRectangle(tkwin_, drawable, ops->plotBg,
@@ -562,36 +561,6 @@ void Graph::drawPlot(Drawable drawable)
 
   Blt_DrawAxisLimits(this, drawable);
   Blt_DrawElements(this, drawable);
-}
-
-// Support
-
-void Blt_EventuallyRedrawGraph(Graph* graphPtr) 
-{
-  if ((graphPtr->flags & GRAPH_DELETED) || !Tk_IsMapped(graphPtr->tkwin_))
-    return;
-
-  if (!(graphPtr->flags & REDRAW_PENDING)) {
-    graphPtr->flags |= REDRAW_PENDING;
-    Tcl_DoWhenIdle(DisplayGraph, graphPtr);
-  }
-}
-
-static void AdjustAxisPointers(Graph* graphPtr) 
-{
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  if (ops->inverted) {
-    ops->leftMargin.axes   = graphPtr->axisChain_[0];
-    ops->bottomMargin.axes = graphPtr->axisChain_[1];
-    ops->rightMargin.axes  = graphPtr->axisChain_[2];
-    ops->topMargin.axes    = graphPtr->axisChain_[3];
-  }
-  else {
-    ops->leftMargin.axes   = graphPtr->axisChain_[1];
-    ops->bottomMargin.axes = graphPtr->axisChain_[0];
-    ops->rightMargin.axes  = graphPtr->axisChain_[3];
-    ops->topMargin.axes    = graphPtr->axisChain_[2];
-  }
 }
 
 /*
@@ -639,9 +608,9 @@ static void AdjustAxisPointers(Graph* graphPtr)
  *
  *---------------------------------------------------------------------------
  */
-static void DrawMargins(Graph* graphPtr, Drawable drawable)
+void Graph::drawMargins(Drawable drawable)
 {
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
   XRectangle rects[4];
 
   /*
@@ -649,26 +618,26 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
    * surface. This clears the surrounding area and clips the plot.
    */
   rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-  rects[0].width = rects[3].width = (short int)graphPtr->width_;
-  rects[0].height = (short int)graphPtr->top_;
-  rects[3].y = graphPtr->bottom_;
-  rects[3].height = graphPtr->height_ - graphPtr->bottom_;
-  rects[2].y = rects[1].y = graphPtr->top_;
-  rects[1].width = graphPtr->left_;
-  rects[2].height = rects[1].height = graphPtr->bottom_ - graphPtr->top_;
-  rects[2].x = graphPtr->right_;
-  rects[2].width = graphPtr->width_ - graphPtr->right_;
+  rects[0].width = rects[3].width = (short int)width_;
+  rects[0].height = (short int)top_;
+  rects[3].y = bottom_;
+  rects[3].height = height_ - bottom_;
+  rects[2].y = rects[1].y = top_;
+  rects[1].width = left_;
+  rects[2].height = rects[1].height = bottom_ - top_;
+  rects[2].x = right_;
+  rects[2].width = width_ - right_;
 
-  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
 		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
 		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
 		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
 		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
 		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
 		     0, TK_RELIEF_FLAT);
 
@@ -677,32 +646,62 @@ static void DrawMargins(Graph* graphPtr, Drawable drawable)
   if (ops->plotBW > 0) {
     int x, y, w, h;
 
-    x = graphPtr->left_ - ops->plotBW;
-    y = graphPtr->top_ - ops->plotBW;
-    w = (graphPtr->right_ - graphPtr->left_) + (2*ops->plotBW);
-    h = (graphPtr->bottom_ - graphPtr->top_) + (2*ops->plotBW);
-    Tk_Draw3DRectangle(graphPtr->tkwin_, drawable, ops->normalBg, 
+    x = left_ - ops->plotBW;
+    y = top_ - ops->plotBW;
+    w = (right_ - left_) + (2*ops->plotBW);
+    h = (bottom_ - top_) + (2*ops->plotBW);
+    Tk_Draw3DRectangle(tkwin_, drawable, ops->normalBg, 
 		       x, y, w, h, ops->plotBW, ops->plotRelief);
   }
   
-  switch (graphPtr->legend_->position()) {
+  switch (legend_->position()) {
   case Legend::TOP:
   case Legend::BOTTOM:
   case Legend::RIGHT:
   case Legend::LEFT:
-    graphPtr->legend_->draw(drawable);
+    legend_->draw(drawable);
     break;
   default:
     break;
   }
 
   if (ops->title != NULL)
-    Blt_DrawText(graphPtr->tkwin_, drawable, ops->title,
-		 &ops->titleTextStyle, graphPtr->titleX_, graphPtr->titleY_);
+    Blt_DrawText(tkwin_, drawable, ops->title,
+		 &ops->titleTextStyle, titleX_, titleY_);
 
-  Blt_DrawAxes(graphPtr, drawable);
-  graphPtr->flags &= ~DRAW_MARGINS;
+  Blt_DrawAxes(this, drawable);
+  flags &= ~DRAW_MARGINS;
 }
+
+void Graph::eventuallyRedraw() 
+{
+  if ((flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin_))
+    return;
+
+  if (!(flags & REDRAW_PENDING)) {
+    flags |= REDRAW_PENDING;
+    Tcl_DoWhenIdle(DisplayGraph, this);
+  }
+}
+
+static void AdjustAxisPointers(Graph* graphPtr) 
+{
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  if (ops->inverted) {
+    ops->leftMargin.axes   = graphPtr->axisChain_[0];
+    ops->bottomMargin.axes = graphPtr->axisChain_[1];
+    ops->rightMargin.axes  = graphPtr->axisChain_[2];
+    ops->topMargin.axes    = graphPtr->axisChain_[3];
+  }
+  else {
+    ops->leftMargin.axes   = graphPtr->axisChain_[1];
+    ops->bottomMargin.axes = graphPtr->axisChain_[0];
+    ops->rightMargin.axes  = graphPtr->axisChain_[3];
+    ops->topMargin.axes    = graphPtr->axisChain_[2];
+  }
+}
+
+// Support
 
 static void UpdateMarginTraces(Graph* graphPtr)
 {

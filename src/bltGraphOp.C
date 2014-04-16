@@ -122,7 +122,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
     graphPtr->flags |= mask;
     graphPtr->configure();
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -451,20 +451,22 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
   if (eventPtr->type == Expose) {
     if (eventPtr->xexpose.count == 0) {
       graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
+      graphPtr->eventuallyRedraw();
     }
 
-  } else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+  }
+  else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
     if (eventPtr->xfocus.detail != NotifyInferior) {
       if (eventPtr->type == FocusIn)
 	graphPtr->flags |= FOCUS;
       else
 	graphPtr->flags &= ~FOCUS;
       graphPtr->flags |= REDRAW_WORLD;
-      Blt_EventuallyRedrawGraph(graphPtr);
+      graphPtr->eventuallyRedraw();
     }
 
-  } else if (eventPtr->type == DestroyNotify) {
+  }
+  else if (eventPtr->type == DestroyNotify) {
     if (!(graphPtr->flags & GRAPH_DELETED)) {
       graphPtr->flags |= GRAPH_DELETED;
       Tcl_DeleteCommandFromToken(graphPtr->interp_, graphPtr->cmdToken_);
@@ -472,9 +474,10 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 	Tcl_CancelIdleCall(DisplayGraph, graphPtr);
       Tcl_EventuallyFree(graphPtr, DestroyGraph);
     }
-  } else if (eventPtr->type == ConfigureNotify) {
+  }
+  else if (eventPtr->type == ConfigureNotify) {
     graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
-    Blt_EventuallyRedrawGraph(graphPtr);
+    graphPtr->eventuallyRedraw();
   }
 }
 
