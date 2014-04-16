@@ -101,7 +101,7 @@ static int BindOp(Tcl_Interp* interp, Axis* axisPtr,
 {
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeAxisTag(graphPtr, axisPtr->name()), objc-3, objv+3);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, Blt_MakeAxisTag(graphPtr, axisPtr->name()), objc-3, objv+3);
 }
           
 static int UseOp(Tcl_Interp* interp, Axis* axisPtr, 

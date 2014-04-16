@@ -417,7 +417,7 @@ static int BindOp(Tcl_Interp* interp, Graph* graphPtr, int objc,
     return TCL_OK;
   }
   else
-    return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable, Blt_MakeAxisTag(graphPtr, Tcl_GetString(objv[3])), objc-4, objv+4);
+    return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, Blt_MakeAxisTag(graphPtr, Tcl_GetString(objv[3])), objc-4, objv+4);
 }
 
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
@@ -467,7 +467,7 @@ static int FocusOp(Tcl_Interp* interp, Graph* graphPtr,
       graphPtr->focusPtr_ = axisPtr;
   }
 
-  Blt_SetFocusItem(graphPtr->bindTable, graphPtr->focusPtr_, NULL);
+  Blt_SetFocusItem(graphPtr->bindTable_, graphPtr->focusPtr_, NULL);
 
   if (graphPtr->focusPtr_)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr_->name(),-1);
@@ -478,7 +478,7 @@ static int FocusOp(Tcl_Interp* interp, Graph* graphPtr,
 static int GetOp(Tcl_Interp* interp, Graph* graphPtr, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  Axis* axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable);
+  Axis* axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable_);
 
   // Report only on axes
   if ((axisPtr) && 

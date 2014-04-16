@@ -114,7 +114,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   int isNew;
   Tcl_HashEntry* hPtr =
-    Tcl_CreateHashEntry(&graphPtr->markers.table, name, &isNew);
+    Tcl_CreateHashEntry(&graphPtr->markers_.table, name, &isNew);
   if (!isNew) {
     Tcl_AppendResult(graphPtr->interp_, "marker \"", name,
 		     "\" already exists in \"", Tcl_GetString(objv[0]),
@@ -145,7 +145,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   // Unlike elements, new markers are drawn on top of old markers
-  markerPtr->link = Blt_Chain_Prepend(graphPtr->markers.displayList, markerPtr);
+  markerPtr->link = Blt_Chain_Prepend(graphPtr->markers_.displayList, markerPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
   return TCL_OK;
@@ -202,11 +202,11 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_HashSearch iter;
     for (Tcl_HashEntry* hp = 
-	   Tcl_FirstHashEntry(&graphPtr->markers.tagTable, &iter); 
+	   Tcl_FirstHashEntry(&graphPtr->markers_.tagTable, &iter); 
 	 hp; hp = Tcl_NextHashEntry(&iter)) {
 
       const char* tag = 
-	(const char*)Tcl_GetHashKey(&graphPtr->markers.tagTable, hp);
+	(const char*)Tcl_GetHashKey(&graphPtr->markers_.tagTable, hp);
       Tcl_Obj* objPtr = Tcl_NewStringObj(tag, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
@@ -253,7 +253,7 @@ static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Tcl_HashEntry* hPtr =
-    Tcl_FindHashEntry(&graphPtr->markers.table, Tcl_GetString(objv[3]));
+    Tcl_FindHashEntry(&graphPtr->markers_.table, Tcl_GetString(objv[3]));
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr));
 
   return TCL_OK;
@@ -304,7 +304,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   int enclosed = (mode == FIND_ENCLOSED);
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -345,7 +345,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -353,7 +353,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
     }
   } 
   else {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       for (int ii = 3; ii<objc; ii++) {
@@ -385,15 +385,15 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_ERROR;
 
   Blt_ChainLink link = markerPtr->link;
-  Blt_Chain_UnlinkLink(graphPtr->markers.displayList, markerPtr->link);
+  Blt_Chain_UnlinkLink(graphPtr->markers_.displayList, markerPtr->link);
 
   Blt_ChainLink place = placePtr ? placePtr->link : NULL;
 
   const char* string = Tcl_GetString(objv[2]);
   if (string[0] == 'l')
-    Blt_Chain_LinkAfter(graphPtr->markers.displayList, link, place);
+    Blt_Chain_LinkAfter(graphPtr->markers_.displayList, link, place);
   else
-    Blt_Chain_LinkBefore(graphPtr->markers.displayList, link, place);
+    Blt_Chain_LinkBefore(graphPtr->markers_.displayList, link, place);
 
   if (ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
@@ -465,7 +465,7 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			    Tcl_Obj *objPtr, Marker** markerPtrPtr)
 {
   const char* string = Tcl_GetString(objPtr);
-  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&graphPtr->markers.table, string);
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&graphPtr->markers_.table, string);
   if (hPtr) {
     *markerPtrPtr = (Marker*)Tcl_GetHashValue(hPtr);
     return TCL_OK;
@@ -488,7 +488,7 @@ static void FreeMarker(char* dataPtr)
 
 void Blt::MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 {
-  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
+  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -509,7 +509,7 @@ void Blt::MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
 
 void Blt::DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
 {
-  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers.displayList); 
+  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -527,7 +527,7 @@ void Blt::DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
 
 void Blt::ConfigureMarkers(Graph* graphPtr)
 {
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     markerPtr->configure();
@@ -536,7 +536,7 @@ void Blt::ConfigureMarkers(Graph* graphPtr)
 
 void Blt::MapMarkers(Graph* graphPtr)
 {
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList); 
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -554,7 +554,7 @@ void Blt::MapMarkers(Graph* graphPtr)
 void Blt::DestroyMarkers(Graph* graphPtr)
 {
   Tcl_HashSearch iter;
-  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->markers.table, &iter); 
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->markers_.table, &iter); 
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
     Marker* markerPtr = (Marker*)Tcl_GetHashValue(hPtr);
 
@@ -562,9 +562,9 @@ void Blt::DestroyMarkers(Graph* graphPtr)
     // entry from being automatically deleted.
     delete markerPtr;
   }
-  Tcl_DeleteHashTable(&graphPtr->markers.table);
-  Tcl_DeleteHashTable(&graphPtr->markers.tagTable);
-  Blt_Chain_Destroy(graphPtr->markers.displayList);
+  Tcl_DeleteHashTable(&graphPtr->markers_.table);
+  Tcl_DeleteHashTable(&graphPtr->markers_.tagTable);
+  Blt_Chain_Destroy(graphPtr->markers_.displayList);
 }
 
 void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
@@ -572,7 +572,7 @@ void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
   Point2d point;
   point.x = (double)x;
   point.y = (double)y;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers.displayList);
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -594,7 +594,7 @@ ClientData Blt::MakeMarkerTag(Graph* graphPtr, const char* tagName)
 {
   int isNew;
   Tcl_HashEntry *hPtr =
-    Tcl_CreateHashEntry(&graphPtr->markers.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->markers.tagTable, hPtr);
+    Tcl_CreateHashEntry(&graphPtr->markers_.tagTable, tagName, &isNew);
+  return Tcl_GetHashKey(&graphPtr->markers_.tagTable, hPtr);
 }
 

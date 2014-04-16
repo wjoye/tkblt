@@ -57,7 +57,7 @@ Marker::~Marker()
     Tcl_DeleteHashEntry(hashPtr_);
 
   if (link)
-    Blt_Chain_DeleteLink(graphPtr_->markers.displayList, link);
+    Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
 

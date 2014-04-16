@@ -277,16 +277,15 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Tcl_InitHashTable(&axes_.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&elements_.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&elements_.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&markers.table, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&markers.tagTable, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&dataTables, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&penTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers_.table, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&markers_.tagTable, TCL_STRING_KEYS);
+  Tcl_InitHashTable(&penTable_, TCL_STRING_KEYS);
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
-  markers.displayList = Blt_Chain_Create();
-  bindTable = Blt_CreateBindingTable(interp_, tkwin_, this, 
-				     PickEntry, Blt_GraphTags);
+  markers_.displayList = Blt_Chain_Create();
+  bindTable_ = Blt_CreateBindingTable(interp_, tkwin_, this, 
+				      PickEntry, Blt_GraphTags);
 
   if (Blt_CreatePen(this, interp_, "activeLine", CID_ELEM_LINE, 0, NULL) != 
       TCL_OK) {
@@ -342,8 +341,8 @@ Graph::~Graph()
   Blt_DestroyPageSetup(this);
   Blt_DestroyBarSets(this);
 
-  if (bindTable)
-    Blt_DestroyBindingTable(bindTable);
+  if (bindTable_)
+    Blt_DestroyBindingTable(bindTable_);
 
   if (drawGC_)
     Tk_FreeGC(display_, drawGC_);
