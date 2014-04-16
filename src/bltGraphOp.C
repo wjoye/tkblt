@@ -55,7 +55,6 @@ extern "C" {
 using namespace Blt;
 
 extern void GraphDisplay(Graph* graphPtr);
-extern void GraphConfigure(Graph* graphPtr);
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
@@ -124,7 +123,7 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
     }
 
     graphPtr->flags |= mask;
-    GraphConfigure(graphPtr);
+    graphPtr->configure();
     Blt_EventuallyRedrawGraph(graphPtr);
 
     break; 

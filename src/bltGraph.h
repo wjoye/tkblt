@@ -198,6 +198,8 @@ class Graph {
   Graph(ClientData clientData, Tcl_Interp*interp, 
 	int objc, Tcl_Obj* const objv[], ClassId classId);
   virtual ~Graph();
+
+  void configure();
 };
 
 extern void Blt_MapGraph(Graph* graphPtr);

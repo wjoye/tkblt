@@ -54,8 +54,6 @@ using namespace Blt;
 #define MARKER_ABOVE	0
 #define MARKER_UNDER	1
 
-extern void GraphConfigure(Graph* graphPtr);
-
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
 extern void Blt_LayoutGraph(Graph* graphPtr);
@@ -358,29 +356,28 @@ Graph::~Graph()
     free (ops_);
 }
 
-void GraphConfigure(Graph* graphPtr)	
+void Graph::configure()	
 {
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   // Don't allow negative bar widths. Reset to an arbitrary value (0.1)
   if (ops->barWidth <= 0.0f)
     ops->barWidth = 0.8f;
 
-  graphPtr->inset = ops->borderWidth + ops->highlightWidth;
-  if ((ops->reqHeight != Tk_ReqHeight(graphPtr->tkwin)) ||
-      (ops->reqWidth != Tk_ReqWidth(graphPtr->tkwin))) {
-    Tk_GeometryRequest(graphPtr->tkwin, ops->reqWidth,
-		       ops->reqHeight);
-  }
-  Tk_SetInternalBorder(graphPtr->tkwin, ops->borderWidth);
+  inset = ops->borderWidth + ops->highlightWidth;
+  if ((ops->reqHeight != Tk_ReqHeight(tkwin)) ||
+      (ops->reqWidth != Tk_ReqWidth(tkwin)))
+    Tk_GeometryRequest(tkwin, ops->reqWidth, ops->reqHeight);
+
+  Tk_SetInternalBorder(tkwin, ops->borderWidth);
   XColor* colorPtr = Tk_3DBorderColor(ops->normalBg);
 
-  graphPtr->titleWidth = graphPtr->titleHeight = 0;
+  titleWidth =0;
+  titleHeight =0;
   if (ops->title != NULL) {
     unsigned int w, h;
-
     Blt_Ts_GetExtents(&ops->titleTextStyle, ops->title, &w, &h);
-    graphPtr->titleHeight = h;
+    titleHeight = h;
   }
 
   // Create GCs for interior and exterior regions, and a background GC for
@@ -390,21 +387,20 @@ void GraphConfigure(Graph* graphPtr)
   gcValues.foreground = ops->titleTextStyle.color->pixel;
   gcValues.background = colorPtr->pixel;
   unsigned long gcMask = (GCForeground | GCBackground);
-  GC newGC = Tk_GetGC(graphPtr->tkwin, gcMask, &gcValues);
-  if (graphPtr->drawGC != NULL) {
-    Tk_FreeGC(graphPtr->display, graphPtr->drawGC);
-  }
-  graphPtr->drawGC = newGC;
+  GC newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
+  if (drawGC != NULL)
+    Tk_FreeGC(display, drawGC);
+  drawGC = newGC;
 
   // If the -inverted option changed, we need to readjust the pointers
   // to the axes and recompute the their scales.
-  if (graphPtr->flags & RESET_AXES)
-    AdjustAxisPointers(graphPtr);
+  if (flags & RESET_AXES)
+    AdjustAxisPointers(this);
 
   // Free the pixmap if we're not buffering the display of elements anymore.
-  if ((!ops->backingStore) && (graphPtr->cache != None)) {
-    Tk_FreePixmap(graphPtr->display, graphPtr->cache);
-    graphPtr->cache = None;
+  if ((!ops->backingStore) && (cache != None)) {
+    Tk_FreePixmap(display, cache);
+    cache = None;
   }
 }
 
@@ -758,7 +754,7 @@ void Blt_GraphExtents(Graph* graphPtr, Region2d *regionPtr)
 
 void Blt_ReconfigureGraph(Graph* graphPtr)	
 {
-  GraphConfigure(graphPtr);
+  graphPtr->configure();
   graphPtr->legend->configure();
   //  Blt_ConfigureElements(graphPtr);
   Blt_ConfigureAxes(graphPtr);
