@@ -44,6 +44,10 @@ class Axis;
 class Element;
 class Legend;
 
+namespace Blt {
+class Marker;
+};
+
 typedef struct {
   Axis *x, *y;
 } Axis2d;
@@ -198,6 +202,8 @@ class Graph {
   void drawMargins(Drawable);
   void updateMarginTraces();
 
+  void destroyPens();
+
   void destroyElements();
   void configureElements();
   void mapElements();
@@ -205,6 +211,12 @@ class Graph {
   void drawActiveElements(Drawable);
   void printElements(Blt_Ps);
   void printActiveElements(Blt_Ps);
+
+  void destroyMarkers();
+  void configureMarkers();
+  void mapMarkers();
+  void drawMarkers(Drawable, int);
+  void printMarkers(Blt_Ps, int);
 
   void destroyAxes();
   void configureAxes();
@@ -229,6 +241,8 @@ class Graph {
 
   void resetAxes();
   void printAxes(Blt_Ps);
+
+  int isElementHidden(Blt::Marker*);
 };
 
 extern void Blt_ReconfigureGraph(Graph* graphPtr);

@@ -31,14 +31,10 @@
 #define __Blt_GrMarkerOp_h__
 
 namespace Blt {
-  extern void DestroyMarkers(Graph* graphPtr);
-  extern void DrawMarkers(Graph* graphPtr, Drawable drawable, int under);
-  extern ClientData MakeMarkerTag(Graph* graphPtr, const char* tagName);
-  extern void MapMarkers(Graph* graphPtr);
-  extern void ConfigureMarkers(Graph*);
   extern int MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
-  extern void MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under);
+
+  extern ClientData MakeMarkerTag(Graph* graphPtr, const char* tagName);
   extern void* NearestMarker(Graph* graphPtr, int x, int y, int under);
 };
 

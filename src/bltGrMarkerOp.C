@@ -45,7 +45,6 @@ using namespace Blt;
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
-static int IsElementHidden(Graph*, Marker*);
 static void FreeMarker(char* dataPtr);
 
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
@@ -311,7 +310,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
     if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
       continue;
 
-    if (IsElementHidden(graphPtr, markerPtr))
+    if (graphPtr->isElementHidden(markerPtr))
       continue;
 
     if (markerPtr->regionIn(&extents, enclosed)) {
@@ -445,22 +444,6 @@ int Blt::MarkerOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-static int IsElementHidden(Graph* graphPtr, Marker* markerPtr)
-{
-  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-
-  if (ops->elemName) {
-    Tcl_HashEntry *hPtr 
-      = Tcl_FindHashEntry(&graphPtr->elements_.table, ops->elemName);
-    if (hPtr) {
-      Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      if (!elemPtr->link || elemPtr->hide())
-	return 1;
-    }
-  }
-  return 0;
-}
-
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj *objPtr, Marker** markerPtrPtr)
 {
@@ -484,89 +467,6 @@ static void FreeMarker(char* dataPtr)
   delete markerPtr;
 }
 
-// export
-
-void Blt::MarkersToPostScript(Graph* graphPtr, Blt_Ps ps, int under)
-{
-  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-    if (ops->drawUnder != under)
-      continue;
-
-    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
-      continue;
-
-    if (IsElementHidden(graphPtr, markerPtr))
-      continue;
-
-    Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name(), 
-		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
-    markerPtr->postscript(ps);
-  }
-}
-
-void Blt::DrawMarkers(Graph* graphPtr, Drawable drawable, int under)
-{
-  for (Blt_ChainLink link = Blt_Chain_LastLink(graphPtr->markers_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-
-    if ((ops->drawUnder != under) || (markerPtr->clipped()) ||
-	(markerPtr->flags & DELETE_PENDING) || (ops->hide))
-      continue;
-
-    if (IsElementHidden(graphPtr, markerPtr))
-      continue;
-
-    markerPtr->draw(drawable);
-  }
-}
-
-void Blt::ConfigureMarkers(Graph* graphPtr)
-{
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
-       link; link = Blt_Chain_NextLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    markerPtr->configure();
-  }
-}
-
-void Blt::MapMarkers(Graph* graphPtr)
-{
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
-       link; link = Blt_Chain_NextLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
-    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-
-    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
-      continue;
-
-    if ((graphPtr->flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
-      markerPtr->map();
-      markerPtr->flags &= ~MAP_ITEM;
-    }
-  }
-}
-
-void Blt::DestroyMarkers(Graph* graphPtr)
-{
-  Tcl_HashSearch iter;
-  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->markers_.table, &iter); 
-       hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
-    Marker* markerPtr = (Marker*)Tcl_GetHashValue(hPtr);
-
-    // Dereferencing the pointer to the hash table prevents the hash table
-    // entry from being automatically deleted.
-    delete markerPtr;
-  }
-  Tcl_DeleteHashTable(&graphPtr->markers_.table);
-  Tcl_DeleteHashTable(&graphPtr->markers_.tagTable);
-  Blt_Chain_Destroy(graphPtr->markers_.displayList);
-}
-
 void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
 {
   Point2d point;
@@ -580,7 +480,7 @@ void* Blt::NearestMarker(Graph* graphPtr, int x, int y, int under)
     if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (ops->hide))
       continue;
 
-    if (IsElementHidden(graphPtr, markerPtr))
+    if (graphPtr->isElementHidden(markerPtr))
       continue;
 
     if ((ops->drawUnder == under) && (ops->state == BLT_STATE_NORMAL))

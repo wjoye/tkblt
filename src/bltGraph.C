@@ -326,7 +326,7 @@ Graph::~Graph()
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
-  Blt::DestroyMarkers(this);
+  destroyMarkers();
   destroyElements();  // must come before legend and others
 
   if (crosshairs_)
@@ -335,7 +335,7 @@ Graph::~Graph()
     delete legend_;
 
   destroyAxes();
-  Blt_DestroyPens(this);
+  destroyPens();
   Blt_DestroyPageSetup(this);
   Blt_DestroyBarSets(this);
 
@@ -466,7 +466,7 @@ void Graph::display()
     drawPlot(drawable);
 
   // Draw markers above elements
-  Blt::DrawMarkers(this, drawable, MARKER_ABOVE);
+  drawMarkers(drawable, MARKER_ABOVE);
   drawActiveElements(drawable);
 
   // Don't draw legend in the plot area.
@@ -525,7 +525,7 @@ void Graph::map()
       mapAxes();
 
     mapElements();
-    Blt::MapMarkers(this);
+    mapMarkers();
     flags &= ~(MAP_ALL);
   }
 }
@@ -546,7 +546,7 @@ void Graph::drawPlot(Drawable drawable)
   // Draw the elements, markers, legend, and axis limits
   drawAxes(drawable);
   Blt_DrawGrids(this, drawable);
-  Blt::DrawMarkers(this, drawable, MARKER_UNDER);
+  drawMarkers(drawable, MARKER_UNDER);
 
   if (!legend_->isRaised()) {
     switch (legend_->position()) {
@@ -738,7 +738,7 @@ void Graph::reconfigure()
   legend_->configure();
   configureElements();
   configureAxes();
-  Blt::ConfigureMarkers(this);
+  configureMarkers();
 }
 
 // Support
@@ -884,6 +884,19 @@ void Graph::disableCrosshairs()
     crosshairs_->off();
 }
 
+// Pens
+
+void Graph::destroyPens()
+{
+  Tcl_HashSearch iter;
+  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&penTable_, &iter);
+       hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+    Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
+    delete penPtr;
+  }
+  Tcl_DeleteHashTable(&penTable_);
+}
+
 // Elements
 
 void Graph::destroyElements()
@@ -977,6 +990,105 @@ void Graph::printActiveElements(Blt_Ps ps)
       elemPtr->printActive(ps);
     }
   }
+}
+
+// Markers
+
+void Graph::destroyMarkers()
+{
+  Tcl_HashSearch iter;
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&markers_.table, &iter); 
+       hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+    Marker* markerPtr = (Marker*)Tcl_GetHashValue(hPtr);
+
+    // Dereferencing the pointer to the hash table prevents the hash table
+    // entry from being automatically deleted.
+    delete markerPtr;
+  }
+  Tcl_DeleteHashTable(&markers_.table);
+  Tcl_DeleteHashTable(&markers_.tagTable);
+  Blt_Chain_Destroy(markers_.displayList);
+}
+
+
+void Graph::configureMarkers()
+{
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    markerPtr->configure();
+  }
+}
+
+void Graph::mapMarkers()
+{
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
+
+    if ((markerPtr->flags & DELETE_PENDING) || mops->hide)
+      continue;
+
+    if ((flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
+      markerPtr->map();
+      markerPtr->flags &= ~MAP_ITEM;
+    }
+  }
+}
+
+void Graph::drawMarkers(Drawable drawable, int under)
+{
+  for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
+
+    if ((mops->drawUnder != under) || (markerPtr->clipped()) ||
+	(markerPtr->flags & DELETE_PENDING) || (mops->hide))
+      continue;
+
+    if (isElementHidden(markerPtr))
+      continue;
+
+    markerPtr->draw(drawable);
+  }
+}
+
+void Graph::printMarkers(Blt_Ps ps, int under)
+{
+  for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
+       link; link = Blt_Chain_PrevLink(link)) {
+    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+    MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
+    if (mops->drawUnder != under)
+      continue;
+
+    if ((markerPtr->flags & DELETE_PENDING) || mops->hide)
+      continue;
+
+    if (isElementHidden(markerPtr))
+      continue;
+
+    Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name(), 
+		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
+    markerPtr->postscript(ps);
+  }
+}
+
+int Graph::isElementHidden(Marker* markerPtr)
+{
+  MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
+
+  if (mops->elemName) {
+    Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&elements_.table, mops->elemName);
+    if (hPtr) {
+      Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
+      if (!elemPtr->link || elemPtr->hide())
+	return 1;
+    }
+  }
+  return 0;
 }
 
 // Axis

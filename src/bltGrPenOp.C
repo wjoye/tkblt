@@ -274,17 +274,6 @@ int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-void Blt_DestroyPens(Graph* graphPtr)
-{
-  Tcl_HashSearch iter;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-    Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-    delete penPtr;
-  }
-  Tcl_DeleteHashTable(&graphPtr->penTable_);
-}
-
 void Blt_FreePen(Pen* penPtr)
 {
   if (penPtr != NULL) {
