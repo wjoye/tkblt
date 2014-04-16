@@ -223,7 +223,7 @@ static int LineOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 static int ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
-  return Blt_ElementOp(graphPtr, interp, objc, objv, graphPtr->classId);
+  return Blt_ElementOp(graphPtr, interp, objc, objv, graphPtr->classId_);
 }
 
 /*

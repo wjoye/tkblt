@@ -174,7 +174,7 @@ static int CreateOp(Tcl_Interp* interp, Graph* graphPtr,
 		    int objc, Tcl_Obj* const objv[])
 {
   if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]),
-		    graphPtr->classId, objc, objv) != TCL_OK)
+		    graphPtr->classId_, objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
 

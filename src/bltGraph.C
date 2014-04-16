@@ -198,11 +198,11 @@ static Tk_OptionSpec optionSpecs[] = {
 
 // Create
 
-Graph::Graph(ClientData clientData, Tcl_Interp* interpp, 
-	     int objc, Tcl_Obj* const objv[], ClassId classIdd)
+Graph::Graph(ClientData clientData, Tcl_Interp* interp, 
+	     int objc, Tcl_Obj* const objv[], ClassId classId)
 {
   valid_ =1;
-  interp_ = interpp;
+  interp_ = interp;
   tkwin_ = Tk_CreateWindowFromPath(interp_, Tk_MainWindow(interp_), 
 				  Tcl_GetString(objv[1]), NULL);
   if (!tkwin_) {
@@ -230,7 +230,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interpp,
     break;
   }
 
-  classId = classIdd;
+  classId_ = classId;
   flags = MAP_WORLD | REDRAW_WORLD;
   nextMarkerId = 1;
 

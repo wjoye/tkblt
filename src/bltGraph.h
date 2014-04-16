@@ -148,7 +148,7 @@ class Graph {
   void* ops_;
   int valid_;
 
-  ClassId classId;
+  ClassId classId_;
   unsigned int flags;
   int nextMarkerId;
 
