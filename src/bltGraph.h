@@ -199,7 +199,9 @@ class Graph {
 
  protected:
   void drawPlot(Drawable);
+  
   void drawMargins(Drawable);
+  void printMargins(Blt_Ps);
   void updateMarginTraces();
 
   void destroyPens();
@@ -233,9 +235,9 @@ class Graph {
 
   void configure();
   void map();
-  void display();
+  void draw();
   void eventuallyRedraw();
-  int print(const char *ident, Blt_Ps ps);
+  int print(const char*, Blt_Ps);
   void extents(Region2d*);
   void reconfigure();
 

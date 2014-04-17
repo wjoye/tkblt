@@ -502,11 +502,11 @@ void Axis::draw(Drawable drawable)
   if (ops->hide || !use_ || (flags & DELETE_PENDING))
     return;
 
-  if (ops->normalBg) {
+  if (ops->normalBg)
     Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, ops->normalBg, 
 		       left_, top_, right_ - left_, bottom_ - top_,
 		       ops->borderWidth, ops->relief);
-  }
+
   if (ops->title) {
     TextStyle ts;
 
@@ -618,8 +618,7 @@ void Axis::draw(Drawable drawable)
   }
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {	
-    GC gc = (flags & ACTIVE) ? 
-      activeTickGC_ : tickGC_;
+    GC gc = (flags & ACTIVE) ? activeTickGC_ : tickGC_;
     Blt_Draw2DSegments(graphPtr_->display_, drawable, gc, segments_, 
 		       nSegments_);
   }

@@ -485,7 +485,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 void DisplayGraph(ClientData clientData)
 {
   Graph* graphPtr = (Graph*)clientData;
-  graphPtr->display();
+  graphPtr->draw();
 }
 
 // called by Tcl_EventuallyFree and others

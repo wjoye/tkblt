@@ -58,7 +58,6 @@ extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
 extern void Blt_LayoutGraph(Graph* graphPtr);
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
-extern void MarginsToPostScript(Graph* graphPtr, Blt_Ps ps);
 
 static Blt_BindPickProc PickEntry;
 
@@ -405,7 +404,27 @@ void Graph::configure()
   }
 }
 
-void Graph::display()
+void Graph::map()
+{
+  if (flags & RESET_AXES)
+    resetAxes();
+
+  if (flags & LAYOUT_NEEDED) {
+    Blt_LayoutGraph(this);
+    flags &= ~LAYOUT_NEEDED;
+  }
+
+  if ((vRange_ > 1) && (hRange_ > 1)) {
+    if (flags & MAP_WORLD)
+      mapAxes();
+
+    mapElements();
+    mapMarkers();
+    flags &= ~(MAP_ALL);
+  }
+}
+
+void Graph::draw()
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -413,22 +432,16 @@ void Graph::display()
   if ((flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin_))
     return;
 
-  if ((Tk_Width(tkwin_) <= 1) || (Tk_Height(tkwin_) <= 1)) {
-    /* Don't bother computing the layout until the size of the window is
-     * something reasonable. */
+  // Don't bother computing the layout until the size of the window is
+  // something reasonable.
+  if ((Tk_Width(tkwin_) <= 1) || (Tk_Height(tkwin_) <= 1))
     return;
-  }
+
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
   map();
 
-  if (!Tk_IsMapped(tkwin_)) {
-    /* The graph's window isn't displayed, so don't bother drawing
-     * anything.  By getting this far, we've at least computed the
-     * coordinates of the graph's new layout.  */
-    return;
-  }
-  /* Create a pixmap the size of the window for double buffering. */
+  // Create a pixmap the size of the window for double buffering
   Pixmap drawable;
   if (ops->doubleBuffer)
     drawable = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), 
@@ -461,7 +474,6 @@ void Graph::display()
     drawPlot(drawable);
 
   // Draw markers above elements
-  drawMarkers(drawable, MARKER_ABOVE);
   drawActiveElements(drawable);
 
   if (legend_->isRaised()) {
@@ -474,6 +486,8 @@ void Graph::display()
       break;
     }
   }
+
+  drawMarkers(drawable, MARKER_ABOVE);
 
   // Draw 3D border just inside of the focus highlight ring
   if ((ops->borderWidth > 0) && (ops->relief != TK_RELIEF_FLAT))
@@ -504,38 +518,27 @@ void Graph::display()
   updateMarginTraces();
 }
 
-void Graph::map()
-{
-  if (flags & RESET_AXES)
-    resetAxes();
-
-  if (flags & LAYOUT_NEEDED) {
-    Blt_LayoutGraph(this);
-    flags &= ~LAYOUT_NEEDED;
-  }
-
-  if ((vRange_ > 1) && (hRange_ > 1)) {
-    if (flags & MAP_WORLD)
-      mapAxes();
-
-    mapElements();
-    mapMarkers();
-    flags &= ~(MAP_ALL);
-  }
-}
-
 void Graph::drawPlot(Drawable drawable)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
   drawMargins(drawable);
 
+  switch (legend_->position()) {
+  case Legend::TOP:
+  case Legend::BOTTOM:
+  case Legend::RIGHT:
+  case Legend::LEFT:
+    legend_->draw(drawable);
+    break;
+  default:
+    break;
+  }
+
   // Draw the background of the plotting area with 3D border
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->plotBg,
-		     left_ - ops->plotBW, 
-		     top_ - ops->plotBW, 
-		     right_ - left_ + 1 + 2*ops->plotBW,
-		     bottom_ - top_  + 1 + 2*ops->plotBW, 
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->plotBg, 
+		     left_-ops->plotBW, top_-ops->plotBW, 
+		     right_-left_+1+2*ops->plotBW,bottom_-top_+1+2*ops->plotBW, 
 		     ops->plotBW, ops->plotRelief);
   
   drawAxes(drawable);
@@ -555,68 +558,6 @@ void Graph::drawPlot(Drawable drawable)
   }
 
   drawElements(drawable);
-}
-
-void Graph::drawMargins(Drawable drawable)
-{
-  GraphOptions* ops = (GraphOptions*)ops_;
-  XRectangle rects[4];
-
-  // Draw the four outer rectangles which encompass the plotting
-  // surface. This clears the surrounding area and clips the plot.
-  rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-  rects[0].width = rects[3].width = (short int)width_;
-  rects[0].height = (short int)top_;
-  rects[3].y = bottom_;
-  rects[3].height = height_ - bottom_;
-  rects[2].y = rects[1].y = top_;
-  rects[1].width = left_;
-  rects[2].height = rects[1].height = bottom_ - top_;
-  rects[2].x = right_;
-  rects[2].width = width_ - right_;
-
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
-		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
-		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
-		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
-		     0, TK_RELIEF_FLAT);
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
-		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
-		     0, TK_RELIEF_FLAT);
-
-  // Draw 3D border around the plotting area
-  if (ops->plotBW > 0) {
-    int x, y, w, h;
-
-    x = left_ - ops->plotBW;
-    y = top_ - ops->plotBW;
-    w = (right_ - left_) + (2*ops->plotBW);
-    h = (bottom_ - top_) + (2*ops->plotBW);
-    Tk_Draw3DRectangle(tkwin_, drawable, ops->normalBg, 
-		       x, y, w, h, ops->plotBW, ops->plotRelief);
-  }
-  
-  switch (legend_->position()) {
-  case Legend::TOP:
-  case Legend::BOTTOM:
-  case Legend::RIGHT:
-  case Legend::LEFT:
-    legend_->draw(drawable);
-    break;
-  default:
-    break;
-  }
-
-  if (ops->title)
-    Blt_DrawText(tkwin_, drawable, ops->title,
-		 &ops->titleTextStyle, titleX_, titleY_);
-
-  drawAxes(drawable);
-  flags &= ~DRAW_MARGINS;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -666,12 +607,24 @@ int Graph::print(const char *ident, Blt_Ps ps)
   Blt_Ps_Rectangle(ps, x, y, w, h);
   Blt_Ps_Append(ps, "gsave clip\n\n");
 
-  // Draw the grid, elements, and markers in the plotting area
+  // Start
+  printMargins(ps);
+
+  switch (legend_->position()) {
+  case Legend::TOP:
+  case Legend::BOTTOM:
+  case Legend::RIGHT:
+  case Legend::LEFT:
+    legend_->print(ps);
+    break;
+  default:
+    break;
+  }
+
+  printAxes(ps);
   printAxesGrids(ps);
   printAxesLimits(ps);
-  printMarkers(ps, 1);
-  
-  // Print legend underneath elements and markers
+
   if (!legend_->isRaised()) {
     switch (legend_->position()) {
     case Legend::PLOT:
@@ -683,9 +636,10 @@ int Graph::print(const char *ident, Blt_Ps ps)
     }
   }
 
+  printMarkers(ps, MARKER_UNDER);
   printElements(ps);
+  printActiveElements(ps);
 
-  // Print legend above elements (but not markers)
   if (legend_->isRaised()) {
     switch (legend_->position()) {
     case Legend::PLOT:
@@ -696,19 +650,12 @@ int Graph::print(const char *ident, Blt_Ps ps)
       break;
     }
   }
+  printMarkers(ps, MARKER_ABOVE);
+  // End
 
-  printMarkers(ps, 0);
-  printActiveElements(ps);
-  Blt_Ps_VarAppend(ps, "\n",
-		   "% Unset clipping\n",
-		   "grestore\n\n", (char *)NULL);
-  MarginsToPostScript(this, ps);
-  Blt_Ps_VarAppend(ps,
-		   "showpage\n",
-		   "%Trailer\n",
-		   "grestore\n",
-		   "end\n",
-		   "%EOF\n", (char *)NULL);
+  Blt_Ps_VarAppend(ps, "\n", "% Unset clipping\n", "grestore\n\n", NULL);
+  Blt_Ps_VarAppend(ps, "showpage\n", "%Trailer\n", "grestore\n", "end\n", "%EOF\n", NULL);
+
  error:
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
@@ -745,6 +692,108 @@ void Graph::extents(Region2d* regionPtr)
   regionPtr->bottom = (double)(vOffset_ + vRange_ + ops->yPad);
 }
 
+void Graph::reconfigure()	
+{
+  configure();
+  legend_->configure();
+  configureElements();
+  configureAxes();
+  configureMarkers();
+}
+
+// Margins
+
+void Graph::drawMargins(Drawable drawable)
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+  XRectangle rects[4];
+
+  // Draw the four outer rectangles which encompass the plotting
+  // surface. This clears the surrounding area and clips the plot.
+  rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
+  rects[0].width = rects[3].width = (short int)width_;
+  rects[0].height = (short int)top_;
+  rects[3].y = bottom_;
+  rects[3].height = height_ - bottom_;
+  rects[2].y = rects[1].y = top_;
+  rects[1].width = left_;
+  rects[2].height = rects[1].height = bottom_ - top_;
+  rects[2].x = right_;
+  rects[2].width = width_ - right_;
+
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
+		     rects[0].x, rects[0].y, rects[0].width, rects[0].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
+		     rects[1].x, rects[1].y, rects[1].width, rects[1].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
+		     rects[2].x, rects[2].y, rects[2].width, rects[2].height, 
+		     0, TK_RELIEF_FLAT);
+  Tk_Fill3DRectangle(tkwin_, drawable, ops->normalBg, 
+		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
+		     0, TK_RELIEF_FLAT);
+
+  // Draw 3D border around the plotting area
+  if (ops->plotBW > 0) {
+    int x = left_ - ops->plotBW;
+    int y = top_ - ops->plotBW;
+    int w = (right_ - left_) + (2*ops->plotBW);
+    int h = (bottom_ - top_) + (2*ops->plotBW);
+    Tk_Draw3DRectangle(tkwin_, drawable, ops->normalBg, 
+		       x, y, w, h, ops->plotBW, ops->plotRelief);
+  }
+  
+  if (ops->title)
+    Blt_DrawText(tkwin_, drawable, ops->title,
+		 &ops->titleTextStyle, titleX_, titleY_);
+
+  flags &= ~DRAW_MARGINS;
+}
+
+void Graph::printMargins(Blt_Ps ps)
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  PageSetup *setupPtr = pageSetup_;
+  XRectangle margin[4];
+
+  margin[0].x = margin[0].y = margin[3].x = margin[1].x = 0;
+  margin[0].width = margin[3].width = width_;
+  margin[0].height = top_;
+  margin[3].y = bottom_;
+  margin[3].height = height_ - bottom_;
+  margin[2].y = margin[1].y = top_;
+  margin[1].width = left_;
+  margin[2].height = margin[1].height = bottom_ - top_;
+  margin[2].x = right_;
+  margin[2].width = width_ - right_;
+
+  // Clear the surrounding margins and clip the plotting surface
+  if (setupPtr->decorations)
+    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(gops->normalBg));
+  else
+    Blt_Ps_SetClearBackground(ps);
+
+  Blt_Ps_Append(ps, "% Margins\n");
+  Blt_Ps_XFillRectangles(ps, margin, 4);
+    
+  Blt_Ps_Append(ps, "% Interior 3D border\n");
+  if (gops->plotBW > 0) {
+    int x = left_ - gops->plotBW;
+    int y = top_ - gops->plotBW;
+    int w = (right_ - left_) + (2*gops->plotBW);
+    int h = (bottom_ - top_) + (2*gops->plotBW);
+    Blt_Ps_Draw3DRectangle(ps, gops->normalBg, (double)x, (double)y, w, h,
+			   gops->plotBW, gops->plotRelief);
+  }
+
+  if (gops->title) {
+    Blt_Ps_Append(ps, "% Graph title\n");
+    Blt_Ps_DrawText(ps, gops->title, &gops->titleTextStyle, 
+		    (double)titleX_, (double)titleY_);
+  }
+}
+
 void Graph::updateMarginTraces()
 {
   GraphOptions* ops = (GraphOptions*)ops_;
@@ -764,15 +813,6 @@ void Graph::updateMarginTraces()
 		 TCL_GLOBAL_ONLY);
     }
   }
-}
-
-void Graph::reconfigure()	
-{
-  configure();
-  legend_->configure();
-  configureElements();
-  configureAxes();
-  configureMarkers();
 }
 
 // Crosshairs
