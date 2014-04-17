@@ -216,7 +216,8 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend_->bindTable_, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
+
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend_->bindTable_, graphPtr->elementTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 

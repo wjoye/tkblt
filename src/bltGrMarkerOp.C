@@ -213,9 +213,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  ClientData rr = Blt::MakeMarkerTag(graphPtr, Tcl_GetString(objv[3]));
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, rr, 
-				      objc - 4, objv + 4);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->markerTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
@@ -465,13 +463,5 @@ static void FreeMarker(char* dataPtr)
 {
   Marker* markerPtr = (Marker*)dataPtr;
   delete markerPtr;
-}
-
-ClientData Blt::MakeMarkerTag(Graph* graphPtr, const char* tagName)
-{
-  int isNew;
-  Tcl_HashEntry *hPtr =
-    Tcl_CreateHashEntry(&graphPtr->markers_.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->markers_.tagTable, hPtr);
 }
 

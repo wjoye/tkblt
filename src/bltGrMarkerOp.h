@@ -33,8 +33,6 @@
 namespace Blt {
   extern int MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
-
-  extern ClientData MakeMarkerTag(Graph* graphPtr, const char* tagName);
 };
 
 #endif

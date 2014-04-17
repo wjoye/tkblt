@@ -268,7 +268,7 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, Blt_MakeElementTag(graphPtr, Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->elementTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
@@ -651,11 +651,3 @@ int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
   return TCL_OK;
 }
 
-ClientData Blt_MakeElementTag(Graph* graphPtr, const char *tagName)
-{
-  Tcl_HashEntry *hPtr;
-  int isNew;
-
-  hPtr = Tcl_CreateHashEntry(&graphPtr->elements_.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
-}

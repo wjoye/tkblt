@@ -417,7 +417,7 @@ static int BindOp(Tcl_Interp* interp, Graph* graphPtr, int objc,
     return TCL_OK;
   }
   else
-    return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, Blt_MakeAxisTag(graphPtr, Tcl_GetString(objv[3])), objc-4, objv+4);
+    return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->axisTag(Tcl_GetString(objv[3])), objc-4, objv+4);
 }
 
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
@@ -694,14 +694,6 @@ Axis *Blt_GetFirstAxis(Blt_Chain chain)
     return NULL;
 
   return (Axis*)Blt_Chain_GetValue(link);
-}
-
-ClientData Blt_MakeAxisTag(Graph* graphPtr, const char *tagName)
-{
-  int isNew;
-  Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->axes_.tagTable, tagName, &isNew);
-  return Tcl_GetHashKey(&graphPtr->axes_.tagTable, hPtr);
 }
 
 /*

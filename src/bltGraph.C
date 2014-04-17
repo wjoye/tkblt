@@ -897,6 +897,13 @@ void Graph::printActiveElements(Blt_Ps ps)
   }
 }
 
+ClientData Graph::elementTag(const char *tagName)
+{
+  int isNew;
+  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&elements_.tagTable,tagName,&isNew);
+  return Tcl_GetHashKey(&elements_.tagTable, hPtr);
+}
+
 // Markers
 
 void Graph::destroyMarkers()
@@ -979,6 +986,13 @@ void Graph::printMarkers(Blt_Ps ps, int under)
 		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
     markerPtr->postscript(ps);
   }
+}
+
+ClientData Graph::markerTag(const char* tagName)
+{
+  int isNew;
+  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&markers_.tagTable, tagName,&isNew);
+  return Tcl_GetHashKey(&markers_.tagTable, hPtr);
 }
 
 Marker* Graph::nearestMarker(int x, int y, int under)
@@ -1153,6 +1167,13 @@ void Graph::printAxesLimits(Blt_Ps ps)
   }
 }
 
+ClientData Graph::axisTag(const char *tagName)
+{
+  int isNew;
+  Tcl_HashEntry *hPtr = Tcl_CreateHashEntry(&axes_.tagTable, tagName, &isNew);
+  return Tcl_GetHashKey(&axes_.tagTable, hPtr);
+}
+
 void Graph::resetAxes()
 {
   GraphOptions* gops = (GraphOptions*)ops_;
@@ -1302,27 +1323,23 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_ELEM_BAR:		
   case CID_ELEM_LINE: 
     {
-      Element* elemPtr = (Element*)object;
-      ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-      MakeTagProc* tagProc = Blt_MakeElementTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+      Element* ptr = (Element*)object;
+      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->name()),0);
+      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->className()),0);
+      ElementOptions* ops = (ElementOptions*)ptr->ops();
+      for (const char** pp = ops->tags; *pp; pp++)
+	Blt_List_Append(list, (const char*)graphPtr->elementTag(*pp),0);
     }
     break;
   case CID_AXIS_X:
   case CID_AXIS_Y:
     {
-      Axis* axisPtr = (Axis*)object;
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      MakeTagProc* tagProc = Blt_MakeAxisTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+      Axis* ptr = (Axis*)object;
+      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->name()),0);
+      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->className()),0);
+      AxisOptions* ops = (AxisOptions*)ptr->ops();
+      for (const char** pp = ops->tags; *pp; pp++)
+	Blt_List_Append(list, (const char*)graphPtr->axisTag(*pp),0);
     }
     break;
   case CID_MARKER_BITMAP:
@@ -1331,15 +1348,12 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_TEXT:
   case CID_MARKER_WINDOW:
     {
-      Marker* markerPtr = (Marker*)object;
-      MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-      MakeTagProc* tagProc = Blt::MakeMarkerTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-
+      Marker* ptr = (Marker*)object;
+      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->name()),0);
+      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->className()),0);
+      MarkerOptions* ops = (MarkerOptions*)ptr->ops();
+      for (const char** pp = ops->tags; *pp; pp++)
+	Blt_List_Append(list, (const char*)graphPtr->markerTag(*pp),0);
     }
     break;
   default:

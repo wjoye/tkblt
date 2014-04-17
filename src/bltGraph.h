@@ -245,16 +245,17 @@ class Graph {
   void printAxes(Blt_Ps);
   void printAxesGrids(Blt_Ps);
   void printAxesLimits(Blt_Ps);
-
-  int isElementHidden(Blt::Marker*);
-  Blt::Marker* nearestMarker(int, int, int);
+  ClientData axisTag(const char*);
   Axis* nearestAxis(int, int);
+
+  ClientData markerTag(const char*);
+  Blt::Marker* nearestMarker(int, int, int);
+  int isElementHidden(Blt::Marker*);
+
+  ClientData elementTag(const char*);
 };
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
-extern MakeTagProc Blt_MakeElementTag;
-extern MakeTagProc Blt_MakeAxisTag;
 extern Blt_BindTagProc Blt_GraphTags;
-extern Blt_BindTagProc Blt_AxisTags;
 
 #endif
