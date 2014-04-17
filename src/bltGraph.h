@@ -224,6 +224,7 @@ class Graph {
   void drawAxes(Drawable);
   void drawAxesLimits(Drawable);
   void drawAxesGrids(Drawable);
+  void adjustAxes();
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
@@ -255,7 +256,6 @@ class Graph {
   ClientData elementTag(const char*);
 };
 
-typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);
 extern Blt_BindTagProc Blt_GraphTags;
 
 #endif

@@ -62,8 +62,6 @@ extern void MarginsToPostScript(Graph* graphPtr, Blt_Ps ps);
 
 static Blt_BindPickProc PickEntry;
 
-static void AdjustAxisPointers(Graph* graphPtr);
-
 // OptionSpecs
 
 static const char* barmodeObjOption[] = 
@@ -319,7 +317,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
-  AdjustAxisPointers(this);
+  adjustAxes();
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp_), Tk_PathName(tkwin_), -1);
 }
@@ -398,7 +396,7 @@ void Graph::configure()
   // If the -inverted option changed, we need to readjust the pointers
   // to the axes and recompute the their scales.
   if (flags & RESET_AXES)
-    AdjustAxisPointers(this);
+    adjustAxes();
 
   // Free the pixmap if we're not buffering the display of elements anymore.
   if ((!ops->backingStore) && (cache_ != None)) {
@@ -734,23 +732,6 @@ void Graph::eventuallyRedraw()
   if (!(flags & REDRAW_PENDING)) {
     flags |= REDRAW_PENDING;
     Tcl_DoWhenIdle(DisplayGraph, this);
-  }
-}
-
-static void AdjustAxisPointers(Graph* graphPtr) 
-{
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  if (ops->inverted) {
-    ops->leftMargin.axes   = graphPtr->axisChain_[0];
-    ops->bottomMargin.axes = graphPtr->axisChain_[1];
-    ops->rightMargin.axes  = graphPtr->axisChain_[2];
-    ops->topMargin.axes    = graphPtr->axisChain_[3];
-  }
-  else {
-    ops->leftMargin.axes   = graphPtr->axisChain_[1];
-    ops->bottomMargin.axes = graphPtr->axisChain_[0];
-    ops->rightMargin.axes  = graphPtr->axisChain_[3];
-    ops->topMargin.axes    = graphPtr->axisChain_[2];
   }
 }
 
@@ -1172,6 +1153,24 @@ ClientData Graph::axisTag(const char *tagName)
   int isNew;
   Tcl_HashEntry *hPtr = Tcl_CreateHashEntry(&axes_.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&axes_.tagTable, hPtr);
+}
+
+void Graph::adjustAxes() 
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+
+  if (ops->inverted) {
+    ops->leftMargin.axes   = axisChain_[0];
+    ops->bottomMargin.axes = axisChain_[1];
+    ops->rightMargin.axes  = axisChain_[2];
+    ops->topMargin.axes    = axisChain_[3];
+  }
+  else {
+    ops->leftMargin.axes   = axisChain_[1];
+    ops->bottomMargin.axes = axisChain_[0];
+    ops->rightMargin.axes  = axisChain_[3];
+    ops->topMargin.axes    = axisChain_[2];
+  }
 }
 
 void Graph::resetAxes()
