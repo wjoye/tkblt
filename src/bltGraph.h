@@ -248,6 +248,7 @@ class Graph {
 
   int isElementHidden(Blt::Marker*);
   Blt::Marker* nearestMarker(int, int, int);
+  Axis* nearestAxis(int, int);
 };
 
 typedef ClientData (MakeTagProc)(Graph* graphPtr, const char *tagName);

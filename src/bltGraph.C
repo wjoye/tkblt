@@ -1228,7 +1228,70 @@ void Graph::resetAxes()
   flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 
+Axis* Graph::nearestAxis(int x, int y)
+{
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor); 
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+    if (ops->hide || !axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
+      continue;
 
+    if (ops->showTicks) {
+      for (Blt_ChainLink link=Blt_Chain_FirstLink(axisPtr->tickLabels_);
+	   link; link = Blt_Chain_NextLink(link)) {	
+	TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+	double rw, rh;
+	Point2d bbox[5];
+	Blt_GetBoundingBox(labelPtr->width, labelPtr->height, 
+			   ops->tickAngle, &rw, &rh, bbox);
+	Point2d t;
+	t = Blt_AnchorPoint(labelPtr->anchorPos.x, labelPtr->anchorPos.y,
+			    rw, rh, axisPtr->tickAnchor_);
+	t.x = x - t.x - (rw * 0.5);
+	t.y = y - t.y - (rh * 0.5);
+
+	bbox[4] = bbox[0];
+	if (Blt_PointInPolygon(&t, bbox, 5)) {
+	  axisPtr->detail_ = "label";
+	  return axisPtr;
+	}
+      }
+    }
+
+    if (ops->title) {
+      unsigned int w, h;
+      double rw, rh;
+      Point2d bbox[5];
+      Blt_GetTextExtents(ops->titleFont, 0, ops->title,-1,&w,&h);
+      Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
+      Point2d t;
+      t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
+			  rw, rh, axisPtr->titleAnchor_);
+      // Translate the point so that the 0,0 is the upper left 
+      // corner of the bounding box
+      t.x = x - t.x - (rw * 0.5);
+      t.y = y - t.y - (rh * 0.5);
+	    
+      bbox[4] = bbox[0];
+      if (Blt_PointInPolygon(&t, bbox, 5)) {
+	axisPtr->detail_ = "title";
+	return axisPtr;
+      }
+    }
+    if (ops->lineWidth > 0) {
+      if ((x <= axisPtr->right_) && (x >= axisPtr->left_) && 
+	  (y <= axisPtr->bottom_) && (y >= axisPtr->top_)) {
+	axisPtr->detail_ = "line";
+	return axisPtr;
+      }
+    }
+  }
+
+  return NULL;
+}
+ 
 void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)
 {
@@ -1305,7 +1368,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   // Sample coordinate is in one of the graph margins. Can only pick an axis.
   if ((x >= exts.right) || (x < exts.left) || 
       (y >= exts.bottom) || (y < exts.top)) {
-    Axis* axisPtr = Blt_NearestAxis(graphPtr, x, y);
+    Axis* axisPtr = graphPtr->nearestAxis(x, y);
     if (axisPtr) {
       *contextPtr = (ClientData)axisPtr->classId();
       return axisPtr;
