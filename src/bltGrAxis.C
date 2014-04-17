@@ -499,6 +499,9 @@ void Axis::draw(Drawable drawable)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
+  if (ops->hide || !use_ || (flags & DELETE_PENDING))
+    return;
+
   if (ops->normalBg) {
     Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, ops->normalBg, 
 		       left_, top_, right_ - left_, bottom_ - top_,
@@ -622,10 +625,28 @@ void Axis::draw(Drawable drawable)
   }
 }
 
+void Axis::drawGrids(Drawable drawable) 
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
+    return;
+
+  Blt_Draw2DSegments(graphPtr_->display_, drawable, ops->major.gc,
+		     ops->major.segments, ops->major.nUsed);
+
+  if (ops->showGridMinor)
+    Blt_Draw2DSegments(graphPtr_->display_, drawable, ops->minor.gc,
+		       ops->minor.segments, ops->minor.nUsed);
+}
+
 void Axis::drawLimits(Drawable drawable)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+
+  if ((flags & DELETE_PENDING) || (!ops->limitsFormat))
+    return;
 
   int vMin = graphPtr_->left_ + gops->xPad + 2;
   int vMax = vMin;
@@ -1670,6 +1691,9 @@ void Axis::print(Blt_Ps ps)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
+  if (ops->hide || !use_ || (flags & DELETE_PENDING))
+    return;
+
   Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name());
   if (ops->normalBg)
     Blt_Ps_Fill3DRectangle(ps, ops->normalBg, left_, top_, 
@@ -1718,10 +1742,34 @@ void Axis::print(Blt_Ps ps)
   }
 }
 
+void Axis::printGrids(Blt_Ps ps)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+
+  if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
+    continue;
+
+  Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name());
+  Blt_Ps_XSetLineAttributes(ps, ops->major.color, ops->major.lineWidth, 
+			    &ops->major.dashes, CapButt, JoinMiter);
+  Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n", name());
+  Blt_Ps_Draw2DSegments(ps, ops->major.segments, ops->major.nUsed);
+
+  if (ops->showGridMinor) {
+    Blt_Ps_XSetLineAttributes(ps, ops->minor.color, ops->minor.lineWidth, 
+			      &ops->minor.dashes, CapButt, JoinMiter);
+    Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n", name());
+    Blt_Ps_Draw2DSegments(ps, ops->minor.segments, ops->minor.nUsed);
+  }
+}
+
 void Axis::printLimits(Blt_Ps ps)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+
+  if ((flags & DELETE_PENDING) || (!ops->limitsFormat))
+    return;
 
   double vMin = graphPtr_->left_ + gops->xPad + 2;
   double vMax = vMin;

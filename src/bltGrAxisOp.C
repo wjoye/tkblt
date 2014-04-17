@@ -687,66 +687,6 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
   return point;
 }
 
-void Blt_DrawGrids(Graph* graphPtr, Drawable drawable) 
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[i].axes); link != NULL;
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (ops->hide || (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      if (axisPtr->use_ && ops->showGrid) {
-	Blt_Draw2DSegments(graphPtr->display_, drawable, 
-			   ops->major.gc, ops->major.segments, 
-			   ops->major.nUsed);
-
-	if (ops->showGridMinor)
-	  Blt_Draw2DSegments(graphPtr->display_, drawable, 
-			     ops->minor.gc, ops->minor.segments, 
-			     ops->minor.nUsed);
-      }
-    }
-  }
-}
-
-void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps) 
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[i].axes); link != NULL; link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (ops->hide || !ops->showGrid || !axisPtr->use_ || 
-	  (axisPtr->flags & DELETE_PENDING))
-	continue;
-
-      Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n",
-		    axisPtr->name());
-      Blt_Ps_XSetLineAttributes(ps, ops->major.color, 
-				ops->major.lineWidth, 
-				&ops->major.dashes, CapButt, 
-				JoinMiter);
-      Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n",
-		    axisPtr->name());
-      Blt_Ps_Draw2DSegments(ps, ops->major.segments, 
-			    ops->major.nUsed);
-      if (ops->showGridMinor) {
-	Blt_Ps_XSetLineAttributes(ps, ops->minor.color, 
-				  ops->minor.lineWidth, 
-				  &ops->minor.dashes, CapButt, 
-				  JoinMiter);
-	Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n",
-		      axisPtr->name());
-	Blt_Ps_Draw2DSegments(ps, ops->minor.segments, 
-			      ops->minor.nUsed);
-      }
-    }
-  }
-}
-
 Axis *Blt_GetFirstAxis(Blt_Chain chain)
 {
   Blt_ChainLink link = Blt_Chain_FirstLink(chain);

@@ -42,7 +42,6 @@ extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y,
 			 Axis2d *pairPtr);
 
 extern void Blt_AdjustAxisPointers(Graph* graphPtr);
-extern void Blt_DrawGrids(Graph* graphPtr, Drawable drawable);
 extern void Blt_UpdateAxisBackgrounds(Graph* graphPtr);
 extern void Blt_GridsToPostScript(Graph* graphPtr, Blt_Ps ps);
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);

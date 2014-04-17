@@ -223,6 +223,7 @@ class Graph {
   void mapAxes();
   void drawAxes(Drawable);
   void drawAxesLimits(Drawable);
+  void drawAxesGrids(Drawable);
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 

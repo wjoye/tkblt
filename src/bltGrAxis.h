@@ -224,8 +224,10 @@ class Axis {
   int configure();
   void map(int, int);
   void draw(Drawable);
+  void drawGrids(Drawable);
   void drawLimits(Drawable);
   void print(Blt_Ps);
+  void printGrids(Blt_Ps);
   void printLimits(Blt_Ps);
 
   void mapStacked(int, int);

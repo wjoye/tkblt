@@ -437,28 +437,23 @@ void Graph::display()
     drawable = Tk_WindowId(tkwin_);
 
   if (ops->backingStore) {
-    if ((cache_ == None) || 
-	(cacheWidth_ != width_) ||
-	(cacheHeight_ != height_)) {
+    if ((cache_ == None)||(cacheWidth_ != width_)||(cacheHeight_ != height_)) {
       if (cache_ != None)
 	Tk_FreePixmap(display_, cache_);
 
-      cache_ = Tk_GetPixmap(display_, 
-				     Tk_WindowId(tkwin_), 
-				     width_, height_, 
-				     Tk_Depth(tkwin_));
+      cache_ = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), width_, height_, 
+			    Tk_Depth(tkwin_));
       cacheWidth_  = width_;
       cacheHeight_ = height_;
       flags |= CACHE_DIRTY;
     }
   }
+
   if (ops->backingStore) {
     if (flags & CACHE_DIRTY) {
       drawPlot(cache_);
       flags &= ~CACHE_DIRTY;
     }
-
-    // Copy the pixmap to the one used for drawing the entire graph
     XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
 	      Tk_Height(tkwin_), 0, 0);
   }
@@ -469,7 +464,6 @@ void Graph::display()
   drawMarkers(drawable, MARKER_ABOVE);
   drawActiveElements(drawable);
 
-  // Don't draw legend in the plot area.
   if (legend_->isRaised()) {
     switch (legend_->position()) {
     case Legend::PLOT:
@@ -545,7 +539,7 @@ void Graph::drawPlot(Drawable drawable)
   
   // Draw the elements, markers, legend, and axis limits
   drawAxes(drawable);
-  Blt_DrawGrids(this, drawable);
+  drawAxesGrids(drawable);
   drawMarkers(drawable, MARKER_UNDER);
 
   if (!legend_->isRaised()) {
@@ -1182,13 +1176,12 @@ void Graph::mapAxes()
 void Graph::drawAxes(Drawable drawable)
 {
   GraphOptions* gops = (GraphOptions*)ops_;
-  for (int i = 0; i < 4; i++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[i].axes); 
+
+  for (int ii=0; ii<4; ii++) {
+    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[ii].axes); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	axisPtr->draw(drawable);
+      axisPtr->draw(drawable);
     }
   }
 }
@@ -1199,11 +1192,20 @@ void Graph::drawAxesLimits(Drawable drawable)
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-    if ((axisPtr->flags & DELETE_PENDING) || (!ops->limitsFormat))
-      continue;
     axisPtr->drawLimits(drawable);
+  }
+}
+
+void Graph::drawAxesGrids(Drawable drawable)
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+
+  for (int ii=0; ii<4; ii++) {
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[ii].axes);
+	 link; link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      axisPtr->drawGrids(drawable);
+    }
   }
 }
 
@@ -1216,9 +1218,20 @@ void Graph::printAxes(Blt_Ps ps)
     for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	axisPtr->print(ps);
+      axisPtr->print(ps);
+    }
+  }
+}
+
+void Graph::printAxesGrids(Blt_Ps ps) 
+{
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+
+  for (int ii=0; ii<4; ii++) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(gops->margins[ii].axes);
+	 link; link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      axisPtr->printGrids(ps);
     }
   }
 }
@@ -1229,10 +1242,6 @@ void Graph::printAxesLimits(Blt_Ps ps)
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-    if ((axisPtr->flags & DELETE_PENDING) || (!ops->limitsFormat))
-      continue;
     axisPtr->printLimits(ps);
   }
 }
