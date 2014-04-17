@@ -689,89 +689,15 @@ Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, Axis2d *axesPtr)
 
 void Blt_DrawAxisLimits(Graph* graphPtr, Drawable drawable)
 {
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
-  char minString[200], maxString[200];
-  int vMin, hMin, vMax, hMax;
-
-#define SPACING 8
-  vMin = vMax = graphPtr->left_ + gops->xPad + 2;
-  hMin = hMax = graphPtr->bottom_ - gops->yPad - 2;	/* Offsets */
-
-  for (hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor);
-       hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Dim2D textDim;
-    const char *minFmt, *maxFmt;
-    char *minPtr, *maxPtr;
-    int isHoriz;
-
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    ops->limitsTextStyle.flags |= UPDATE_GC;
 
-    if (axisPtr->flags & DELETE_PENDING)
+    if ((axisPtr->flags & DELETE_PENDING) || (!ops->limitsFormat))
       continue;
-
-    if (!ops->limitsFormat)
-      continue;
-
-    isHoriz = axisPtr->isHorizontal();
-    minPtr = maxPtr = NULL;
-    minFmt = maxFmt = ops->limitsFormat;
-    if (minFmt[0] != '\0') {
-      minPtr = minString;
-      sprintf_s(minString, 200, minFmt, axisPtr->axisRange_.min);
-    }
-    if (maxFmt[0] != '\0') {
-      maxPtr = maxString;
-      sprintf_s(maxString, 200, maxFmt, axisPtr->axisRange_.max);
-    }
-    if (ops->descending) {
-      char *tmp;
-
-      tmp = minPtr, minPtr = maxPtr, maxPtr = tmp;
-    }
-    if (maxPtr) {
-      if (isHoriz) {
-	ops->limitsTextStyle.angle = 90.0;
-	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
-
-	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
-		      &ops->limitsTextStyle, graphPtr->right_, 
-		      hMax, &textDim);
-	hMax -= (textDim.height + SPACING);
-      } 
-      else {
-	ops->limitsTextStyle.angle = 0.0;
-	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
-
-	Blt_DrawText2(graphPtr->tkwin_, drawable, maxPtr,
-		      &ops->limitsTextStyle, vMax, 
-		      graphPtr->top_, &textDim);
-	vMax += (textDim.width + SPACING);
-      }
-    }
-    if (minPtr) {
-      ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
-
-      if (isHoriz) {
-	ops->limitsTextStyle.angle = 90.0;
-
-	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
-		      &ops->limitsTextStyle, graphPtr->left_, 
-		      hMin, &textDim);
-	hMin -= (textDim.height + SPACING);
-      } 
-      else {
-	ops->limitsTextStyle.angle = 0.0;
-
-	Blt_DrawText2(graphPtr->tkwin_, drawable, minPtr,
-		      &ops->limitsTextStyle, vMin, 
-		      graphPtr->bottom_, &textDim);
-	vMin += (textDim.width + SPACING);
-      }
-    }
+    axisPtr->drawLimits(drawable);
   }
 }
 

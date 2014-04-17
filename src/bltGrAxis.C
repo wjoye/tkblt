@@ -622,6 +622,80 @@ void Axis::draw(Drawable drawable)
   }
 }
 
+void Axis::drawLimits(Drawable drawable)
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+
+#define SPACING 8
+  int vMin = graphPtr_->left_ + gops->xPad + 2;
+  int vMax = vMin;
+  int hMin = graphPtr_->bottom_ - gops->yPad - 2;
+  int hMax = hMin;
+
+  ops->limitsTextStyle.flags |= UPDATE_GC;
+
+  int isHoriz = isHorizontal();
+  char* minPtr =NULL;
+  char* maxPtr =NULL;
+  const char* fmt = ops->limitsFormat;
+  if (fmt && *fmt) {
+    char minString[200];
+    minPtr = minString;
+    sprintf_s(minString, 200, fmt, axisRange_.min);
+
+    char maxString[200];
+    maxPtr = maxString;
+    sprintf_s(maxString, 200, fmt, axisRange_.max);
+  }
+  if (ops->descending) {
+    char *tmp = minPtr;
+    minPtr = maxPtr;
+    maxPtr = tmp;
+  }
+
+  if (maxPtr) {
+    if (isHoriz) {
+      ops->limitsTextStyle.angle = 90.0;
+      ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
+
+      Dim2D textDim;
+      Blt_DrawText2(graphPtr_->tkwin_, drawable, maxPtr, &ops->limitsTextStyle,
+		    graphPtr_->right_, hMax, &textDim);
+      hMax -= (textDim.height + SPACING);
+    } 
+    else {
+      ops->limitsTextStyle.angle = 0.0;
+      ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
+
+      Dim2D textDim;
+      Blt_DrawText2(graphPtr_->tkwin_, drawable, maxPtr, &ops->limitsTextStyle,
+		    vMax, graphPtr_->top_, &textDim);
+      vMax += (textDim.width + SPACING);
+    }
+  }
+  if (minPtr) {
+    ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
+
+    if (isHoriz) {
+      ops->limitsTextStyle.angle = 90.0;
+
+      Dim2D textDim;
+      Blt_DrawText2(graphPtr_->tkwin_, drawable, minPtr, &ops->limitsTextStyle,
+		    graphPtr_->left_, hMin, &textDim);
+      hMin -= (textDim.height + SPACING);
+    } 
+    else {
+      ops->limitsTextStyle.angle = 0.0;
+
+      Dim2D textDim;
+      Blt_DrawText2(graphPtr_->tkwin_, drawable, minPtr, &ops->limitsTextStyle,
+		    vMin, graphPtr_->bottom_, &textDim);
+      vMin += (textDim.width + SPACING);
+    }
+  }
+}
+
 void Axis::setClass(ClassId classId)
 {
   if (className_)
