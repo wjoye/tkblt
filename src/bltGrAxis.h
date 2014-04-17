@@ -226,6 +226,7 @@ class Axis {
   void draw(Drawable);
   void drawLimits(Drawable);
   void print(Blt_Ps);
+  void printLimits(Blt_Ps);
 
   void mapStacked(int, int);
   void mapGridlines();

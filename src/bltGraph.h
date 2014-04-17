@@ -222,6 +222,7 @@ class Graph {
   void configureAxes();
   void mapAxes();
   void drawAxes(Drawable);
+  void drawAxesLimits(Drawable);
 
  public:
   Graph(ClientData clientData, Tcl_Interp*interp, 
@@ -241,6 +242,7 @@ class Graph {
 
   void resetAxes();
   void printAxes(Blt_Ps);
+  void printAxesLimits(Blt_Ps);
 
   int isElementHidden(Blt::Marker*);
   Blt::Marker* nearestMarker(int, int, int);

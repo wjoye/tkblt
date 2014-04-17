@@ -559,7 +559,7 @@ void Graph::drawPlot(Drawable drawable)
     }
   }
 
-  Blt_DrawAxisLimits(this, drawable);
+  drawAxesLimits(drawable);
   drawElements(drawable);
 }
 
@@ -1193,6 +1193,50 @@ void Graph::drawAxes(Drawable drawable)
   }
 }
 
+void Graph::drawAxesLimits(Drawable drawable)
+{
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+
+    if ((axisPtr->flags & DELETE_PENDING) || (!ops->limitsFormat))
+      continue;
+    axisPtr->drawLimits(drawable);
+  }
+}
+
+void Graph::printAxes(Blt_Ps ps) 
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+
+  Margin *mp, *mend;
+  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
+	 link = Blt_Chain_NextLink(link)) {
+      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
+	axisPtr->print(ps);
+    }
+  }
+}
+
+void Graph::printAxesLimits(Blt_Ps ps)
+{
+  Tcl_HashSearch cursor;
+  for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
+    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+
+    if ((axisPtr->flags & DELETE_PENDING) || (!ops->limitsFormat))
+      continue;
+    axisPtr->printLimits(ps);
+  }
+}
+
 void Graph::resetAxes()
 {
   GraphOptions* gops = (GraphOptions*)ops_;
@@ -1268,19 +1312,4 @@ void Graph::resetAxes()
   flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 
-void Graph::printAxes(Blt_Ps ps) 
-{
-  GraphOptions* gops = (GraphOptions*)ops_;
-
-  Margin *mp, *mend;
-  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!ops->hide && axisPtr->use_ && !(axisPtr->flags & DELETE_PENDING))
-	axisPtr->print(ps);
-    }
-  }
-}
 
