@@ -123,8 +123,21 @@ void Crosshairs::configure()
   segArr_[1].x1 = graphPtr_->left_;
   segArr_[1].x2 = graphPtr_->right_;
 
+  enable();
+}
+
+void Crosshairs::enable()
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
   if (!ops->hide)
     on();
+}
+
+void Crosshairs::disable()
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
+  if (!ops->hide)
+    off();
 }
 
 void Crosshairs::off()

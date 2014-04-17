@@ -794,22 +794,16 @@ void Graph::reconfigure()
   configureMarkers();
 }
 
-// Support
-
 // Crosshairs
 
 void Graph::enableCrosshairs()
 {
-  CrosshairsOptions* ops = (CrosshairsOptions*)crosshairs_->ops_;
-  if (!ops->hide)
-    crosshairs_->on();
+  crosshairs_->enable();
 }
 
 void Graph::disableCrosshairs()
 {
-  CrosshairsOptions* ops = (CrosshairsOptions*)crosshairs_->ops_;
-  if (!ops->hide)
-    crosshairs_->off();
+  crosshairs_->disable();
 }
 
 // Pens

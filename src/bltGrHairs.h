@@ -52,7 +52,7 @@ typedef struct {
 } CrosshairsOptions;
 
 class Crosshairs {
- private:
+ protected:
   GC gc_;
 
  public:
@@ -69,6 +69,8 @@ class Crosshairs {
   void configure();
   void on();
   void off();
+  void enable();
+  void disable();
 };
 
 #endif
