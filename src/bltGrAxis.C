@@ -1747,7 +1747,7 @@ void Axis::printGrids(Blt_Ps ps)
   AxisOptions* ops = (AxisOptions*)ops_;
 
   if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
-    continue;
+    return;
 
   Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name());
   Blt_Ps_XSetLineAttributes(ps, ops->major.color, ops->major.lineWidth, 

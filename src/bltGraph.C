@@ -57,6 +57,8 @@ using namespace Blt;
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
 extern void Blt_LayoutGraph(Graph* graphPtr);
+extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
+extern void MarginsToPostScript(Graph* graphPtr, Blt_Ps ps);
 
 static Blt_BindPickProc PickEntry;
 
@@ -527,6 +529,7 @@ void Graph::map()
 void Graph::drawPlot(Drawable drawable)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
+
   drawMargins(drawable);
 
   // Draw the background of the plotting area with 3D border
@@ -537,9 +540,9 @@ void Graph::drawPlot(Drawable drawable)
 		     bottom_ - top_  + 1 + 2*ops->plotBW, 
 		     ops->plotBW, ops->plotRelief);
   
-  // Draw the elements, markers, legend, and axis limits
   drawAxes(drawable);
   drawAxesGrids(drawable);
+  drawAxesLimits(drawable);
   drawMarkers(drawable, MARKER_UNDER);
 
   if (!legend_->isRaised()) {
@@ -553,64 +556,16 @@ void Graph::drawPlot(Drawable drawable)
     }
   }
 
-  drawAxesLimits(drawable);
   drawElements(drawable);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DrawMargins --
- *
- * 	Draws the exterior region of the graph (axes, ticks, titles, etc) 
- * 	onto a pixmap. The interior region is defined by the given rectangle
- * 	structure.
- *
- *	---------------------------------
- *      |                               |
- *      |           rectArr[0]          |
- *      |                               |
- *	---------------------------------
- *      |     |top           right|     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      | [1] |                   | [2] |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |                   |     |
- *      |     |left         bottom|     |
- *	---------------------------------
- *      |                               |
- *      |          rectArr[3]           |
- *      |                               |
- *	---------------------------------
- *
- *		X coordinate axis
- *		Y coordinate axis
- *		legend
- *		interior border
- *		exterior border
- *		titles (X and Y axis, graph)
- *
- * Returns:
- *	None.
- *
- * Side Effects:
- *	Exterior of graph is displayed in its window.
- *
- *---------------------------------------------------------------------------
- */
 void Graph::drawMargins(Drawable drawable)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   XRectangle rects[4];
 
-  /*
-   * Draw the four outer rectangles which encompass the plotting
-   * surface. This clears the surrounding area and clips the plot.
-   */
+  // Draw the four outer rectangles which encompass the plotting
+  // surface. This clears the surrounding area and clips the plot.
   rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
   rects[0].width = rects[3].width = (short int)width_;
   rects[0].height = (short int)top_;
@@ -635,8 +590,7 @@ void Graph::drawMargins(Drawable drawable)
 		     rects[3].x, rects[3].y, rects[3].width, rects[3].height, 
 		     0, TK_RELIEF_FLAT);
 
-  /* Draw 3D border around the plotting area */
-
+  // Draw 3D border around the plotting area
   if (ops->plotBW > 0) {
     int x, y, w, h;
 
@@ -659,12 +613,117 @@ void Graph::drawMargins(Drawable drawable)
     break;
   }
 
-  if (ops->title != NULL)
+  if (ops->title)
     Blt_DrawText(tkwin_, drawable, ops->title,
 		 &ops->titleTextStyle, titleX_, titleY_);
 
   drawAxes(drawable);
   flags &= ~DRAW_MARGINS;
+}
+
+int Graph::print(const char *ident, Blt_Ps ps)
+{
+  GraphOptions* gops = (GraphOptions*)ops_;
+  PageSetup *setupPtr = pageSetup_;
+
+  // We need to know how big a graph to print.  If the graph hasn't been drawn
+  // yet, the width and height will be 1.  Instead use the requested size of
+  // the widget.  The user can still override this with the -width and -height
+  // postscript options.
+  if (setupPtr->reqWidth > 0)
+    width_ = setupPtr->reqWidth;
+  else if (width_ < 2)
+    width_ = Tk_ReqWidth(tkwin_);
+
+  if (setupPtr->reqHeight > 0)
+    height_ = setupPtr->reqHeight;
+  else if (height_ < 2)
+    height_ = Tk_ReqHeight(tkwin_);
+
+  Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
+  flags |= LAYOUT_NEEDED | RESET_WORLD;
+
+  /* Turn on PostScript measurements when computing the graph's layout. */
+  Blt_Ps_SetPrinting(ps, 1);
+  reconfigure();
+  map();
+
+  int x = left_ - gops->plotBW;
+  int y = top_ - gops->plotBW;
+
+  int w = (right_ - left_ + 1) + (2*gops->plotBW);
+  int h = (bottom_ - top_ + 1) + (2*gops->plotBW);
+
+  int result = PostScriptPreamble(this, ident, ps);
+  if (result != TCL_OK)
+    goto error;
+
+  Blt_Ps_XSetFont(ps, gops->titleTextStyle.font);
+  if (pageSetup_->decorations)
+    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(gops->plotBg));
+  else
+    Blt_Ps_SetClearBackground(ps);
+
+  Blt_Ps_XFillRectangle(ps, x, y, w, h);
+  Blt_Ps_Rectangle(ps, x, y, w, h);
+  Blt_Ps_Append(ps, "gsave clip\n\n");
+
+  // Draw the grid, elements, and markers in the plotting area
+  printAxesGrids(ps);
+  printAxesLimits(ps);
+  printMarkers(ps, 1);
+  
+  // Print legend underneath elements and markers
+  if (!legend_->isRaised()) {
+    switch (legend_->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      legend_->print(ps);
+      break;
+    default:
+      break;
+    }
+  }
+
+  printElements(ps);
+
+  // Print legend above elements (but not markers)
+  if (legend_->isRaised()) {
+    switch (legend_->position()) {
+    case Legend::PLOT:
+    case Legend::XY:
+      legend_->print(ps);
+      break;
+    default:
+      break;
+    }
+  }
+
+  printMarkers(ps, 0);
+  printActiveElements(ps);
+  Blt_Ps_VarAppend(ps, "\n",
+		   "% Unset clipping\n",
+		   "grestore\n\n", (char *)NULL);
+  MarginsToPostScript(this, ps);
+  Blt_Ps_VarAppend(ps,
+		   "showpage\n",
+		   "%Trailer\n",
+		   "grestore\n",
+		   "end\n",
+		   "%EOF\n", (char *)NULL);
+ error:
+  width_ = Tk_Width(tkwin_);
+  height_ = Tk_Height(tkwin_);
+  flags |= MAP_WORLD;
+  Blt_Ps_SetPrinting(ps, 0);
+  reconfigure();
+  map();
+
+  // Redraw the graph in order to re-calculate the layout as soon as
+  // possible. This is in the case the crosshairs are active.
+  eventuallyRedraw();
+
+  return result;
 }
 
 void Graph::eventuallyRedraw() 
@@ -736,131 +795,6 @@ void Graph::reconfigure()
 }
 
 // Support
-
-void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
-		   Blt_List list)
-{
-  Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
-  ClassId classId = (ClassId)(long(context));
-
-  switch (classId) {
-  case CID_ELEM_BAR:		
-  case CID_ELEM_LINE: 
-    {
-      Element* elemPtr = (Element*)object;
-      ElementOptions* ops = (ElementOptions*)elemPtr->ops();
-      MakeTagProc* tagProc = Blt_MakeElementTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-    }
-    break;
-  case CID_AXIS_X:
-  case CID_AXIS_Y:
-    {
-      Axis* axisPtr = (Axis*)object;
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      MakeTagProc* tagProc = Blt_MakeAxisTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-    }
-    break;
-  case CID_MARKER_BITMAP:
-  case CID_MARKER_LINE:
-  case CID_MARKER_POLYGON:
-  case CID_MARKER_TEXT:
-  case CID_MARKER_WINDOW:
-    {
-      Marker* markerPtr = (Marker*)object;
-      MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-      MakeTagProc* tagProc = Blt::MakeMarkerTag;
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->name()), 0);
-      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->className()), 0);
-      if (ops->tags)
-	for (const char** p = ops->tags; *p != NULL; p++)
-	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
-
-    }
-    break;
-  default:
-    break;
-  }
-}
-
-// Find the closest point from the set of displayed elements, searching
-// the display list from back to front.  That way, if the points from
-// two different elements overlay each other exactly, the one that's on
-// top (visible) is picked.
-static ClientData PickEntry(ClientData clientData, int x, int y, 
-			    ClientData* contextPtr)
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-
-  if (graphPtr->flags & MAP_ALL) {
-    *contextPtr = (ClientData)NULL;
-    return NULL;
-  }
-
-  Region2d exts;
-  graphPtr->extents(&exts);
-
-  // Sample coordinate is in one of the graph margins. Can only pick an axis.
-  if ((x >= exts.right) || (x < exts.left) || 
-      (y >= exts.bottom) || (y < exts.top)) {
-    Axis* axisPtr = Blt_NearestAxis(graphPtr, x, y);
-    if (axisPtr) {
-      *contextPtr = (ClientData)axisPtr->classId();
-      return axisPtr;
-    }
-  }
-
-  // From top-to-bottom check:
-  // 1. markers drawn on top (-under false).
-  // 2. elements using its display list back to front.
-  // 3. markers drawn under element (-under true).
-  Marker* markerPtr = graphPtr->nearestMarker(x, y, 0);
-  if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId();
-    return markerPtr;
-  }
-
-  ClosestSearch* searchPtr = &ops->search;
-  searchPtr->index = -1;
-  searchPtr->x = x;
-  searchPtr->y = y;
-  searchPtr->dist = (double)(searchPtr->halo + 1);
-	
-  Blt_ChainLink link;
-  Element* elemPtr;
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->hide() || (elemPtr->flags & MAP_ITEM))
-      continue;
-
-    elemPtr->closest();
-  }
-  // Found an element within the minimum halo distance.
-  if (searchPtr->dist <= (double)searchPtr->halo) {
-    *contextPtr = (ClientData)elemPtr->classId();
-    return searchPtr->elemPtr;
-  }
-
-  markerPtr = graphPtr->nearestMarker(x, y, 1);
-  if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId();
-    return markerPtr;
-  }
-
-  *contextPtr = (ClientData)NULL;
-  return NULL;
-}
 
 // Crosshairs
 
@@ -1140,10 +1074,11 @@ void Graph::configureAxes()
 void Graph::mapAxes()
 {
   GraphOptions* gops = (GraphOptions*)ops_;
-  for (int margin = 0; margin < 4; margin++) {
+
+  for (int ii=0; ii<4; ii++) {
     int count =0;
     int offset =0;
-    Blt_Chain chain = gops->margins[margin].axes;
+    Blt_Chain chain = gops->margins[ii].axes;
     for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
@@ -1151,18 +1086,13 @@ void Graph::mapAxes()
       if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
 	continue;
 
-      if (gops->stackAxes) {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
+      if (ops->reqNumMajorTicks <= 0)
+	ops->reqNumMajorTicks = 4;
 
-	axisPtr->mapStacked(count, margin);
-      } 
-      else {
-	if (ops->reqNumMajorTicks <= 0)
-	  ops->reqNumMajorTicks = 4;
-
-	axisPtr->map(offset, margin);
-      }
+      if (gops->stackAxes)
+	axisPtr->mapStacked(count, ii);
+      else 
+	axisPtr->map(offset, ii);
 
       if (ops->showGrid)
 	axisPtr->mapGridlines();
@@ -1225,7 +1155,7 @@ void Graph::printAxes(Blt_Ps ps)
 
 void Graph::printAxesGrids(Blt_Ps ps) 
 {
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* gops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
     for (Blt_ChainLink link=Blt_Chain_FirstLink(gops->margins[ii].axes);
@@ -1321,4 +1251,129 @@ void Graph::resetAxes()
   flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 
+
+void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
+		   Blt_List list)
+{
+  Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
+  ClassId classId = (ClassId)(long(context));
+
+  switch (classId) {
+  case CID_ELEM_BAR:		
+  case CID_ELEM_LINE: 
+    {
+      Element* elemPtr = (Element*)object;
+      ElementOptions* ops = (ElementOptions*)elemPtr->ops();
+      MakeTagProc* tagProc = Blt_MakeElementTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->name()), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, elemPtr->className()), 0);
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    }
+    break;
+  case CID_AXIS_X:
+  case CID_AXIS_Y:
+    {
+      Axis* axisPtr = (Axis*)object;
+      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      MakeTagProc* tagProc = Blt_MakeAxisTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->name()), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, axisPtr->className()), 0);
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+    }
+    break;
+  case CID_MARKER_BITMAP:
+  case CID_MARKER_LINE:
+  case CID_MARKER_POLYGON:
+  case CID_MARKER_TEXT:
+  case CID_MARKER_WINDOW:
+    {
+      Marker* markerPtr = (Marker*)object;
+      MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
+      MakeTagProc* tagProc = Blt::MakeMarkerTag;
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->name()), 0);
+      Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, markerPtr->className()), 0);
+      if (ops->tags)
+	for (const char** p = ops->tags; *p != NULL; p++)
+	  Blt_List_Append(list, (const char*)(*tagProc)(graphPtr, *p), 0);
+
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+// Find the closest point from the set of displayed elements, searching
+// the display list from back to front.  That way, if the points from
+// two different elements overlay each other exactly, the one that's on
+// top (visible) is picked.
+static ClientData PickEntry(ClientData clientData, int x, int y, 
+			    ClientData* contextPtr)
+{
+  Graph* graphPtr = (Graph*)clientData;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
+
+  if (graphPtr->flags & MAP_ALL) {
+    *contextPtr = (ClientData)NULL;
+    return NULL;
+  }
+
+  Region2d exts;
+  graphPtr->extents(&exts);
+
+  // Sample coordinate is in one of the graph margins. Can only pick an axis.
+  if ((x >= exts.right) || (x < exts.left) || 
+      (y >= exts.bottom) || (y < exts.top)) {
+    Axis* axisPtr = Blt_NearestAxis(graphPtr, x, y);
+    if (axisPtr) {
+      *contextPtr = (ClientData)axisPtr->classId();
+      return axisPtr;
+    }
+  }
+
+  // From top-to-bottom check:
+  // 1. markers drawn on top (-under false).
+  // 2. elements using its display list back to front.
+  // 3. markers drawn under element (-under true).
+  Marker* markerPtr = graphPtr->nearestMarker(x, y, 0);
+  if (markerPtr) {
+    *contextPtr = (ClientData)markerPtr->classId();
+    return markerPtr;
+  }
+
+  ClosestSearch* searchPtr = &ops->search;
+  searchPtr->index = -1;
+  searchPtr->x = x;
+  searchPtr->y = y;
+  searchPtr->dist = (double)(searchPtr->halo + 1);
+	
+  Blt_ChainLink link;
+  Element* elemPtr;
+  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
+       link != NULL; link = Blt_Chain_PrevLink(link)) {
+    elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->hide() || (elemPtr->flags & MAP_ITEM))
+      continue;
+
+    elemPtr->closest();
+  }
+  // Found an element within the minimum halo distance.
+  if (searchPtr->dist <= (double)searchPtr->halo) {
+    *contextPtr = (ClientData)elemPtr->classId();
+    return searchPtr->elemPtr;
+  }
+
+  markerPtr = graphPtr->nearestMarker(x, y, 1);
+  if (markerPtr) {
+    *contextPtr = (ClientData)markerPtr->classId();
+    return markerPtr;
+  }
+
+  *contextPtr = (ClientData)NULL;
+  return NULL;
+}
 

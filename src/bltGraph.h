@@ -243,6 +243,7 @@ class Graph {
 
   void resetAxes();
   void printAxes(Blt_Ps);
+  void printAxesGrids(Blt_Ps);
   void printAxesLimits(Blt_Ps);
 
   int isElementHidden(Blt::Marker*);
