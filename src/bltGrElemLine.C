@@ -348,6 +348,9 @@ void LineElement::map()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
     
+  if (!link || (flags & DELETE_PENDING))
+    return;
+
   ResetLine();
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues || !ops->coords.y->nValues)
@@ -569,57 +572,12 @@ void LineElement::closest()
   }
 }
 
-void LineElement::drawActive(Drawable drawable)
-{
-  LineElementOptions* ops = (LineElementOptions*)ops_;
-  LinePen* penPtr = (LinePen *)ops->activePenPtr;
-
-  if (!penPtr)
-    return;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-  int symbolSize = ScaleSymbol(penOps->symbol.size);
-
-  /* 
-   * nActiveIndices 
-   *	  > 0		Some points are active.  Uses activeArr.
-   *	  < 0		All points are active.
-   *    == 0		No points are active.
-   */
-  if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      MapActiveSymbols();
-
-    if (penOps->symbol.type != SYMBOL_NONE)
-      DrawSymbols(drawable, penPtr, symbolSize, activePts_.length,
-		  activePts_.points);
-    if (penOps->valueShow != SHOW_NONE)
-      DrawValues(drawable, penPtr, activePts_.length, activePts_.points, 
-		 activePts_.map);
-  }
-  else if (nActiveIndices_ < 0) { 
-    if (penOps->traceWidth > 0) {
-      if (lines_.length > 0)
-	Blt_Draw2DSegments(graphPtr_->display_, drawable, 
-			   penPtr->traceGC_, lines_.segments, 
-			   lines_.length);
-      else if (Blt_Chain_GetLength(traces_) > 0)
-	DrawTraces(drawable, penPtr);
-    }
-    if (penOps->symbol.type != SYMBOL_NONE)
-      DrawSymbols(drawable, penPtr, symbolSize, symbolPts_.length,
-		  symbolPts_.points);
-
-    if (penOps->valueShow != SHOW_NONE) {
-      DrawValues(drawable, penPtr, symbolPts_.length, symbolPts_.points, 
-		 symbolPts_.map);
-    }
-  }
-}
-
 void LineElement::draw(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING))
+    return;
 
   // Fill area under the curve
   if (fillPts_) {
@@ -705,6 +663,51 @@ void LineElement::draw(Drawable drawable)
   symbolInterval_ = 0;
 }
 
+void LineElement::drawActive(Drawable drawable)
+{
+  LineElementOptions* ops = (LineElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+    return;
+
+  LinePen* penPtr = (LinePen*)ops->activePenPtr;
+  if (!penPtr)
+    return;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  int symbolSize = ScaleSymbol(penOps->symbol.size);
+
+  if (nActiveIndices_ > 0) {
+    if (flags & ACTIVE_PENDING)
+      MapActiveSymbols();
+
+    if (penOps->symbol.type != SYMBOL_NONE)
+      DrawSymbols(drawable, penPtr, symbolSize, activePts_.length,
+		  activePts_.points);
+    if (penOps->valueShow != SHOW_NONE)
+      DrawValues(drawable, penPtr, activePts_.length, activePts_.points, 
+		 activePts_.map);
+  }
+  else if (nActiveIndices_ < 0) { 
+    if (penOps->traceWidth > 0) {
+      if (lines_.length > 0)
+	Blt_Draw2DSegments(graphPtr_->display_, drawable, 
+			   penPtr->traceGC_, lines_.segments, 
+			   lines_.length);
+      else if (Blt_Chain_GetLength(traces_) > 0)
+	DrawTraces(drawable, penPtr);
+    }
+    if (penOps->symbol.type != SYMBOL_NONE)
+      DrawSymbols(drawable, penPtr, symbolSize, symbolPts_.length,
+		  symbolPts_.points);
+
+    if (penOps->valueShow != SHOW_NONE) {
+      DrawValues(drawable, penPtr, symbolPts_.length, symbolPts_.points, 
+		 symbolPts_.map);
+    }
+  }
+}
+
 void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
@@ -713,11 +716,9 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (penOps->traceWidth > 0) {
-    /*
-     * Draw an extra line offset by one pixel from the previous to give a
-     * thicker appearance.  This is only for the legend entry.  This routine
-     * is never called for drawing the actual line segments.
-     */
+    // Draw an extra line offset by one pixel from the previous to give a
+    // thicker appearance.  This is only for the legend entry.  This routine
+    // is never called for drawing the actual line segments.
     XDrawLine(graphPtr_->display_, drawable, penPtr->traceGC_, x - size, y, 
 	      x + size, y);
     XDrawLine(graphPtr_->display_, drawable, penPtr->traceGC_, x - size, y + 1,
@@ -731,50 +732,14 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
   }
 }
 
-void LineElement::printActive(Blt_Ps ps)
-{
-  LineElementOptions* ops = (LineElementOptions*)ops_;
-
-  LinePen* penPtr = (LinePen *)ops->activePenPtr;
-  if (!penPtr)
-    return;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-  int symbolSize = ScaleSymbol(penOps->symbol.size);
-  if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      MapActiveSymbols();
-
-    if (penOps->symbol.type != SYMBOL_NONE)
-      SymbolsToPostScript(ps, penPtr, symbolSize, activePts_.length,
-			  activePts_.points);
-
-    if (penOps->valueShow != SHOW_NONE)
-      ValuesToPostScript(ps, penPtr, activePts_.length, activePts_.points,
-			 activePts_.map);
-  }
-  else if (nActiveIndices_ < 0) {
-    if (penOps->traceWidth > 0) {
-      if (lines_.length > 0) {
-	SetLineAttributes(ps, penPtr);
-	Blt_Ps_Draw2DSegments(ps, lines_.segments, lines_.length);
-      }
-      if (Blt_Chain_GetLength(traces_) > 0)
-	TracesToPostScript(ps, (LinePen*)penPtr);
-    }
-    if (penOps->symbol.type != SYMBOL_NONE)
-      SymbolsToPostScript(ps, penPtr, symbolSize, symbolPts_.length, 
-			  symbolPts_.points);
-    if (penOps->valueShow != SHOW_NONE) {
-      ValuesToPostScript(ps, penPtr, symbolPts_.length, 
-			 symbolPts_.points, symbolPts_.map);
-    }
-  }
-}
-
 void LineElement::print(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING))
+    return;
+
+  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name());
 
   // Draw fill area
   if (fillPts_) {
@@ -861,6 +826,52 @@ void LineElement::print(Blt_Ps ps)
 			 symbolPts_.map + count);
     }
     count += stylePtr->symbolPts.length;
+  }
+}
+
+void LineElement::printActive(Blt_Ps ps)
+{
+  LineElementOptions* ops = (LineElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+    return;
+
+  LinePen* penPtr = (LinePen *)ops->activePenPtr;
+  if (!penPtr)
+    return;
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name());
+
+  int symbolSize = ScaleSymbol(penOps->symbol.size);
+  if (nActiveIndices_ > 0) {
+    if (flags & ACTIVE_PENDING)
+      MapActiveSymbols();
+
+    if (penOps->symbol.type != SYMBOL_NONE)
+      SymbolsToPostScript(ps, penPtr, symbolSize, activePts_.length,
+			  activePts_.points);
+
+    if (penOps->valueShow != SHOW_NONE)
+      ValuesToPostScript(ps, penPtr, activePts_.length, activePts_.points,
+			 activePts_.map);
+  }
+  else if (nActiveIndices_ < 0) {
+    if (penOps->traceWidth > 0) {
+      if (lines_.length > 0) {
+	SetLineAttributes(ps, penPtr);
+	Blt_Ps_Draw2DSegments(ps, lines_.segments, lines_.length);
+      }
+      if (Blt_Chain_GetLength(traces_) > 0)
+	TracesToPostScript(ps, (LinePen*)penPtr);
+    }
+    if (penOps->symbol.type != SYMBOL_NONE)
+      SymbolsToPostScript(ps, penPtr, symbolSize, symbolPts_.length, 
+			  symbolPts_.points);
+    if (penOps->valueShow != SHOW_NONE) {
+      ValuesToPostScript(ps, penPtr, symbolPts_.length, 
+			 symbolPts_.points, symbolPts_.map);
+    }
   }
 }
 

@@ -258,6 +258,9 @@ void BarElement::map()
   BarElementOptions* ops = (BarElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
+  if (!link || (flags & DELETE_PENDING))
+    return;
+
   ResetBar();
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues || !ops->coords.y->nValues)
@@ -666,33 +669,12 @@ void BarElement::closest()
   }
 }
 
-void BarElement::drawActive(Drawable drawable)
-{
-  BarElementOptions* ops = (BarElementOptions*)ops_;
-
-  if (ops->activePenPtr) {
-    BarPen* penPtr = ops->activePenPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
-
-    if (nActiveIndices_ > 0) {
-      if (flags & ACTIVE_PENDING) {
-	MapActiveBars();
-      }
-      DrawBarSegments(drawable, penPtr, activeRects_, nActive_);
-      if (penOps->valueShow != SHOW_NONE)
-	DrawBarValues(drawable, penPtr, activeRects_, nActive_, activeToData_);
-    }
-    else if (nActiveIndices_ < 0) {
-      DrawBarSegments(drawable, penPtr, bars_, nBars_);
-      if (penOps->valueShow != SHOW_NONE)
-	DrawBarValues(drawable, penPtr, bars_, nBars_, barToData_);
-    }
-  }
-}
-
 void BarElement::draw(Drawable drawable)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING))
+    return;
 
   int count = 0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
@@ -718,6 +700,33 @@ void BarElement::draw(Drawable drawable)
 		    barToData_ + count);
 
     count += stylePtr->nBars;
+  }
+}
+
+void BarElement::drawActive(Drawable drawable)
+{
+  BarElementOptions* ops = (BarElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+    return;
+
+  BarPen* penPtr = (BarPen*)ops->activePenPtr;
+  if (!penPtr)
+    return;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+
+  if (nActiveIndices_ > 0) {
+    if (flags & ACTIVE_PENDING)
+      MapActiveBars();
+
+    DrawBarSegments(drawable, penPtr, activeRects_, nActive_);
+    if (penOps->valueShow != SHOW_NONE)
+      DrawBarValues(drawable, penPtr, activeRects_, nActive_, activeToData_);
+  }
+  else if (nActiveIndices_ < 0) {
+    DrawBarSegments(drawable, penPtr, bars_, nBars_);
+    if (penOps->valueShow != SHOW_NONE)
+      DrawBarValues(drawable, penPtr, bars_, nBars_, barToData_);
   }
 }
 
@@ -752,33 +761,16 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
     XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, 0, 0);
 }
 
-void BarElement::printActive(Blt_Ps ps)
-{
-  BarElementOptions* ops = (BarElementOptions*)ops_;
-
-  if (ops->activePenPtr) {
-    BarPen* penPtr = ops->activePenPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
-	
-    if (nActiveIndices_ > 0) {
-      if (flags & ACTIVE_PENDING)
-	MapActiveBars();
-      SegmentsToPostScript(ps, penPtr, activeRects_, nActive_);
-      if (penOps->valueShow != SHOW_NONE)
-	BarValuesToPostScript(ps, penPtr, activeRects_, nActive_,activeToData_);
-    }
-    else if (nActiveIndices_ < 0) {
-      SegmentsToPostScript(ps, penPtr, bars_, nBars_);
-      if (penOps->valueShow != SHOW_NONE)
-	BarValuesToPostScript(ps, penPtr, bars_, nBars_, barToData_);
-    }
-  }
-}
-
 void BarElement::print(Blt_Ps ps)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   
+  if (hide_ || (flags & DELETE_PENDING))
+    return;
+
+  // Comment the PostScript to indicate the start of the element
+  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name());
+
   int count = 0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
@@ -812,6 +804,34 @@ void BarElement::print(Blt_Ps ps)
 			    barToData_ + count);
 
     count += stylePtr->nBars;
+  }
+}
+
+void BarElement::printActive(Blt_Ps ps)
+{
+  BarElementOptions* ops = (BarElementOptions*)ops_;
+
+  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+    return;
+
+  BarPen* penPtr = (BarPen*)ops->activePenPtr;
+  if (!penPtr)
+    return;
+  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+	
+  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name());
+
+  if (nActiveIndices_ > 0) {
+    if (flags & ACTIVE_PENDING)
+      MapActiveBars();
+    SegmentsToPostScript(ps, penPtr, activeRects_, nActive_);
+    if (penOps->valueShow != SHOW_NONE)
+      BarValuesToPostScript(ps, penPtr, activeRects_, nActive_,activeToData_);
+  }
+  else if (nActiveIndices_ < 0) {
+    SegmentsToPostScript(ps, penPtr, bars_, nBars_);
+    if (penOps->valueShow != SHOW_NONE)
+      BarValuesToPostScript(ps, penPtr, bars_, nBars_, barToData_);
   }
 }
 
