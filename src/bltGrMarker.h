@@ -60,14 +60,14 @@ namespace Blt {
 
   class Marker {
   protected:
-    Graph* graphPtr_;
-    const char *name_;
     Tk_OptionTable optionTable_;
     void* ops_;
-    Tcl_HashEntry* hashPtr_;
-    int clipped_;
 
   public:
+    Graph* graphPtr_;
+    const char *name_;
+    Tcl_HashEntry* hashPtr_;
+    int clipped_;
     Blt_ChainLink link;
     unsigned int flags;		
 
@@ -94,10 +94,8 @@ namespace Blt {
     virtual const char* className() =0;
     virtual const char* typeName() =0;
 
-    const char* name() {return name_;}
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}
-    int clipped() {return clipped_;}
   };
 };
 

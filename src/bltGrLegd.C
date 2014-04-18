@@ -1009,7 +1009,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
     for (Blt_ChainLink link=Blt_Chain_FirstLink(legendPtr->selected_); 
 	 link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      Tcl_DStringAppend(&dString, elemPtr->name(), -1);
+      Tcl_DStringAppend(&dString, elemPtr->name_, -1);
       Tcl_DStringAppend(&dString, "\n", -1);
     }
   }
@@ -1018,7 +1018,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
 	 link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (legendPtr->entryIsSelected(elemPtr)) {
-	Tcl_DStringAppend(&dString, elemPtr->name(), -1);
+	Tcl_DStringAppend(&dString, elemPtr->name_, -1);
 	Tcl_DStringAppend(&dString, "\n", -1);
       }
     }

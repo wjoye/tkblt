@@ -259,6 +259,7 @@ class Graph {
   Blt::Marker* nearestMarker(int, int, int);
   int isElementHidden(Blt::Marker*);
 
+  int createElement(int, Tcl_Obj* const []);
   int getElement(Tcl_Obj*, Element**);
   ClientData elementTag(const char*);
 

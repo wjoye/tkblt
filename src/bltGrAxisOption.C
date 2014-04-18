@@ -81,7 +81,7 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
   if (!axisPtr)
     return Tcl_NewStringObj("", -1);
 
-  return Tcl_NewStringObj(axisPtr->name(), -1);
+  return Tcl_NewStringObj(axisPtr->name_, -1);
 };
 
 static void AxisFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
@@ -251,13 +251,13 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 
   if (classId != CID_NONE) {
     // Set the axis type on the first use of it.
-    if ((axisPtr->refCount_ == 0) || (axisPtr->classId() == CID_NONE))
+    if ((axisPtr->refCount_ == 0) || (axisPtr->classId_ == CID_NONE))
       axisPtr->setClass(classId);
 
-    else if (axisPtr->classId() != classId) {
+    else if (axisPtr->classId_ != classId) {
       Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
 		       "\" is already in use on an opposite ", 
-		       axisPtr->className(), "-axis", 
+		       axisPtr->className_, "-axis", 
 		       NULL);
       return TCL_ERROR;
     }

@@ -38,10 +38,12 @@ extern "C" {
 #include "bltGrAxisOp.h"
 #include "bltGrXAxisOp.h"
 #include "bltGrPen.h"
-#include "bltGrPenOp.h"
 #include "bltGrPenBar.h"
 #include "bltGrPenLine.h"
+#include "bltGrPenOp.h"
 #include "bltGrElem.h"
+#include "bltGrElemBar.h"
+#include "bltGrElemLine.h"
 #include "bltGrElemOp.h"
 #include "bltGrMarker.h"
 #include "bltGrMarkerOp.h"
@@ -910,6 +912,51 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
 
 // Elements
 
+int Graph::createElement(int objc, Tcl_Obj* const objv[])
+{
+  char *name = Tcl_GetString(objv[3]);
+  if (name[0] == '-') {
+    Tcl_AppendResult(interp_, "name of element \"", name, 
+		     "\" can't start with a '-'", NULL);
+    return TCL_ERROR;
+  }
+
+  int isNew;
+  Tcl_HashEntry* hPtr = 
+    Tcl_CreateHashEntry(&elements_.table, name, &isNew);
+  if (!isNew) {
+    Tcl_AppendResult(interp_, "element \"", name, 
+		     "\" already exists in \"", Tcl_GetString(objv[0]), 
+		     "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  Element* elemPtr;
+  switch (classId_) {
+  case CID_ELEM_BAR:
+    elemPtr = new BarElement(this, name, hPtr);
+    break;
+  case CID_ELEM_LINE:
+    elemPtr = new LineElement(this, name, hPtr);
+    break;
+  default:
+    return TCL_ERROR;
+  }
+  if (!elemPtr)
+    return TCL_ERROR;
+
+  Tcl_SetHashValue(hPtr, elemPtr);
+
+  if ((Tk_InitOptions(interp_, (char*)elemPtr->ops(), elemPtr->optionTable(), tkwin_) != TCL_OK) || (ElementObjConfigure(interp_, elemPtr, objc-4, objv+4) != TCL_OK)) {
+    Blt_DestroyElement(elemPtr);
+    return TCL_ERROR;
+  }
+
+  elemPtr->link = Blt_Chain_Append(elements_.displayList, elemPtr);
+
+  return TCL_OK;
+}
+
 void Graph::destroyElements()
 {
   Tcl_HashSearch iter;
@@ -1063,7 +1110,7 @@ void Graph::drawMarkers(Drawable drawable, int under)
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
 
-    if ((mops->drawUnder != under) || (markerPtr->clipped()) ||
+    if ((mops->drawUnder != under) || (markerPtr->clipped_) ||
 	(markerPtr->flags & DELETE_PENDING) || (mops->hide))
       continue;
 
@@ -1089,7 +1136,7 @@ void Graph::printMarkers(Blt_Ps ps, int under)
     if (isElementHidden(markerPtr))
       continue;
 
-    Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name(), 
+    Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name_, 
 		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
     markerPtr->postscript(ps);
   }
@@ -1133,7 +1180,7 @@ int Graph::isElementHidden(Marker* markerPtr)
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&elements_.table, mops->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      if (!elemPtr->link || elemPtr->hide())
+      if (!elemPtr->link || elemPtr->hide_)
 	return 1;
     }
   }
@@ -1536,7 +1583,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_ELEM_LINE: 
     {
       Element* ptr = (Element*)object;
-      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->name()),0);
+      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->name_),0);
       Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->className()),0);
       ElementOptions* ops = (ElementOptions*)ptr->ops();
       for (const char** pp = ops->tags; *pp; pp++)
@@ -1547,8 +1594,8 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_AXIS_Y:
     {
       Axis* ptr = (Axis*)object;
-      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->name()),0);
-      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->className()),0);
+      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->name_),0);
+      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->className_),0);
       AxisOptions* ops = (AxisOptions*)ptr->ops();
       for (const char** pp = ops->tags; *pp; pp++)
 	Blt_List_Append(list, (const char*)graphPtr->axisTag(*pp),0);
@@ -1561,7 +1608,7 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_WINDOW:
     {
       Marker* ptr = (Marker*)object;
-      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->name()),0);
+      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->name_),0);
       Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->className()),0);
       MarkerOptions* ops = (MarkerOptions*)ptr->ops();
       for (const char** pp = ops->tags; *pp; pp++)
@@ -1596,7 +1643,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
       (y >= exts.bottom) || (y < exts.top)) {
     Axis* axisPtr = graphPtr->nearestAxis(x, y);
     if (axisPtr) {
-      *contextPtr = (ClientData)axisPtr->classId();
+      *contextPtr = (ClientData)axisPtr->classId_;
       return axisPtr;
     }
   }
@@ -1622,7 +1669,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->hide() || (elemPtr->flags & MAP_ITEM))
+    if (elemPtr->hide_ || (elemPtr->flags & MAP_ITEM))
       continue;
 
     elemPtr->closest();

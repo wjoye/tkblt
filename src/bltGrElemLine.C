@@ -739,7 +739,7 @@ void LineElement::print(Blt_Ps ps)
   if (hide_ || (flags & DELETE_PENDING))
     return;
 
-  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name());
+  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name_);
 
   // Draw fill area
   if (fillPts_) {
@@ -841,7 +841,7 @@ void LineElement::printActive(Blt_Ps ps)
     return;
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name());
+  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
   int symbolSize = ScaleSymbol(penOps->symbol.size);
   if (nActiveIndices_ > 0) {

@@ -163,7 +163,7 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
       if ((penPtr->flags & DELETE_PENDING) == 0)
 	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewStringObj(penPtr->name(), -1));
+				 Tcl_NewStringObj(penPtr->name_, -1));
     }
   } 
   else {
@@ -174,9 +174,9 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
       if ((penPtr->flags & DELETE_PENDING) == 0) {
 	for (int ii=3; ii<objc; ii++) {
 	  char *pattern = Tcl_GetString(objv[ii]);
-	  if (Tcl_StringMatch(penPtr->name(), pattern)) {
+	  if (Tcl_StringMatch(penPtr->name_, pattern)) {
 	    Tcl_ListObjAppendElement(interp, listObjPtr, 
-				     Tcl_NewStringObj(penPtr->name(), -1));
+				     Tcl_NewStringObj(penPtr->name_, -1));
 	    break;
 	  }
 	}

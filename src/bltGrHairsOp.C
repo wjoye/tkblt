@@ -48,7 +48,7 @@ static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 
   for (error=0; error<=1; error++) {
     if (!error) {
-      if (Tk_SetOptions(interp, (char*)chPtr->ops_, chPtr->optionTable_, 
+      if (Tk_SetOptions(interp, (char*)chPtr->ops(), chPtr->optionTable(), 
 			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
 	  != TCL_OK)
 	continue;
@@ -86,8 +86,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   Crosshairs* chPtr = graphPtr->crosshairs_;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)chPtr->ops_, 
-				      chPtr->optionTable_,
+				      (char*)chPtr->ops(), 
+				      chPtr->optionTable(),
 				      objv[3], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -101,8 +101,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   Crosshairs* chPtr = graphPtr->crosshairs_;
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)chPtr->ops_, 
-				       chPtr->optionTable_, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)chPtr->ops(), 
+				       chPtr->optionTable(), 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin_);
     if (objPtr == NULL)
@@ -119,7 +119,7 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
 		int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
   if (ops->hide) {
     chPtr->on();
@@ -132,7 +132,7 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
   if (!ops->hide) {
     chPtr->off();
@@ -145,7 +145,7 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops_;
+  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
   ops->hide = (ops->hide == 0);
   if (ops->hide)

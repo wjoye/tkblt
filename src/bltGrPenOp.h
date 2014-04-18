@@ -32,7 +32,8 @@
 
 extern int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 			   int objc, Tcl_Obj* const objv[]);
-extern void Blt_FreePen(Pen* penPtr);
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[]);
+
+extern void Blt_FreePen(Pen* penPtr);
 #endif

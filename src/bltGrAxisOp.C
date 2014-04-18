@@ -432,7 +432,7 @@ static int FocusOp(Tcl_Interp* interp, Graph* graphPtr,
   Blt_SetFocusItem(graphPtr->bindTable_, graphPtr->focusPtr_, NULL);
 
   if (graphPtr->focusPtr_)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr_->name(),-1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr_->name_,-1);
 
   return TCL_OK;
 }
@@ -444,13 +444,13 @@ static int GetOp(Tcl_Interp* interp, Graph* graphPtr,
 
   // Report only on axes
   if ((axisPtr) && 
-      ((axisPtr->classId() == CID_AXIS_X) || 
-       (axisPtr->classId() == CID_AXIS_Y) || 
-       (axisPtr->classId() == CID_NONE))) {
+      ((axisPtr->classId_ == CID_AXIS_X) || 
+       (axisPtr->classId_ == CID_AXIS_Y) || 
+       (axisPtr->classId_ == CID_NONE))) {
 
     char  *string = Tcl_GetString(objv[3]);
     if (!strcmp(string, "current"))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->name(),-1);
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->name_,-1);
     else if (!strcmp(string, "detail"))
       Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->detail_, -1);
   }
@@ -499,7 +499,7 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
       if (axisPtr->flags & DELETE_PENDING)
 	continue;
 
-      Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(axisPtr->name(), -1));
+      Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(axisPtr->name_, -1));
     }
   } 
   else {
@@ -508,9 +508,9 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
       Axis* axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
       for (int ii=3; ii<objc; ii++) {
 	const char *pattern = (const char*)Tcl_GetString(objv[ii]);
-	if (Tcl_StringMatch(axisPtr->name(), pattern)) {
+	if (Tcl_StringMatch(axisPtr->name_, pattern)) {
 	  Tcl_ListObjAppendElement(interp, listObjPtr, 
-				   Tcl_NewStringObj(axisPtr->name(), -1));
+				   Tcl_NewStringObj(axisPtr->name_, -1));
 	  break;
 	}
       }

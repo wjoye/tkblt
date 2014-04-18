@@ -64,7 +64,7 @@ static int BindOp(Tcl_Interp* interp, Axis* axisPtr,
 {
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->axisTag(axisPtr->name()), objc-3, objv+3);
+  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->axisTag(axisPtr->name_), objc-3, objv+3);
 }
           
 static int UseOp(Tcl_Interp* interp, Axis* axisPtr, 
@@ -82,7 +82,7 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
 	 link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
-			       Tcl_NewStringObj(axisPtr->name(), -1));
+			       Tcl_NewStringObj(axisPtr->name_, -1));
     }
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
@@ -116,12 +116,12 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
     if (graphPtr->getAxis(axisObjv[i], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (axisPtr->classId() == CID_NONE)
+    if (axisPtr->classId_ == CID_NONE)
       axisPtr->setClass(classId);
-    else if (axisPtr->classId() != classId) {
+    else if (axisPtr->classId_ != classId) {
       Tcl_AppendResult(interp, "wrong type axis \"", 
-		       axisPtr->name(), "\": can't use ", 
-		       axisPtr->className(), " type axis.", NULL); 
+		       axisPtr->name_, "\": can't use ", 
+		       axisPtr->className_, " type axis.", NULL); 
       return TCL_ERROR;
     }
     if (axisPtr->link) {

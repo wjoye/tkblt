@@ -118,17 +118,17 @@ typedef struct {
 
 class Element {
  protected:
-  Graph* graphPtr_;
-  const char* name_;
   Tk_OptionTable optionTable_;
   void* ops_;
-  Tcl_HashEntry* hashPtr_;
-  int hide_;
 
   double xRange_;
   double yRange_;
 
  public:
+  Graph* graphPtr_;
+  const char* name_;
+  Tcl_HashEntry* hashPtr_;
+  int hide_;
   unsigned short row_;
   unsigned short col_;
   int *activeIndices_;
@@ -159,11 +159,8 @@ class Element {
   virtual const char* className() =0;
   virtual const char* typeName() =0;
 
-  Graph* graphPtr() {return graphPtr_;}
-  const char* name() {return name_;}
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
-  int hide() {return hide_;}
 };
 
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);

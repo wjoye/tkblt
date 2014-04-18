@@ -53,12 +53,13 @@ typedef struct {
 
 class Crosshairs {
  protected:
+  Tk_OptionTable optionTable_;
+  void* ops_;
+
   GC gc_;
 
  public:
   Graph* graphPtr_;
-  Tk_OptionTable optionTable_;
-  void* ops_;
   int visible_;
   XSegment segArr_[2];
 
@@ -71,6 +72,9 @@ class Crosshairs {
   void off();
   void enable();
   void disable();
+
+  Tk_OptionTable optionTable() {return optionTable_;}
+  void* ops() {return ops_;}
 };
 
 #endif

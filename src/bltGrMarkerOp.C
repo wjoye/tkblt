@@ -313,7 +313,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
 
     if (markerPtr->regionIn(&extents, enclosed)) {
       Tcl_Obj* objPtr = Tcl_GetObjResult(interp);
-      Tcl_SetStringObj(objPtr, markerPtr->name(), -1);
+      Tcl_SetStringObj(objPtr, markerPtr->name_, -1);
       return TCL_OK;
     }
   }
@@ -332,7 +332,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (markerPtr == NULL)
       return TCL_OK;
 
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->name(), -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->name_, -1);
   }
   return TCL_OK;
 }
@@ -346,7 +346,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
 	 link; link = Blt_Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
-			       Tcl_NewStringObj(markerPtr->name(), -1));
+			       Tcl_NewStringObj(markerPtr->name_, -1));
     }
   } 
   else {
@@ -355,9 +355,9 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       for (int ii = 3; ii<objc; ii++) {
 	const char* pattern = (const char*)Tcl_GetString(objv[ii]);
-	if (Tcl_StringMatch(markerPtr->name(), pattern)) {
+	if (Tcl_StringMatch(markerPtr->name_, pattern)) {
 	  Tcl_ListObjAppendElement(interp, listObjPtr,
-				   Tcl_NewStringObj(markerPtr->name(), -1));
+				   Tcl_NewStringObj(markerPtr->name_, -1));
 	  break;
 	}
       }

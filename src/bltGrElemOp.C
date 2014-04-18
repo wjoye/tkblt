@@ -50,10 +50,10 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
 
 // Create
 
-static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
-			       Element* elemPtr, 
-			       int objc, Tcl_Obj* const objv[])
+int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
+			int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = elemPtr->graphPtr_;
   Tk_SavedOptions savedOptions;
   int mask =0;
   int error;
@@ -93,55 +93,9 @@ static int ElementObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   }
 }
 
-static int CreateElement(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			 Tcl_Obj *const *objv, ClassId classId)
-{
-  char *name = Tcl_GetString(objv[3]);
-  if (name[0] == '-') {
-    Tcl_AppendResult(interp, "name of element \"", name, 
-		     "\" can't start with a '-'", NULL);
-    return TCL_ERROR;
-  }
-
-  int isNew;
-  Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->elements_.table, name, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp, "element \"", name, 
-		     "\" already exists in \"", Tcl_GetString(objv[0]), 
-		     "\"", NULL);
-    return TCL_ERROR;
-  }
-
-  Element* elemPtr;
-  switch (classId) {
-  case CID_ELEM_BAR:
-    elemPtr = new BarElement(graphPtr,name,hPtr);
-    break;
-  case CID_ELEM_LINE:
-    elemPtr = new LineElement(graphPtr,name,hPtr);
-    break;
-  default:
-    return TCL_ERROR;
-  }
-  if (!elemPtr)
-    return TCL_ERROR;
-
-  Tcl_SetHashValue(hPtr, elemPtr);
-
-  if ((Tk_InitOptions(interp, (char*)elemPtr->ops(), elemPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4) != TCL_OK)) {
-    Blt_DestroyElement(elemPtr);
-    return TCL_ERROR;
-  }
-
-  elemPtr->link = Blt_Chain_Append(graphPtr->elements_.displayList, elemPtr);
-
-  return TCL_OK;
-}
-
 void Blt_DestroyElement(Element* elemPtr)
 {
-  Graph* graphPtr = elemPtr->graphPtr();
+  Graph* graphPtr = elemPtr->graphPtr_;
 
   Blt_DeleteBindings(graphPtr->bindTable_, elemPtr);
   graphPtr->legend_->removeElement(elemPtr);
@@ -196,7 +150,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return ElementObjConfigure(interp, graphPtr, elemPtr, objc-4, objv+4);
+    return ElementObjConfigure(interp, elemPtr, objc-4, objv+4);
 }
 
 // Ops
@@ -213,7 +167,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (elemPtr->flags & ACTIVE)
 	Tcl_ListObjAppendElement(interp, listObjPtr,
-				 Tcl_NewStringObj(elemPtr->name(), -1));
+				 Tcl_NewStringObj(elemPtr->name_, -1));
     }
 
     Tcl_SetObjResult(interp, listObjPtr);
@@ -299,7 +253,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
       if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
-      if (elemPtr && !elemPtr->hide() && 
+      if (elemPtr && !elemPtr->hide_ && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
 	elemPtr->closest();
     }
@@ -313,7 +267,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr && !elemPtr->hide() && 
+      if (elemPtr && !elemPtr->hide_ && 
 	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
 	elemPtr->closest();
     }
@@ -322,7 +276,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   if (searchPtr->dist < (double)searchPtr->halo) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("name", -1));
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(searchPtr->elemPtr->name(), -1)); 
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(searchPtr->elemPtr->name_, -1)); 
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("index", -1));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(searchPtr->index));
     Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj("x", -1));
@@ -338,9 +292,9 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
-		    int objc, Tcl_Obj* const objv[], ClassId classId)
+		    int objc, Tcl_Obj* const objv[])
 {
-  if (CreateElement(graphPtr, interp, objc, objv, classId) != TCL_OK)
+  if (graphPtr->createElement(objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
 
@@ -401,7 +355,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
     Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable_);
     if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0))
-	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
+	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
   }
   return TCL_OK;
 }
@@ -447,7 +401,7 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_HashSearch iter;
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.table, &iter); hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
   }
@@ -457,8 +411,8 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
 
       for (int ii=3; ii<objc; ii++) {
-	if (Tcl_StringMatch(elemPtr->name(),Tcl_GetString(objv[ii]))) {
-	  Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+	if (Tcl_StringMatch(elemPtr->name_,Tcl_GetString(objv[ii]))) {
+	  Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
 	  Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
 	  break;
 	}
@@ -576,7 +530,7 @@ typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc,
 			       Tcl_Obj *const *objv);
 
 int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
-		  int objc, Tcl_Obj* const objv[], ClassId classId)
+		  int objc, Tcl_Obj* const objv[])
 {
   void *ptr = Blt_GetOpFromObj(interp, numElemOps, elemOps, BLT_OP_ARG2, 
 			       objc, objv, 0);
@@ -584,7 +538,7 @@ int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   if (ptr == CreateOp)
-    return CreateOp(graphPtr, interp, objc, objv, classId);
+    return CreateOp(graphPtr, interp, objc, objv);
   else {
     GraphElementProc* proc = (GraphElementProc*)ptr;
     return (*proc)(graphPtr, interp, objc, objv);
@@ -599,7 +553,7 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
 
   for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+    Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
     Tcl_ListObjAppendElement(graphPtr->interp_, listObjPtr, objPtr);
   }
 

@@ -51,14 +51,14 @@ typedef struct {
 
 class Pen {
  protected:
-  Graph* graphPtr_;
-  const char *name_;
   Tk_OptionTable optionTable_;
   void* ops_;
-  int manageOptions_;
-  Tcl_HashEntry *hashPtr_;
 
  public:
+  Graph* graphPtr_;
+  const char *name_;
+  int manageOptions_;
+  Tcl_HashEntry *hashPtr_;
   unsigned int flags;
   int refCount;
 
@@ -71,7 +71,6 @@ class Pen {
   virtual const char* className() =0;
   virtual const char* typeName() =0;
 
-  const char* name() {return name_;}
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 

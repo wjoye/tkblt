@@ -319,7 +319,7 @@ void BarElement::map()
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->axes.y->name();
+	  ops->groupName : ops->axes.y->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
 	  double slice, width, offset;
@@ -769,7 +769,7 @@ void BarElement::print(Blt_Ps ps)
     return;
 
   // Comment the PostScript to indicate the start of the element
-  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name());
+  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name_);
 
   int count = 0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
@@ -819,7 +819,7 @@ void BarElement::printActive(Blt_Ps ps)
     return;
   BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
 	
-  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name());
+  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
@@ -1470,7 +1470,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide()) || (bePtr->classId() != CID_ELEM_BAR))
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     nSegs++;
@@ -1497,7 +1497,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
 	else
 	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 
-	name = (ops->groupName) ? ops->groupName : ops->axes.y->name();
+	name = (ops->groupName) ? ops->groupName : ops->axes.y->name_;
 	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	if (isNew)
 	  count = 1;
@@ -1589,7 +1589,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if ((bePtr->hide()) || (bePtr->classId() != CID_ELEM_BAR))
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
       continue;
 
     if (ops->coords.x && ops->coords.y) {
@@ -1607,7 +1607,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 	  continue;
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	name = (ops->groupName) ? ops->groupName : ops->axes.y->name();
+	name = (ops->groupName) ? ops->groupName : ops->axes.y->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (!hPtr)
 	  continue;

@@ -206,22 +206,10 @@ static int Y2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int BarOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		 Tcl_Obj* const objv[])
-{
-  return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_BAR);
-}
-
-static int LineOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		  Tcl_Obj* const objv[])
-{
-  return Blt_ElementOp(graphPtr, interp, objc, objv, CID_ELEM_LINE);
-}
-
 static int ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
-  return Blt_ElementOp(graphPtr, interp, objc, objv, graphPtr->classId_);
+  return Blt_ElementOp(graphPtr, interp, objc, objv);
 }
 
 /*
@@ -399,7 +387,7 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 static Blt_OpSpec graphOps[] =
   {
     {"axis",         1, (void*)Blt_AxisOp,        2, 0, "oper ?args?",},
-    {"bar",          2, (void*)BarOp,             2, 0, "oper ?args?",},
+    {"bar",          2, (void*)ElementOp,         2, 0, "oper ?args?",},
     {"cget",         2, (void*)CgetOp,            3, 3, "option",},
     {"configure",    2, (void*)ConfigureOp,       2, 0, "?option value?...",},
     {"crosshairs",   2, (void*)Blt_CrosshairsOp,  2, 0, "oper ?args?",},
@@ -408,8 +396,8 @@ static Blt_OpSpec graphOps[] =
     {"inside",       3, (void*)InsideOp,          4, 4, "winX winY",},
     {"invtransform", 3, (void*)InvtransformOp,    4, 4, "winX winY",},
     {"legend",       2, (void*)Blt_LegendOp,      2, 0, "oper ?args?",},
-    {"line",         2, (void*)LineOp,            2, 0, "oper ?args?",},
-    {"marker",       2, (void*)Blt::MarkerOp,      2, 0, "oper ?args?",},
+    {"line",         2, (void*)ElementOp,         2, 0, "oper ?args?",},
+    {"marker",       2, (void*)Blt::MarkerOp,     2, 0, "oper ?args?",},
     {"pen",          2, (void*)Blt_PenOp,         2, 0, "oper ?args?",},
     {"postscript",   2, (void*)Blt_PostScriptOp,  2, 0, "oper ?args?",},
     {"transform",    1, (void*)TransformOp,       4, 4, "x y",},

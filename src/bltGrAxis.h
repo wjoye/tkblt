@@ -147,13 +147,15 @@ typedef struct {
 } AxisOptions;
 
 class Axis {
+ protected:
+  Tk_OptionTable optionTable_;
+  void* ops_;
+
  public:
   Graph* graphPtr_;
   ClassId classId_;
   const char* name_;
   const char* className_;
-  Tk_OptionTable optionTable_;
-  void* ops_;
 
   int use_;
   Tcl_HashEntry* hashPtr_;
@@ -215,9 +217,6 @@ class Axis {
   Axis(Graph*, const char*, int, Tcl_HashEntry*);
   virtual ~Axis();
 
-  ClassId classId() {return classId_;}
-  const char* name() {return name_;}
-  const char* className() {return className_;}
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 

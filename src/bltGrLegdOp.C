@@ -143,9 +143,9 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
     for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
 	 link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (Tcl_StringMatch(elemPtr->name(), pattern)) {
+      if (Tcl_StringMatch(elemPtr->name_, pattern)) {
 	fprintf(stderr, "legend %s(%s) %s is currently %d\n",
-		string, pattern, elemPtr->name(), 
+		string, pattern, elemPtr->name_, 
 		(elemPtr->flags & LABEL_ACTIVE));
 	if (active) {
 	  if ((elemPtr->flags & LABEL_ACTIVE) == 0) {
@@ -159,7 +159,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
 	  }
 	}
 	fprintf(stderr, "legend %s(%s) %s is now %d\n",
-		string, pattern, elemPtr->name(), 
+		string, pattern, elemPtr->name_, 
 		(elemPtr->flags & LABEL_ACTIVE));
       }
     }
@@ -188,7 +188,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
       if (elemPtr->flags & LABEL_ACTIVE) {
 	Tcl_Obj *objPtr;
 
-	objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+	objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
 	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
       }
     }
@@ -231,7 +231,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
     for (link = Blt_Chain_FirstLink(legendPtr->selected_); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
   }
@@ -241,7 +241,7 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
       if (legendPtr->entryIsSelected(elemPtr)) {
-	Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name(), -1);
+	Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
 	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
       }
     }
@@ -269,7 +269,7 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
   graphPtr->legend_->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name(),-1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name_,-1);
 
   return TCL_OK;
 }
@@ -287,7 +287,7 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
       return TCL_ERROR;
 
     if (elemPtr)
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(),-1);
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
   }
   return TCL_OK;
 }
@@ -335,7 +335,7 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   legendPtr->selAnchorPtr_ = elemPtr;
   legendPtr->selMarkPtr_ = NULL;
   if (elemPtr)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
 
   graphPtr->legend_->eventuallyRedraw();
 
@@ -396,7 +396,7 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
     legendPtr->flags &= ~SELECT_TOGGLE;
     legendPtr->flags |= SELECT_SET;
     legendPtr->selectRange(legendPtr->selAnchorPtr_, elemPtr);
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name(), -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
     legendPtr->selMarkPtr_ = elemPtr;
 
     graphPtr->legend_->eventuallyRedraw();
@@ -440,7 +440,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   if (legendPtr->getElementFromObj(objv[4], &firstPtr) != TCL_OK)
     return TCL_ERROR;
 
-  if ((firstPtr->hide()) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
+  if ((firstPtr->hide_) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
     Tcl_AppendResult(interp, "can't select hidden node \"", 
 		     Tcl_GetString(objv[4]), "\"", (char *)NULL);
     return TCL_ERROR;
@@ -451,7 +451,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
     if (legendPtr->getElementFromObj(objv[5], &lastPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (lastPtr->hide() && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
+    if (lastPtr->hide_ && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
       Tcl_AppendResult(interp, "can't select hidden node \"", 
 		       Tcl_GetString(objv[5]), "\"", (char *)NULL);
       return TCL_ERROR;

@@ -329,7 +329,7 @@ int Axis::configure()
     char msg[200];
     sprintf_s(msg, 200, 
 	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
-	      ops->reqMin, ops->reqMax, name());
+	      ops->reqMin, ops->reqMax, name_);
     Tcl_AppendResult(graphPtr_->interp_, msg, NULL);
     return TCL_ERROR;
   }
@@ -342,7 +342,7 @@ int Axis::configure()
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
 	Tcl_AppendResult(graphPtr_->interp_,"bad logscale -min limit \"", 
 			 Blt_Dtoa(graphPtr_->interp_, ops->reqMin), 
-			 "\" for axis \"", name(), "\"", 
+			 "\" for axis \"", name_, "\"", 
 			 NULL);
 	return TCL_ERROR;
       }
@@ -1693,7 +1693,7 @@ void Axis::print(Blt_Ps ps)
   if (ops->hide || !use_ || (flags & DELETE_PENDING))
     return;
 
-  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name());
+  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name_);
   if (ops->normalBg)
     Blt_Ps_Fill3DRectangle(ps, ops->normalBg, left_, top_, 
 			   right_ - left_, bottom_ - top_, 
@@ -1748,16 +1748,16 @@ void Axis::printGrids(Blt_Ps ps)
   if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
     return;
 
-  Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name());
+  Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name_);
   Blt_Ps_XSetLineAttributes(ps, ops->major.color, ops->major.lineWidth, 
 			    &ops->major.dashes, CapButt, JoinMiter);
-  Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n", name());
+  Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n", name_);
   Blt_Ps_Draw2DSegments(ps, ops->major.segments, ops->major.nUsed);
 
   if (ops->showGridMinor) {
     Blt_Ps_XSetLineAttributes(ps, ops->minor.color, ops->minor.lineWidth, 
 			      &ops->minor.dashes, CapButt, JoinMiter);
-    Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n", name());
+    Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n", name_);
     Blt_Ps_Draw2DSegments(ps, ops->minor.segments, ops->minor.nUsed);
   }
 }
