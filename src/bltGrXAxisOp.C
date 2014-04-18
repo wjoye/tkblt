@@ -57,43 +57,6 @@ extern int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr,
 static int lastMargin;
 
 
-int Blt_CreateAxes(Graph* graphPtr)
-{
-  for (int ii=0; ii<4; ii++) {
-    int isNew;
-    Tcl_HashEntry* hPtr = 
-      Tcl_CreateHashEntry(&graphPtr->axes_.table, axisNames[ii].name, &isNew);
-    Blt_Chain chain = Blt_Chain_Create();
-
-    Axis* axisPtr = new Axis(graphPtr, axisNames[ii].name, ii, hPtr);
-    if (!axisPtr)
-      return TCL_ERROR;
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-
-    Tcl_SetHashValue(hPtr, axisPtr);
-
-    axisPtr->refCount_ = 1;
-    axisPtr->use_ =1;
-    
-    axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
-
-    if (Tk_InitOptions(graphPtr->interp_, (char*)axisPtr->ops(), 
-		       axisPtr->optionTable(), graphPtr->tkwin_) != TCL_OK)
-      return TCL_ERROR;
-
-    if (axisPtr->configure() != TCL_OK)
-      return TCL_ERROR;
-
-    if ((axisPtr->margin_ == MARGIN_RIGHT) || (axisPtr->margin_ == MARGIN_TOP))
-      ops->hide = 1;
-
-    graphPtr->axisChain_[ii] = chain;
-    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
-    axisPtr->chain = chain;
-  }
-  return TCL_OK;
-}
-
 // Ops
 
 static int BindOp(Tcl_Interp* interp, Axis* axisPtr, 

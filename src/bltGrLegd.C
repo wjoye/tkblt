@@ -872,7 +872,7 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, NULL);
   }
   else {
-    if (Blt_GetElement(graphPtr_->interp_, graphPtr_, objPtr, &elemPtr) !=TCL_OK)
+    if (graphPtr_->getElement(objPtr, &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (!elemPtr->link) {

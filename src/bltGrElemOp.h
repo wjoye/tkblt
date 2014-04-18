@@ -32,7 +32,5 @@
 
 extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			 Tcl_Obj* const objv[], ClassId classId);
-extern int Blt_GetElement(Tcl_Interp* interp, Graph *graphPtr, 
-			  Tcl_Obj *objPtr, Element **elemPtrPtr);
 extern void Blt_DestroyElement(Element* elemPtr);
 #endif

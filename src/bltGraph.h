@@ -220,6 +220,7 @@ class Graph {
   void drawMarkers(Drawable, int);
   void printMarkers(Blt_Ps, int);
 
+  int createAxes();
   void destroyAxes();
   void configureAxes();
   void mapAxes();
@@ -256,6 +257,8 @@ class Graph {
   int isElementHidden(Blt::Marker*);
 
   ClientData elementTag(const char*);
+
+  int getElement(Tcl_Obj *objPtr, Element **elemPtrPtr);
 };
 
 extern Blt_BindTagProc Blt_GraphTags;

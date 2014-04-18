@@ -166,7 +166,7 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+  if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
@@ -184,7 +184,7 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+  if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (objc <= 5) {
@@ -224,7 +224,7 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+  if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   int* indices = NULL;
@@ -299,7 +299,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
   if (objc>5) {
     for (int ii=5; ii<objc; ii++) {
       Element* elemPtr;
-      if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
+      if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
       if (elemPtr && !elemPtr->hide() && 
@@ -355,7 +355,7 @@ static int DeactivateOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
-    if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
+    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (elemPtr->activeIndices_) {
@@ -375,12 +375,9 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
-    if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK) {
-      Tcl_AppendResult(interp, "can't find element \"", 
-		       Tcl_GetString(objv[ii]), "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin_), "\"", NULL);
+    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
-    }
+
     elemPtr->flags |= DELETE_PENDING;
     Tcl_EventuallyFree(elemPtr, FreeElement);
   }
@@ -421,8 +418,9 @@ static int LowerOp(Graph* graphPtr, Tcl_Interp* interp,
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
-    if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
+    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
+
     Blt_Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
     Blt_Chain_LinkAfter(chain, elemPtr->link, NULL); 
   }
@@ -482,7 +480,7 @@ static int RaiseOp(Graph* graphPtr, Tcl_Interp* interp,
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
-    if (Blt_GetElement(interp, graphPtr, objv[ii], &elemPtr) != TCL_OK)
+    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
     Blt_Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
@@ -517,10 +515,11 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
   Blt_Chain chain = Blt_Chain_Create();
   for (int ii=0; ii<n; ii++) {
     Element* elemPtr;
-    if (Blt_GetElement(interp, graphPtr, elem[ii], &elemPtr) != TCL_OK) {
+    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK) {
       Blt_Chain_Destroy(chain);
       return TCL_ERROR;
     }
+
     Blt_Chain_Append(chain, elemPtr);
   }
 
@@ -550,7 +549,7 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Element* elemPtr;
-  if (Blt_GetElement(interp, graphPtr, objv[3], &elemPtr) != TCL_OK)
+  if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->typeName(), -1);
@@ -630,24 +629,4 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
   return TCL_OK;
 }
 
-int Blt_GetElement(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-		   Element **elemPtrPtr)
-{
-  Tcl_HashEntry *hPtr;
-  char *name;
-
-  name = Tcl_GetString(objPtr);
-  if (!name || !name[0])
-    return TCL_ERROR;
-  hPtr = Tcl_FindHashEntry(&graphPtr->elements_.table, name);
-  if (!hPtr) {
-    if (interp)
-      Tcl_AppendResult(interp, "can't find element \"", name,
-		       "\" in \"", Tk_PathName(graphPtr->tkwin_), "\"", 
-		       NULL);
-    return TCL_ERROR;
-  }
-  *elemPtrPtr = (Element*)Tcl_GetHashValue(hPtr);
-  return TCL_OK;
-}
 

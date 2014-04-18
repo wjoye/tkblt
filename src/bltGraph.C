@@ -284,6 +284,11 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   bindTable_ = Blt_CreateBindingTable(interp_, tkwin_, this, 
 				      PickEntry, Blt_GraphTags);
 
+  if (createAxes() != TCL_OK) {
+    valid_ =0;
+    return;
+  }
+
   if (Blt_CreatePen(this, interp_, "activeLine", CID_ELEM_LINE, 0, NULL) != 
       TCL_OK) {
     valid_ =0;
@@ -294,10 +299,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
     valid_ =0;
     return;
   }
-  if (Blt_CreateAxes(this) != TCL_OK) {
-    valid_ =0;
-    return;
-  }
+
   if (Blt_CreatePageSetup(this) != TCL_OK) {
     valid_ =0;
     return;
@@ -918,6 +920,25 @@ void Graph::printActiveElements(Blt_Ps ps)
   }
 }
 
+int Graph::getElement(Tcl_Obj *objPtr, Element **elemPtrPtr)
+{
+  Tcl_HashEntry *hPtr;
+  char *name;
+
+  name = Tcl_GetString(objPtr);
+  if (!name || !name[0])
+    return TCL_ERROR;
+  hPtr = Tcl_FindHashEntry(&elements_.table, name);
+  if (!hPtr) {
+    Tcl_AppendResult(interp_, "can't find element \"", name,
+		     "\" in \"", Tk_PathName(tkwin_), "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  *elemPtrPtr = (Element*)Tcl_GetHashValue(hPtr);
+  return TCL_OK;
+}
+
 ClientData Graph::elementTag(const char *tagName)
 {
   int isNew;
@@ -1055,6 +1076,43 @@ int Graph::isElementHidden(Marker* markerPtr)
 }
 
 // Axis
+
+int Graph::createAxes()
+{
+  for (int ii=0; ii<4; ii++) {
+    int isNew;
+    Tcl_HashEntry* hPtr = 
+      Tcl_CreateHashEntry(&axes_.table, axisNames[ii].name, &isNew);
+    Blt_Chain chain = Blt_Chain_Create();
+
+    Axis* axisPtr = new Axis(this, axisNames[ii].name, ii, hPtr);
+    if (!axisPtr)
+      return TCL_ERROR;
+    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+
+    Tcl_SetHashValue(hPtr, axisPtr);
+
+    axisPtr->refCount_ = 1;
+    axisPtr->use_ =1;
+    
+    axisPtr->setClass(!(ii&1) ? CID_AXIS_X : CID_AXIS_Y);
+
+    if (Tk_InitOptions(interp_, (char*)axisPtr->ops(), 
+		       axisPtr->optionTable(), tkwin_) != TCL_OK)
+      return TCL_ERROR;
+
+    if (axisPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+
+    if ((axisPtr->margin_ == MARGIN_RIGHT) || (axisPtr->margin_ == MARGIN_TOP))
+      ops->hide = 1;
+
+    axisChain_[ii] = chain;
+    axisPtr->link = Blt_Chain_Append(chain, axisPtr);
+    axisPtr->chain = chain;
+  }
+  return TCL_OK;
+}
 
 void Graph::destroyAxes()
 {
