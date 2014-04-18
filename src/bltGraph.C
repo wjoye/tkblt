@@ -905,7 +905,7 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
   }
 
   *penPtrPtr = (Pen*)Tcl_GetHashValue(hPtr);
-  (*penPtrPtr)->refCount++;
+  (*penPtrPtr)->refCount_++;
 
   return TCL_OK;
 }
@@ -1236,8 +1236,7 @@ int Graph::createAxis(int objc, Tcl_Obj* const objv[])
   }
 
   int isNew;
-  Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&axes_.table, string, &isNew);
+  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&axes_.table, string, &isNew);
   if (!isNew) {
     Tcl_AppendResult(interp_, "axis \"", string, "\" already exists in \"",
 		     Tcl_GetString(objv[0]), "\"", NULL);
@@ -1261,9 +1260,9 @@ int Graph::createAxis(int objc, Tcl_Obj* const objv[])
 void Graph::destroyAxes()
 {
   Tcl_HashSearch cursor;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor); hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
+  for (Tcl_HashEntry *hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
+       hPtr; hPtr=Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->hashPtr_ = NULL;
     delete axisPtr;
   }
   Tcl_DeleteHashTable(&axes_.table);
