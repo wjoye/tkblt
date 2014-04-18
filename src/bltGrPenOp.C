@@ -37,9 +37,6 @@ extern "C" {
 #include "bltGrPenLine.h"
 #include "bltGrPenBar.h"
 
-static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			 Pen **penPtrPtr);
-
 static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 			   int objc, Tcl_Obj* const objv[])
 {
@@ -133,9 +130,8 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
   }
 
   Pen* penPtr;
-  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
+  if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
-
 
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)penPtr->ops(), 
@@ -152,7 +148,7 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
 		       int objc, Tcl_Obj* const objv[])
 {
   Pen* penPtr;
-  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
+  if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (objc <= 5) {
@@ -188,12 +184,8 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
     
   Pen* penPtr;
-  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK) {
-    Tcl_AppendResult(interp, "can't find pen \"", 
-		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
+  if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
-  }
 
   penPtr->flags |= DELETE_PENDING;
   if (penPtr->refCount == 0)
@@ -241,7 +233,7 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
 		  int objc, Tcl_Obj* const objv[])
 {
   Pen* penPtr;
-  if (GetPenFromObj(interp, graphPtr, objv[3], &penPtr) != TCL_OK)
+  if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), penPtr->typeName(), -1);
@@ -282,60 +274,3 @@ void Blt_FreePen(Pen* penPtr)
       delete penPtr;
   }
 }
-
-int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
-		      ClassId classId, Pen **penPtrPtr)
-{
-  Pen* penPtr = NULL;
-  const char *name = Tcl_GetString(objPtr);
-  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable_, name);
-  if (hPtr != NULL) {
-    penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-    if (penPtr->flags & DELETE_PENDING)
-      penPtr = NULL;
-  }
-
-  if (!penPtr) {
-    Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin_), "\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  if (penPtr->classId() != classId) {
-    Tcl_AppendResult(interp, "pen \"", name, 
-		     "\" is the wrong type (is \"", penPtr->className(),
-		     "\")", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  penPtr->refCount++;
-  *penPtrPtr = penPtr;
-
-  return TCL_OK;
-}
-
-// Support
-
-static int GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			 Pen **penPtrPtr)
-{
-  Pen* penPtr = NULL;
-  const char *name = Tcl_GetString(objPtr);
-  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&graphPtr->penTable_, name);
-  if (hPtr != NULL) {
-    penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-    if (penPtr->flags & DELETE_PENDING)
-      penPtr = NULL;
-  }
-  if (penPtr == NULL) {
-    if (interp != NULL) {
-      Tcl_AppendResult(interp, "can't find pen \"", name, "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin_), "\"", (char *)NULL);
-    }
-    return TCL_ERROR;
-  }
-  *penPtrPtr = penPtr;
-  return TCL_OK;
-}
-
-

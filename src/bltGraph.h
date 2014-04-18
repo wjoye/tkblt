@@ -43,6 +43,7 @@ class Crosshairs;
 class Axis;
 class Element;
 class Legend;
+class Pen;
 
 namespace Blt {
 class Marker;
@@ -260,6 +261,7 @@ class Graph {
 
   int getElement(Tcl_Obj*, Element**);
   int getAxis(Tcl_Obj*, Axis**);
+  int getPen(Tcl_Obj*, Pen**);
 };
 
 extern Blt_BindTagProc Blt_GraphTags;

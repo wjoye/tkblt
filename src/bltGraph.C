@@ -842,6 +842,26 @@ void Graph::destroyPens()
   Tcl_DeleteHashTable(&penTable_);
 }
 
+int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
+{
+  *penPtrPtr = NULL;
+  const char *name = Tcl_GetString(objPtr);
+  if (!name || !name[0])
+    return TCL_ERROR;
+
+  Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&penTable_, name);
+  if (!hPtr) {
+    Tcl_AppendResult(interp_, "can't find pen \"", name, "\" in \"", 
+		     Tk_PathName(tkwin_), "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  *penPtrPtr = (Pen*)Tcl_GetHashValue(hPtr);
+  (*penPtrPtr)->refCount++;
+
+  return TCL_OK;
+}
+
 // Elements
 
 void Graph::destroyElements()

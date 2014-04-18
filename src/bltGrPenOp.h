@@ -30,7 +30,6 @@
 #ifndef __BltGrPenOp_h__
 #define __BltGrPenOp_h__
 
-extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
 extern void Blt_FreePen(Pen* penPtr);
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[]);

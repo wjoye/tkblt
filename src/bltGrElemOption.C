@@ -357,7 +357,7 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
   }
 
   Pen* penPtr;
-  if (Blt_GetPenFromObj(interp, graphPtr, objv[0], classId, &penPtr) != TCL_OK)
+  if (graphPtr->getPen(objv[0], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (objc == 3) {

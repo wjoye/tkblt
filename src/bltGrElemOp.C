@@ -43,9 +43,6 @@ extern "C" {
 
 // Defs
 
-extern int Blt_GetPenFromObj(Tcl_Interp* interp, Graph* graphPtr, 
-			     Tcl_Obj *objPtr, ClassId classId, Pen **penPtrPtr);
-
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 static void FreeElement(char* data);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
