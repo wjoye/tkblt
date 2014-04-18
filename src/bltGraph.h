@@ -258,7 +258,8 @@ class Graph {
 
   ClientData elementTag(const char*);
 
-  int getElement(Tcl_Obj *objPtr, Element **elemPtrPtr);
+  int getElement(Tcl_Obj*, Element**);
+  int getAxis(Tcl_Obj*, Axis**);
 };
 
 extern Blt_BindTagProc Blt_GraphTags;

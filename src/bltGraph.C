@@ -922,16 +922,15 @@ void Graph::printActiveElements(Blt_Ps ps)
 
 int Graph::getElement(Tcl_Obj *objPtr, Element **elemPtrPtr)
 {
-  Tcl_HashEntry *hPtr;
-  char *name;
-
-  name = Tcl_GetString(objPtr);
+  *elemPtrPtr =NULL;
+  const char* name = Tcl_GetString(objPtr);
   if (!name || !name[0])
     return TCL_ERROR;
-  hPtr = Tcl_FindHashEntry(&elements_.table, name);
+
+  Tcl_HashEntry*hPtr = Tcl_FindHashEntry(&elements_.table, name);
   if (!hPtr) {
-    Tcl_AppendResult(interp_, "can't find element \"", name,
-		     "\" in \"", Tk_PathName(tkwin_), "\"", NULL);
+    Tcl_AppendResult(interp_, "can't find element \"", name, "\" in \"",
+		     Tk_PathName(tkwin_), "\"", NULL);
     return TCL_ERROR;
   }
 
@@ -1244,6 +1243,24 @@ void Graph::printAxesLimits(Blt_Ps ps)
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     axisPtr->printLimits(ps);
   }
+}
+
+int Graph::getAxis(Tcl_Obj *objPtr, Axis **axisPtrPtr)
+{
+  *axisPtrPtr = NULL;
+  const char* name = Tcl_GetString(objPtr);
+  if (!name || !name[0])
+    return TCL_ERROR;
+
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&axes_.table, name);
+  if (!hPtr) {
+    Tcl_AppendResult(interp_, "can't find axis \"", name, "\" in \"", 
+		     Tk_PathName(tkwin_), "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  *axisPtrPtr = (Axis*)Tcl_GetHashValue(hPtr);
+  return TCL_OK;
 }
 
 ClientData Graph::axisTag(const char *tagName)

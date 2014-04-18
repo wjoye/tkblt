@@ -35,8 +35,6 @@ extern "C" {
 #include "bltGrAxisOption.h"
 
 extern Tcl_FreeProc FreeAxis;
-extern int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			  Axis **axisPtrPtr);
 static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr);
 static void ReleaseAxis(Axis* axisPtr);
@@ -248,8 +246,7 @@ static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
 			  ClassId classId, Axis **axisPtrPtr)
 {
   Axis *axisPtr;
-
-  if (GetAxisFromObj(interp, graphPtr, objPtr, &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objPtr, &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (classId != CID_NONE) {

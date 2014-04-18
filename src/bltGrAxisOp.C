@@ -375,7 +375,7 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
 		  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisCgetOp(interp, axisPtr, objc-1, objv+1);
@@ -385,7 +385,7 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr, int objc,
 		       Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisConfigureOp(interp, axisPtr, objc-1, objv+1);
@@ -395,7 +395,7 @@ static int ActivateOp(Tcl_Interp* interp, Graph* graphPtr,
 		      int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisActivateOp(interp, axisPtr, objc, objv);
@@ -437,12 +437,8 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
     
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK) {
-    Tcl_AppendResult(interp, "can't find axis \"", 
-		     Tcl_GetString(objv[3]), "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
-  }
 
   axisPtr->flags |= DELETE_PENDING;
   if (axisPtr->refCount_ == 0) {
@@ -459,7 +455,7 @@ static int FocusOp(Tcl_Interp* interp, Graph* graphPtr,
   graphPtr->focusPtr_ = NULL;
   if (objc == 4) {
     Axis* axisPtr;
-    if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+    if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
@@ -500,7 +496,7 @@ static int InvTransformOp(Tcl_Interp* interp, Graph* graphPtr,
 			  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisInvTransformOp(interp, axisPtr, objc-1, objv+1);
@@ -510,7 +506,7 @@ static int LimitsOp(Tcl_Interp* interp, Graph* graphPtr,
 		    int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisLimitsOp(interp, axisPtr, objc-1, objv+1);
@@ -520,7 +516,7 @@ static int MarginOp(Tcl_Interp* interp, Graph* graphPtr,
 		    int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisMarginOp(interp, axisPtr, objc-1, objv+1);
@@ -563,7 +559,7 @@ static int TransformOp(Tcl_Interp* interp, Graph* graphPtr,
 		       int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisTransformOp(interp, axisPtr, objc-1, objv+1);
@@ -573,7 +569,7 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
 		  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisTypeOp(interp, axisPtr, objc-1, objv+1);
@@ -583,7 +579,7 @@ static int ViewOp(Tcl_Interp* interp, Graph* graphPtr,
 		  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr;
-  if (GetAxisFromObj(interp, graphPtr, objv[3], &axisPtr) != TCL_OK)
+  if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
   return AxisViewOp(interp, axisPtr, objc-1, objv+1);
@@ -625,29 +621,6 @@ int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 // Support
-
-int GetAxisFromObj(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr, 
-			  Axis **axisPtrPtr)
-{
-  Tcl_HashEntry *hPtr;
-  const char *name;
-
-  *axisPtrPtr = NULL;
-  name = Tcl_GetString(objPtr);
-  hPtr = Tcl_FindHashEntry(&graphPtr->axes_.table, name);
-  if (hPtr) {
-    Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    if ((axisPtr->flags & DELETE_PENDING) == 0) {
-      *axisPtrPtr = axisPtr;
-      return TCL_OK;
-    }
-  }
-  if (interp)
-    Tcl_AppendResult(interp, "can't find axis \"", name, "\" in \"", 
-		     Tk_PathName(graphPtr->tkwin_), "\"", NULL);
-
-  return TCL_ERROR;
-}
 
 void FreeAxis(char* data)
 {

@@ -113,7 +113,7 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
   Blt_Chain_Reset(chain);
   for (int i=0; i<axisObjc; i++) {
     Axis* axisPtr;
-    if (GetAxisFromObj(interp, graphPtr, axisObjv[i], &axisPtr) != TCL_OK)
+    if (graphPtr->getAxis(axisObjv[i], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (axisPtr->classId() == CID_NONE)
