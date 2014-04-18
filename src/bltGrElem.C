@@ -125,6 +125,15 @@ PenStyle** Element::StyleMap()
   return dataToStyle;
 }
 
+void Element::freePen(Pen* penPtr)
+{
+  if (penPtr != NULL) {
+    penPtr->refCount_--;
+    if (penPtr->refCount_ == 0)
+      delete penPtr;
+  }
+}
+
 void Blt_FreeStylePalette(Blt_Chain stylePalette)
 {
   // Skip the first slot. It contains the built-in "normal" pen of the element
@@ -134,7 +143,12 @@ void Blt_FreeStylePalette(Blt_Chain stylePalette)
     for (link = Blt_Chain_NextLink(link); link != NULL; link = next) {
       next = Blt_Chain_NextLink(link);
       PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
-      Blt_FreePen(stylePtr->penPtr);
+      Pen* penPtr = stylePtr->penPtr;
+      if (penPtr) {
+	penPtr->refCount_--;
+	if (penPtr->refCount_ == 0)
+	  delete penPtr;
+      }
       Blt_Chain_DeleteLink(stylePalette, link);
     }
   }

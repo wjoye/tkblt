@@ -66,6 +66,7 @@ static int PenSetProc(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getPen(*objPtr, &penPtr) != TCL_OK)
     return TCL_ERROR;
 
+  penPtr->refCount_++;
   *penPtrPtr = penPtr;
 
   return TCL_OK;
@@ -84,8 +85,11 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
 static void PenFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   Pen* penPtr = *(Pen**)ptr;
-  if (penPtr)
-    Blt_FreePen(penPtr);
+  if (penPtr) {
+    penPtr->refCount_--;
+    if (penPtr->refCount_ == 0)
+      delete penPtr;
+  }
 }
 
 

@@ -219,9 +219,11 @@ BarElement::~BarElement()
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
   if (ops->activePenPtr)
-    Blt_FreePen((Pen*)ops->activePenPtr);
+    freePen((Pen*)ops->activePenPtr);
+
   if (ops->normalPenPtr)
-    Blt_FreePen((Pen*)ops->normalPenPtr);
+    freePen((Pen*)ops->normalPenPtr);
+
   if (ops->builtinPenPtr)
     delete builtinPenPtr;
 

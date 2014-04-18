@@ -369,6 +369,7 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
     SETWEIGHT(stylePtr->weight, min, max);
   }
 
+  penPtr->refCount_++;
   stylePtr->penPtr = penPtr;
   return TCL_OK;
 }

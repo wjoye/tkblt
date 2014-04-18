@@ -145,7 +145,6 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
 
-  penPtr->flags |= DELETE_PENDING;
   if (penPtr->refCount_ == 0)
     delete penPtr;
 
@@ -158,27 +157,24 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
-	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+    for (Tcl_HashEntry *hPtr=Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
+	 hPtr; hPtr=Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-      if ((penPtr->flags & DELETE_PENDING) == 0)
-	Tcl_ListObjAppendElement(interp, listObjPtr, 
-				 Tcl_NewStringObj(penPtr->name_, -1));
+      Tcl_ListObjAppendElement(interp, listObjPtr, 
+			       Tcl_NewStringObj(penPtr->name_, -1));
     }
   } 
   else {
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
-	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+    for (Tcl_HashEntry *hPtr=Tcl_FirstHashEntry(&graphPtr->penTable_, &iter);
+	 hPtr; hPtr=Tcl_NextHashEntry(&iter)) {
       Pen* penPtr = (Pen*)Tcl_GetHashValue(hPtr);
-      if ((penPtr->flags & DELETE_PENDING) == 0) {
-	for (int ii=3; ii<objc; ii++) {
-	  char *pattern = Tcl_GetString(objv[ii]);
-	  if (Tcl_StringMatch(penPtr->name_, pattern)) {
-	    Tcl_ListObjAppendElement(interp, listObjPtr, 
-				     Tcl_NewStringObj(penPtr->name_, -1));
-	    break;
-	  }
+      for (int ii=3; ii<objc; ii++) {
+	char *pattern = Tcl_GetString(objv[ii]);
+	if (Tcl_StringMatch(penPtr->name_, pattern)) {
+	  Tcl_ListObjAppendElement(interp, listObjPtr, 
+				   Tcl_NewStringObj(penPtr->name_, -1));
+	  break;
 	}
       }
     }
@@ -220,15 +216,4 @@ int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp,
     return TCL_ERROR;
 
   return (*proc)(interp, graphPtr, objc, objv);
-}
-
-// Support
-
-void Blt_FreePen(Pen* penPtr)
-{
-  if (penPtr != NULL) {
-    penPtr->refCount_--;
-    if ((penPtr->refCount_ == 0) && (penPtr->flags & DELETE_PENDING))
-      delete penPtr;
-  }
 }

@@ -905,7 +905,6 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
   }
 
   *penPtrPtr = (Pen*)Tcl_GetHashValue(hPtr);
-  (*penPtrPtr)->refCount_++;
 
   return TCL_OK;
 }
