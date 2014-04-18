@@ -94,7 +94,7 @@ extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
-   "activeLine", -1, Tk_Offset(LineElementOptions, activePenPtr), 
+   "active", -1, Tk_Offset(LineElementOptions, activePenPtr), 
    TK_OPTION_NULL_OK, &linePenObjOption, 0},
   {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
    NULL, -1, Tk_Offset(LineElementOptions, fillFgColor), 

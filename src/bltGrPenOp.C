@@ -37,8 +37,8 @@ extern "C" {
 #include "bltGrPenLine.h"
 #include "bltGrPenBar.h"
 
-static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
-			   int objc, Tcl_Obj* const objv[])
+int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
+		    int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
   int mask =0;
@@ -76,47 +76,6 @@ static int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
     Tcl_DecrRefCount(errorResult);
     return TCL_ERROR;
   }
-}
-
-int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp, 
-		  const char* penName, ClassId classId,
-		  int objc, Tcl_Obj* const objv[])
-{
-  int isNew;
-  Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->penTable_, penName, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp, "pen \"", penName, 
-		     "\" already exists in \"", Tk_PathName(graphPtr->tkwin_),
-		     "\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  Pen* penPtr;
-  switch (classId) {
-  case CID_ELEM_BAR:
-    penPtr = new BarPen(graphPtr, penName, hPtr);
-    break;
-  case CID_ELEM_LINE:
-    penPtr = new LinePen(graphPtr, penName, hPtr);
-    break;
-  default:
-    return TCL_ERROR;
-  }
-  if (!penPtr)
-    return TCL_ERROR;
-
-  Tcl_SetHashValue(hPtr, penPtr);
-
-  if ((Tk_InitOptions(graphPtr->interp_, (char*)penPtr->ops(), penPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4) != TCL_OK)) {
-    delete penPtr;
-    return TCL_ERROR;
-  }
-
-  graphPtr->flags |= CACHE_DIRTY;
-  graphPtr->eventuallyRedraw();
-
-  return TCL_OK;
 }
 
 // Configure
@@ -169,8 +128,7 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  if (Blt_CreatePen(graphPtr, interp, Tcl_GetString(objv[3]),
-		    graphPtr->classId_, objc, objv) != TCL_OK)
+  if (graphPtr->createPen(Tcl_GetString(objv[3]), objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
 

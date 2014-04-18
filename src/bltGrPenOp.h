@@ -30,10 +30,9 @@
 #ifndef __BltGrPenOp_h__
 #define __BltGrPenOp_h__
 
+extern int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
+			   int objc, Tcl_Obj* const objv[]);
 extern void Blt_FreePen(Pen* penPtr);
 extern int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[]);
-extern int Blt_CreatePen(Graph* graphPtr, Tcl_Interp* interp, 
-			 const char* penName, ClassId classId, 
-			 int objc, Tcl_Obj* const objv[]);
 #endif

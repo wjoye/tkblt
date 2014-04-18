@@ -259,6 +259,8 @@ class Graph {
 
   ClientData elementTag(const char*);
 
+  int createPen(const char*, int, Tcl_Obj* const []);
+
   int getElement(Tcl_Obj*, Element**);
   int getAxis(Tcl_Obj*, Axis**);
   int getPen(Tcl_Obj*, Pen**);

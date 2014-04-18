@@ -63,7 +63,7 @@ extern Tk_ObjCustomOption yAxisObjOption;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
-   "activeBar", -1, Tk_Offset(BarElementOptions, activePenPtr), 
+   "active", -1, Tk_Offset(BarElementOptions, activePenPtr), 
    TK_OPTION_NULL_OK, &barPenObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),

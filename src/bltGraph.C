@@ -39,6 +39,8 @@ extern "C" {
 #include "bltGrXAxisOp.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"
+#include "bltGrPenBar.h"
+#include "bltGrPenLine.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrMarker.h"
@@ -289,15 +291,21 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
-  if (Blt_CreatePen(this, interp_, "activeLine", CID_ELEM_LINE, 0, NULL) != 
-      TCL_OK) {
-    valid_ =0;
-    return;
-  }
-  if (Blt_CreatePen(this, interp_, "activeBar", CID_ELEM_BAR, 0, NULL) != 
-      TCL_OK) {
-    valid_ =0;
-    return;
+  switch (classId) {
+  case CID_ELEM_LINE:
+    if (createPen("active", 0, NULL) != TCL_OK) {
+      valid_ =0;
+      return;
+    }
+    break;
+  case CID_ELEM_BAR:
+    if (createPen("active", 0, NULL) != TCL_OK) {
+      valid_ =0;
+      return;
+    }
+    break;
+  default:
+    break;
   }
 
   if (Blt_CreatePageSetup(this) != TCL_OK) {
@@ -830,6 +838,44 @@ void Graph::disableCrosshairs()
 }
 
 // Pens
+
+int Graph::createPen(const char* penName, int objc, Tcl_Obj* const objv[])
+{
+  int isNew;
+  Tcl_HashEntry *hPtr = 
+    Tcl_CreateHashEntry(&penTable_, penName, &isNew);
+  if (!isNew) {
+    Tcl_AppendResult(interp_, "pen \"", penName, "\" already exists in \"",
+		     Tk_PathName(tkwin_), "\"", (char *)NULL);
+    return TCL_ERROR;
+  }
+
+  Pen* penPtr;
+  switch (classId_) {
+  case CID_ELEM_BAR:
+    penPtr = new BarPen(this, penName, hPtr);
+    break;
+  case CID_ELEM_LINE:
+    penPtr = new LinePen(this, penName, hPtr);
+    break;
+  default:
+    return TCL_ERROR;
+  }
+  if (!penPtr)
+    return TCL_ERROR;
+
+  Tcl_SetHashValue(hPtr, penPtr);
+
+  if ((Tk_InitOptions(interp_, (char*)penPtr->ops(), penPtr->optionTable(), tkwin_) != TCL_OK) || (PenObjConfigure(interp_, this, penPtr, objc-4, objv+4) != TCL_OK)) {
+    delete penPtr;
+    return TCL_ERROR;
+  }
+
+  flags |= CACHE_DIRTY;
+  eventuallyRedraw();
+
+  return TCL_OK;
+}
 
 void Graph::destroyPens()
 {
