@@ -252,6 +252,8 @@ class Graph {
   void printAxesLimits(Blt_Ps);
   int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
+  Point2d map2D(double, double, Axis2d*);
+  Point2d invMap2D(double, double, Axis2d*);
   void resetAxes();
   Axis* nearestAxis(int, int);
 

@@ -375,11 +375,10 @@ void BarElement::map()
      * Get the two corners of the bar segment and compute the rectangle
      */
     double ybot = c2.y;
-    c1 = Blt_Map2D(graphPtr_, c1.x, c1.y, &ops->axes);
-    c2 = Blt_Map2D(graphPtr_, c2.x, c2.y, &ops->axes);
-    if ((ybot == 0.0) && (axisyops->logScale)) {
+    c1 = graphPtr_->map2D(c1.x, c1.y, &ops->axes);
+    c2 = graphPtr_->map2D(c2.x, c2.y, &ops->axes);
+    if ((ybot == 0.0) && (axisyops->logScale))
       c2.y = graphPtr_->bottom_;
-    }
 	    
     if (c2.y < c1.y) {
       double t;
@@ -1120,8 +1119,8 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
 	  low  = ops->xLow  ? ops->xLow->values[ii]  : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p = Blt_Map2D(graphPtr_, high, y, &ops->axes);
-	  Point2d q = Blt_Map2D(graphPtr_, low, y, &ops->axes);
+	  Point2d p = graphPtr_->map2D(high, y, &ops->axes);
+	  Point2d q = graphPtr_->map2D(low, y, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
@@ -1182,8 +1181,8 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
 	  low = ops->yLow->values[ii];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p = Blt_Map2D(graphPtr_, x, high, &ops->axes);
-	  Point2d q = Blt_Map2D(graphPtr_, x, low, &ops->axes);
+	  Point2d p = graphPtr_->map2D(x, high, &ops->axes);
+	  Point2d q = graphPtr_->map2D(x, low, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {

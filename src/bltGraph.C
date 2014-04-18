@@ -1433,6 +1433,38 @@ void Graph::adjustAxes()
   }
 }
 
+Point2d Graph::map2D(double x, double y, Axis2d* axesPtr)
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+
+  Point2d point;
+  if (ops->inverted) {
+    point.x = axesPtr->y->hMap(y);
+    point.y = axesPtr->x->vMap(x);
+  }
+  else {
+    point.x = axesPtr->x->hMap(x);
+    point.y = axesPtr->y->vMap(y);
+  }
+  return point;
+}
+
+Point2d Graph::invMap2D(double x, double y, Axis2d* axesPtr)
+{
+  GraphOptions* ops = (GraphOptions*)ops_;
+
+  Point2d point;
+  if (ops->inverted) {
+    point.x = axesPtr->x->invVMap(y);
+    point.y = axesPtr->y->invHMap(x);
+  }
+  else {
+    point.x = axesPtr->x->invHMap(x);
+    point.y = axesPtr->y->invVMap(y);
+  }
+  return point;
+}
+
 void Graph::resetAxes()
 {
   GraphOptions* gops = (GraphOptions*)ops_;

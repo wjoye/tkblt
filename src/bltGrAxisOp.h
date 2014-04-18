@@ -36,12 +36,6 @@ extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[]);
 
 extern Tcl_FreeProc FreeAxis;
-extern Point2d Blt_InvMap2D(Graph* graphPtr, double x, double y, 
-			    Axis2d *pairPtr);
-extern Point2d Blt_Map2D(Graph* graphPtr, double x, double y, 
-			 Axis2d *pairPtr);
-
-extern void Blt_UpdateAxisBackgrounds(Graph* graphPtr);
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 
 #endif

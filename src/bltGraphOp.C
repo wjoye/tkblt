@@ -344,7 +344,7 @@ static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   Axis2d axes;
   axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
   axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
-  Point2d point = Blt_InvMap2D(graphPtr, x, y, &axes);
+  Point2d point = graphPtr->invMap2D(x, y, &axes);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.x));
@@ -374,7 +374,7 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
   axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
 
-  Point2d point = Blt_Map2D(graphPtr, x, y, &axes);
+  Point2d point = graphPtr->map2D(x, y, &axes);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.x)));

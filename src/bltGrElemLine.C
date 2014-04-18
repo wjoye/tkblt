@@ -1463,7 +1463,7 @@ void LineElement::MapActiveSymbols()
 
       double x = ops->coords.x->values[iPoint];
       double y = ops->coords.y->values[iPoint];
-      points[count] = Blt_Map2D(graphPtr_, x, y, &ops->axes);
+      points[count] = graphPtr_->map2D(x, y, &ops->axes);
       map[count] = iPoint;
       if (PointInRegion(&exts, points[count].x, points[count].y)) {
 	count++;
@@ -1954,8 +1954,8 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
 
-	  p = Blt_Map2D(graphPtr_, high, y, &ops->axes);
-	  q = Blt_Map2D(graphPtr_, low, y, &ops->axes);
+	  p = graphPtr_->map2D(high, y, &ops->axes);
+	  q = graphPtr_->map2D(low, y, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
@@ -2023,8 +2023,8 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
 		    
-	  p = Blt_Map2D(graphPtr_, x, high, &ops->axes);
-	  q = Blt_Map2D(graphPtr_, x, low, &ops->axes);
+	  p = graphPtr_->map2D(x, high, &ops->axes);
+	  q = graphPtr_->map2D(x, low, &ops->axes);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
@@ -2098,7 +2098,7 @@ int LineElement::ClosestTrace()
     searchPtr->dist = dMin;
     searchPtr->elemPtr = (Element*)this;
     searchPtr->index = iClose;
-    searchPtr->point = Blt_InvMap2D(graphPtr_, closest.x, closest.y, &ops->axes);
+    searchPtr->point = graphPtr_->invMap2D(closest.x, closest.y, &ops->axes);
     return 1;
   }
 
