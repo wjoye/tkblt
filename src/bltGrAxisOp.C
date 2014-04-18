@@ -406,11 +406,10 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  axisPtr->flags |= DELETE_PENDING;
-  if (axisPtr->refCount_ == 0) {
-    Tcl_EventuallyFree(axisPtr, FreeAxis);
-    graphPtr->eventuallyRedraw();
-  }
+  if (axisPtr->refCount_ == 0)
+    delete axisPtr;
+
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -496,9 +495,6 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
     Tcl_HashSearch cursor;
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor); hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
       Axis* axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-      if (axisPtr->flags & DELETE_PENDING)
-	continue;
-
       Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewStringObj(axisPtr->name_, -1));
     }
   } 
@@ -587,12 +583,6 @@ int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 // Support
-
-void FreeAxis(char* data)
-{
-  Axis* axisPtr = (Axis*)data;
-  delete axisPtr;
-}
 
 Axis *Blt_GetFirstAxis(Blt_Chain chain)
 {

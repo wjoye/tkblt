@@ -146,7 +146,7 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
     return TCL_ERROR;
 
   penPtr->flags |= DELETE_PENDING;
-  if (penPtr->refCount == 0)
+  if (penPtr->refCount_ == 0)
     delete penPtr;
 
   return TCL_OK;
@@ -227,8 +227,8 @@ int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp,
 void Blt_FreePen(Pen* penPtr)
 {
   if (penPtr != NULL) {
-    penPtr->refCount--;
-    if ((penPtr->refCount == 0) && (penPtr->flags & DELETE_PENDING))
+    penPtr->refCount_--;
+    if ((penPtr->refCount_ == 0) && (penPtr->flags & DELETE_PENDING))
       delete penPtr;
   }
 }

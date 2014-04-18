@@ -57,10 +57,10 @@ class Pen {
  public:
   Graph* graphPtr_;
   const char *name_;
-  int manageOptions_;
   Tcl_HashEntry *hashPtr_;
+  int refCount_;
   unsigned int flags;
-  int refCount;
+  int manageOptions_;
 
  public:
   Pen();

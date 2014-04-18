@@ -35,15 +35,15 @@ using namespace Blt;
 
 Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 {
-  name_ = dupstr(nPtr);
   optionTable_ =NULL;
   ops_ =NULL;
-  graphPtr_ =gPtr;  
-  hashPtr_ = hPtr;
-  clipped_ =0;
 
+  graphPtr_ =gPtr;  
+  name_ = dupstr(nPtr);
+  hashPtr_ = hPtr;
   link =NULL;
   flags =0;
+  clipped_ =0;
 }
 
 Marker::~Marker()

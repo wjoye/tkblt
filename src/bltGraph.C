@@ -1064,11 +1064,8 @@ void Graph::destroyMarkers()
 {
   Tcl_HashSearch iter;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&markers_.table, &iter); 
-       hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+       hPtr; hPtr=Tcl_NextHashEntry(&iter)) {
     Marker* markerPtr = (Marker*)Tcl_GetHashValue(hPtr);
-
-    // Dereferencing the pointer to the hash table prevents the hash table
-    // entry from being automatically deleted.
     delete markerPtr;
   }
   Tcl_DeleteHashTable(&markers_.table);

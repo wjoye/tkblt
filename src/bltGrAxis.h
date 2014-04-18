@@ -157,12 +157,14 @@ class Axis {
   const char* name_;
   const char* className_;
 
-  int use_;
   Tcl_HashEntry* hashPtr_;
+  Blt_ChainLink link;
+  Blt_Chain chain;
+  int refCount_;
+  int use_;
   unsigned int flags;		
 
   const char *detail_;
-  int refCount_;
   Point2d titlePos_;
   unsigned short int titleWidth_;
   unsigned short int titleHeight_;	
@@ -180,8 +182,6 @@ class Axis {
   TickSweep majorSweep_;
 
   int margin_;
-  Blt_ChainLink link;
-  Blt_Chain chain;
   Segment2d *segments_;
   int nSegments_;
   Blt_Chain tickLabels_;

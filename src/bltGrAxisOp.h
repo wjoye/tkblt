@@ -35,7 +35,6 @@ extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 
-extern Tcl_FreeProc FreeAxis;
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 
 #endif

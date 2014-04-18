@@ -45,8 +45,6 @@ using namespace Blt;
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
-static void FreeMarker(char* dataPtr);
-
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[])
@@ -238,8 +236,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
 		       Tk_PathName(graphPtr->tkwin_), "\"", NULL);
       return TCL_ERROR;
     }
-    markerPtr->flags |= DELETE_PENDING;
-    Tcl_EventuallyFree(markerPtr, FreeMarker);
+    delete markerPtr;
   }
   graphPtr->eventuallyRedraw();
 
@@ -305,7 +302,7 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
-    if ((markerPtr->flags & DELETE_PENDING) || ops->hide)
+    if (ops->hide)
       continue;
 
     if (graphPtr->isElementHidden(markerPtr))
@@ -457,11 +454,5 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
   }
 
   return TCL_ERROR;
-}
-
-static void FreeMarker(char* dataPtr) 
-{
-  Marker* markerPtr = (Marker*)dataPtr;
-  delete markerPtr;
 }
 

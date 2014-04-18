@@ -193,14 +193,14 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   name_ = dupstr(name);
   className_ = dupstr("none");
 
-  use_ =0;
   hashPtr_ = hPtr;
+  link =NULL;
+  chain =NULL;
+  refCount_ =0;
+  use_ =0;
   flags =0;		
 
-  /* Fields specific to axes. */
-
   detail_ =NULL;
-  refCount_ =0;
   titlePos_.x =0;
   titlePos_.y =0;
   titleWidth_ =0;
@@ -228,11 +228,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   majorSweep_.step =0;
   majorSweep_.nSteps =0;
 
-  /* The following fields are specific to logical axes */
-
   margin_ = margin;
-  link =NULL;
-  chain =NULL;
   segments_ =NULL;
   nSegments_ =0;
   tickLabels_ = Blt_Chain_Create();
@@ -499,7 +495,7 @@ void Axis::draw(Drawable drawable)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (ops->hide || !use_ || (flags & DELETE_PENDING))
+  if (ops->hide || !use_)
     return;
 
   if (ops->normalBg)
@@ -628,7 +624,7 @@ void Axis::drawGrids(Drawable drawable)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
+  if (ops->hide || !ops->showGrid || !use_)
     return;
 
   Blt_Draw2DSegments(graphPtr_->display_, drawable, ops->major.gc,
@@ -644,7 +640,7 @@ void Axis::drawLimits(Drawable drawable)
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  if ((flags & DELETE_PENDING) || (!ops->limitsFormat))
+  if (!ops->limitsFormat)
     return;
 
   int vMin = graphPtr_->left_ + gops->xPad + 2;
@@ -1690,7 +1686,7 @@ void Axis::print(Blt_Ps ps)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (ops->hide || !use_ || (flags & DELETE_PENDING))
+  if (ops->hide || !use_)
     return;
 
   Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name_);
@@ -1745,7 +1741,7 @@ void Axis::printGrids(Blt_Ps ps)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (ops->hide || !ops->showGrid || !use_ || (flags & DELETE_PENDING))
+  if (ops->hide || !ops->showGrid || !use_)
     return;
 
   Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name_);
@@ -1767,7 +1763,7 @@ void Axis::printLimits(Blt_Ps ps)
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  if ((flags & DELETE_PENDING) || (!ops->limitsFormat))
+  if (!ops->limitsFormat)
     return;
 
   double vMin = graphPtr_->left_ + gops->xPad + 2;

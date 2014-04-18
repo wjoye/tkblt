@@ -78,7 +78,7 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
     Tcl_Obj *listObjPtr;
 
     listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link != NULL;
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link;
 	 link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -87,6 +87,7 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
+
   ClassId classId;
   if ((lastMargin == MARGIN_BOTTOM) || (lastMargin == MARGIN_TOP))
     classId = (gops->inverted) ? CID_AXIS_Y : CID_AXIS_X;
@@ -95,25 +96,25 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
 
   int axisObjc;  
   Tcl_Obj **axisObjv;
-  if (Tcl_ListObjGetElements(interp, objv[3], &axisObjc, &axisObjv) 
-      != TCL_OK) {
+  if (Tcl_ListObjGetElements(interp, objv[3], &axisObjc, &axisObjv) != TCL_OK)
     return TCL_ERROR;
-  }
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link!= NULL; 
+
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link; 
        link = Blt_Chain_NextLink(link)) {
     Axis* axisPtr;
 
     axisPtr = (Axis*)Blt_Chain_GetValue(link);
     axisPtr->link = NULL;
     axisPtr->use_ =0;
-    /* Clear the axis type if it's not currently used.*/
+    // Clear the axis type if it's not currently used
     if (axisPtr->refCount_ == 0)
       axisPtr->setClass(CID_NONE);
   }
+
   Blt_Chain_Reset(chain);
-  for (int i=0; i<axisObjc; i++) {
+  for (int ii=0; ii<axisObjc; ii++) {
     Axis* axisPtr;
-    if (graphPtr->getAxis(axisObjv[i], &axisPtr) != TCL_OK)
+    if (graphPtr->getAxis(axisObjv[ii], &axisPtr) != TCL_OK)
       return TCL_ERROR;
 
     if (axisPtr->classId_ == CID_NONE)
@@ -128,14 +129,16 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
       /* Move the axis from the old margin's "use" list to the new. */
       Blt_Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
       Blt_Chain_AppendLink(chain, axisPtr->link);
-    } else {
-      axisPtr->link = Blt_Chain_Append(chain, axisPtr);
     }
+    else
+      axisPtr->link = Blt_Chain_Append(chain, axisPtr);
+
     axisPtr->chain = chain;
     axisPtr->use_ =1;
   }
+
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
-  /* When any axis changes, we need to layout the entire graph.  */
+  // When any axis changes, we need to layout the entire graph.
   graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
   graphPtr->eventuallyRedraw();
 

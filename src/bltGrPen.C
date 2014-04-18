@@ -31,14 +31,14 @@
 
 Pen::Pen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
-  graphPtr_ = graphPtr;
-  name_ = dupstr(name);
   optionTable_ = NULL;
   ops_ = NULL;
-  manageOptions_ =0;
-  flags =0;
-  refCount =0;
+  graphPtr_ = graphPtr;
+  name_ = dupstr(name);
   hashPtr_ = hPtr;
+  refCount_ =0;
+  flags =0;
+  manageOptions_ =0;
 }
 
 Pen::~Pen()

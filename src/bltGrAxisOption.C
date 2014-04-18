@@ -34,11 +34,6 @@ extern "C" {
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
 
-extern Tcl_FreeProc FreeAxis;
-static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
-			  ClassId classId, Axis **axisPtrPtr);
-static void ReleaseAxis(Axis* axisPtr);
-
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
 static Tk_CustomOptionFreeProc AxisFreeProc;
@@ -65,12 +60,27 @@ static int AxisSetProc(ClientData clientData, Tcl_Interp* interp,
 
   Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
   ClassId classId = (ClassId)(long(clientData));
-  Axis* axisPtr;
-  if (GetAxisByClass(interp, graphPtr, *objPtr, classId, &axisPtr) != TCL_OK)
+
+  Axis *axisPtr;
+  if (graphPtr->getAxis(*objPtr, &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  *axisPtrPtr = axisPtr;
+  if (classId != CID_NONE) {
+    // Set the axis type on the first use of it.
+    if ((axisPtr->refCount_ == 0) || (axisPtr->classId_ == CID_NONE))
+      axisPtr->setClass(classId);
 
+    else if (axisPtr->classId_ != classId) {
+      Tcl_AppendResult(interp, "axis \"", Tcl_GetString(*objPtr),
+		       "\" is already in use on an opposite ", 
+		       axisPtr->className_, "-axis", 
+		       NULL);
+      return TCL_ERROR;
+    }
+    axisPtr->refCount_++;
+  }
+
+  *axisPtrPtr = axisPtr;
   return TCL_OK;
 };
 
@@ -87,8 +97,11 @@ static Tcl_Obj* AxisGetProc(ClientData clientData, Tk_Window tkwin,
 static void AxisFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   Axis* axisPtr = *(Axis**)ptr;
-  if (axisPtr)
-    ReleaseAxis(axisPtr);
+  if (axisPtr) {
+    axisPtr->refCount_--;
+    if (axisPtr->refCount_ == 0)
+      delete axisPtr;
+  }
 }
 
 static Tk_CustomOptionSetProc LimitSetProc;
@@ -238,44 +251,5 @@ static void ObjectFreeProc(ClientData clientData, Tk_Window tkwin,
   Tcl_Obj* objectPtr = *(Tcl_Obj**)ptr;
   if (objectPtr)
     Tcl_DecrRefCount(objectPtr);
-}
-
-// Support
-
-static int GetAxisByClass(Tcl_Interp* interp, Graph* graphPtr, Tcl_Obj *objPtr,
-			  ClassId classId, Axis **axisPtrPtr)
-{
-  Axis *axisPtr;
-  if (graphPtr->getAxis(objPtr, &axisPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (classId != CID_NONE) {
-    // Set the axis type on the first use of it.
-    if ((axisPtr->refCount_ == 0) || (axisPtr->classId_ == CID_NONE))
-      axisPtr->setClass(classId);
-
-    else if (axisPtr->classId_ != classId) {
-      Tcl_AppendResult(interp, "axis \"", Tcl_GetString(objPtr),
-		       "\" is already in use on an opposite ", 
-		       axisPtr->className_, "-axis", 
-		       NULL);
-      return TCL_ERROR;
-    }
-    axisPtr->refCount_++;
-  }
-
-  *axisPtrPtr = axisPtr;
-  return TCL_OK;
-}
-
-static void ReleaseAxis(Axis *axisPtr)
-{
-  if (axisPtr) {
-    axisPtr->refCount_--;
-    if (axisPtr->refCount_ == 0) {
-      axisPtr->flags |= DELETE_PENDING;
-      Tcl_EventuallyFree(axisPtr, FreeAxis);
-    }
-  }
 }
 
