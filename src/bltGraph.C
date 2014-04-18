@@ -1179,6 +1179,38 @@ int Graph::createAxes()
   return TCL_OK;
 }
 
+int Graph::createAxis(int objc, Tcl_Obj* const objv[])
+{
+  char *string = Tcl_GetString(objv[3]);
+  if (string[0] == '-') {
+    Tcl_AppendResult(interp_, "name of axis \"", string, 
+		     "\" can't start with a '-'", NULL);
+    return TCL_ERROR;
+  }
+
+  int isNew;
+  Tcl_HashEntry* hPtr = 
+    Tcl_CreateHashEntry(&axes_.table, string, &isNew);
+  if (!isNew) {
+    Tcl_AppendResult(interp_, "axis \"", string, "\" already exists in \"",
+		     Tcl_GetString(objv[0]), "\"", NULL);
+    return TCL_ERROR;
+  }
+
+  Axis* axisPtr = new Axis(this, Tcl_GetString(objv[3]), MARGIN_NONE, hPtr);
+  if (!axisPtr)
+    return TCL_ERROR;
+
+  Tcl_SetHashValue(hPtr, axisPtr);
+
+  if ((Tk_InitOptions(interp_, (char*)axisPtr->ops(), axisPtr->optionTable(), tkwin_) != TCL_OK) || (AxisObjConfigure(interp_, axisPtr, objc-4, objv+4) != TCL_OK)) {
+    delete axisPtr;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
 void Graph::destroyAxes()
 {
   Tcl_HashSearch cursor;

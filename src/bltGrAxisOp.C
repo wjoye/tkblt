@@ -55,8 +55,8 @@ static double Clamp(double x)
   return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
 }
 
-static int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
-			    int objc, Tcl_Obj* const objv[])
+int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
+		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = axisPtr->graphPtr_;
   Tk_SavedOptions savedOptions;
@@ -337,40 +337,6 @@ int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr,
 
 // Axis
 
-static int CreateAxis(Tcl_Interp* interp, Graph* graphPtr, 
-		       int objc, Tcl_Obj* const objv[])
-{
-  char *string = Tcl_GetString(objv[3]);
-  if (string[0] == '-') {
-    Tcl_AppendResult(interp, "name of axis \"", string, 
-		     "\" can't start with a '-'", NULL);
-    return TCL_ERROR;
-  }
-
-  int isNew;
-  Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&graphPtr->axes_.table, string, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp, "axis \"", string,
-		     "\" already exists in \"", Tcl_GetString(objv[0]),
-		     "\"", NULL);
-    return TCL_ERROR;
-  }
-
-  Axis* axisPtr = new Axis(graphPtr, Tcl_GetString(objv[3]), MARGIN_NONE, hPtr);
-  if (!axisPtr)
-    return TCL_ERROR;
-
-  Tcl_SetHashValue(hPtr, axisPtr);
-
-  if ((Tk_InitOptions(interp, (char*)axisPtr->ops(), axisPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (AxisObjConfigure(interp, axisPtr, objc-4, objv+4) != TCL_OK)) {
-    delete axisPtr;
-    return TCL_ERROR;
-  }
-
-  return TCL_OK;
-}
-
 static int CgetOp(Tcl_Interp* interp, Graph* graphPtr, 
 		  int objc, Tcl_Obj* const objv[])
 {
@@ -423,7 +389,7 @@ static int BindOp(Tcl_Interp* interp, Graph* graphPtr, int objc,
 static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  if (CreateAxis(interp, graphPtr, objc, objv) != TCL_OK)
+  if (graphPtr->createAxis(objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
 

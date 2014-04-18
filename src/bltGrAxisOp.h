@@ -30,6 +30,8 @@
 #ifndef __BltGrAxisOp_h__
 #define __BltGrAxisOp_h__
 
+extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
+			    int objc, Tcl_Obj* const objv[]);
 extern int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 

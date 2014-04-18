@@ -246,23 +246,23 @@ class Graph {
   void enableCrosshairs();
   void disableCrosshairs();
 
-  void resetAxes();
+  int createAxis(int, Tcl_Obj* const []);
   void printAxes(Blt_Ps);
   void printAxesGrids(Blt_Ps);
   void printAxesLimits(Blt_Ps);
+  int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
+  void resetAxes();
   Axis* nearestAxis(int, int);
 
   ClientData markerTag(const char*);
   Blt::Marker* nearestMarker(int, int, int);
   int isElementHidden(Blt::Marker*);
 
+  int getElement(Tcl_Obj*, Element**);
   ClientData elementTag(const char*);
 
   int createPen(const char*, int, Tcl_Obj* const []);
-
-  int getElement(Tcl_Obj*, Element**);
-  int getAxis(Tcl_Obj*, Axis**);
   int getPen(Tcl_Obj*, Pen**);
 };
 
