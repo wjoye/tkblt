@@ -947,7 +947,7 @@ int Graph::createElement(int objc, Tcl_Obj* const objv[])
   Tcl_SetHashValue(hPtr, elemPtr);
 
   if ((Tk_InitOptions(interp_, (char*)elemPtr->ops(), elemPtr->optionTable(), tkwin_) != TCL_OK) || (ElementObjConfigure(interp_, elemPtr, objc-4, objv+4) != TCL_OK)) {
-    Blt_DestroyElement(elemPtr);
+    delete elemPtr;
     return TCL_ERROR;
   }
 
@@ -956,14 +956,26 @@ int Graph::createElement(int objc, Tcl_Obj* const objv[])
   return TCL_OK;
 }
 
+void Graph::destroyElement(Element* elemPtr)
+{
+  Blt_DeleteBindings(bindTable_, elemPtr);
+  legend_->removeElement(elemPtr);
+
+  if (elemPtr->link)
+    Blt_Chain_DeleteLink(elements_.displayList, elemPtr->link);
+
+  delete elemPtr;
+}
+
 void Graph::destroyElements()
 {
   Tcl_HashSearch iter;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&elements_.table, &iter);
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
     Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-    Blt_DestroyElement(elemPtr);
+    destroyElement(elemPtr);
   }
+
   Tcl_DeleteHashTable(&elements_.table);
   Tcl_DeleteHashTable(&elements_.tagTable);
   Blt_Chain_Destroy(elements_.displayList);
@@ -1089,7 +1101,7 @@ void Graph::mapMarkers()
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
 
-    if ((markerPtr->flags & DELETE_PENDING) || mops->hide)
+    if (mops->hide)
       continue;
 
     if ((flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
@@ -1106,8 +1118,7 @@ void Graph::drawMarkers(Drawable drawable, int under)
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
 
-    if ((mops->drawUnder != under) || (markerPtr->clipped_) ||
-	(markerPtr->flags & DELETE_PENDING) || (mops->hide))
+    if ((mops->drawUnder != under) || markerPtr->clipped_ || mops->hide)
       continue;
 
     if (isElementHidden(markerPtr))
@@ -1126,7 +1137,7 @@ void Graph::printMarkers(Blt_Ps ps, int under)
     if (mops->drawUnder != under)
       continue;
 
-    if ((markerPtr->flags & DELETE_PENDING) || mops->hide)
+    if (mops->hide)
       continue;
 
     if (isElementHidden(markerPtr))
@@ -1155,7 +1166,7 @@ Marker* Graph::nearestMarker(int x, int y, int under)
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
 
-    if ((markerPtr->flags & (DELETE_PENDING|MAP_ITEM)) || (mops->hide))
+    if ((markerPtr->flags & MAP_ITEM) || mops->hide)
       continue;
 
     if (isElementHidden(markerPtr))
@@ -1292,7 +1303,7 @@ void Graph::mapAxes()
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-      if (!axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
+      if (!axisPtr->use_)
 	continue;
 
       if (ops->reqNumMajorTicks <= 0)
@@ -1542,7 +1553,7 @@ Axis* Graph::nearestAxis(int x, int y)
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    if (ops->hide || !axisPtr->use_ || (axisPtr->flags & DELETE_PENDING))
+    if (ops->hide || !axisPtr->use_)
       continue;
 
     if (ops->showTicks) {

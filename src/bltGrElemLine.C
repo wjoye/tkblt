@@ -350,7 +350,7 @@ void LineElement::map()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
     
-  if (!link || (flags & DELETE_PENDING))
+  if (!link)
     return;
 
   ResetLine();
@@ -578,7 +578,7 @@ void LineElement::draw(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING))
+  if (hide_)
     return;
 
   // Fill area under the curve
@@ -669,7 +669,7 @@ void LineElement::drawActive(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+  if (hide_ || !(flags & ACTIVE))
     return;
 
   LinePen* penPtr = (LinePen*)ops->activePenPtr;
@@ -738,7 +738,7 @@ void LineElement::print(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING))
+  if (hide_)
     return;
 
   Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name_);
@@ -835,7 +835,7 @@ void LineElement::printActive(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+  if (hide_ || !(flags & ACTIVE))
     return;
 
   LinePen* penPtr = (LinePen *)ops->activePenPtr;

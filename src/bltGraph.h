@@ -262,6 +262,7 @@ class Graph {
   int isElementHidden(Blt::Marker*);
 
   int createElement(int, Tcl_Obj* const []);
+  void destroyElement(Element*);
   int getElement(Tcl_Obj*, Element**);
   ClientData elementTag(const char*);
 

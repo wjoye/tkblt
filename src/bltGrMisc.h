@@ -102,7 +102,6 @@
  *	GRAPH_FOCUS	
  */
 
-#define DELETE_PENDING		(1<<1) /* 0x0002 */
 #define REDRAW_PENDING		(1<<2) /* 0x0004 */
 #define	ACTIVE_PENDING		(1<<3) /* 0x0008 */
 #define	MAP_ITEM		(1<<4) /* 0x0010 */

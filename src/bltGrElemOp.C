@@ -44,7 +44,6 @@ extern "C" {
 // Defs
 
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
-static void FreeElement(char* data);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
 
@@ -91,19 +90,6 @@ int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
     Tcl_DecrRefCount(errorResult);
     return TCL_ERROR;
   }
-}
-
-void Blt_DestroyElement(Element* elemPtr)
-{
-  Graph* graphPtr = elemPtr->graphPtr_;
-
-  Blt_DeleteBindings(graphPtr->bindTable_, elemPtr);
-  graphPtr->legend_->removeElement(elemPtr);
-
-  if (elemPtr->link)
-    Blt_Chain_DeleteLink(graphPtr->elements_.displayList, elemPtr->link);
-
-  delete elemPtr;
 }
 
 // Configure
@@ -253,8 +239,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
       if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
-      if (elemPtr && !elemPtr->hide_ && 
-	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
+      if (elemPtr && !elemPtr->hide_ && !(elemPtr->flags & MAP_ITEM))
 	elemPtr->closest();
     }
   }
@@ -267,8 +252,7 @@ static int ClosestOp(Graph* graphPtr, Tcl_Interp* interp,
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr && !elemPtr->hide_ && 
-	  !(elemPtr->flags & (MAP_ITEM|DELETE_PENDING)))
+      if (elemPtr && !elemPtr->hide_ && !(elemPtr->flags & MAP_ITEM))
 	elemPtr->closest();
     }
   }
@@ -328,9 +312,7 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
     Element* elemPtr;
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
-
-    elemPtr->flags |= DELETE_PENDING;
-    Tcl_EventuallyFree(elemPtr, FreeElement);
+    graphPtr->destroyElement(elemPtr);
   }
 
   graphPtr->flags |= RESET_WORLD;
@@ -354,8 +336,8 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   char *string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
     Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable_);
-    if ((elemPtr) && ((elemPtr->flags & DELETE_PENDING) == 0))
-	Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
+    if (elemPtr)
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
   }
   return TCL_OK;
 }
@@ -558,12 +540,6 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
   }
 
   return listObjPtr;
-}
-
-static void FreeElement(char* data)
-{
-  Element* elemPtr = (Element *)data;
-  Blt_DestroyElement(elemPtr);
 }
 
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 

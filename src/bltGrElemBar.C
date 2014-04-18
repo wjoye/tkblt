@@ -260,7 +260,7 @@ void BarElement::map()
   BarElementOptions* ops = (BarElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  if (!link || (flags & DELETE_PENDING))
+  if (!link)
     return;
 
   ResetBar();
@@ -674,7 +674,7 @@ void BarElement::draw(Drawable drawable)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING))
+  if (hide_)
     return;
 
   int count = 0;
@@ -708,7 +708,7 @@ void BarElement::drawActive(Drawable drawable)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+  if (hide_ || !(flags & ACTIVE))
     return;
 
   BarPen* penPtr = (BarPen*)ops->activePenPtr;
@@ -766,7 +766,7 @@ void BarElement::print(Blt_Ps ps)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   
-  if (hide_ || (flags & DELETE_PENDING))
+  if (hide_)
     return;
 
   // Comment the PostScript to indicate the start of the element
@@ -812,7 +812,7 @@ void BarElement::printActive(Blt_Ps ps)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (hide_ || (flags & DELETE_PENDING) || !(flags & ACTIVE))
+  if (hide_ || !(flags & ACTIVE))
     return;
 
   BarPen* penPtr = (BarPen*)ops->activePenPtr;

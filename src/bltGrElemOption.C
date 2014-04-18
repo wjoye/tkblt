@@ -430,7 +430,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   Graph* graphPtr = elemPtr->graphPtr_;
   graphPtr->flags |= RESET_AXES;
   elemPtr->flags |= MAP_ITEM;
-  if (elemPtr->link && !(elemPtr->flags & DELETE_PENDING)) {
+  if (elemPtr->link) {
     graphPtr->flags |= CACHE_DIRTY;
     graphPtr->eventuallyRedraw();
   }
