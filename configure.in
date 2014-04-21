@@ -95,6 +95,8 @@ TEA_ADD_SOURCES([
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C
 	bltGrMisc.C
+	bltGrPageSetup.C
+	bltGrPageSetupOp.C
 	bltGrPenOp.C
 	bltGrPenOption.C
 	bltGrPen.C
