@@ -41,6 +41,8 @@ extern "C" {
 #include "bltGrAxisOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
+#include "bltPs.h"
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
 

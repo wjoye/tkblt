@@ -30,6 +30,7 @@
 #include "bltGrPenLine.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
 
 typedef struct {
   const char* name;

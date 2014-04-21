@@ -32,7 +32,8 @@
 
 #include "bltGrMisc.h"
 #include "bltBind.h"
-#include "bltPs.h"
+#include "bltGrPageSetup.h"
+#include "bltText.h"
 
 extern "C" {
 #include "bltChain.h"
@@ -44,6 +45,8 @@ class Axis;
 class Element;
 class Legend;
 class Pen;
+
+typedef struct _Blt_Ps *Blt_Ps;
 
 namespace Blt {
 class Marker;

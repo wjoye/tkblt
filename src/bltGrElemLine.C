@@ -40,6 +40,8 @@ extern "C" {
 #include "bltGrAxisOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
+#include "bltPs.h"
 
 #define SEARCH_X	0
 #define SEARCH_Y	1

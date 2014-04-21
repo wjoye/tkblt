@@ -37,6 +37,8 @@ extern "C" {
 #include "bltGrHairsOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
+#include "bltPs.h"
 
 static void SelectCmdProc(ClientData);
 static Tcl_IdleProc DisplayProc;

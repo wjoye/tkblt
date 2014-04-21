@@ -35,4 +35,9 @@
 #include <iomanip>
 using namespace std;
 
+extern int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+				 int objc, Tcl_Obj* const objv[]);
+
+int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+		     Tcl_Obj* const objv[]);
 #endif

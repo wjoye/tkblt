@@ -31,6 +31,8 @@
 #include "bltGrMarkerOption.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
+#include "bltPs.h"
 
 using namespace Blt;
 

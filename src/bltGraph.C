@@ -52,6 +52,7 @@ extern "C" {
 #include "bltGrHairs.h"
 #include "bltGrHairsOp.h"
 #include "bltGrDef.h"
+#include "bltPs.h"
 
 using namespace Blt;
 

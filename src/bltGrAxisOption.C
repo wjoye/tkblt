@@ -33,6 +33,7 @@ extern "C" {
 
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
+#include "bltConfig.h"
 
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;

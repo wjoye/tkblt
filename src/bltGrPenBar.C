@@ -29,6 +29,7 @@
 
 #include "bltGrPenBar.h"
 #include "bltGrDef.h"
+#include "bltConfig.h"
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",

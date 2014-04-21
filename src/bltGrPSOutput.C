@@ -43,10 +43,8 @@ extern "C" {
 };
 
 #include "bltGrMisc.h"
-
-extern "C" {
+#include "bltGrPageSetup.h"
 #include "bltPs.h"
-};
 
 #ifdef TCL_UTF_MAX
 #  define HAVE_UTF	1

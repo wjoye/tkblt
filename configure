@@ -5557,7 +5557,6 @@ done
 	bltGrPen.C
 	bltGrPenBar.C
 	bltGrPenLine.C
-	bltGrPs.C
 	bltGraph.C
 	bltGraphBar.C
 	bltGraphLine.C

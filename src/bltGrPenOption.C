@@ -30,6 +30,7 @@
 #include "bltGrPen.h"
 #include "bltGrPenOption.h"
 #include "bltGrPenOp.h"
+#include "bltConfig.h"
 
 static Tk_CustomOptionSetProc PenSetProc;
 static Tk_CustomOptionGetProc PenGetProc;

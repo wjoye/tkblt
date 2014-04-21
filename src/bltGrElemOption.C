@@ -35,6 +35,7 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrElemOption.h"
 #include "bltGrPenOp.h"
+#include "bltConfig.h"
 
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
