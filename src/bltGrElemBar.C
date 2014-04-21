@@ -31,6 +31,7 @@
 
 extern "C" {
 #include "bltInt.h"
+#include "bltGraphBar.h"
 };
 
 #include "bltGrElemBar.h"
@@ -257,8 +258,9 @@ int BarElement::configure()
 
 void BarElement::map()
 {
+  BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarElementOptions* ops = (BarElementOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
   if (!link)
     return;
@@ -308,7 +310,7 @@ void BarElement::map()
      * coordinates of the two corners.
      */
 
-    if ((graphPtr_->nBarGroups_ > 0) && (gops->barMode != BARS_INFRONT) && 
+    if ((barGraphPtr_->nBarGroups_ > 0) && (gops->barMode != BARS_INFRONT) && 
 	(!gops->stackAxes)) {
       Tcl_HashEntry *hPtr;
       BarSetKey key;
@@ -316,7 +318,7 @@ void BarElement::map()
       key.value = (float)x[i];
       key.axes = ops->axes;
       key.axes.y = NULL;
-      hPtr = Tcl_FindHashEntry(&graphPtr_->setTable_, (char *)&key);
+      hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
       if (hPtr) {
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
@@ -327,9 +329,9 @@ void BarElement::map()
 	  double slice, width, offset;
 		    
 	  BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
-	  slice = barWidth / (double)graphPtr_->maxBarSetSize_;
+	  slice = barWidth / (double)barGraphPtr_->maxBarSetSize_;
 	  offset = (slice * groupPtr->index);
-	  if (graphPtr_->maxBarSetSize_ > 1) {
+	  if (barGraphPtr_->maxBarSetSize_ > 1) {
 	    offset += slice * 0.05;
 	    slice *= 0.90;
 	  }
@@ -483,8 +485,9 @@ void BarElement::map()
 
 void BarElement::extents(Region2d *regPtr)
 {
+  BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarElementOptions* ops = (BarElementOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
   regPtr->top = regPtr->left = DBL_MAX;
   regPtr->bottom = regPtr->right = -DBL_MAX;
@@ -510,7 +513,7 @@ void BarElement::extents(Region2d *regPtr)
   // Handle stacked bar elements specially.
   // If element is stacked, the sum of its ordinates may be outside the
   // minimum/maximum limits of the element's data points.
-  if ((gops->barMode == BARS_STACKED) && (graphPtr_->nBarGroups_ > 0))
+  if ((gops->barMode == BARS_STACKED) && (barGraphPtr_->nBarGroups_ > 0))
     CheckBarStacks(&ops->axes, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
@@ -614,7 +617,7 @@ void BarElement::extents(Region2d *regPtr)
 void BarElement::closest()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
   ClosestSearch* searchPtr = &gops->search;
   double minDist = searchPtr->dist;
@@ -888,12 +891,13 @@ void BarElement::ResetStylePalette(Blt_Chain stylePalette)
 
 void BarElement::CheckBarStacks(Axis2d *pairPtr, double *minPtr, double *maxPtr)
 {
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
-  if ((gops->barMode != BARS_STACKED) || (graphPtr_->nBarGroups_ == 0))
+  BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
+  if ((gops->barMode != BARS_STACKED) || barGraphPtr_->nBarGroups_ == 0)
     return;
 
   BarGroup *gp, *gend;
-  for (gp = graphPtr_->barGroups_, gend = gp + graphPtr_->nBarGroups_; gp < gend;
+  for (gp = barGraphPtr_->barGroups_, gend = gp + barGraphPtr_->nBarGroups_; gp < gend;
        gp++) {
     if ((gp->axes.x == pairPtr->x) && (gp->axes.y == pairPtr->y)) {
 
@@ -1305,7 +1309,7 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
   const char *fmt = penOps->valueFormat;
   if (!fmt)
@@ -1393,7 +1397,7 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
 {
   BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
   XRectangle *rp, *rend;
   char string[TCL_DOUBLE_SPACE * 2 + 2];
@@ -1440,7 +1444,8 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
 
 void Blt_InitBarSetTable(Graph* graphPtr)
 {
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  BarGraph* barGraphPtr = (BarGraph*)graphPtr;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr->ops_;
   Blt_ChainLink link;
   int nStacks, nSegs;
   Tcl_HashTable setTable;
@@ -1455,7 +1460,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
   Blt_DestroyBarSets(graphPtr);
   if (gops->barMode == BARS_INFRONT)
     return;
-  Tcl_InitHashTable(&graphPtr->setTable_, sizeof(BarSetKey) / sizeof(int));
+  Tcl_InitHashTable(&barGraphPtr->setTable_, sizeof(BarSetKey) / sizeof(int));
 
   /*
    * Initialize a hash table and fill it with unique abscissas.  Keep track
@@ -1522,7 +1527,7 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     int isNew;
 
     keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
-    hPtr2 = Tcl_CreateHashEntry(&graphPtr->setTable_, (char *)keyPtr,&isNew);
+    hPtr2 = Tcl_CreateHashEntry(&barGraphPtr->setTable_, (char *)keyPtr,&isNew);
     Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
     Tcl_SetHashValue(hPtr2, tablePtr);
     if (max < tablePtr->numEntries) {
@@ -1535,9 +1540,9 @@ void Blt_InitBarSetTable(Graph* graphPtr)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch iter;
 
-    graphPtr->barGroups_ = (BarGroup*)calloc(sum, sizeof(BarGroup));
-    BarGroup* groupPtr = graphPtr->barGroups_;
-    for (hPtr = Tcl_FirstHashEntry(&graphPtr->setTable_, &iter); 
+    barGraphPtr->barGroups_ = (BarGroup*)calloc(sum, sizeof(BarGroup));
+    BarGroup* groupPtr = barGraphPtr->barGroups_;
+    for (hPtr = Tcl_FirstHashEntry(&barGraphPtr->setTable_, &iter); 
 	 hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
       BarSetKey *keyPtr;
       Tcl_HashEntry *hPtr2;
@@ -1560,22 +1565,23 @@ void Blt_InitBarSetTable(Graph* graphPtr)
       }
     }
   }
-  graphPtr->maxBarSetSize_ = max;
-  graphPtr->nBarGroups_ = sum;
+  barGraphPtr->maxBarSetSize_ = max;
+  barGraphPtr->nBarGroups_ = sum;
 }
 
 void Blt_ComputeBarStacks(Graph* graphPtr)
 {
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  BarGraph* barGraphPtr = (BarGraph*)graphPtr;
+  BarGraphOptions* gops = (BarGraphOptions*)graphPtr->ops_;
 
   Blt_ChainLink link;
-  if ((gops->barMode != BARS_STACKED) || (graphPtr->nBarGroups_ == 0))
+  if ((gops->barMode != BARS_STACKED) || (barGraphPtr->nBarGroups_ == 0))
     return;
 
   /* Initialize the stack sums to zero. */
   {
     BarGroup *gp, *gend;
-    for (gp = graphPtr->barGroups_, gend = gp + graphPtr->nBarGroups_; 
+    for (gp = barGraphPtr->barGroups_, gend = gp + barGraphPtr->nBarGroups_; 
 	 gp < gend; gp++) {
       gp->sum = 0.0;
     }
@@ -1603,7 +1609,7 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 	key.value = *x;
 	key.axes = ops->axes;
 	key.axes.y = NULL;
-	hPtr = Tcl_FindHashEntry(&graphPtr->setTable_, (char *)&key);
+	hPtr = Tcl_FindHashEntry(&barGraphPtr->setTable_, (char *)&key);
 	if (!hPtr)
 	  continue;
 
@@ -1622,9 +1628,10 @@ void Blt_ComputeBarStacks(Graph* graphPtr)
 
 void Blt_ResetBarGroups(Graph* graphPtr)
 {
+  BarGraph* barGraphPtr = (BarGraph*)graphPtr;
   BarGroup* gp;
   BarGroup* gend;
-  for (gp = graphPtr->barGroups_, gend = gp + graphPtr->nBarGroups_; gp < gend; 
+  for (gp = barGraphPtr->barGroups_, gend = gp + barGraphPtr->nBarGroups_; gp < gend; 
        gp++) {
     gp->lastY = 0.0;
     gp->count = 0;
@@ -1633,19 +1640,20 @@ void Blt_ResetBarGroups(Graph* graphPtr)
 
 void Blt_DestroyBarSets(Graph* graphPtr)
 {
-  if (graphPtr->barGroups_) {
-    free(graphPtr->barGroups_);
-    graphPtr->barGroups_ = NULL;
+  BarGraph* barGraphPtr = (BarGraph*)graphPtr;
+  if (barGraphPtr->barGroups_) {
+    free(barGraphPtr->barGroups_);
+    barGraphPtr->barGroups_ = NULL;
   }
 
-  graphPtr->nBarGroups_ = 0;
+  barGraphPtr->nBarGroups_ = 0;
   Tcl_HashSearch iter;
-  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->setTable_, &iter); 
+  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&barGraphPtr->setTable_, &iter); 
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
     Tcl_HashTable* tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
     Tcl_DeleteHashTable(tablePtr);
     free(tablePtr);
   }
-  Tcl_DeleteHashTable(&graphPtr->setTable_);
-  Tcl_InitHashTable(&graphPtr->setTable_, sizeof(BarSetKey) / sizeof(int));
+  Tcl_DeleteHashTable(&barGraphPtr->setTable_);
+  Tcl_InitHashTable(&barGraphPtr->setTable_, sizeof(BarSetKey) / sizeof(int));
 }

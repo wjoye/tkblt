@@ -66,140 +66,8 @@ static Blt_BindPickProc PickEntry;
 
 // OptionSpecs
 
-static const char* barmodeObjOption[] = 
-  {"normal", "stacked", "aligned", "overlap", NULL};
-const char* searchModeObjOption[] = {"points", "traces", "auto", NULL};
-const char* searchAlongObjOption[] = {"x", "y", "both", NULL};
-
-static Tk_OptionSpec optionSpecs[] = {
-  {TK_OPTION_DOUBLE, "-aspect", "aspect", "Aspect", 
-   "0", -1, Tk_Offset(GraphOptions, aspect), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, normalBg), 
-   0, NULL, CACHE_DIRTY},
-  {TK_OPTION_STRING_TABLE, "-barmode", "barMode", "BarMode", 
-   "normal", -1, Tk_Offset(GraphOptions, barMode), 
-   0, &barmodeObjOption, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth", 
-   ".9", -1, Tk_Offset(GraphOptions, barWidth), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_DOUBLE, "-baseline", "baseline", "Baseline", 
-   "0", -1, Tk_Offset(GraphOptions, baseline), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_SYNONYM, "-bm", NULL, NULL, NULL, -1, 0, 0, "-bottommargin", 0},
-  {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(GraphOptions, borderWidth), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-bottommargin", "bottomMargin", "BottomMargin",
-   "0", -1, Tk_Offset(GraphOptions, bottomMargin.reqSize), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_STRING, "-bottomvariable", "bottomVariable", "BottomVariable",
-   NULL, -1, Tk_Offset(GraphOptions, bottomMargin.varName), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-bufferelements", "bufferElements", "BufferElements",
-   "yes", -1, Tk_Offset(GraphOptions, backingStore), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
-   "yes", -1, Tk_Offset(GraphOptions, doubleBuffer), 0, NULL, 0},
-  {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", 
-   "crosshair", -1, Tk_Offset(GraphOptions, cursor), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_FONT, "-font", "font", "Font", 
-   STD_FONT_MEDIUM, -1, Tk_Offset(GraphOptions, titleTextStyle.font), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(GraphOptions, titleTextStyle.color), 
-   0, NULL, 
-   CACHE_DIRTY},
-  {TK_OPTION_SYNONYM, "-halo", NULL, NULL, NULL, -1, 0, 0, "-searchhalo", 0},
-  {TK_OPTION_PIXELS, "-height", "height", "Height", 
-   "4i", -1, Tk_Offset(GraphOptions, reqHeight), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
-   "HighlightBackground", 
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, highlightBgColor), 
-   0, NULL, 
-   CACHE_DIRTY},
-  {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(GraphOptions, highlightColor), 
-   0, NULL, 0},
-  {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
-   "HighlightThickness", 
-   "2", -1, Tk_Offset(GraphOptions, highlightWidth), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-invertxy", "invertXY", "InvertXY", 
-   "no", -1, Tk_Offset(GraphOptions, inverted), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY | RESET_AXES},
-  {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify", 
-   "center", -1, Tk_Offset(GraphOptions, titleTextStyle.justify), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-leftmargin", "leftMargin", "Margin", 
-   "0", -1, Tk_Offset(GraphOptions, leftMargin.reqSize), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_STRING, "-leftvariable", "leftVariable", "LeftVariable",
-   NULL, -1, Tk_Offset(GraphOptions, leftMargin.varName), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-lm", NULL, NULL, NULL, -1, 0, 0, "-leftmargin", 0},
-  {TK_OPTION_BORDER, "-plotbackground", "plotbackground", "PlotBackground",
-   STD_NORMAL_BACKGROUND, -1, Tk_Offset(GraphOptions, plotBg), 0, NULL,
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-plotborderwidth", "plotBorderWidth", "PlotBorderWidth",
-   STD_BORDERWIDTH, -1, Tk_Offset(GraphOptions, plotBW), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-plotpadx", "plotPadX", "PlotPad", 
-   "0", -1, Tk_Offset(GraphOptions, xPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-plotpady", "plotPadY", "PlotPad", 
-   "0", -1, Tk_Offset(GraphOptions, yPad), 0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_RELIEF, "-plotrelief", "plotRelief", "Relief", 
-   "flat", -1, Tk_Offset(GraphOptions, plotRelief), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_RELIEF, "-relief", "relief", "Relief", 
-   "flat", -1, Tk_Offset(GraphOptions, relief), 0, NULL, 0},
-  {TK_OPTION_PIXELS, "-rightmargin", "rightMargin", "Margin", 
-   "0", -1, Tk_Offset(GraphOptions, rightMargin.reqSize), 0, NULL, 
-   RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_STRING, "-rightvariable", "rightVariable", "RightVariable",
-   NULL, -1, Tk_Offset(GraphOptions, rightMargin.varName), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL, -1, 0, 0, "-rightmargin", 0},
-  {TK_OPTION_PIXELS, "-searchhalo", "searchhalo", "SearchHalo", 
-   "2m", -1, Tk_Offset(GraphOptions, search.halo), 0, NULL, 0},
-  {TK_OPTION_STRING_TABLE, "-searchmode", "searchMode", "SearchMode",
-   "points", -1, Tk_Offset(GraphOptions, search.mode), 
-   0, &searchModeObjOption, 0}, 
-  {TK_OPTION_STRING_TABLE, "-searchalong", "searchAlong", "SearchAlong",
-   "both", -1, Tk_Offset(GraphOptions, search.along), 
-   0, &searchAlongObjOption, 0},
-  {TK_OPTION_BOOLEAN, "-stackaxes", "stackAxes", "StackAxes", 
-   "no", -1, Tk_Offset(GraphOptions, stackAxes), 0, NULL, 0},
-  {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
-   NULL, -1, Tk_Offset(GraphOptions, takeFocus), TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING, "-title", "title", "Title", 
-   NULL, -1, Tk_Offset(GraphOptions, title), 
-   TK_OPTION_NULL_OK, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_SYNONYM, "-tm", NULL, NULL, NULL, -1, 0, 0, "-topmargin", 0},
-  {TK_OPTION_PIXELS, "-topmargin", "topMargin", "TopMargin", 
-   "0", -1, Tk_Offset(GraphOptions, topMargin.reqSize), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_STRING, "-topvariable", "topVariable", "TopVariable",
-   NULL, -1, Tk_Offset(GraphOptions, topMargin.varName), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_PIXELS, "-width", "width", "Width", 
-   "5i", -1, Tk_Offset(GraphOptions, reqWidth), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-plotwidth", "plotWidth", "PlotWidth", 
-   "0", -1, Tk_Offset(GraphOptions, reqPlotWidth), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_PIXELS, "-plotheight", "plotHeight", "PlotHeight", 
-   "0", -1, Tk_Offset(GraphOptions, reqPlotHeight), 
-   0, NULL, RESET_WORLD | CACHE_DIRTY},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
-};
-
-// Create
-
 Graph::Graph(ClientData clientData, Tcl_Interp* interp, 
-	     int objc, Tcl_Obj* const objv[], ClassId classId)
+	     int objc, Tcl_Obj* const objv[])
 {
   valid_ =1;
   interp_ = interp;
@@ -215,22 +83,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   cmdToken_ = Tcl_CreateObjCommand(interp_, Tk_PathName(tkwin_),
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
-  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
-  ops_ = (GraphOptions*)calloc(1, sizeof(GraphOptions));
-  GraphOptions* ops = (GraphOptions*)ops_;
 
-  switch (classId) {
-  case CID_ELEM_LINE:
-    Tk_SetClass(tkwin_, "Graph");
-    break;
-  case CID_ELEM_BAR:
-    Tk_SetClass(tkwin_, "Barchart");
-    break;
-  default:
-    break;
-  }
-
-  classId_ = classId;
   flags = MAP_WORLD | REDRAW_WORLD;
   nextMarkerId_ = 1;
 
@@ -261,18 +114,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   cacheWidth_ =0;
   cacheHeight_ =0;
 
-  barGroups_ =NULL;
-  nBarGroups_ =0;
-  maxBarSetSize_ =0;
-
-  ops->bottomMargin.site = MARGIN_BOTTOM;
-  ops->leftMargin.site = MARGIN_LEFT;
-  ops->topMargin.site = MARGIN_TOP;
-  ops->rightMargin.site = MARGIN_RIGHT;
-
-  Blt_Ts_InitStyle(ops->titleTextStyle);
-  ops->titleTextStyle.anchor = TK_ANCHOR_N;
-
   Tcl_InitHashTable(&axes_.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&axes_.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&elements_.table, TCL_STRING_KEYS);
@@ -280,7 +121,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Tcl_InitHashTable(&markers_.table, TCL_STRING_KEYS);
   Tcl_InitHashTable(&markers_.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&penTable_, TCL_STRING_KEYS);
-  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
+
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
@@ -292,28 +133,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
-  switch (classId) {
-  case CID_ELEM_LINE:
-    if (createPen("active", 0, NULL) != TCL_OK) {
-      valid_ =0;
-      return;
-    }
-    break;
-  case CID_ELEM_BAR:
-    if (createPen("active", 0, NULL) != TCL_OK) {
-      valid_ =0;
-      return;
-    }
-    break;
-  default:
-    break;
-  }
-
-  if (Blt_CreatePageSetup(this) != TCL_OK) {
-    valid_ =0;
-    return;
-  }
-
   // Keep a hold of the associated tkwin until we destroy the graph,
   // otherwise Tk might free it while we still need it.
   Tcl_Preserve(tkwin_);
@@ -321,15 +140,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Tk_CreateEventHandler(tkwin_, 
 			ExposureMask|StructureNotifyMask|FocusChangeMask,
 			GraphEventProc, this);
-
-  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(interp_, this, objc-2, objv+2) != TCL_OK)) {
-    valid_ =0;
-    return;
-  }
-
-  adjustAxes();
-
-  Tcl_SetStringObj(Tcl_GetObjResult(interp_), Tk_PathName(tkwin_), -1);
 }
 
 Graph::~Graph()
@@ -347,7 +157,6 @@ Graph::~Graph()
   destroyAxes();
   destroyPens();
   Blt_DestroyPageSetup(this);
-  Blt_DestroyBarSets(this);
 
   if (bindTable_)
     Blt_DestroyBindingTable(bindTable_);
@@ -370,10 +179,6 @@ Graph::~Graph()
 void Graph::configure()	
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-
-  // Don't allow negative bar widths. Reset to an arbitrary value (0.1)
-  if (ops->barWidth <= 0.0f)
-    ops->barWidth = 0.8f;
 
   inset_ = ops->borderWidth + ops->highlightWidth;
   if ((ops->reqHeight != Tk_ReqHeight(tkwin_)) ||
@@ -573,7 +378,7 @@ void Graph::drawPlot(Drawable drawable)
 
 int Graph::print(const char *ident, Blt_Ps ps)
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
   PageSetup *setupPtr = pageSetup_;
 
   // We need to know how big a graph to print.  If the graph hasn't been drawn
@@ -598,19 +403,19 @@ int Graph::print(const char *ident, Blt_Ps ps)
   reconfigure();
   map();
 
-  int x = left_ - gops->plotBW;
-  int y = top_ - gops->plotBW;
+  int x = left_ - ops->plotBW;
+  int y = top_ - ops->plotBW;
 
-  int w = (right_ - left_ + 1) + (2*gops->plotBW);
-  int h = (bottom_ - top_ + 1) + (2*gops->plotBW);
+  int w = (right_ - left_ + 1) + (2*ops->plotBW);
+  int h = (bottom_ - top_ + 1) + (2*ops->plotBW);
 
   int result = PostScriptPreamble(this, ident, ps);
   if (result != TCL_OK)
     goto error;
 
-  Blt_Ps_XSetFont(ps, gops->titleTextStyle.font);
+  Blt_Ps_XSetFont(ps, ops->titleTextStyle.font);
   if (pageSetup_->decorations)
-    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(gops->plotBg));
+    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->plotBg));
   else
     Blt_Ps_SetClearBackground(ps);
 
@@ -764,7 +569,7 @@ void Graph::drawMargins(Drawable drawable)
 
 void Graph::printMargins(Blt_Ps ps)
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
   PageSetup *setupPtr = pageSetup_;
   XRectangle margin[4];
 
@@ -781,7 +586,7 @@ void Graph::printMargins(Blt_Ps ps)
 
   // Clear the surrounding margins and clip the plotting surface
   if (setupPtr->decorations)
-    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(gops->normalBg));
+    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->normalBg));
   else
     Blt_Ps_SetClearBackground(ps);
 
@@ -789,18 +594,18 @@ void Graph::printMargins(Blt_Ps ps)
   Blt_Ps_XFillRectangles(ps, margin, 4);
     
   Blt_Ps_Append(ps, "% Interior 3D border\n");
-  if (gops->plotBW > 0) {
-    int x = left_ - gops->plotBW;
-    int y = top_ - gops->plotBW;
-    int w = (right_ - left_) + (2*gops->plotBW);
-    int h = (bottom_ - top_) + (2*gops->plotBW);
-    Blt_Ps_Draw3DRectangle(ps, gops->normalBg, (double)x, (double)y, w, h,
-			   gops->plotBW, gops->plotRelief);
+  if (ops->plotBW > 0) {
+    int x = left_ - ops->plotBW;
+    int y = top_ - ops->plotBW;
+    int w = (right_ - left_) + (2*ops->plotBW);
+    int h = (bottom_ - top_) + (2*ops->plotBW);
+    Blt_Ps_Draw3DRectangle(ps, ops->normalBg, (double)x, (double)y, w, h,
+			   ops->plotBW, ops->plotRelief);
   }
 
-  if (gops->title) {
+  if (ops->title) {
     Blt_Ps_Append(ps, "% Graph title\n");
-    Blt_Ps_DrawText(ps, gops->title, &gops->titleTextStyle, 
+    Blt_Ps_DrawText(ps, ops->title, &ops->titleTextStyle, 
 		    (double)titleX_, (double)titleY_);
   }
 }
@@ -840,44 +645,6 @@ void Graph::disableCrosshairs()
 
 // Pens
 
-int Graph::createPen(const char* penName, int objc, Tcl_Obj* const objv[])
-{
-  int isNew;
-  Tcl_HashEntry *hPtr = 
-    Tcl_CreateHashEntry(&penTable_, penName, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp_, "pen \"", penName, "\" already exists in \"",
-		     Tk_PathName(tkwin_), "\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  Pen* penPtr;
-  switch (classId_) {
-  case CID_ELEM_BAR:
-    penPtr = new BarPen(this, penName, hPtr);
-    break;
-  case CID_ELEM_LINE:
-    penPtr = new LinePen(this, penName, hPtr);
-    break;
-  default:
-    return TCL_ERROR;
-  }
-  if (!penPtr)
-    return TCL_ERROR;
-
-  Tcl_SetHashValue(hPtr, penPtr);
-
-  if ((Tk_InitOptions(interp_, (char*)penPtr->ops(), penPtr->optionTable(), tkwin_) != TCL_OK) || (PenObjConfigure(interp_, this, penPtr, objc-4, objv+4) != TCL_OK)) {
-    delete penPtr;
-    return TCL_ERROR;
-  }
-
-  flags |= CACHE_DIRTY;
-  eventuallyRedraw();
-
-  return TCL_OK;
-}
-
 void Graph::destroyPens()
 {
   Tcl_HashSearch iter;
@@ -909,51 +676,6 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
 }
 
 // Elements
-
-int Graph::createElement(int objc, Tcl_Obj* const objv[])
-{
-  char *name = Tcl_GetString(objv[3]);
-  if (name[0] == '-') {
-    Tcl_AppendResult(interp_, "name of element \"", name, 
-		     "\" can't start with a '-'", NULL);
-    return TCL_ERROR;
-  }
-
-  int isNew;
-  Tcl_HashEntry* hPtr = 
-    Tcl_CreateHashEntry(&elements_.table, name, &isNew);
-  if (!isNew) {
-    Tcl_AppendResult(interp_, "element \"", name, 
-		     "\" already exists in \"", Tcl_GetString(objv[0]), 
-		     "\"", NULL);
-    return TCL_ERROR;
-  }
-
-  Element* elemPtr;
-  switch (classId_) {
-  case CID_ELEM_BAR:
-    elemPtr = new BarElement(this, name, hPtr);
-    break;
-  case CID_ELEM_LINE:
-    elemPtr = new LineElement(this, name, hPtr);
-    break;
-  default:
-    return TCL_ERROR;
-  }
-  if (!elemPtr)
-    return TCL_ERROR;
-
-  Tcl_SetHashValue(hPtr, elemPtr);
-
-  if ((Tk_InitOptions(interp_, (char*)elemPtr->ops(), elemPtr->optionTable(), tkwin_) != TCL_OK) || (ElementObjConfigure(interp_, elemPtr, objc-4, objv+4) != TCL_OK)) {
-    delete elemPtr;
-    return TCL_ERROR;
-  }
-
-  elemPtr->link = Blt_Chain_Append(elements_.displayList, elemPtr);
-
-  return TCL_OK;
-}
 
 void Graph::destroyElement(Element* elemPtr)
 {
@@ -991,10 +713,6 @@ void Graph::configureElements()
 
 void Graph::mapElements()
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
-  if (gops->barMode != BARS_INFRONT)
-    Blt_ResetBarGroups(this);
-
   for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -1292,28 +1010,28 @@ void Graph::configureAxes()
 
 void Graph::mapAxes()
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
     int count =0;
     int offset =0;
-    Blt_Chain chain = gops->margins[ii].axes;
+    Blt_Chain chain = ops->margins[ii].axes;
     for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+      AxisOptions* aops = (AxisOptions*)axisPtr->ops();
       if (!axisPtr->use_)
 	continue;
 
-      if (ops->reqNumMajorTicks <= 0)
-	ops->reqNumMajorTicks = 4;
+      if (aops->reqNumMajorTicks <= 0)
+	aops->reqNumMajorTicks = 4;
 
-      if (gops->stackAxes)
+      if (ops->stackAxes)
 	axisPtr->mapStacked(count, ii);
       else 
 	axisPtr->map(offset, ii);
 
-      if (ops->showGrid)
+      if (aops->showGrid)
 	axisPtr->mapGridlines();
 
       offset += axisPtr->isHorizontal() ? axisPtr->height_ : axisPtr->width_;
@@ -1324,10 +1042,10 @@ void Graph::mapAxes()
 
 void Graph::drawAxes(Drawable drawable)
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(gops->margins[ii].axes); 
+    for (Blt_ChainLink link = Blt_Chain_LastLink(ops->margins[ii].axes); 
 	 link != NULL; link = Blt_Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->draw(drawable);
@@ -1347,10 +1065,10 @@ void Graph::drawAxesLimits(Drawable drawable)
 
 void Graph::drawAxesGrids(Drawable drawable)
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(gops->margins[ii].axes);
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->margins[ii].axes);
 	 link; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->drawGrids(drawable);
@@ -1360,10 +1078,10 @@ void Graph::drawAxesGrids(Drawable drawable)
 
 void Graph::printAxes(Blt_Ps ps) 
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   Margin *mp, *mend;
-  for (mp = gops->margins, mend = mp + 4; mp < mend; mp++) {
+  for (mp = ops->margins, mend = mp + 4; mp < mend; mp++) {
     for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
@@ -1374,10 +1092,10 @@ void Graph::printAxes(Blt_Ps ps)
 
 void Graph::printAxesGrids(Blt_Ps ps) 
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
+  GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(gops->margins[ii].axes);
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(ops->margins[ii].axes);
 	 link; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->printGrids(ps);
@@ -1472,17 +1190,6 @@ Point2d Graph::invMap2D(double x, double y, Axis2d* axesPtr)
 
 void Graph::resetAxes()
 {
-  GraphOptions* gops = (GraphOptions*)ops_;
-  
-  /* FIXME: This should be called whenever the display list of
-   *	      elements change. Maybe yet another flag INIT_STACKS to
-   *	      indicate that the element display list has changed.
-   *	      Needs to be done before the axis limits are set.
-   */
-  Blt_InitBarSetTable(this);
-  if ((gops->barMode == BARS_STACKED) && (nBarGroups_ > 0))
-    Blt_ComputeBarStacks(this);
-
   /*
    * Step 1:  Reset all axes. Initialize the data limits of the axis to
    *		impossible values.

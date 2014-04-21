@@ -67,24 +67,6 @@ typedef struct {
 } ClosestSearch;
 
 typedef struct {
-  int nSegments;
-  Axis2d axes;
-  float sum;
-  int count;
-  float lastY;
-  size_t index;
-} BarGroup;
-
-typedef struct {
-  float value;
-  Axis2d axes;
-} BarSetKey;
-
-typedef enum {
-  BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
-} BarMode;
-
-typedef struct {
   short int width;
   short int height;
   short int axesOffset;
@@ -136,11 +118,6 @@ typedef struct {
   int reqWidth;
   int reqPlotWidth;
   int reqPlotHeight;
-
-  // bar graph
-  BarMode barMode;
-  double barWidth;
-  double baseline;
 } GraphOptions;
 
 class Graph {
@@ -192,12 +169,6 @@ class Graph {
   short int cacheWidth_;
   short int cacheHeight_;
 
-  // barchart specific information
-  BarGroup *barGroups_;
-  int nBarGroups_;
-  Tcl_HashTable setTable_;
-  int maxBarSetSize_;
-
  protected:
   void drawPlot(Drawable);
   void layoutGraph();
@@ -211,7 +182,7 @@ class Graph {
 
   void destroyElements();
   void configureElements();
-  void mapElements();
+  virtual void mapElements();
   void drawElements(Drawable);
   void drawActiveElements(Drawable);
   void printElements(Blt_Ps);
@@ -234,11 +205,10 @@ class Graph {
   void adjustAxes();
 
  public:
-  Graph(ClientData clientData, Tcl_Interp*interp, 
-	int objc, Tcl_Obj* const objv[], ClassId classId);
+  Graph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);
   virtual ~Graph();
 
-  void configure();
+  virtual void configure();
   void map();
   void draw();
   void eventuallyRedraw();
@@ -257,19 +227,19 @@ class Graph {
   ClientData axisTag(const char*);
   Point2d map2D(double, double, Axis2d*);
   Point2d invMap2D(double, double, Axis2d*);
-  void resetAxes();
+  virtual void resetAxes();
   Axis* nearestAxis(int, int);
 
   ClientData markerTag(const char*);
   Blt::Marker* nearestMarker(int, int, int);
   int isElementHidden(Blt::Marker*);
 
-  int createElement(int, Tcl_Obj* const []);
+  virtual int createElement(int, Tcl_Obj* const []) =0;
   void destroyElement(Element*);
   int getElement(Tcl_Obj*, Element**);
   ClientData elementTag(const char*);
 
-  int createPen(const char*, int, Tcl_Obj* const []);
+  virtual int createPen(const char*, int, Tcl_Obj* const []) =0;
   int getPen(Tcl_Obj*, Pen**);
 };
 

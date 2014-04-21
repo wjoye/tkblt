@@ -32,7 +32,8 @@
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
-#include "bltGraph.h"
+#include "bltGraphLine.h"
+#include "bltGraphBar.h"
 #include "bltOp.h"
 }
 
@@ -83,7 +84,7 @@ static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
   }
 
-  Graph* graphPtr = new Graph(clientData, interp, objc, objv, CID_ELEM_LINE);
+  Graph* graphPtr = new LineGraph(clientData, interp, objc, objv);
   return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
 }
 
@@ -95,7 +96,7 @@ static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc,
     return TCL_ERROR;
   }
 
-  Graph* graphPtr = new Graph(clientData, interp, objc, objv, CID_ELEM_BAR);
+  Graph* graphPtr = new BarGraph(clientData, interp, objc, objv);
   return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
 }
 
