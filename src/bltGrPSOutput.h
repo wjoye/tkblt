@@ -71,6 +71,16 @@ typedef struct  {
     
 } PageSetup;
 
+#define POSTSCRIPT_BUFSIZ	((BUFSIZ*2)-1)
+struct _Blt_Ps {
+    Tcl_Interp* interp;
+    Tcl_DString dString;
+    PageSetup *setupPtr;
+    char scratchArr[POSTSCRIPT_BUFSIZ+1];
+};
+
+typedef struct _Blt_Ps PostScript;
+
 #define PS_MAXPECT	(1<<4)
 
 #define PS_FMT_NONE	0

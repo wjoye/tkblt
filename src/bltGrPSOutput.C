@@ -45,7 +45,7 @@ extern "C" {
 #include "bltGrMisc.h"
 
 extern "C" {
-#include "bltPsInt.h"
+#include "bltPs.h"
 };
 
 #ifdef TCL_UTF_MAX
