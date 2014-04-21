@@ -1355,7 +1355,6 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_LINE:
   case CID_MARKER_POLYGON:
   case CID_MARKER_TEXT:
-  case CID_MARKER_WINDOW:
     {
       Marker* ptr = (Marker*)object;
       Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->name_),0);

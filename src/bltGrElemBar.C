@@ -58,7 +58,7 @@ static Tk_ObjCustomOption styleObjOption =
     (ClientData)sizeof(BarStyle)
   };
 
-extern Tk_ObjCustomOption barPenObjOption;
+extern Tk_ObjCustomOption penObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 extern Tk_ObjCustomOption valuesObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
@@ -67,7 +67,7 @@ extern Tk_ObjCustomOption yAxisObjOption;
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "active", -1, Tk_Offset(BarElementOptions, activePenPtr), 
-   TK_OPTION_NULL_OK, &barPenObjOption, 0},
+   TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),
    TK_OPTION_NULL_OK, NULL, 0},
@@ -114,7 +114,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
    NULL, -1, Tk_Offset(BarElementOptions, normalPenPtr), 
-   TK_OPTION_NULL_OK, &barPenObjOption},
+   TK_OPTION_NULL_OK, &penObjOption},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "raised", -1, Tk_Offset(BarElementOptions, builtinPen.relief), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",

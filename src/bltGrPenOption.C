@@ -28,22 +28,15 @@
  */
 
 #include "bltGrPen.h"
-#include "bltGrPenOption.h"
 #include "bltGrPenOp.h"
 #include "bltConfig.h"
 
 static Tk_CustomOptionSetProc PenSetProc;
 static Tk_CustomOptionGetProc PenGetProc;
 static Tk_CustomOptionFreeProc PenFreeProc;
-Tk_ObjCustomOption barPenObjOption =
+Tk_ObjCustomOption penObjOption =
   {
-    "barPen", PenSetProc, PenGetProc, RestoreProc, PenFreeProc,
-    (ClientData)CID_ELEM_BAR
-  };
-Tk_ObjCustomOption linePenObjOption =
-  {
-    "linePen", PenSetProc, PenGetProc, RestoreProc, PenFreeProc,
-    (ClientData)CID_ELEM_LINE
+    "pen", PenSetProc, PenGetProc, RestoreProc, PenFreeProc, NULL
   };
 
 static int PenSetProc(ClientData clientData, Tcl_Interp* interp,

@@ -88,7 +88,7 @@ static Tk_ObjCustomOption styleObjOption =
 
   };
 
-extern Tk_ObjCustomOption linePenObjOption;
+extern Tk_ObjCustomOption penObjOption;
 extern Tk_ObjCustomOption pairsObjOption;
 extern Tk_ObjCustomOption valuesObjOption;
 extern Tk_ObjCustomOption xAxisObjOption;
@@ -97,7 +97,7 @@ extern Tk_ObjCustomOption yAxisObjOption;
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "active", -1, Tk_Offset(LineElementOptions, activePenPtr), 
-   TK_OPTION_NULL_OK, &linePenObjOption, 0},
+   TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
    NULL, -1, Tk_Offset(LineElementOptions, fillFgColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -158,7 +158,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen",
    NULL, -1, Tk_Offset(LineElementOptions, normalPenPtr), 
-   TK_OPTION_NULL_OK, &linePenObjOption, 0},
+   TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
    "0.1i", -1, Tk_Offset(LineElementOptions, builtinPen.symbol.size), 
    0, NULL, MAP_ITEM},
