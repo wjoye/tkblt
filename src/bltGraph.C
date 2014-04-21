@@ -60,7 +60,6 @@ using namespace Blt;
 
 extern int Blt_CreatePageSetup(Graph* graphPtr);
 extern void Blt_DestroyPageSetup(Graph* graphPtr);
-extern void Blt_LayoutGraph(Graph* graphPtr);
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
 
 static Blt_BindPickProc PickEntry;
@@ -422,7 +421,7 @@ void Graph::map()
     resetAxes();
 
   if (flags & LAYOUT_NEEDED) {
-    Blt_LayoutGraph(this);
+    layoutGraph();
     flags &= ~LAYOUT_NEEDED;
   }
 

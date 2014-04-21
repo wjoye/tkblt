@@ -200,10 +200,12 @@ class Graph {
 
  protected:
   void drawPlot(Drawable);
+  void layoutGraph();
   
   void drawMargins(Drawable);
   void printMargins(Blt_Ps);
   void updateMarginTraces();
+  int getMarginGeometry(Margin*);
 
   void destroyPens();
 
@@ -228,6 +230,7 @@ class Graph {
   void drawAxes(Drawable);
   void drawAxesLimits(Drawable);
   void drawAxesGrids(Drawable);
+  void getAxisGeometry(Axis*);
   void adjustAxes();
 
  public:
