@@ -96,6 +96,10 @@ class BarGraph : public Graph {
  protected:
   void resetAxes();
   void mapElements();
+  void initBarSetTable();
+  void destroyBarSets();
+  void resetBarGroups();
+  void computeBarStacks();
 
  public:
   BarGraph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);

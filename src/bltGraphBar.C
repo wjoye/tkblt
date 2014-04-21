@@ -232,7 +232,7 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
 
 BarGraph::~BarGraph()
 {
-  Blt_DestroyBarSets(this);
+  destroyBarSets();
 }
 
 void BarGraph::configure()	
@@ -312,7 +312,7 @@ void BarGraph::mapElements()
 {
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
   if (ops->barMode != BARS_INFRONT)
-    Blt_ResetBarGroups(this);
+    resetBarGroups();
 
   Graph::mapElements();
 }
@@ -326,9 +326,209 @@ void BarGraph::resetAxes()
    *	      indicate that the element display list has changed.
    *	      Needs to be done before the axis limits are set.
    */
-  Blt_InitBarSetTable(this);
+  initBarSetTable();
   if ((ops->barMode == BARS_STACKED) && (nBarGroups_ > 0))
-    Blt_ComputeBarStacks(this);
+    computeBarStacks();
 
   Graph::resetAxes();
 }
+
+void BarGraph::initBarSetTable()
+{
+  BarGraphOptions* ops = (BarGraphOptions*)ops_;
+  Blt_ChainLink link;
+  int nStacks, nSegs;
+  Tcl_HashTable setTable;
+  int sum, max;
+  Tcl_HashEntry *hPtr;
+  Tcl_HashSearch iter;
+
+  /*
+   * Free resources associated with a previous frequency table. This includes
+   * the array of frequency information and the table itself
+   */
+  destroyBarSets();
+  if (ops->barMode == BARS_INFRONT)
+    return;
+  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
+
+  /*
+   * Initialize a hash table and fill it with unique abscissas.  Keep track
+   * of the frequency of each x-coordinate and how many abscissas have
+   * duplicate mappings.
+   */
+  Tcl_InitHashTable(&setTable, sizeof(BarSetKey) / sizeof(int));
+  nSegs = nStacks = 0;
+  for (link = Blt_Chain_FirstLink(elements_.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
+    double *x, *xend;
+    int nPoints;
+
+    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+    BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
+      continue;
+
+    nSegs++;
+    
+    if (ops->coords.x) {
+      nPoints = ops->coords.x->nValues;
+      for (x = ops->coords.x->values, xend = x + nPoints; x < xend; x++) {
+	size_t count;
+	const char *name;
+
+	BarSetKey key;
+	key.value = *x;
+	key.axes = ops->axes;
+	key.axes.y = NULL;
+	int isNew;
+	Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
+	Tcl_HashTable *tablePtr;
+	if (isNew) {
+	  tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
+	  Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
+	  Tcl_SetHashValue(hPtr, tablePtr);
+	}
+	else
+	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+
+	name = (ops->groupName) ? ops->groupName : ops->axes.y->name_;
+	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
+	if (isNew)
+	  count = 1;
+	else {
+	  count = (size_t)Tcl_GetHashValue(hPtr);
+	  count++;
+	}		
+	Tcl_SetHashValue(hPtr, (ClientData)count);
+      }
+    }
+  }
+
+  if (setTable.numEntries == 0)
+    return;
+
+  sum = max = 0;
+  for (hPtr = Tcl_FirstHashEntry(&setTable, &iter); hPtr;
+       hPtr = Tcl_NextHashEntry(&iter)) {
+    BarSetKey *keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
+    int isNew;
+    Tcl_HashEntry *hPtr2 = Tcl_CreateHashEntry(&setTable_, (char *)keyPtr,&isNew);
+    Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+    Tcl_SetHashValue(hPtr2, tablePtr);
+    if (max < tablePtr->numEntries) {
+      max = tablePtr->numEntries;	/* # of stacks in group. */
+    }
+    sum += tablePtr->numEntries;
+  }
+  Tcl_DeleteHashTable(&setTable);
+  if (sum > 0) {
+    Tcl_HashEntry *hPtr;
+    Tcl_HashSearch iter;
+
+    barGroups_ = (BarGroup*)calloc(sum, sizeof(BarGroup));
+    BarGroup* groupPtr = barGroups_;
+    for (hPtr = Tcl_FirstHashEntry(&setTable_, &iter); 
+	 hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+      BarSetKey *keyPtr;
+      Tcl_HashEntry *hPtr2;
+      Tcl_HashSearch iter2;
+      size_t xcount;
+
+      Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+      keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
+      xcount = 0;
+      for (hPtr2 = Tcl_FirstHashEntry(tablePtr, &iter2); hPtr2!=NULL;
+	   hPtr2 = Tcl_NextHashEntry(&iter2)) {
+	size_t count;
+
+	count = (size_t)Tcl_GetHashValue(hPtr2);
+	groupPtr->nSegments = count;
+	groupPtr->axes = keyPtr->axes;
+	Tcl_SetHashValue(hPtr2, groupPtr);
+	groupPtr->index = xcount++;
+	groupPtr++;
+      }
+    }
+  }
+  maxBarSetSize_ = max;
+  nBarGroups_ = sum;
+}
+
+void BarGraph::destroyBarSets()
+{
+  if (barGroups_) {
+    free(barGroups_);
+    barGroups_ = NULL;
+  }
+
+  nBarGroups_ = 0;
+  Tcl_HashSearch iter;
+  for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&setTable_, &iter); 
+       hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+    Tcl_HashTable* tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+    Tcl_DeleteHashTable(tablePtr);
+    free(tablePtr);
+  }
+  Tcl_DeleteHashTable(&setTable_);
+  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
+}
+
+void BarGraph::resetBarGroups()
+{
+  BarGroup *gp, *gend;
+  for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++) {
+    gp->lastY = 0.0;
+    gp->count = 0;
+  }
+}
+
+void BarGraph::computeBarStacks()
+{
+  BarGraphOptions* ops = (BarGraphOptions*)ops_;
+
+  Blt_ChainLink link;
+  if ((ops->barMode != BARS_STACKED) || (nBarGroups_ == 0))
+    return;
+
+  // Initialize the stack sums to zero
+  BarGroup *gp, *gend;
+  for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++)
+    gp->sum = 0.0;
+
+  // Consider each bar x-y coordinate. Add the ordinates of duplicate
+  // abscissas
+
+  for (link = Blt_Chain_FirstLink(elements_.displayList); 
+       link; link = Blt_Chain_NextLink(link)) {
+    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+    BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
+    if ((bePtr->hide_) || (bePtr->classId() != CID_ELEM_BAR))
+      continue;
+
+    if (ops->coords.x && ops->coords.y) {
+      double *x, *y, *xend;
+      for (x = ops->coords.x->values, y = ops->coords.y->values, 
+	     xend = x + ops->coords.x->nValues; x < xend; x++, y++) {
+	BarSetKey key;
+	key.value = *x;
+	key.axes = ops->axes;
+	key.axes.y = NULL;
+	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, (char *)&key);
+	if (!hPtr)
+	  continue;
+
+	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
+	const char *name = (ops->groupName) ? 
+	  ops->groupName : ops->axes.y->name_;
+	hPtr = Tcl_FindHashEntry(tablePtr, name);
+	if (!hPtr)
+	  continue;
+
+	BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
+	groupPtr->sum += *y;
+      }
+    }
+  }
+}
+

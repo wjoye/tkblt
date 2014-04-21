@@ -125,10 +125,15 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = Blt_CreateBindingTable(interp_, tkwin_, this, 
-				      PickEntry, Blt_GraphTags);
+  bindTable_ = Blt_CreateBindingTable(interp_, tkwin_, this, PickEntry, 
+				      Blt_GraphTags);
 
   if (createAxes() != TCL_OK) {
+    valid_ =0;
+    return;
+  }
+
+  if (Blt_CreatePageSetup(this) != TCL_OK) {
     valid_ =0;
     return;
   }

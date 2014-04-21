@@ -166,9 +166,5 @@ class Element {
 };
 
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
-extern void Blt_InitBarSetTable(Graph* graphPtr);
-extern void Blt_ComputeBarStacks(Graph* graphPtr);
-extern void Blt_ResetBarGroups(Graph* graphPtr);
-extern void Blt_DestroyBarSets(Graph* graphPtr);
 
 #endif
