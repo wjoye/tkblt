@@ -32,6 +32,7 @@ extern "C" {
 };
 
 #include "bltGraph.h"
+#include "bltGrPageSetup.h"
 #include "bltGrPageSetupOp.h"
 #include "bltPs.h"
 

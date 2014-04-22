@@ -32,6 +32,8 @@
 #ifndef _BLT_CHAIN_H
 #define _BLT_CHAIN_H
 
+#include <tcl.h>
+
 typedef struct _Blt_Chain *Blt_Chain;
 typedef struct _Blt_ChainLink *Blt_ChainLink;
 

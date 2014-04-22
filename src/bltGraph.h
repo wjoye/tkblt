@@ -30,14 +30,15 @@
 #ifndef __BltGraph_h__
 #define __BltGraph_h__
 
-#include "bltGrMisc.h"
-#include "bltBind.h"
-#include "bltGrPageSetup.h"
-#include "bltText.h"
-
 extern "C" {
 #include "bltChain.h"
+#include "bltBind.h"
 };
+
+#include "bltGrMisc.h"
+#include "bltText.h"
+
+typedef struct _Blt_Ps *Blt_Ps;
 
 class Graph;
 class Crosshairs;
@@ -46,8 +47,6 @@ class Element;
 class Legend;
 class Pen;
 class PageSetup;
-
-typedef struct _Blt_Ps *Blt_Ps;
 
 namespace Blt {
 class Marker;
