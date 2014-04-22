@@ -137,11 +137,6 @@ void Blt_Ps_SetPrinting(PostScript *psPtr, int state)
   psInterp = ((state) && (psPtr != NULL)) ? psPtr->interp : NULL;
 }
 
-int Blt_Ps_IsPrinting(void)
-{
-  return (psInterp != NULL);
-}
-
 void Blt_Ps_Free(PostScript *psPtr)
 {
   Tcl_DStringFree(&psPtr->dString);
@@ -154,48 +149,9 @@ const char *Blt_Ps_GetValue(PostScript *psPtr, int *lengthPtr)
   return Tcl_DStringValue(&psPtr->dString);
 }
 
-void Blt_Ps_SetInterp(PostScript *psPtr, Tcl_Interp* interp)
-{
-  Tcl_DStringResult(interp, &psPtr->dString);
-}
-
 char *Blt_Ps_GetScratchBuffer(PostScript *psPtr)
 {
   return psPtr->scratchArr;
-}
-
-Tcl_Interp *Blt_Ps_GetInterp(PostScript *psPtr)
-{
-  return psPtr->interp;
-}
-
-Tcl_DString *Blt_Ps_GetDString(PostScript *psPtr)
-{
-  return &psPtr->dString;
-}
-
-int Blt_Ps_SaveFile(Tcl_Interp* interp, PostScript *psPtr, const char *fileName)
-{
-  Tcl_Channel channel;
-  int nWritten, nBytes;
-  char *bytes;
-
-  channel = Tcl_OpenFileChannel(interp, fileName, "w", 0660);
-  if (channel == NULL) {
-    return TCL_ERROR;
-  }
-  nBytes = Tcl_DStringLength(&psPtr->dString);
-  bytes = Tcl_DStringValue(&psPtr->dString);
-  nWritten = Tcl_Write(channel, bytes, nBytes);
-  Tcl_Close(interp, channel);
-  if (nWritten != nBytes) {
-    Tcl_AppendResult(interp, "short file \"", fileName, (char *)NULL);
-    Tcl_AppendResult(interp, "\" : wrote ", Blt_Itoa(nWritten), " of ", 
-		     (char *)NULL);
-    Tcl_AppendResult(interp, Blt_Itoa(nBytes), " bytes.", (char *)NULL); 
-    return TCL_ERROR;
-  }	
-  return TCL_OK;
 }
 
 void Blt_Ps_VarAppend TCL_VARARGS_DEF(PostScript *, arg1)
@@ -212,11 +168,6 @@ void Blt_Ps_VarAppend TCL_VARARGS_DEF(PostScript *, arg1)
     }
     Tcl_DStringAppend(&psPtr->dString, string, -1);
   }
-}
-
-void Blt_Ps_AppendBytes(PostScript *psPtr, const char *bytes, int length)
-{
-  Tcl_DStringAppend(&psPtr->dString, bytes, length);
 }
 
 void Blt_Ps_Append(PostScript *psPtr, const char *string)
@@ -385,55 +336,6 @@ void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, Pixmap bitmap,
   XDestroyImage(imagePtr);
 }
 
-typedef struct {
-  const char *alias;
-  const char *fontName;
-} FamilyMap;
-
-static FamilyMap familyMap[] =
-  {
-    { "Arial",		        "Helvetica"	   },
-    { "AvantGarde",             "AvantGarde"       },
-    { "Bookman",                "Bookman"          },
-    { "Courier New",            "Courier"          },
-    { "Courier",                "Courier"          },
-    { "Geneva",                 "Helvetica"        },
-    { "Helvetica",              "Helvetica"        },
-    { "Mathematica1",		"Helvetica"	   },
-    { "Monaco",                 "Courier"          },
-    { "New Century Schoolbook", "NewCenturySchlbk" },
-    { "New York",               "Times"            },
-    { "Nimbus Roman No9 L"	"Times"		   },
-    { "Nimbus Sans L Condensed","Helvetica"        },
-    { "Nimbus Sans L",		"Helvetica"        },
-    { "Palatino",               "Palatino"         },
-    { "Standard Symbols L",	"Symbol"           },
-    { "Swiss 721",              "Helvetica"        },
-    { "Symbol",                 "Symbol"           },
-    { "Times New Roman",        "Times"            },
-    { "Times Roman",            "Times"            },
-    { "Times",                  "Times"            },
-    { "ZapfChancery",           "ZapfChancery"     },
-    { "ZapfDingbats",           "ZapfDingbats"     }
-  };
-
-static int nFamilyNames = (sizeof(familyMap) / sizeof(FamilyMap));
-
-static const char *FamilyToPsFamily(const char *family) 
-{
-  FamilyMap *fp, *fend;
-
-  if (strncasecmp(family, "itc ", 4) == 0) {
-    family += 4;
-  }
-  for (fp = familyMap, fend = fp + nFamilyNames; fp < fend; fp++) {
-    if (strcasecmp(fp->alias, family) == 0) {
-      return fp->fontName;
-    }
-  }
-  return NULL;
-}
-
 void Blt_Ps_SetClearBackground(Blt_Ps ps)
 {
   Blt_Ps_Append(ps, "1 1 1 setrgbcolor\n");
@@ -578,10 +480,6 @@ void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rectangles, int nRectangles)
 			  (int)rp->width, (int)rp->height);
   }
 }
-
-#ifndef TK_RELIEF_SOLID
-#define TK_RELIEF_SOLID		-1	/* Set the an impossible value. */
-#endif /* TK_RELIEF_SOLID */
 
 void Blt_Ps_Draw3DRectangle(
 			    Blt_Ps ps,
@@ -907,100 +805,3 @@ void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments, int nSegments)
   }
 }
 
-void Blt_Ps_FontName(const char *family, int flags, Tcl_DString *resultPtr)
-{
-  const char *familyName, *weightName, *slantName;
-  int len;
-
-  len = Tcl_DStringLength(resultPtr);
-
-  familyName = FamilyToPsFamily(family);
-  if (familyName == NULL) {
-    Tcl_UniChar ch;
-    char *src, *dest;
-    int upper;
-
-    /*
-     * Inline, capitalize the first letter of each word, lowercase the
-     * rest of the letters in each word, and then take out the spaces
-     * between the words.  This may make the DString shorter, which is
-     * safe to do.
-     */
-    Tcl_DStringAppend(resultPtr, family, -1);
-    src = dest = Tcl_DStringValue(resultPtr) + len;
-    upper = 1;
-    while (*src != '\0') {
-      while (isspace(*src)) { /* INTL: ISO space */
-	src++;
-	upper = 1;
-      }
-      src += Tcl_UtfToUniChar(src, &ch);
-      if (upper) {
-	ch = Tcl_UniCharToUpper(ch);
-	upper = 0;
-      } else {
-	ch = Tcl_UniCharToLower(ch);
-      }
-      dest += Tcl_UniCharToUtf(ch, dest);
-    }
-    *dest = '\0';
-    Tcl_DStringSetLength(resultPtr, dest - Tcl_DStringValue(resultPtr));
-    familyName = Tcl_DStringValue(resultPtr) + len;
-  }
-  if (familyName != Tcl_DStringValue(resultPtr) + len) {
-    Tcl_DStringAppend(resultPtr, familyName, -1);
-    familyName = Tcl_DStringValue(resultPtr) + len;
-  }
-  if (strcasecmp(familyName, "NewCenturySchoolbook") == 0) {
-    Tcl_DStringSetLength(resultPtr, len);
-    Tcl_DStringAppend(resultPtr, "NewCenturySchlbk", -1);
-    familyName = Tcl_DStringValue(resultPtr) + len;
-  }
-
-  /* Get the string to use for the weight. */
-  weightName = NULL;
-  if (flags & FONT_BOLD) {
-    if ((strcmp(familyName, "Bookman") == 0) || 
-	(strcmp(familyName, "AvantGarde") == 0)) {
-      weightName = "Demi";
-    } else {
-      weightName = "Bold";
-    }
-  } else {
-    if (strcmp(familyName, "Bookman") == 0) {
-      weightName = "Light";
-    } else if (strcmp(familyName, "AvantGarde") == 0) {
-      weightName = "Book";
-    } else if (strcmp(familyName, "ZapfChancery") == 0) {
-      weightName = "Medium";
-    }
-  }
-
-  /* Get the string to use for the slant. */
-  slantName = NULL;
-  if (flags & FONT_ITALIC) {
-    if ((strcmp(familyName, "Helvetica") == 0) || 
-	(strcmp(familyName, "Courier") == 0) || 
-	(strcmp(familyName, "AvantGarde") == 0)) {
-      slantName = "Oblique";
-    } else {
-      slantName = "Italic";
-    }
-  }
-
-  if ((slantName == NULL) && (weightName == NULL)) {
-    if ((strcmp(familyName, "Times") == 0) || 
-	(strcmp(familyName, "NewCenturySchlbk") == 0) || 
-	(strcmp(familyName, "Palatino") == 0)) {
-      Tcl_DStringAppend(resultPtr, "-Roman", -1);
-    }
-  } else {
-    Tcl_DStringAppend(resultPtr, "-", -1);
-    if (weightName != NULL) {
-      Tcl_DStringAppend(resultPtr, weightName, -1);
-    }
-    if (slantName != NULL) {
-      Tcl_DStringAppend(resultPtr, slantName, -1);
-    }
-  }
-}
