@@ -27,10 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
-#include "bltC.h"
 #include "bltMath.h"
 
 extern "C" {
@@ -39,8 +35,9 @@ extern "C" {
 #include <tkInt.h>
 
 #include "bltInt.h"
-#include "bltText.h"
 };
+
+#include "bltText.h"
 
 #define ROTATE_0	0
 #define ROTATE_90	1

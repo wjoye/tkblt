@@ -28,12 +28,15 @@
  */
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltOp.h"
+#include "bltBind.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
+
+using namespace Blt;
 
 static Tk_LostSelProc LostSelectionProc;
 static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 

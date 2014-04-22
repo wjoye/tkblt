@@ -40,6 +40,8 @@ extern "C" {
 #include "bltConfig.h"
 #include "bltPs.h"
 
+using namespace Blt;
+
 #define AXIS_PAD_TITLE 2
 
 #define UROUND(x,u)		(Round((x)/(u))*(u))

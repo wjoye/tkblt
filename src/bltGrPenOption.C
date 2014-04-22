@@ -31,6 +31,8 @@
 #include "bltGrPenOp.h"
 #include "bltConfig.h"
 
+using namespace Blt;
+
 static Tk_CustomOptionSetProc PenSetProc;
 static Tk_CustomOptionGetProc PenGetProc;
 static Tk_CustomOptionFreeProc PenFreeProc;

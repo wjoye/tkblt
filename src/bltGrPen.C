@@ -29,6 +29,8 @@
 
 #include "bltGrPen.h"
 
+using namespace Blt;
+
 Pen::Pen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   optionTable_ = NULL;

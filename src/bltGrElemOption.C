@@ -37,6 +37,8 @@ extern "C" {
 #include "bltGrPenOp.h"
 #include "bltConfig.h"
 
+using namespace Blt;
+
 #define ELEM_SOURCE_VALUES	0
 #define ELEM_SOURCE_VECTOR	1
 

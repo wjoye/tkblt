@@ -38,6 +38,8 @@ extern "C" {
 #include "bltGrPageSetup.h"
 #include "bltPs.h"
 
+using namespace Blt;
+
 #ifdef TCL_UTF_MAX
 #  define HAVE_UTF	1
 #else

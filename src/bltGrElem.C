@@ -31,6 +31,8 @@
 #include "bltGrElemOp.h"
 #include "bltGrPenOp.h"
 
+using namespace Blt;
+
 Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   graphPtr_ = graphPtr;

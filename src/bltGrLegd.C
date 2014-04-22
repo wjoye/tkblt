@@ -28,9 +28,10 @@
  */
 
 extern "C" {
-#include "bltGraph.h"
+#include "bltBind.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
@@ -41,6 +42,8 @@ extern "C" {
 #include "bltGrDef.h"
 #include "bltConfig.h"
 #include "bltPs.h"
+
+using namespace Blt;
 
 static void SelectCmdProc(ClientData);
 static Tcl_IdleProc DisplayProc;

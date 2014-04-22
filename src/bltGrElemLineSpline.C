@@ -35,9 +35,10 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltSpline.h"
 #include "bltOp.h"
 };
+
+#include "bltSpline.h"
 
 typedef int (SplineProc)(Point2d origPts[], int nOrigPts, Point2d intpPts[],
 			 int nIntpPts);

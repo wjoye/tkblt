@@ -29,10 +29,11 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltGraph.h"
 #include "bltOp.h"
+#include "bltBind.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltGrMarkerOp.h"
 #include "bltGrMarker.h"

@@ -30,9 +30,7 @@
 #ifndef __BltGraphBar_h__
 #define __BltGraphBar_h__
 
-extern "C" {
 #include "bltGraph.h"
-};
 
 typedef struct {
   int nSegments;

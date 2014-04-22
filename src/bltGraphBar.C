@@ -27,10 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
 #include "bltGraphBar.h"
-}
-
 #include "bltGraphOp.h"
 
 #include "bltGrAxis.h"

@@ -33,6 +33,8 @@
 #ifndef _BLT_VECTOR_H
 #define _BLT_VECTOR_H
 
+#include <tcl.h>
+
 typedef enum {
     BLT_VECTOR_NOTIFY_UPDATE = 1, /* The vector's values has been updated */
     BLT_VECTOR_NOTIFY_DESTROY	/* The vector has been destroyed and the client

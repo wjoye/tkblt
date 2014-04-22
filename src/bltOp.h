@@ -31,14 +31,7 @@
  */
 
 #include <tcl.h>
-#ifdef USE_TCL_STUBS
-#include <tclInt.h>
-#endif
-
 #include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
 
 typedef struct {
     const char *name;		/* Name of operation */

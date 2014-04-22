@@ -30,13 +30,12 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
 #include "bltGraph.h"
-}
-
 #include "bltGrHairs.h"
 #include "bltGrMisc.h"
 #include "bltConfig.h"
+
+using namespace Blt;
 
 #define PointInGraph(g,x,y) (((x) <= (g)->right_) && ((x) >= (g)->left_) && ((y) <= (g)->bottom_) && ((y) >= (g)->top_))
 

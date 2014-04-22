@@ -38,9 +38,7 @@
 #include <iomanip>
 using namespace std;
 
-extern "C" {
 #include "bltGraph.h"
-};
 
 typedef struct {
   XColor* colorPtr;

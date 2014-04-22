@@ -31,6 +31,8 @@
 #include "bltGrDef.h"
 #include "bltConfig.h"
 
+using namespace Blt;
+
 static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_BORDER, "-background", "background", "Background",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPenOptions, fill), 

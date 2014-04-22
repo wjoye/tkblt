@@ -27,11 +27,12 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
 #include "bltGraph.h"
-};
+#include "bltGrMisc.h"
 
-char* dupstr(const char* str)
+using namespace Blt;
+
+char* Blt::dupstr(const char* str)
 {
   char* copy =NULL;
   if (str) {

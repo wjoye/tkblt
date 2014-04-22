@@ -167,7 +167,9 @@ typedef struct {
 
 #define LineIsDashed(d) ((d).values[0] != 0)
 
+namespace Blt {
 extern char* dupstr(const char*);
+};
 
 extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
@@ -186,5 +188,6 @@ extern void Blt_FreePrivateGC(Display *display, GC gc);
 extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
 extern long Blt_MaxRequestSize (Display *display, size_t elemSize);
 extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
+
 
 #endif

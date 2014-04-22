@@ -31,13 +31,16 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltGraph.h"
 #include "bltOp.h"
-}
+#include "bltBind.h"
+};
 
+#include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 #include "bltGrMisc.h"
+
+using namespace Blt;
 
 static int GetAxisScrollInfo(Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[],

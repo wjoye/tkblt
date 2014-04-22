@@ -28,12 +28,14 @@
  */
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltOp.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrPageSetupOp.h"
 #include "bltPs.h"
+
+using namespace Blt;
 
 int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			  int objc, Tcl_Obj* const objv[])

@@ -35,6 +35,8 @@ extern "C" {
 #include "bltGrAxisOption.h"
 #include "bltConfig.h"
 
+using namespace Blt;
+
 static Tk_CustomOptionSetProc AxisSetProc;
 static Tk_CustomOptionGetProc AxisGetProc;
 static Tk_CustomOptionFreeProc AxisFreeProc;

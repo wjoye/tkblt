@@ -29,14 +29,13 @@
 
 #include "bltMath.h"
 
-extern "C" {
 #include "bltGraph.h"
-}
-
 #include "bltGrAxis.h"
 #include "bltGrElem.h"
 #include "bltGrLegd.h"
 #include "bltGrMisc.h"
+
+using namespace Blt;
 
 #define AXIS_PAD_TITLE 2
 

@@ -45,6 +45,7 @@ class Axis;
 class Element;
 class Legend;
 class Pen;
+class PageSetup;
 
 typedef struct _Blt_Ps *Blt_Ps;
 

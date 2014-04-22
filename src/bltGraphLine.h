@@ -30,9 +30,7 @@
 #ifndef __BltGraphLine_h__
 #define __BltGraphLine_h__
 
-extern "C" {
 #include "bltGraph.h"
-};
 
 typedef struct {
   double aspect;

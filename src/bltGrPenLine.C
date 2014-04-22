@@ -32,6 +32,8 @@
 #include "bltGrDef.h"
 #include "bltConfig.h"
 
+using namespace Blt;
+
 typedef struct {
   const char* name;
   unsigned int minChars;

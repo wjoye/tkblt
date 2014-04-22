@@ -28,12 +28,15 @@
  */
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltOp.h"
-}
+#include "bltBind.h"
+};
 
+#include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
+
+using namespace Blt;
 
 extern int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
 		      int objc, Tcl_Obj* const objv[]);

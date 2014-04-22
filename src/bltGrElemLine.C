@@ -29,10 +29,7 @@
 
 #include "bltMath.h"
 
-extern "C" {
 #include "bltSpline.h"
-}
-
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
 #include "bltGrPenOp.h"
@@ -42,6 +39,8 @@ extern "C" {
 #include "bltGrDef.h"
 #include "bltConfig.h"
 #include "bltPs.h"
+
+using namespace Blt;
 
 #define SEARCH_X	0
 #define SEARCH_Y	1

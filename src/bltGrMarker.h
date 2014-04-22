@@ -35,9 +35,7 @@
 #include <iomanip>
 using namespace std;
 
-extern "C" {
 #include "bltGraph.h"
-};
 
 namespace Blt {
 

@@ -39,9 +39,10 @@
 using namespace std;
 
 extern "C" {
-#include "bltGraph.h"
-}
+#include "bltBind.h"
+};
 
+#include "bltGraph.h"
 #include "bltGrMisc.h"
 
 typedef struct {

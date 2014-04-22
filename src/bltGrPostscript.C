@@ -27,12 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
 #include "bltGraph.h"
-};
-
 #include "bltGrPageSetup.h"
 #include "bltConfig.h"
+
+using namespace Blt;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-center", "center", "Center", 

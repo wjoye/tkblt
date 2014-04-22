@@ -36,10 +36,10 @@
 using namespace std;
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltVector.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrPen.h"
 
 #define SHOW_NONE	0

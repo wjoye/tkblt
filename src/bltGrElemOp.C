@@ -29,10 +29,11 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltGraph.h"
 #include "bltOp.h"
+#include "bltBind.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 #include "bltGrElem.h"
@@ -40,6 +41,8 @@ extern "C" {
 #include "bltGrElemLine.h"
 #include "bltGrElemOp.h"
 #include "bltGrLegd.h"
+
+using namespace Blt;
 
 // Defs
 

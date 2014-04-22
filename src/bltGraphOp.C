@@ -32,11 +32,11 @@
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
-#include "bltGraphLine.h"
-#include "bltGraphBar.h"
 #include "bltOp.h"
 }
 
+#include "bltGraphLine.h"
+#include "bltGraphBar.h"
 #include "bltGraphOp.h"
 
 #include "bltGrAxis.h"

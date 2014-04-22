@@ -28,14 +28,16 @@
  */
 
 extern "C" {
-#include "bltGraph.h"
 #include "bltOp.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"
 #include "bltGrPenLine.h"
 #include "bltGrPenBar.h"
+
+using namespace Blt;
 
 int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
 		    int objc, Tcl_Obj* const objv[])
