@@ -62,7 +62,8 @@ typedef struct {
   Element* elemPtr;
   const char *label;
   char** tags;
-  Axis2d axes;
+  Axis* xAxis;
+  Axis* yAxis;
   ElemCoords coords;
   ElemValues* w;
   ElemValues* xError;
@@ -99,7 +100,7 @@ class BarElement : public Element {
 
  protected:
   void ResetStylePalette(Blt_Chain);
-  void CheckBarStacks(Axis2d*, double*, double*);
+  void CheckBarStacks(Axis*, Axis*, double*, double*);
   void MergePens(BarStyle**);
   void MapActiveBars();
   void ResetBar();

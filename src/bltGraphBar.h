@@ -36,7 +36,8 @@
 
 typedef struct {
   int nSegments;
-  Axis2d axes;
+  Axis* xAxis;
+  Axis* yAxis;
   float sum;
   int count;
   float lastY;
@@ -45,7 +46,8 @@ typedef struct {
 
 typedef struct {
   float value;
-  Axis2d axes;
+  Axis* xAxis;
+  Axis* yAxis;
 } BarSetKey;
 
 typedef enum {

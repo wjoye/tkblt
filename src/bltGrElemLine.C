@@ -138,11 +138,9 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.traceWidth),
    0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(LineElementOptions, axes.x),
-   0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(LineElementOptions, xAxis), 0, &xAxisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(LineElementOptions, axes.y),
-   0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(LineElementOptions, yAxis), 0, &yAxisObjOption, MAP_ITEM},
   {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
    "0", -1, Tk_Offset(LineElementOptions, reqMaxSymbols), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
@@ -447,14 +445,14 @@ void LineElement::extents(Region2d *extsPtr)
   int np = NUMBEROFPOINTS(ops);
 
   extsPtr->right = ops->coords.x->max;
-  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
+  AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
   if ((ops->coords.x->min <= 0.0) && (axisxops->logScale))
     extsPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN);
   else
     extsPtr->left = ops->coords.x->min;
 
   extsPtr->bottom = ops->coords.y->max;
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
+  AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
   if ((ops->coords.y->min <= 0.0) && (axisyops->logScale))
     extsPtr->top = FindElemValuesMinimum(ops->coords.y, DBL_MIN);
   else
@@ -473,7 +471,7 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->right = x;
       }
       x = ops->coords.x->values[i] - ops->xError->values[i];
-      AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
+      AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
       if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
@@ -517,7 +515,7 @@ void LineElement::extents(Region2d *extsPtr)
 	extsPtr->bottom = y;
       }
       y = ops->coords.y->values[i] - ops->yError->values[i];
-      AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
+      AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
       if (axisyops->logScale) {
 	if (y < 0.0) {
 	  y = -y;		/* Mirror negative values, instead of
@@ -1032,8 +1030,8 @@ int LineElement::ScaleSymbol(int normalSize)
 
   double scale = 1.0;
   if (ops->scaleSymbols) {
-    double xRange = (ops->axes.x->max_ - ops->axes.x->min_);
-    double yRange = (ops->axes.y->max_ - ops->axes.y->min_);
+    double xRange = (ops->xAxis->max_ - ops->xAxis->min_);
+    double yRange = (ops->yAxis->max_ - ops->yAxis->min_);
     // Save the ranges as a baseline for future scaling
     if (flags & SCALE_SYMBOL) {
       xRange_ = xRange;
@@ -1082,8 +1080,8 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   if (gops->inverted) {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = ops->axes.y->hMap(y[i]);
-	points[count].y = ops->axes.x->vMap(x[i]);
+	points[count].x = ops->yAxis->hMap(y[i]);
+	points[count].y = ops->xAxis->vMap(x[i]);
 	map[count] = i;
 	count++;
       }
@@ -1092,8 +1090,8 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   else {
     for (int i = 0; i < np; i++) {
       if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = ops->axes.x->hMap(x[i]);
-	points[count].y = ops->axes.y->vMap(y[i]);
+	points[count].x = ops->xAxis->hMap(x[i]);
+	points[count].y = ops->yAxis->vMap(y[i]);
 	map[count] = i;
 	count++;
       }
@@ -1465,7 +1463,7 @@ void LineElement::MapActiveSymbols()
 
       double x = ops->coords.x->values[iPoint];
       double y = ops->coords.y->values[iPoint];
-      points[count] = graphPtr_->map2D(x, y, &ops->axes);
+      points[count] = graphPtr_->map2D(x, y, ops->xAxis, ops->yAxis);
       map[count] = iPoint;
       if (PointInRegion(&exts, points[count].x, points[count].y)) {
 	count++;
@@ -1797,7 +1795,7 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
     double minX;
     int i;
 
-    minX = (double)ops->axes.y->screenMin_;
+    minX = (double)ops->yAxis->screenMin_;
     for (i = 0; i < mapPtr->nScreenPts; i++) {
       origPts[i].x = mapPtr->screenPts[i].x + 1;
       origPts[i].y = mapPtr->screenPts[i].y;
@@ -1818,7 +1816,7 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
   else {
     int i;
 
-    double maxY = (double)ops->axes.y->bottom_;
+    double maxY = (double)ops->yAxis->bottom_;
     for (i = 0; i < mapPtr->nScreenPts; i++) {
       origPts[i].x = mapPtr->screenPts[i].x + 1;
       origPts[i].y = mapPtr->screenPts[i].y;
@@ -1956,8 +1954,8 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
 
-	  p = graphPtr_->map2D(high, y, &ops->axes);
-	  q = graphPtr_->map2D(low, y, &ops->axes);
+	  p = graphPtr_->map2D(high, y, ops->xAxis, ops->yAxis);
+	  q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
@@ -2025,8 +2023,8 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p, q;
 		    
-	  p = graphPtr_->map2D(x, high, &ops->axes);
-	  q = graphPtr_->map2D(x, low, &ops->axes);
+	  p = graphPtr_->map2D(x, high, ops->xAxis, ops->yAxis);
+	  q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
@@ -2100,7 +2098,8 @@ int LineElement::ClosestTrace()
     searchPtr->dist = dMin;
     searchPtr->elemPtr = (Element*)this;
     searchPtr->index = iClose;
-    searchPtr->point = graphPtr_->invMap2D(closest.x, closest.y, &ops->axes);
+    searchPtr->point = graphPtr_->invMap2D(closest.x, closest.y, 
+					   ops->xAxis, ops->yAxis);
     return 1;
   }
 

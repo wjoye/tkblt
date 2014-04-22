@@ -40,7 +40,8 @@ namespace Blt {
     const char** tags;
     Coords* worldPts;
     const char* elemName;
-    Axis2d axes;
+    Axis* xAxis;
+    Axis* yAxis;
     int hide;
     int state;
     int drawUnder;

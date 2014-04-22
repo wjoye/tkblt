@@ -118,17 +118,17 @@ double Marker::VMap(Axis *axisPtr, double y)
   return (((1.0 - y) * axisPtr->screenRange_) + axisPtr->screenMin_);
 }
 
-Point2d Marker::mapPoint(Point2d* pointPtr, Axis2d* axesPtr)
+Point2d Marker::mapPoint(Point2d* pointPtr, Axis* xAxis, Axis* yAxis)
 {
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
   Point2d result;
   if (gops->inverted) {
-    result.x = HMap(axesPtr->y, pointPtr->y);
-    result.y = VMap(axesPtr->x, pointPtr->x);
+    result.x = HMap(yAxis, pointPtr->y);
+    result.y = VMap(xAxis, pointPtr->x);
   }
   else {
-    result.x = HMap(axesPtr->x, pointPtr->x);
-    result.y = VMap(axesPtr->y, pointPtr->y);
+    result.x = HMap(xAxis, pointPtr->x);
+    result.y = VMap(yAxis, pointPtr->y);
   }
 
   return result;

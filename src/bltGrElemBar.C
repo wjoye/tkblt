@@ -109,9 +109,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(BarElementOptions, legendRelief), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
-   "x", -1, Tk_Offset(BarElementOptions, axes.x), 0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(BarElementOptions, xAxis), 0, &xAxisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(BarElementOptions, axes.y), 0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(BarElementOptions, yAxis), 0, &yAxisObjOption, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
    NULL, -1, Tk_Offset(BarElementOptions, normalPenPtr), 
@@ -276,7 +276,7 @@ void BarElement::map()
 
   //  double barWidth = graphPtr->barWidth;
   double barWidth = (ops->barWidth > 0.0f) ? ops->barWidth : gops->barWidth;
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
+  AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
   double baseline = (axisyops->logScale) ? 0.0 : gops->baseline;
   double barOffset = barWidth * 0.5;
 
@@ -298,8 +298,8 @@ void BarElement::map()
     int height;
     double right, left, top, bottom;
 
-    if (((x[i] - barWidth) > ops->axes.x->axisRange_.max) ||
-	((x[i] + barWidth) < ops->axes.x->axisRange_.min)) {
+    if (((x[i] - barWidth) > ops->xAxis->axisRange_.max) ||
+	((x[i] + barWidth) < ops->xAxis->axisRange_.min)) {
       continue;			/* Abscissa is out of range of the
 				 * x-axis */
     }
@@ -319,14 +319,14 @@ void BarElement::map()
       BarSetKey key;
 
       key.value = (float)x[i];
-      key.axes = ops->axes;
-      key.axes.y = NULL;
+      key.xAxis = ops->xAxis;
+      key.yAxis = NULL;
       hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
       if (hPtr) {
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->axes.y->name_;
+	  ops->groupName : ops->yAxis->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
 	  double slice, width, offset;
@@ -382,8 +382,8 @@ void BarElement::map()
      * Get the two corners of the bar segment and compute the rectangle
      */
     double ybot = c2.y;
-    c1 = graphPtr_->map2D(c1.x, c1.y, &ops->axes);
-    c2 = graphPtr_->map2D(c2.x, c2.y, &ops->axes);
+    c1 = graphPtr_->map2D(c1.x, c1.y, ops->xAxis, ops->yAxis);
+    c2 = graphPtr_->map2D(c2.x, c2.y, ops->xAxis, ops->yAxis);
     if ((ybot == 0.0) && (axisyops->logScale))
       c2.y = graphPtr_->bottom_;
 	    
@@ -402,8 +402,8 @@ void BarElement::map()
     /* Bound the bars horizontally by the width of the graph window */
     /* Bound the bars vertically by the position of the axis. */
     if (gops->stackAxes) {
-      top = ops->axes.y->screenMin_;
-      bottom = ops->axes.y->screenMin_ + ops->axes.y->screenRange_;
+      top = ops->yAxis->screenMin_;
+      bottom = ops->yAxis->screenMin_ + ops->yAxis->screenRange_;
       left = graphPtr_->left_;
       right = graphPtr_->right_;
     } else {
@@ -517,11 +517,11 @@ void BarElement::extents(Region2d *regPtr)
   // If element is stacked, the sum of its ordinates may be outside the
   // minimum/maximum limits of the element's data points.
   if ((gops->barMode == BARS_STACKED) && (barGraphPtr_->nBarGroups_ > 0))
-    CheckBarStacks(&ops->axes, &regPtr->top, &regPtr->bottom);
+    CheckBarStacks(ops->xAxis, ops->yAxis, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
-  AxisOptions* axisxops = (AxisOptions*)ops->axes.x->ops();
-  AxisOptions* axisyops = (AxisOptions*)ops->axes.y->ops();
+  AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
+  AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
   if (axisxops->logScale)
     regPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN) + middle;
 
@@ -892,7 +892,8 @@ void BarElement::ResetStylePalette(Blt_Chain stylePalette)
   }
 }
 
-void BarElement::CheckBarStacks(Axis2d *pairPtr, double *minPtr, double *maxPtr)
+void BarElement::CheckBarStacks(Axis* xAxis, Axis* yAxis, 
+				double *minPtr, double *maxPtr)
 {
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
@@ -902,7 +903,7 @@ void BarElement::CheckBarStacks(Axis2d *pairPtr, double *minPtr, double *maxPtr)
   BarGroup *gp, *gend;
   for (gp = barGraphPtr_->barGroups_, gend = gp + barGraphPtr_->nBarGroups_; gp < gend;
        gp++) {
-    if ((gp->axes.x == pairPtr->x) && (gp->axes.y == pairPtr->y)) {
+    if ((gp->xAxis == xAxis) && (gp->yAxis == yAxis)) {
 
       // Check if any of the y-values (because of stacking) are greater
       // than the current limits of the graph.
@@ -1128,8 +1129,8 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
 	  low  = ops->xLow  ? ops->xLow->values[ii]  : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p = graphPtr_->map2D(high, y, &ops->axes);
-	  Point2d q = graphPtr_->map2D(low, y, &ops->axes);
+	  Point2d p = graphPtr_->map2D(high, y, ops->xAxis, ops->yAxis);
+	  Point2d q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
@@ -1190,8 +1191,8 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
 	  low = ops->yLow->values[ii];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p = graphPtr_->map2D(x, high, &ops->axes);
-	  Point2d q = graphPtr_->map2D(x, low, &ops->axes);
+	  Point2d p = graphPtr_->map2D(x, high, ops->xAxis, ops->yAxis);
+	  Point2d q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (Blt_LineRectClip(&reg, &segPtr->p, &segPtr->q)) {

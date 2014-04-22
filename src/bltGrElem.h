@@ -43,6 +43,7 @@ extern "C" {
 
 #include "bltGrMisc.h"
 #include "bltGraph.h" // for Axis2d
+#include "bltGrPen.h"
 
 #define SHOW_NONE	0
 #define SHOW_X		1
@@ -102,7 +103,8 @@ typedef struct {
   Element* elemPtr;
   const char* label;
   const char** tags;
-  Axis2d axes;
+  Axis* xAxis;
+  Axis* yAxis;
   ElemCoords coords;
   ElemValues* w;
   ElemValues* xError;
@@ -117,7 +119,7 @@ typedef struct {
   Pen* builtinPenPtr;
   Pen* activePenPtr;
   Pen* normalPenPtr;
-  void* builtinPen;
+  PenOptions builtinPen;
 } ElementOptions;
 
 class Element {

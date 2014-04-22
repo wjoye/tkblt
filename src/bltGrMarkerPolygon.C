@@ -66,9 +66,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(PolygonMarkerOptions, hide), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(PolygonMarkerOptions, axes.x), 0, &xAxisObjOption, 0},
+   "x", -1, Tk_Offset(PolygonMarkerOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
-   "y", -1, Tk_Offset(PolygonMarkerOptions, axes.y), 0, &yAxisObjOption, 0},
+   "y", -1, Tk_Offset(PolygonMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(PolygonMarkerOptions, outline), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -267,7 +267,7 @@ void PolygonMarker::map()
     Point2d *sp, *send;
     for (sp = ops->worldPts->points, send = sp + ops->worldPts->num; 
 	 sp < send; sp++) {
-      *dp = mapPoint(sp, &ops->axes);
+      *dp = mapPoint(sp, ops->xAxis, ops->yAxis);
       dp->x += ops->xOffset;
       dp->y += ops->yOffset;
       dp++;

@@ -1157,34 +1157,34 @@ void Graph::adjustAxes()
   }
 }
 
-Point2d Graph::map2D(double x, double y, Axis2d* axesPtr)
+Point2d Graph::map2D(double x, double y, Axis* xAxis, Axis* yAxis)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
   Point2d point;
   if (ops->inverted) {
-    point.x = axesPtr->y->hMap(y);
-    point.y = axesPtr->x->vMap(x);
+    point.x = yAxis->hMap(y);
+    point.y = xAxis->vMap(x);
   }
   else {
-    point.x = axesPtr->x->hMap(x);
-    point.y = axesPtr->y->vMap(y);
+    point.x = xAxis->hMap(x);
+    point.y = yAxis->vMap(y);
   }
   return point;
 }
 
-Point2d Graph::invMap2D(double x, double y, Axis2d* axesPtr)
+Point2d Graph::invMap2D(double x, double y, Axis* xAxis, Axis* yAxis)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
   Point2d point;
   if (ops->inverted) {
-    point.x = axesPtr->x->invVMap(y);
-    point.y = axesPtr->y->invHMap(x);
+    point.x = xAxis->invVMap(y);
+    point.y = yAxis->invHMap(x);
   }
   else {
-    point.x = axesPtr->x->invHMap(x);
-    point.y = axesPtr->y->invVMap(y);
+    point.x = xAxis->invHMap(x);
+    point.y = yAxis->invVMap(y);
   }
   return point;
 }
@@ -1216,8 +1216,8 @@ void Graph::resetAxes()
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* elemops = (ElementOptions*)elemPtr->ops();
     elemPtr->extents(&exts);
-    elemops->axes.x->getDataLimits(exts.left, exts.right);
-    elemops->axes.y->getDataLimits(exts.top, exts.bottom);
+    elemops->xAxis->getDataLimits(exts.left, exts.right);
+    elemops->yAxis->getDataLimits(exts.top, exts.bottom);
   }
   /*
    * Step 3:  Now that we know the range of data values for each axis,

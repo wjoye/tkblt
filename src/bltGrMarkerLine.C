@@ -70,9 +70,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(LineMarkerOptions, hide), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(LineMarkerOptions, axes.x), 0, &xAxisObjOption, 0},
+   "x", -1, Tk_Offset(LineMarkerOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
-   "y", -1, Tk_Offset(LineMarkerOptions, axes.y), 0, &yAxisObjOption, 0},
+   "y", -1, Tk_Offset(LineMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(LineMarkerOptions, outlineColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -192,7 +192,7 @@ void LineMarker::map()
 
   Segment2d* segments = new Segment2d[ops->worldPts->num];
   Point2d* srcPtr = ops->worldPts->points;
-  Point2d p = mapPoint(srcPtr, &ops->axes);
+  Point2d p = mapPoint(srcPtr, ops->xAxis, ops->yAxis);
   p.x += ops->xOffset;
   p.y += ops->yOffset;
 
@@ -200,7 +200,7 @@ void LineMarker::map()
   Point2d* pend;
   for (srcPtr++, pend = ops->worldPts->points + ops->worldPts->num; 
        srcPtr < pend; srcPtr++) {
-    Point2d next = mapPoint(srcPtr, &ops->axes);
+    Point2d next = mapPoint(srcPtr, ops->xAxis, ops->yAxis);
     next.x += ops->xOffset;
     next.y += ops->yOffset;
     Point2d q = next;
@@ -278,7 +278,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 
     for (pp = ops->worldPts->points, pend = pp + ops->worldPts->num; 
 	 pp < pend; pp++) {
-      Point2d p = mapPoint(pp, &ops->axes);
+      Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
 	  (p.y < extsPtr->top) && (p.y > extsPtr->bottom)) {
 	return 0;
@@ -291,8 +291,8 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
     int count = 0;
     for (pp = ops->worldPts->points, pend = pp + (ops->worldPts->num - 1); 
 	 pp < pend; pp++) {
-      Point2d p = mapPoint(pp, &ops->axes);
-      Point2d q = mapPoint(pp + 1, &ops->axes);
+      Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
+      Point2d q = mapPoint(pp + 1, ops->xAxis, ops->yAxis);
       if (Blt_LineRectClip(extsPtr, &p, &q))
 	count++;
     }

@@ -341,10 +341,9 @@ static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
    * bottom and left axes (which may not be what the user wants).  */
 
   /*  Pick the first pair of axes */
-  Axis2d axes;
-  axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
-  axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
-  Point2d point = graphPtr->invMap2D(x, y, &axes);
+  Axis* xAxis = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
+  Axis* yAxis = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
+  Point2d point = graphPtr->invMap2D(x, y, xAxis, yAxis);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(point.x));
@@ -370,11 +369,10 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
    * the points are always mapped onto the bottom and left axes (which may
    * not be the what the user wants).
    */
-  Axis2d axes;
-  axes.x = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
-  axes.y = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
+  Axis* xAxis = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
+  Axis* yAxis = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
 
-  Point2d point = graphPtr->map2D(x, y, &axes);
+  Point2d point = graphPtr->map2D(x, y, xAxis, yAxis);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.x)));

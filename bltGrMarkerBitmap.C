@@ -63,9 +63,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(BitmapMarkerOptions, hide), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(BitmapMarkerOptions, axes.x), 0, &xAxisObjOption, 0},
+   "x", -1, Tk_Offset(BitmapMarkerOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
-   "y", -1, Tk_Offset(BitmapMarkerOptions, axes.y), 0, &yAxisObjOption, 0},
+   "y", -1, Tk_Offset(BitmapMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(BitmapMarkerOptions, state), 0, &stateObjOption, 0},
@@ -181,7 +181,7 @@ void BitmapMarker::map()
   int lheight;
   Tk_SizeOfBitmap(graphPtr_->display_, ops->bitmap, &lwidth, &lheight);
 
-  Point2d lanchorPt = mapPoint(ops->worldPts->points, &ops->axes);
+  Point2d lanchorPt = mapPoint(ops->worldPts->points, ops->xAxis, ops->yAxis);
   lanchorPt = 
     Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, ops->anchor);
   lanchorPt.x += ops->xOffset;

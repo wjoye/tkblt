@@ -376,8 +376,8 @@ void BarGraph::initBarSetTable()
 
 	BarSetKey key;
 	key.value = *x;
-	key.axes = ops->axes;
-	key.axes.y = NULL;
+	key.xAxis = ops->xAxis;
+	key.yAxis = NULL;
 	int isNew;
 	Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
 	Tcl_HashTable *tablePtr;
@@ -389,7 +389,7 @@ void BarGraph::initBarSetTable()
 	else
 	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 
-	name = (ops->groupName) ? ops->groupName : ops->axes.y->name_;
+	name = (ops->groupName) ? ops->groupName : ops->yAxis->name_;
 	hPtr = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	if (isNew)
 	  count = 1;
@@ -441,7 +441,8 @@ void BarGraph::initBarSetTable()
 
 	count = (size_t)Tcl_GetHashValue(hPtr2);
 	groupPtr->nSegments = count;
-	groupPtr->axes = keyPtr->axes;
+	groupPtr->xAxis = keyPtr->xAxis;
+	groupPtr->yAxis = keyPtr->yAxis;
 	Tcl_SetHashValue(hPtr2, groupPtr);
 	groupPtr->index = xcount++;
 	groupPtr++;
@@ -509,15 +510,15 @@ void BarGraph::computeBarStacks()
 	     xend = x + ops->coords.x->nValues; x < xend; x++, y++) {
 	BarSetKey key;
 	key.value = *x;
-	key.axes = ops->axes;
-	key.axes.y = NULL;
+	key.xAxis = ops->xAxis;
+	key.yAxis = NULL;
 	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, (char *)&key);
 	if (!hPtr)
 	  continue;
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->axes.y->name_;
+	  ops->groupName : ops->yAxis->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (!hPtr)
 	  continue;

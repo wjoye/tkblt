@@ -55,10 +55,6 @@ class Marker;
 };
 
 typedef struct {
-  Axis *x, *y;
-} Axis2d;
-
-typedef struct {
   int halo;
   int mode;
   int x;
@@ -230,8 +226,8 @@ class Graph {
   void printAxesLimits(Blt_Ps);
   int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
-  Point2d map2D(double, double, Axis2d*);
-  Point2d invMap2D(double, double, Axis2d*);
+  Point2d map2D(double, double, Axis*, Axis*);
+  Point2d invMap2D(double, double, Axis*, Axis*);
   virtual void resetAxes();
   Axis* nearestAxis(int, int);
 

@@ -66,9 +66,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(TextMarkerOptions, hide), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(TextMarkerOptions, axes.x), 0, &xAxisObjOption, 0},
+   "x", -1, Tk_Offset(TextMarkerOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
-   "y", -1, Tk_Offset(TextMarkerOptions, axes.y), 0, &yAxisObjOption, 0},
+   "y", -1, Tk_Offset(TextMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
    "0", -1, Tk_Offset(TextMarkerOptions, style.angle), 0, NULL, 0},
@@ -181,7 +181,7 @@ void TextMarker::map()
   outline_[4].x = outline_[0].x;
   outline_[4].y = outline_[0].y;
 
-  Point2d anchorPtr = mapPoint(ops->worldPts->points, &ops->axes);
+  Point2d anchorPtr = mapPoint(ops->worldPts->points, ops->xAxis, ops->yAxis);
   anchorPtr = Blt_AnchorPoint(anchorPtr.x, anchorPtr.y, width_, 
 			     height_, ops->anchor);
   anchorPtr.x += ops->xOffset;
