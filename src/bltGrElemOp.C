@@ -44,13 +44,9 @@ extern "C" {
 
 using namespace Blt;
 
-// Defs
-
-static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 static int GetIndex(Tcl_Interp* interp, Element* elemPtr, 
 		    Tcl_Obj *objPtr, int *indexPtr);
-
-// Create
+static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 
 int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
 			int objc, Tcl_Obj* const objv[])
@@ -442,16 +438,16 @@ static int RaiseOp(Graph* graphPtr, Tcl_Interp* interp,
 static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
-  int n;
-  Tcl_Obj **elem;
-  if (Tcl_ListObjGetElements(interp, objv[3], &n, &elem) != TCL_OK)
+  int elemObjc;
+  Tcl_Obj** elemObjv;
+  if (Tcl_ListObjGetElements(interp, objv[3], &elemObjc, &elemObjv) != TCL_OK)
     return TCL_ERROR;
 
   // Collect the named elements into a list
   Blt_Chain chain = Blt_Chain_Create();
-  for (int ii=0; ii<n; ii++) {
+  for (int ii=0; ii<elemObjc; ii++) {
     Element* elemPtr;
-    if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK) {
+    if (graphPtr->getElement(elemObjv[ii], &elemPtr) != TCL_OK) {
       Blt_Chain_Destroy(chain);
       return TCL_ERROR;
     }
@@ -460,7 +456,8 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   // Clear the links from the currently displayed elements
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements_.displayList);
+       link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->link = NULL;
   }
@@ -468,7 +465,7 @@ static int ShowOp(Graph* graphPtr, Tcl_Interp* interp,
   graphPtr->elements_.displayList = chain;
 
   // Set links on all the displayed elements
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link != NULL; 
+  for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link; 
        link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->link = link;
