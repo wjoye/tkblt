@@ -399,7 +399,7 @@ static Blt_OpSpec graphOps[] =
     {"line",         2, (void*)ElementOp,         2, 0, "oper ?args?",},
     {"marker",       2, (void*)Blt::MarkerOp,     2, 0, "oper ?args?",},
     {"pen",          2, (void*)Blt_PenOp,         2, 0, "oper ?args?",},
-    {"postscript",   2, (void*)Blt_PsOp,          2, 0, "oper ?args?",},
+    {"postscript",   2, (void*)Blt_PageSetupOp,   2, 0, "oper ?args?",},
     {"transform",    1, (void*)TransformOp,       4, 4, "x y",},
     {"x2axis",       2, (void*)X2AxisOp,          2, 0, "oper ?args?",},
     {"xaxis",        2, (void*)XAxisOp,           2, 0, "oper ?args?",},

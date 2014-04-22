@@ -31,6 +31,7 @@
 #define _BLT_PS_H
 
 #include "bltConfig.h"
+#include "bltText.h"
 
 #define POSTSCRIPT_BUFSIZ	((BUFSIZ*2)-1)
 struct _Blt_Ps {
@@ -44,12 +45,6 @@ typedef struct _Blt_Ps PostScript;
 
 #define PS_MAXPECT	(1<<4)
 
-#define PS_FMT_NONE	0
-#define PS_FMT_MASK	(PS_FMT_WMF|PS_FMT_EPSI|PS_FMT_TIFF)
-#define PS_FMT_WMF	(1<<8)
-#define PS_FMT_EPSI	(1<<9)
-#define PS_FMT_TIFF	(1<<10)
-
 typedef struct _Blt_Ps *Blt_Ps;
 
 extern Blt_Ps Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr);
@@ -58,17 +53,9 @@ extern void Blt_Ps_Free(Blt_Ps ps);
 
 extern const char *Blt_Ps_GetValue(Blt_Ps ps, int *lengthPtr);
 
-extern Tcl_Interp *Blt_Ps_GetInterp(Blt_Ps ps);
-
-extern Tcl_DString *Blt_Ps_GetDString(Blt_Ps ps);
-
 extern char *Blt_Ps_GetScratchBuffer(Blt_Ps ps);
 
-extern void Blt_Ps_SetInterp(Blt_Ps ps, Tcl_Interp* interp);
-
 extern void Blt_Ps_Append(Blt_Ps ps, const char *string);
-
-extern void Blt_Ps_AppendBytes(Blt_Ps ps, const char *string, int nBytes);
 
 extern void Blt_Ps_VarAppend TCL_VARARGS(Blt_Ps, ps);
 
@@ -84,12 +71,6 @@ extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
 extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
 
 
-extern int Blt_Ps_SaveFile(Tcl_Interp* interp, Blt_Ps ps, 
-			   const char *fileName);
-
-#ifdef _TK
-
-#include "bltText.h"
 
 extern void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
 
@@ -156,11 +137,5 @@ extern void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n);
 extern void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
 
 extern void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
-extern int Blt_Ps_IsPrinting(void);
-
-extern void Blt_Ps_FontName(const char *family, int flags, 
-			    Tcl_DString *resultPtr);
-
-#endif /* _TK */
 
 #endif /* BLT_PS_H */

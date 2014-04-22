@@ -178,7 +178,7 @@ static int nPsOps = sizeof(psOps) / sizeof(Blt_OpSpec);
 typedef int (GraphPsProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			  Tcl_Obj* const objv[]);
 
-int Blt_PsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+int Blt_PageSetupOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
   GraphPsProc* proc = (GraphPsProc*)Blt_GetOpFromObj(interp, nPsOps, psOps, BLT_OP_ARG2, objc, objv, 0);

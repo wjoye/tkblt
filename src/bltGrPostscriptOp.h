@@ -37,6 +37,6 @@ using namespace std;
 
 extern int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				 int objc, Tcl_Obj* const objv[]);
-extern int Blt_PsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+extern int Blt_PageSetupOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj* const objv[]);
 #endif

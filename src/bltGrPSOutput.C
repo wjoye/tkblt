@@ -28,17 +28,9 @@
  *
  */
 
-#include <stdarg.h>
-
 extern "C" {
 #include <tkPort.h>
-#include <tkInt.h>
 #include <tk3d.h>
-};
-
-#include "bltMath.h"
-
-extern "C" {
 #include "bltInt.h"
 };
 
@@ -51,9 +43,6 @@ extern "C" {
 #else
 #  define HAVE_UTF	0
 #endif
-
-#define FONT_ITALIC	(1<<0)
-#define FONT_BOLD	(1<<1)
 
 #define PS_MAXPATH	1500		/* Maximum number of components in a
 					 * PostScript (level 1) path. */
