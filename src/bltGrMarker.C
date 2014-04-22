@@ -34,6 +34,7 @@ extern "C" {
 #include "bltBind.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrMarker.h"
 #include "bltGrAxis.h"
 #include "bltGrMisc.h"

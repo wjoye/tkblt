@@ -32,6 +32,7 @@ extern "C" {
 #include "bltChain.h"
 };
 
+#include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltGrElemOption.h"
 #include "bltGrPen.h"

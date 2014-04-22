@@ -39,11 +39,17 @@ using namespace std;
 
 extern "C" {
 #include "bltVector.h"
+#include "bltChain.h"
 };
 
+class Axis;
+class Element;
+class Pen;
+class PageSetup;
+
 #include "bltGrMisc.h"
-#include "bltGraph.h" // for Axis2d
 #include "bltGrPen.h"
+#include "bltPs.h"
 
 #define SHOW_NONE	0
 #define SHOW_X		1
@@ -59,9 +65,6 @@ extern "C" {
 			       (e)->coords.y ? (e)->coords.y->nValues : 0 )
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? \
 		       (e)->builtinPenPtr : (e)->normalPenPtr))
-
-class Element;
-class Pen;
 
 typedef struct {
   Segment2d *segments;

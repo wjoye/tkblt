@@ -37,9 +37,16 @@ using namespace std;
 
 #include <tk.h>
 
-#include "bltGraph.h" // Axis2d
+extern "C" {
+#include "bltChain.h"
+};
 
 class Graph;
+class Axis;
+class PageSetup;
+
+#include "bltGrMisc.h"
+#include "bltPs.h"
 
 namespace Blt {
 

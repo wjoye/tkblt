@@ -27,6 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltGraph.h"
 #include "bltSpline.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"

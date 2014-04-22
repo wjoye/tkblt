@@ -30,6 +30,7 @@
 #include <math.h>
 #include <float.h>
 
+#include "bltGraph.h"
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerOption.h"
 #include "bltGrMisc.h"

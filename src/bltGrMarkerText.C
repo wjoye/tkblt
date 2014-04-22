@@ -29,6 +29,7 @@
 
 #include <math.h>
 
+#include "bltGraph.h"
 #include "bltGrMarkerText.h"
 #include "bltGrMarkerOption.h"
 #include "bltGrMisc.h"
