@@ -29,6 +29,7 @@
 
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
+#include "bltGrPen.h"
 #include "bltGrPenOp.h"
 
 using namespace Blt;

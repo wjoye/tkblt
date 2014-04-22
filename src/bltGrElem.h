@@ -39,8 +39,8 @@ extern "C" {
 #include "bltVector.h"
 };
 
-#include "bltGraph.h"
-#include "bltGrPen.h"
+#include "bltGrMisc.h"
+#include "bltGraph.h" // for Axis2d
 
 #define SHOW_NONE	0
 #define SHOW_X		1
@@ -57,6 +57,7 @@ extern "C" {
 		       (e)->builtinPenPtr : (e)->normalPenPtr))
 
 class Element;
+class Pen;
 
 typedef struct {
   Segment2d *segments;
@@ -113,7 +114,7 @@ typedef struct {
   Pen* builtinPenPtr;
   Pen* activePenPtr;
   Pen* normalPenPtr;
-  PenOptions builtinPen;
+  void* builtinPen;
 } ElementOptions;
 
 class Element {

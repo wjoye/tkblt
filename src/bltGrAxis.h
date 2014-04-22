@@ -40,10 +40,15 @@ using namespace std;
 
 extern "C" {
 #include "bltBind.h"
+#include "bltChain.h"
 };
 
-#include "bltGraph.h"
+class Graph;
+class PageSetup;
+
 #include "bltGrMisc.h"
+#include "bltText.h"
+#include "bltPs.h"
 
 typedef struct {
   int axis;
