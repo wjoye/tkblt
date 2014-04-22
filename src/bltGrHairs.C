@@ -75,9 +75,7 @@ Crosshairs::~Crosshairs()
     Blt_FreePrivateGC(graphPtr_->display_, gc_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
-
-  if (ops_)
-    free(ops_);
+  free(ops_);
 }
 
 // Configure

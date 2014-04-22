@@ -46,9 +46,11 @@ typedef struct {
   int reqHeight;
 } PageSetupOptions;
 
-typedef struct  {
+class PageSetup  {
+ public:
   Tk_OptionTable optionTable_;
   void* ops_;
+  Graph* graphPtr_;
   unsigned int flags;
 
   short int left;
@@ -58,6 +60,10 @@ typedef struct  {
   float scale;
   int paperHeight;
   int paperWidth;
-} PageSetup;
+
+ public:
+  PageSetup(Graph*);
+  virtual ~PageSetup();
+};
 
 #endif

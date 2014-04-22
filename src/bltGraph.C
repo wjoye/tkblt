@@ -59,8 +59,6 @@ using namespace Blt;
 #define MARKER_ABOVE	0
 #define MARKER_UNDER	1
 
-extern int Blt_CreatePageSetup(Graph* graphPtr);
-extern void Blt_DestroyPageSetup(Graph* graphPtr);
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
 
 static Blt_BindPickProc PickEntry;
@@ -90,6 +88,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 
   legend_ = new Legend(this);
   crosshairs_ = new Crosshairs(this);
+  pageSetup_ = new PageSetup(this);
 
   inset_ =0;
   titleX_ =0;
@@ -134,11 +133,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
-  if (Blt_CreatePageSetup(this) != TCL_OK) {
-    valid_ =0;
-    return;
-  }
-
   // Keep a hold of the associated tkwin until we destroy the graph,
   // otherwise Tk might free it while we still need it.
   Tcl_Preserve(tkwin_);
@@ -155,14 +149,12 @@ Graph::~Graph()
   destroyMarkers();
   destroyElements();  // must come before legend and others
 
-  if (crosshairs_)
-    delete crosshairs_;
-  if (legend_)
-    delete legend_;
+  delete crosshairs_;
+  delete legend_;
+  delete pageSetup_;
 
   destroyAxes();
   destroyPens();
-  Blt_DestroyPageSetup(this);
 
   if (bindTable_)
     Blt_DestroyBindingTable(bindTable_);
@@ -178,8 +170,7 @@ Graph::~Graph()
   Tcl_Release(tkwin_);
   tkwin_ = NULL;
 
-  if (ops_)
-    free (ops_);
+  free (ops_);
 }
 
 void Graph::configure()	

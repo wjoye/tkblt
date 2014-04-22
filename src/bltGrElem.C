@@ -63,9 +63,7 @@ Element::~Element()
     Tcl_DeleteHashEntry(hashPtr_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
-
-  if (ops_)
-    free(ops_);
+  free(ops_);
 }
 
 double Element::FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)

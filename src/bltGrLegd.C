@@ -212,8 +212,7 @@ Legend::~Legend()
   Blt_Chain_Destroy(selected_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
-  if (ops_)
-    free(ops_);
+  free(ops_);
 }
 
 void Legend::configure()

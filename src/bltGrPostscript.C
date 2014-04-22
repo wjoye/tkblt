@@ -65,26 +65,19 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-int Blt_CreatePageSetup(Graph* graphPtr)
+PageSetup::PageSetup(Graph* graphPtr)
 {
-  PageSetup* setupPtr = (PageSetup*)calloc(1, sizeof(PageSetup));
-  graphPtr->pageSetup_ = setupPtr;
-  setupPtr->ops_ = (PageSetupOptions*)calloc(1, sizeof(PageSetupOptions));
+  ops_ = (PageSetupOptions*)calloc(1, sizeof(PageSetupOptions));
+  graphPtr_ = graphPtr;
 
-  setupPtr->optionTable_ =Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
-  return Tk_InitOptions(graphPtr->interp_, (char*)setupPtr->ops_, 
-			setupPtr->optionTable_, graphPtr->tkwin_);
+  optionTable_ =Tk_CreateOptionTable(graphPtr_->interp_, optionSpecs);
+  Tk_InitOptions(graphPtr_->interp_, (char*)ops_, optionTable_,
+		 graphPtr_->tkwin_);
 }
 
-void Blt_DestroyPageSetup(Graph* graphPtr)
+PageSetup::~PageSetup()
 {
-  PageSetup* setupPtr = graphPtr->pageSetup_;
-  Tk_FreeConfigOptions((char*)setupPtr->ops_, setupPtr->optionTable_, 
-		       graphPtr->tkwin_);
-
-  if(setupPtr->ops_)
-    free(setupPtr->ops_);
-
-  free(setupPtr);
+  Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
+  free(ops_);
 }
 

@@ -60,9 +60,7 @@ Marker::~Marker()
     Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
-
-  if (ops_)
-    free(ops_);
+  free(ops_);
 }
 
 double Marker::HMap(Axis *axisPtr, double x)
