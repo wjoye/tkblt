@@ -60,8 +60,8 @@ using namespace Blt;
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 #define BROKEN_TRACE(dir,last,next)			\
-  (((dir == PEN_INCREASING) && (next < last)) ||	\
-   ((dir == PEN_DECREASING) && (next > last)))
+  (((dir == INCREASING) && (next < last)) ||	\
+   ((dir == DECREASING) && (next > last)))
 
 #define DRAW_SYMBOL() ((symbolCounter_ % symbolInterval_) == 0)
 
@@ -233,7 +233,7 @@ static Tk_OptionSpec optionSpecs[] = {
 LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Element(graphPtr, name, hPtr)
 {
-  smooth_ = PEN_SMOOTH_LINEAR;
+  smooth_ = LINEAR;
   fillBgColor_ =NULL;
   fillGC_ = NULL;
   fillPts_ =NULL;
@@ -366,28 +366,28 @@ void LineElement::map()
     MapActiveSymbols();
 
   // Map connecting line segments if they are to be displayed.
-  smooth_ = ops->reqSmooth;
+  smooth_ = (Smoothing)ops->reqSmooth;
   if ((np > 1) && (ops->builtinPen.traceWidth > 0)) {
     // Do smoothing if necessary.  This can extend the coordinate array,
     // so both mi.points and mi.nPoints may change.
     switch (smooth_) {
-    case PEN_SMOOTH_STEP:
+    case STEP:
       GenerateSteps(&mi);
       break;
 
-    case PEN_SMOOTH_NATURAL:
-    case PEN_SMOOTH_QUADRATIC:
+    case NATURAL:
+    case QUADRATIC:
       // Can't interpolate with less than three points
       if (mi.nScreenPts < 3)
-	smooth_ = PEN_SMOOTH_LINEAR;
+	smooth_ = LINEAR;
       else
 	GenerateSpline(&mi);
       break;
 
-    case PEN_SMOOTH_CATROM:
+    case CATROM:
       // Can't interpolate with less than three points
       if (mi.nScreenPts < 3)
-	smooth_ = PEN_SMOOTH_LINEAR;
+	smooth_ = LINEAR;
       else
 	GenerateParametricSpline(&mi);
       break;
@@ -1281,15 +1281,15 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
   }
   niPts = count;
   result = 0;
-  if (smooth_ == PEN_SMOOTH_NATURAL)
+  if (smooth_ == NATURAL)
     result = Blt_NaturalSpline(origPts, nOrigPts, iPts, niPts);
-  else if (smooth_ == PEN_SMOOTH_QUADRATIC)
+  else if (smooth_ == QUADRATIC)
     result = Blt_QuadraticSpline(origPts, nOrigPts, iPts, niPts);
 
   if (!result) {
     /* The spline interpolation failed.  We'll fallback to the current
      * coordinates and do no smoothing (standard line segments).  */
-    smooth_ = PEN_SMOOTH_LINEAR;
+    smooth_ = LINEAR;
     free(iPts);
     free(map);
   }
@@ -1389,16 +1389,16 @@ void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
   count++;
   niPts = count;
   result = 0;
-  if (smooth_ == PEN_SMOOTH_NATURAL)
+  if (smooth_ == NATURAL)
     result = Blt_NaturalParametricSpline(origPts, nOrigPts, &exts, 0,
 					 iPts, niPts);
-  else if (smooth_ == PEN_SMOOTH_CATROM)
+  else if (smooth_ == CATROM)
     result = Blt_CatromParametricSpline(origPts, nOrigPts, iPts, niPts);
 
   if (!result) {
     /* The spline interpolation failed.  We will fall back to the current
      * coordinates and do no smoothing (standard line segments).  */
-    smooth_ = PEN_SMOOTH_LINEAR;
+    smooth_ = LINEAR;
     free(iPts);
     free(map);
   }

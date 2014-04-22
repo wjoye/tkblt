@@ -35,21 +35,12 @@
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"
 
-typedef enum {
-  PEN_INCREASING, PEN_DECREASING, PEN_BOTH_DIRECTIONS
-} PenDirection;
-
 typedef struct {
   Point2d *screenPts;
   int nScreenPts;
   int *styleMap;
   int *map;
 } MapInfo;
-
-typedef enum {
-  PEN_SMOOTH_LINEAR, PEN_SMOOTH_STEP, PEN_SMOOTH_NATURAL,
-  PEN_SMOOTH_QUADRATIC, PEN_SMOOTH_CATROM
-} Smoothing;
 
 typedef struct {
   Point2d *points;
@@ -101,11 +92,15 @@ typedef struct {
   int reqMaxSymbols;
   double rTolerance;
   int scaleSymbols;
-  Smoothing reqSmooth;
+  int reqSmooth;
   int penDir;
 } LineElementOptions;
 
 class LineElement : public Element {
+ public:
+  enum PenDirection {INCREASING, DECREASING, BOTH_DIRECTIONS};
+  enum Smoothing {LINEAR, STEP, NATURAL, QUADRATIC, CATROM};
+
  protected:
   LinePen* builtinPenPtr;
   Smoothing smooth_;
