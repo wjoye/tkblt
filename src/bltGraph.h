@@ -30,6 +30,8 @@
 #ifndef __BltGraph_h__
 #define __BltGraph_h__
 
+#include <tk.h>
+
 extern "C" {
 #include "bltChain.h"
 #include "bltBind.h"

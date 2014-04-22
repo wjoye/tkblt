@@ -30,6 +30,8 @@
 #ifndef __BltGraphLine_h__
 #define __BltGraphLine_h__
 
+#include <tk.h>
+
 #include "bltGraph.h"
 
 typedef struct {

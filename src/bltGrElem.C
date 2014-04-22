@@ -27,6 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <float.h>
+
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrPen.h"

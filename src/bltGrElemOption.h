@@ -30,6 +30,8 @@
 #ifndef __BltGrElemOption_h__
 #define __BltGrElemOption_h__
 
+#include <tk.h>
+
 extern const char* fillObjOption[];
 extern Tk_CustomOptionSetProc StyleSetProc;
 extern Tk_CustomOptionGetProc StyleGetProc;

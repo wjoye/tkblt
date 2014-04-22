@@ -27,6 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <math.h>
+
 #include "bltGrMarkerText.h"
 #include "bltGrMarkerOption.h"
 #include "bltGrMisc.h"

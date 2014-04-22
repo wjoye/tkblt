@@ -35,6 +35,8 @@
 #include <iomanip>
 using namespace std;
 
+#include <tk.h>
+
 #include "bltText.h"
 
 class Graph;

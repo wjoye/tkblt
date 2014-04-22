@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
-
 extern "C" {
 #include "bltInt.h"
 #include "bltOp.h"
@@ -41,6 +39,8 @@ extern "C" {
 #include "bltGrMisc.h"
 
 using namespace Blt;
+
+#define EXP10(x)	(pow(10.0,(x)))
 
 static int GetAxisScrollInfo(Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[],

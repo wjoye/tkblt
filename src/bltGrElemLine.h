@@ -30,6 +30,8 @@
 #ifndef __BltGrElemLine_h__
 #define __BltGrElemLine_h__
 
+#include <tk.h>
+
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"
 

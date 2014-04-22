@@ -38,6 +38,8 @@
 #include <iomanip>
 using namespace std;
 
+#include <tk.h>
+
 #include "bltGrMisc.h"
 #include "bltText.h"
 

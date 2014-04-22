@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
-
 #include "bltSpline.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
@@ -57,6 +55,7 @@ using namespace Blt;
 
 #define SCALE_SYMBOL	(1<<10)
 
+#define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 #define BROKEN_TRACE(dir,last,next)			\

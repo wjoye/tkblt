@@ -30,6 +30,8 @@
 #ifndef _BLT_TEXT_H
 #define _BLT_TEXT_H
 
+#include <tk.h>
+
 #include "bltGrMisc.h"
 
 #define UPDATE_GC 1

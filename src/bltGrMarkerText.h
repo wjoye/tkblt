@@ -30,6 +30,8 @@
 #ifndef __BltGrMarkerText_h__
 #define __BltGrMarkerText_h__
 
+#include <tk.h>
+
 #include "bltGrMarker.h"
 
 namespace Blt {

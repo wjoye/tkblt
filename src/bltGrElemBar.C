@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
-
 extern "C" {
 #include "bltInt.h"
 };
@@ -47,6 +45,7 @@ extern "C" {
 using namespace Blt;
 
 #define CLAMP(x,l,h)	((x) = (((x)<(l))? (l) : ((x)>(h)) ? (h) : (x)))
+#define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
 
 #define PointInRectangle(r,x0,y0)					\
   (((x0) <= (int)((r)->x + (r)->width - 1)) && ((x0) >= (int)(r)->x) && \

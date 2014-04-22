@@ -28,6 +28,8 @@
  *
  */
 
+#include <math.h>
+
 extern "C" {
 #include <tkPort.h>
 #include <tk3d.h>

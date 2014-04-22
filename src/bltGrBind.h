@@ -30,6 +30,8 @@
 #ifndef _BLT_BIND_H
 #define _BLT_BIND_H
 
+#include <tk.h>
+
 #include <bltList.h>
 
 typedef struct _Blt_BindTable *Blt_BindTable;

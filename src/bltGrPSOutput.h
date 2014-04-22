@@ -30,6 +30,8 @@
 #ifndef _BLT_PS_H
 #define _BLT_PS_H
 
+#include <tk.h>
+
 #include "bltConfig.h"
 #include "bltText.h"
 

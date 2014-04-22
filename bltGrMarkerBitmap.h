@@ -30,6 +30,8 @@
 #ifndef __BltGrMarkerBitmap_h__
 #define __BltGrMarkerBitmap_h__
 
+#include <tk.h>
+
 #include "bltGrMarker.h"
 
 namespace Blt {

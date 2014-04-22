@@ -27,7 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
+#include <math.h>
 
 extern "C" {
 #include <tk.h>
@@ -39,6 +39,7 @@ extern "C" {
 
 #include "bltText.h"
 
+#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define ROTATE_0	0
 #define ROTATE_90	1
 #define ROTATE_180	2

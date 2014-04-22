@@ -30,6 +30,8 @@
 #ifndef __BltGrPageSetup_h__
 #define __BltGrPageSetup_h__
 
+#include <tk.h>
+
 typedef struct {
   int center;
   const char **comments;

@@ -30,6 +30,8 @@
 #ifndef __BltGraphOp_h__
 #define __BltGraphOp_h__
 
+#include <tk.h>
+
 extern int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			     int objc, Tcl_Obj* const objv[]);
 

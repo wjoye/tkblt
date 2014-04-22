@@ -35,6 +35,11 @@
 #include <iomanip>
 using namespace std;
 
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
 #include "bltGrElem.h"
 #include "bltGrPenBar.h"
 

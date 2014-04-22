@@ -30,6 +30,8 @@
 #ifndef __BltGrAxisOption_h__
 #define __BltGrAxisOption_h__
 
+#include <tk.h>
+
 extern Tk_ObjCustomOption xAxisObjOption;
 extern Tk_ObjCustomOption yAxisObjOption;
 extern Tk_ObjCustomOption limitObjOption;

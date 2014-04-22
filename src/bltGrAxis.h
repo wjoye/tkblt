@@ -38,6 +38,8 @@
 #include <iomanip>
 using namespace std;
 
+#include <tk.h>
+
 extern "C" {
 #include "bltBind.h"
 #include "bltChain.h"

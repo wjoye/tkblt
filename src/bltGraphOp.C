@@ -27,8 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltMath.h"
-
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
@@ -59,6 +57,8 @@ using namespace Blt;
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
+
+#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
