@@ -35,7 +35,9 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltGraph.h"
+#include "bltGraph.h" // Axis2d
+
+class Graph;
 
 namespace Blt {
 

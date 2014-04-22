@@ -38,7 +38,12 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltGraph.h"
+#include "bltGrMisc.h"
+#include "bltText.h"
+
+class Graph;
+class Element;
+class Legend;
 
 /*
  *  Selection related flags:
@@ -61,8 +66,6 @@ using namespace std;
 typedef enum {
   SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
 } SelectMode;
-
-class Legend;
 
 typedef struct {
   Tk_3DBorder activeBg;

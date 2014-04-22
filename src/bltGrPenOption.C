@@ -27,6 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "bltGraph.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"
 #include "bltConfig.h"

@@ -35,7 +35,9 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltGraph.h"
+#include "bltText.h"
+
+class Graph;
 
 typedef struct {
   int errorBarShow;

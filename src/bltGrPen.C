@@ -28,6 +28,7 @@
  */
 
 #include "bltGrPen.h"
+#include "bltGraph.h"
 
 using namespace Blt;
 

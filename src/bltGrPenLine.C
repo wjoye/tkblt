@@ -28,6 +28,7 @@
  */
 
 #include "bltGrPenLine.h"
+#include "bltGraph.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
