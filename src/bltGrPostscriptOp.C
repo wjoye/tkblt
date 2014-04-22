@@ -35,6 +35,42 @@ extern "C" {
 #include "bltGrPageSetupOp.h"
 #include "bltPs.h"
 
+int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+			  int objc, Tcl_Obj* const objv[])
+{
+  PageSetup* setupPtr = graphPtr->pageSetup_;
+  Tk_SavedOptions savedOptions;
+  int mask =0;
+  int error;
+  Tcl_Obj* errorResult;
+
+  for (error=0; error<=1; error++) {
+    if (!error) {
+      if (Tk_SetOptions(interp, (char*)setupPtr->ops_, setupPtr->optionTable_, 
+			objc, objv, graphPtr->tkwin_, &savedOptions, &mask)
+	  != TCL_OK)
+	continue;
+    }
+    else {
+      errorResult = Tcl_GetObjResult(interp);
+      Tcl_IncrRefCount(errorResult);
+      Tk_RestoreSavedOptions(&savedOptions);
+    }
+
+    break; 
+  }
+
+  if (!error) {
+    Tk_FreeSavedOptions(&savedOptions);
+    return TCL_OK;
+  }
+  else {
+    Tcl_SetObjResult(interp, errorResult);
+    Tcl_DecrRefCount(errorResult);
+    return TCL_ERROR;
+  }
+}
+
 static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
@@ -45,8 +81,8 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   PageSetup *setupPtr = graphPtr->pageSetup_;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
-				      (char*)setupPtr, 
-				      setupPtr->optionTable,
+				      (char*)setupPtr->ops_, 
+				      setupPtr->optionTable_,
 				      objv[3], graphPtr->tkwin_);
   if (objPtr == NULL)
     return TCL_ERROR;
@@ -60,8 +96,8 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
 {
   PageSetup* setupPtr = graphPtr->pageSetup_;
   if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)setupPtr, 
-				       setupPtr->optionTable, 
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)setupPtr->ops_, 
+				       setupPtr->optionTable_, 
 				       (objc == 4) ? objv[3] : NULL, 
 				       graphPtr->tkwin_);
     if (objPtr == NULL)
@@ -142,7 +178,7 @@ static int nPsOps = sizeof(psOps) / sizeof(Blt_OpSpec);
 typedef int (GraphPsProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			  Tcl_Obj* const objv[]);
 
-int Blt_PostScriptOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+int Blt_PsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
   GraphPsProc* proc = (GraphPsProc*)Blt_GetOpFromObj(interp, nPsOps, psOps, BLT_OP_ARG2, objc, objv, 0);
@@ -168,6 +204,7 @@ static void AddComments(Blt_Ps ps, const char **comments)
 int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps)
 {
   PageSetup *setupPtr = graphPtr->pageSetup_;
+  PageSetupOptions* ops = (PageSetupOptions*)setupPtr->ops_;
   time_t ticks;
   char date[200];			/* Holds the date string from ctime() */
   char *newline;
@@ -200,18 +237,18 @@ int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps)
   Blt_Ps_Format(ps, "%%%%CreationDate: (%s)\n", date);
   Blt_Ps_Format(ps, "%%%%Title: (%s)\n", fileName);
   Blt_Ps_Append(ps, "%%DocumentData: Clean7Bit\n");
-  if (setupPtr->landscape) {
+  if (ops->landscape) {
     Blt_Ps_Append(ps, "%%Orientation: Landscape\n");
   } else {
     Blt_Ps_Append(ps, "%%Orientation: Portrait\n");
   }
   Blt_Ps_Append(ps, "%%DocumentNeededResources: font Helvetica Courier\n");
-  AddComments(ps, setupPtr->comments);
+  AddComments(ps, ops->comments);
   Blt_Ps_Append(ps, "%%EndComments\n\n");
   if (Blt_Ps_IncludeFile(graphPtr->interp_, ps, "bltGraph.pro") != TCL_OK) {
     return TCL_ERROR;
   }
-  if (setupPtr->footer) {
+  if (ops->footer) {
     const char *who;
 
     who = getenv("LOGNAME");
@@ -246,7 +283,7 @@ int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps)
 		   "% Set color level\n", (char *)NULL);
   Blt_Ps_Format(ps, "%% Set origin\n%d %d translate\n\n",
 		setupPtr->left, setupPtr->bottom);
-  if (setupPtr->landscape) {
+  if (ops->landscape) {
     Blt_Ps_Format(ps,
 		  "%% Landscape orientation\n0 %g translate\n-90 rotate\n",
 		  ((double)graphPtr->width_ * setupPtr->scale));

@@ -35,6 +35,8 @@ extern "C" {
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrHairsOp.h"
+#include "bltGrPageSetup.h"
+#include "bltGrPageSetupOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
@@ -541,6 +543,7 @@ void Legend::print(Blt_Ps ps)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
 
   if ((ops->hide) || (nEntries_ == 0))
     return;
@@ -553,7 +556,7 @@ void Legend::print(Blt_Ps ps)
   int height = height_ - 2*ops->yPad;
 
   Blt_Ps_Append(ps, "% Legend\n");
-  if (graphPtr_->pageSetup_->decorations) {
+  if (pops->decorations) {
     if (ops->normalBg)
       Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);

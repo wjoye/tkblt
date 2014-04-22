@@ -386,18 +386,19 @@ int Graph::print(const char *ident, Blt_Ps ps)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   PageSetup *setupPtr = pageSetup_;
+  PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
 
   // We need to know how big a graph to print.  If the graph hasn't been drawn
   // yet, the width and height will be 1.  Instead use the requested size of
   // the widget.  The user can still override this with the -width and -height
   // postscript options.
-  if (setupPtr->reqWidth > 0)
-    width_ = setupPtr->reqWidth;
+  if (pops->reqWidth > 0)
+    width_ = pops->reqWidth;
   else if (width_ < 2)
     width_ = Tk_ReqWidth(tkwin_);
 
-  if (setupPtr->reqHeight > 0)
-    height_ = setupPtr->reqHeight;
+  if (pops->reqHeight > 0)
+    height_ = pops->reqHeight;
   else if (height_ < 2)
     height_ = Tk_ReqHeight(tkwin_);
 
@@ -420,7 +421,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     goto error;
 
   Blt_Ps_XSetFont(ps, ops->titleTextStyle.font);
-  if (pageSetup_->decorations)
+  if (pops->decorations)
     Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->plotBg));
   else
     Blt_Ps_SetClearBackground(ps);
@@ -576,7 +577,7 @@ void Graph::drawMargins(Drawable drawable)
 void Graph::printMargins(Blt_Ps ps)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  PageSetup *setupPtr = pageSetup_;
+  PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
   XRectangle margin[4];
 
   margin[0].x = margin[0].y = margin[3].x = margin[1].x = 0;
@@ -591,7 +592,7 @@ void Graph::printMargins(Blt_Ps ps)
   margin[2].width = width_ - right_;
 
   // Clear the surrounding margins and clip the plotting surface
-  if (setupPtr->decorations)
+  if (pops->decorations)
     Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->normalBg));
   else
     Blt_Ps_SetClearBackground(ps);

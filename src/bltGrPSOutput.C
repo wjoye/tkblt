@@ -62,17 +62,18 @@ static Tcl_Interp *psInterp = NULL;
 
 int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
 {
+  PageSetupOptions* pops = (PageSetupOptions*)setupPtr->ops_;
   int paperWidth, paperHeight;
-  int x, y, hSize, vSize, hBorder, vBorder;
   float hScale, vScale, scale;
 
-  x = setupPtr->xPad;
-  y = setupPtr->yPad;
+  int x = pops->xPad;
+  int y = pops->yPad;
 
-  hBorder = 2*setupPtr->xPad;
-  vBorder = 2*setupPtr->yPad;
+  int hBorder = 2*pops->xPad;
+  int vBorder = 2*pops->yPad;
 
-  if (setupPtr->landscape) {
+  int hSize, vSize;
+  if (pops->landscape) {
     hSize = height;
     vSize = width;
   } else {
@@ -83,9 +84,9 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
    * If the paper size wasn't specified, set it to the graph size plus the
    * paper border.
    */
-  paperWidth = (setupPtr->reqPaperWidth > 0) ? setupPtr->reqPaperWidth :
+  paperWidth = (pops->reqPaperWidth > 0) ? pops->reqPaperWidth :
     hSize + hBorder;
-  paperHeight = (setupPtr->reqPaperHeight > 0) ? setupPtr->reqPaperHeight :
+  paperHeight = (pops->reqPaperHeight > 0) ? pops->reqPaperHeight :
     vSize + vBorder;
 
   /*
@@ -105,7 +106,7 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
     vSize = (int)((vSize * scale) + 0.5f);
   }
   setupPtr->scale = scale;
-  if (setupPtr->center) {
+  if (pops->center) {
     if (paperWidth > hSize) {
       x = (paperWidth - hSize) / 2;
     }
@@ -301,18 +302,20 @@ static void XColorToPostScript(Blt_Ps ps, XColor* colorPtr)
 
 void Blt_Ps_XSetBackground(PostScript *psPtr, XColor* colorPtr)
 {
+  PageSetupOptions* pops = (PageSetupOptions*)psPtr->setupPtr->ops_;
   XColorToPostScript(psPtr, colorPtr);
   Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (psPtr->setupPtr->greyscale) {
+  if (pops->greyscale) {
     Blt_Ps_Append(psPtr, " currentgray setgray\n");
   }
 }
 
 void Blt_Ps_XSetForeground(PostScript *psPtr, XColor* colorPtr)
 {
+  PageSetupOptions* pops = (PageSetupOptions*)psPtr->setupPtr->ops_;
   XColorToPostScript(psPtr, colorPtr);
   Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (psPtr->setupPtr->greyscale) {
+  if (pops->greyscale) {
     Blt_Ps_Append(psPtr, " currentgray setgray\n");
   }
 }

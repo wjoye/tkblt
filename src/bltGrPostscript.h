@@ -30,43 +30,34 @@
 #ifndef __BltGrPageSetup_h__
 #define __BltGrPageSetup_h__
 
-typedef struct  {
-  Tk_OptionTable optionTable;
-  int reqWidth, reqHeight;	/* If greater than zero, represents the
-				 * requested dimensions of the printed graph */
-  int reqPaperWidth;
-  int reqPaperHeight;		/* Requested dimensions for the PostScript
-				 * page. Can constrain the size of the graph
-				 * if the graph (plus padding) is larger than
-				 * the size of the page. */
-  int xPad, yPad;		/* Requested padding on the exterior of the
-				 * graph. This forms the bounding box for
-				 * the page. */
-  const char *fontVarName;	/* If non-NULL, is the name of a TCL array
-				 * variable containing X to output device font
-				 * translations */
-  int level;			/* PostScript Language level 1-3 */
-
-  int decorations;
+typedef struct {
   int center;
+  const char **comments;
+  int decorations;
   int footer;
   int greyscale;
   int landscape;
+  int level;
+  int xPad;
+  int yPad;
+  int reqPaperWidth;
+  int reqPaperHeight;
+  int reqWidth;
+  int reqHeight;
+} PageSetupOptions;
+
+typedef struct  {
+  Tk_OptionTable optionTable_;
+  void* ops_;
   unsigned int flags;
 
-  const char **comments;	/* User supplied comments to be added. */
-
-  /* Computed fields */
-
-  short int left, bottom;	/* Bounding box of the plot in the page. */
-  short int right, top;
-
-  float scale;		/* Scale of page. Set if "-maxpect" option
-			 * is set, otherwise 1.0. */
-
+  short int left;
+  short int bottom;
+  short int right;
+  short int top;
+  float scale;
   int paperHeight;
   int paperWidth;
-    
 } PageSetup;
 
 #endif
