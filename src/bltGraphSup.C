@@ -37,6 +37,7 @@
 
 using namespace Blt;
 
+#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define AXIS_PAD_TITLE 2
 
 /*

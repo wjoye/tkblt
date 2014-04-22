@@ -30,15 +30,15 @@
 #ifndef __BltGrMisc_h__
 #define __BltGrMisc_h__
 
-#include <tcl.h>
-#ifdef USE_TCL_STUBS
-#include <tclInt.h>
-#endif
+//#include <tcl.h>
+//#ifdef USE_TCL_STUBS
+//#include <tclInt.h>
+//#endif
 
 #include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+//#ifdef USE_TK_STUBS
+//#include <tkInt.h>
+//#endif
 
 /*
  * Bit flags definitions:
