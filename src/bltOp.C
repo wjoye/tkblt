@@ -33,6 +33,26 @@ extern "C" {
 #include "bltOp.h"
 };
 
+int BltInvokeEnsemble(const BltEnsemble* ensemble, int cmdIndex,
+		      void* clientData, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[])
+{
+  while (cmdIndex < objc) {
+    int index;
+    if (Tcl_GetIndexFromObjStruct(interp, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
+      return TCL_ERROR;
+
+    if (ensemble[index].command)
+      return ensemble[index].command(clientData, interp, objc, objv);
+
+    ensemble = (const BltEnsemble*)ensemble[index].ensemble;
+    ++cmdIndex;
+  }
+
+  Tcl_WrongNumArgs(interp, cmdIndex, objv, "option ?arg ...?");
+  return TCL_ERROR;
+}
+
 static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, 
 			  const char *string, int length)
 {

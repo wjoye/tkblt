@@ -33,6 +33,7 @@ extern "C" {
 };
 
 #include "bltGraph.h"
+#include "bltGrXAxisOp.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 
@@ -148,6 +149,35 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
   return TCL_OK;
 }
 
+static int CgetOp(ClientData clientData,Tcl_Interp* interp,
+		  int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = (Graph*)clientData;
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  int margin = (gops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
+
+  return AxisCgetOp(interp, axisPtr, objc, objv);
+}
+
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
+		       int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = (Graph*)clientData;
+  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  int margin = (gops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
+
+  return AxisConfigureOp(interp, axisPtr, objc, objv);
+}
+
+const BltEnsemble xaxisEnsemble[] = {
+    { "cget", 		CgetOp,0 },
+    { "configure", 	ConfigureOp,0 },
+    { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec axisOps[] = {
   {"activate",     1, (void*)AxisActivateOp,     3, 3, "",},
   {"bind",         1, (void*)BindOp,         2, 5, "sequence command",},
@@ -185,4 +215,4 @@ int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin,
     return (*proc)(interp, axisPtr, objc, objv);
   }
 }
-
+*/

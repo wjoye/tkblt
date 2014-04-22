@@ -138,9 +138,10 @@ int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   }
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int CgetOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc != 3) {
     Tcl_WrongNumArgs(interp, 1, objv, "cget option");
     return TCL_ERROR;
@@ -156,9 +157,10 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc <= 3) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)graphPtr->ops_, 
 				       graphPtr->optionTable_, 
@@ -382,6 +384,27 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
+#include "bltGrLegdOp.h"
+
+static const BltEnsemble graphEnsemble[] = {
+    { "cget", 		CgetOp,0 },
+    { "configure", 	ConfigureOp,0 },
+    { "crosshairs",  0, crosshairsEnsemble },
+    { "legend",      0, legendEnsemble },
+    { "xaxis",       0, xaxisEnsemble },
+    { 0,0,0 }
+};
+
+int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
+		     int objc, Tcl_Obj* const objv[])
+{
+  Tcl_Preserve(clientData);
+  int result = BltInvokeEnsemble(graphEnsemble, 1, clientData, interp, objc, objv);
+  Tcl_Release(clientData);
+  return result;
+}
+
+/*
 static Blt_OpSpec graphOps[] =
   {
     {"axis",         1, (void*)Blt_AxisOp,        2, 0, "oper ?args?",},
@@ -422,6 +445,7 @@ int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   Tcl_Release(graphPtr);
   return result;
 }
+*/
 
 // called by Tcl_DeleteCommand
 void GraphInstCmdDeleteProc(ClientData clientData)

@@ -36,6 +36,7 @@ extern "C" {
 
 #include "bltGraph.h"
 #include "bltGrHairs.h"
+#include "bltGrHairsOp.h"
 
 using namespace Blt;
 
@@ -78,9 +79,10 @@ static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   }
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
+static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc != 4) {
     Tcl_WrongNumArgs(interp, 2, objv, "cget option");
     return TCL_ERROR;
@@ -98,9 +100,10 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Crosshairs* chPtr = graphPtr->crosshairs_;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)chPtr->ops(), 
@@ -158,6 +161,13 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+const BltEnsemble crosshairsEnsemble[] = {
+    { "cget", 		CgetOp,0 },
+    { "configure", 	ConfigureOp,0 },
+    { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec xhairOps[] =
   {
     {"cget", 2, (void*)CgetOp, 4, 4, "option",},
@@ -180,5 +190,5 @@ int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return (*proc)(graphPtr, interp, objc, objv);
 }
-
+*/
 

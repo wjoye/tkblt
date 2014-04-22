@@ -33,6 +33,12 @@
 #ifndef __BltGrHairsOp_h__
 #define __BltGrHairsOp_h__
 
+extern "C" {
+#include "bltOp.h"
+}
+
+extern const BltEnsemble crosshairsEnsemble[];
+
 extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
 			    Tcl_Obj* const objv[]);
 

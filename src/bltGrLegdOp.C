@@ -39,6 +39,7 @@ extern "C" {
 
 #include "bltGraph.h"
 #include "bltGrLegd.h"
+#include "bltGrLegdOp.h"
 #include "bltGrElem.h"
 
 using namespace Blt;
@@ -89,9 +90,10 @@ static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   }
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int CgetOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc != 4) {
     Tcl_WrongNumArgs(interp, 2, objv, "cget option");
     return TCL_ERROR;
@@ -109,9 +111,10 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)legendPtr->ops(), 
@@ -300,6 +303,13 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+const BltEnsemble legendEnsemble[] = {
+    { "cget", 		CgetOp,0 },
+    { "configure", 	ConfigureOp,0 },
+    { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec legendOps[] =
   {
     {"activate",     1, (void*)ActivateOp,      3, 0, "?pattern?...",},
@@ -326,6 +336,7 @@ int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return (*proc)(graphPtr, interp, objc, objv);
 }
+*/
 
 // Selection Widget Ops
 
@@ -487,6 +498,7 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+/*
 static Blt_OpSpec selectionOps[] =
   {
     {"anchor",   1, (void*)SelectionAnchorOp,   5, 5, "elem",},
@@ -509,6 +521,7 @@ static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return (*proc)(graphPtr, interp, objc, objv);
 }
+*/
 
 // Support
 

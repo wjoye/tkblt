@@ -30,6 +30,12 @@
 #ifndef __BltGrLegdOp_h__
 #define __BltGrLegdOp_h__
 
+extern "C" {
+#include "bltOp.h"
+}
+
+extern const BltEnsemble legendEnsemble[];
+
 extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
 	Tcl_Obj* const objv[]);
 

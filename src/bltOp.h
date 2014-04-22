@@ -30,8 +30,16 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <tcl.h>
+#ifndef __BltOp_h__
+#define __BltOp_h__
+
 #include <tk.h>
+
+typedef struct BltEnsemble {
+    const char* name;			/* subcommand name */
+    Tcl_ObjCmdProc* command; 		/* subcommand implementation, OR: */
+    const struct BltEnsemble* ensemble;	/* subcommand ensemble */
+} BltEnsemble;
 
 typedef struct {
     const char *name;		/* Name of operation */
@@ -54,7 +62,13 @@ typedef enum {
 #define BLT_OP_BINARY_SEARCH	0
 #define BLT_OP_LINEAR_SEARCH	1
 
+int BltInvokeEnsemble(const BltEnsemble* ensemble, int cmdIndex,
+		      void* clientData, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
+
 void *Blt_GetOpFromObj(Tcl_Interp* interp, int nSpecs, 
 		       Blt_OpSpec *specs, int operPos, int objc, 
 		       Tcl_Obj* const objv[], int flags);
+
+#endif
 

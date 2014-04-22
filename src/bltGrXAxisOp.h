@@ -30,6 +30,12 @@
 #ifndef __BltGrXAxisOp_h__
 #define __BltGrXAxisOp_h__
 
+extern "C" {
+#include "bltOp.h"
+}
+
+extern const BltEnsemble xaxisEnsemble[];
+
 extern int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
 			 int objc, Tcl_Obj* const objv[]);
 

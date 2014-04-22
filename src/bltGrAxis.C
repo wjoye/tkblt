@@ -43,10 +43,9 @@ extern "C" {
 
 using namespace Blt;
 
+#define AXIS_PAD_TITLE 2
 #define EXP10(x)	(pow(10.0,(x)))
 #define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
-#define AXIS_PAD_TITLE 2
-
 #define UROUND(x,u)		(Round((x)/(u))*(u))
 #define UCEIL(x,u)		(ceil((x)/(u))*(u))
 #define UFLOOR(x,u)		(floor((x)/(u))*(u))
