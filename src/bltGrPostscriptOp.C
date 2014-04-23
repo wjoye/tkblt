@@ -74,9 +74,11 @@ int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
   }
 }
 
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int CgetOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+
   if (objc != 4) {
     Tcl_WrongNumArgs(interp, 2, objv, "cget option");
     return TCL_ERROR;
@@ -94,9 +96,10 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   PageSetup* setupPtr = graphPtr->pageSetup_;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)setupPtr->ops_, 
@@ -113,9 +116,11 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return PageSetupObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
-static int OutputOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int OutputOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+
   const char *fileName = NULL;
   Tcl_Channel channel = NULL;
   if (objc > 3) {
@@ -169,6 +174,14 @@ static int OutputOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+const TkEnsemble pageSetupEnsemble[] = {
+  {"cget",      CgetOp, 0},
+  {"configure", ConfigureOp, 0},
+  {"output",    OutputOp, 0},
+  { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec psOps[] =
   {
     {"cget",      2, (void*)CgetOp,      4, 4, "option",},
@@ -190,6 +203,7 @@ int Blt_PageSetupOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
 
   return (*proc)(graphPtr, interp, objc, objv);
 }
+*/
 
 // Support
 

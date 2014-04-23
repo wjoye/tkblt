@@ -171,7 +171,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
   return AxisConfigureOp(interp, axisPtr, objc, objv);
 }
 
-const BltEnsemble xaxisEnsemble[] = {
+const TkEnsemble xaxisEnsemble[] = {
     { "cget", 		CgetOp,0 },
     { "configure", 	ConfigureOp,0 },
     { 0,0,0 }

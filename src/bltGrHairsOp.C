@@ -164,7 +164,7 @@ static int ToggleOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const BltEnsemble crosshairsEnsemble[] = {
+const TkEnsemble crosshairsEnsemble[] = {
   {"cget", 	CgetOp, 0},
   {"configure",	ConfigureOp, 0},
   {"off",       OffOp, 0},

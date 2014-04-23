@@ -338,6 +338,9 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -349,6 +352,9 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -360,6 +366,9 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -391,6 +400,9 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   if (graphPtr->createAxis(objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
@@ -444,6 +456,9 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable_);
 
   // Report only on axes
@@ -466,6 +481,9 @@ static int InvTransformOp(ClientData clientData, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -477,6 +495,9 @@ static int LimitsOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -488,6 +509,9 @@ static int MarginOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -530,6 +554,9 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -541,6 +568,9 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -552,6 +582,9 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
@@ -559,7 +592,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
   return AxisViewOp(interp, axisPtr, objc-1, objv+1);
 }
 
-const BltEnsemble axisEnsemble[] = {
+const TkEnsemble axisEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget", 	   CgetOp,0 },

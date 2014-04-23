@@ -30,11 +30,12 @@
 #ifndef __BltGrAxisOp_h__
 #define __BltGrAxisOp_h__
 
-extern "C" {
-#include "bltOp.h"
-}
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
-extern const BltEnsemble axisEnsemble[];
+extern const TkEnsemble axisEnsemble[];
 
 extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
 			    int objc, Tcl_Obj* const objv[]);

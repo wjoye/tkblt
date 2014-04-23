@@ -30,11 +30,12 @@
 #ifndef __BltGrElemOp_h__
 #define __BltGrElemOp_h__
 
-extern "C" {
-#include "bltOp.h"
-}
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
-extern const BltEnsemble elementEnsemble[];
+extern const TkEnsemble elementEnsemble[];
 
 extern int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
 			       int objc, Tcl_Obj* const objv[]);

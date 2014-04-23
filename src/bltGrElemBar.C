@@ -34,7 +34,6 @@ extern "C" {
 #include "bltGraphBar.h"
 #include "bltGrElemBar.h"
 #include "bltGrElemOption.h"
-#include "bltGrPenOp.h"
 #include "bltGrAxis.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"

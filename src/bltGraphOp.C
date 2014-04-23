@@ -177,7 +177,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 }
 
 /*
-static int XAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int XAxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -186,7 +186,7 @@ static int XAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int X2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int X2AxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -195,7 +195,7 @@ static int X2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int YAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int YAxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -204,7 +204,7 @@ static int YAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int Y2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int Y2AxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -213,7 +213,7 @@ static int Y2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int ElementOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int ElementOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -244,8 +244,8 @@ static int ElementOp(ClientData* clientData, Tcl_Interp* interp, int objc,
  *---------------------------------------------------------------------------
  */
 
-static int ExtentsOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
-		     Tcl_Obj* const objv[])
+static int ExtentsOp(ClientData clientData, Tcl_Interp* interp,
+		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
@@ -315,7 +315,7 @@ topmargin, bottommargin, plotarea, or legend", (char*)NULL);
   (((x) <= (e)->right) && ((x) >= (e)->left) && \
    ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
-static int InsideOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int InsideOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -336,7 +336,7 @@ static int InsideOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static int InvtransformOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int InvtransformOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 			  Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -365,7 +365,7 @@ static int InvtransformOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static int TransformOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
+static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		       Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -395,7 +395,7 @@ static int TransformOp(ClientData* clientData, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static const BltEnsemble graphEnsemble[] = {
+static const TkEnsemble graphEnsemble[] = {
   {"axis",        0, axisEnsemble},
   {"bar",         0, elementEnsemble},
   {"cget", 	  CgetOp, 0},

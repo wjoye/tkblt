@@ -118,6 +118,9 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Element* elemPtr;
   if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
@@ -210,6 +213,9 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<5)
+    return TCL_ERROR;
+
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   ClosestSearch* searchPtr = &gops->search;
 
@@ -278,6 +284,9 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   if (graphPtr->createElement(objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
@@ -327,6 +336,9 @@ static int ExistsOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Tcl_HashEntry *hPtr = 
     Tcl_FindHashEntry(&graphPtr->elements_.table, Tcl_GetString(objv[3]));
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
@@ -337,6 +349,9 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   char *string = Tcl_GetString(objv[3]);
   if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
     Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable_);
@@ -449,6 +464,8 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
 
   int elemObjc;
   Tcl_Obj** elemObjv;
@@ -494,6 +511,9 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Element* elemPtr;
   if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
     return TCL_ERROR;
@@ -502,7 +522,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const BltEnsemble elementEnsemble[] = {
+const TkEnsemble elementEnsemble[] = {
   {"activate",   ActivateOp, 0},
   {"bind",       BindOp, 0},
   {"cget",       CgetOp, 0},

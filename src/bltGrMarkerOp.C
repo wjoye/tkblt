@@ -46,6 +46,10 @@ using namespace Blt;
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 
 			    Tcl_Obj* objPtr, Marker** markerPtrPtr);
+
+#define FIND_ENCLOSED	 (1<<0)
+#define FIND_OVERLAPPING (1<<1)
+
 static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
 			       Marker* markerPtr,
 			       int objc, Tcl_Obj* const objv[])
@@ -149,11 +153,13 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-// Configure
-
-static int CgetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int CgetOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
@@ -169,9 +175,13 @@ static int CgetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
@@ -191,11 +201,10 @@ static int ConfigureOp(Graph* graphPtr, Tcl_Interp* interp,
     return MarkerObjConfigure(interp, graphPtr, markerPtr, objc-4, objv+4);
 }
 
-// Ops
-
-static int BindOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int BindOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc == 3) {
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_HashSearch iter;
@@ -215,9 +224,10 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->markerTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
+static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (CreateMarker(graphPtr, interp, objc, objv) != TCL_OK)
     return TCL_ERROR;
   // set in CreateMarker
@@ -226,9 +236,10 @@ static int CreateOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int DeleteOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   for (int ii=3; ii<objc; ii++) {
     Marker* markerPtr;
     if (GetMarkerFromObj(NULL, graphPtr, objv[ii], &markerPtr) != TCL_OK) {
@@ -244,9 +255,13 @@ static int DeleteOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int ExistsOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Tcl_HashEntry* hPtr =
     Tcl_FindHashEntry(&graphPtr->markers_.table, Tcl_GetString(objv[3]));
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr));
@@ -254,11 +269,13 @@ static int ExistsOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int FindOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int FindOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
-#define FIND_ENCLOSED	 (1<<0)
-#define FIND_OVERLAPPING (1<<1)
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   const char* string = Tcl_GetString(objv[3]);
   int mode;
   if (strcmp(string, "enclosed") == 0)
@@ -320,9 +337,13 @@ static int FindOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int GetOp(ClientData clientData, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   const char* string = Tcl_GetString(objv[3]);
   if (!strcmp(string, "current")) {
     Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable_);
@@ -335,9 +356,10 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int NamesOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int NamesOp(ClientData clientData, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
@@ -366,9 +388,13 @@ static int NamesOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int RelinkOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
@@ -397,9 +423,13 @@ static int RelinkOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int TypeOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int TypeOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
@@ -408,6 +438,23 @@ static int TypeOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
+const TkEnsemble markerEnsemble[] = {
+  {"bind",      BindOp, 0},
+  {"cget",      CgetOp, 0},
+  {"configure", ConfigureOp, 0},
+  {"create",    CreateOp, 0},
+  {"delete",    DeleteOp, 0},
+  {"exists",    ExistsOp, 0},
+  {"find",      FindOp, 0},
+  {"get",       GetOp, 0},
+  {"lower",     RelinkOp, 0},
+  {"names",     NamesOp, 0},
+  {"raise",     RelinkOp, 0},
+  {"type",      TypeOp, 0},
+  { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec markerOps[] =
   {
     {"bind",      1, (void*)BindOp,   3, 6, "marker sequence command",},
@@ -437,6 +484,7 @@ int Blt::MarkerOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return (*proc) (graphPtr, interp, objc, objv);
 }
+*/
 
 // Support
 

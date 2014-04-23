@@ -290,6 +290,9 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
@@ -305,7 +308,7 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const BltEnsemble legendEnsemble[] = {
+const TkEnsemble legendEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget",         CgetOp, 0},
@@ -513,7 +516,7 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const BltEnsemble selectionEnsemble[] = {
+const TkEnsemble selectionEnsemble[] = {
   {"anchor",   SelectionAnchorOp, 0},
   {"clear",    SelectionSetOp, 0},
   {"clearall", SelectionClearallOp, 0},

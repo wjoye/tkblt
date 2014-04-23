@@ -30,10 +30,11 @@
 #ifndef __BltGrXAxisOp_h__
 #define __BltGrXAxisOp_h__
 
-extern "C" {
-#include "bltOp.h"
-}
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
-extern const BltEnsemble xaxisEnsemble[];
+extern const TkEnsemble xaxisEnsemble[];
 
 #endif

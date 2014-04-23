@@ -33,10 +33,11 @@
 #ifndef __BltGrHairsOp_h__
 #define __BltGrHairsOp_h__
 
-extern "C" {
-#include "bltOp.h"
-}
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
-extern const BltEnsemble crosshairsEnsemble[];
+extern const TkEnsemble crosshairsEnsemble[];
 
 #endif

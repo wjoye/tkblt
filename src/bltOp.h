@@ -35,12 +35,6 @@
 
 #include <tk.h>
 
-typedef struct BltEnsemble {
-    const char* name;			/* subcommand name */
-    Tcl_ObjCmdProc* command; 		/* subcommand implementation, OR: */
-    const struct BltEnsemble* ensemble;	/* subcommand ensemble */
-} BltEnsemble;
-
 typedef struct {
     const char *name;		/* Name of operation */
     int minChars;		/* Minimum # characters to disambiguate */
@@ -62,7 +56,12 @@ typedef enum {
 #define BLT_OP_BINARY_SEARCH	0
 #define BLT_OP_LINEAR_SEARCH	1
 
-int BltInvokeEnsemble(const BltEnsemble* ensemble, int cmdIndex,
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
+int BltInvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
 		      void* clientData, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 

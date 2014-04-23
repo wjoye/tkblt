@@ -80,11 +80,10 @@ int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr,
   }
 }
 
-// Configure
-
-static int CgetOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int CgetOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc != 5) {
     Tcl_WrongNumArgs(interp, 3, objv, "cget option");
     return TCL_ERROR;
@@ -105,9 +104,13 @@ static int CgetOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Pen* penPtr;
   if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
@@ -127,9 +130,13 @@ static int ConfigureOp(Tcl_Interp* interp, Graph* graphPtr,
     return PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4);
 }
 
-static int CreateOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int CreateOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   if (graphPtr->createPen(Tcl_GetString(objv[3]), objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
@@ -137,9 +144,10 @@ static int CreateOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int DeleteOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   if (objc<4)
     return TCL_ERROR;
     
@@ -153,9 +161,10 @@ static int DeleteOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int NamesOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int NamesOp(ClientData clientData, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     Tcl_HashSearch iter;
@@ -185,9 +194,13 @@ static int NamesOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static int TypeOp(Tcl_Interp* interp, Graph* graphPtr, 
+static int TypeOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+  if (objc<4)
+    return TCL_ERROR;
+
   Pen* penPtr;
   if (graphPtr->getPen(objv[3], &penPtr) != TCL_OK)
     return TCL_ERROR;
@@ -196,6 +209,17 @@ static int TypeOp(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
+const TkEnsemble penEnsemble[] = {
+  {"cget",      CgetOp, 0},
+  {"configure", ConfigureOp, 0},
+  {"create",    CreateOp, 0},
+  {"delete",    DeleteOp, 0},
+  {"names",     NamesOp, 0},
+  {"type",      TypeOp, 0},
+  { 0,0,0 }
+};
+
+/*
 static Blt_OpSpec penOps[] =
   {
     {"cget", 2, (void*)CgetOp, 5, 5, "penName option",},
@@ -219,3 +243,4 @@ int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return (*proc)(interp, graphPtr, objc, objv);
 }
+*/

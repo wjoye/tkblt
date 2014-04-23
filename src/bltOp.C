@@ -33,7 +33,12 @@ extern "C" {
 #include "bltOp.h"
 };
 
-int BltInvokeEnsemble(const BltEnsemble* ensemble, int cmdIndex,
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
+int BltInvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
 		      void* clientData, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[])
 {
@@ -42,10 +47,10 @@ int BltInvokeEnsemble(const BltEnsemble* ensemble, int cmdIndex,
     if (Tcl_GetIndexFromObjStruct(interp, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
       return TCL_ERROR;
 
-    if (ensemble[index].command)
-      return ensemble[index].command(clientData, interp, objc, objv);
+    if (ensemble[index].proc)
+      return ensemble[index].proc(clientData, interp, objc, objv);
 
-    ensemble = (const BltEnsemble*)ensemble[index].ensemble;
+    ensemble = ensemble[index].subensemble;
     ++cmdIndex;
   }
 

@@ -30,9 +30,11 @@
 #ifndef __Blt_GrMarkerOp_h__
 #define __Blt_GrMarkerOp_h__
 
-namespace Blt {
-  extern int MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
-		      int objc, Tcl_Obj* const objv[]);
-};
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
+extern const TkEnsemble markerEnsemble[];
 
 #endif

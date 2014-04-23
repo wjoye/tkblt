@@ -30,11 +30,12 @@
 #ifndef __BltGrLegdOp_h__
 #define __BltGrLegdOp_h__
 
-extern "C" {
-#include "bltOp.h"
-}
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
-extern const BltEnsemble legendEnsemble[];
-extern const BltEnsemble selectionEnsemble[];
+extern const TkEnsemble legendEnsemble[];
+extern const TkEnsemble selectionEnsemble[];
 
 #endif

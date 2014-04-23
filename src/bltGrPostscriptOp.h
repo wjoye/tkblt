@@ -30,13 +30,14 @@
 #ifndef __BltGrPageSetupOp_h__
 #define __BltGrPageSetupOp_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
+extern const TkEnsemble pageSetupEnsemble[];
 
 extern int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 				 int objc, Tcl_Obj* const objv[]);
-extern int Blt_PageSetupOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			    Tcl_Obj* const objv[]);
+
 #endif

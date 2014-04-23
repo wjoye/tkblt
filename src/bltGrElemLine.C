@@ -31,7 +31,6 @@
 #include "bltSpline.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
-#include "bltGrPenOp.h"
 #include "bltGrAxis.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
