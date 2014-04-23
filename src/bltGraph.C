@@ -504,6 +504,25 @@ void Graph::extents(Region2d* regionPtr)
   regionPtr->bottom = (double)(vOffset_ + vRange_ + ops->yPad);
 }
 
+int Graph::invoke(const TkEnsemble* ensemble, int cmdIndex,
+		  int objc, Tcl_Obj* const objv[])
+{
+  while (cmdIndex < objc) {
+    int index;
+    if (Tcl_GetIndexFromObjStruct(interp_, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
+      return TCL_ERROR;
+
+    if (ensemble[index].proc)
+      return ensemble[index].proc(this, interp_, objc, objv);
+
+    ensemble = ensemble[index].subensemble;
+    ++cmdIndex;
+  }
+
+  Tcl_WrongNumArgs(interp_, cmdIndex, objv, "option ?arg ...?");
+  return TCL_ERROR;
+}
+
 void Graph::reconfigure()	
 {
   configure();

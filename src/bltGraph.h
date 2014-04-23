@@ -31,6 +31,9 @@
 #define __BltGraph_h__
 
 #include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
 
 extern "C" {
 #include "bltChain.h"
@@ -215,6 +218,7 @@ class Graph {
   void eventuallyRedraw();
   int print(const char*, Blt_Ps);
   void extents(Region2d*);
+  int invoke(const TkEnsemble*, int, int, Tcl_Obj* const []);
   void reconfigure();
 
   void enableCrosshairs();

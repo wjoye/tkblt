@@ -27,11 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
-
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
@@ -375,32 +370,13 @@ static const TkEnsemble graphEnsemble[] = {
   { 0,0,0 }
 };
 
-static int InvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
-			  void* clientData, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj* const objv[])
-{
-  while (cmdIndex < objc) {
-    int index;
-    if (Tcl_GetIndexFromObjStruct(interp, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
-      return TCL_ERROR;
-
-    if (ensemble[index].proc)
-      return ensemble[index].proc(clientData, interp, objc, objv);
-
-    ensemble = ensemble[index].subensemble;
-    ++cmdIndex;
-  }
-
-  Tcl_WrongNumArgs(interp, cmdIndex, objv, "option ?arg ...?");
-  return TCL_ERROR;
-}
-
 int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
 		     int objc, Tcl_Obj* const objv[])
 {
-  Tcl_Preserve(clientData);
-  int result = InvokeEnsemble(graphEnsemble, 1, clientData, interp, objc, objv);
-  Tcl_Release(clientData);
+  Graph* graphPtr = (Graph*)clientData;
+  Tcl_Preserve(graphPtr);
+  int result = graphPtr->invoke(graphEnsemble, 1, objc, objv);
+  Tcl_Release(graphPtr);
   return result;
 }
 
