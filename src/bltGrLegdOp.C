@@ -320,35 +320,6 @@ const TkEnsemble legendEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec legendOps[] =
-  {
-    {"activate",     1, (void*)ActivateOp,      3, 0, "?pattern?...",},
-    {"bind",         1, (void*)BindOp,          3, 6, "elem sequence command",},
-    {"cget",         2, (void*)CgetOp,          4, 4, "option",},
-    {"configure",    2, (void*)ConfigureOp,     3, 0, "?option value?...",},
-    {"curselection", 2, (void*)CurselectionOp,  3, 3, "",},
-    {"deactivate",   1, (void*)ActivateOp,      3, 0, "?pattern?...",},
-    {"focus",        1, (void*)FocusOp,         3, 4, "?elem?",},
-    {"get",          1, (void*)GetOp,           4, 4, "elem",},
-    {"selection",    1, (void*)SelectionOp,     3, 0, "args"},
-  };
-static int nLegendOps = sizeof(legendOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphLegendProc)(Graph* graphPtr, Tcl_Interp* interp, 
-			      int objc, Tcl_Obj* const objv[]);
-
-int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  GraphLegendProc *proc = (GraphLegendProc*)Blt_GetOpFromObj(interp, nLegendOps, legendOps, BLT_OP_ARG2, objc, objv,0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
-}
-*/
-
 // Selection Ops
 
 static int SelectionAnchorOp(ClientData clientData, Tcl_Interp* interp, 
@@ -526,31 +497,6 @@ const TkEnsemble selectionEnsemble[] = {
   {"toggle",   SelectionSetOp, 0},
   { 0,0,0 }
 };
-
-/*
-static Blt_OpSpec selectionOps[] =
-  {
-    {"anchor",   1, (void*)SelectionAnchorOp,   5, 5, "elem",},
-    {"clear",    5, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-    {"clearall", 6, (void*)SelectionClearallOp, 4, 4, "",},
-    {"includes", 1, (void*)SelectionIncludesOp, 5, 5, "elem",},
-    {"mark",     1, (void*)SelectionMarkOp,     5, 5, "elem",},
-    {"present",  1, (void*)SelectionPresentOp,  4, 4, "",},
-    {"set",      1, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-    {"toggle",   1, (void*)SelectionSetOp,      5, 6, "firstElem ?lastElem?",},
-  };
-static int nSelectionOps = sizeof(selectionOps) / sizeof(Blt_OpSpec);
-
-static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
-		       int objc, Tcl_Obj* const objv[])
-{
-  GraphLegendProc* proc = (GraphLegendProc*)Blt_GetOpFromObj(interp, nSelectionOps, selectionOps, BLT_OP_ARG3, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
-}
-*/
 
 // Support
 

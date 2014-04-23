@@ -177,30 +177,6 @@ const TkEnsemble pageSetupEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec psOps[] =
-  {
-    {"cget",      2, (void*)CgetOp,      4, 4, "option",},
-    {"configure", 2, (void*)ConfigureOp, 3, 0, "?option value?...",},
-    {"output",    1, (void*)OutputOp,    3, 0, "?fileName? ?option value?...",},
-  };
-
-static int nPsOps = sizeof(psOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphPsProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			  Tcl_Obj* const objv[]);
-
-int Blt_PageSetupOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-		     Tcl_Obj* const objv[])
-{
-  GraphPsProc* proc = (GraphPsProc*)Blt_GetOpFromObj(interp, nPsOps, psOps, BLT_OP_ARG2, objc, objv, 0);
-  if (!proc)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
-}
-*/
-
 // Support
 
 static void AddComments(Blt_Ps ps, const char **comments)

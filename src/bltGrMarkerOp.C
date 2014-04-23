@@ -453,38 +453,6 @@ const TkEnsemble markerEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec markerOps[] =
-  {
-    {"bind",      1, (void*)BindOp,   3, 6, "marker sequence command",},
-    {"cget",      2, (void*)CgetOp,   5, 5, "marker option",},
-    {"configure", 2, (void*)ConfigureOp, 4, 0,"marker ?option value?...",},
-    {"create",    2, (void*)CreateOp, 4, 0, "type ?option value?...",},
-    {"delete",    1, (void*)DeleteOp, 3, 0, "?marker?...",},
-    {"exists",    1, (void*)ExistsOp, 4, 4, "marker",},
-    {"find",      1, (void*)FindOp,   8, 8, "option x1 y1 x2 y2",},
-    {"get",       1, (void*)GetOp,    5, 5, "current",},
-    {"lower",     1, (void*)RelinkOp, 4, 5, "marker ?afterMarker?",},
-    {"names",     1, (void*)NamesOp,  3, 0, "?pattern?...",},
-    {"raise",     1, (void*)RelinkOp, 4, 5, "marker ?beforeMarker?",},
-    {"type",      1, (void*)TypeOp,   4, 4, "marker",},
-  };
-static int nMarkerOps = sizeof(markerOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphMarkerProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			      Tcl_Obj* const objv[]);
-
-int Blt::MarkerOp(Graph* graphPtr, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  GraphMarkerProc* proc = (GraphMarkerProc*)Blt_GetOpFromObj(interp, nMarkerOps, markerOps, BLT_OP_ARG2, objc, objv,0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc) (graphPtr, interp, objc, objv);
-}
-*/
-
 // Support
 
 static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr, 

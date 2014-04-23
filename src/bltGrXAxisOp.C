@@ -34,8 +34,6 @@
 
 using namespace Blt;
 
-static int lastMargin;
-
 static Axis* GetAxisFromCmd(ClientData clientData, Tcl_Obj* obj)
 {
   Graph* graphPtr = (Graph*)clientData;
@@ -91,34 +89,55 @@ static int InvTransformOp(ClientData clientData, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
-  return AxisInvTransformOp(axisPtr, interp, objc-1, objv+1);
+  return AxisInvTransformOp(axisPtr, interp, objc, objv);
 }
 
 static int LimitsOp(ClientData clientData, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
-  return AxisLimitsOp(axisPtr, interp, objc-1, objv+1);
+  return AxisLimitsOp(axisPtr, interp, objc, objv);
 }
 
 static int TransformOp(ClientData clientData, Tcl_Interp* interp, 
 		       int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
-  return AxisTransformOp(axisPtr, interp, objc-1, objv+1);
+  return AxisTransformOp(axisPtr, interp, objc, objv);
 }
 
 static int UseOp(ClientData clientData, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
-  Blt_Chain chain = gops->margins[lastMargin].axes;
+  int margin;
+  ClassId classId;
+  const char* name = Tcl_GetString(objv[1]);
+  if (!strcmp(name,"xaxis")) {
+    classId = CID_AXIS_X;
+    margin = (ops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  }
+  else if (!strcmp(name,"yaxis")) {
+    classId = CID_AXIS_Y;
+    margin = (ops->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
+  }
+  else if (!strcmp(name,"x2axis")) {
+    classId = CID_AXIS_X;
+    margin = (ops->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
+  }
+  else if (!strcmp(name,"y2axis")) {
+    classId = CID_AXIS_Y;
+    margin = (ops->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
+  }
+  else
+    return TCL_ERROR;
+
+  Blt_Chain chain = ops->margins[margin].axes;
+
   if (objc == 3) {
-    Tcl_Obj *listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link;
 	 link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
@@ -128,12 +147,6 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
-
-  ClassId classId;
-  if ((lastMargin == MARGIN_BOTTOM) || (lastMargin == MARGIN_TOP))
-    classId = (gops->inverted) ? CID_AXIS_Y : CID_AXIS_X;
-  else
-    classId = (gops->inverted) ? CID_AXIS_X : CID_AXIS_Y;
 
   int axisObjc;  
   Tcl_Obj **axisObjv;
@@ -190,7 +203,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
-  return AxisViewOp(axisPtr, interp, objc-1, objv+1);
+  return AxisViewOp(axisPtr, interp, objc, objv);
 }
 
 const TkEnsemble xaxisEnsemble[] = {
@@ -206,43 +219,3 @@ const TkEnsemble xaxisEnsemble[] = {
   {"view",         ViewOp, 0},
   { 0,0,0 }
 };
-
-/*
-static Blt_OpSpec axisOps[] = {
-  {"activate",     1, (void*)AxisActivateOp,     3, 3, "",},
-  {"bind",         1, (void*)BindOp,         2, 5, "sequence command",},
-  {"cget",         2, (void*)AxisCgetOp,         4, 4, "option",},
-  {"configure",    2, (void*)AxisConfigureOp,    3, 0, "?option value?...",},
-  {"deactivate",   1, (void*)AxisActivateOp,     3, 3, "",},
-  {"invtransform", 1, (void*)AxisInvTransformOp, 4, 4, "value",},
-  {"limits",       1, (void*)AxisLimitsOp,       3, 3, "",},
-  {"transform",    1, (void*)AxisTransformOp,    4, 4, "value",},
-  {"use",          1, (void*)UseOp,          3, 4, "?axisName?",},
-  {"view",         1, (void*)AxisViewOp,         3, 6, "?moveto fract? ",},
-};
-
-static int nAxisOps = sizeof(axisOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphAxisProc)(Tcl_Interp* interp, Axis* axisPtr, 
-			    int objc, Tcl_Obj* const objv[]);
-
-int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
-		  int objc, Tcl_Obj* const objv[])
-{
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  GraphAxisProc* proc = (GraphAxisProc*)Blt_GetOpFromObj(interp, nAxisOps, axisOps, BLT_OP_ARG2, objc, objv, 0);
-  if (!proc)
-    return TCL_ERROR;
-
-  if (proc == UseOp) {
-    lastMargin = margin;
-    return (*proc)(interp, (Axis*)graphPtr, objc, objv);
-  } 
-  else {
-    Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
-    if (!axisPtr)
-      return TCL_OK;
-    return (*proc)(interp, axisPtr, objc, objv);
-  }
-}
-*/

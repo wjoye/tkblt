@@ -372,43 +372,6 @@ const TkEnsemble axisEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec axisOps[] = {
-  {"activate",     1, (void*)ActivateOp,     4, 4, "axisName"},
-  {"bind",         1, (void*)BindOp,         3, 6, "axisName sequence command"},
-  {"cget",         2, (void*)CgetOp,         5, 5, "axisName option"},
-  {"configure",    2, (void*)ConfigureOp,    4, 0, "axisName ?axisName?... "
-   "?option value?..."},
-  {"create",       2, (void*)CreateOp,       4, 0, "axisName ?option value?..."},
-  {"deactivate",   3, (void*)ActivateOp,     4, 4, "axisName"},
-  {"delete",       3, (void*)DeleteOp,       3, 0, "?axisName?..."},
-  {"focus",        1, (void*)FocusOp,        3, 4, "?axisName?"},
-  {"get",          1, (void*)GetOp,          4, 4, "name"},
-  {"invtransform", 1, (void*)InvTransformOp, 5, 5, "axisName value"},
-  {"limits",       1, (void*)LimitsOp,       4, 4, "axisName"},
-  {"margin",       1, (void*)MarginOp,       4, 4, "axisName"},
-  {"names",        1, (void*)NamesOp,        3, 0, "?pattern?..."},
-  {"transform",    2, (void*)TransformOp,    5, 5, "axisName value"},
-  {"type",         2, (void*)TypeOp,       4, 4, "axisName"},
-  {"view",         1, (void*)ViewOp,         4, 7, "axisName ?moveto fract? "
-   "?scroll number what?"},
-};
-static int nAxisOps = sizeof(axisOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphAxisProc)(Tcl_Interp* interp, Graph* graphPtr, 
-			    int objc, Tcl_Obj* const objv[]);
-
-int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp, 
-		int objc, Tcl_Obj* const objv[])
-{
-  GraphAxisProc* proc = (GraphAxisProc*)Blt_GetOpFromObj(interp, nAxisOps, axisOps, BLT_OP_ARG2, objc, objv, 0);
-  if (!proc)
-    return TCL_ERROR;
-
-  return (*proc)(interp, graphPtr, objc, objv);
-}
-*/
-
 // Support
 
 double AdjustViewport(double offset, double windowSize)

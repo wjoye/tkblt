@@ -540,46 +540,6 @@ const TkEnsemble elementEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec elemOps[] = {
-  {"activate",   1, (void*)ActivateOp,   3, 0, "?elemName? ?index...?",},
-  {"bind",       1, (void*)BindOp,       3, 6, "elemName sequence command",},
-  {"cget",       2, (void*)CgetOp,       5, 5, "elemName option",},
-  {"closest",    2, (void*)ClosestOp,    5, 0, "x y ?elemName?...",},
-  {"configure",  2, (void*)ConfigureOp,  4, 0, "elemName ?option value?...",},
-  {"create",     2, (void*)CreateOp,     4, 0, "elemName ?option value?...",},
-  {"deactivate", 3, (void*)DeactivateOp, 3, 0, "?elemName?...",},
-  {"delete",     3, (void*)DeleteOp,     3, 0, "?elemName?...",},
-  {"exists",     1, (void*)ExistsOp,     4, 4, "elemName",},
-  {"get",        1, (void*)GetOp,        4, 4, "current",},
-  {"lower",      1, (void*)LowerOp,      3, 0, "?elemName?...",},
-  {"names",      1, (void*)NamesOp,      3, 0, "?pattern?...",},
-  {"raise",      1, (void*)RaiseOp,      3, 0, "?elemName?...",},
-  {"show",       1, (void*)ShowOp,       4, 4, "elemList",},
-  {"type",       1, (void*)TypeOp,       4, 4, "elemName",},
-};
-static int numElemOps = sizeof(elemOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphElementProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			       Tcl_Obj *const *objv);
-
-int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp,
-		  int objc, Tcl_Obj* const objv[])
-{
-  void *ptr = Blt_GetOpFromObj(interp, numElemOps, elemOps, BLT_OP_ARG2, 
-			       objc, objv, 0);
-  if (!ptr)
-    return TCL_ERROR;
-
-  if (ptr == CreateOp)
-    return CreateOp(graphPtr, interp, objc, objv);
-  else {
-    GraphElementProc* proc = (GraphElementProc*)ptr;
-    return (*proc)(graphPtr, interp, objc, objv);
-  }
-}
-*/
-
 // Support
 
 static Tcl_Obj *DisplayListObj(Graph* graphPtr)

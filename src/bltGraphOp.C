@@ -64,6 +64,9 @@ static Tcl_ObjCmdProc GraphObjCmd;
 static Axis* GetFirstAxis(Blt_Chain chain);
 
 #define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
+#define PointInRegion(e,x,y)			\
+  (((x) <= (e)->right) && ((x) >= (e)->left) && \
+   ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
@@ -271,10 +274,6 @@ topmargin, bottommargin, plotarea, or legend", (char*)NULL);
   return TCL_OK;
 }
 
-#define PointInRegion(e,x,y)			\
-  (((x) <= (e)->right) && ((x) >= (e)->left) && \
-   ((y) <= (e)->bottom) && ((y) >= (e)->top))
-
 static int InsideOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
@@ -405,48 +404,6 @@ int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   return result;
 }
 
-/*
-static Blt_OpSpec graphOps[] =
-  {
-    {"axis",         1, (void*)Blt_AxisOp,        2, 0, "oper ?args?",},
-    {"bar",          2, (void*)ElementOp,         2, 0, "oper ?args?",},
-    {"cget",         2, (void*)CgetOp,            3, 3, "option",},
-    {"configure",    2, (void*)ConfigureOp,       2, 0, "?option value?...",},
-    {"crosshairs",   2, (void*)Blt_CrosshairsOp,  2, 0, "oper ?args?",},
-    {"element",      2, (void*)ElementOp,         2, 0, "oper ?args?",},
-    {"extents",      2, (void*)ExtentsOp,         3, 3, "item",},
-    {"inside",       3, (void*)InsideOp,          4, 4, "winX winY",},
-    {"invtransform", 3, (void*)InvtransformOp,    4, 4, "winX winY",},
-    {"legend",       2, (void*)Blt_LegendOp,      2, 0, "oper ?args?",},
-    {"line",         2, (void*)ElementOp,         2, 0, "oper ?args?",},
-    {"marker",       2, (void*)Blt::MarkerOp,     2, 0, "oper ?args?",},
-    {"pen",          2, (void*)Blt_PenOp,         2, 0, "oper ?args?",},
-    {"postscript",   2, (void*)Blt_PageSetupOp,   2, 0, "oper ?args?",},
-    {"transform",    1, (void*)TransformOp,       4, 4, "x y",},
-    {"x2axis",       2, (void*)X2AxisOp,          2, 0, "oper ?args?",},
-    {"xaxis",        2, (void*)XAxisOp,           2, 0, "oper ?args?",},
-    {"y2axis",       2, (void*)Y2AxisOp,          2, 0, "oper ?args?",},
-    {"yaxis",        2, (void*)YAxisOp,           2, 0, "oper ?args?",},
-  };
-static int nGraphOps = sizeof(graphOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphCmdProc)(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			   Tcl_Obj* const objv[]);
-
-int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
-		     int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphCmdProc* proc = (GraphCmdProc*)Blt_GetOpFromObj(interp, nGraphOps, graphOps, BLT_OP_ARG1, objc, objv, 0);
-  if (!proc)
-    return TCL_ERROR;
-
-  Tcl_Preserve(graphPtr);
-  int result = (*proc)(graphPtr, interp, objc, objv);
-  Tcl_Release(graphPtr);
-  return result;
-}
-*/
 
 // called by Tcl_DeleteCommand
 void GraphInstCmdDeleteProc(ClientData clientData)

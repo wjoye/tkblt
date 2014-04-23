@@ -168,29 +168,3 @@ const TkEnsemble crosshairsEnsemble[] = {
   {"toggle",    ToggleOp, 0},
   { 0,0,0 }
 };
-
-/*
-static Blt_OpSpec xhairOps[] =
-  {
-    {"cget", 2, (void*)CgetOp, 4, 4, "option",},
-    {"configure", 2, (void*)ConfigureOp, 3, 0, "?options...?",},
-    {"off", 2, (void*)OffOp, 3, 3, "",},
-    {"on", 2, (void*)OnOp, 3, 3, "",},
-    {"toggle", 1, (void*)ToggleOp, 3, 3, "",},
-  };
-static int nXhairOps = sizeof(xhairOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphCrosshairProc)(Graph* graphPtr, Tcl_Interp* interp, 
-				 int objc, Tcl_Obj* const objv[]);
-
-int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp,
-		     int objc, Tcl_Obj* const objv[])
-{
-  GraphCrosshairProc* proc = (GraphCrosshairProc*)Blt_GetOpFromObj(interp, nXhairOps, xhairOps, BLT_OP_ARG2, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(graphPtr, interp, objc, objv);
-}
-*/
-

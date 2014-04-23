@@ -216,28 +216,3 @@ const TkEnsemble penEnsemble[] = {
   { 0,0,0 }
 };
 
-/*
-static Blt_OpSpec penOps[] =
-  {
-    {"cget", 2, (void*)CgetOp, 5, 5, "penName option",},
-    {"configure", 2, (void*)ConfigureOp, 4, 0, "penName ?penName?... ?option value?...",},
-    {"create", 2, (void*)CreateOp, 4, 0, "penName ?option value?...",},
-    {"delete", 2, (void*)DeleteOp, 3, 0, "?penName?...",},
-    {"names", 1, (void*)NamesOp, 3, 0, "?pattern?...",},
-    {"type", 1, (void*)TypeOp, 4, 4, "penName",},
-  };
-static int nPenOps = sizeof(penOps) / sizeof(Blt_OpSpec);
-
-typedef int (GraphPenProc)(Tcl_Interp* interp, Graph* graphPtr, int objc, 
-			   Tcl_Obj* const objv[]);
-
-int Blt_PenOp(Graph* graphPtr, Tcl_Interp* interp, 
-	      int objc, Tcl_Obj* const objv[])
-{
-  GraphPenProc *proc = (GraphPenProc*)Blt_GetOpFromObj(interp, nPenOps, penOps, BLT_OP_ARG2, objc, objv, 0);
-  if (proc == NULL)
-    return TCL_ERROR;
-
-  return (*proc)(interp, graphPtr, objc, objv);
-}
-*/
