@@ -56,51 +56,13 @@ using namespace Blt;
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
+
 static Axis* GetFirstAxis(Blt_Chain chain);
 
 #define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define PointInRegion(e,x,y)			\
   (((x) <= (e)->right) && ((x) >= (e)->left) && \
    ((y) <= (e)->bottom) && ((y) >= (e)->top))
-
-int Blt_GraphCmdInitProc(Tcl_Interp* interp)
-{
-  static Blt_InitCmdSpec graphSpec = 
-    {"graph", GraphObjCmd, NULL, NULL};
-  static Blt_InitCmdSpec barchartSpec = 
-    {"barchart", BarchartObjCmd, NULL, NULL};
-
-  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
-    return TCL_ERROR;
-  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-		       Tcl_Obj* const objv[])
-{
-  if (objc < 2) {
-    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
-    return TCL_ERROR;
-  }
-
-  Graph* graphPtr = new LineGraph(clientData, interp, objc, objv);
-  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
-}
-
-static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
-			  Tcl_Obj* const objv[])
-{
-  if (objc < 2) {
-    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
-    return TCL_ERROR;
-  }
-
-  Graph* graphPtr = new BarGraph(clientData, interp, objc, objv);
-  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
-}
 
 int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
@@ -370,6 +332,58 @@ static const TkEnsemble graphEnsemble[] = {
   { 0,0,0 }
 };
 
+// Support
+
+static Axis* GetFirstAxis(Blt_Chain chain)
+{
+  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
+  if (!link)
+    return NULL;
+
+  return (Axis*)Blt_Chain_GetValue(link);
+}
+
+// Tk Interface
+
+int Blt_GraphCmdInitProc(Tcl_Interp* interp)
+{
+  static Blt_InitCmdSpec graphSpec = 
+    {"graph", GraphObjCmd, NULL, NULL};
+  static Blt_InitCmdSpec barchartSpec = 
+    {"barchart", BarchartObjCmd, NULL, NULL};
+
+  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
+    return TCL_ERROR;
+  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+
+static int GraphObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+		       Tcl_Obj* const objv[])
+{
+  if (objc < 2) {
+    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
+    return TCL_ERROR;
+  }
+
+  Graph* graphPtr = new LineGraph(clientData, interp, objc, objv);
+  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
+}
+
+static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc, 
+			  Tcl_Obj* const objv[])
+{
+  if (objc < 2) {
+    Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
+    return TCL_ERROR;
+  }
+
+  Graph* graphPtr = new BarGraph(clientData, interp, objc, objv);
+  return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
+}
+
 int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
 		     int objc, Tcl_Obj* const objv[])
 {
@@ -379,7 +393,6 @@ int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp,
   Tcl_Release(graphPtr);
   return result;
 }
-
 
 // called by Tcl_DeleteCommand
 void GraphInstCmdDeleteProc(ClientData clientData)
@@ -437,14 +450,5 @@ void DestroyGraph(char* dataPtr)
 {
   Graph* graphPtr = (Graph*)dataPtr;
   delete graphPtr;
-}
-
-static Axis* GetFirstAxis(Blt_Chain chain)
-{
-  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
-  if (!link)
-    return NULL;
-
-  return (Axis*)Blt_Chain_GetValue(link);
 }
 

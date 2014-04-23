@@ -35,9 +35,7 @@
 extern int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 			     int objc, Tcl_Obj* const objv[]);
 
-extern int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
-			    int objc, Tcl_Obj* const objv[]);
-
+extern Tcl_ObjCmdProc GraphInstCmdProc;
 extern Tcl_CmdDeleteProc GraphInstCmdDeleteProc;
 extern Tk_EventProc GraphEventProc;
 extern Tcl_IdleProc DisplayGraph;
