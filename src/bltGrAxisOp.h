@@ -59,6 +59,4 @@ extern int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp,
 extern int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 
-extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
-
 #endif

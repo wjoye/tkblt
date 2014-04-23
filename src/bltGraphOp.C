@@ -61,6 +61,7 @@ using namespace Blt;
 
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
+static Axis* GetFirstAxis(Blt_Chain chain);
 
 #define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 
@@ -307,13 +308,11 @@ static int InvtransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
   if (graphPtr->flags & RESET_AXES)
     graphPtr->resetAxes();
 
-  /* Perform the reverse transformation, converting from window coordinates
-   * to graph data coordinates.  Note that the point is always mapped to the
-   * bottom and left axes (which may not be what the user wants).  */
-
-  /*  Pick the first pair of axes */
-  Axis* xAxis = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
-  Axis* yAxis = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
+  // Perform the reverse transformation, converting from window coordinates
+  // to graph data coordinates.  Note that the point is always mapped to the
+  // bottom and left axes (which may not be what the user wants)
+  Axis* xAxis = GetFirstAxis(graphPtr->axisChain_[0]);
+  Axis* yAxis = GetFirstAxis(graphPtr->axisChain_[1]);
   Point2d point = graphPtr->invMap2D(x, y, xAxis, yAxis);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
@@ -341,8 +340,8 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
    * the points are always mapped onto the bottom and left axes (which may
    * not be the what the user wants).
    */
-  Axis* xAxis = Blt_GetFirstAxis(graphPtr->axisChain_[0]);
-  Axis* yAxis = Blt_GetFirstAxis(graphPtr->axisChain_[1]);
+  Axis* xAxis = GetFirstAxis(graphPtr->axisChain_[0]);
+  Axis* yAxis = GetFirstAxis(graphPtr->axisChain_[1]);
 
   Point2d point = graphPtr->map2D(x, y, xAxis, yAxis);
 
@@ -506,3 +505,13 @@ void DestroyGraph(char* dataPtr)
   Graph* graphPtr = (Graph*)dataPtr;
   delete graphPtr;
 }
+
+static Axis* GetFirstAxis(Blt_Chain chain)
+{
+  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
+  if (!link)
+    return NULL;
+
+  return (Axis*)Blt_Chain_GetValue(link);
+}
+

@@ -54,7 +54,8 @@ static Axis* GetAxisFromCmd(ClientData clientData, Tcl_Obj* obj)
   else
     return NULL;
 
-  return Blt_GetFirstAxis(ops->margins[margin].axes);
+  Blt_ChainLink link = Blt_Chain_FirstLink(ops->margins[margin].axes);
+  return (Axis*)Blt_Chain_GetValue(link);
 }
 
 static int CgetOp(ClientData clientData, Tcl_Interp* interp,

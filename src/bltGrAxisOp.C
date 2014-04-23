@@ -411,15 +411,6 @@ int Blt_AxisOp(Graph* graphPtr, Tcl_Interp* interp,
 
 // Support
 
-Axis *Blt_GetFirstAxis(Blt_Chain chain)
-{
-  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
-  if (!link)
-    return NULL;
-
-  return (Axis*)Blt_Chain_GetValue(link);
-}
-
 double AdjustViewport(double offset, double windowSize)
 {
   // Canvas-style scrolling allows the world to be scrolled within the window.
