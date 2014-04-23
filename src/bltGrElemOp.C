@@ -29,7 +29,6 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltOp.h"
 #include "bltBind.h"
 };
 
@@ -47,7 +46,7 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
 		    Tcl_Obj *objPtr, int *indexPtr);
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 
-int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
+int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
 			int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = elemPtr->graphPtr_;
@@ -137,7 +136,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return ElementObjConfigure(interp, elemPtr, objc-4, objv+4);
+    return ElementObjConfigure(elemPtr, interp, objc-4, objv+4);
 }
 
 static int ActivateOp(ClientData clientData, Tcl_Interp* interp,

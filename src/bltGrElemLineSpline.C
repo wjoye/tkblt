@@ -35,7 +35,6 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltOp.h"
 };
 
 #include "bltSpline.h"

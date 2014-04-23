@@ -56,15 +56,6 @@ typedef enum {
 #define BLT_OP_BINARY_SEARCH	0
 #define BLT_OP_LINEAR_SEARCH	1
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
-
-int BltInvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
-		      void* clientData, Tcl_Interp* interp, 
-		      int objc, Tcl_Obj* const objv[]);
-
 void *Blt_GetOpFromObj(Tcl_Interp* interp, int nSpecs, 
 		       Blt_OpSpec *specs, int operPos, int objc, 
 		       Tcl_Obj* const objv[], int flags);

@@ -969,7 +969,7 @@ int Graph::createAxis(int objc, Tcl_Obj* const objv[])
 
   Tcl_SetHashValue(hPtr, axisPtr);
 
-  if ((Tk_InitOptions(interp_, (char*)axisPtr->ops(), axisPtr->optionTable(), tkwin_) != TCL_OK) || (AxisObjConfigure(interp_, axisPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(interp_, (char*)axisPtr->ops(), axisPtr->optionTable(), tkwin_) != TCL_OK) || (AxisObjConfigure(axisPtr, interp_, objc-4, objv+4) != TCL_OK)) {
     delete axisPtr;
     return TCL_ERROR;
   }

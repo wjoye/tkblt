@@ -27,10 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltOp.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrPageSetup.h"
 #include "bltGrPageSetupOp.h"
@@ -38,7 +34,7 @@ extern "C" {
 
 using namespace Blt;
 
-int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+int PageSetupObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
   PageSetup* setupPtr = graphPtr->pageSetup_;
@@ -113,7 +109,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return PageSetupObjConfigure(interp, graphPtr, objc-3, objv+3);
+    return PageSetupObjConfigure(graphPtr, interp, objc-3, objv+3);
 }
 
 static int OutputOp(ClientData clientData, Tcl_Interp* interp, 
@@ -139,7 +135,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
 
   PostScript *psPtr = Blt_Ps_Create(graphPtr->interp_, graphPtr->pageSetup_);
   
-  if (PageSetupObjConfigure(interp, graphPtr, objc-3, objv+3) != TCL_OK) {
+  if (PageSetupObjConfigure(graphPtr, interp, objc-3, objv+3) != TCL_OK) {
     if (channel)
       Tcl_Close(interp, channel);
     Blt_Ps_Free(psPtr);

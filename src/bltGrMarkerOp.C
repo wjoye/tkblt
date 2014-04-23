@@ -29,7 +29,6 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltOp.h"
 #include "bltBind.h"
 };
 
@@ -50,8 +49,8 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
 #define FIND_ENCLOSED	 (1<<0)
 #define FIND_OVERLAPPING (1<<1)
 
-static int MarkerObjConfigure( Tcl_Interp* interp, Graph* graphPtr,
-			       Marker* markerPtr,
+static int MarkerObjConfigure( Graph* graphPtr,Marker* markerPtr,
+			       Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
@@ -141,7 +140,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   Tcl_SetHashValue(hPtr, markerPtr);
 
-  if ((Tk_InitOptions(graphPtr->interp_, (char*)markerPtr->ops(), markerPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (MarkerObjConfigure(interp, graphPtr, markerPtr, objc-offset, objv+offset) != TCL_OK)) {
+  if ((Tk_InitOptions(graphPtr->interp_, (char*)markerPtr->ops(), markerPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (MarkerObjConfigure(graphPtr, markerPtr, interp, objc-offset, objv+offset) != TCL_OK)) {
     delete markerPtr;
     return TCL_ERROR;
   }
@@ -198,7 +197,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return MarkerObjConfigure(interp, graphPtr, markerPtr, objc-4, objv+4);
+    return MarkerObjConfigure(graphPtr, markerPtr, interp, objc-4, objv+4);
 }
 
 static int BindOp(ClientData clientData, Tcl_Interp* interp, 

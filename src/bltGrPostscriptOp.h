@@ -37,7 +37,7 @@
 
 extern const TkEnsemble pageSetupEnsemble[];
 
-extern int PageSetupObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+extern int PageSetupObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
 				 int objc, Tcl_Obj* const objv[]);
 
 #endif

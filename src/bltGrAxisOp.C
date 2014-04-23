@@ -29,7 +29,6 @@
 
 extern "C" {
 #include "bltInt.h"
-#include "bltOp.h"
 #include "bltBind.h"
 };
 
@@ -52,7 +51,7 @@ static double Clamp(double x)
   return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
 }
 
-int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
+int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = axisPtr->graphPtr_;
@@ -95,245 +94,6 @@ int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
   }
 }
 
-// Common Ops
-
-int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
-	       int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (objc != 4) {
-    Tcl_WrongNumArgs(interp, 2, objv, "cget option");
-    return TCL_ERROR;
-  }
-
-  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops(),
-				      axisPtr->optionTable(),
-				      objv[3], graphPtr->tkwin_);
-  if (!objPtr)
-    return TCL_ERROR;
-  else
-    Tcl_SetObjResult(interp, objPtr);
-  return TCL_OK;
-}
-
-int AxisConfigureOp(Tcl_Interp* interp, Axis* axisPtr, 
-		    int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (objc <= 4) {
-    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)axisPtr->ops(), 
-				       axisPtr->optionTable(), 
-				       (objc == 4) ? objv[3] : NULL, 
-				       graphPtr->tkwin_);
-    if (!objPtr)
-      return TCL_ERROR;
-    else
-      Tcl_SetObjResult(interp, objPtr);
-    return TCL_OK;
-  } 
-  else
-    return AxisObjConfigure(interp, axisPtr, objc-3, objv+3);
-}
-
-int AxisActivateOp(Tcl_Interp* interp, Axis* axisPtr, 
-		   int objc, Tcl_Obj* const objv[])
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-  const char *string;
-
-  string = Tcl_GetString(objv[2]);
-  if (string[0] == 'a')
-    axisPtr->flags |= ACTIVE;
-  else
-    axisPtr->flags &= ~ACTIVE;
-
-  if (!ops->hide && axisPtr->use_) {
-    graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
-    graphPtr->eventuallyRedraw();
-  }
-
-  return TCL_OK;
-}
-
-int AxisInvTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-		       int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (graphPtr->flags & RESET_AXES)
-    graphPtr->resetAxes();
-
-  int sy;
-  if (Tcl_GetIntFromObj(interp, objv[3], &sy) != TCL_OK)
-    return TCL_ERROR;
-
-  // Is the axis vertical or horizontal?
-  // Check the site where the axis was positioned.  If the axis is
-  // virtual, all we have to go on is how it was mapped to an
-  // element (using either -mapx or -mapy options).  
-  double y = axisPtr->isHorizontal() ? 
-    axisPtr->invHMap(sy) : axisPtr->invVMap(sy);
-
-  Tcl_SetDoubleObj(Tcl_GetObjResult(interp), y);
-  return TCL_OK;
-}
-
-int AxisLimitsOp(Tcl_Interp* interp, Axis* axisPtr, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (graphPtr->flags & RESET_AXES)
-    graphPtr->resetAxes();
-
-  double min, max;
-  if (ops->logScale) {
-    min = EXP10(axisPtr->axisRange_.min);
-    max = EXP10(axisPtr->axisRange_.max);
-  } 
-  else {
-    min = axisPtr->axisRange_.min;
-    max = axisPtr->axisRange_.max;
-  }
-
-  Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(min));
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(max));
-
-  Tcl_SetObjResult(interp, listObjPtr);
-  return TCL_OK;
-}
-
-int AxisMarginOp(Tcl_Interp* interp, Axis* axisPtr, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  const char *marginName = "";
-  if (axisPtr->use_)
-    marginName = axisNames[axisPtr->margin_].name;
-
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), marginName, -1);
-  return TCL_OK;
-}
-
-int AxisTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-		    int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = axisPtr->graphPtr_;
-
-  if (graphPtr->flags & RESET_AXES)
-    graphPtr->resetAxes();
-
-  double x;
-  if (Blt_ExprDoubleFromObj(interp, objv[3], &x) != TCL_OK)
-    return TCL_ERROR;
-
-  if (axisPtr->isHorizontal())
-    x = axisPtr->hMap(x);
-  else
-    x = axisPtr->vMap(x);
-
-  Tcl_SetIntObj(Tcl_GetObjResult(interp), (int)x);
-  return TCL_OK;
-}
-
-int AxisTypeOp(Tcl_Interp* interp, Axis* axisPtr, 
-	       int objc, Tcl_Obj* const objv[])
-{
-  const char *typeName;
-
-  typeName = "";
-  if (axisPtr->use_) {
-    if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
-      typeName = "x";
-    else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
-      typeName = "y";
-  }
-  Tcl_SetStringObj(Tcl_GetObjResult(interp), typeName, -1);
-  return TCL_OK;
-}
-
-int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr, 
-	       int objc, Tcl_Obj* const objv[])
-{
-  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-  Graph* graphPtr = axisPtr->graphPtr_;
-  double worldMin = axisPtr->valueRange_.min;
-  double worldMax = axisPtr->valueRange_.max;
-  /* Override data dimensions with user-selected limits. */
-  if (!isnan(axisPtr->scrollMin_))
-    worldMin = axisPtr->scrollMin_;
-
-  if (!isnan(axisPtr->scrollMax_))
-    worldMax = axisPtr->scrollMax_;
-
-  double viewMin = axisPtr->min_;
-  double viewMax = axisPtr->max_;
-  /* Bound the view within scroll region. */ 
-  if (viewMin < worldMin)
-    viewMin = worldMin;
-
-  if (viewMax > worldMax)
-    viewMax = worldMax;
-
-  if (ops->logScale) {
-    worldMin = log10(worldMin);
-    worldMax = log10(worldMax);
-    viewMin  = log10(viewMin);
-    viewMax  = log10(viewMax);
-  }
-  double worldWidth = worldMax - worldMin;
-  double viewWidth  = viewMax - viewMin;
-
-  /* Unlike horizontal axes, vertical axis values run opposite of the
-   * scrollbar first/last values.  So instead of pushing the axis minimum
-   * around, we move the maximum instead. */
-  double axisOffset;
-  double axisScale;
-  if (axisPtr->isHorizontal() != ops->descending) {
-    axisOffset  = viewMin - worldMin;
-    axisScale = graphPtr->hScale_;
-  } else {
-    axisOffset  = worldMax - viewMax;
-    axisScale = graphPtr->vScale_;
-  }
-  if (objc == 4) {
-    double first = Clamp(axisOffset / worldWidth);
-    double last = Clamp((axisOffset + viewWidth) / worldWidth);
-    Tcl_Obj *listObjPtr = Tcl_NewListObj(0, NULL);
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(first));
-    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(last));
-    Tcl_SetObjResult(interp, listObjPtr);
-    return TCL_OK;
-  }
-  double fract = axisOffset / worldWidth;
-  if (GetAxisScrollInfo(interp, objc, objv, &fract, viewWidth / worldWidth, 
-			ops->scrollUnits, axisScale) != TCL_OK)
-    return TCL_ERROR;
-
-  if (axisPtr->isHorizontal() != ops->descending) {
-    ops->reqMin = (fract * worldWidth) + worldMin;
-    ops->reqMax = ops->reqMin + viewWidth;
-  }
-  else {
-    ops->reqMax = worldMax - (fract * worldWidth);
-    ops->reqMin = ops->reqMax - viewWidth;
-  }
-  if (ops->logScale) {
-    ops->reqMin = EXP10(ops->reqMin);
-    ops->reqMax = EXP10(ops->reqMax);
-  }
-  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
-  graphPtr->eventuallyRedraw();
-
-  return TCL_OK;
-}
-
-// Axis
-
 static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
@@ -345,7 +105,7 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisCgetOp(interp, axisPtr, objc-1, objv+1);
+  return AxisCgetOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
@@ -359,7 +119,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisConfigureOp(interp, axisPtr, objc-1, objv+1);
+  return AxisConfigureOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int ActivateOp(ClientData clientData, Tcl_Interp* interp, 
@@ -373,7 +133,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisActivateOp(interp, axisPtr, objc, objv);
+  return AxisActivateOp(axisPtr, interp, objc, objv);
 }
 
 static int BindOp(ClientData clientData, Tcl_Interp* interp,
@@ -488,7 +248,7 @@ static int InvTransformOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisInvTransformOp(interp, axisPtr, objc-1, objv+1);
+  return AxisInvTransformOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int LimitsOp(ClientData clientData, Tcl_Interp* interp, 
@@ -502,7 +262,7 @@ static int LimitsOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisLimitsOp(interp, axisPtr, objc-1, objv+1);
+  return AxisLimitsOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int MarginOp(ClientData clientData, Tcl_Interp* interp, 
@@ -516,7 +276,7 @@ static int MarginOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisMarginOp(interp, axisPtr, objc-1, objv+1);
+  return AxisMarginOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int NamesOp(ClientData clientData, Tcl_Interp* interp, 
@@ -561,7 +321,7 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisTransformOp(interp, axisPtr, objc-1, objv+1);
+  return AxisTransformOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int TypeOp(ClientData clientData, Tcl_Interp* interp, 
@@ -575,7 +335,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisTypeOp(interp, axisPtr, objc-1, objv+1);
+  return AxisTypeOp(axisPtr, interp, objc-1, objv+1);
 }
 
 static int ViewOp(ClientData clientData, Tcl_Interp* interp, 
@@ -589,7 +349,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
     return TCL_ERROR;
 
-  return AxisViewOp(interp, axisPtr, objc-1, objv+1);
+  return AxisViewOp(axisPtr, interp, objc-1, objv+1);
 }
 
 const TkEnsemble axisEnsemble[] = {
@@ -740,6 +500,243 @@ static int GetAxisScrollInfo(Tcl_Interp* interp,
     /* CHECK THIS: return TCL_OK; */
   }
   *offsetPtr = AdjustViewport(offset, windowSize);
+  return TCL_OK;
+}
+
+// Common Ops
+
+int AxisCgetOp(Axis* axisPtr, Tcl_Interp* interp, 
+	       int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = axisPtr->graphPtr_;
+
+  if (objc != 4) {
+    Tcl_WrongNumArgs(interp, 2, objv, "cget option");
+    return TCL_ERROR;
+  }
+
+  Tcl_Obj* objPtr = Tk_GetOptionValue(interp, (char*)axisPtr->ops(),
+				      axisPtr->optionTable(),
+				      objv[3], graphPtr->tkwin_);
+  if (!objPtr)
+    return TCL_ERROR;
+  else
+    Tcl_SetObjResult(interp, objPtr);
+  return TCL_OK;
+}
+
+int AxisConfigureOp(Axis* axisPtr, Tcl_Interp* interp, 
+		    int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = axisPtr->graphPtr_;
+
+  if (objc <= 4) {
+    Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)axisPtr->ops(), 
+				       axisPtr->optionTable(), 
+				       (objc == 4) ? objv[3] : NULL, 
+				       graphPtr->tkwin_);
+    if (!objPtr)
+      return TCL_ERROR;
+    else
+      Tcl_SetObjResult(interp, objPtr);
+    return TCL_OK;
+  } 
+  else
+    return AxisObjConfigure(axisPtr, interp, objc-3, objv+3);
+}
+
+int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp, 
+		   int objc, Tcl_Obj* const objv[])
+{
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
+  const char *string;
+
+  string = Tcl_GetString(objv[2]);
+  if (string[0] == 'a')
+    axisPtr->flags |= ACTIVE;
+  else
+    axisPtr->flags &= ~ACTIVE;
+
+  if (!ops->hide && axisPtr->use_) {
+    graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
+    graphPtr->eventuallyRedraw();
+  }
+
+  return TCL_OK;
+}
+
+int AxisInvTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+		       int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = axisPtr->graphPtr_;
+
+  if (graphPtr->flags & RESET_AXES)
+    graphPtr->resetAxes();
+
+  int sy;
+  if (Tcl_GetIntFromObj(interp, objv[3], &sy) != TCL_OK)
+    return TCL_ERROR;
+
+  // Is the axis vertical or horizontal?
+  // Check the site where the axis was positioned.  If the axis is
+  // virtual, all we have to go on is how it was mapped to an
+  // element (using either -mapx or -mapy options).  
+  double y = axisPtr->isHorizontal() ? 
+    axisPtr->invHMap(sy) : axisPtr->invVMap(sy);
+
+  Tcl_SetDoubleObj(Tcl_GetObjResult(interp), y);
+  return TCL_OK;
+}
+
+int AxisLimitsOp(Axis* axisPtr, Tcl_Interp* interp, 
+		 int objc, Tcl_Obj* const objv[])
+{
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
+
+  if (graphPtr->flags & RESET_AXES)
+    graphPtr->resetAxes();
+
+  double min, max;
+  if (ops->logScale) {
+    min = EXP10(axisPtr->axisRange_.min);
+    max = EXP10(axisPtr->axisRange_.max);
+  } 
+  else {
+    min = axisPtr->axisRange_.min;
+    max = axisPtr->axisRange_.max;
+  }
+
+  Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(min));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(max));
+
+  Tcl_SetObjResult(interp, listObjPtr);
+  return TCL_OK;
+}
+
+int AxisMarginOp(Axis* axisPtr, Tcl_Interp* interp, 
+		 int objc, Tcl_Obj* const objv[])
+{
+  const char *marginName = "";
+  if (axisPtr->use_)
+    marginName = axisNames[axisPtr->margin_].name;
+
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), marginName, -1);
+  return TCL_OK;
+}
+
+int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+		    int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = axisPtr->graphPtr_;
+
+  if (graphPtr->flags & RESET_AXES)
+    graphPtr->resetAxes();
+
+  double x;
+  if (Blt_ExprDoubleFromObj(interp, objv[3], &x) != TCL_OK)
+    return TCL_ERROR;
+
+  if (axisPtr->isHorizontal())
+    x = axisPtr->hMap(x);
+  else
+    x = axisPtr->vMap(x);
+
+  Tcl_SetIntObj(Tcl_GetObjResult(interp), (int)x);
+  return TCL_OK;
+}
+
+int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp, 
+	       int objc, Tcl_Obj* const objv[])
+{
+  const char *typeName;
+
+  typeName = "";
+  if (axisPtr->use_) {
+    if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
+      typeName = "x";
+    else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
+      typeName = "y";
+  }
+  Tcl_SetStringObj(Tcl_GetObjResult(interp), typeName, -1);
+  return TCL_OK;
+}
+
+int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp, 
+	       int objc, Tcl_Obj* const objv[])
+{
+  AxisOptions* ops = (AxisOptions*)axisPtr->ops();
+  Graph* graphPtr = axisPtr->graphPtr_;
+  double worldMin = axisPtr->valueRange_.min;
+  double worldMax = axisPtr->valueRange_.max;
+  /* Override data dimensions with user-selected limits. */
+  if (!isnan(axisPtr->scrollMin_))
+    worldMin = axisPtr->scrollMin_;
+
+  if (!isnan(axisPtr->scrollMax_))
+    worldMax = axisPtr->scrollMax_;
+
+  double viewMin = axisPtr->min_;
+  double viewMax = axisPtr->max_;
+  /* Bound the view within scroll region. */ 
+  if (viewMin < worldMin)
+    viewMin = worldMin;
+
+  if (viewMax > worldMax)
+    viewMax = worldMax;
+
+  if (ops->logScale) {
+    worldMin = log10(worldMin);
+    worldMax = log10(worldMax);
+    viewMin  = log10(viewMin);
+    viewMax  = log10(viewMax);
+  }
+  double worldWidth = worldMax - worldMin;
+  double viewWidth  = viewMax - viewMin;
+
+  /* Unlike horizontal axes, vertical axis values run opposite of the
+   * scrollbar first/last values.  So instead of pushing the axis minimum
+   * around, we move the maximum instead. */
+  double axisOffset;
+  double axisScale;
+  if (axisPtr->isHorizontal() != ops->descending) {
+    axisOffset  = viewMin - worldMin;
+    axisScale = graphPtr->hScale_;
+  } else {
+    axisOffset  = worldMax - viewMax;
+    axisScale = graphPtr->vScale_;
+  }
+  if (objc == 4) {
+    double first = Clamp(axisOffset / worldWidth);
+    double last = Clamp((axisOffset + viewWidth) / worldWidth);
+    Tcl_Obj *listObjPtr = Tcl_NewListObj(0, NULL);
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(first));
+    Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewDoubleObj(last));
+    Tcl_SetObjResult(interp, listObjPtr);
+    return TCL_OK;
+  }
+  double fract = axisOffset / worldWidth;
+  if (GetAxisScrollInfo(interp, objc, objv, &fract, viewWidth / worldWidth, 
+			ops->scrollUnits, axisScale) != TCL_OK)
+    return TCL_ERROR;
+
+  if (axisPtr->isHorizontal() != ops->descending) {
+    ops->reqMin = (fract * worldWidth) + worldMin;
+    ops->reqMax = ops->reqMin + viewWidth;
+  }
+  else {
+    ops->reqMax = worldMax - (fract * worldWidth);
+    ops->reqMin = ops->reqMax - viewWidth;
+  }
+  if (ops->logScale) {
+    ops->reqMin = EXP10(ops->reqMin);
+    ops->reqMax = EXP10(ops->reqMax);
+  }
+  graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
+  graphPtr->eventuallyRedraw();
+
   return TCL_OK;
 }
 

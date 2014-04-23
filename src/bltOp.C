@@ -33,31 +33,6 @@ extern "C" {
 #include "bltOp.h"
 };
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
-
-int BltInvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
-		      void* clientData, Tcl_Interp* interp, 
-		      int objc, Tcl_Obj* const objv[])
-{
-  while (cmdIndex < objc) {
-    int index;
-    if (Tcl_GetIndexFromObjStruct(interp, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
-      return TCL_ERROR;
-
-    if (ensemble[index].proc)
-      return ensemble[index].proc(clientData, interp, objc, objv);
-
-    ensemble = ensemble[index].subensemble;
-    ++cmdIndex;
-  }
-
-  Tcl_WrongNumArgs(interp, cmdIndex, objv, "option ?arg ...?");
-  return TCL_ERROR;
-}
-
 static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, 
 			  const char *string, int length)
 {

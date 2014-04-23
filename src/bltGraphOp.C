@@ -27,10 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
-#include "bltOp.h"
 }
 
 #include "bltGraphLine.h"
@@ -99,7 +103,7 @@ static int BarchartObjCmd(ClientData clientData, Tcl_Interp* interp, int objc,
   return graphPtr->valid_ ? TCL_OK : TCL_ERROR;
 }
 
-int GraphObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
@@ -173,53 +177,8 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return GraphObjConfigure(interp, graphPtr, objc-2, objv+2);
+    return GraphObjConfigure(graphPtr, interp, objc-2, objv+2);
 }
-
-/*
-static int XAxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
-		   Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  int margin = (ops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
-  return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
-}
-
-static int X2AxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
-		    Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  int margin = (ops->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
-  return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
-}
-
-static int YAxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
-		   Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  int margin = (ops->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
-  return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
-}
-
-static int Y2AxisOp(ClientData clientData, Tcl_Interp* interp, int objc, 
-		    Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-  int margin = (ops->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
-  return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
-}
-
-static int ElementOp(ClientData clientData, Tcl_Interp* interp, int objc, 
-		     Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  return Blt_ElementOp(graphPtr, interp, objc, objv);
-}
-*/
 
 /*
  *---------------------------------------------------------------------------
@@ -418,11 +377,31 @@ static const TkEnsemble graphEnsemble[] = {
   { 0,0,0 }
 };
 
+static int InvokeEnsemble(const TkEnsemble* ensemble, int cmdIndex,
+			  void* clientData, Tcl_Interp* interp, 
+			  int objc, Tcl_Obj* const objv[])
+{
+  while (cmdIndex < objc) {
+    int index;
+    if (Tcl_GetIndexFromObjStruct(interp, objv[cmdIndex], ensemble, sizeof(ensemble[0]), "command", 0, &index) != TCL_OK)
+      return TCL_ERROR;
+
+    if (ensemble[index].proc)
+      return ensemble[index].proc(clientData, interp, objc, objv);
+
+    ensemble = ensemble[index].subensemble;
+    ++cmdIndex;
+  }
+
+  Tcl_WrongNumArgs(interp, cmdIndex, objv, "option ?arg ...?");
+  return TCL_ERROR;
+}
+
 int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 
 		     int objc, Tcl_Obj* const objv[])
 {
   Tcl_Preserve(clientData);
-  int result = BltInvokeEnsemble(graphEnsemble, 1, clientData, interp, objc, objv);
+  int result = InvokeEnsemble(graphEnsemble, 1, clientData, interp, objc, objv);
   Tcl_Release(clientData);
   return result;
 }

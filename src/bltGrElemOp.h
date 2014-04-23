@@ -37,6 +37,6 @@
 
 extern const TkEnsemble elementEnsemble[];
 
-extern int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
+extern int ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
 			       int objc, Tcl_Obj* const objv[]);
 #endif

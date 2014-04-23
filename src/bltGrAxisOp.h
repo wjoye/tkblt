@@ -37,8 +37,27 @@
 
 extern const TkEnsemble axisEnsemble[];
 
-extern int AxisObjConfigure(Tcl_Interp* interp, Axis* axisPtr,
+extern int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
 			    int objc, Tcl_Obj* const objv[]);
+
+extern int AxisCgetOp(Axis* axisPtr, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
+extern int AxisConfigureOp(Axis* axisPtr, Tcl_Interp* interp, 
+			   int objc, Tcl_Obj* const objv[]);
+extern int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp, 
+			  int objc, Tcl_Obj* const objv[]);
+extern int AxisInvTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+			      int objc, Tcl_Obj* const objv[]);
+extern int AxisLimitsOp(Axis* axisPtr, Tcl_Interp* interp, 
+			int objc, Tcl_Obj* const objv[]);
+extern int AxisMarginOp(Axis* axisPtr, Tcl_Interp* interp, 
+			int objc, Tcl_Obj* const objv[]);
+extern int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+			   int objc, Tcl_Obj* const objv[]);
+extern int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
+extern int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[]);
 
 extern Axis *Blt_GetFirstAxis(Blt_Chain chain);
 

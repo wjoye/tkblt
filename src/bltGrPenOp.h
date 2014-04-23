@@ -37,6 +37,7 @@
 
 extern const TkEnsemble penEnsemble[];
 
-extern int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
+extern int PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
+			   Tcl_Interp* interp,
 			   int objc, Tcl_Obj* const objv[]);
 #endif

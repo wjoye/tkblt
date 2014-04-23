@@ -27,10 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltOp.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"
@@ -39,7 +35,8 @@ extern "C" {
 
 using namespace Blt;
 
-int PenObjConfigure(Tcl_Interp* interp, Graph* graphPtr, Pen* penPtr, 
+int PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
+		    Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
@@ -127,7 +124,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return PenObjConfigure(interp, graphPtr, penPtr, objc-4, objv+4);
+    return PenObjConfigure(graphPtr, penPtr, interp, objc-4, objv+4);
 }
 
 static int CreateOp(ClientData clientData, Tcl_Interp* interp, 

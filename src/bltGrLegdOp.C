@@ -33,7 +33,6 @@
 #endif
 
 extern "C" {
-#include "bltOp.h"
 #include "bltBind.h"
 };
 
@@ -46,7 +45,7 @@ using namespace Blt;
 
 static Tk_LostSelProc LostSelectionProc;
 
-static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+static int LegendObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 			      int objc, Tcl_Obj* const objv[])
 {
   Legend* legendPtr = graphPtr->legend_;
@@ -126,7 +125,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return LegendObjConfigure(interp, graphPtr, objc-3, objv+3);
+    return LegendObjConfigure(graphPtr, interp, objc-3, objv+3);
 }
 
 static int ActivateOp(ClientData clientData, Tcl_Interp* interp, 

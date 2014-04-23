@@ -213,7 +213,7 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
-  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(interp_, this, objc-2, objv+2) != TCL_OK)) {
+  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(this, interp_, objc-2, objv+2) != TCL_OK)) {
     valid_ =0;
     return;
   }
@@ -255,7 +255,7 @@ int BarGraph::createPen(const char* penName, int objc, Tcl_Obj* const objv[])
 
   Tcl_SetHashValue(hPtr, penPtr);
 
-  if ((Tk_InitOptions(interp_, (char*)penPtr->ops(), penPtr->optionTable(), tkwin_) != TCL_OK) || (PenObjConfigure(interp_, this, penPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(interp_, (char*)penPtr->ops(), penPtr->optionTable(), tkwin_) != TCL_OK) || (PenObjConfigure(this, penPtr, interp_, objc-4, objv+4) != TCL_OK)) {
     delete penPtr;
     return TCL_ERROR;
   }
@@ -291,7 +291,7 @@ int BarGraph::createElement(int objc, Tcl_Obj* const objv[])
 
   Tcl_SetHashValue(hPtr, elemPtr);
 
-  if ((Tk_InitOptions(interp_, (char*)elemPtr->ops(), elemPtr->optionTable(), tkwin_) != TCL_OK) || (ElementObjConfigure(interp_, elemPtr, objc-4, objv+4) != TCL_OK)) {
+  if ((Tk_InitOptions(interp_, (char*)elemPtr->ops(), elemPtr->optionTable(), tkwin_) != TCL_OK) || (ElementObjConfigure(elemPtr, interp_, objc-4, objv+4) != TCL_OK)) {
     delete elemPtr;
     return TCL_ERROR;
   }

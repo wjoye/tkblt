@@ -30,17 +30,13 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltOp.h"
-}
-
 #include "bltGraph.h"
 #include "bltGrHairs.h"
 #include "bltGrHairsOp.h"
 
 using namespace Blt;
 
-static int CrosshairsObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
+static int CrosshairsObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 				  int objc, Tcl_Obj* const objv[])
 {
   Crosshairs* chPtr = graphPtr->crosshairs_;
@@ -117,7 +113,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return CrosshairsObjConfigure(interp, graphPtr, objc-3, objv+3);
+    return CrosshairsObjConfigure(graphPtr, interp, objc-3, objv+3);
 }
 
 static int OnOp(ClientData clientData, Tcl_Interp* interp, 

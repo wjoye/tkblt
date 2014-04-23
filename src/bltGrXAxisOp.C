@@ -27,11 +27,6 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-extern "C" {
-#include "bltOp.h"
-#include "bltBind.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrXAxisOp.h"
 #include "bltGrAxis.h"
@@ -39,42 +34,83 @@ extern "C" {
 
 using namespace Blt;
 
-extern int AxisCgetOp(Tcl_Interp* interp, Axis* axisPtr, 
-		      int objc, Tcl_Obj* const objv[]);
-extern int AxisConfigureOp(Tcl_Interp* interp, Axis* axisPtr, 
-			   int objc, Tcl_Obj* const objv[]);
-extern int AxisActivateOp(Tcl_Interp* interp, Axis* axisPtr, 
-			  int objc, Tcl_Obj* const objv[]);
-extern int AxisInvTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-			      int objc, Tcl_Obj* const objv[]);
-extern int AxisLimitsOp(Tcl_Interp* interp, Axis* axisPtr, 
-			int objc, Tcl_Obj* const objv[]);
-extern int AxisMarginOp(Tcl_Interp* interp, Axis* axisPtr, 
-			int objc, Tcl_Obj* const objv[]);
-extern int AxisTransformOp(Tcl_Interp* interp, Axis* axisPtr, 
-			   int objc, Tcl_Obj* const objv[]);
-extern int AxisTypeOp(Tcl_Interp* interp, Axis* axisPtr, 
-		      int objc, Tcl_Obj* const objv[]);
-extern int AxisViewOp(Tcl_Interp* interp, Axis* axisPtr, 
-		      int objc, Tcl_Obj* const objv[]);
-
 static int lastMargin;
 
+static Axis* GetAxisFromCmd(ClientData clientData, Tcl_Obj* obj)
+{
+  Graph* graphPtr = (Graph*)clientData;
+  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
-// Ops
+  int margin;
+  const char* name = Tcl_GetString(obj);
+  if (!strcmp(name,"xaxis"))
+    margin = (ops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
+  else if (!strcmp(name,"yaxis"))
+    margin = (ops->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
+  else if (!strcmp(name,"x2axis"))
+    margin = (ops->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
+  else if (!strcmp(name,"y2axis"))
+    margin = (ops->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
+  else
+    return NULL;
 
-static int BindOp(Tcl_Interp* interp, Axis* axisPtr, 
+  return Blt_GetFirstAxis(ops->margins[margin].axes);
+}
+
+static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = axisPtr->graphPtr_;
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisCgetOp(axisPtr, interp, objc, objv);
+}
 
+static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
+		       int objc, Tcl_Obj* const objv[])
+{
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisConfigureOp(axisPtr, interp, objc, objv);
+}
+
+static int ActivateOp(ClientData clientData, Tcl_Interp* interp, 
+		      int objc, Tcl_Obj* const objv[])
+{
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisActivateOp(axisPtr, interp, objc, objv);
+}
+
+static int BindOp(ClientData clientData, Tcl_Interp* interp, 
+		  int objc, Tcl_Obj* const objv[])
+{
+  Graph* graphPtr = (Graph*)clientData;
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->axisTag(axisPtr->name_), objc-3, objv+3);
 }
-          
-static int UseOp(Tcl_Interp* interp, Axis* axisPtr, 
+
+static int InvTransformOp(ClientData clientData, Tcl_Interp* interp, 
+			  int objc, Tcl_Obj* const objv[])
+{
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisInvTransformOp(axisPtr, interp, objc-1, objv+1);
+}
+
+static int LimitsOp(ClientData clientData, Tcl_Interp* interp, 
+		    int objc, Tcl_Obj* const objv[])
+{
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisLimitsOp(axisPtr, interp, objc-1, objv+1);
+}
+
+static int TransformOp(ClientData clientData, Tcl_Interp* interp, 
+		       int objc, Tcl_Obj* const objv[])
+{
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisTransformOp(axisPtr, interp, objc-1, objv+1);
+}
+
+static int UseOp(ClientData clientData, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = (Graph *)axisPtr;
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
 
   Blt_Chain chain = gops->margins[lastMargin].axes;
@@ -149,32 +185,25 @@ static int UseOp(Tcl_Interp* interp, Axis* axisPtr,
   return TCL_OK;
 }
 
-static int CgetOp(ClientData clientData,Tcl_Interp* interp,
+static int ViewOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  int margin = (gops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
-  Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
-
-  return AxisCgetOp(interp, axisPtr, objc, objv);
-}
-
-static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
-		       int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
-  int margin = (gops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
-  Axis* axisPtr = Blt_GetFirstAxis(gops->margins[margin].axes);
-
-  return AxisConfigureOp(interp, axisPtr, objc, objv);
+  Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
+  return AxisViewOp(axisPtr, interp, objc-1, objv+1);
 }
 
 const TkEnsemble xaxisEnsemble[] = {
-    { "cget", 		CgetOp,0 },
-    { "configure", 	ConfigureOp,0 },
-    { 0,0,0 }
+  {"activate",     ActivateOp, 0},
+  {"bind",         BindOp, 0},
+  {"cget",         CgetOp, 0},
+  {"configure",    ConfigureOp, 0},
+  {"deactivate",   ActivateOp, 0},
+  {"invtransform", InvTransformOp, 0},
+  {"limits",       LimitsOp, 0},
+  {"transform",    TransformOp, 0},
+  {"use",          UseOp, 0},
+  {"view",         ViewOp, 0},
+  { 0,0,0 }
 };
 
 /*
