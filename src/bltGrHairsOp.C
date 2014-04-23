@@ -120,9 +120,10 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return CrosshairsObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
-static int OnOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int OnOp(ClientData clientData, Tcl_Interp* interp, 
 		int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
@@ -133,9 +134,10 @@ static int OnOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
+static int OffOp(ClientData clientData, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
@@ -146,9 +148,10 @@ static int OffOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
+static int ToggleOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
   CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
@@ -162,9 +165,12 @@ static int ToggleOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 const BltEnsemble crosshairsEnsemble[] = {
-    { "cget", 		CgetOp,0 },
-    { "configure", 	ConfigureOp,0 },
-    { 0,0,0 }
+  {"cget", 	CgetOp, 0},
+  {"configure",	ConfigureOp, 0},
+  {"off",       OffOp, 0},
+  {"on",        OnOp, 0},
+  {"toggle",    ToggleOp, 0},
+  { 0,0,0 }
 };
 
 /*

@@ -45,8 +45,6 @@ extern "C" {
 using namespace Blt;
 
 static Tk_LostSelProc LostSelectionProc;
-static int SelectionOp(Graph* graphPtr, Tcl_Interp* interp, 
-		       int objc, Tcl_Obj* const objv[]);
 
 static int LegendObjConfigure(Tcl_Interp* interp, Graph* graphPtr,
 			      int objc, Tcl_Obj* const objv[])
@@ -131,11 +129,10 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return LegendObjConfigure(interp, graphPtr, objc-3, objv+3);
 }
 
-// Ops
-
-static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int ActivateOp(ClientData clientData, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
@@ -208,9 +205,11 @@ static int ActivateOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int BindOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int BindOp(ClientData clientData, Tcl_Interp* interp, 
 		  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
+
   if (objc == 3) {
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch iter;
@@ -231,9 +230,10 @@ static int BindOp(Graph* graphPtr, Tcl_Interp* interp,
   return Blt_ConfigureBindingsFromObj(interp, graphPtr->legend_->bindTable_, graphPtr->elementTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
-static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int CurselectionOp(ClientData clientData, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (legendPtr->flags & SELECT_SORTED) {
@@ -261,9 +261,10 @@ static int CurselectionOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int FocusOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int FocusOp(ClientData clientData, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
 
   legendPtr->focusPtr_ = NULL;
@@ -285,9 +286,10 @@ static int FocusOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int GetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int GetOp(ClientData clientData, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
@@ -304,9 +306,16 @@ static int GetOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 
 const BltEnsemble legendEnsemble[] = {
-    { "cget", 		CgetOp,0 },
-    { "configure", 	ConfigureOp,0 },
-    { 0,0,0 }
+  {"activate",     ActivateOp, 0},
+  {"bind",         BindOp, 0},
+  {"cget",         CgetOp, 0},
+  {"configure",    ConfigureOp, 0},
+  {"curselection", CurselectionOp, 0},
+  {"deactivate",   ActivateOp, 0},
+  {"focus",        FocusOp, 0},
+  {"get",          GetOp, 0},
+  {"selection",    0, selectionEnsemble},
+  { 0,0,0 }
 };
 
 /*
@@ -338,11 +347,12 @@ int Blt_LegendOp(Graph* graphPtr, Tcl_Interp* interp,
 }
 */
 
-// Selection Widget Ops
+// Selection Ops
 
-static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionAnchorOp(ClientData clientData, Tcl_Interp* interp, 
 			     int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   Element* elemPtr;
 
@@ -361,9 +371,10 @@ static int SelectionAnchorOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionClearallOp(ClientData clientData, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   legendPtr->clearSelection();
   legendPtr->eventuallyRedraw();
@@ -371,9 +382,10 @@ static int SelectionClearallOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionIncludesOp(ClientData clientData, Tcl_Interp* interp, 
 			       int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   Element* elemPtr;
   if (legendPtr->getElementFromObj(objv[4], &elemPtr) != TCL_OK)
@@ -384,9 +396,10 @@ static int SelectionIncludesOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionMarkOp(ClientData clientData, Tcl_Interp* interp, 
 			   int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
   Element* elemPtr;
@@ -426,18 +439,20 @@ static int SelectionMarkOp(Graph* graphPtr, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int SelectionPresentOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionPresentOp(ClientData clientData, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   int boo = (Blt_Chain_GetLength(legendPtr->selected_) > 0);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }
 
-static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp, 
+static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
@@ -497,6 +512,18 @@ static int SelectionSetOp(Graph* graphPtr, Tcl_Interp* interp,
 
   return TCL_OK;
 }
+
+const BltEnsemble selectionEnsemble[] = {
+  {"anchor",   SelectionAnchorOp, 0},
+  {"clear",    SelectionSetOp, 0},
+  {"clearall", SelectionClearallOp, 0},
+  {"includes", SelectionIncludesOp, 0},
+  {"mark",     SelectionMarkOp, 0},
+  {"present",  SelectionPresentOp, 0},
+  {"set",      SelectionSetOp, 0},
+  {"toggle",   SelectionSetOp, 0},
+  { 0,0,0 }
+};
 
 /*
 static Blt_OpSpec selectionOps[] =

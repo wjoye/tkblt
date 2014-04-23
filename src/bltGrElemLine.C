@@ -33,7 +33,6 @@
 #include "bltGrElemOption.h"
 #include "bltGrPenOp.h"
 #include "bltGrAxis.h"
-#include "bltGrAxisOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"

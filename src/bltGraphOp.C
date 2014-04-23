@@ -39,19 +39,19 @@ extern "C" {
 
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
-#include "bltGrXAxisOp.h"
-#include "bltGrPen.h"
-#include "bltGrPenOp.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
-#include "bltGrMarker.h"
-#include "bltGrMarkerOp.h"
-#include "bltGrLegd.h"
-#include "bltGrLegdOp.h"
 #include "bltGrHairs.h"
 #include "bltGrHairsOp.h"
+#include "bltGrLegd.h"
+#include "bltGrLegdOp.h"
+#include "bltGrMarker.h"
+#include "bltGrMarkerOp.h"
 #include "bltGrPageSetup.h"
 #include "bltGrPageSetupOp.h"
+#include "bltGrPen.h"
+#include "bltGrPenOp.h"
+#include "bltGrXAxisOp.h"
 
 using namespace Blt;
 
@@ -176,43 +176,50 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return GraphObjConfigure(interp, graphPtr, objc-2, objv+2);
 }
 
-static int XAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+/*
+static int XAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int margin = (ops->inverted) ? MARGIN_LEFT : MARGIN_BOTTOM;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int X2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int X2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int margin = (ops->inverted) ? MARGIN_RIGHT : MARGIN_TOP;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int YAxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int YAxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		   Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int margin = (ops->inverted) ? MARGIN_BOTTOM : MARGIN_LEFT;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int Y2AxisOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int Y2AxisOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int margin = (ops->inverted) ? MARGIN_TOP : MARGIN_RIGHT;
   return Blt_XAxisOp(interp, graphPtr, margin, objc, objv);
 }
 
-static int ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int ElementOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   return Blt_ElementOp(graphPtr, interp, objc, objv);
 }
+*/
 
 /*
  *---------------------------------------------------------------------------
@@ -237,9 +244,10 @@ static int ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
  *---------------------------------------------------------------------------
  */
 
-static int ExtentsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int ExtentsOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		     Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
   int length;
   const char* string = Tcl_GetStringFromObj(objv[2], &length);
@@ -307,9 +315,10 @@ topmargin, bottommargin, plotarea, or legend", (char*)NULL);
   (((x) <= (e)->right) && ((x) >= (e)->left) && \
    ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
-static int InsideOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int InsideOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   int x;
   if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK)
     return TCL_ERROR;
@@ -327,9 +336,10 @@ static int InsideOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int InvtransformOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 			  Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   double x, y;
   if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
       (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
@@ -355,9 +365,10 @@ static int InvtransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
+static int TransformOp(ClientData* clientData, Tcl_Interp* interp, int objc, 
 		       Tcl_Obj* const objv[])
 {
+  Graph* graphPtr = (Graph*)clientData;
   double x, y;
   if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
       (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
@@ -384,15 +395,27 @@ static int TransformOp(Graph* graphPtr, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-#include "bltGrLegdOp.h"
-
 static const BltEnsemble graphEnsemble[] = {
-    { "cget", 		CgetOp,0 },
-    { "configure", 	ConfigureOp,0 },
-    { "crosshairs",  0, crosshairsEnsemble },
-    { "legend",      0, legendEnsemble },
-    { "xaxis",       0, xaxisEnsemble },
-    { 0,0,0 }
+  {"axis",        0, axisEnsemble},
+  {"bar",         0, elementEnsemble},
+  {"cget", 	  CgetOp, 0},
+  {"configure",   ConfigureOp, 0},
+  {"crosshairs",  0, crosshairsEnsemble},
+  {"element",     0, elementEnsemble},
+  {"extents",     ExtentsOp, 0},
+  {"inside",      InsideOp, 0},
+  {"invtransform",InvtransformOp, 0},
+  {"legend",      0, legendEnsemble},
+  {"line",        0, elementEnsemble},
+  {"marker",      0, markerEnsemble},
+  {"pen",         0, penEnsemble},
+  {"postscript",  0, pageSetupEnsemble},
+  {"transform",   TransformOp, 0},
+  {"xaxis",       0, xaxisEnsemble},
+  {"yaxis",       0, xaxisEnsemble},
+  {"x2axis",      0, xaxisEnsemble},
+  {"y2axis",      0, xaxisEnsemble},
+  { 0,0,0 }
 };
 
 int GraphInstCmdProc(ClientData clientData, Tcl_Interp* interp, 

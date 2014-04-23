@@ -36,7 +36,4 @@ extern "C" {
 
 extern const BltEnsemble xaxisEnsemble[];
 
-extern int Blt_XAxisOp(Tcl_Interp* interp, Graph* graphPtr, int margin, 
-			 int objc, Tcl_Obj* const objv[]);
-
 #endif

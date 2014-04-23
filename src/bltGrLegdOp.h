@@ -35,8 +35,6 @@ extern "C" {
 }
 
 extern const BltEnsemble legendEnsemble[];
-
-extern int Blt_LegendOp(Graph *graphPtr, Tcl_Interp* interp, int objc, 
-	Tcl_Obj* const objv[]);
+extern const BltEnsemble selectionEnsemble[];
 
 #endif

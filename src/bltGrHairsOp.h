@@ -39,7 +39,4 @@ extern "C" {
 
 extern const BltEnsemble crosshairsEnsemble[];
 
-extern int Blt_CrosshairsOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			    Tcl_Obj* const objv[]);
-
 #endif

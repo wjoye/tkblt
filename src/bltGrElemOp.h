@@ -30,8 +30,12 @@
 #ifndef __BltGrElemOp_h__
 #define __BltGrElemOp_h__
 
+extern "C" {
+#include "bltOp.h"
+}
+
+extern const BltEnsemble elementEnsemble[];
+
 extern int ElementObjConfigure(Tcl_Interp* interp, Element* elemPtr,
 			       int objc, Tcl_Obj* const objv[]);
-extern int Blt_ElementOp(Graph* graphPtr, Tcl_Interp* interp, int objc, 
-			 Tcl_Obj* const objv[]);
 #endif

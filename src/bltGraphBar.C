@@ -31,22 +31,19 @@
 #include "bltGraphOp.h"
 
 #include "bltGrAxis.h"
-#include "bltGrAxisOp.h"
 #include "bltGrXAxisOp.h"
 #include "bltGrPen.h"
 #include "bltGrPenBar.h"
 #include "bltGrPenLine.h"
 #include "bltGrPenOp.h"
 #include "bltGrElem.h"
+#include "bltGrElemOp.h"
 #include "bltGrElemBar.h"
 #include "bltGrElemLine.h"
-#include "bltGrElemOp.h"
 #include "bltGrMarker.h"
 #include "bltGrMarkerOp.h"
 #include "bltGrLegd.h"
-#include "bltGrLegdOp.h"
 #include "bltGrHairs.h"
-#include "bltGrHairsOp.h"
 #include "bltGrDef.h"
 
 using namespace Blt;

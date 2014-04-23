@@ -39,8 +39,6 @@ extern "C" {
 #include "bltGraph.h"
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
-#include "bltGrElemOp.h"
-#include "bltGrHairsOp.h"
 #include "bltGrPageSetup.h"
 #include "bltGrPageSetupOp.h"
 #include "bltGrMisc.h"
