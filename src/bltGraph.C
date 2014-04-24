@@ -35,7 +35,6 @@
 using namespace std;
 
 extern "C" {
-#include "bltInt.h"
 #include "bltList.h"
 #include "bltBind.h"
 };
