@@ -50,7 +50,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "bltInt.h"
+//#include "bltInt.h"
 #include "bltVecInt.h"
 #include "bltNsUtil.h"
 #include "bltSwitch.h"
@@ -1834,10 +1834,23 @@ Blt_Vec_GetInterpData(Tcl_Interp* interp)
 int
 Blt_VectorCmdInitProc(Tcl_Interp* interp)
 {
-    static Blt_InitCmdSpec cmdSpec = {"vector", VectorCmd, };
-    
-    cmdSpec.clientData = Blt_Vec_GetInterpData(interp);
-    return Blt_InitCmd(interp, "::blt", &cmdSpec);
+  Tcl_Namespace* nsPtr;
+  Tcl_Command cmdToken;
+  const char* cmdPath = "::blt::vector";
+
+  nsPtr = Tcl_FindNamespace(interp, "::blt", NULL, TCL_LEAVE_ERR_MSG);
+  if (nsPtr == NULL)
+    return TCL_ERROR;
+
+  cmdToken = Tcl_FindCommand(interp, cmdPath, NULL, 0);
+  if (cmdToken)
+      return TCL_OK;
+  cmdToken = Tcl_CreateObjCommand(interp, cmdPath, VectorCmd, 
+				  Blt_Vec_GetInterpData(interp), NULL);
+  if (Tcl_Export(interp, nsPtr, "vector", 0) != TCL_OK)
+      return TCL_ERROR;
+
+  return TCL_OK;
 }
 
 /* C Application interface to vectors */
