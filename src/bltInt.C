@@ -27,14 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <tk.h>
+
 extern "C" {
 #include "bltInt.h"
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
 Tcl_AppInitProc Blt_VectorCmdInitProc;
 };
-
-#include <tk.h>
 
 Tcl_AppInitProc Blt_GraphCmdInitProc;
 
@@ -86,35 +86,3 @@ int Tkblt_SafeInit(Tcl_Interp* interp)
 {
   return Tkblt_Init(interp);
 }
-
-int Blt_InitCmd(Tcl_Interp* interp, const char *nsName, 
-		Blt_InitCmdSpec *specPtr)
-{
-  Tcl_DString dString;
-  Tcl_DStringInit(&dString);
-  if (nsName)
-    Tcl_DStringAppend(&dString, nsName, -1);
-  Tcl_DStringAppend(&dString, "::", -1);
-  Tcl_DStringAppend(&dString, specPtr->name, -1);
-
-  const char* cmdPath = Tcl_DStringValue(&dString);
-  Tcl_Command cmdToken = Tcl_FindCommand(interp, cmdPath, NULL, 0);
-  if (cmdToken) {
-    Tcl_DStringFree(&dString);
-    return TCL_OK;		/* Assume command was already initialized */
-  }
-  cmdToken = Tcl_CreateObjCommand(interp, cmdPath, specPtr->cmdProc, 
-				  specPtr->clientData, specPtr->cmdDeleteProc);
-  Tcl_DStringFree(&dString);
-  Tcl_Namespace* nsPtr = Tcl_FindNamespace(interp, nsName, NULL, 
-					   TCL_LEAVE_ERR_MSG);
-  if (nsPtr == NULL)
-    return TCL_ERROR;
-
-  if (Tcl_Export(interp, nsPtr, specPtr->name, 0) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
-}
-
-

@@ -135,6 +135,34 @@ static Blt_SwitchSpec fftSwitches[] = {
     {BLT_SWITCH_END}
 };
 
+static int Blt_ExprIntFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int *valuePtr)
+{
+  // First try to extract the value as a simple integer.
+  if (Tcl_GetIntFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
+    return TCL_OK;
+ 
+  // Otherwise try to parse it as an expression.
+  long lvalue;
+  if (Tcl_ExprLong(interp, Tcl_GetString(objPtr), &lvalue) == TCL_OK) {
+    *valuePtr = lvalue;
+    return TCL_OK;
+  }
+  return TCL_ERROR;
+}
+
+static int Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
+{
+  // First try to extract the value as a double precision number.
+  if (Tcl_GetDoubleFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
+    return TCL_OK;
+
+  // Then try to parse it as an expression.
+  if (Tcl_ExprDouble(interp, Tcl_GetString(objPtr), valuePtr) == TCL_OK)
+    return TCL_OK;
+
+  return TCL_ERROR;
+}
+
 /*
  *---------------------------------------------------------------------------
  *
