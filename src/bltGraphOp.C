@@ -32,6 +32,7 @@ extern "C" {
 #include "bltList.h"
 }
 
+#include "bltGraph.h"
 #include "bltGraphLine.h"
 #include "bltGraphBar.h"
 #include "bltGraphOp.h"
@@ -309,7 +310,7 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
   return TCL_OK;
 }
 
-static const TkEnsemble graphEnsemble[] = {
+static const Ensemble graphEnsemble[] = {
   {"axis",        0, axisEnsemble},
   {"bar",         0, elementEnsemble},
   {"cget", 	  CgetOp, 0},

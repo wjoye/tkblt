@@ -29,11 +29,12 @@
 
 extern "C" {
 #include "bltInt.h"
-
-Tcl_AppInitProc Blt_VectorCmdInitProc;
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
+Tcl_AppInitProc Blt_VectorCmdInitProc;
 };
+
+#include <tk.h>
 
 Tcl_AppInitProc Blt_GraphCmdInitProc;
 

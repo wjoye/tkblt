@@ -521,7 +521,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const TkEnsemble elementEnsemble[] = {
+const Ensemble elementEnsemble[] = {
   {"activate",   ActivateOp, 0},
   {"bind",       BindOp, 0},
   {"cget",       CgetOp, 0},

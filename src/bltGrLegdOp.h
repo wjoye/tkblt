@@ -30,12 +30,9 @@
 #ifndef __BltGrLegdOp_h__
 #define __BltGrLegdOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble legendEnsemble[];
-extern const TkEnsemble selectionEnsemble[];
+extern const Ensemble legendEnsemble[];
+extern const Ensemble selectionEnsemble[];
 
 #endif

@@ -437,7 +437,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const TkEnsemble markerEnsemble[] = {
+const Ensemble markerEnsemble[] = {
   {"bind",      BindOp, 0},
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},

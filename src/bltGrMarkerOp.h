@@ -30,11 +30,8 @@
 #ifndef __Blt_GrMarkerOp_h__
 #define __Blt_GrMarkerOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble markerEnsemble[];
+extern const Ensemble markerEnsemble[];
 
 #endif

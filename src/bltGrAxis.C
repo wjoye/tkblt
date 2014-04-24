@@ -28,6 +28,7 @@
  */
 
 #include <math.h>
+#include <float.h>
 
 extern "C" {
 #include "bltInt.h"

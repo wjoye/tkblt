@@ -27,7 +27,9 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 extern "C" {
 #include "bltInt.h"

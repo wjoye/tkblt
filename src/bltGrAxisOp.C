@@ -27,6 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <math.h>
+
 extern "C" {
 #include "bltInt.h"
 #include "bltBind.h"
@@ -352,7 +354,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
   return AxisViewOp(axisPtr, interp, objc-1, objv+1);
 }
 
-const TkEnsemble axisEnsemble[] = {
+const Ensemble axisEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget", 	   CgetOp,0 },

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <tk.h>
 #ifdef USE_TK_STUBS
 #include <tkInt.h>
 #endif

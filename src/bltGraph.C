@@ -27,6 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <float.h>
+
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
@@ -504,7 +506,7 @@ void Graph::extents(Region2d* regionPtr)
   regionPtr->bottom = (double)(vOffset_ + vRange_ + ops->yPad);
 }
 
-int Graph::invoke(const TkEnsemble* ensemble, int cmdIndex,
+int Graph::invoke(const Ensemble* ensemble, int cmdIndex,
 		  int objc, Tcl_Obj* const objv[])
 {
   while (cmdIndex < objc) {

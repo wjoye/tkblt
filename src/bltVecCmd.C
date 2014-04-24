@@ -48,6 +48,9 @@
 
 #include <math.h>
 #include <float.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #include "bltInt.h"
 #include "bltVecInt.h"

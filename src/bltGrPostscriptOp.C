@@ -27,6 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <tk.h>
+#ifdef USE_TK_STUBS
+#include <tkInt.h>
+#endif
+
 #include "bltGraph.h"
 #include "bltGrPageSetup.h"
 #include "bltGrPageSetupOp.h"
@@ -170,7 +175,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const TkEnsemble pageSetupEnsemble[] = {
+const Ensemble pageSetupEnsemble[] = {
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},
   {"output",    OutputOp, 0},

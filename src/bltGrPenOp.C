@@ -206,7 +206,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const TkEnsemble penEnsemble[] = {
+const Ensemble penEnsemble[] = {
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},
   {"create",    CreateOp, 0},

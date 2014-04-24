@@ -30,12 +30,9 @@
 #ifndef __BltGrAxisOp_h__
 #define __BltGrAxisOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble axisEnsemble[];
+extern const Ensemble axisEnsemble[];
 
 extern int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
 			    int objc, Tcl_Obj* const objv[]);

@@ -32,6 +32,9 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <ctype.h>
 
 #include "bltInt.h"
 #include "bltVecInt.h"

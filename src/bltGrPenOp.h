@@ -30,12 +30,9 @@
 #ifndef __BltGrPenOp_h__
 #define __BltGrPenOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble penEnsemble[];
+extern const Ensemble penEnsemble[];
 
 extern int PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
 			   Tcl_Interp* interp,

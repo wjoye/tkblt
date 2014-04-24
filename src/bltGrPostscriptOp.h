@@ -30,12 +30,9 @@
 #ifndef __BltGrPageSetupOp_h__
 #define __BltGrPageSetupOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble pageSetupEnsemble[];
+extern const Ensemble pageSetupEnsemble[];
 
 extern int PageSetupObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
 				 int objc, Tcl_Obj* const objv[]);

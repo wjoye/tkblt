@@ -30,12 +30,9 @@
 #ifndef __BltGrElemOp_h__
 #define __BltGrElemOp_h__
 
-#include <tk.h>
-#ifdef USE_TK_STUBS
-#include <tkInt.h>
-#endif
+#include "bltGraph.h"
 
-extern const TkEnsemble elementEnsemble[];
+extern const Ensemble elementEnsemble[];
 
 extern int ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
 			       int objc, Tcl_Obj* const objv[]);
