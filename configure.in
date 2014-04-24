@@ -109,7 +109,7 @@ TEA_ADD_SOURCES([
 	bltGraphSup.C
 	bltInt.C
 	bltList.C
-	bltNsUtil.C
+	bltNsUtil.c
 	bltParse.C
 	bltPs.C
 	bltOp.C
