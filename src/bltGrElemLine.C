@@ -29,6 +29,8 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 extern "C" {
 #include "bltInt.h"
@@ -2795,13 +2797,13 @@ void LineElement::DrawValues(Drawable drawable, LinePen* penPtr,
     double y = yval[map[count]];
     count++;
     if (penOps->valueShow == SHOW_X)
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
     else if (penOps->valueShow == SHOW_Y)
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
     else if (penOps->valueShow == SHOW_BOTH) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
-      sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
+      snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
     Blt_DrawText(graphPtr_->tkwin_, drawable, string, &penOps->valueStyle, 
@@ -2979,14 +2981,14 @@ void LineElement::ValuesToPostScript(Blt_Ps ps, LinePen* penPtr,
     count++;
 
     char string[TCL_DOUBLE_SPACE * 2 + 2];
-    if (penOps->valueShow == SHOW_X) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
-    } else if (penOps->valueShow == SHOW_Y) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
-    } else if (penOps->valueShow == SHOW_BOTH) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
+    if (penOps->valueShow == SHOW_X)
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
+    else if (penOps->valueShow == SHOW_Y)
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
+    else if (penOps->valueShow == SHOW_BOTH) {
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
-      sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
+      snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
     Blt_Ps_DrawText(ps, string, &penOps->valueStyle, pp->x, pp->y);
   } 

@@ -1330,13 +1330,13 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
 
     count++;
     if (penOps->valueShow == SHOW_X)
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
     else if (penOps->valueShow == SHOW_Y)
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
     else if (penOps->valueShow == SHOW_BOTH) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
-      sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
+      snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
     if (gops->inverted) {
@@ -1417,14 +1417,14 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
     x = ops->coords.x->values[barToData[count]];
     y = ops->coords.y->values[barToData[count]];
     count++;
-    if (penOps->valueShow == SHOW_X) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x); 
-    } else if (penOps->valueShow == SHOW_Y) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, y); 
-    } else if (penOps->valueShow == SHOW_BOTH) {
-      sprintf_s(string, TCL_DOUBLE_SPACE, fmt, x);
+    if (penOps->valueShow == SHOW_X)
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
+    else if (penOps->valueShow == SHOW_Y)
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
+    else if (penOps->valueShow == SHOW_BOTH) {
+      snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
-      sprintf_s(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
+      snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
     if (gops->inverted) {
       anchorPos.y = rp->y + rp->height * 0.5;

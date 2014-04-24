@@ -5571,7 +5571,7 @@ done
 	bltSpline.C
 	bltSwitch.C
 	bltText.C
-	bltUtil.C
+	bltUtil.c
 	bltVecCmd.c
 	bltVecMath.c
 	bltVector.c

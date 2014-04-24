@@ -366,7 +366,7 @@ int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specs,
       if (DoSwitch(interp, sp, objv[count], record) != TCL_OK) {
 	char msg[200];
 
-	sprintf_s(msg, 200, "\n    (processing \"%.40s\" switch)", 
+	snprintf(msg, 200, "\n    (processing \"%.40s\" switch)", 
 		  sp->switchName);
 	Tcl_AddErrorInfo(interp, msg);
 	return -1;

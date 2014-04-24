@@ -30,11 +30,6 @@
 #ifndef __BltGrPen_h__
 #define __BltGrPen_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 #include "bltText.h"

@@ -26,6 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 #include <tcl.h>
 
 extern "C" {
@@ -502,11 +507,10 @@ int Blt_ParseQuotes(
 	    src += nRead;
 	    continue;
 	} else if (c == '\0') {
-	    char buf[10];
-
 	    Tcl_ResetResult(interp);
-	    sprintf_s(buf, 10, "missing %c", termChar);
-	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, 9);
+	    ostringstream str;
+	    str << "missing " << termChar << ends;
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), str.str().c_str(), 9);
 	    *termPtr = string - 1;
 	    return TCL_ERROR;
 	} else {

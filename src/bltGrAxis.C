@@ -334,12 +334,12 @@ int Axis::configure()
 
   if (((!isnan(ops->reqMin)) && (!isnan(ops->reqMax))) &&
       (ops->reqMin >= ops->reqMax)) {
-    char msg[200];
-    sprintf_s(msg, 200, 
-	      "impossible axis limits (-min %g >= -max %g) for \"%s\"",
-	      ops->reqMin, ops->reqMax, name_);
-    Tcl_AppendResult(graphPtr_->interp_, msg, NULL);
-    return TCL_ERROR;
+      ostringstream str;
+      str << "impossible axis limits (-min " << ops->reqMin 
+	  << " >= -max " << ops->reqMax << ") for \"" 
+	  << name_ << "\"" << ends;
+      Tcl_AppendResult(graphPtr_->interp_, str.str().c_str(), NULL);
+      return TCL_ERROR;
   }
 
   scrollMin_ = ops->reqScrollMin;
@@ -349,10 +349,9 @@ int Axis::configure()
       // Check that the logscale limits are positive.
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
 	ostringstream str;
-	str << ops->reqMin << ends;
-	Tcl_AppendResult(graphPtr_->interp_,"bad logscale -min limit \"", 
-			 str.str().c_str(), "\" for axis \"", name_, "\"", 
-			 NULL);
+	str << "bad logscale -min limit \"" << ops->reqMin 
+	    << "\" for axis \"" << name_ << "\"" << ends;
+	Tcl_AppendResult(graphPtr_->interp_, str.str().c_str(), NULL);
 	return TCL_ERROR;
       }
     }
@@ -672,10 +671,10 @@ void Axis::drawLimits(Drawable drawable)
   const char* fmt = ops->limitsFormat;
   if (fmt && *fmt) {
     minPtr = minString;
-    sprintf_s(minString, 200, fmt, axisRange_.min);
+    snprintf(minString, 200, fmt, axisRange_.min);
 
     maxPtr = maxString;
-    sprintf_s(maxString, 200, fmt, axisRange_.max);
+    snprintf(maxString, 200, fmt, axisRange_.max);
   }
   if (ops->descending) {
     char *tmp = minPtr;
@@ -1044,13 +1043,12 @@ TickLabel* Axis::makeLabel(double value)
 #define TICK_LABEL_SIZE		200
 
   AxisOptions* ops = (AxisOptions*)ops_;
-  char string[TICK_LABEL_SIZE + 1];
-  TickLabel* labelPtr;
 
+  char string[TICK_LABEL_SIZE + 1];
   if (ops->logScale)
-    sprintf_s(string, TICK_LABEL_SIZE, "1E%d", ROUND(value));
+    snprintf(string, TICK_LABEL_SIZE, "1E%d", ROUND(value));
   else
-    sprintf_s(string, TICK_LABEL_SIZE, "%.*G", 15, value);
+    snprintf(string, TICK_LABEL_SIZE, "%.*G", 15, value);
 
   if (ops->formatCmd) {
     Tcl_Interp* interp = graphPtr_->interp_;
@@ -1074,7 +1072,7 @@ TickLabel* Axis::makeLabel(double value)
     }
   }
 
-  labelPtr = (TickLabel*)malloc(sizeof(TickLabel) + strlen(string));
+  TickLabel* labelPtr = (TickLabel*)malloc(sizeof(TickLabel) + strlen(string));
   strcpy(labelPtr->string, string);
   labelPtr->anchorPos.x = DBL_MAX;
   labelPtr->anchorPos.y = DBL_MAX;
@@ -1793,10 +1791,10 @@ void Axis::printLimits(Blt_Ps ps)
   const char* fmt = ops->limitsFormat;
   if (fmt && *fmt) {
     minPtr = minString;
-    sprintf_s(minString, 200, fmt, axisRange_.min);
+    snprintf(minString, 200, fmt, axisRange_.min);
 
     maxPtr = maxString;
-    sprintf_s(maxString, 200, fmt, axisRange_.max);
+    snprintf(maxString, 200, fmt, axisRange_.max);
   }
   if (ops->descending) {
     char *tmp = minPtr;

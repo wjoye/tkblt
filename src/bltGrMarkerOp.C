@@ -27,6 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 extern "C" {
 #include "bltInt.h"
 #include "bltBind.h"
@@ -97,19 +102,19 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 			int objc, Tcl_Obj* const objv[])
 {
   int offset = 5;
-  char* name =NULL;
-  char ident[128];
+  const char* name =NULL;
+  ostringstream str;
   if (objc == 4) {
     offset = 4;
-    sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId_++);
-    name = ident;
+    str << "marker" << graphPtr->nextMarkerId_++ << ends;
+    name = str.str().c_str();
   }
   else {
     name = Tcl_GetString(objv[4]);
     if (name[0] == '-') {
       offset = 4;
-      sprintf_s(ident, 128, "marker%d", graphPtr->nextMarkerId_++);
-      name = ident;
+      str << "marker" << graphPtr->nextMarkerId_++ << ends;
+      name = str.str().c_str();
     }
   }
 

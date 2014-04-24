@@ -1261,7 +1261,7 @@ Blt_Vec_Create(
 	do {	/* Generate a unique vector name. */
 	    char string[200];
 
-	    sprintf_s(string, 200, "vector%d", dataPtr->nextId++);
+	    snprintf(string, 200, "vector%d", dataPtr->nextId++);
 	    objName.name = string;
 	    qualName = Blt_MakeQualifiedName(&objName, &dString);
 	    hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, qualName);

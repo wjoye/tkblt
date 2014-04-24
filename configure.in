@@ -116,7 +116,7 @@ TEA_ADD_SOURCES([
 	bltSpline.C
 	bltSwitch.C
 	bltText.C
-	bltUtil.C
+	bltUtil.c
 	bltVecCmd.c
 	bltVecMath.c
 	bltVector.c

@@ -30,6 +30,11 @@
 
 #include <math.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 extern "C" {
 #include <tkPort.h>
 #include <tk3d.h>
@@ -671,7 +676,7 @@ static void TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
 	count += 2;
       } else if ((c < ' ') || (c > '~')) {
 	/* Convert non-printable characters into octal. */
-	sprintf_s(dst, 5, "\\%03o", c);
+	snprintf(dst, 5, "\\%03o", c);
 	dst += 4;
 	count += 4;
       } else {
