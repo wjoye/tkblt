@@ -29,6 +29,11 @@
 
 #include <float.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
@@ -642,7 +647,9 @@ void Graph::updateMarginTraces()
       else
 	size = marginPtr->height;
 
-      Tcl_SetVar(interp_, marginPtr->varName, Blt_Itoa(size), 
+      ostringstream str;
+      str << size << ends;
+      Tcl_SetVar(interp_, marginPtr->varName, str.str().c_str(),
 		 TCL_GLOBAL_ONLY);
     }
   }

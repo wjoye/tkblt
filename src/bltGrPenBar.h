@@ -30,11 +30,6 @@
 #ifndef __BltGrPenBar_h__
 #define __BltGrPenBar_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 #include "bltGrPen.h"

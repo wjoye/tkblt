@@ -30,11 +30,6 @@
 #ifndef __BltGrElem_h__
 #define __BltGrElem_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 extern "C" {

@@ -33,11 +33,6 @@
 #ifndef ___Blt_GrAxis_h__
 #define ___Blt_GrAxis_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 extern "C" {

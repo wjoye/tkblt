@@ -28,6 +28,7 @@
  */
 
 #include <math.h>
+#include <string.h>
 
 extern "C" {
 #include "bltBind.h"

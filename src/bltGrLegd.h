@@ -33,11 +33,6 @@
 #ifndef __BltGrLegend_h__
 #define __BltGrLegend_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 #include "bltGrMisc.h"

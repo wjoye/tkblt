@@ -31,6 +31,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 #include <tcl.h>
 
 extern "C" {
@@ -283,8 +288,10 @@ static int DoSwitch(Tcl_Interp* interp, Blt_SwitchSpec *sp,
       break;
 
     default: 
+      ostringstream str;
+      str << sp->type << ends;
       Tcl_AppendResult(interp, "bad switch table: unknown type \"",
-		       Blt_Itoa(sp->type), "\"", (char *)NULL);
+		       str.str().c_str(), "\"", NULL);
       return TCL_ERROR;
     }
     sp++;

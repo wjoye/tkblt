@@ -30,11 +30,6 @@
 #ifndef __BltGrMarker_h__
 #define __BltGrMarker_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 extern "C" {

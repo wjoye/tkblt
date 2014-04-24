@@ -28,6 +28,7 @@
  */
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "bltGraph.h"
 #include "bltGrAxis.h"

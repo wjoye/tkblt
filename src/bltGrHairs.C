@@ -30,6 +30,8 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #include "bltGraph.h"
 #include "bltGrHairs.h"
 #include "bltGrMisc.h"

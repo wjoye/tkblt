@@ -30,11 +30,6 @@
 #ifndef __BltGrPenLine_h__
 #define __BltGrPenLine_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include "bltGrPen.h"
 
 typedef enum {

@@ -33,11 +33,6 @@
 #ifndef __BltGrHairs_h__
 #define __BltGrHairs_h__
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include <tk.h>
 
 #include "bltGrMisc.h"
