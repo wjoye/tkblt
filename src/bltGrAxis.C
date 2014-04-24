@@ -32,6 +32,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 extern "C" {
 #include "bltInt.h"
 };
@@ -343,9 +348,10 @@ int Axis::configure()
     if (ops->checkLimits) {
       // Check that the logscale limits are positive.
       if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0)) {
+	ostringstream str;
+	str << ops->reqMin << ends;
 	Tcl_AppendResult(graphPtr_->interp_,"bad logscale -min limit \"", 
-			 Blt_Dtoa(graphPtr_->interp_, ops->reqMin), 
-			 "\" for axis \"", name_, "\"", 
+			 str.str().c_str(), "\" for axis \"", name_, "\"", 
 			 NULL);
 	return TCL_ERROR;
       }

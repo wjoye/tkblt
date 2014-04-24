@@ -185,6 +185,8 @@ typedef struct {
     } \
 }
 
+extern const char *Blt_Itoa(int value);
+
 extern void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr);
 
 extern void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr);
