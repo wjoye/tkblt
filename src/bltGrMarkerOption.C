@@ -29,10 +29,6 @@
 
 #include <float.h>
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltGrMarker.h"
 #include "bltGrMarkerOption.h"
 #include "bltConfig.h"
@@ -205,7 +201,7 @@ static int GetCoordinate(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
     *valuePtr = -DBL_MAX;		/* Elastic lower bound */
   else if ((c == '+') && (expr[1] == 'I') && (strcmp(expr, "+Inf") == 0))
     *valuePtr = DBL_MAX;		/* Elastic upper bound */
-  else if (Blt_ExprDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
+  else if (Tcl_GetDoubleFromObj(interp, objPtr, valuePtr) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;

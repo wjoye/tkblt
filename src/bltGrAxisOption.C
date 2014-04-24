@@ -29,10 +29,6 @@
 
 #include <math.h>
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
@@ -128,7 +124,7 @@ static int LimitSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  if (Blt_ExprDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
+  if (Tcl_GetDoubleFromObj(interp, *objPtr, limitPtr) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;
@@ -176,7 +172,7 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
     ticksPtr = (Ticks*)malloc(sizeof(Ticks) + (objc*sizeof(double)));
     for (int ii = 0; ii<objc; ii++) {
       double value;
-      if (Blt_ExprDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
+      if (Tcl_GetDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
 	free(ticksPtr);
 	return TCL_ERROR;
       }

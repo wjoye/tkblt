@@ -31,7 +31,6 @@
 #include <float.h>
 
 extern "C" {
-#include "bltInt.h"
 #include "bltChain.h"
 };
 
@@ -485,7 +484,7 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
       return TCL_ERROR;
     }
     for (p = array, i = 0; i < objc; i++, p++) {
-      if (Blt_ExprDoubleFromObj(interp, objv[i], p) != TCL_OK) {
+      if (Tcl_GetDoubleFromObj(interp, objv[i], p) != TCL_OK) {
 	free(array);
 	return TCL_ERROR;
       }

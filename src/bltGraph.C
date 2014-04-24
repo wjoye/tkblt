@@ -33,7 +33,7 @@ extern "C" {
 #include "bltInt.h"
 #include "bltList.h"
 #include "bltBind.h"
-}
+};
 
 #include "bltGraph.h"
 #include "bltGraphOp.h"

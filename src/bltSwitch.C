@@ -31,6 +31,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <tcl.h>
+
 extern "C" {
 #include "bltInt.h"
 #include "bltSwitch.h"

@@ -28,7 +28,6 @@
  */
 
 extern "C" {
-#include "bltInt.h"
 #include "bltBind.h"
 };
 
@@ -563,7 +562,7 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
   char *string = Tcl_GetString(objPtr);
   if ((*string == 'e') && (strcmp("end", string) == 0))
     *indexPtr = NUMBEROFPOINTS(ops);
-  else if (Blt_ExprIntFromObj(interp, objPtr, indexPtr) != TCL_OK)
+  else if (Tcl_GetIntFromObj(interp, objPtr, indexPtr) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;

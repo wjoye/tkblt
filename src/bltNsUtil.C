@@ -27,13 +27,9 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltC.h"
-
 extern "C" {
 #include <tclPort.h>
 #include <tclInt.h>
-
-#include "bltInt.h"
 #include "bltNsUtil.h"
 };
 

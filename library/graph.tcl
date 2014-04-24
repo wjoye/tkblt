@@ -170,7 +170,7 @@ proc blt::FindElement { g x y } {
     set markerName "bltClosest_$info(name)"
     catch { $g marker delete $markerName }
     $g marker create text $markerName \
-	-coords { $info(x) $info(y) } \
+	-coords "$info(x) $info(y)" \
 	-text "$info(name): $info(dist)\nindex $info(index)" \
 	-anchor center -justify left \
 	-yoffset 0 -bg {} 
@@ -274,10 +274,10 @@ proc blt::ZoomStack::MarkPoint { g index } {
     set text [format "x=%.4g\ny=%.4g" $x $y] 
 
     if [$g marker exists $marker] {
-     	$g marker configure $marker -coords { $x $y } -text $text 
+     	$g marker configure $marker -coords "$x $y" -text $text 
     } else {
     	$g marker create text $marker \
-	    -coords { $x $y } \
+	    -coords "$x $y" \
 	    -text $text -anchor center -bg {} -justify left
     }
 }
@@ -536,7 +536,7 @@ proc blt::ZoomStack::Box { g } {
 	set x2 [$g xaxis invtransform $_private($g,B,x)]
 	set y2 [$g yaxis invtransform $_private($g,B,y)]
     }
-    set coords { $x1 $y1 $x2 $y1 $x2 $y2 $x1 $y2 $x1 $y1 }
+    set coords "$x1 $y1 $x2 $y1 $x2 $y2 $x1 $y2 $x1 $y1"
     if { [$g marker exists "zoomOutline"] } {
 	$g marker configure "zoomOutline" -coords $coords 
     } else {

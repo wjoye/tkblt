@@ -33,8 +33,6 @@ extern "C" {
 #include <tk.h>
 #include <tkPort.h>
 #include <tkInt.h>
-
-#include "bltInt.h"
 };
 
 #include "bltText.h"

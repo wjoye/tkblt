@@ -23,11 +23,14 @@
  * since the compiled code typically runs only one time.
  */
 
-#include "bltC.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include <tcl.h>
 
 extern "C" {
-#include "bltInt.h"
 #include "bltParse.h"
+#include "bltInt.h"
 };
 
 /*

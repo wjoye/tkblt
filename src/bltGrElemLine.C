@@ -30,6 +30,10 @@
 #include <float.h>
 #include <math.h>
 
+extern "C" {
+#include "bltInt.h"
+};
+
 #include "bltGraph.h"
 #include "bltSpline.h"
 #include "bltGrElemLine.h"

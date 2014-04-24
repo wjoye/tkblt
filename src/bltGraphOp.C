@@ -28,9 +28,8 @@
  */
 
 extern "C" {
-#include "bltInt.h"
 #include "bltList.h"
-}
+};
 
 #include "bltGraph.h"
 #include "bltGraphLine.h"
@@ -258,8 +257,8 @@ static int InvtransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
 {
   Graph* graphPtr = (Graph*)clientData;
   double x, y;
-  if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
+  if ((Tcl_GetDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
+      (Tcl_GetDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
 
   if (graphPtr->flags & RESET_AXES)
@@ -285,8 +284,8 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
 {
   Graph* graphPtr = (Graph*)clientData;
   double x, y;
-  if ((Blt_ExprDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
-      (Blt_ExprDoubleFromObj(interp, objv[3], &y) != TCL_OK))
+  if ((Tcl_GetDoubleFromObj(interp, objv[2], &x) != TCL_OK) ||
+      (Tcl_GetDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
 
   if (graphPtr->flags & RESET_AXES)
@@ -348,15 +347,30 @@ static Axis* GetFirstAxis(Blt_Chain chain)
 
 int Blt_GraphCmdInitProc(Tcl_Interp* interp)
 {
-  static Blt_InitCmdSpec graphSpec = 
-    {"graph", GraphObjCmd, NULL, NULL};
-  static Blt_InitCmdSpec barchartSpec = 
-    {"barchart", BarchartObjCmd, NULL, NULL};
+  Tcl_Namespace* nsPtr = Tcl_FindNamespace(interp, "::blt", NULL, 
+					   TCL_LEAVE_ERR_MSG);
+  if (nsPtr == NULL)
+    return TCL_ERROR;
 
-  if (Blt_InitCmd(interp, "::blt", &graphSpec) != TCL_OK)
-    return TCL_ERROR;
-  if (Blt_InitCmd(interp, "::blt", &barchartSpec) != TCL_OK)
-    return TCL_ERROR;
+  {
+    const char* cmdPath = "::blt::graph";
+    Tcl_Command cmdToken = Tcl_FindCommand(interp, cmdPath, NULL, 0);
+    if (cmdToken)
+      return TCL_OK;
+    cmdToken = Tcl_CreateObjCommand(interp, cmdPath, GraphObjCmd, NULL, NULL);
+    if (Tcl_Export(interp, nsPtr, "graph", 0) != TCL_OK)
+      return TCL_ERROR;
+  }
+
+  {
+    const char* cmdPath = "::blt::barchart";
+    Tcl_Command cmdToken = Tcl_FindCommand(interp, cmdPath, NULL, 0);
+    if (cmdToken)
+      return TCL_OK;
+    cmdToken = Tcl_CreateObjCommand(interp, cmdPath, BarchartObjCmd, NULL,NULL);
+    if (Tcl_Export(interp, nsPtr, "barchart", 0) != TCL_OK)
+      return TCL_ERROR;
+  }
 
   return TCL_OK;
 }
