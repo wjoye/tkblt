@@ -30,7 +30,6 @@
 #include <math.h>
 
 extern "C" {
-#include "bltInt.h"
 #include "bltBind.h"
 };
 
@@ -592,7 +591,7 @@ int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp,
     graphPtr->resetAxes();
 
   double x;
-  if (Blt_ExprDoubleFromObj(interp, objv[3], &x) != TCL_OK)
+  if (Tcl_GetDoubleFromObj(interp, objv[3], &x) != TCL_OK)
     return TCL_ERROR;
 
   if (axisPtr->isHorizontal())

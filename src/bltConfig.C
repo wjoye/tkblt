@@ -40,10 +40,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltConfig.h"
 #include "bltGrMisc.h"
 
