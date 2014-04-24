@@ -35,9 +35,6 @@
 
 #include "bltSpline.h"
 
-typedef int (SplineProc)(Point2d origPts[], int nOrigPts, Point2d intpPts[],
-			 int nIntpPts);
-
 typedef double TriDiagonalMatrix[3];
 typedef struct {
     double b, c, d;
