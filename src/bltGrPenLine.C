@@ -88,7 +88,7 @@ static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
     char c = string[0];
 
     for (GraphSymbolType* p = graphSymbols; p->name; p++) {
-      if (length < p->minChars) {
+      if (length < (int)p->minChars) {
 	continue;
       }
       if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
