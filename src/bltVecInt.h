@@ -28,7 +28,6 @@
  */
 
 
-#include "bltInt.h"
 #include "bltChain.h"
 #include "bltVector.h"
 
@@ -85,7 +84,7 @@ typedef struct {
 
     /*
      * If you change these fields, make sure you change the definition of
-     * Blt_Vector in bltInt.h and blt.h too.
+     * Blt_Vector in blt.h too.
      */
 
     double *valueArr;		/* Array of values (malloc-ed) */

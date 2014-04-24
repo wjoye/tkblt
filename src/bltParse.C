@@ -35,7 +35,6 @@ using namespace std;
 
 extern "C" {
 #include "bltParse.h"
-#include "bltInt.h"
 };
 
 /*

@@ -37,10 +37,6 @@
 #include <iomanip>
 using namespace std;
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"

@@ -33,7 +33,6 @@
 using namespace std;
 
 extern "C" {
-#include "bltInt.h"
 #include "bltBind.h"
 };
 

@@ -32,10 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltGraph.h"
 #include "bltSpline.h"
 #include "bltGrElemLine.h"

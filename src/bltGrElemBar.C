@@ -29,10 +29,6 @@
 
 #include <float.h>
 
-extern "C" {
-#include "bltInt.h"
-};
-
 #include "bltGraphBar.h"
 #include "bltGrElemBar.h"
 #include "bltGrElemOption.h"

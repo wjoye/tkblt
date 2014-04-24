@@ -358,8 +358,8 @@ void Graph::drawPlot(Drawable drawable)
 		     right_-left_+1+2*ops->plotBW,bottom_-top_+1+2*ops->plotBW, 
 		     ops->plotBW, ops->plotRelief);
   
-  drawAxes(drawable);
   drawAxesGrids(drawable);
+  drawAxes(drawable);
   drawAxesLimits(drawable);
   drawMarkers(drawable, MARKER_UNDER);
 
@@ -439,8 +439,8 @@ int Graph::print(const char *ident, Blt_Ps ps)
     break;
   }
 
-  printAxes(ps);
   printAxesGrids(ps);
+  printAxes(ps);
   printAxesLimits(ps);
 
   if (!legend_->isRaised()) {

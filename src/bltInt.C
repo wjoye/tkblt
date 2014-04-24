@@ -30,7 +30,6 @@
 #include <tk.h>
 
 extern "C" {
-#include "bltInt.h"
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
 Tcl_AppInitProc Blt_VectorCmdInitProc;

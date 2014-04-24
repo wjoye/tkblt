@@ -28,7 +28,6 @@
  */
 
 #include <string.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 #include <iostream>
@@ -39,7 +38,6 @@ using namespace std;
 #include <tcl.h>
 
 extern "C" {
-#include "bltInt.h"
 #include "bltSwitch.h"
 };
 
@@ -364,11 +362,9 @@ int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specs,
 	return -1;
       }
       if (DoSwitch(interp, sp, objv[count], record) != TCL_OK) {
-	char msg[200];
-
-	snprintf(msg, 200, "\n    (processing \"%.40s\" switch)", 
-		  sp->switchName);
-	Tcl_AddErrorInfo(interp, msg);
+	ostringstream str;
+	str << "\n    (processing \"" << sp->switchName << "\" switch)" << ends;
+	Tcl_AddErrorInfo(interp, str.str().c_str());
 	return -1;
       }
     }
