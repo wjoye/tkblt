@@ -108,14 +108,15 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   if (objc == 4) {
     offset = 4;
     str << "marker" << graphPtr->nextMarkerId_++ << ends;
-    name = str.str().c_str();
+    name = dupstr(str.str().c_str());
   }
   else {
-    name = Tcl_GetString(objv[4]);
+    name = dupstr(Tcl_GetString(objv[4]));
     if (name[0] == '-') {
+      delete [] name;
       offset = 4;
       str << "marker" << graphPtr->nextMarkerId_++ << ends;
-      name = str.str().c_str();
+      name = dupstr(str.str().c_str());
     }
   }
 
@@ -152,9 +153,11 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   // Unlike elements, new markers are drawn on top of old markers
-  markerPtr->link = Blt_Chain_Prepend(graphPtr->markers_.displayList, markerPtr);
+  markerPtr->link =Blt_Chain_Prepend(graphPtr->markers_.displayList, markerPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
+
+  delete [] name;
   return TCL_OK;
 }
 

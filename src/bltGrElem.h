@@ -78,7 +78,8 @@ typedef struct {
   double *values;
   int nValues;
   int arraySize;
-  double min, max;
+  double min;
+  double max;
 } ElemValues;
 
 typedef struct {

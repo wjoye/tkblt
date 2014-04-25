@@ -430,7 +430,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   else {
     Blt_Vector* vector;
     Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
-    if (FetchVectorValues(NULL, valuesPtr, vector) != TCL_OK)
+    if (FetchVectorValues(interp, valuesPtr, vector) != TCL_OK)
       return;
   }
 
