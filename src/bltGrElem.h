@@ -163,8 +163,6 @@ class Element {
   virtual const char* className() =0;
   virtual const char* typeName() =0;
 
-  void freePen(Pen*);
-
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
 };

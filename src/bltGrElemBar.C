@@ -218,13 +218,7 @@ BarElement::~BarElement()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (ops->activePenPtr)
-    freePen((Pen*)ops->activePenPtr);
-
-  if (ops->normalPenPtr)
-    freePen((Pen*)ops->normalPenPtr);
-
-  if (ops->builtinPenPtr)
+  if (builtinPenPtr)
     delete builtinPenPtr;
 
   ResetBar();
