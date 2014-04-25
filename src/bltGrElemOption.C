@@ -159,19 +159,10 @@ static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin,
 			   char *ptr)
 {
   ElemValues* valuesPtr = *(ElemValues**)ptr;
-  if (!valuesPtr)
-    return;
-
-  switch (valuesPtr->type) {
-  case ELEM_SOURCE_VECTOR: 
-    FreeVectorSource(valuesPtr);
-    break;
-  case ELEM_SOURCE_VALUES:
-    break;
+  if (valuesPtr) {
+    FreeDataValues(valuesPtr);
+    free(valuesPtr);
   }
-
-  FreeDataValues(valuesPtr);
-  free(valuesPtr);
 }
 
 static Tk_CustomOptionSetProc PairsSetProc;
@@ -203,10 +194,16 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 
   nValues /= 2;
   size_t newSize = nValues * sizeof(double);
-  FreeDataValues(coordsPtr->x);
-  FreeDataValues(coordsPtr->y);
-  coordsPtr->x = NULL;
-  coordsPtr->y = NULL;
+  if (coordsPtr->x) {
+    FreeDataValues(coordsPtr->x);
+    free(coordsPtr->x);
+    coordsPtr->x = NULL;
+  }
+  if (coordsPtr->y) {
+    FreeDataValues(coordsPtr->y);
+    free(coordsPtr->y);
+    coordsPtr->y = NULL;
+  }
 
   if (newSize == 0)
     return TCL_OK;
@@ -400,20 +397,28 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr,
   if (!valuesPtr)
     return TCL_ERROR;
 
-  double *array = !valuesPtr->values ?
-    (double*)malloc(Blt_VecLength(vector) * sizeof(double)) :
-    (double*)realloc(valuesPtr->values, Blt_VecLength(vector)*sizeof(double));
+  if (valuesPtr->values)
+    free(valuesPtr->values);
+  valuesPtr->values = NULL;
+  valuesPtr->nValues = 0;
+  valuesPtr->min =0;
+  valuesPtr->max =0;
 
+  int ss = Blt_VecLength(vector);
+  if (!ss)
+    return TCL_OK;
+
+  double *array = (double*)malloc( ss*sizeof(double));
   if (!array) {
     Tcl_AppendResult(interp, "can't allocate new vector", NULL);
     return TCL_ERROR;
   }
 
-  memcpy(array, Blt_VecData(vector), sizeof(double) * Blt_VecLength(vector));
-  valuesPtr->min = Blt_VecMin(vector);
-  valuesPtr->max = Blt_VecMax(vector);
+  memcpy(array, Blt_VecData(vector), ss*sizeof(double));
   valuesPtr->values = array;
   valuesPtr->nValues = Blt_VecLength(vector);
+  valuesPtr->min = Blt_VecMin(vector);
+  valuesPtr->max = Blt_VecMax(vector);
 
   return TCL_OK;
 }
@@ -511,8 +516,11 @@ static void FreeDataValues(ElemValues* valuesPtr)
   }
   if (valuesPtr->values)
     free(valuesPtr->values);
+  valuesPtr->type = ELEM_SOURCE_VALUES;
   valuesPtr->values = NULL;
-  valuesPtr->nValues =0;
+  valuesPtr->nValues = 0;
+  valuesPtr->min =0;
+  valuesPtr->max =0;
 }
 
 static void FindRange(ElemValues* valuesPtr)

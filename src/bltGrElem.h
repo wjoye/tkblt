@@ -77,7 +77,6 @@ typedef struct {
   VectorDataSource vectorSource;
   double *values;
   int nValues;
-  int arraySize;
   double min;
   double max;
 } ElemValues;
