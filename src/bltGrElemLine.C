@@ -271,9 +271,6 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   builtinPenPtr = new LinePen(graphPtr, "builtin", &ops->builtinPen);
   ops->builtinPenPtr = builtinPenPtr;
 
-  Tk_InitOptions(graphPtr->interp_, (char*)&(ops->builtinPen),
-		 builtinPenPtr->optionTable(), graphPtr->tkwin_);
-
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   ops->stylePalette = Blt_Chain_Create();
@@ -284,6 +281,9 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
     strcpy((char*)ops->label,(char*)name);
 
   flags = SCALE_SYMBOL;
+
+  Tk_InitOptions(graphPtr->interp_, (char*)&(ops->builtinPen),
+		 builtinPenPtr->optionTable(), graphPtr->tkwin_);
 }
 
 LineElement::~LineElement()
