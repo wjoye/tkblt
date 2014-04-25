@@ -392,7 +392,7 @@ static void FreeVectorSource(ElemValues* valuesPtr)
 }
 
 static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr, 
-			     Blt_Vector *vector)
+			     Blt_Vector* vector)
 {
   if (!valuesPtr)
     return TCL_ERROR;
@@ -408,7 +408,7 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr,
   if (!ss)
     return TCL_OK;
 
-  double *array = (double*)malloc( ss*sizeof(double));
+  double* array = (double*)malloc(ss*sizeof(double));
   if (!array) {
     Tcl_AppendResult(interp, "can't allocate new vector", NULL);
     return TCL_ERROR;
