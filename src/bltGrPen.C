@@ -58,6 +58,7 @@ Pen::~Pen()
   Blt_Ts_FreeStyle(graphPtr_->display_, &ops->valueStyle);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
+
   if (manageOptions_)
     free(ops_);
 }
