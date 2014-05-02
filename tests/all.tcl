@@ -5,7 +5,7 @@ source crosshairs.tcl
 source legend.tcl
 source xaxis.tcl
 source axis.tcl
-source element.tcl
+source lineelement.tcl
 source pen.tcl
 source marker.tcl
 source bitmapmarker.tcl
