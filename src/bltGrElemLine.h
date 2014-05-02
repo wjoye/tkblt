@@ -87,7 +87,6 @@ typedef struct {
   LinePenOptions builtinPen;
 
   // derived
-  XColor* fillFgColor;
   Tk_3DBorder fillBg;
   int reqMaxSymbols;
   double rTolerance;
@@ -104,8 +103,6 @@ class LineElement : public Element {
  protected:
   LinePen* builtinPenPtr;
   Smoothing smooth_;
-  XColor* fillBgColor_;
-  GC fillGC_;
   Point2d *fillPts_;
   int nFillPts_;
   GraphPoints symbolPts_;

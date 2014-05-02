@@ -101,9 +101,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "active", -1, Tk_Offset(LineElementOptions, activePenPtr), 
    TK_OPTION_NULL_OK, &penObjOption, 0},
-  {TK_OPTION_COLOR, "-areaforeground", "areaForeground", "AreaForeground",
-   NULL, -1, Tk_Offset(LineElementOptions, fillFgColor), 
-   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BORDER, "-areabackground", "areaBackground", "AreaBackground",
    NULL, -1, Tk_Offset(LineElementOptions, fillBg), 
    TK_OPTION_NULL_OK, NULL, MAP_ITEM},
@@ -238,8 +235,6 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Element(graphPtr, name, hPtr)
 {
   smooth_ = LINEAR;
-  fillBgColor_ =NULL;
-  fillGC_ = NULL;
   fillPts_ =NULL;
   nFillPts_ = 0;
 
@@ -302,8 +297,6 @@ LineElement::~LineElement()
 
   if (fillPts_)
     free(fillPts_);
-  if (fillGC_)
-    Tk_FreeGC(graphPtr_->display_, fillGC_);
 }
 
 int LineElement::configure()
@@ -322,23 +315,6 @@ int LineElement::configure()
   } 
   LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
-
-  // Set the outline GC for this pen: GCForeground is outline color.
-  // GCBackground is the fill color (only used for bitmap symbols).
-  unsigned long gcMask =0;
-  XGCValues gcValues;
-  if (ops->fillFgColor) {
-    gcMask |= GCForeground;
-    gcValues.foreground = ops->fillFgColor->pixel;
-  }
-  if (fillBgColor_) {
-    gcMask |= GCBackground;
-    gcValues.background = fillBgColor_->pixel;
-  }
-  GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
-  if (fillGC_)
-    Tk_FreeGC(graphPtr_->display_, fillGC_);
-  fillGC_ = newGC;
 
   return TCL_OK;
 }
@@ -748,11 +724,6 @@ void LineElement::print(Blt_Ps ps)
 
     // If the background fill color was specified, draw the polygon in a
     // solid fashion with that color
-    if (fillBgColor_) {
-      Blt_Ps_XSetBackground(ps, fillBgColor_);
-      Blt_Ps_Append(ps, "gsave fill grestore\n");
-    }
-    Blt_Ps_XSetForeground(ps, ops->fillFgColor);
     if (ops->fillBg)
       Blt_Ps_Append(ps, "gsave fill grestore\n");
     else
