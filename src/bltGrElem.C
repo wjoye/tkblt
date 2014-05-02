@@ -43,7 +43,6 @@ Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   optionTable_ =NULL;
   ops_ =NULL;
   hashPtr_ = hPtr;
-  hide_ =0;
 
   row_ =0;
   col_ =0;

@@ -242,7 +242,8 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
       if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
 	return TCL_ERROR;
 
-      if (elemPtr && !elemPtr->hide_ && !(elemPtr->flags & MAP_ITEM))
+      ElementOptions* eops = (ElementOptions*)elemPtr->ops();
+      if (!eops->hide && !(elemPtr->flags & MAP_ITEM))
 	elemPtr->closest();
     }
   }
@@ -253,9 +254,10 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
     // exactly, the last one picked will be the topmost.  
 
     for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList); 
-	 link != NULL; link = Blt_Chain_PrevLink(link)) {
+	 link; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr && !elemPtr->hide_ && !(elemPtr->flags & MAP_ITEM))
+      ElementOptions* eops = (ElementOptions*)elemPtr->ops();
+      if (!eops->hide && !(elemPtr->flags & MAP_ITEM))
 	elemPtr->closest();
     }
   }

@@ -359,7 +359,7 @@ void BarGraph::initBarSetTable()
 
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if (bePtr->hide_)
+    if (ops->hide)
       continue;
 
     nSegs++;
@@ -497,7 +497,7 @@ void BarGraph::computeBarStacks()
        link; link = Blt_Chain_NextLink(link)) {
     BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
-    if (bePtr->hide_)
+    if (ops->hide)
       continue;
 
     if (ops->coords.x && ops->coords.y) {

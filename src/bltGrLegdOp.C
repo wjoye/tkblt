@@ -446,8 +446,9 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   Element *firstPtr;
   if (legendPtr->getElementFromObj(objv[4], &firstPtr) != TCL_OK)
     return TCL_ERROR;
+  ElementOptions* eops = (ElementOptions*)firstPtr->ops();
 
-  if ((firstPtr->hide_) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
+  if ((eops->hide) && ((legendPtr->flags & SELECT_CLEAR)==0)) {
     Tcl_AppendResult(interp, "can't select hidden node \"", 
 		     Tcl_GetString(objv[4]), "\"", (char *)NULL);
     return TCL_ERROR;
@@ -457,8 +458,9 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   if (objc > 5) {
     if (legendPtr->getElementFromObj(objv[5], &lastPtr) != TCL_OK)
       return TCL_ERROR;
+    ElementOptions* eops = (ElementOptions*)firstPtr->ops();
 
-    if (lastPtr->hide_ && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
+    if (eops->hide && ((legendPtr->flags & SELECT_CLEAR) == 0)) {
       Tcl_AppendResult(interp, "can't select hidden node \"", 
 		       Tcl_GetString(objv[5]), "\"", (char *)NULL);
       return TCL_ERROR;

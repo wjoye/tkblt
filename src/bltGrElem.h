@@ -132,7 +132,6 @@ class Element {
   Graph* graphPtr_;
   const char* name_;
   Tcl_HashEntry* hashPtr_;
-  int hide_;
   unsigned short row_;
   unsigned short col_;
   int *activeIndices_;

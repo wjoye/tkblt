@@ -927,7 +927,8 @@ int Graph::isElementHidden(Marker* markerPtr)
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&elements_.table, mops->elemName);
     if (hPtr) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      if (!elemPtr->link || elemPtr->hide_)
+      ElementOptions* eops = (ElementOptions*)elemPtr->ops();
+      if (!elemPtr->link || eops->hide)
 	return 1;
     }
   }
@@ -1435,7 +1436,8 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     elemPtr = (Element*)Blt_Chain_GetValue(link);
-    if (elemPtr->hide_ || (elemPtr->flags & MAP_ITEM))
+    ElementOptions* eops = (ElementOptions*)elemPtr->ops();
+    if (eops->hide || (elemPtr->flags & MAP_ITEM))
       continue;
 
     elemPtr->closest();
