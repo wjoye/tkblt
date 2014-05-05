@@ -95,9 +95,9 @@ void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text,
 		       unsigned int *widthPtr, unsigned int *heightPtr)
 {
   unsigned int w, h;
-  Blt_GetTextExtents(tsPtr->font, tsPtr->leader, text, -1, &w, &h);
-  *widthPtr = w + 2*tsPtr->xPad;
-  *heightPtr = h + 2*tsPtr->yPad;
+  Blt_GetTextExtents(tsPtr->font, tsPtr->leader_, text, -1, &w, &h);
+  *widthPtr = w + 2*tsPtr->xPad_;
+  *heightPtr = h + 2*tsPtr->yPad_;
 }
 
 /*
@@ -320,14 +320,14 @@ void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
   if (!text || !(*text))
     return;
 
-  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+  if ((stylePtr->gc_ == NULL) || (stylePtr->flags_ & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int w1, h1;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, textLen,-1,
 					      stylePtr->justify, 0, &w1, &h1);
   Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
-  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc_, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, textLen);
 }
 
@@ -337,14 +337,14 @@ void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, const char *text,
   if (!text || !(*text))
     return;
 
-  if ((stylePtr->gc == NULL) || (stylePtr->flags & UPDATE_GC))
+  if ((stylePtr->gc_ == NULL) || (stylePtr->flags_ & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int w1, h1;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 				stylePtr->justify, 0, &w1, &h1);
   Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
-  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc_, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, -1);
 
   float angle = fmod(stylePtr->angle, 360.0);
@@ -369,14 +369,14 @@ void Blt_DrawText(Tk_Window tkwin, Drawable drawable, const char *text,
   if (!text || (*text == '\0'))
     return;
 
-  if (!stylePtr->gc || (stylePtr->flags & UPDATE_GC))
+  if (!stylePtr->gc_ || (stylePtr->flags_ & UPDATE_GC))
     Blt_Ts_ResetStyle(tkwin, stylePtr);
 
   int w1, h1;
   Tk_TextLayout layout = Tk_ComputeTextLayout(stylePtr->font, text, -1, -1, 
 				stylePtr->justify, 0, &w1, &h1);
   Point2d rr = Rotate_Text(x, y, w1, h1, stylePtr);
-  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc, layout,
+  TkDrawAngledTextLayout(Tk_Display(tkwin), drawable, stylePtr->gc_, layout,
   			 rr.x, rr.y, stylePtr->angle, 0, -1);
 }
 
@@ -393,15 +393,15 @@ void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *stylePtr)
     gcValues.foreground = stylePtr->color->pixel;
   }
   newGC = Tk_GetGC(tkwin, gcMask, &gcValues);
-  if (stylePtr->gc)
-    Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc);
+  if (stylePtr->gc_)
+    Tk_FreeGC(Tk_Display(tkwin), stylePtr->gc_);
 
-  stylePtr->gc = newGC;
-  stylePtr->flags &= ~UPDATE_GC;
+  stylePtr->gc_ = newGC;
+  stylePtr->flags_ &= ~UPDATE_GC;
 }
 
 void Blt_Ts_FreeStyle(Display *display, TextStyle *stylePtr)
 {
-  if (stylePtr->gc)
-    Tk_FreeGC(display, stylePtr->gc);
+  if (stylePtr->gc_)
+    Tk_FreeGC(display, stylePtr->gc_);
 }

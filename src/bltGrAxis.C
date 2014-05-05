@@ -515,23 +515,22 @@ void Axis::draw(Drawable drawable)
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    ts.flags |= UPDATE_GC;
+    ts.flags_ |= UPDATE_GC;
 
     ts.angle = titleAngle_;
     ts.font = ops->titleFont;
-    ts.xPad = 1;
-    ts.yPad = 0;
     ts.anchor = titleAnchor_;
-    ts.justify = ops->titleJustify;
     if (flags & ACTIVE)
       ts.color = ops->activeFgColor;
     else
       ts.color = ops->titleColor;
-
+    ts.justify = ops->titleJustify;
+    ts.xPad_ = 1;
+    ts.yPad_ = 0;
     if ((titleAngle_ == 90.0) || (titleAngle_ == 270.0))
-      ts.maxLength = height_;
+      ts.maxLength_ = height_;
     else
-      ts.maxLength = width_;
+      ts.maxLength_ = width_;
 
     Blt_Ts_DrawText(graphPtr_->tkwin_, drawable, ops->title, -1, &ts, 
 		    (int)titlePos_.x, (int)titlePos_.y);
@@ -601,12 +600,12 @@ void Axis::draw(Drawable drawable)
     TextStyle ts;
 
     Blt_Ts_InitStyle(ts);
-    ts.flags |= UPDATE_GC;
+    ts.flags_ |= UPDATE_GC;
 
     ts.angle = ops->tickAngle;
     ts.font = ops->tickFont;
-    ts.xPad = 2;
-    ts.yPad = 0;
+    ts.xPad_ = 2;
+    ts.yPad_ = 0;
     ts.anchor = tickAnchor_;
     if (flags & ACTIVE)
       ts.color = ops->activeFgColor;
@@ -656,7 +655,7 @@ void Axis::drawLimits(Drawable drawable)
   int hMin = graphPtr_->bottom_ - gops->yPad - 2;
   int hMax = hMin;
 
-  ops->limitsTextStyle.flags |= UPDATE_GC;
+  ops->limitsTextStyle.flags_ |= UPDATE_GC;
 
   const int spacing =8;
   int isHoriz = isHorizontal();
@@ -1709,11 +1708,11 @@ void Axis::print(Blt_Ps ps)
 
     ts.angle = titleAngle_;
     ts.font = ops->titleFont;
-    ts.xPad = 1;
-    ts.yPad = 0;
     ts.anchor = titleAnchor_;
     ts.justify = ops->titleJustify;
     ts.color = ops->titleColor;
+    ts.xPad_ = 1;
+    ts.yPad_ = 0;
     Blt_Ps_DrawText(ps, ops->title, &ts, titlePos_.x, titlePos_.y);
   }
 
@@ -1724,10 +1723,10 @@ void Axis::print(Blt_Ps ps)
 
     ts.angle = ops->tickAngle;
     ts.font = ops->tickFont;
-    ts.xPad = 2;
-    ts.yPad = 0;
     ts.anchor = tickAnchor_;
     ts.color = ops->tickColor;
+    ts.xPad_ = 2;
+    ts.yPad_ = 0;
 
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link; 
 	 link = Blt_Chain_NextLink(link)) {

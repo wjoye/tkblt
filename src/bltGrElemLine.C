@@ -2752,7 +2752,7 @@ void LineElement::DrawValues(Drawable drawable, LinePen* penPtr,
   xval = ops->coords.x->values, yval = ops->coords.y->values;
 
   // be sure to update style->gc, things might have changed
-  penOps->valueStyle.flags |= UPDATE_GC;
+  penOps->valueStyle.flags_ |= UPDATE_GC;
   for (pp = points, endp = points + length; pp < endp; pp++) {
     double x = xval[map[count]];
     double y = yval[map[count]];

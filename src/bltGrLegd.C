@@ -402,8 +402,8 @@ void Legend::draw(Drawable drawable)
 			       Tk_Depth(tkwin));
 
   // be sure to update style->gc, things might have changed
-  ops->style.flags |= UPDATE_GC;
-  ops->titleStyle.flags |= UPDATE_GC;
+  ops->style.flags_ |= UPDATE_GC;
+  ops->titleStyle.flags_ |= UPDATE_GC;
 
   if (ops->normalBg)
     Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 

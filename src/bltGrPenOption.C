@@ -81,11 +81,9 @@ static Tcl_Obj* PenGetProc(ClientData clientData, Tk_Window tkwin,
 static void PenFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   Pen* penPtr = *(Pen**)ptr;
-  if (penPtr) {
-    penPtr->refCount_--;
-    if (penPtr->refCount_ == 0)
-      delete penPtr;
-  }
+  if (penPtr)
+    if (penPtr->refCount_ > 0)
+      penPtr->refCount_--;
 }
 
 

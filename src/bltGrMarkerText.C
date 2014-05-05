@@ -149,7 +149,7 @@ void TextMarker::draw(Drawable drawable)
   }
 
   // be sure to update style->gc, things might have changed
-  ops->style.flags |= UPDATE_GC;
+  ops->style.flags_ |= UPDATE_GC;
   Blt_Ts_DrawText(graphPtr_->tkwin_, drawable, ops->string, -1,
 		  &ops->style, anchorPt_.x, anchorPt_.y);
 }

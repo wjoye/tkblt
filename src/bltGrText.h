@@ -36,23 +36,23 @@
 
 #define UPDATE_GC 1
 
-typedef struct {
-  unsigned int state;
+class TextStyle {
+ public:
+  Tk_Anchor anchor;
   XColor* color;
   Tk_Font font;
   double angle;
   Tk_Justify justify;
-  Tk_Anchor anchor;
-  int xPad;
-  int yPad;
-  unsigned short int leader;
-  short int underline;
-  int maxLength;
 
-  /* Private fields. */
-  unsigned short flags;
-  GC gc;
-} TextStyle;
+  unsigned short int leader_;
+  short int underline_;
+  int xPad_;
+  int yPad_;
+  int maxLength_;
+  unsigned int state_;
+  unsigned short flags_;
+  GC gc_;
+};
 
 extern void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, 
 			       int textLen, unsigned int *widthPtr, 
@@ -79,15 +79,15 @@ extern Point2d Blt_AnchorPoint (double x, double y, double width,
   ((ts).anchor = TK_ANCHOR_NW,			\
    (ts).color = (XColor*)NULL,			\
    (ts).font = NULL,				\
+   (ts).angle = 0.0,                            \
    (ts).justify = TK_JUSTIFY_LEFT,		\
-   (ts).leader = 0,				\
-   (ts).underline = -1,				\
-   (ts).xPad = 0,				\
-   (ts).yPad = 0,				\
-   (ts).state = 0,				\
-   (ts).flags = 0,				\
-   (ts).gc = NULL,				\
-   (ts).maxLength = -1,				\
-   (ts).angle = 0.0)
+   (ts).leader_ = 0,				\
+   (ts).underline_ = -1,			\
+   (ts).xPad_ = 0,				\
+   (ts).yPad_ = 0,				\
+    (ts).maxLength_ = -1,			\
+   (ts).state_ = 0,				\
+   (ts).flags_ = 0,				\
+   (ts).gc_ = NULL)				
 
 #endif
