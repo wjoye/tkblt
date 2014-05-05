@@ -60,6 +60,22 @@ BarGroup::BarGroup()
   index =0;
 }
 
+// BarSetKey
+
+BarSetKey::BarSetKey()
+{
+  value =0;
+  xAxis =NULL;
+  yAxis =NULL;
+}
+
+BarSetKey::BarSetKey(float vv, Axis* xx, Axis* yy)
+{
+  value =vv;
+  xAxis =xx;
+  yAxis =yy;
+}
+
 // BarGraph
 
 static const char* barmodeObjOption[] = 
@@ -319,7 +335,7 @@ int BarGraph::createElement(int objc, Tcl_Obj* const objv[])
 void BarGraph::mapElements()
 {
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
-  if (ops->barMode != BARS_INFRONT)
+  if ((BarMode)ops->barMode != INFRONT)
     resetBarGroups();
 
   Graph::mapElements();
@@ -335,7 +351,7 @@ void BarGraph::resetAxes()
    *	      Needs to be done before the axis limits are set.
    */
   initBarSetTable();
-  if ((ops->barMode == BARS_STACKED) && (nBarGroups_ > 0))
+  if (((BarMode)ops->barMode == STACKED) && (nBarGroups_ > 0))
     computeBarStacks();
 
   Graph::resetAxes();
@@ -348,7 +364,7 @@ void BarGraph::initBarSetTable()
   // Free resources associated with a previous frequency table. This includes
   // the array of frequency information and the table itself
   destroyBarSets();
-  if (ops->barMode == BARS_INFRONT)
+  if ((BarMode)ops->barMode == INFRONT)
     return;
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
 
@@ -370,13 +386,12 @@ void BarGraph::initBarSetTable()
       int nPoints = ops->coords.x->nValues;
       double *x, *xend;
       for (x = ops->coords.x->values, xend = x + nPoints; x < xend; x++) {
-	BarSetKey key;
-	key.value = *x;
-	key.xAxis = ops->xAxis;
-	key.yAxis = NULL;
+	BarSetKey key(*x, ops->xAxis, NULL);
 	int isNew;
-	Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
-	Tcl_HashTable *tablePtr;
+	Tcl_HashEntry* hPtr = 
+	  Tcl_CreateHashEntry(&setTable, (char *)&key, &isNew);
+	
+	Tcl_HashTable* tablePtr;
 	if (isNew) {
 	  tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
 	  Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
@@ -427,7 +442,7 @@ void BarGraph::initBarSetTable()
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&setTable_, &iter); 
 	 hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
       Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-      BarSetKey *keyPtr = (BarSetKey *)Tcl_GetHashKey(&setTable, hPtr);
+      BarSetKey* keyPtr = (BarSetKey*)Tcl_GetHashKey(&setTable, hPtr);
       size_t xcount = 0;
       Tcl_HashSearch iter2;
       for (Tcl_HashEntry *hPtr2 = Tcl_FirstHashEntry(tablePtr, &iter2);
@@ -462,6 +477,7 @@ void BarGraph::destroyBarSets()
     Tcl_DeleteHashTable(tablePtr);
     free(tablePtr);
   }
+
   Tcl_DeleteHashTable(&setTable_);
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
 }
@@ -480,7 +496,7 @@ void BarGraph::computeBarStacks()
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
   Blt_ChainLink link;
-  if ((ops->barMode != BARS_STACKED) || (nBarGroups_ == 0))
+  if (((BarMode)ops->barMode != STACKED) || (nBarGroups_ == 0))
     return;
 
   // Initialize the stack sums to zero

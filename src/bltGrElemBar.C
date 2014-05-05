@@ -284,10 +284,6 @@ void BarElement::map()
   for (rp = bars, i = 0; i < nPoints; i++) {
     Point2d c1, c2;			/* Two opposite corners of the rectangle
 					 * in graph coordinates. */
-    double dx, dy;
-    int height;
-    double right, left, top, bottom;
-
     if (((x[i] - barWidth) > ops->xAxis->axisRange_.max) ||
 	((x[i] + barWidth) < ops->xAxis->axisRange_.min)) {
       continue;			/* Abscissa is out of range of the
@@ -298,38 +294,32 @@ void BarElement::map()
     c2.x = c1.x + barWidth;
     c2.y = baseline;
 
-    /*
-     * If the mode is "aligned" or "stacked" we need to adjust the x or y
-     * coordinates of the two corners.
-     */
-
-    if ((barGraphPtr_->nBarGroups_ > 0) && (gops->barMode != BARS_INFRONT) && 
+    // If the mode is "aligned" or "stacked" we need to adjust the x or y
+    // coordinates of the two corners.
+    if ((barGraphPtr_->nBarGroups_ > 0) && 
+	((BarGraph::BarMode)gops->barMode != BarGraph::INFRONT) && 
 	(!gops->stackAxes)) {
-      Tcl_HashEntry *hPtr;
-      BarSetKey key;
+      
+      BarSetKey key((float)x[i], ops->xAxis, NULL);
+      Tcl_HashEntry *hPtr = 
+	Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
 
-      key.value = (float)x[i];
-      key.xAxis = ops->xAxis;
-      key.yAxis = NULL;
-      hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
       if (hPtr) {
-
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? 
 	  ops->groupName : ops->yAxis->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
-	  double slice, width, offset;
-		    
 	  BarGroup* groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
-	  slice = barWidth / (double)barGraphPtr_->maxBarSetSize_;
-	  offset = (slice * groupPtr->index);
+	  double slice = barWidth / (double)barGraphPtr_->maxBarSetSize_;
+	  double offset = (slice * groupPtr->index);
 	  if (barGraphPtr_->maxBarSetSize_ > 1) {
 	    offset += slice * 0.05;
 	    slice *= 0.90;
 	  }
-	  switch (gops->barMode) {
-	  case BARS_STACKED:
+
+	  switch ((BarGraph::BarMode)gops->barMode) {
+	  case BarGraph::STACKED:
 	    groupPtr->count++;
 	    c2.y = groupPtr->lastY;
 	    c1.y += c2.y;
@@ -338,39 +328,41 @@ void BarElement::map()
 	    c2.x = c1.x + slice;
 	    break;
 			
-	  case BARS_ALIGNED:
+	  case BarGraph::ALIGNED:
 	    slice /= groupPtr->nSegments;
 	    c1.x += offset + (slice * groupPtr->count);
 	    c2.x = c1.x + slice;
 	    groupPtr->count++;
 	    break;
 			
-	  case BARS_OVERLAP:
-	    slice /= (groupPtr->nSegments + 1);
-	    width = slice + slice;
-	    groupPtr->count++;
-	    c1.x += offset + 
-	      (slice * (groupPtr->nSegments - groupPtr->count));
-	    c2.x = c1.x + width;
+	  case BarGraph::OVERLAP:
+	    {
+	      slice /= (groupPtr->nSegments + 1);
+	      double width = slice + slice;
+	      groupPtr->count++;
+	      c1.x += offset + 
+		(slice * (groupPtr->nSegments - groupPtr->count));
+	      c2.x = c1.x + width;
+	    }
 	    break;
 			
-	  case BARS_INFRONT:
+	  case BarGraph::INFRONT:
 	    break;
 	  }
 	}
       }
     }
+
     int invertBar = 0;
     if (c1.y < c2.y) {
-      double temp;
-
-      /* Handle negative bar values by swapping ordinates */
-      temp = c1.y, c1.y = c2.y, c2.y = temp;
+      // Handle negative bar values by swapping ordinates
+      double temp = c1.y;
+      c1.y = c2.y;
+      c2.y = temp;
       invertBar = 1;
     }
-    /*
-     * Get the two corners of the bar segment and compute the rectangle
-     */
+
+    // Get the two corners of the bar segment and compute the rectangle
     double ybot = c2.y;
     c1 = graphPtr_->map2D(c1.x, c1.y, ops->xAxis, ops->yAxis);
     c2 = graphPtr_->map2D(c2.x, c2.y, ops->xAxis, ops->yAxis);
@@ -378,72 +370,79 @@ void BarElement::map()
       c2.y = graphPtr_->bottom_;
 	    
     if (c2.y < c1.y) {
-      double t;
-      t = c1.y, c1.y = c2.y, c2.y = t;
+      double t = c1.y;
+      c1.y = c2.y;
+      c2.y = t;
     }
+
     if (c2.x < c1.x) {
-      double t;
-      t = c1.x, c1.x = c2.x, c2.x = t;
+      double t = c1.x;
+      c1.x = c2.x;
+      c2.x = t;
     }
+
     if ((c1.x > graphPtr_->right_) || (c2.x < graphPtr_->left_) || 
-	(c1.y > graphPtr_->bottom_) || (c2.y < graphPtr_->top_)) {
+	(c1.y > graphPtr_->bottom_) || (c2.y < graphPtr_->top_))
       continue;
-    }
-    /* Bound the bars horizontally by the width of the graph window */
-    /* Bound the bars vertically by the position of the axis. */
+
+    // Bound the bars horizontally by the width of the graph window 
+    // Bound the bars vertically by the position of the axis.
+    double right =0;
+    double left =0;
+    double top =0;
+    double bottom =0;
     if (gops->stackAxes) {
       top = ops->yAxis->screenMin_;
       bottom = ops->yAxis->screenMin_ + ops->yAxis->screenRange_;
       left = graphPtr_->left_;
       right = graphPtr_->right_;
-    } else {
-      left = top = 0;
+    }
+    else {
       bottom = right = 10000;
-      /* Shouldn't really have a call to Tk_Width or Tk_Height in
-       * mapping routine.  We only want to clamp the bar segment to the
-       * size of the window if we're actually mapped onscreen. */
+      // Shouldn't really have a call to Tk_Width or Tk_Height in
+      // mapping routine.  We only want to clamp the bar segment to the
+      // size of the window if we're actually mapped onscreen
       if (Tk_Height(graphPtr_->tkwin_) > 1)
 	bottom = Tk_Height(graphPtr_->tkwin_);
-
       if (Tk_Width(graphPtr_->tkwin_) > 1)
 	right = Tk_Width(graphPtr_->tkwin_);
     }
+
     CLAMP(c1.y, top, bottom);
     CLAMP(c2.y, top, bottom);
     CLAMP(c1.x, left, right);
     CLAMP(c2.x, left, right);
-    dx = fabs(c1.x - c2.x);
-    dy = fabs(c1.y - c2.y);
-    if ((dx == 0) || (dy == 0)) {
+    double dx = fabs(c1.x - c2.x);
+    double dy = fabs(c1.y - c2.y);
+    if ((dx == 0) || (dy == 0))
       continue;
-    }
-    height = (int)dy;
-    if (invertBar) {
+
+    int height = (int)dy;
+    if (invertBar)
       rp->y = (short int)MIN(c1.y, c2.y);
-    } else {
+    else
       rp->y = (short int)(MAX(c1.y, c2.y)) - height;
-    }
+
     rp->x = (short int)MIN(c1.x, c2.x);
     rp->width = (short int)dx + 1;
     rp->width |= 0x1;
-    if (rp->width < 1) {
+    if (rp->width < 1)
       rp->width = 1;
-    }
+
     rp->height = height + 1;
-    if (rp->height < 1) {
+    if (rp->height < 1)
       rp->height = 1;
-    }
-    barToData[count] = i;		/* Save the data index corresponding to
-					 * the rectangle */
+
+    // Save the data index corresponding to the rectangle
+    barToData[count] = i;
     count++;
     rp++;
   }
   nBars_ = count;
   bars_ = bars;
   barToData_ = barToData;
-  if (nActiveIndices_ > 0) {
+  if (nActiveIndices_ > 0)
     MapActiveBars();
-  }
 	
   int size = 20;
   if (count > 0)
@@ -506,7 +505,8 @@ void BarElement::extents(Region2d *regPtr)
   // Handle stacked bar elements specially.
   // If element is stacked, the sum of its ordinates may be outside the
   // minimum/maximum limits of the element's data points.
-  if ((gops->barMode == BARS_STACKED) && (barGraphPtr_->nBarGroups_ > 0))
+  if (((BarGraph::BarMode)gops->barMode == BarGraph::STACKED) && 
+      (barGraphPtr_->nBarGroups_ > 0))
     CheckBarStacks(ops->xAxis, ops->yAxis, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
@@ -887,7 +887,8 @@ void BarElement::CheckBarStacks(Axis* xAxis, Axis* yAxis,
 {
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
-  if ((gops->barMode != BARS_STACKED) || barGraphPtr_->nBarGroups_ == 0)
+  if (((BarGraph::BarMode)gops->barMode != BarGraph::STACKED) || 
+      barGraphPtr_->nBarGroups_ == 0)
     return;
 
   BarGroup *gp, *gend;

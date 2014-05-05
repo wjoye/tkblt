@@ -34,30 +34,6 @@
 
 #include "bltGraph.h"
 
-class BarGroup {
- public:
-  int nSegments;
-  Axis* xAxis;
-  Axis* yAxis;
-  float sum;
-  int count;
-  float lastY;
-  size_t index;
-
- public:
-  BarGroup();
-};
-
-typedef struct {
-  float value;
-  Axis* xAxis;
-  Axis* yAxis;
-} BarSetKey;
-
-typedef enum {
-  BARS_INFRONT, BARS_STACKED, BARS_ALIGNED, BARS_OVERLAP
-} BarMode;
-
 typedef struct {
   double aspect;
   Tk_3DBorder normalBg;
@@ -87,12 +63,40 @@ typedef struct {
   int reqPlotHeight;
 
   // bar graph
-  BarMode barMode;
+  int barMode;
   double barWidth;
   double baseline;
 } BarGraphOptions;
 
+class BarGroup {
+ public:
+  int nSegments;
+  Axis* xAxis;
+  Axis* yAxis;
+  float sum;
+  int count;
+  float lastY;
+  size_t index;
+
+ public:
+  BarGroup();
+};
+
+class BarSetKey {
+ public:
+  float value;
+  Axis* xAxis;
+  Axis* yAxis;
+
+ public:
+  BarSetKey();
+  BarSetKey(float, Axis*, Axis*);
+};
+
 class BarGraph : public Graph {
+ public:
+  enum BarMode {INFRONT, STACKED, ALIGNED, OVERLAP};
+
  public:
   BarGroup* barGroups_;
   int nBarGroups_;
@@ -114,7 +118,6 @@ class BarGraph : public Graph {
   void configure();
   int createPen(const char*, int, Tcl_Obj* const []);
   int createElement(int, Tcl_Obj* const []);
-
 };
 
 #endif
