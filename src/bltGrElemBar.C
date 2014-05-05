@@ -321,7 +321,7 @@ void BarElement::map()
 	if (hPtr) {
 	  double slice, width, offset;
 		    
-	  BarGroup *groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
+	  BarGroup* groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
 	  slice = barWidth / (double)barGraphPtr_->maxBarSetSize_;
 	  offset = (slice * groupPtr->index);
 	  if (barGraphPtr_->maxBarSetSize_ > 1) {

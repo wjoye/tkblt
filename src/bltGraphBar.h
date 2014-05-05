@@ -34,7 +34,8 @@
 
 #include "bltGraph.h"
 
-typedef struct {
+class BarGroup {
+ public:
   int nSegments;
   Axis* xAxis;
   Axis* yAxis;
@@ -42,7 +43,10 @@ typedef struct {
   int count;
   float lastY;
   size_t index;
-} BarGroup;
+
+ public:
+  BarGroup();
+};
 
 typedef struct {
   float value;
@@ -90,7 +94,7 @@ typedef struct {
 
 class BarGraph : public Graph {
  public:
-  BarGroup *barGroups_;
+  BarGroup* barGroups_;
   int nBarGroups_;
   Tcl_HashTable setTable_;
   int maxBarSetSize_;
