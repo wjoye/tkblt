@@ -2737,59 +2737,57 @@ void LineElement::DrawValues(Drawable drawable, LinePen* penPtr,
 			     int length, Point2d *points, int *map)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
   Point2d *pp, *endp;
   double *xval, *yval;
   const char* fmt;
   char string[TCL_DOUBLE_SPACE * 2 + 2];
     
-  fmt = penOps->valueFormat;
+  fmt = pops->valueFormat;
   if (fmt == NULL)
     fmt = "%g";
+  TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
   xval = ops->coords.x->values, yval = ops->coords.y->values;
 
-  // be sure to update style->gc, things might have changed
-  penOps->valueStyle.flags_ |= UPDATE_GC;
   for (pp = points, endp = points + length; pp < endp; pp++) {
     double x = xval[map[count]];
     double y = yval[map[count]];
     count++;
-    if (penOps->valueShow == SHOW_X)
+    if (pops->valueShow == SHOW_X)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
-    else if (penOps->valueShow == SHOW_Y)
+    else if (pops->valueShow == SHOW_Y)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
-    else if (penOps->valueShow == SHOW_BOTH) {
+    else if (pops->valueShow == SHOW_BOTH) {
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
-    Blt_DrawText(graphPtr_->tkwin_, drawable, string, &penOps->valueStyle, 
-		 Round(pp->x), Round(pp->y));
+    ts.drawText(drawable, string, pp->x, pp->y);
   } 
 }
 
 void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
   /* Set line and foreground attributes */
-  XColor* fillColor = penOps->symbol.fillColor;
+  XColor* fillColor = pops->symbol.fillColor;
   if (!fillColor)
-    fillColor = penOps->traceColor;
+    fillColor = pops->traceColor;
 
-  XColor* outlineColor = penOps->symbol.outlineColor;
+  XColor* outlineColor = pops->symbol.outlineColor;
   if (!outlineColor)
-    outlineColor = penOps->traceColor;
+    outlineColor = pops->traceColor;
 
-  if (penOps->symbol.type == SYMBOL_NONE)
-    Blt_Ps_XSetLineAttributes(ps, penOps->traceColor, penOps->traceWidth + 2,
-			      &penOps->traceDashes, CapButt, JoinMiter);
+  if (pops->symbol.type == SYMBOL_NONE)
+    Blt_Ps_XSetLineAttributes(ps, pops->traceColor, pops->traceWidth + 2,
+			      &pops->traceDashes, CapButt, JoinMiter);
   else {
-    Blt_Ps_XSetLineWidth(ps, penOps->symbol.outlineWidth);
+    Blt_Ps_XSetLineWidth(ps, pops->symbol.outlineWidth);
     Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
   }
 
@@ -2799,7 +2797,7 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
    * already.
    */
   Blt_Ps_Append(ps, "\n/DrawSymbolProc {\n");
-  switch (penOps->symbol.type) {
+  switch (pops->symbol.type) {
   case SYMBOL_NONE:
     break;				/* Do nothing */
   case SYMBOL_BITMAP:
@@ -2811,24 +2809,24 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
        * Compute how much to scale the bitmap.  Don't let the scaled
        * bitmap exceed the bounding square for the symbol.
        */
-      Tk_SizeOfBitmap(graphPtr_->display_, penOps->symbol.bitmap, &w, &h);
+      Tk_SizeOfBitmap(graphPtr_->display_, pops->symbol.bitmap, &w, &h);
       sx = (double)size / (double)w;
       sy = (double)size / (double)h;
       scale = MIN(sx, sy);
 
-      if (penOps->symbol.mask != None) {
+      if (pops->symbol.mask != None) {
 	Blt_Ps_VarAppend(ps, "\n  % Bitmap mask is \"",
-			 Tk_NameOfBitmap(graphPtr_->display_, penOps->symbol.mask),
+			 Tk_NameOfBitmap(graphPtr_->display_, pops->symbol.mask),
 			 "\"\n\n  ", NULL);
 	Blt_Ps_XSetBackground(ps, fillColor);
-	Blt_Ps_DrawBitmap(ps, graphPtr_->display_, penOps->symbol.mask, 
+	Blt_Ps_DrawBitmap(ps, graphPtr_->display_, pops->symbol.mask, 
 			  scale, scale);
       }
       Blt_Ps_VarAppend(ps, "\n  % Bitmap symbol is \"",
-		       Tk_NameOfBitmap(graphPtr_->display_, penOps->symbol.bitmap),
+		       Tk_NameOfBitmap(graphPtr_->display_, pops->symbol.bitmap),
 		       "\"\n\n  ", NULL);
       Blt_Ps_XSetForeground(ps, outlineColor);
-      Blt_Ps_DrawBitmap(ps, graphPtr_->display_, penOps->symbol.bitmap, 
+      Blt_Ps_DrawBitmap(ps, graphPtr_->display_, pops->symbol.bitmap, 
 			scale, scale);
     }
     break;
@@ -2837,7 +2835,7 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
     Blt_Ps_XSetBackground(ps, fillColor);
     Blt_Ps_Append(ps, "  gsave fill grestore\n");
 
-    if (penOps->symbol.outlineWidth > 0) {
+    if (pops->symbol.outlineWidth > 0) {
       Blt_Ps_Append(ps, "  ");
       Blt_Ps_XSetForeground(ps, outlineColor);
       Blt_Ps_Append(ps, "  stroke\n");
@@ -2850,7 +2848,7 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
 void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
 				      int nSymbolPts, Point2d *symbolPts)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
   double symbolSize;
   static const char* symbolMacros[] =
@@ -2860,7 +2858,7 @@ void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
   GetSymbolPostScriptInfo(ps, penPtr, size);
 
   symbolSize = (double)size;
-  switch (penOps->symbol.type) {
+  switch (pops->symbol.type) {
   case SYMBOL_SQUARE:
   case SYMBOL_CROSS:
   case SYMBOL_PLUS:
@@ -2883,21 +2881,21 @@ void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
   Point2d *pp, *endp;
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
     Blt_Ps_Format(ps, "%g %g %g %s\n", pp->x, pp->y, 
-		  symbolSize, symbolMacros[penOps->symbol.type]);
+		  symbolSize, symbolMacros[pops->symbol.type]);
   }
 }
 
 void LineElement::SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
 {
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
   /* Set the attributes of the line (color, dashes, linewidth) */
-  Blt_Ps_XSetLineAttributes(ps, penOps->traceColor, penOps->traceWidth, 
-			    &penOps->traceDashes, CapButt, JoinMiter);
-  if ((LineIsDashed(penOps->traceDashes)) && 
-      (penOps->traceOffColor)) {
+  Blt_Ps_XSetLineAttributes(ps, pops->traceColor, pops->traceWidth, 
+			    &pops->traceDashes, CapButt, JoinMiter);
+  if ((LineIsDashed(pops->traceDashes)) && 
+      (pops->traceOffColor)) {
     Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-    Blt_Ps_XSetBackground(ps, penOps->traceOffColor);
+    Blt_Ps_XSetBackground(ps, pops->traceOffColor);
     Blt_Ps_Append(ps, "    ");
     Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
     Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
@@ -2926,32 +2924,32 @@ void LineElement::ValuesToPostScript(Blt_Ps ps, LinePen* penPtr,
 				     int *pointToData)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
-  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
-  const char* fmt = penOps->valueFormat;
+  const char* fmt = pops->valueFormat;
   if (fmt == NULL)
     fmt = "%g";
+  TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
   Point2d *pp, *endp;
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
-    double x, y;
-
-    x = ops->coords.x->values[pointToData[count]];
-    y = ops->coords.y->values[pointToData[count]];
+    double x = ops->coords.x->values[pointToData[count]];
+    double y = ops->coords.y->values[pointToData[count]];
     count++;
 
     char string[TCL_DOUBLE_SPACE * 2 + 2];
-    if (penOps->valueShow == SHOW_X)
+    if (pops->valueShow == SHOW_X)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
-    else if (penOps->valueShow == SHOW_Y)
+    else if (pops->valueShow == SHOW_Y)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
-    else if (penOps->valueShow == SHOW_BOTH) {
+    else if (pops->valueShow == SHOW_BOTH) {
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
-    Blt_Ps_DrawText(ps, string, &penOps->valueStyle, pp->x, pp->y);
+
+    ts.printText(ps, string, pp->x, pp->y);
   } 
 }
 

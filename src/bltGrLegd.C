@@ -182,12 +182,17 @@ Legend::Legend(Graph* graphPtr)
   titleWidth_ =0;
   titleHeight_ =0;
 
-  Blt_Ts_InitStyle(ops->style);
-  Blt_Ts_InitStyle(ops->titleStyle);
-  ops->style.justify = TK_JUSTIFY_LEFT;
-  ops->style.anchor = TK_ANCHOR_NW;
-  ops->titleStyle.justify = TK_JUSTIFY_LEFT;
-  ops->titleStyle.anchor = TK_ANCHOR_NW;
+  ops->style.anchor =TK_ANCHOR_NW;
+  ops->style.color =NULL;
+  ops->style.font =NULL;
+  ops->style.angle =0;
+  ops->style.justify =TK_JUSTIFY_LEFT;
+
+  ops->titleStyle.anchor =TK_ANCHOR_NW;
+  ops->titleStyle.color =NULL;
+  ops->titleStyle.font =NULL;
+  ops->titleStyle.angle =0;
+  ops->titleStyle.justify =TK_JUSTIFY_LEFT;
 
   bindTable_ = Blt_CreateBindingTable(graphPtr->interp_, graphPtr->tkwin_, 
 				      graphPtr, PickEntryProc, Blt_GraphTags);
@@ -203,10 +208,8 @@ Legend::Legend(Graph* graphPtr)
 
 Legend::~Legend()
 {
-  LegendOptions* ops = (LegendOptions*)ops_;
+  //  LegendOptions* ops = (LegendOptions*)ops_;
 
-  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->style);
-  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->titleStyle);
   Blt_DestroyBindingTable(bindTable_);
     
   if (focusGC_)
@@ -254,8 +257,8 @@ void Legend::map(int plotWidth, int plotHeight)
   height_ =0;
   width_ = 0;
 
-  Blt_Ts_GetExtents(&ops->titleStyle, ops->title, 
-		    &titleWidth_, &titleHeight_);
+  TextStyle tts(graphPtr_, &ops->titleStyle);
+  tts.getExtents(ops->title, &titleWidth_, &titleHeight_);
 
   // Count the number of legend entries and determine the widest and tallest
   // label.  The number of entries would normally be the number of elements,
@@ -263,6 +266,7 @@ void Legend::map(int plotWidth, int plotHeight)
   int nEntries =0;
   int maxWidth =0;
   int maxHeight =0;
+  TextStyle ts(graphPtr_, &ops->style);
   for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -271,8 +275,8 @@ void Legend::map(int plotWidth, int plotHeight)
     if (!elemOps->label)
       continue;
 
-    unsigned int w, h;
-    Blt_Ts_GetExtents(&ops->style, elemOps->label, &w, &h);
+    int w, h;
+    ts.getExtents(elemOps->label, &w, &h);
     if (maxWidth < (int)w)
       maxWidth = w;
 
@@ -401,10 +405,6 @@ void Legend::draw(Drawable drawable)
   Pixmap pixmap = Tk_GetPixmap(graphPtr_->display_, Tk_WindowId(tkwin), w, h, 
 			       Tk_Depth(tkwin));
 
-  // be sure to update style->gc, things might have changed
-  ops->style.flags_ |= UPDATE_GC;
-  ops->titleStyle.flags_ |= UPDATE_GC;
-
   if (ops->normalBg)
     Tk_Fill3DRectangle(tkwin, pixmap, ops->normalBg, 0, 0, 
 		       w, h, 0, TK_RELIEF_FLAT);
@@ -445,12 +445,16 @@ void Legend::draw(Drawable drawable)
 
   int x = ops->xPad + ops->borderWidth;
   int y = ops->yPad + ops->borderWidth;
-  Blt_DrawText(tkwin, pixmap, ops->title, &ops->titleStyle, x, y);
+  
+  TextStyle tts(graphPtr_, &ops->titleStyle);
+  tts.drawText(pixmap, ops->title, x, y);
   if (titleHeight_ > 0)
     y += titleHeight_ + ops->yPad;
 
   int count = 0;
   int yStart = y;
+  TextStyle ts(graphPtr_, &ops->style);
+
   for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -483,10 +487,10 @@ void Legend::draw(Drawable drawable)
 			   elemOps->legendRelief);
     }
     elemPtr->drawSymbol(pixmap, x + xSymbol, y + ySymbol, symbolSize);
-    Blt_DrawText(tkwin, pixmap, elemOps->label, &ops->style, 
-		 x + xLabel, 
-		 y + ops->entryBW + ops->iyPad);
+
+    ts.drawText(pixmap, elemOps->label, x+xLabel, y+ops->entryBW+ops->iyPad);
     count++;
+
     if (focusPtr_ == elemPtr) {
       if (isSelected) {
 	XColor* color = (flags & FOCUS) ?
@@ -497,10 +501,9 @@ void Legend::draw(Drawable drawable)
       XDrawRectangle(graphPtr_->display_, pixmap, focusGC_, 
 		     x + 1, y + 1, entryWidth_ - 3, 
 		     entryHeight_ - 3);
-      if (isSelected) {
+      if (isSelected)
 	XSetForeground(graphPtr_->display_, focusGC_, 
 		       ops->focusColor->pixel);
-      }
     }
 
     // Check when to move to the next column
@@ -528,8 +531,8 @@ void Legend::draw(Drawable drawable)
 
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
 		     ops->borderWidth, ops->relief);
-  XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC_, 0, 0, w, h,
-	    x_, y_);
+  XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC_, 
+	    0, 0, w, h, x_, y_);
 
   switch ((Position)ops->position) {
   case PLOT:
@@ -586,12 +589,15 @@ void Legend::print(Blt_Ps ps)
 
   x += ops->borderWidth;
   y += ops->borderWidth;
-  Blt_Ps_DrawText(ps, ops->title, &ops->titleStyle, x, y);
+  TextStyle tts(graphPtr_, &ops->titleStyle);
+  tts.printText(ps, ops->title, x, y);
   if (titleHeight_ > 0)
     y += titleHeight_ + ops->yPad;
 
   int count = 0;
   double yStart = y;
+  TextStyle ts(graphPtr_, &ops->style);
+
   for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr_->elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -616,8 +622,7 @@ void Legend::print(Blt_Ps ps)
       }
     }
     elemPtr->printSymbol(ps, x + xSymbol, y + ySymbol, symbolSize);
-    Blt_Ps_DrawText(ps, elemOps->label, &ops->style, 
-		    x + xLabel, y + ops->entryBW + ops->iyPad);
+    ts.printText(ps, elemOps->label, x + xLabel, y + ops->entryBW + ops->iyPad);
     count++;
 
     if ((count % nRows_) > 0)

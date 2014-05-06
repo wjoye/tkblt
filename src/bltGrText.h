@@ -27,67 +27,55 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_TEXT_H
-#define _BLT_TEXT_H
+#ifndef __BltText_h__
+#define __BltText_h__
 
 #include <tk.h>
 
 #include "bltGrMisc.h"
 
-#define UPDATE_GC 1
+class Graph;
+typedef struct _Blt_Ps *Blt_Ps;
 
-class TextStyle {
- public:
+typedef struct {
   Tk_Anchor anchor;
   XColor* color;
   Tk_Font font;
   double angle;
   Tk_Justify justify;
+} TextStyleOptions;
 
-  unsigned short int leader_;
-  short int underline_;
+class TextStyle {
+ protected:
+  Graph* graphPtr_;
+  void* ops_;
+  GC gc_;
+  int manageOptions_;
+
+ public:
   int xPad_;
   int yPad_;
-  int maxLength_;
-  unsigned int state_;
-  unsigned short flags_;
-  GC gc_;
+
+ protected:
+  void resetStyle();
+  Point2d rotateText(int, int, int, int);
+
+ public:
+  TextStyle(Graph*);
+  TextStyle(Graph*, TextStyleOptions*);
+  virtual ~TextStyle();
+
+  void* ops() {return ops_;}
+  void drawText(Drawable, const char*, int, int);
+  void drawText2(Drawable, const char*, int, int, int*, int*);
+  void printText(Blt_Ps, const char*, int, int);
+  void getExtents(const char*, int*, int*);
 };
 
-extern void Blt_GetTextExtents(Tk_Font font, int leader, const char *text, 
-			       int textLen, unsigned int *widthPtr, 
-			       unsigned int *heightPtr);
-extern void Blt_Ts_GetExtents(TextStyle *tsPtr, const char *text, 
-			      unsigned int *widthPtr, unsigned int *heightPtr);
-extern void Blt_Ts_ResetStyle(Tk_Window tkwin, TextStyle *tsPtr);
-extern void Blt_Ts_FreeStyle(Display *display, TextStyle *tsPtr);
-extern void Blt_DrawText(Tk_Window tkwin, Drawable drawable, 
-			 const char *string, TextStyle *tsPtr, 
-			 int x, int y);
-extern void Blt_DrawText2(Tk_Window tkwin, Drawable drawable, 
-			  const char *string, TextStyle *tsPtr, 
-			  int x, int y, Dim2D * dimPtr);
-extern void Blt_Ts_DrawText(Tk_Window tkwin, Drawable drawable, 
-			    const char *text, int textLen, TextStyle *tsPtr,
-			    int x, int y);
+extern void Blt_GetTextExtents(Tk_Font, const char*, int, int*, int*);
 extern void Blt_GetBoundingBox (int width, int height, float angle, 
 	double *widthPtr, double *heightPtr, Point2d *points);
 extern Point2d Blt_AnchorPoint (double x, double y, double width, 
 	double height, Tk_Anchor anchor);
-
-#define Blt_Ts_InitStyle(ts)			\
-  ((ts).anchor = TK_ANCHOR_NW,			\
-   (ts).color = (XColor*)NULL,			\
-   (ts).font = NULL,				\
-   (ts).angle = 0.0,                            \
-   (ts).justify = TK_JUSTIFY_LEFT,		\
-   (ts).leader_ = 0,				\
-   (ts).underline_ = -1,			\
-   (ts).xPad_ = 0,				\
-   (ts).yPad_ = 0,				\
-    (ts).maxLength_ = -1,			\
-   (ts).state_ = 0,				\
-   (ts).flags_ = 0,				\
-   (ts).gc_ = NULL)				
 
 #endif

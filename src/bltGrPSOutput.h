@@ -124,9 +124,6 @@ extern void Blt_Ps_DrawPhoto(Blt_Ps ps, Tk_PhotoHandle photoToken,
 extern void Blt_Ps_XDrawWindow(Blt_Ps ps, Tk_Window tkwin, 
 			       double x, double y);
 
-extern void Blt_Ps_DrawText(Blt_Ps ps, const char *string, 
-			    TextStyle *attrPtr, double x, double y);
-
 extern void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap, 
 			      double scaleX, double scaleY);
 

@@ -106,7 +106,7 @@ typedef struct {
   int backingStore;
   int doubleBuffer;
   Tk_Cursor cursor;
-  TextStyle titleTextStyle;
+  TextStyleOptions titleTextStyle;
   int reqHeight;
   XColor* highlightBgColor;
   XColor* highlightColor;

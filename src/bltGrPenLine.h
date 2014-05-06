@@ -59,7 +59,7 @@ typedef struct {
   XColor* errorBarColor;
   int valueShow;
   const char* valueFormat;
-  TextStyle valueStyle;
+  TextStyleOptions valueStyle;
 
   Symbol symbol;
   int traceWidth;

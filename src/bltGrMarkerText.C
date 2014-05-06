@@ -91,19 +91,25 @@ TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Marker(graphPtr, name, hPtr)
 {
   ops_ = (TextMarkerOptions*)calloc(1, sizeof(TextMarkerOptions));
-  Blt_Ts_InitStyle(((TextMarkerOptions*)ops_)->style);
-  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
+  TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
+
+  ops->style.anchor =TK_ANCHOR_NW;
+  ops->style.color =NULL;
+  ops->style.font =NULL;
+  ops->style.angle =0;
+  ops->style.justify =TK_JUSTIFY_LEFT;
 
   anchorPt_.x =0;
   anchorPt_.y =0;
   width_ =0;
   height_ =0;
   fillGC_ =NULL;
+
+  optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 }
 
 TextMarker::~TextMarker()
 {
-  Blt_Ts_FreeStyle(graphPtr_->display_, &((TextMarkerOptions*)ops_)->style);
 }
 
 int TextMarker::configure()
@@ -148,10 +154,8 @@ void TextMarker::draw(Drawable drawable)
 		 Convex, CoordModeOrigin);
   }
 
-  // be sure to update style->gc, things might have changed
-  ops->style.flags_ |= UPDATE_GC;
-  Blt_Ts_DrawText(graphPtr_->tkwin_, drawable, ops->string, -1,
-		  &ops->style, anchorPt_.x, anchorPt_.y);
+  TextStyle ts(graphPtr_, &ops->style);
+  ts.drawText(drawable, ops->string, anchorPt_.x, anchorPt_.y);
 }
 
 void TextMarker::map()
@@ -167,9 +171,9 @@ void TextMarker::map()
   width_ =0;
   height_ =0;
 
-  unsigned int w;
-  unsigned int h;
-  Blt_Ts_GetExtents(&ops->style, ops->string, &w, &h);
+  int w, h;
+  TextStyle ts(graphPtr_, &ops->style);
+  ts.getExtents(ops->string, &w, &h);
 
   double rw;
   double rh;
@@ -270,5 +274,6 @@ void TextMarker::postscript(Blt_Ps ps)
     Blt_Ps_XFillPolygon(ps, points, 4);
   }
 
-  Blt_Ps_DrawText(ps, ops->string, &ops->style,  anchorPt_.x, anchorPt_.y);
+  TextStyle ts(graphPtr_, &ops->style);
+  ts.printText(ps, ops->string, anchorPt_.x, anchorPt_.y);
 }

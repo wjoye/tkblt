@@ -263,7 +263,12 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   ops->reqMax =NAN;
   ops->reqScrollMin =NAN;
   ops->reqScrollMax =NAN;
-  Blt_Ts_InitStyle(ops->limitsTextStyle);
+
+  ops->limitsTextStyle.anchor =TK_ANCHOR_NW;
+  ops->limitsTextStyle.color =NULL;
+  ops->limitsTextStyle.font =NULL;
+  ops->limitsTextStyle.angle =0;
+  ops->limitsTextStyle.justify =TK_JUSTIFY_LEFT;
 
   optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, optionSpecs);
 }
@@ -285,8 +290,6 @@ Axis::~Axis()
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
-
-  Blt_Ts_FreeStyle(graphPtr_->display_, &ops->limitsTextStyle);
 
   if (tickGC_)
     Tk_FreeGC(graphPtr_->display_, tickGC_);
@@ -367,8 +370,8 @@ int Axis::configure()
 
   titleWidth_ = titleHeight_ = 0;
   if (ops->title) {
-    unsigned int w, h;
-    Blt_GetTextExtents(ops->titleFont, 0, ops->title, -1, &w, &h);
+    int w, h;
+    Blt_GetTextExtents(ops->titleFont, ops->title, -1, &w, &h);
     titleWidth_ = (unsigned short int)w;
     titleHeight_ = (unsigned short int)h;
   }
@@ -417,8 +420,8 @@ void Axis::mapStacked(int count, int margin)
     height_ = slice;
   }
 
-  unsigned int w, h;
-  Blt_GetTextExtents(ops->tickFont, 0, "0", 1, &w, &h);
+  int w, h;
+  Blt_GetTextExtents(ops->tickFont, "0", 1, &w, &h);
   screenMin_ += (slice * count) + 2 + h / 2;
   screenRange_ = slice - 2 * 2 - h;
   screenScale_ = 1.0f / screenRange_;
@@ -512,28 +515,19 @@ void Axis::draw(Drawable drawable)
 		       ops->borderWidth, ops->relief);
 
   if (ops->title) {
-    TextStyle ts;
+    TextStyle ts(graphPtr_);
+    TextStyleOptions* tops = (TextStyleOptions*)ts.ops();
 
-    Blt_Ts_InitStyle(ts);
-    ts.flags_ |= UPDATE_GC;
+    tops->angle = titleAngle_;
+    tops->font = ops->titleFont;
+    tops->anchor = titleAnchor_;
+    tops->color = (flags & ACTIVE) ? ops->activeFgColor : ops->titleColor;
+    tops->justify = ops->titleJustify;
 
-    ts.angle = titleAngle_;
-    ts.font = ops->titleFont;
-    ts.anchor = titleAnchor_;
-    if (flags & ACTIVE)
-      ts.color = ops->activeFgColor;
-    else
-      ts.color = ops->titleColor;
-    ts.justify = ops->titleJustify;
     ts.xPad_ = 1;
     ts.yPad_ = 0;
-    if ((titleAngle_ == 90.0) || (titleAngle_ == 270.0))
-      ts.maxLength_ = height_;
-    else
-      ts.maxLength_ = width_;
 
-    Blt_Ts_DrawText(graphPtr_->tkwin_, drawable, ops->title, -1, &ts, 
-		    (int)titlePos_.x, (int)titlePos_.y);
+    ts.drawText(drawable, ops->title, titlePos_.x, titlePos_.y);
   }
 
   if (ops->scrollCmdObjPtr) {
@@ -597,26 +591,22 @@ void Axis::draw(Drawable drawable)
   }
 
   if (ops->showTicks) {
-    TextStyle ts;
+    TextStyle ts(graphPtr_);
+    TextStyleOptions* tops = (TextStyleOptions*)ts.ops();
 
-    Blt_Ts_InitStyle(ts);
-    ts.flags_ |= UPDATE_GC;
+    tops->angle = ops->tickAngle;
+    tops->font = ops->tickFont;
+    tops->anchor = tickAnchor_;
+    tops->color = (flags & ACTIVE) ? ops->activeFgColor : ops->tickColor;
 
-    ts.angle = ops->tickAngle;
-    ts.font = ops->tickFont;
     ts.xPad_ = 2;
     ts.yPad_ = 0;
-    ts.anchor = tickAnchor_;
-    if (flags & ACTIVE)
-      ts.color = ops->activeFgColor;
-    else
-      ts.color = ops->tickColor;
 
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link;
 	 link = Blt_Chain_NextLink(link)) {	
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      Blt_DrawText(graphPtr_->tkwin_, drawable, labelPtr->string, &ts, 
-		   (int)labelPtr->anchorPos.x, (int)labelPtr->anchorPos.y);
+      ts.drawText(drawable, labelPtr->string, labelPtr->anchorPos.x, 
+		  labelPtr->anchorPos.y);
     }
   }
 
@@ -655,8 +645,6 @@ void Axis::drawLimits(Drawable drawable)
   int hMin = graphPtr_->bottom_ - gops->yPad - 2;
   int hMax = hMin;
 
-  ops->limitsTextStyle.flags_ |= UPDATE_GC;
-
   const int spacing =8;
   int isHoriz = isHorizontal();
   char* minPtr =NULL;
@@ -677,24 +665,23 @@ void Axis::drawLimits(Drawable drawable)
     maxPtr = tmp;
   }
 
+  TextStyle ts(graphPtr_, &ops->limitsTextStyle);
   if (maxPtr) {
     if (isHoriz) {
       ops->limitsTextStyle.angle = 90.0;
       ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
-      Dim2D textDim;
-      Blt_DrawText2(graphPtr_->tkwin_, drawable, maxPtr, &ops->limitsTextStyle,
-		    graphPtr_->right_, hMax, &textDim);
-      hMax -= (textDim.height + spacing);
+      int ww, hh;
+      ts.drawText2(drawable, maxPtr, graphPtr_->right_, hMax, &ww, &hh);
+      hMax -= (hh + spacing);
     } 
     else {
       ops->limitsTextStyle.angle = 0.0;
       ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
-      Dim2D textDim;
-      Blt_DrawText2(graphPtr_->tkwin_, drawable, maxPtr, &ops->limitsTextStyle,
-		    vMax, graphPtr_->top_, &textDim);
-      vMax += (textDim.width + spacing);
+      int ww, hh;
+      ts.drawText2(drawable, maxPtr, vMax, graphPtr_->top_, &ww, &hh);
+      vMax += (ww + spacing);
     }
   }
   if (minPtr) {
@@ -703,18 +690,16 @@ void Axis::drawLimits(Drawable drawable)
     if (isHoriz) {
       ops->limitsTextStyle.angle = 90.0;
 
-      Dim2D textDim;
-      Blt_DrawText2(graphPtr_->tkwin_, drawable, minPtr, &ops->limitsTextStyle,
-		    graphPtr_->left_, hMin, &textDim);
-      hMin -= (textDim.height + spacing);
+      int ww, hh;
+      ts.drawText2(drawable, minPtr, graphPtr_->left_, hMin, &ww, &hh);
+      hMin -= (hh + spacing);
     } 
     else {
       ops->limitsTextStyle.angle = 0.0;
 
-      Dim2D textDim;
-      Blt_DrawText2(graphPtr_->tkwin_, drawable, minPtr, &ops->limitsTextStyle,
-		    vMin, graphPtr_->bottom_, &textDim);
-      vMin += (textDim.width + spacing);
+      int ww, hh;
+      ts.drawText2(drawable, minPtr, vMin, graphPtr_->bottom_, &ww, &hh);
+      vMin += (ww + spacing);
     }
   }
 }
@@ -1147,8 +1132,6 @@ void Axis::getDataLimits(double min, double max)
 void Axis::resetTextStyles()
 {
   AxisOptions* ops = (AxisOptions*)ops_;
-
-  Blt_Ts_ResetStyle(graphPtr_->tkwin_, &ops->limitsTextStyle);
 
   XGCValues gcValues;
   unsigned long gcMask;
@@ -1702,37 +1685,38 @@ void Axis::print(Blt_Ps ps)
 			   ops->borderWidth, ops->relief);
 
   if (ops->title) {
-    TextStyle ts;
+    TextStyle ts(graphPtr_);
+    TextStyleOptions* tops = (TextStyleOptions*)ts.ops();
 
-    Blt_Ts_InitStyle(ts);
+    tops->angle = titleAngle_;
+    tops->font = ops->titleFont;
+    tops->anchor = titleAnchor_;
+    tops->justify = ops->titleJustify;
+    tops->color = ops->titleColor;
 
-    ts.angle = titleAngle_;
-    ts.font = ops->titleFont;
-    ts.anchor = titleAnchor_;
-    ts.justify = ops->titleJustify;
-    ts.color = ops->titleColor;
     ts.xPad_ = 1;
     ts.yPad_ = 0;
-    Blt_Ps_DrawText(ps, ops->title, &ts, titlePos_.x, titlePos_.y);
+
+    ts.printText(ps, ops->title, titlePos_.x, titlePos_.y);
   }
 
   if (ops->showTicks) {
-    TextStyle ts;
+    TextStyle ts(graphPtr_);
+    TextStyleOptions* tops = (TextStyleOptions*)ts.ops();
 
-    Blt_Ts_InitStyle(ts);
+    tops->angle = ops->tickAngle;
+    tops->font = ops->tickFont;
+    tops->anchor = tickAnchor_;
+    tops->color = ops->tickColor;
 
-    ts.angle = ops->tickAngle;
-    ts.font = ops->tickFont;
-    ts.anchor = tickAnchor_;
-    ts.color = ops->tickColor;
     ts.xPad_ = 2;
     ts.yPad_ = 0;
 
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link; 
 	 link = Blt_Chain_NextLink(link)) {
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      Blt_Ps_DrawText(ps, labelPtr->string, &ts, labelPtr->anchorPos.x, 
-		      labelPtr->anchorPos.y);
+      ts.printText(ps, labelPtr->string, labelPtr->anchorPos.x, 
+		   labelPtr->anchorPos.y);
     }
   }
 
@@ -1797,47 +1781,43 @@ void Axis::printLimits(Blt_Ps ps)
     maxPtr = tmp;
   }
 
-  unsigned int textWidth;
-  unsigned int textHeight;
+  int textWidth, textHeight;
+  TextStyle ts(graphPtr_, &ops->limitsTextStyle);
   if (maxPtr) {
-    Blt_GetTextExtents(ops->tickFont, 0, maxPtr, -1, &textWidth, &textHeight);
+    Blt_GetTextExtents(ops->tickFont, maxPtr, -1, &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
-	Blt_Ps_DrawText(ps, maxPtr, &ops->limitsTextStyle, 
-			(double)graphPtr_->right_, hMax);
+	ts.printText(ps, maxPtr, (double)graphPtr_->right_, hMax);
 	hMax -= (textWidth + spacing);
       } 
       else {
 	ops->limitsTextStyle.angle = 0.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
-	Blt_Ps_DrawText(ps, maxPtr, &ops->limitsTextStyle,
-			vMax, (double)graphPtr_->top_);
+	ts.printText(ps, maxPtr, vMax, (double)graphPtr_->top_);
 	vMax += (textWidth + spacing);
       }
     }
   }
 
   if (minPtr) {
-    Blt_GetTextExtents(ops->tickFont, 0, minPtr, -1, &textWidth, &textHeight);
+    Blt_GetTextExtents(ops->tickFont, minPtr, -1, &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
 
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 
-	Blt_Ps_DrawText(ps, minPtr, &ops->limitsTextStyle, 
-			(double)graphPtr_->left_, hMin);
+	ts.printText(ps, minPtr, (double)graphPtr_->left_, hMin);
 	hMin -= (textWidth + spacing);
       }
       else {
 	ops->limitsTextStyle.angle = 0.0;
 
-	Blt_Ps_DrawText(ps, minPtr, &ops->limitsTextStyle, 
-			vMin, (double)graphPtr_->bottom_);
+	ts.printText(ps, minPtr, vMin, (double)graphPtr_->bottom_);
 	vMin += (textWidth + spacing);
       }
     }

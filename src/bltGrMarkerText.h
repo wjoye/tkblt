@@ -50,7 +50,7 @@ namespace Blt {
 
     Tk_Anchor anchor;
     XColor* fillColor;
-    TextStyle style;
+    TextStyleOptions style;
     const char* string;
   } TextMarkerOptions;
 

@@ -92,7 +92,6 @@ class BarElement : public Element {
   XRectangle* activeRects_;
   int nBars_;
   int nActive_;
-  int xPad_;
   GraphSegments xeb_;
   GraphSegments yeb_;
 

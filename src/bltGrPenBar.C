@@ -82,31 +82,41 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
 BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Pen(graphPtr, name, hPtr)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
   ops_ = calloc(1, sizeof(BarPenOptions));
+  BarPenOptions* ops = (BarPenOptions*)ops_;
   manageOptions_ =1;
 
   fillGC_ =NULL;
   outlineGC_ =NULL;
   errorBarGC_ =NULL;
 
-  BarPenOptions* ops = (BarPenOptions*)ops_;
-  Blt_Ts_InitStyle(ops->valueStyle);
+  ops->valueStyle.anchor =TK_ANCHOR_NW;
+  ops->valueStyle.color =NULL;
+  ops->valueStyle.font =NULL;
+  ops->valueStyle.angle =0;
+  ops->valueStyle.justify =TK_JUSTIFY_LEFT;
+
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
 }
 
 BarPen::BarPen(Graph* graphPtr, const char* name, void* options)
   : Pen(graphPtr, name, NULL)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
   ops_ = options;
+  BarPenOptions* ops = (BarPenOptions*)ops_;
   manageOptions_ =0;
 
   fillGC_ =NULL;
   outlineGC_ =NULL;
   errorBarGC_ =NULL;
 
-  BarPenOptions* ops = (BarPenOptions*)ops_;
-  Blt_Ts_InitStyle(ops->valueStyle);
+  ops->valueStyle.anchor =TK_ANCHOR_NW;
+  ops->valueStyle.color =NULL;
+  ops->valueStyle.font =NULL;
+  ops->valueStyle.angle =0;
+  ops->valueStyle.justify =TK_JUSTIFY_LEFT;
+
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, barPenOptionSpecs);
 }
 
 BarPen::~BarPen()

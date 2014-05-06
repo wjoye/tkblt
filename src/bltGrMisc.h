@@ -141,11 +141,6 @@ typedef struct {
   Point2d q;
 } Segment2d;
 
-typedef struct {
-  short int width;
-  short int height;
-} Dim2D;
-
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
   CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,

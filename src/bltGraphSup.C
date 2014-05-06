@@ -520,17 +520,17 @@ void Graph::getAxisGeometry(Axis *axisPtr)
       TickLabel* labelPtr = axisPtr->makeLabel(x);
       Blt_Chain_Append(axisPtr->tickLabels_, labelPtr);
       nLabels++;
-      /* 
-       * Get the dimensions of each tick label.  Remember tick labels
-       * can be multi-lined and/or rotated.
-       */
-      unsigned int lw, lh;	/* Label width and height. */
-      Blt_GetTextExtents(aops->tickFont, 0, labelPtr->string, -1, &lw, &lh);
+
+      // Get the dimensions of each tick label.  Remember tick labels
+      // can be multi-lined and/or rotated.
+      int lw, lh;
+      Blt_GetTextExtents(aops->tickFont, labelPtr->string, -1, &lw, &lh);
       labelPtr->width  = lw;
       labelPtr->height = lh;
 
       if (aops->tickAngle != 0.0f) {
-	double rlw, rlh;	/* Rotated label width and height. */
+	// Rotated label width and height
+	double rlw, rlh;
 	Blt_GetBoundingBox(lw, lh, aops->tickAngle, &rlw, &rlh, NULL);
 	lw = ROUND(rlw), lh = ROUND(rlh);
       }

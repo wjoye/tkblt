@@ -693,13 +693,9 @@ static void TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
 }
 #endif
 
-void Blt_Ps_DrawText(
-		     Blt_Ps ps,
-		     const char *string,		/* String to convert to PostScript */
-		     TextStyle *tsPtr,		/* Text attribute information */
-		     double x, double y)		/* Window coordinates where to print text */
-{
 #if 0
+void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
+{
   TextLayout *textPtr;
   Point2d t;
 
@@ -732,8 +728,8 @@ void Blt_Ps_DrawText(
   TextLayoutToPostScript(ps, 0, 0, textPtr);
   free(textPtr);
   Blt_Ps_Append(ps, "EndText\n");
-#endif
 }
+#endif
 
 void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n)
 {

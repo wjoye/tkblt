@@ -225,35 +225,47 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
 LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   : Pen(graphPtr, name, hPtr)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, linePenOptionSpecs);
   ops_ = calloc(1, sizeof(LinePenOptions));
+  LinePenOptions* ops = (LinePenOptions*)ops_;
   manageOptions_ =1;
 
   traceGC_ =NULL;
   errorBarGC_ =NULL;
 
-  LinePenOptions* ops = (LinePenOptions*)ops_;
-  Blt_Ts_InitStyle(ops->valueStyle);
   ops->symbol.bitmap = None;
   ops->symbol.mask = None;
   ops->symbol.type = SYMBOL_NONE;
+
+  ops->valueStyle.anchor =TK_ANCHOR_NW;
+  ops->valueStyle.color =NULL;
+  ops->valueStyle.font =NULL;
+  ops->valueStyle.angle =0;
+  ops->valueStyle.justify =TK_JUSTIFY_LEFT;
+
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, linePenOptionSpecs);
 }
 
 LinePen::LinePen(Graph* graphPtr, const char* name, void* options)
   : Pen(graphPtr, name, NULL)
 {
-  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, linePenOptionSpecs);
   ops_ = options;
+  LinePenOptions* ops = (LinePenOptions*)ops_;
   manageOptions_ =0;
 
   traceGC_ =NULL;
   errorBarGC_ =NULL;
 
-  LinePenOptions* ops = (LinePenOptions*)ops_;
-  Blt_Ts_InitStyle(ops->valueStyle);
   ops->symbol.bitmap = None;
   ops->symbol.mask = None;
   ops->symbol.type = SYMBOL_NONE;
+
+  ops->valueStyle.anchor =TK_ANCHOR_NW;
+  ops->valueStyle.color =NULL;
+  ops->valueStyle.font =NULL;
+  ops->valueStyle.angle =0;
+  ops->valueStyle.justify =TK_JUSTIFY_LEFT;
+
+  optionTable_ = Tk_CreateOptionTable(graphPtr_->interp_, linePenOptionSpecs);
 }
 
 LinePen::~LinePen()

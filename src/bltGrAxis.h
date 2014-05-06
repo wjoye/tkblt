@@ -111,7 +111,7 @@ typedef struct {
   const char *formatCmd;
   int descending;
   int labelOffset;
-  TextStyle limitsTextStyle;
+  TextStyleOptions limitsTextStyle;
   const char *limitsFormat;
   int lineWidth;
   int logScale;

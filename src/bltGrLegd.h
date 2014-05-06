@@ -76,7 +76,7 @@ typedef struct {
   int exportSelection;
   Blt_Dashes focusDashes;
   XColor* focusColor;
-  TextStyle style;
+  TextStyleOptions style;
   int hide;
   int ixPad;
   int iyPad;
@@ -99,7 +99,7 @@ typedef struct {
   int selRelief;
   const char *takeFocus;
   const char *title;
-  TextStyle titleStyle;
+  TextStyleOptions titleStyle;
 } LegendOptions;
 
 class Legend {
@@ -131,8 +131,8 @@ class Legend {
   Element *selAnchorPtr_;
   Element *selMarkPtr_;
   Blt_Chain selected_;
-  unsigned int titleWidth_;
-  unsigned int titleHeight_;
+  int titleWidth_;
+  int titleHeight_;
 
  protected:
   void setOrigin();

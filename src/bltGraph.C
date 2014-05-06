@@ -148,7 +148,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 
 Graph::~Graph()
 {
-  GraphOptions* ops = (GraphOptions*)ops_;
+  //  GraphOptions* ops = (GraphOptions*)ops_;
 
   destroyMarkers();
   destroyElements();  // must come before legend and others
@@ -166,7 +166,6 @@ Graph::~Graph()
   if (drawGC_)
     Tk_FreeGC(display_, drawGC_);
 
-  Blt_Ts_FreeStyle(display_, &ops->titleTextStyle);
   if (cache_ != None)
     Tk_FreePixmap(display_, cache_);
 
@@ -192,8 +191,9 @@ void Graph::configure()
   titleWidth_ =0;
   titleHeight_ =0;
   if (ops->title != NULL) {
-    unsigned int w, h;
-    Blt_Ts_GetExtents(&ops->titleTextStyle, ops->title, &w, &h);
+    int w, h;
+    TextStyle ts(this, &ops->titleTextStyle);
+    ts.getExtents(ops->title, &w, &h);
     titleHeight_ = h;
   }
 
@@ -581,9 +581,10 @@ void Graph::drawMargins(Drawable drawable)
 		       x, y, w, h, ops->plotBW, ops->plotRelief);
   }
   
-  if (ops->title)
-    Blt_DrawText(tkwin_, drawable, ops->title,
-		 &ops->titleTextStyle, titleX_, titleY_);
+  if (ops->title) {
+    TextStyle ts(this, &ops->titleTextStyle);
+    ts.drawText(drawable, ops->title, titleX_, titleY_);
+  }
 
   flags &= ~DRAW_MARGINS;
 }
@@ -626,8 +627,8 @@ void Graph::printMargins(Blt_Ps ps)
 
   if (ops->title) {
     Blt_Ps_Append(ps, "% Graph title\n");
-    Blt_Ps_DrawText(ps, ops->title, &ops->titleTextStyle, 
-		    (double)titleX_, (double)titleY_);
+    TextStyle ts(this, &ops->titleTextStyle);
+    ts.printText(ps, ops->title, (double)titleX_, (double)titleY_);
   }
 }
 
@@ -1309,14 +1310,13 @@ Axis* Graph::nearestAxis(int x, int y)
     }
 
     if (ops->title) {
-      unsigned int w, h;
+      int w, h;
       double rw, rh;
       Point2d bbox[5];
-      Blt_GetTextExtents(ops->titleFont, 0, ops->title,-1,&w,&h);
+      Blt_GetTextExtents(ops->titleFont, ops->title, -1, &w, &h);
       Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
-      Point2d t;
-      t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
-			  rw, rh, axisPtr->titleAnchor_);
+      Point2d t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
+				rw, rh, axisPtr->titleAnchor_);
       // Translate the point so that the 0,0 is the upper left 
       // corner of the bounding box
       t.x = x - t.x - (rw * 0.5);

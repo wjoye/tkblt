@@ -218,17 +218,15 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
 		   int objc, Tcl_Obj* const objv[])
   : Graph(clientData, interp, objc, objv)
 {
-  Tk_SetClass(tkwin_, "Barchart");
-  classId_ = CID_ELEM_BAR;
-
-  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
   ops_ = (BarGraphOptions*)calloc(1, sizeof(BarGraphOptions));
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
+
+  Tk_SetClass(tkwin_, "Barchart");
+  classId_ = CID_ELEM_BAR;
 
   barGroups_ =NULL;
   nBarGroups_ =0;
   maxBarSetSize_ =0;
-
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey) / sizeof(int));
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
@@ -236,15 +234,19 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
   ops->topMargin.site = MARGIN_TOP;
   ops->rightMargin.site = MARGIN_RIGHT;
 
-  Blt_Ts_InitStyle(ops->titleTextStyle);
   ops->titleTextStyle.anchor = TK_ANCHOR_N;
+  ops->titleTextStyle.color =NULL;
+  ops->titleTextStyle.font =NULL;
+  ops->titleTextStyle.angle =0;
+  ops->titleTextStyle.justify =TK_JUSTIFY_LEFT;
 
-  if (createPen("active", 0, NULL) != TCL_OK) {
+  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
+  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(this, interp_, objc-2, objv+2) != TCL_OK)) {
     valid_ =0;
     return;
   }
 
-  if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(this, interp_, objc-2, objv+2) != TCL_OK)) {
+  if (createPen("active", 0, NULL) != TCL_OK) {
     valid_ =0;
     return;
   }

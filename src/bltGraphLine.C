@@ -178,26 +178,30 @@ LineGraph::LineGraph(ClientData clientData, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
   : Graph(clientData, interp, objc, objv)
 {
-  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
   ops_ = (LineGraphOptions*)calloc(1, sizeof(LineGraphOptions));
   LineGraphOptions* ops = (LineGraphOptions*)ops_;
 
   Tk_SetClass(tkwin_, "Graph");
   classId_ = CID_ELEM_LINE;
-  if (createPen("active", 0, NULL) != TCL_OK) {
-    valid_ =0;
-    return;
-  }
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
   ops->leftMargin.site = MARGIN_LEFT;
   ops->topMargin.site = MARGIN_TOP;
   ops->rightMargin.site = MARGIN_RIGHT;
 
-  Blt_Ts_InitStyle(ops->titleTextStyle);
   ops->titleTextStyle.anchor = TK_ANCHOR_N;
+  ops->titleTextStyle.color =NULL;
+  ops->titleTextStyle.font =NULL;
+  ops->titleTextStyle.angle =0;
+  ops->titleTextStyle.justify =TK_JUSTIFY_LEFT;
 
+  optionTable_ = Tk_CreateOptionTable(interp_, optionSpecs);
   if ((Tk_InitOptions(interp_, (char*)ops_, optionTable_, tkwin_) != TCL_OK) || (GraphObjConfigure(this, interp_, objc-2, objv+2) != TCL_OK)) {
+    valid_ =0;
+    return;
+  }
+
+  if (createPen("active", 0, NULL) != TCL_OK) {
     valid_ =0;
     return;
   }

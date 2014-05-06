@@ -185,7 +185,6 @@ BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   activeRects_ =NULL;
   nBars_ =0;
   nActive_ =0;
-  xPad_ =0;
 
   xeb_.segments =NULL;
   xeb_.length =0;
@@ -1303,15 +1302,17 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
 			       XRectangle *bars, int nBars, int *barToData)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
-  const char *fmt = penOps->valueFormat;
+  const char *fmt = pops->valueFormat;
   if (!fmt)
     fmt = "%g";
+  TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
   XRectangle *rp, *rend;
+
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
     Point2d anchorPos;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
@@ -1320,11 +1321,11 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
     double y = ops->coords.y->values[barToData[count]];
 
     count++;
-    if (penOps->valueShow == SHOW_X)
+    if (pops->valueShow == SHOW_X)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
-    else if (penOps->valueShow == SHOW_Y)
+    else if (pops->valueShow == SHOW_Y)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
-    else if (penOps->valueShow == SHOW_BOTH) {
+    else if (pops->valueShow == SHOW_BOTH) {
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
@@ -1342,46 +1343,46 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
       if (y < gops->baseline)
 	anchorPos.y += rp->height;
     }
-    Blt_DrawText(graphPtr_->tkwin_, drawable, string, &penOps->valueStyle, 
-		 (int)anchorPos.x, (int)anchorPos.y);
+
+    ts.drawText(drawable, string, anchorPos.x, anchorPos.y);
   }
 }
 
 void BarElement::SegmentsToPostScript(Blt_Ps ps, BarPen* penPtr, 
 				      XRectangle *bars, int nBars)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
 
-  if (!penOps->fill && !penOps->outlineColor)
+  if (!pops->fill && !pops->outlineColor)
     return;
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1)) {
       continue;
     }
-    if (penOps->stipple != None) {
+    if (pops->stipple != None) {
       Blt_Ps_Rectangle(ps, rp->x, rp->y, rp->width - 1, rp->height - 1);
-      if (penOps->fill) {
-	Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penOps->fill));
+      if (pops->fill) {
+	Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(pops->fill));
 	Blt_Ps_Append(ps, "gsave fill grestore\n");
       }
-      if (penOps->outlineColor) {
-	Blt_Ps_XSetForeground(ps, penOps->outlineColor);
+      if (pops->outlineColor) {
+	Blt_Ps_XSetForeground(ps, pops->outlineColor);
       } else {
-	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
+	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(pops->fill));
       }
-      Blt_Ps_XSetStipple(ps, graphPtr_->display_, penOps->stipple);
-    } else if (penOps->outlineColor) {
-      Blt_Ps_XSetForeground(ps, penOps->outlineColor);
+      Blt_Ps_XSetStipple(ps, graphPtr_->display_, pops->stipple);
+    } else if (pops->outlineColor) {
+      Blt_Ps_XSetForeground(ps, pops->outlineColor);
       Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
 			    (int)rp->width - 1, (int)rp->height - 1);
     }
-    if ((penOps->fill) && (penOps->borderWidth > 0) && 
-	(penOps->relief != TK_RELIEF_FLAT)) {
-      Blt_Ps_Draw3DRectangle(ps, penOps->fill, (double)rp->x, (double)rp->y,
+    if ((pops->fill) && (pops->borderWidth > 0) && 
+	(pops->relief != TK_RELIEF_FLAT)) {
+      Blt_Ps_Draw3DRectangle(ps, pops->fill, (double)rp->x, (double)rp->y,
 			     (int)rp->width, (int)rp->height,
-			     penOps->borderWidth, penOps->relief);
+			     pops->borderWidth, pops->relief);
     }
   }
 }
@@ -1390,48 +1391,48 @@ void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr,
 				       XRectangle *bars, int nBars, 
 				       int *barToData)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
 
-  XRectangle *rp, *rend;
-  char string[TCL_DOUBLE_SPACE * 2 + 2];
-  double x, y;
-  Point2d anchorPos;
-    
   int count = 0;
-  const char* fmt = penOps->valueFormat;
+  const char* fmt = pops->valueFormat;
   if (!fmt)
     fmt = "%g";
+  TextStyle ts(graphPtr_, &pops->valueStyle);
 
+  XRectangle *rp, *rend;
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    x = ops->coords.x->values[barToData[count]];
-    y = ops->coords.y->values[barToData[count]];
+    double x = ops->coords.x->values[barToData[count]];
+    double y = ops->coords.y->values[barToData[count]];
+
     count++;
-    if (penOps->valueShow == SHOW_X)
+    char string[TCL_DOUBLE_SPACE * 2 + 2];
+    if (pops->valueShow == SHOW_X)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x); 
-    else if (penOps->valueShow == SHOW_Y)
+    else if (pops->valueShow == SHOW_Y)
       snprintf(string, TCL_DOUBLE_SPACE, fmt, y); 
-    else if (penOps->valueShow == SHOW_BOTH) {
+    else if (pops->valueShow == SHOW_BOTH) {
       snprintf(string, TCL_DOUBLE_SPACE, fmt, x);
       strcat(string, ",");
       snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
+
+    Point2d anchorPos;
     if (gops->inverted) {
       anchorPos.y = rp->y + rp->height * 0.5;
       anchorPos.x = rp->x + rp->width;
-      if (x < gops->baseline) {
+      if (x < gops->baseline)
 	anchorPos.x -= rp->width;
-      } 
-    } else {
+    }
+    else {
       anchorPos.x = rp->x + rp->width * 0.5;
       anchorPos.y = rp->y;
-      if (y < gops->baseline) {			
+      if (y < gops->baseline)
 	anchorPos.y += rp->height;
-      }
     }
-    Blt_Ps_DrawText(ps, string, &penOps->valueStyle, anchorPos.x, 
-		    anchorPos.y);
+
+    ts.printText(ps, string, anchorPos.x, anchorPos.y);
   }
 }
 
