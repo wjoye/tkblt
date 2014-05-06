@@ -185,7 +185,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth", "ErrorBarWidth",
    "1", -1, Tk_Offset(LinePenOptions, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "6", -1, Tk_Offset(LinePenOptions, errorBarCapWidth), 0, NULL, 0},
+   "5", -1, Tk_Offset(LinePenOptions, errorBarCapWidth), 0, NULL, 0},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(LinePenOptions, symbol.fillColor), 
    TK_OPTION_NULL_OK, NULL, 0},

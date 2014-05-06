@@ -69,13 +69,6 @@ using namespace Blt;
 
 #define DRAW_SYMBOL() ((symbolCounter_ % symbolInterval_) == 0)
 
-// Defs
-
-static int Round(double x)
-{
-  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
-}
-
 // OptionSpecs
 
 static const char* smoothObjOption[] = 
@@ -124,7 +117,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "6", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
+   "5", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, 0},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.symbol.fillColor), 
@@ -389,7 +382,7 @@ void LineElement::map()
     int size = ScaleSymbol(penOps->symbol.size);
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penOps->errorBarCapWidth > 0) 
-      ? penOps->errorBarCapWidth : Round(size * 0.6666666);
+      ? penOps->errorBarCapWidth : size * 0.6666666;
     stylePtr->errorBarCapWidth /= 2;
   }
 
@@ -562,8 +555,8 @@ void LineElement::draw(Drawable drawable)
     Point2d *endp, *pp;
     for (pp = fillPts_, endp = pp + nFillPts_; 
 	 pp < endp; pp++) {
-      points[count].x = Round(pp->x);
-      points[count].y = Round(pp->y);
+      points[count].x = pp->x;
+      points[count].y = pp->y;
       count++;
     }
     if (ops->fillBg)
@@ -1015,7 +1008,7 @@ int LineElement::ScaleSymbol(int normalSize)
       scale = MIN(xScale, yScale);
     }
   }
-  int newSize = Round(normalSize * scale);
+  int newSize = normalSize * scale;
 
   // Don't let the size of symbols go unbounded. Both X and Win32 drawing
   // routines assume coordinates to be a signed short int.
@@ -2147,9 +2140,10 @@ void LineElement::DrawCircles(Display *display, Drawable drawable,
     Point2d *pp, *pend;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       if (DRAW_SYMBOL()) {
-	ap->x = Round(pp->x) - radius;
-	ap->y = Round(pp->y) - radius;
-	ap->width = ap->height = (unsigned short)s;
+	ap->x = pp->x - radius;
+	ap->y = pp->y - radius;
+	ap->width = (unsigned short)s;
+	ap->height = (unsigned short)s;
 	ap->angle1 = 0;
 	ap->angle2 = 23040;
 	ap++, count++;
@@ -2161,8 +2155,8 @@ void LineElement::DrawCircles(Display *display, Drawable drawable,
     XArc *ap = arcs;
     Point2d *pp, *pend;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
-      ap->x = Round(pp->x) - radius;
-      ap->y = Round(pp->y) - radius;
+      ap->x = pp->x - radius;
+      ap->y = pp->y - radius;
       ap->width = ap->height = (unsigned short)s;
       ap->angle1 = 0;
       ap->angle2 = 23040;
@@ -2199,8 +2193,8 @@ void LineElement::DrawSquares(Display *display, Drawable drawable,
     Point2d *pp, *pend;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
       if (DRAW_SYMBOL()) {
-	rp->x = Round(pp->x) - r;
-	rp->y = Round(pp->y) - r;
+	rp->x = pp->x - r;
+	rp->y = pp->y - r;
 	rp->width = rp->height = (unsigned short)s;
 	rp++, count++;
       }
@@ -2211,8 +2205,8 @@ void LineElement::DrawSquares(Display *display, Drawable drawable,
     XRectangle* rp = rectangles;
     Point2d *pp, *pend;
     for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
-      rp->x = Round(pp->x) - r;
-      rp->y = Round(pp->y) - r;
+      rp->x = pp->x - r;
+      rp->y = pp->y - r;
       rp->width = rp->height = (unsigned short)s;
       rp++;
     }
@@ -2252,8 +2246,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
       XPoint* xpp = points;
       Point2d *pp, *endp;
       for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	xpp->x = Round(pp->x);
-	xpp->y = Round(pp->y);
+	xpp->x = pp->x;
+	xpp->y = pp->y;
 	xpp++;
       }
       XDrawPoints(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
@@ -2284,7 +2278,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
   case SYMBOL_SCROSS:
     {
       if (penOps->symbol.type == SYMBOL_SCROSS) {
-	r2 = Round((double)r2 * M_SQRT1_2);
+	r2 = (double)r2 * M_SQRT1_2;
 	pattern[3].y = pattern[2].x = pattern[0].x = pattern[0].y = -r2;
 	pattern[3].x = pattern[2].y = pattern[1].y = pattern[1].x = r2;
       }
@@ -2301,8 +2295,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL()) {
-	    int rndx, rndy;
-	    rndx = Round(pp->x), rndy = Round(pp->y);
+	    int rndx = pp->x;
+	    int rndy = pp->y;
 	    sp->x1 = pattern[0].x + rndx;
 	    sp->y1 = pattern[0].y + rndy;
 	    sp->x2 = pattern[1].x + rndx;
@@ -2323,8 +2317,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	count = nSymbolPts;
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int rndx = Round(pp->x);
-	  int rndy = Round(pp->y);
+	  int rndx = pp->x;
+	  int rndy = pp->y;
 	  sp->x1 = pattern[0].x + rndx;
 	  sp->y1 = pattern[0].y + rndy;
 	  sp->x2 = pattern[1].x + rndx;
@@ -2384,8 +2378,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	for (int ii=0; ii<12; ii++) {
 	  double dx = (double)pattern[ii].x * M_SQRT1_2;
 	  double dy = (double)pattern[ii].y * M_SQRT1_2;
-	  pattern[ii].x = Round(dx - dy);
-	  pattern[ii].y = Round(dx + dy);
+	  pattern[ii].x = dx - dy;
+	  pattern[ii].y = dx + dy;
 	}
 	pattern[12] = pattern[0];
       }
@@ -2396,8 +2390,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL()) {
-	    int rndx = Round(pp->x);
-	    int rndy = Round(pp->y);
+	    int rndx = pp->x;
+	    int rndy = pp->y;
 	    for (int ii=0; ii<13; ii++) {
 	      xpp->x = pattern[ii].x + rndx;
 	      xpp->y = pattern[ii].y + rndy;
@@ -2412,8 +2406,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	XPoint* xpp = polygon;
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int rndx = Round(pp->x);
-	  int rndy = Round(pp->y);
+	  int rndx = pp->x;
+	  int rndy = pp->y;
 	  for (int ii=0; ii<13; ii++) {
 	    xpp->x = pattern[ii].x + rndx;
 	    xpp->y = pattern[ii].y + rndy;
@@ -2469,8 +2463,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	count = 0;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL()) {
-	    int rndx = Round(pp->x);
-	    int rndy = Round(pp->y);
+	    int rndx = pp->x;
+	    int rndy = pp->y;
 	    for (int ii=0; ii<5; ii++) {
 	      xpp->x = pattern[ii].x + rndx;
 	      xpp->y = pattern[ii].y + rndy;
@@ -2485,8 +2479,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	XPoint* xpp = polygon;
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int rndx = Round(pp->x);
-	  int rndy = Round(pp->y);
+	  int rndx = pp->x;
+	  int rndy = pp->y;
 	  for (int ii=0; ii<5; ii++) {
 	    xpp->x = pattern[ii].x + rndx;
 	    xpp->y = pattern[ii].y + rndy;
@@ -2518,17 +2512,15 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
   case SYMBOL_ARROW:
     {
       XPoint *polygon;
-      double b;
-      int b2, h1, h2;
 #define H_RATIO		1.1663402261671607
 #define B_RATIO		1.3467736870885982
 #define TAN30		0.57735026918962573
 #define COS30		0.86602540378443871
 
-      b = Round(size * B_RATIO * 0.7);
-      b2 = Round(b * 0.5);
-      h2 = Round(TAN30 * b2);
-      h1 = Round(b2 / COS30);
+      double b = size * B_RATIO * 0.7;
+      int b2 = b * 0.5;
+      int h2 = TAN30 * b2;
+      int h1 = b2 / COS30;
       /*
        *
        *                      The triangle symbol is a closed polygon
@@ -2562,8 +2554,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	count = 0;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL()) {
-	    int rndx = Round(pp->x);
-	    int rndy = Round(pp->y);
+	    int rndx = pp->x;
+	    int rndy = pp->y;
 	    for (int ii=0; ii<4; ii++) {
 	      xpp->x = pattern[ii].x + rndx;
 	      xpp->y = pattern[ii].y + rndy;
@@ -2578,8 +2570,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	XPoint* xpp = polygon;
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int rndx = Round(pp->x);
-	  int rndy = Round(pp->y);
+	  int rndx = pp->x;
+	  int rndy = pp->y;
 	  for (int ii=0; ii<4; ii++) {
 	    xpp->x = pattern[ii].x + rndx;
 	    xpp->y = pattern[ii].y + rndy;
@@ -2639,8 +2631,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
 	  if (DRAW_SYMBOL()) {
-	    int x = Round(pp->x) - dx;
-	    int y = Round(pp->y) - dy;
+	    int x = pp->x - dx;
+	    int y = pp->y - dy;
 	    if ((penOps->symbol.fillGC == NULL) || 
 		(penOps->symbol.mask != None))
 	      XSetClipOrigin(graphPtr_->display_,
@@ -2654,8 +2646,8 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
       else {
 	Point2d *pp, *endp;
 	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int x = Round(pp->x) - dx;
-	  int y = Round(pp->y) - dy;
+	  int x = pp->x - dx;
+	  int y = pp->y - dy;
 	  if ((penOps->symbol.fillGC == NULL) || 
 	      (penOps->symbol.mask != None))
 	    XSetClipOrigin(graphPtr_->display_, 
@@ -2691,8 +2683,8 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
 
     int n = MIN(np, tracePtr->screenPts.length); 
     for (xpp = points, count = 0; count < n; count++, xpp++) {
-      xpp->x = Round(tracePtr->screenPts.points[count].x);
-      xpp->y = Round(tracePtr->screenPts.points[count].y);
+      xpp->x = tracePtr->screenPts.points[count].x;
+      xpp->y = tracePtr->screenPts.points[count].y;
     }
     XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);
@@ -2707,8 +2699,8 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
       points[0].y = points[np - 1].y;
 	    
       for (xpp = points + 1, j = 0; j < np; j++, count++, xpp++) {
-	xpp->x = Round(tracePtr->screenPts.points[count].x);
-	xpp->y = Round(tracePtr->screenPts.points[count].y);
+	xpp->x = tracePtr->screenPts.points[count].x;
+	xpp->y = tracePtr->screenPts.points[count].y;
       }
       XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 		 np + 1, CoordModeOrigin);
@@ -2723,8 +2715,8 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
       points[0].y = points[np - 1].y;
       for (xpp = points + 1; count < tracePtr->screenPts.length; count++, 
 	     xpp++) {
-	xpp->x = Round(tracePtr->screenPts.points[count].x);
-	xpp->y = Round(tracePtr->screenPts.points[count].y);
+	xpp->x = tracePtr->screenPts.points[count].x;
+	xpp->y = tracePtr->screenPts.points[count].y;
       }	    
       XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 		 remaining + 1, CoordModeOrigin);
@@ -2864,14 +2856,14 @@ void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
   case SYMBOL_PLUS:
   case SYMBOL_SCROSS:
   case SYMBOL_SPLUS:
-    symbolSize = (double)Round(size * S_RATIO);
+    symbolSize = (double)size * S_RATIO;
     break;
   case SYMBOL_TRIANGLE:
   case SYMBOL_ARROW:
-    symbolSize = (double)Round(size * 0.7);
+    symbolSize = (double)size * 0.7;
     break;
   case SYMBOL_DIAMOND:
-    symbolSize = (double)Round(size * M_SQRT1_2);
+    symbolSize = (double)size * M_SQRT1_2;
     break;
 
   default:
