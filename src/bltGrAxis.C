@@ -49,10 +49,6 @@ using namespace Blt;
 
 #define AXIS_PAD_TITLE 2
 #define EXP10(x)	(pow(10.0,(x)))
-#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
-#define UROUND(x,u)		(Round((x)/(u))*(u))
-#define UCEIL(x,u)		(ceil((x)/(u))*(u))
-#define UFLOOR(x,u)		(floor((x)/(u))*(u))
 
 AxisName axisNames[] = { 
   { "x",  CID_AXIS_X, MARGIN_BOTTOM, MARGIN_LEFT   },
@@ -64,10 +60,6 @@ AxisName axisNames[] = {
 // Defs
 
 extern double AdjustViewport(double offset, double windowSize);
-static int Round(double x)
-{
-  return (int) (x + ((x < 0.0) ? -0.5 : 0.5));
-}
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-activeforeground", "activeForeground", "ActiveForeground",
@@ -747,23 +739,24 @@ void Axis::logScale(double min, double max)
     range = tickMax - tickMin;
 	
     if (range > 10) {
-      /* There are too many decades to display a major tick at every
-       * decade.  Instead, treat the axis as a linear scale.  */
+      // There are too many decades to display a major tick at every
+      // decade.  Instead, treat the axis as a linear scale
       range = niceNum(range, 0);
       majorStep = niceNum(range / ops->reqNumMajorTicks, 1);
-      tickMin = UFLOOR(tickMin, majorStep);
-      tickMax = UCEIL(tickMax, majorStep);
+      tickMin = floor(tickMin/majorStep)*majorStep;
+      tickMax = ceil(tickMax/majorStep)*majorStep;
       nMajor = (int)((tickMax - tickMin) / majorStep) + 1;
       minorStep = EXP10(floor(log10(majorStep)));
       if (minorStep == majorStep) {
-	nMinor = 4, minorStep = 0.2;
-      } else {
-	nMinor = ROUND(majorStep / minorStep) - 1;
+	nMinor = 4;
+	minorStep = 0.2;
       }
-    } else {
-      if (tickMin == tickMax) {
+      else
+	nMinor = (majorStep/minorStep) - 1;
+    }
+    else {
+      if (tickMin == tickMax)
 	tickMax++;
-      }
       majorStep = 1.0;
       nMajor = (int)(tickMax - tickMin + 1); /* FIXME: Check this. */
 	    
@@ -817,7 +810,7 @@ void Axis::linearScale(double min, double max)
     axisMin = tickMin = floor(min / step) * step + 0.0;
     axisMax = tickMax = ceil(max / step) * step + 0.0;
 	
-    nTicks = ROUND((tickMax - tickMin) / step) + 1;
+    nTicks = ((tickMax-tickMin) / step) + 1;
   } 
   majorSweep_.step = step;
   majorSweep_.initial = tickMin;
@@ -940,7 +933,7 @@ void Axis::fixRange()
     max = min_ + ops->windowSize;
     if (max_ >= max) {
       if (ops->shiftBy > 0.0)
-	max = UCEIL(max_, ops->shiftBy);
+	max = ceil(max_/ops->shiftBy)*ops->shiftBy;
       min_ = max - ops->windowSize;
     }
     max_ = max;
@@ -1026,7 +1019,7 @@ TickLabel* Axis::makeLabel(double value)
 
   char string[TICK_LABEL_SIZE + 1];
   if (ops->logScale)
-    snprintf(string, TICK_LABEL_SIZE, "1E%d", ROUND(value));
+    snprintf(string, TICK_LABEL_SIZE, "1E%d", int(value));
   else
     snprintf(string, TICK_LABEL_SIZE, "%.*G", 15, value);
 
@@ -1641,7 +1634,7 @@ Ticks* Axis::generateTicks(TickSweep *sweepPtr)
   else {
     double value = sweepPtr->initial;	/* Start from smallest axis tick */
     for (int ii=0; ii<sweepPtr->nSteps; ii++) {
-      value = UROUND(value, sweepPtr->step);
+      value = (value/sweepPtr->step)*sweepPtr->step;
       ticksPtr->values[ii] = value;
       value += sweepPtr->step;
     }

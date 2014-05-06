@@ -39,7 +39,6 @@
 
 using namespace Blt;
 
-#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define AXIS_PAD_TITLE 2
 #define ROTATE_0	0
 #define ROTATE_90	1
@@ -538,7 +537,8 @@ void Graph::getAxisGeometry(Axis *axisPtr)
 	// Rotated label width and height
 	double rlw, rlh;
 	getBoundingBox(lw, lh, aops->tickAngle, &rlw, &rlh, NULL);
-	lw = ROUND(rlw), lh = ROUND(rlh);
+	lw = rlw;
+	lh = rlh;
       }
       if (axisPtr->maxTickWidth_ < int(lw))
 	axisPtr->maxTickWidth_ = lw;
@@ -549,8 +549,8 @@ void Graph::getAxisGeometry(Axis *axisPtr)
 	
     unsigned int pad =0;
     if (aops->exterior) {
-      /* Because the axis cap style is "CapProjecting", we need to
-       * account for an extra 1.5 linewidth at the end of each line.  */
+      // Because the axis cap style is "CapProjecting", we need to
+      // account for an extra 1.5 linewidth at the end of each line
       pad = ((aops->lineWidth * 12) / 8);
     }
     if (axisPtr->isHorizontal())

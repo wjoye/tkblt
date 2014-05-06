@@ -61,7 +61,6 @@ static Tcl_ObjCmdProc GraphObjCmd;
 
 static Axis* GetFirstAxis(Blt_Chain chain);
 
-#define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define PointInRegion(e,x,y)			\
   (((x) <= (e)->right) && ((x) >= (e)->left) && \
    ((y) <= (e)->bottom) && ((y) >= (e)->top))
@@ -293,19 +292,17 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
   if (graphPtr->flags & RESET_AXES)
     graphPtr->resetAxes();
 
-  /*
-   * Perform the transformation from window to graph coordinates.  Note that
-   * the points are always mapped onto the bottom and left axes (which may
-   * not be the what the user wants).
-   */
+  // Perform the transformation from window to graph coordinates.  Note that
+  // the points are always mapped onto the bottom and left axes (which may
+  // not be the what the user wants
   Axis* xAxis = GetFirstAxis(graphPtr->axisChain_[0]);
   Axis* yAxis = GetFirstAxis(graphPtr->axisChain_[1]);
 
   Point2d point = graphPtr->map2D(x, y, xAxis, yAxis);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.x)));
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(ROUND(point.y)));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(point.x));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(point.y));
   Tcl_SetObjResult(interp, listObjPtr);
 
   return TCL_OK;
