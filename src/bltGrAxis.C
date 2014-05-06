@@ -371,7 +371,7 @@ int Axis::configure()
   titleWidth_ = titleHeight_ = 0;
   if (ops->title) {
     int w, h;
-    Blt_GetTextExtents(ops->titleFont, ops->title, -1, &w, &h);
+    graphPtr_->getTextExtents(ops->titleFont, ops->title, -1, &w, &h);
     titleWidth_ = (unsigned short int)w;
     titleHeight_ = (unsigned short int)h;
   }
@@ -421,7 +421,7 @@ void Axis::mapStacked(int count, int margin)
   }
 
   int w, h;
-  Blt_GetTextExtents(ops->tickFont, "0", 1, &w, &h);
+  graphPtr_->getTextExtents(ops->tickFont, "0", 1, &w, &h);
   screenMin_ += (slice * count) + 2 + h / 2;
   screenRange_ = slice - 2 * 2 - h;
   screenScale_ = 1.0f / screenRange_;
@@ -1784,7 +1784,7 @@ void Axis::printLimits(Blt_Ps ps)
   int textWidth, textHeight;
   TextStyle ts(graphPtr_, &ops->limitsTextStyle);
   if (maxPtr) {
-    Blt_GetTextExtents(ops->tickFont, maxPtr, -1, &textWidth, &textHeight);
+    graphPtr_->getTextExtents(ops->tickFont, maxPtr, -1, &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
@@ -1804,7 +1804,7 @@ void Axis::printLimits(Blt_Ps ps)
   }
 
   if (minPtr) {
-    Blt_GetTextExtents(ops->tickFont, minPtr, -1, &textWidth, &textHeight);
+    graphPtr_->getTextExtents(ops->tickFont, minPtr, -1, &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
 

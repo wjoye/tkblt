@@ -28,6 +28,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "bltGraph.h"
 #include "bltGrAxis.h"
@@ -524,7 +525,7 @@ void Graph::getAxisGeometry(Axis *axisPtr)
       // Get the dimensions of each tick label.  Remember tick labels
       // can be multi-lined and/or rotated.
       int lw, lh;
-      Blt_GetTextExtents(aops->tickFont, labelPtr->string, -1, &lw, &lh);
+      getTextExtents(aops->tickFont, labelPtr->string, -1, &lw, &lh);
       labelPtr->width  = lw;
       labelPtr->height = lh;
 
@@ -578,4 +579,51 @@ void Graph::getAxisGeometry(Axis *axisPtr)
     axisPtr->width_ = y;
 }
 
+void Graph::getTextExtents(Tk_Font font, const char *text, int textLen,
+			   int* ww, int* hh)
+{
+  if (!text) {
+    *ww =0;
+    *hh =0;
+    return;
+  }
+
+  Tk_FontMetrics fm;
+  Tk_GetFontMetrics(font, &fm);
+  int lineHeight = fm.linespace;
+
+  if (textLen < 0)
+    textLen = strlen(text);
+
+  int maxWidth =0;
+  int maxHeight =0;
+  int lineLen =0;
+  const char *line =NULL;
+  const char *p, *pend;
+  for (p = line = text, pend = text + textLen; p < pend; p++) {
+    if (*p == '\n') {
+      if (lineLen > 0) {
+	int lineWidth = Tk_TextWidth(font, line, lineLen);
+	if (lineWidth > maxWidth)
+	  maxWidth = lineWidth;
+      }
+      maxHeight += lineHeight;
+      line = p + 1;	/* Point to the start of the next line. */
+      lineLen = 0;	/* Reset counter to indicate the start of a
+			 * new line. */
+      continue;
+    }
+    lineLen++;
+  }
+
+  if ((lineLen > 0) && (*(p - 1) != '\n')) {
+    maxHeight += lineHeight;
+    int lineWidth = Tk_TextWidth(font, line, lineLen);
+    if (lineWidth > maxWidth)
+      maxWidth = lineWidth;
+  }
+
+  *ww = maxWidth;
+  *hh = maxHeight;
+}
 

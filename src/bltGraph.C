@@ -1313,7 +1313,7 @@ Axis* Graph::nearestAxis(int x, int y)
       int w, h;
       double rw, rh;
       Point2d bbox[5];
-      Blt_GetTextExtents(ops->titleFont, ops->title, -1, &w, &h);
+      getTextExtents(ops->titleFont, ops->title, -1, &w, &h);
       Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
       Point2d t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
 				rw, rh, axisPtr->titleAnchor_);

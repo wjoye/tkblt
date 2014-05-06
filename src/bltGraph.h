@@ -249,6 +249,9 @@ class Graph {
 
   virtual int createPen(const char*, int, Tcl_Obj* const []) =0;
   int getPen(Tcl_Obj*, Pen**);
+
+  void getTextExtents(Tk_Font font, const char *text, int textLen,
+		      int* ww, int* hh);
 };
 
 extern Blt_BindTagProc Blt_GraphTags;
