@@ -32,7 +32,7 @@
 
 #include <tk.h>
 
-#include "bltText.h"
+#include "bltGrText.h"
 
 class Graph;
 

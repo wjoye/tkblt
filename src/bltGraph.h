@@ -38,7 +38,7 @@ extern "C" {
 };
 
 #include "bltGrMisc.h"
-#include "bltText.h"
+#include "bltGrText.h"
 
 typedef struct _Blt_Ps *Blt_Ps;
 

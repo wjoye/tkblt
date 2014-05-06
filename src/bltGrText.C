@@ -35,7 +35,7 @@ extern "C" {
 #include <tkInt.h>
 };
 
-#include "bltText.h"
+#include "bltGrText.h"
 #include "bltGraph.h"
 #include "bltPs.h"
 

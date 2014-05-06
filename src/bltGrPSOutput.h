@@ -33,7 +33,6 @@
 #include <tk.h>
 
 #include "bltConfig.h"
-//#include "bltGrText.h"
 
 #define POSTSCRIPT_BUFSIZ	((BUFSIZ*2)-1)
 struct _Blt_Ps {

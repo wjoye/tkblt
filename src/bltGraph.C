@@ -1293,11 +1293,11 @@ Axis* Graph::nearestAxis(int x, int y)
 	TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
 	double rw, rh;
 	Point2d bbox[5];
-	Blt_GetBoundingBox(labelPtr->width, labelPtr->height, 
-			   ops->tickAngle, &rw, &rh, bbox);
+	getBoundingBox(labelPtr->width, labelPtr->height, ops->tickAngle,
+		       &rw, &rh, bbox);
 	Point2d t;
-	t = Blt_AnchorPoint(labelPtr->anchorPos.x, labelPtr->anchorPos.y,
-			    rw, rh, axisPtr->tickAnchor_);
+	t = anchorPoint(labelPtr->anchorPos.x, labelPtr->anchorPos.y,
+			rw, rh, axisPtr->tickAnchor_);
 	t.x = x - t.x - (rw * 0.5);
 	t.y = y - t.y - (rh * 0.5);
 
@@ -1314,9 +1314,9 @@ Axis* Graph::nearestAxis(int x, int y)
       double rw, rh;
       Point2d bbox[5];
       getTextExtents(ops->titleFont, ops->title, -1, &w, &h);
-      Blt_GetBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
-      Point2d t = Blt_AnchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
-				rw, rh, axisPtr->titleAnchor_);
+      getBoundingBox(w, h, axisPtr->titleAngle_, &rw, &rh, bbox);
+      Point2d t = anchorPoint(axisPtr->titlePos_.x, axisPtr->titlePos_.y, 
+			      rw, rh, axisPtr->titleAnchor_);
       // Translate the point so that the 0,0 is the upper left 
       // corner of the bounding box
       t.x = x - t.x - (rw * 0.5);

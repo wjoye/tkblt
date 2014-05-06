@@ -72,10 +72,4 @@ class TextStyle {
   void getExtents(const char*, int*, int*);
 };
 
-extern void Blt_GetTextExtents(Tk_Font, const char*, int, int*, int*);
-extern void Blt_GetBoundingBox (int width, int height, float angle, 
-	double *widthPtr, double *heightPtr, Point2d *points);
-extern Point2d Blt_AnchorPoint (double x, double y, double width, 
-	double height, Tk_Anchor anchor);
-
 #endif

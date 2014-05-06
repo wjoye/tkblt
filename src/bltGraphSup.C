@@ -29,6 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "bltGraph.h"
 #include "bltGrAxis.h"
@@ -40,6 +41,10 @@ using namespace Blt;
 
 #define ROUND(x) 	((int)((x) + (((x)<0.0) ? -0.5 : 0.5)))
 #define AXIS_PAD_TITLE 2
+#define ROTATE_0	0
+#define ROTATE_90	1
+#define ROTATE_180	2
+#define ROTATE_270	3
 
 /*
  *---------------------------------------------------------------------------
@@ -532,7 +537,7 @@ void Graph::getAxisGeometry(Axis *axisPtr)
       if (aops->tickAngle != 0.0f) {
 	// Rotated label width and height
 	double rlw, rlh;
-	Blt_GetBoundingBox(lw, lh, aops->tickAngle, &rlw, &rlh, NULL);
+	getBoundingBox(lw, lh, aops->tickAngle, &rlw, &rlh, NULL);
 	lw = ROUND(rlw), lh = ROUND(rlh);
       }
       if (axisPtr->maxTickWidth_ < int(lw))
@@ -625,5 +630,188 @@ void Graph::getTextExtents(Tk_Font font, const char *text, int textLen,
 
   *ww = maxWidth;
   *hh = maxHeight;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ *	Computes the dimensions of the bounding box surrounding a rectangle
+ *	rotated about its center.  If pointArr isn't NULL, the coordinates of
+ *	the rotated rectangle are also returned.
+ *
+ *	The dimensions are determined by rotating the rectangle, and doubling
+ *	the maximum x-coordinate and y-coordinate.
+ *
+ *		w = 2 * maxX,  h = 2 * maxY
+ *
+ *	Since the rectangle is centered at 0,0, the coordinates of the
+ *	bounding box are (-w/2,-h/2 w/2,-h/2, w/2,h/2 -w/2,h/2).
+ *
+ *  		0 ------- 1
+ *  		|         |
+ *  		|    x    |
+ *  		|         |
+ *  		3 ------- 2
+ *
+ * Results:
+ *	The width and height of the bounding box containing the rotated
+ *	rectangle are returned.
+ *
+ *---------------------------------------------------------------------------
+ */
+void Graph::getBoundingBox(int width, int height, float angle,
+			   double *rotWidthPtr, double *rotHeightPtr,
+			   Point2d *bbox)
+{
+  int i;
+  double sinTheta, cosTheta;
+  double radians;
+  double xMax, yMax;
+  double x, y;
+  Point2d corner[4];
+
+  angle = fmod(angle, 360.0);
+  if (fmod(angle, (double)90.0) == 0.0) {
+    int ll, ur, ul, lr;
+    double rotWidth, rotHeight;
+
+    /* Handle right-angle rotations specially. */
+
+    int quadrant = (int)(angle / 90.0);
+    switch (quadrant) {
+    case ROTATE_270:	/* 270 degrees */
+      ul = 3, ur = 0, lr = 1, ll = 2;
+      rotWidth = (double)height;
+      rotHeight = (double)width;
+      break;
+    case ROTATE_90:		/* 90 degrees */
+      ul = 1, ur = 2, lr = 3, ll = 0;
+      rotWidth = (double)height;
+      rotHeight = (double)width;
+      break;
+    case ROTATE_180:	/* 180 degrees */
+      ul = 2, ur = 3, lr = 0, ll = 1;
+      rotWidth = (double)width;
+      rotHeight = (double)height;
+      break;
+    default:
+    case ROTATE_0:		/* 0 degrees */
+      ul = 0, ur = 1, lr = 2, ll = 3;
+      rotWidth = (double)width;
+      rotHeight = (double)height;
+      break;
+    }
+    if (bbox) {
+      x = rotWidth * 0.5;
+      y = rotHeight * 0.5;
+      bbox[ll].x = bbox[ul].x = -x;
+      bbox[ur].y = bbox[ul].y = -y;
+      bbox[lr].x = bbox[ur].x = x;
+      bbox[ll].y = bbox[lr].y = y;
+    }
+    *rotWidthPtr = rotWidth;
+    *rotHeightPtr = rotHeight;
+    return;
+  }
+  /* Set the four corners of the rectangle whose center is the origin. */
+  corner[1].x = corner[2].x = (double)width * 0.5;
+  corner[0].x = corner[3].x = -corner[1].x;
+  corner[2].y = corner[3].y = (double)height * 0.5;
+  corner[0].y = corner[1].y = -corner[2].y;
+
+  radians = (-angle / 180.0) * M_PI;
+  sinTheta = sin(radians), cosTheta = cos(radians);
+  xMax = yMax = 0.0;
+
+  /* Rotate the four corners and find the maximum X and Y coordinates */
+
+  for (i = 0; i < 4; i++) {
+    x = (corner[i].x * cosTheta) - (corner[i].y * sinTheta);
+    y = (corner[i].x * sinTheta) + (corner[i].y * cosTheta);
+    if (x > xMax)
+      xMax = x;
+
+    if (y > yMax)
+      yMax = y;
+
+    if (bbox) {
+      bbox[i].x = x;
+      bbox[i].y = y;
+    }
+  }
+
+  /*
+   * By symmetry, the width and height of the bounding box are twice the
+   * maximum x and y coordinates.
+   */
+  *rotWidthPtr = xMax + xMax;
+  *rotHeightPtr = yMax + yMax;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * Blt_AnchorPoint --
+ *
+ * 	Translates a position, using both the dimensions of the bounding box,
+ * 	and the anchor direction, returning the coordinates of the upper-left
+ * 	corner of the box. The anchor indicates where the given x-y position
+ * 	is in relation to the bounding box.
+ *
+ *  		7 nw --- 0 n --- 1 ne
+ *  		 |                |
+ *  		6 w    8 center  2 e
+ *  		 |                |
+ *  		5 sw --- 4 s --- 3 se
+ *
+ * 	The coordinates returned are translated to the origin of the bounding
+ * 	box (suitable for giving to XCopyArea, XCopyPlane, etc.)
+ *
+ * Results:
+ *	The translated coordinates of the bounding box are returned.
+ *
+ *---------------------------------------------------------------------------
+ */
+Point2d Graph::anchorPoint(double x, double y, double w, double h,	
+			   Tk_Anchor anchor)
+{
+  Point2d t;
+
+  switch (anchor) {
+  case TK_ANCHOR_NW:		/* 7 Upper left corner */
+    break;
+  case TK_ANCHOR_W:		/* 6 Left center */
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_SW:		/* 5 Lower left corner */
+    y -= h;
+    break;
+  case TK_ANCHOR_N:		/* 0 Top center */
+    x -= (w * 0.5);
+    break;
+  case TK_ANCHOR_CENTER:	/* 8 Center */
+    x -= (w * 0.5);
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_S:		/* 4 Bottom center */
+    x -= (w * 0.5);
+    y -= h;
+    break;
+  case TK_ANCHOR_NE:		/* 1 Upper right corner */
+    x -= w;
+    break;
+  case TK_ANCHOR_E:		/* 2 Right center */
+    x -= w;
+    y -= (h * 0.5);
+    break;
+  case TK_ANCHOR_SE:		/* 3 Lower right corner */
+    x -= w;
+    y -= h;
+    break;
+  }
+
+  t.x = x;
+  t.y = y;
+  return t;
 }
 

@@ -44,7 +44,7 @@ class Graph;
 class PageSetup;
 
 #include "bltGrMisc.h"
-#include "bltText.h"
+#include "bltGrText.h"
 #include "bltPs.h"
 
 typedef struct {

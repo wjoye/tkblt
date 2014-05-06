@@ -5557,6 +5557,7 @@ done
 	bltGrPen.C
 	bltGrPenBar.C
 	bltGrPenLine.C
+	bltGrText.C
 	bltGraph.C
 	bltGraphBar.C
 	bltGraphLine.C
@@ -5570,7 +5571,6 @@ done
 	bltOp.C
 	bltSpline.C
 	bltSwitch.C
-	bltText.C
 	bltUtil.c
 	bltVecCmd.c
 	bltVecMath.c

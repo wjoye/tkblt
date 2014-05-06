@@ -177,7 +177,7 @@ void TextMarker::map()
 
   double rw;
   double rh;
-  Blt_GetBoundingBox(w, h, ops->style.angle, &rw, &rh, outline_);
+  graphPtr_->getBoundingBox(w, h, ops->style.angle, &rw, &rh, outline_);
   width_ = rw;
   height_ = rh;
   for (int ii=0; ii<4; ii++) {
@@ -188,8 +188,8 @@ void TextMarker::map()
   outline_[4].y = outline_[0].y;
 
   Point2d anchorPtr = mapPoint(ops->worldPts->points, ops->xAxis, ops->yAxis);
-  anchorPtr = Blt_AnchorPoint(anchorPtr.x, anchorPtr.y, width_, 
-			     height_, ops->anchor);
+  anchorPtr = graphPtr_->anchorPoint(anchorPtr.x, anchorPtr.y, 
+				     width_, height_, ops->anchor);
   anchorPtr.x += ops->xOffset;
   anchorPtr.y += ops->yOffset;
 

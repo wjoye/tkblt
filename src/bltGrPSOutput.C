@@ -708,12 +708,10 @@ void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
     double rw, rh;
 	
     angle = fmod(tsPtr->angle, (double)360.0);
-    Blt_GetBoundingBox(textPtr->width, textPtr->height, angle, &rw, &rh, 
-		       (Point2d *)NULL);
-    /*
-     * Find the center of the bounding box
-     */
-    t = Blt_AnchorPoint(x, y, rw, rh, tsPtr->anchor); 
+    graphPtr_->getBoundingBox(textPtr->width, textPtr->height, angle, &rw, &rh, 
+			      NULL);
+
+    t = graphPtr_->anchorPoint(x, y, rw, rh, tsPtr->anchor); 
     t.x += rw * 0.5;
     t.y += rh * 0.5;
   }

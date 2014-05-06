@@ -36,7 +36,7 @@
 #include <tk.h>
 
 #include "bltGrMisc.h"
-#include "bltText.h"
+#include "bltGrText.h"
 
 class Graph;
 class Element;

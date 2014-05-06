@@ -186,8 +186,8 @@ void BitmapMarker::map()
   Tk_SizeOfBitmap(graphPtr_->display_, ops->bitmap, &lwidth, &lheight);
 
   Point2d lanchorPt = mapPoint(ops->worldPts->points, ops->xAxis, ops->yAxis);
-  lanchorPt = 
-    Blt_AnchorPoint(lanchorPt.x, lanchorPt.y, lwidth, lheight, ops->anchor);
+  lanchorPt = graphPtr_->anchorPoint(lanchorPt.x, lanchorPt.y, 
+				     lwidth, lheight, ops->anchor);
   lanchorPt.x += ops->xOffset;
   lanchorPt.y += ops->yOffset;
 
@@ -209,7 +209,7 @@ void BitmapMarker::map()
   // This is needed for print a background in PostScript.
   double rotWidth, rotHeight;
   Point2d polygon[5];
-  Blt_GetBoundingBox(width_, height_, 0, &rotWidth, &rotHeight, polygon);
+  graphPtr_->getBoundingBox(width_, height_, 0, &rotWidth, &rotHeight, polygon);
 	
   // Adjust each point of the polygon. Both scale it to the new size and
   // translate it to the actual screen position of the bitmap.
