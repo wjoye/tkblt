@@ -585,7 +585,7 @@ void LineElement::draw(Drawable drawable)
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
-      DrawTraces(drawable, penPtr);
+      drawTraces(drawable, penPtr);
   }
 
   if (ops->reqMaxSymbols > 0) {
@@ -618,11 +618,11 @@ void LineElement::draw(Drawable drawable)
 
     if ((stylePtr->symbolPts.length > 0) && 
 	(penOps->symbol.type != SYMBOL_NONE))
-      DrawSymbols(drawable, penPtr, stylePtr->symbolSize,
+      drawSymbols(drawable, penPtr, stylePtr->symbolSize,
 		  stylePtr->symbolPts.length, stylePtr->symbolPts.points);
 
     if (penOps->valueShow != SHOW_NONE)
-      DrawValues(drawable, penPtr, stylePtr->symbolPts.length, 
+      drawValues(drawable, penPtr, stylePtr->symbolPts.length, 
 		 stylePtr->symbolPts.points, symbolPts_.map + count);
 
     count += stylePtr->symbolPts.length;
@@ -650,10 +650,10 @@ void LineElement::drawActive(Drawable drawable)
       MapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
-      DrawSymbols(drawable, penPtr, symbolSize, activePts_.length,
+      drawSymbols(drawable, penPtr, symbolSize, activePts_.length,
 		  activePts_.points);
     if (penOps->valueShow != SHOW_NONE)
-      DrawValues(drawable, penPtr, activePts_.length, activePts_.points, 
+      drawValues(drawable, penPtr, activePts_.length, activePts_.points, 
 		 activePts_.map);
   }
   else if (nActiveIndices_ < 0) { 
@@ -663,14 +663,14 @@ void LineElement::drawActive(Drawable drawable)
 			   penPtr->traceGC_, lines_.segments, 
 			   lines_.length);
       else if (Blt_Chain_GetLength(traces_) > 0)
-	DrawTraces(drawable, penPtr);
+	drawTraces(drawable, penPtr);
     }
     if (penOps->symbol.type != SYMBOL_NONE)
-      DrawSymbols(drawable, penPtr, symbolSize, symbolPts_.length,
+      drawSymbols(drawable, penPtr, symbolSize, symbolPts_.length,
 		  symbolPts_.points);
 
     if (penOps->valueShow != SHOW_NONE) {
-      DrawValues(drawable, penPtr, symbolPts_.length, symbolPts_.points, 
+      drawValues(drawable, penPtr, symbolPts_.length, symbolPts_.points, 
 		 symbolPts_.map);
     }
   }
@@ -696,7 +696,7 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
     Point2d point;
     point.x = x;
     point.y = y;
-    DrawSymbols(drawable, penPtr, size, 1, &point);
+    drawSymbols(drawable, penPtr, size, 1, &point);
   }
 }
 
@@ -746,10 +746,8 @@ void LineElement::print(Blt_Ps ps)
     LinePen* penPtr = NORMALPEN(ops);
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-    if ((Blt_Chain_GetLength(traces_) > 0) && 
-	(penOps->traceWidth > 0)) {
-      TracesToPostScript(ps, penPtr);
-    }
+    if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
+      printTraces(ps, penPtr);
   }
 
   // Draw symbols, error bars, values
@@ -826,7 +824,7 @@ void LineElement::printActive(Blt_Ps ps)
 	Blt_Ps_Draw2DSegments(ps, lines_.segments, lines_.length);
       }
       if (Blt_Chain_GetLength(traces_) > 0)
-	TracesToPostScript(ps, (LinePen*)penPtr);
+	printTraces(ps, (LinePen*)penPtr);
     }
     if (penOps->symbol.type != SYMBOL_NONE)
       SymbolsToPostScript(ps, penPtr, symbolSize, symbolPts_.length, 
@@ -2125,9 +2123,9 @@ void LineElement::ClosestPoint(ClosestSearch *searchPtr)
 #define MAX_DRAWRECTANGLES(d)	Blt_MaxRequestSize(d, sizeof(XRectangle))
 #define MAX_DRAWARCS(d)		Blt_MaxRequestSize(d, sizeof(XArc))
 
-void LineElement::DrawCircles(Display *display, Drawable drawable, 
-			LinePen* penPtr, 
-			int nSymbolPts, Point2d *symbolPts, int radius)
+void LineElement::drawCircles(Display *display, Drawable drawable, 
+			      LinePen* penPtr, 
+			      int nSymbolPts, Point2d *symbolPts, int radius)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2178,7 +2176,7 @@ void LineElement::DrawCircles(Display *display, Drawable drawable,
   free(arcs);
 }
 
-void LineElement::DrawSquares(Display *display, Drawable drawable, 
+void LineElement::drawSquares(Display *display, Drawable drawable, 
 			      LinePen* penPtr, 
 			      int nSymbolPts, Point2d *symbolPts, int r)
 {
@@ -2232,7 +2230,7 @@ void LineElement::DrawSquares(Display *display, Drawable drawable,
 
 #define SQRT_PI		1.77245385090552
 #define S_RATIO		0.886226925452758
-void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
+void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 			      int size, int nSymbolPts, Point2d *symbolPts)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
@@ -2265,12 +2263,12 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
     break;
 
   case SYMBOL_SQUARE:
-    DrawSquares(graphPtr_->display_, drawable, penPtr, nSymbolPts,
+    drawSquares(graphPtr_->display_, drawable, penPtr, nSymbolPts,
 		symbolPts, r2);
     break;
 
   case SYMBOL_CIRCLE:
-    DrawCircles(graphPtr_->display_, drawable, penPtr, nSymbolPts,
+    drawCircles(graphPtr_->display_, drawable, penPtr, nSymbolPts,
 		symbolPts, r1);
     break;
 
@@ -2661,7 +2659,7 @@ void LineElement::DrawSymbols(Drawable drawable, LinePen* penPtr,
   }
 }
 
-void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
+void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 {
   int np = Blt_MaxRequestSize(graphPtr_->display_, sizeof(XPoint)) - 1;
   XPoint *points = (XPoint*)malloc((np + 1) * sizeof(XPoint));
@@ -2725,7 +2723,7 @@ void LineElement::DrawTraces(Drawable drawable, LinePen* penPtr)
   free(points);
 }
 
-void LineElement::DrawValues(Drawable drawable, LinePen* penPtr, 
+void LineElement::drawValues(Drawable drawable, LinePen* penPtr, 
 			     int length, Point2d *points, int *map)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
@@ -2896,7 +2894,7 @@ void LineElement::SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
   }
 }
 
-void LineElement::TracesToPostScript(Blt_Ps ps, LinePen* penPtr)
+void LineElement::printTraces(Blt_Ps ps, LinePen* penPtr)
 {
   SetLineAttributes(ps, penPtr);
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
