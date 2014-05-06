@@ -57,7 +57,6 @@ typedef struct {
   Weight weight;
   LinePen* penPtr;
   GraphPoints symbolPts;
-  GraphSegments lines;
   GraphSegments xeb;
   GraphSegments yeb;
   int symbolSize;
@@ -109,7 +108,6 @@ class LineElement : public Element {
   GraphPoints activePts_;
   GraphSegments xeb_;
   GraphSegments yeb_;
-  GraphSegments lines_;
   int symbolInterval_;
   int symbolCounter_;
   Blt_Chain traces_;

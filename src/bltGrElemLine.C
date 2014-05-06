@@ -244,9 +244,6 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   yeb_.segments =NULL;
   yeb_.length =0;
   yeb_.map =NULL;
-  lines_.segments =NULL;
-  lines_.length =0;
-  lines_.map =NULL;
 
   symbolInterval_ =0;
   symbolCounter_ =0;
@@ -543,6 +540,8 @@ void LineElement::closest()
 void LineElement::draw(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+  LinePen* penPtr = NORMALPEN(ops);
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (ops->hide)
     return;
@@ -565,28 +564,9 @@ void LineElement::draw(Drawable drawable)
     free(points);
   }
 
-  // Lines: stripchart segments or graph traces
-  if (lines_.length > 0) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
-      LinePen* penPtr = (LinePen*)stylePtr->penPtr;
-      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-      if ((stylePtr->lines.length > 0) && 
-	  (penOps->errorBarLineWidth > 0)) {
-	Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->traceGC_,
-			   stylePtr->lines.segments, stylePtr->lines.length);
-      }
-    }
-  } 
-  else {
-    LinePen* penPtr = NORMALPEN(ops);
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-    if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
-      drawTraces(drawable, penPtr);
-  }
+  // traces
+  if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
+    drawTraces(drawable, penPtr);
 
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
@@ -600,7 +580,6 @@ void LineElement::draw(Drawable drawable)
   }
 
   // Symbols, error bars, values
-
   unsigned int count =0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
@@ -634,14 +613,13 @@ void LineElement::draw(Drawable drawable)
 void LineElement::drawActive(Drawable drawable)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
-
-  if (ops->hide || !(flags & ACTIVE))
-    return;
-
   LinePen* penPtr = (LinePen*)ops->activePenPtr;
   if (!penPtr)
     return;
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  if (ops->hide || !(flags & ACTIVE))
+    return;
 
   int symbolSize = ScaleSymbol(penOps->symbol.size);
 
@@ -657,14 +635,9 @@ void LineElement::drawActive(Drawable drawable)
 		 activePts_.map);
   }
   else if (nActiveIndices_ < 0) { 
-    if (penOps->traceWidth > 0) {
-      if (lines_.length > 0)
-	Blt_Draw2DSegments(graphPtr_->display_, drawable, 
-			   penPtr->traceGC_, lines_.segments, 
-			   lines_.length);
-      else if (Blt_Chain_GetLength(traces_) > 0)
-	drawTraces(drawable, penPtr);
-    }
+    if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
+      drawTraces(drawable, penPtr);
+
     if (penOps->symbol.type != SYMBOL_NONE)
       drawSymbols(drawable, penPtr, symbolSize, symbolPts_.length,
 		  symbolPts_.points);
@@ -703,6 +676,8 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
 void LineElement::print(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
+  LinePen* penPtr = NORMALPEN(ops);
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (ops->hide)
     return;
@@ -725,33 +700,11 @@ void LineElement::print(Blt_Ps ps)
     Blt_Ps_Append(ps, "% end fill area\n");
   }
 
-  // Draw lines (strip chart) or traces (xy graph)
-  if (lines_.length > 0) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
-      LinePen* penPtr = (LinePen *)stylePtr->penPtr;
-      LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-      if ((stylePtr->lines.length > 0) && (penOps->traceWidth > 0)) {
-	SetLineAttributes(ps, penPtr);
-	Blt_Ps_Append(ps, "% start segments\n");
-	Blt_Ps_Draw2DSegments(ps, stylePtr->lines.segments, 
-			      stylePtr->lines.length);
-	Blt_Ps_Append(ps, "% end segments\n");
-      }
-    }
-  }
-  else {
-    LinePen* penPtr = NORMALPEN(ops);
-    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-    if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
-      printTraces(ps, penPtr);
-  }
+  // traces
+  if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
+    printTraces(ps, penPtr);
 
   // Draw symbols, error bars, values
-
   unsigned int count =0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
@@ -793,14 +746,13 @@ void LineElement::print(Blt_Ps ps)
 void LineElement::printActive(Blt_Ps ps)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
-
-  if (ops->hide || !(flags & ACTIVE))
-    return;
-
   LinePen* penPtr = (LinePen *)ops->activePenPtr;
   if (!penPtr)
     return;
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  if (ops->hide || !(flags & ACTIVE))
+    return;
 
   Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
@@ -818,14 +770,9 @@ void LineElement::printActive(Blt_Ps ps)
 			 activePts_.map);
   }
   else if (nActiveIndices_ < 0) {
-    if (penOps->traceWidth > 0) {
-      if (lines_.length > 0) {
-	SetLineAttributes(ps, penPtr);
-	Blt_Ps_Draw2DSegments(ps, lines_.segments, lines_.length);
-      }
-      if (Blt_Chain_GetLength(traces_) > 0)
-	printTraces(ps, (LinePen*)penPtr);
-    }
+    if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
+      printTraces(ps, (LinePen*)penPtr);
+
     if (penOps->symbol.type != SYMBOL_NONE)
       SymbolsToPostScript(ps, penPtr, symbolSize, symbolPts_.length, 
 			  symbolPts_.points);
@@ -1451,8 +1398,6 @@ void LineElement::MergePens(LineStyle **styleMap)
   if (Blt_Chain_GetLength(ops->stylePalette) < 2) {
     Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
-    stylePtr->lines.length = lines_.length;
-    stylePtr->lines.segments = lines_.segments;
     stylePtr->symbolPts.length = symbolPts_.length;
     stylePtr->symbolPts.points = symbolPts_.points;
     stylePtr->xeb.length = xeb_.length;
@@ -1460,32 +1405,6 @@ void LineElement::MergePens(LineStyle **styleMap)
     stylePtr->yeb.length = yeb_.length;
     stylePtr->yeb.segments = yeb_.segments;
     return;
-  }
-
-  /* We have more than one style. Group line segments and points of like pen
-   * styles.  */
-  if (lines_.length > 0) {
-    Segment2d* segments = (Segment2d*)malloc(lines_.length * sizeof(Segment2d));
-    int* map = (int*)malloc(lines_.length * sizeof(int));
-    Segment2d *sp = segments;
-    int* ip = map;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
-      stylePtr->lines.segments = sp;
-      for (int ii=0; ii<lines_.length; ii++) {
-	int iData = lines_.map[ii];
-	if (styleMap[iData] == stylePtr) {
-	  *sp++ = lines_.segments[ii];
-	  *ip++ = iData;
-	}
-      }
-      stylePtr->lines.length = sp - stylePtr->lines.segments;
-    }
-    free(lines_.segments);
-    lines_.segments = segments;
-    free(lines_.map);
-    lines_.map = map;
   }
 
   if (symbolPts_.length > 0) {
@@ -1817,7 +1736,6 @@ void LineElement::ResetLine()
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
-    stylePtr->lines.length = 0;
     stylePtr->symbolPts.length = 0;
     stylePtr->xeb.length = 0;
     stylePtr->yeb.length = 0;
@@ -1832,15 +1750,6 @@ void LineElement::ResetLine()
     free(symbolPts_.map);
   symbolPts_.map = NULL;
   symbolPts_.length = 0;
-
-  if (lines_.segments)
-    free(lines_.segments);
-  lines_.segments = NULL;
-  lines_.length = 0;
-
-  if (lines_.map)
-    free(lines_.map);
-  lines_.map = NULL;
 
   if (activePts_.points)
     free(activePts_.points);
