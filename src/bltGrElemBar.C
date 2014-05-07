@@ -123,9 +123,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-stack", "stack", "Stack", 
    NULL, -1, Tk_Offset(BarElementOptions, groupName),
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
-   NULL, -1, Tk_Offset(BarElementOptions, builtinPen.stipple), 
-   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
    "", -1, Tk_Offset(BarElementOptions, stylePalette), 0, &styleObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
@@ -743,12 +740,8 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
   if (penPtr->fillGC_)
     XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, x, y);
 
-  if (penOps->stipple != None)
-    XFillRectangle(graphPtr_->display_, drawable, penPtr->fillGC_, x, y, 
-		   size, size);
-  else
-    Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, penOps->fill, 
-		       x, y, size, size, penOps->borderWidth, penOps->relief);
+  Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, penOps->fill, 
+		     x, y, size, size, penOps->borderWidth, penOps->relief);
 
   XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, x, y, 
 		 size, size);
@@ -847,18 +840,7 @@ void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
   Blt_Ps_Append(ps, "\n"
 		"/DrawSymbolProc {\n"
 		"gsave\n    ");
-  if (penOps->stipple != None) {
-    if (penOps->fill) {
-      Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(penOps->fill));
-      Blt_Ps_Append(ps, "    gsave fill grestore\n    ");
-    }
-    if (penOps->outlineColor) {
-      Blt_Ps_XSetForeground(ps, penOps->outlineColor);
-    } else {
-      Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(penOps->fill));
-    }
-    Blt_Ps_XSetStipple(ps, graphPtr_->display_, penOps->stipple);
-  } else if (penOps->outlineColor) {
+  if (penOps->outlineColor) {
     Blt_Ps_XSetForeground(ps, penOps->outlineColor);
     Blt_Ps_Append(ps, "    fill\n");
   }
@@ -1255,8 +1237,6 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
       TK_RELIEF_FLAT: pops->relief;
 
     int hasOutline = ((relief == TK_RELIEF_FLAT) && pops->outlineColor);
-    if (pops->stipple != None)
-      TkSetRegion(graphPtr_->display_, penPtr->fillGC_, rgn);
 
     SetBackgroundClipRegion(graphPtr_->tkwin_, pops->fill, rgn);
 
@@ -1265,13 +1245,9 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
 
     XRectangle *rp, *rend;
     for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-      if (pops->stipple != None)
-	XFillRectangle(graphPtr_->display_, drawable, penPtr->fillGC_, 
-		       rp->x, rp->y, rp->width, rp->height);
-      else
-	Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
-			   pops->fill, rp->x, rp->y, rp->width, rp->height, 
-			   pops->borderWidth, relief);
+      Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
+			 pops->fill, rp->x, rp->y, rp->width, rp->height, 
+			 pops->borderWidth, relief);
 
       if (hasOutline)
 	XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
@@ -1282,9 +1258,6 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
 
     if (hasOutline)
       XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
-
-    if (pops->stipple != None)
-      XSetClipMask(graphPtr_->display_, penPtr->fillGC_, None);
 
   }
   else if (pops->outlineColor) {
@@ -1360,19 +1333,7 @@ void BarElement::SegmentsToPostScript(Blt_Ps ps, BarPen* penPtr,
     if ((rp->width < 1) || (rp->height < 1)) {
       continue;
     }
-    if (pops->stipple != None) {
-      Blt_Ps_Rectangle(ps, rp->x, rp->y, rp->width - 1, rp->height - 1);
-      if (pops->fill) {
-	Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(pops->fill));
-	Blt_Ps_Append(ps, "gsave fill grestore\n");
-      }
-      if (pops->outlineColor) {
-	Blt_Ps_XSetForeground(ps, pops->outlineColor);
-      } else {
-	Blt_Ps_XSetForeground(ps, Tk_3DBorderColor(pops->fill));
-      }
-      Blt_Ps_XSetStipple(ps, graphPtr_->display_, pops->stipple);
-    } else if (pops->outlineColor) {
+    if (pops->outlineColor) {
       Blt_Ps_XSetForeground(ps, pops->outlineColor);
       Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
 			    (int)rp->width - 1, (int)rp->height - 1);

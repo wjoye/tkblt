@@ -47,7 +47,6 @@ typedef struct {
   Tk_3DBorder fill;
   int borderWidth;
   int relief;
-  Pixmap stipple;
 } BarPenOptions;
 
 class BarPen : public Pen {

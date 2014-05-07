@@ -81,9 +81,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(PolygonMarkerOptions, state),
    0, &stateObjOption, 0},
-  {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple",
-   NULL, -1, Tk_Offset(PolygonMarkerOptions, stipple),
-   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
@@ -182,12 +179,6 @@ int PolygonMarker::configure()
   if (ops->fillBg) {
     gcMask |= GCBackground;
     gcValues.background = ops->fillBg->pixel;
-  }
-  if (ops->stipple != None) {
-    gcValues.stipple = ops->stipple;
-    gcValues.fill_style = (ops->fillBg)
-      ? FillOpaqueStippled : FillStippled;
-    gcMask |= (GCStipple | GCFillStyle);
   }
   newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (fillGC_)
@@ -351,11 +342,7 @@ void PolygonMarker::postscript(Blt_Ps ps)
       Blt_Ps_Append(ps, "gsave fill grestore\n");
     }
     Blt_Ps_XSetForeground(ps, ops->fill);
-    if (ops->stipple != None) {
-      Blt_Ps_XSetStipple(ps, graphPtr_->display_, ops->stipple);
-    } else {
-      Blt_Ps_Append(ps, "fill\n");
-    }
+    Blt_Ps_Append(ps, "fill\n");
   }
 
   if ((ops->lineWidth > 0) && (ops->outline)) {

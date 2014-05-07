@@ -54,7 +54,6 @@ namespace Blt {
     int lineWidth;
     XColor* outline;
     XColor* outlineBg;
-    Pixmap stipple;
     int xorr;
   } PolygonMarkerOptions;
 

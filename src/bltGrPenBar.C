@@ -63,8 +63,6 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    "both", -1, Tk_Offset(BarPenOptions, errorBarShow), 0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
    "none", -1, Tk_Offset(BarPenOptions, valueShow), 0, &fillObjOption, 0},
-  {TK_OPTION_BITMAP, "-stipple", "stipple", "Stipple", 
-   NULL, -1, Tk_Offset(BarPenOptions, stipple), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(BarPenOptions, valueStyle.anchor), 0, NULL, 0},
   {TK_OPTION_COLOR, "-valuecolor", "valueColor", "ValueColor",
@@ -151,22 +149,6 @@ int BarPen::configure()
   // fillGC
   {
     GC newGC = NULL;
-    if (ops->stipple != None) {
-      // Handle old-style -stipple specially
-      unsigned long gcMask = 
-	GCForeground | GCBackground | GCFillStyle | GCStipple;
-      XGCValues gcValues;
-      int screenNum = Tk_ScreenNumber(graphPtr_->tkwin_);
-      gcValues.foreground = BlackPixel(graphPtr_->display_, screenNum);
-      gcValues.background = WhitePixel(graphPtr_->display_, screenNum);
-      if (ops->fill)
-	gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
-      else if (ops->outlineColor)
-	gcValues.foreground = ops->outlineColor->pixel;
-      gcValues.stipple = ops->stipple;
-      gcValues.fill_style = FillStippled;
-      newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
-    }
     if (fillGC_)
       Tk_FreeGC(graphPtr_->display_, fillGC_);
     fillGC_ = newGC;

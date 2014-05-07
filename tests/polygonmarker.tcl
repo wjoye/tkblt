@@ -23,7 +23,6 @@ bltTest3 $graph marker $mm -mapy y
 bltTest3 $graph marker $mm -outline green
 bltTest3 $graph marker $mm -outlinebg cyan
 bltTest3 $graph marker $mm -state disabled
-#bltTest3 $graph marker $mm -stipple
 bltTest3 $graph marker $mm -under yes
 bltTest3 $graph marker $mm -xoffset 20
 bltTest3 $graph marker $mm -xor yes
