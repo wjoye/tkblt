@@ -97,7 +97,7 @@ typedef struct {
 class LineElement : public Element {
  public:
   enum PenDirection {INCREASING, DECREASING, BOTH_DIRECTIONS};
-  enum Smoothing {LINEAR, STEP, NATURAL, QUADRATIC, CATROM};
+  enum Smoothing {LINEAR, STEP, CUBIC, QUADRATIC, CATROM};
 
  protected:
   LinePen* builtinPenPtr;

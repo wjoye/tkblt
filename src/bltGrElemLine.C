@@ -72,7 +72,7 @@ using namespace Blt;
 // OptionSpecs
 
 static const char* smoothObjOption[] = 
-  {"linear", "step", "natural", "quadratic", "catrom", NULL};
+  {"linear", "step", "cubic", "quadratic", "catrom", NULL};
 
 static const char* penDirObjOption[] = 
   {"increasing", "decreasing", "both", NULL};
@@ -339,7 +339,7 @@ void LineElement::map()
       GenerateSteps(&mi);
       break;
 
-    case NATURAL:
+    case CUBIC:
     case QUADRATIC:
       // Can't interpolate with less than three points
       if (mi.nScreenPts < 3)
@@ -1113,56 +1113,44 @@ void LineElement::GenerateSteps(MapInfo *mapPtr)
 
 void LineElement::GenerateSpline(MapInfo *mapPtr)
 {
-  Point2d *origPts, *iPts;
-  int *map;
-  int extra;
-  int niPts, nOrigPts;
-  int result;
-  int i, j, count;
+  int nOrigPts = mapPtr->nScreenPts;
+  Point2d* origPts = mapPtr->screenPts;
 
-  nOrigPts = mapPtr->nScreenPts;
-  origPts = mapPtr->screenPts;
-  for (i = 0, j = 1; j < nOrigPts; i++, j++) {
-    if (origPts[j].x <= origPts[i].x) {
-      return;			/* Points are not monotonically
-				 * increasing */
-    }
+  // check points are not monotonically increasing
+  for (int ii=0, jj=1; jj<nOrigPts; ii++, jj++) {
+    if (origPts[jj].x <= origPts[ii].x)
+      return;
   }
   if (((origPts[0].x > (double)graphPtr_->right_)) ||
       ((origPts[mapPtr->nScreenPts - 1].x < (double)graphPtr_->left_)))
     return;
 
-  /*
-   * The spline is computed in screen coordinates instead of data points so
-   * that we can select the abscissas of the interpolated points from each
-   * pixel horizontally across the plotting area.
-   */
-  extra = (graphPtr_->right_ - graphPtr_->left_) + 1;
-  if (extra < 1) {
+  // The spline is computed in screen coordinates instead of data points so
+  // that we can select the abscissas of the interpolated points from each
+  // pixel horizontally across the plotting area.
+  int extra = (graphPtr_->right_ - graphPtr_->left_) + 1;
+  if (extra < 1)
     return;
-  }
-  niPts = nOrigPts + extra + 1;
-  iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
-  map = (int*)malloc(sizeof(int) * niPts);
-  /* Populate the x2 array with both the original X-coordinates and extra
-   * X-coordinates for each horizontal pixel that the line segment
-   * contains. */
-  count = 0;
-  for (i = 0, j = 1; j < nOrigPts; i++, j++) {
 
-    /* Add the original x-coordinate */
-    iPts[count].x = origPts[i].x;
+  int niPts = nOrigPts + extra + 1;
+  Point2d* iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
+  int* map = (int*)malloc(sizeof(int) * niPts);
 
-    /* Include the starting offset of the point in the offset array */
-    map[count] = mapPtr->map[i];
+  // Populate the x2 array with both the original X-coordinates and extra
+  // X-coordinates for each horizontal pixel that the line segment contains
+  int count = 0;
+  for (int ii=0, jj=1; jj<nOrigPts; ii++, jj++) {
+    // Add the original x-coordinate
+    iPts[count].x = origPts[ii].x;
+
+    // Include the starting offset of the point in the offset array
+    map[count] = mapPtr->map[ii];
     count++;
 
-    /* Is any part of the interval (line segment) in the plotting area?  */
-    if ((origPts[j].x >= (double)graphPtr_->left_) || 
-	(origPts[i].x <= (double)graphPtr_->right_)) {
-      double x, last;
-
-      x = origPts[i].x + 1.0;
+    // Is any part of the interval (line segment) in the plotting area? 
+    if ((origPts[jj].x >= (double)graphPtr_->left_) || 
+	(origPts[ii].x <= (double)graphPtr_->right_)) {
+      double x = origPts[ii].x + 1.0;
 
       /*
        * Since the line segment may be partially clipped on the left or
@@ -1176,26 +1164,26 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
        * the min of the last X-coordinate and the right edge.
        */
       x = MAX(x, (double)graphPtr_->left_);
-      last = MIN(origPts[j].x, (double)graphPtr_->right_);
+      double last = MIN(origPts[jj].x, (double)graphPtr_->right_);
 
-      /* Add the extra x-coordinates to the interval. */
+      // Add the extra x-coordinates to the interval
       while (x < last) {
-	map[count] = mapPtr->map[i];
+	map[count] = mapPtr->map[ii];
 	iPts[count++].x = x;
 	x++;
       }
     }
   }
   niPts = count;
-  result = 0;
-  if (smooth_ == NATURAL)
+  int result = 0;
+  if (smooth_ == CUBIC)
     result = Blt_NaturalSpline(origPts, nOrigPts, iPts, niPts);
   else if (smooth_ == QUADRATIC)
     result = Blt_QuadraticSpline(origPts, nOrigPts, iPts, niPts);
 
+  // The spline interpolation failed.  We will fall back to the current
+  // coordinates and do no smoothing (standard line segments)
   if (!result) {
-    /* The spline interpolation failed.  We'll fallback to the current
-     * coordinates and do no smoothing (standard line segments).  */
     smooth_ = LINEAR;
     free(iPts);
     free(map);
@@ -1296,15 +1284,15 @@ void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
   count++;
   niPts = count;
   result = 0;
-  if (smooth_ == NATURAL)
+  if (smooth_ == CUBIC)
     result = Blt_NaturalParametricSpline(origPts, nOrigPts, &exts, 0,
 					 iPts, niPts);
   else if (smooth_ == CATROM)
     result = Blt_CatromParametricSpline(origPts, nOrigPts, iPts, niPts);
 
+  // The spline interpolation failed.  We will fall back to the current
+  // coordinates and do no smoothing (standard line segments)
   if (!result) {
-    /* The spline interpolation failed.  We will fall back to the current
-     * coordinates and do no smoothing (standard line segments).  */
     smooth_ = LINEAR;
     free(iPts);
     free(map);
