@@ -37,13 +37,14 @@
 using namespace Blt;
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
-  {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPenOptions, fill), 
-   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-background", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarPenOptions, borderWidth), 0, NULL, 0},
+  {TK_OPTION_BORDER, "-color", "color", "Color",
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPenOptions, fill), 
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(BarPenOptions, errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -51,12 +52,12 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    "1", -1, Tk_Offset(BarPenOptions, errorBarLineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "5", -1, Tk_Offset(BarPenOptions, errorBarCapWidth), 0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarPenOptions, outlineColor), 
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
+  {TK_OPTION_COLOR, "-outline", "outline", "Outline",
+   NULL, -1, Tk_Offset(BarPenOptions, outlineColor), 
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
    "raised", -1, Tk_Offset(BarPenOptions, relief), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
@@ -84,7 +85,6 @@ BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   BarPenOptions* ops = (BarPenOptions*)ops_;
   manageOptions_ =1;
 
-  fillGC_ =NULL;
   outlineGC_ =NULL;
   errorBarGC_ =NULL;
 
@@ -104,7 +104,6 @@ BarPen::BarPen(Graph* graphPtr, const char* name, void* options)
   BarPenOptions* ops = (BarPenOptions*)ops_;
   manageOptions_ =0;
 
-  fillGC_ =NULL;
   outlineGC_ =NULL;
   errorBarGC_ =NULL;
 
@@ -121,8 +120,6 @@ BarPen::~BarPen()
 {
   if (outlineGC_)
     Tk_FreeGC(graphPtr_->display_, outlineGC_);
-  if (fillGC_)
-    Tk_FreeGC(graphPtr_->display_, fillGC_);
   if (errorBarGC_)
     Tk_FreeGC(graphPtr_->display_, errorBarGC_);
 }
@@ -135,7 +132,7 @@ int BarPen::configure()
   {
     unsigned long gcMask = GCForeground | GCLineWidth;
     XGCValues gcValues;
-    gcValues.line_width = ops->errorBarLineWidth;
+    gcValues.line_width = ops->borderWidth;
     if (ops->outlineColor)
       gcValues.foreground = ops->outlineColor->pixel;
     else if (ops->fill)
@@ -146,22 +143,17 @@ int BarPen::configure()
     outlineGC_ = newGC;
   }
 
-  // fillGC
-  {
-    GC newGC = NULL;
-    if (fillGC_)
-      Tk_FreeGC(graphPtr_->display_, fillGC_);
-    fillGC_ = newGC;
-  }
-
   // errorBarGC
   {
     unsigned long gcMask = GCForeground | GCLineWidth;
-    XColor* colorPtr = ops->errorBarColor;
-    if (!colorPtr)
-      colorPtr = ops->outlineColor;
     XGCValues gcValues;
-    gcValues.foreground = colorPtr->pixel;
+    if (ops->errorBarColor)
+      gcValues.foreground = ops->errorBarColor->pixel;
+    else if (ops->outlineColor)
+      gcValues.foreground = ops->outlineColor->pixel;
+    else if (ops->fill)
+      gcValues.foreground = Tk_3DBorderColor(ops->fill)->pixel;
+
     gcValues.line_width = ops->errorBarLineWidth;
     GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     if (errorBarGC_)

@@ -102,8 +102,6 @@ class BarElement : public Element {
   void MapActiveBars();
   void ResetBar();
   void MapErrorBars(BarStyle**);
-  void SetBackgroundClipRegion(Tk_Window, Tk_3DBorder, TkRegion);
-  void UnsetBackgroundClipRegion(Tk_Window, Tk_3DBorder);
   void DrawBarSegments(Drawable, BarPen*, XRectangle*, int);
   void DrawBarValues(Drawable, BarPen*, XRectangle*, int, int*);
   void SegmentsToPostScript(Blt_Ps, BarPen*, XRectangle*, int);

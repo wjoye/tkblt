@@ -65,20 +65,20 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-activepen", "activePen", "ActivePen",
    "active", -1, Tk_Offset(BarElementOptions, activePenPtr), 
    TK_OPTION_NULL_OK, &penObjOption, 0},
-  {TK_OPTION_BORDER, "-background", "background", "Background",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),
-   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-background", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   0, -1, Tk_Offset(BarElementOptions, barWidth), 0, NULL, MAP_ITEM},
+   "0", -1, Tk_Offset(BarElementOptions, barWidth), 0, NULL, MAP_ITEM},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
    "all", -1, Tk_Offset(BarElementOptions, tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarElementOptions, builtinPen.borderWidth),
    0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-color", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_BORDER, "-color", "color", "color",
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, Tk_Offset(BarElementOptions, coords),
    TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
@@ -91,12 +91,9 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "5", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
-  {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, 
-   Tk_Offset(BarElementOptions, builtinPen.outlineColor),
-   TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(BarElementOptions, hide), 0, NULL, MAP_ITEM},
   {TK_OPTION_STRING, "-label", "label", "Label",
@@ -108,7 +105,9 @@ static Tk_OptionSpec optionSpecs[] = {
    "x", -1, Tk_Offset(BarElementOptions, xAxis), 0, &xAxisObjOption, MAP_ITEM},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
    "y", -1, Tk_Offset(BarElementOptions, yAxis), 0, &yAxisObjOption, MAP_ITEM},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_COLOR, "-outline", "outline", "Outline",
+   NULL, -1, Tk_Offset(BarElementOptions, builtinPen.outlineColor),
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-pen", "pen", "Pen", 
    NULL, -1, Tk_Offset(BarElementOptions, normalPenPtr), 
    TK_OPTION_NULL_OK, &penObjOption},
@@ -448,11 +447,11 @@ void BarElement::map()
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+    BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = 
-      (penOps->errorBarCapWidth > 0) 
-      ? penOps->errorBarCapWidth : (size * 66666) / 100000;
+      (pops->errorBarCapWidth > 0) 
+      ? pops->errorBarCapWidth : (size * 66666) / 100000;
     stylePtr->errorBarCapWidth /= 2;
   }
 
@@ -674,20 +673,20 @@ void BarElement::draw(Drawable drawable)
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+    BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
     if (stylePtr->nBars > 0)
       DrawBarSegments(drawable, penPtr, stylePtr->bars, stylePtr->nBars);
 
-    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
+    if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X))
       Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->xeb.segments, stylePtr->xeb.length);
 
-    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
+    if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y))
       Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       DrawBarValues(drawable, penPtr, stylePtr->bars, stylePtr->nBars, 
 		    barToData_ + count);
 
@@ -705,19 +704,19 @@ void BarElement::drawActive(Drawable drawable)
   BarPen* penPtr = (BarPen*)ops->activePenPtr;
   if (!penPtr)
     return;
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
       MapActiveBars();
 
     DrawBarSegments(drawable, penPtr, activeRects_, nActive_);
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       DrawBarValues(drawable, penPtr, activeRects_, nActive_, activeToData_);
   }
   else if (nActiveIndices_ < 0) {
     DrawBarSegments(drawable, penPtr, bars_, nBars_);
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       DrawBarValues(drawable, penPtr, bars_, nBars_, barToData_);
   }
 }
@@ -727,9 +726,9 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
   BarPen* penPtr = NORMALPEN(ops);
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
-  if (!penOps->fill && !penOps->outlineColor)
+  if (!pops->fill && !pops->outlineColor)
     return;
 
   int radius = (size / 2);
@@ -737,16 +736,12 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
 
   x -= radius;
   y -= radius;
-  if (penPtr->fillGC_)
-    XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, x, y);
 
-  Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, penOps->fill, 
-		     x, y, size, size, penOps->borderWidth, penOps->relief);
+  Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, pops->fill, 
+		     x, y, size, size, pops->borderWidth, pops->relief);
 
   XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, x, y, 
 		 size, size);
-  if (penPtr->fillGC_)
-    XSetTSOrigin(graphPtr_->display_, penPtr->fillGC_, 0, 0);
 }
 
 void BarElement::print(Blt_Ps ps)
@@ -765,29 +760,29 @@ void BarElement::print(Blt_Ps ps)
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
-    BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+    BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     if (stylePtr->nBars > 0)
       SegmentsToPostScript(ps, penPtr, stylePtr->bars, stylePtr->nBars);
 
-    XColor* colorPtr = penOps->errorBarColor;
+    XColor* colorPtr = pops->errorBarColor;
     if (!colorPtr)
-      colorPtr = penOps->outlineColor;
+      colorPtr = pops->outlineColor;
 
-    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
+    if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X)) {
+      Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       Blt_Ps_Draw2DSegments(ps, stylePtr->xeb.segments,
 			    stylePtr->xeb.length);
     }
 
-    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
+    if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y)) {
+      Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       Blt_Ps_Draw2DSegments(ps, stylePtr->yeb.segments, 
 			    stylePtr->yeb.length);
     }
 
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       BarValuesToPostScript(ps, penPtr, stylePtr->bars, stylePtr->nBars, 
 			    barToData_ + count);
 
@@ -805,7 +800,7 @@ void BarElement::printActive(Blt_Ps ps)
   BarPen* penPtr = (BarPen*)ops->activePenPtr;
   if (!penPtr)
     return;
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 	
   Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
@@ -813,12 +808,12 @@ void BarElement::printActive(Blt_Ps ps)
     if (flags & ACTIVE_PENDING)
       MapActiveBars();
     SegmentsToPostScript(ps, penPtr, activeRects_, nActive_);
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       BarValuesToPostScript(ps, penPtr, activeRects_, nActive_,activeToData_);
   }
   else if (nActiveIndices_ < 0) {
     SegmentsToPostScript(ps, penPtr, bars_, nBars_);
-    if (penOps->valueShow != SHOW_NONE)
+    if (pops->valueShow != SHOW_NONE)
       BarValuesToPostScript(ps, penPtr, bars_, nBars_, barToData_);
   }
 }
@@ -828,9 +823,9 @@ void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
   BarPen* penPtr = NORMALPEN(ops);
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
-  if (!penOps->fill && !penOps->outlineColor)
+  if (!pops->fill && !pops->outlineColor)
     return;
 
   /*
@@ -840,8 +835,8 @@ void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
   Blt_Ps_Append(ps, "\n"
 		"/DrawSymbolProc {\n"
 		"gsave\n    ");
-  if (penOps->outlineColor) {
-    Blt_Ps_XSetForeground(ps, penOps->outlineColor);
+  if (pops->outlineColor) {
+    Blt_Ps_XSetForeground(ps, pops->outlineColor);
     Blt_Ps_Append(ps, "    fill\n");
   }
   Blt_Ps_Append(ps, "  grestore\n");
@@ -1195,79 +1190,21 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
   }
 }
 
-void BarElement::SetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border, 
-					 TkRegion rgn)
-{
-  Display* display = Tk_Display(tkwin);
-  GC gc = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-  TkSetRegion(display, gc, rgn);
-  gc = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-  TkSetRegion(display, gc, rgn);
-  gc = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-  TkSetRegion(display, gc, rgn);
-}
-
-void BarElement::UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
-{
-  Display* display = Tk_Display(tkwin);
-  GC gc = Tk_3DBorderGC(tkwin, border, TK_3D_LIGHT_GC);
-  XSetClipMask(display, gc, None);
-  gc = Tk_3DBorderGC(tkwin, border, TK_3D_DARK_GC);
-  XSetClipMask(display, gc, None);
-  gc = Tk_3DBorderGC(tkwin, border, TK_3D_FLAT_GC);
-  XSetClipMask(display, gc, None);
-}
-
 void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
 				 XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
-  TkRegion rgn;
-
-  XRectangle clip;
-  clip.x = graphPtr_->left_;
-  clip.y = graphPtr_->top_;
-  clip.width  = graphPtr_->right_ - graphPtr_->left_ + 1;
-  clip.height = graphPtr_->bottom_ - graphPtr_->top_ + 1;
-  rgn = TkCreateRegion();
-  TkUnionRectWithRegion(&clip, rgn, rgn);
-
-  if (pops->fill) {
-    int relief = (pops->relief == TK_RELIEF_SOLID) ? 
-      TK_RELIEF_FLAT: pops->relief;
-
-    int hasOutline = ((relief == TK_RELIEF_FLAT) && pops->outlineColor);
-
-    SetBackgroundClipRegion(graphPtr_->tkwin_, pops->fill, rgn);
-
-    if (hasOutline)
-      TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
-
-    XRectangle *rp, *rend;
-    for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+  XRectangle *rp, *rend;
+  for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+    if (pops->fill)
       Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
 			 pops->fill, rp->x, rp->y, rp->width, rp->height, 
-			 pops->borderWidth, relief);
+			 pops->borderWidth, pops->relief);
 
-      if (hasOutline)
-	XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
-		       rp->x, rp->y, rp->width, rp->height);
-    }
-
-    UnsetBackgroundClipRegion(graphPtr_->tkwin_, pops->fill);
-
-    if (hasOutline)
-      XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
-
+    if (pops->outlineColor)
+      XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
+		     rp->x, rp->y, rp->width, rp->height);
   }
-  else if (pops->outlineColor) {
-    TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
-    XDrawRectangles(graphPtr_->display_, drawable, penPtr->outlineGC_, bars, 
-		    nBars);
-    XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
-  }
-
-  TkDestroyRegion(rgn);
 }
 
 void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr, 
