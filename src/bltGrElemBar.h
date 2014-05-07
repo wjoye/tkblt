@@ -73,9 +73,9 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-  BarPen *builtinPenPtr;
-  BarPen *activePenPtr;
-  BarPen *normalPenPtr;
+  BarPen* builtinPenPtr;
+  BarPen* activePenPtr;
+  BarPen* normalPenPtr;
   BarPenOptions builtinPen;
 
   // derived

@@ -226,7 +226,6 @@ BarElement::~BarElement()
     Blt_FreeStylePalette(ops->stylePalette);
     Blt_Chain_Destroy(ops->stylePalette);
   }
-
 }
 
 int BarElement::configure()
@@ -1240,7 +1239,7 @@ void BarElement::UnsetBackgroundClipRegion(Tk_Window tkwin, Tk_3DBorder border)
 void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
 				 XRectangle *bars, int nBars)
 {
-  BarPenOptions* penOps = (BarPenOptions*)penPtr->ops();
+  BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   TkRegion rgn;
 
   XRectangle clip;
@@ -1251,44 +1250,44 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
   rgn = TkCreateRegion();
   TkUnionRectWithRegion(&clip, rgn, rgn);
 
-  if (penOps->fill) {
-    int relief = (penOps->relief == TK_RELIEF_SOLID) ? 
-      TK_RELIEF_FLAT: penOps->relief;
+  if (pops->fill) {
+    int relief = (pops->relief == TK_RELIEF_SOLID) ? 
+      TK_RELIEF_FLAT: pops->relief;
 
-    int hasOutline = ((relief == TK_RELIEF_FLAT) && penOps->outlineColor);
-    if (penOps->stipple != None)
+    int hasOutline = ((relief == TK_RELIEF_FLAT) && pops->outlineColor);
+    if (pops->stipple != None)
       TkSetRegion(graphPtr_->display_, penPtr->fillGC_, rgn);
 
-    SetBackgroundClipRegion(graphPtr_->tkwin_, penOps->fill, rgn);
+    SetBackgroundClipRegion(graphPtr_->tkwin_, pops->fill, rgn);
 
     if (hasOutline)
       TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
 
     XRectangle *rp, *rend;
     for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-      if (penOps->stipple != None)
+      if (pops->stipple != None)
 	XFillRectangle(graphPtr_->display_, drawable, penPtr->fillGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
       else
 	Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
-			   penOps->fill, rp->x, rp->y, rp->width, rp->height, 
-			   penOps->borderWidth, relief);
+			   pops->fill, rp->x, rp->y, rp->width, rp->height, 
+			   pops->borderWidth, relief);
 
       if (hasOutline)
 	XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
 		       rp->x, rp->y, rp->width, rp->height);
     }
 
-    UnsetBackgroundClipRegion(graphPtr_->tkwin_, penOps->fill);
+    UnsetBackgroundClipRegion(graphPtr_->tkwin_, pops->fill);
 
     if (hasOutline)
       XSetClipMask(graphPtr_->display_, penPtr->outlineGC_, None);
 
-    if (penOps->stipple != None)
+    if (pops->stipple != None)
       XSetClipMask(graphPtr_->display_, penPtr->fillGC_, None);
 
   }
-  else if (penOps->outlineColor) {
+  else if (pops->outlineColor) {
     TkSetRegion(graphPtr_->display_, penPtr->outlineGC_, rgn);
     XDrawRectangles(graphPtr_->display_, drawable, penPtr->outlineGC_, bars, 
 		    nBars);
