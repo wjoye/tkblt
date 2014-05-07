@@ -124,11 +124,11 @@ class LineElement : public Element {
   void MergePens(LineStyle**);
   int OutCode(Region2d*, Point2d*);
   int ClipSegment(Region2d*, int, int, Point2d*, Point2d*);
-  void SaveTrace(int, int, MapInfo*);
-  void FreeTraces();
-  void MapTraces(MapInfo*);
+  void saveTrace(int, int, MapInfo*);
+  void freeTraces();
+  void mapTraces(MapInfo*);
   void MapFillArea(MapInfo*);
-  void ResetLine();
+  void resetLine();
   void MapErrorBars(LineStyle**);
   int ClosestTrace();
   void ClosestPoint(ClosestSearch*);

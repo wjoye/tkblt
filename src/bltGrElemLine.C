@@ -278,7 +278,7 @@ LineElement::~LineElement()
   if (builtinPenPtr)
     delete builtinPenPtr;
 
-  ResetLine();
+  resetLine();
 
   if (ops->stylePalette) {
     Blt_FreeStylePalette(ops->stylePalette);
@@ -316,7 +316,7 @@ void LineElement::map()
   if (!link)
     return;
 
-  ResetLine();
+  resetLine();
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues || !ops->coords.y->nValues)
     return;
@@ -365,7 +365,7 @@ void LineElement::map()
     if (ops->fillBg)
       MapFillArea(&mi);
 
-    MapTraces(&mi);
+    mapTraces(&mi);
   }
   free(mi.screenPts);
   free(mi.map);
@@ -383,7 +383,7 @@ void LineElement::map()
     stylePtr->errorBarCapWidth /= 2;
   }
 
-  LineStyle **styleMap = (LineStyle**)StyleMap();
+  LineStyle** styleMap = (LineStyle**)StyleMap();
   if (((ops->yHigh && ops->yHigh->nValues > 0) &&
        (ops->yLow && ops->yLow->nValues > 0)) ||
       ((ops->xHigh && ops->xHigh->nValues > 0) &&
@@ -1545,21 +1545,21 @@ int LineElement::ClipSegment(Region2d *extsPtr, int code1, int code2,
   return (!inside);
 }
 
-void LineElement::SaveTrace(int start, int length, MapInfo *mapPtr)
+void LineElement::saveTrace(int start, int length, MapInfo *mapPtr)
 {
   bltTrace *tracePtr  = (bltTrace*)malloc(sizeof(bltTrace));
   Point2d *screenPts = (Point2d*)malloc(sizeof(Point2d) * length);
   int* map = (int*)malloc(sizeof(int) * length);
 
   // Copy the screen coordinates of the trace into the point array
-
   if (mapPtr->map) {
     for (int ii=0, jj=start; ii<length; ii++, jj++) {
       screenPts[ii].x = mapPtr->screenPts[jj].x;
       screenPts[ii].y = mapPtr->screenPts[jj].y;
       map[ii] = mapPtr->map[jj];
     }
-  } else {
+  } 
+  else {
     for (int ii=0, jj=start; ii<length; ii++, jj++) {
       screenPts[ii].x = mapPtr->screenPts[jj].x;
       screenPts[ii].y = mapPtr->screenPts[jj].y;
@@ -1576,7 +1576,7 @@ void LineElement::SaveTrace(int start, int length, MapInfo *mapPtr)
   Blt_Chain_Append(traces_, tracePtr);
 }
 
-void LineElement::FreeTraces()
+void LineElement::freeTraces()
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
        link = Blt_Chain_NextLink(link)) {
@@ -1589,7 +1589,7 @@ void LineElement::FreeTraces()
   traces_ = NULL;
 }
 
-void LineElement::MapTraces(MapInfo *mapPtr)
+void LineElement::mapTraces(MapInfo *mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -1608,39 +1608,33 @@ void LineElement::MapTraces(MapInfo *mapPtr)
     s.x = 0;
     s.y = 0;
     int code2 = OutCode(&exts, q);
-    if (code2 != 0) {
-      /* Save the coordinates of the last point, before clipping */
+    // Save the coordinates of the last point, before clipping
+    if (code2 != 0)
       s = *q;
-    }
+
     int broken = BROKEN_TRACE(ops->penDir, p->x, q->x);
     int offscreen = ClipSegment(&exts, code1, code2, p, q);
     if (broken || offscreen) {
-
-      /*
-       * The last line segment is either totally clipped by the plotting
-       * area or the x-direction is wrong, breaking the trace.  Either
-       * way, save information about the last trace (if one exists),
-       * discarding the current line segment
-       */
-
+      // The last line segment is either totally clipped by the plotting
+      // area or the x-direction is wrong, breaking the trace.  Either
+      // way, save information about the last trace (if one exists),
+      // discarding the current line segment
       if (count > 1) {
 	start = ii - count;
-	SaveTrace(start, count, mapPtr);
+	saveTrace(start, count, mapPtr);
 	count = 1;
       }
     }
     else {
-      count++;		/* Add the point to the trace. */
+      // Add the point to the trace
+      count++;
+
+      // If the last point is clipped, this means that the trace is
+      // broken after this point.  Restore the original coordinate
+      // (before clipping) after saving the trace.
       if (code2 != 0) {
-
-	/*
-	 * If the last point is clipped, this means that the trace is
-	 * broken after this point.  Restore the original coordinate
-	 * (before clipping) after saving the trace.
-	 */
-
 	start = ii - (count - 1);
-	SaveTrace(start, count, mapPtr);
+	saveTrace(start, count, mapPtr);
 	mapPtr->screenPts[ii] = s;
 	count = 1;
       }
@@ -1649,7 +1643,7 @@ void LineElement::MapTraces(MapInfo *mapPtr)
   }
   if (count > 1) {
     start = ii - count;
-    SaveTrace(start, count, mapPtr);
+    saveTrace(start, count, mapPtr);
   }
 }
 
@@ -1727,11 +1721,11 @@ void LineElement::MapFillArea(MapInfo *mapPtr)
   }
 }
 
-void LineElement::ResetLine()
+void LineElement::resetLine()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  FreeTraces();
+  freeTraces();
 
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
