@@ -40,6 +40,6 @@
 #define STD_FONT_NORMAL		"helvetica 10 normal roman"
 #define STD_FONT_SMALL		"helvetica 8 normal roman"
 
-#define STD_BORDERWIDTH 	"1"
+#define STD_BORDERWIDTH 	"2"
 
 #endif
