@@ -97,15 +97,15 @@ class BarElement : public Element {
 
  protected:
   void ResetStylePalette(Blt_Chain);
-  void CheckBarStacks(Axis*, Axis*, double*, double*);
-  void MergePens(BarStyle**);
-  void MapActiveBars();
-  void ResetBar();
-  void MapErrorBars(BarStyle**);
-  void DrawBarSegments(Drawable, BarPen*, XRectangle*, int);
-  void DrawBarValues(Drawable, BarPen*, XRectangle*, int, int*);
-  void SegmentsToPostScript(Blt_Ps, BarPen*, XRectangle*, int);
-  void BarValuesToPostScript(Blt_Ps, BarPen*, XRectangle*, int, int*);
+  void checkStacks(Axis*, Axis*, double*, double*);
+  void mergePens(BarStyle**);
+  void mapActive();
+  void reset();
+  void mapErrorBars(BarStyle**);
+  void drawSegments(Drawable, BarPen*, XRectangle*, int);
+  void drawValues(Drawable, BarPen*, XRectangle*, int, int*);
+  void printSegments(Blt_Ps, BarPen*, XRectangle*, int);
+  void printValues(Blt_Ps, BarPen*, XRectangle*, int, int*);
 
  public:
   BarElement(Graph*, const char*, Tcl_HashEntry*);

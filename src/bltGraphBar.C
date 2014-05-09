@@ -361,6 +361,7 @@ void BarGraph::resetAxes()
 
 void BarGraph::initBarSetTable()
 {
+  //  cerr << "BarGraph::initBarSetTable()" << endl;
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
   
   // Free resources associated with a previous frequency table. This includes
@@ -486,6 +487,7 @@ void BarGraph::destroyBarSets()
 
 void BarGraph::resetBarGroups()
 {
+  //  cerr << "BarGraph::resetBarGroups()" << endl;
   BarGroup *gp, *gend;
   for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++) {
     gp->lastY = 0.0;
@@ -495,6 +497,7 @@ void BarGraph::resetBarGroups()
 
 void BarGraph::computeBarStacks()
 {
+  //  cerr << "BarGraph::computsBarStacks()" << endl;
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
   Blt_ChainLink link;

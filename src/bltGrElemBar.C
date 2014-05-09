@@ -216,7 +216,7 @@ BarElement::~BarElement()
   if (builtinPenPtr)
     delete builtinPenPtr;
 
-  ResetBar();
+  reset();
 
   if (ops->stylePalette) {
     Blt_FreeStylePalette(ops->stylePalette);
@@ -252,7 +252,7 @@ void BarElement::map()
   if (!link)
     return;
 
-  ResetBar();
+  reset();
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues || !ops->coords.y->nValues)
     return;
@@ -435,7 +435,7 @@ void BarElement::map()
   bars_ = bars;
   barToData_ = barToData;
   if (nActiveIndices_ > 0)
-    MapActiveBars();
+    mapActive();
 	
   int size = 20;
   if (count > 0)
@@ -461,10 +461,10 @@ void BarElement::map()
        (ops->xLow && ops->xLow->nValues > 0)) ||
       (ops->xError && ops->xError->nValues > 0) || 
       (ops->yError && ops->yError->nValues > 0)) {
-    MapErrorBars(dataToStyle);
+    mapErrorBars(dataToStyle);
   }
 
-  MergePens(dataToStyle);
+  mergePens(dataToStyle);
   free(dataToStyle);
 }
 
@@ -500,7 +500,7 @@ void BarElement::extents(Region2d *regPtr)
   // minimum/maximum limits of the element's data points.
   if (((BarGraph::BarMode)gops->barMode == BarGraph::STACKED) && 
       (barGraphPtr_->nBarGroups_ > 0))
-    CheckBarStacks(ops->xAxis, ops->yAxis, &regPtr->top, &regPtr->bottom);
+    checkStacks(ops->xAxis, ops->yAxis, &regPtr->top, &regPtr->bottom);
 
   // Warning: You get what you deserve if the x-axis is logScale
   AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
@@ -675,7 +675,7 @@ void BarElement::draw(Drawable drawable)
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
     if (stylePtr->nBars > 0)
-      DrawBarSegments(drawable, penPtr, stylePtr->bars, stylePtr->nBars);
+      drawSegments(drawable, penPtr, stylePtr->bars, stylePtr->nBars);
 
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X))
       Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
@@ -686,7 +686,7 @@ void BarElement::draw(Drawable drawable)
 			 stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if (pops->valueShow != SHOW_NONE)
-      DrawBarValues(drawable, penPtr, stylePtr->bars, stylePtr->nBars, 
+      drawValues(drawable, penPtr, stylePtr->bars, stylePtr->nBars, 
 		    barToData_ + count);
 
     count += stylePtr->nBars;
@@ -707,16 +707,16 @@ void BarElement::drawActive(Drawable drawable)
 
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
-      MapActiveBars();
+      mapActive();
 
-    DrawBarSegments(drawable, penPtr, activeRects_, nActive_);
+    drawSegments(drawable, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
-      DrawBarValues(drawable, penPtr, activeRects_, nActive_, activeToData_);
+      drawValues(drawable, penPtr, activeRects_, nActive_, activeToData_);
   }
   else if (nActiveIndices_ < 0) {
-    DrawBarSegments(drawable, penPtr, bars_, nBars_);
+    drawSegments(drawable, penPtr, bars_, nBars_);
     if (pops->valueShow != SHOW_NONE)
-      DrawBarValues(drawable, penPtr, bars_, nBars_, barToData_);
+      drawValues(drawable, penPtr, bars_, nBars_, barToData_);
   }
 }
 
@@ -761,7 +761,7 @@ void BarElement::print(Blt_Ps ps)
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     if (stylePtr->nBars > 0)
-      SegmentsToPostScript(ps, penPtr, stylePtr->bars, stylePtr->nBars);
+      printSegments(ps, penPtr, stylePtr->bars, stylePtr->nBars);
 
     XColor* colorPtr = pops->errorBarColor;
     if (!colorPtr)
@@ -782,7 +782,7 @@ void BarElement::print(Blt_Ps ps)
     }
 
     if (pops->valueShow != SHOW_NONE)
-      BarValuesToPostScript(ps, penPtr, stylePtr->bars, stylePtr->nBars, 
+      printValues(ps, penPtr, stylePtr->bars, stylePtr->nBars, 
 			    barToData_ + count);
 
     count += stylePtr->nBars;
@@ -805,15 +805,15 @@ void BarElement::printActive(Blt_Ps ps)
 
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
-      MapActiveBars();
-    SegmentsToPostScript(ps, penPtr, activeRects_, nActive_);
+      mapActive();
+    printSegments(ps, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
-      BarValuesToPostScript(ps, penPtr, activeRects_, nActive_,activeToData_);
+      printValues(ps, penPtr, activeRects_, nActive_,activeToData_);
   }
   else if (nActiveIndices_ < 0) {
-    SegmentsToPostScript(ps, penPtr, bars_, nBars_);
+    printSegments(ps, penPtr, bars_, nBars_);
     if (pops->valueShow != SHOW_NONE)
-      BarValuesToPostScript(ps, penPtr, bars_, nBars_, barToData_);
+      printValues(ps, penPtr, bars_, nBars_, barToData_);
   }
 }
 
@@ -856,7 +856,7 @@ void BarElement::ResetStylePalette(Blt_Chain stylePalette)
   }
 }
 
-void BarElement::CheckBarStacks(Axis* xAxis, Axis* yAxis, 
+void BarElement::checkStacks(Axis* xAxis, Axis* yAxis, 
 				double *minPtr, double *maxPtr)
 {
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
@@ -884,7 +884,7 @@ void BarElement::CheckBarStacks(Axis* xAxis, Axis* yAxis,
   }
 }
 
-void BarElement::MergePens(BarStyle** dataToStyle)
+void BarElement::mergePens(BarStyle** dataToStyle)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -977,7 +977,7 @@ void BarElement::MergePens(BarStyle** dataToStyle)
   }
 }
 
-void BarElement::MapActiveBars()
+void BarElement::mapActive()
 {
   if (activeRects_) {
     free(activeRects_);
@@ -1011,7 +1011,7 @@ void BarElement::MapActiveBars()
   flags &= ~ACTIVE_PENDING;
 }
 
-void BarElement::ResetBar()
+void BarElement::reset()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -1055,7 +1055,7 @@ void BarElement::ResetBar()
   nBars_ = 0;
 }
 
-void BarElement::MapErrorBars(BarStyle **dataToStyle)
+void BarElement::mapErrorBars(BarStyle **dataToStyle)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -1189,7 +1189,7 @@ void BarElement::MapErrorBars(BarStyle **dataToStyle)
   }
 }
 
-void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
+void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
 				 XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
@@ -1206,7 +1206,7 @@ void BarElement::DrawBarSegments(Drawable drawable, BarPen* penPtr,
   }
 }
 
-void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr, 
+void BarElement::drawValues(Drawable drawable, BarPen* penPtr, 
 			       XRectangle *bars, int nBars, int *barToData)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
@@ -1256,8 +1256,8 @@ void BarElement::DrawBarValues(Drawable drawable, BarPen* penPtr,
   }
 }
 
-void BarElement::SegmentsToPostScript(Blt_Ps ps, BarPen* penPtr, 
-				      XRectangle *bars, int nBars)
+void BarElement::printSegments(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
+			       int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
@@ -1283,9 +1283,8 @@ void BarElement::SegmentsToPostScript(Blt_Ps ps, BarPen* penPtr,
   }
 }
 
-void BarElement::BarValuesToPostScript(Blt_Ps ps, BarPen* penPtr, 
-				       XRectangle *bars, int nBars, 
-				       int *barToData)
+void BarElement::printValues(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
+			     int nBars, int *barToData)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;

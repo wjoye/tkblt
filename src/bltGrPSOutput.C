@@ -30,11 +30,6 @@
 
 #include <math.h>
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 extern "C" {
 #include <tkPort.h>
 #include <tk3d.h>

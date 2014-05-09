@@ -30,6 +30,11 @@
 #ifndef __BltGrMisc_h__
 #define __BltGrMisc_h__
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 #include <tk.h>
 
 /*

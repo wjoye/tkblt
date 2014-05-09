@@ -32,11 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 #include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"

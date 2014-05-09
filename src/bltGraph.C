@@ -29,11 +29,6 @@
 
 #include <float.h>
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-using namespace std;
-
 extern "C" {
 #include "bltList.h"
 #include "bltBind.h"
@@ -223,6 +218,7 @@ void Graph::configure()
 
 void Graph::map()
 {
+  //  cerr << "Graph::map()" << endl;
   if (flags & RESET_AXES)
     resetAxes();
 
@@ -243,6 +239,7 @@ void Graph::map()
 
 void Graph::draw()
 {
+  //  cerr << "Graph::draw()" << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   flags &= ~REDRAW_PENDING;

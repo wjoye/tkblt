@@ -323,11 +323,11 @@ void LineElement::map()
   int np = NUMBEROFPOINTS(ops);
 
   MapInfo mi;
-  GetScreenPoints(&mi);
-  MapSymbols(&mi);
+  getScreenPoints(&mi);
+  mapSymbols(&mi);
 
   if ((flags & ACTIVE_PENDING) && (nActiveIndices_ > 0))
-    MapActiveSymbols();
+    mapActiveSymbols();
 
   // Map connecting line segments if they are to be displayed.
   smooth_ = (Smoothing)ops->reqSmooth;
@@ -336,7 +336,7 @@ void LineElement::map()
     // so both mi.points and mi.nPoints may change.
     switch (smooth_) {
     case STEP:
-      GenerateSteps(&mi);
+      generateSteps(&mi);
       break;
 
     case CUBIC:
@@ -345,7 +345,7 @@ void LineElement::map()
       if (mi.nScreenPts < 3)
 	smooth_ = LINEAR;
       else
-	GenerateSpline(&mi);
+	generateSpline(&mi);
       break;
 
     case CATROM:
@@ -353,17 +353,17 @@ void LineElement::map()
       if (mi.nScreenPts < 3)
 	smooth_ = LINEAR;
       else
-	GenerateParametricSpline(&mi);
+	generateParametricSpline(&mi);
       break;
 
     default:
       break;
     }
     if (ops->rTolerance > 0.0)
-      ReducePoints(&mi, ops->rTolerance);
+      reducePoints(&mi, ops->rTolerance);
 
     if (ops->fillBg)
-      MapFillArea(&mi);
+      mapFillArea(&mi);
 
     mapTraces(&mi);
   }
@@ -376,7 +376,7 @@ void LineElement::map()
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-    int size = ScaleSymbol(penOps->symbol.size);
+    int size = scaleSymbol(penOps->symbol.size);
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penOps->errorBarCapWidth > 0) 
       ? penOps->errorBarCapWidth : size * 0.6666666;
@@ -390,10 +390,10 @@ void LineElement::map()
        (ops->xLow && ops->xLow->nValues > 0)) ||
       (ops->xError && ops->xError->nValues > 0) ||
       (ops->yError && ops->yError->nValues > 0)) {
-    MapErrorBars(styleMap);
+    mapErrorBars(styleMap);
   }
 
-  MergePens(styleMap);
+  mergePens(styleMap);
   free(styleMap);
 }
 
@@ -529,11 +529,11 @@ void LineElement::closest()
       mode = SEARCH_TRACES;
   }
   if (mode == SEARCH_POINTS)
-    ClosestPoint(searchPtr);
+    closestPoint(searchPtr);
   else {
-    int found = ClosestTrace();
+    int found = closestTrace();
     if ((!found) && (searchPtr->along != SEARCH_BOTH))
-      ClosestPoint(searchPtr);
+      closestPoint(searchPtr);
   }
 }
 
@@ -621,11 +621,11 @@ void LineElement::drawActive(Drawable drawable)
   if (ops->hide || !(flags & ACTIVE))
     return;
 
-  int symbolSize = ScaleSymbol(penOps->symbol.size);
+  int symbolSize = scaleSymbol(penOps->symbol.size);
 
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
-      MapActiveSymbols();
+      mapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
       drawSymbols(drawable, penPtr, symbolSize, activePts_.length,
@@ -730,14 +730,12 @@ void LineElement::print(Blt_Ps ps)
     }
     if ((stylePtr->symbolPts.length > 0) &&
 	(penOps->symbol.type != SYMBOL_NONE)) {
-      SymbolsToPostScript(ps, penPtr, stylePtr->symbolSize, 
-			  stylePtr->symbolPts.length, 
-			  stylePtr->symbolPts.points);
+      printSymbols(ps, penPtr, stylePtr->symbolSize, 
+		   stylePtr->symbolPts.length, stylePtr->symbolPts.points);
     }
     if (penOps->valueShow != SHOW_NONE) {
-      ValuesToPostScript(ps, penPtr, stylePtr->symbolPts.length, 
-			 stylePtr->symbolPts.points, 
-			 symbolPts_.map + count);
+      printValues(ps, penPtr, stylePtr->symbolPts.length, 
+		  stylePtr->symbolPts.points, symbolPts_.map + count);
     }
     count += stylePtr->symbolPts.length;
   }
@@ -756,29 +754,29 @@ void LineElement::printActive(Blt_Ps ps)
 
   Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
-  int symbolSize = ScaleSymbol(penOps->symbol.size);
+  int symbolSize = scaleSymbol(penOps->symbol.size);
   if (nActiveIndices_ > 0) {
     if (flags & ACTIVE_PENDING)
-      MapActiveSymbols();
+      mapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
-      SymbolsToPostScript(ps, penPtr, symbolSize, activePts_.length,
+      printSymbols(ps, penPtr, symbolSize, activePts_.length,
 			  activePts_.points);
 
     if (penOps->valueShow != SHOW_NONE)
-      ValuesToPostScript(ps, penPtr, activePts_.length, activePts_.points,
-			 activePts_.map);
+      printValues(ps, penPtr, activePts_.length, activePts_.points,
+		  activePts_.map);
   }
   else if (nActiveIndices_ < 0) {
     if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
       printTraces(ps, (LinePen*)penPtr);
 
     if (penOps->symbol.type != SYMBOL_NONE)
-      SymbolsToPostScript(ps, penPtr, symbolSize, symbolPts_.length, 
-			  symbolPts_.points);
+      printSymbols(ps, penPtr, symbolSize, symbolPts_.length, 
+		   symbolPts_.points);
     if (penOps->valueShow != SHOW_NONE) {
-      ValuesToPostScript(ps, penPtr, symbolPts_.length, 
-			 symbolPts_.points, symbolPts_.map);
+      printValues(ps, penPtr, symbolPts_.length, symbolPts_.points,
+		  symbolPts_.map);
     }
   }
 }
@@ -804,13 +802,13 @@ void LineElement::printSymbol(Blt_Ps ps, double x, double y, int size)
     Point2d point;
     point.x = x;
     point.y = y;
-    SymbolsToPostScript(ps, penPtr, size, 1, &point);
+    printSymbols(ps, penPtr, size, 1, &point);
   }
 }
 
 // Support
 
-double LineElement::DistanceToLine(int x, int y, Point2d *p, Point2d *q,
+double LineElement::distanceToLine(int x, int y, Point2d *p, Point2d *q,
 				   Point2d *t)
 {
   double right, left, top, bottom;
@@ -839,7 +837,7 @@ double LineElement::DistanceToLine(int x, int y, Point2d *p, Point2d *q,
   return hypot((t->x - x), (t->y - y));
 }
 
-double LineElement::DistanceToX(int x, int y, Point2d *p, Point2d *q, 
+double LineElement::distanceToX(int x, int y, Point2d *p, Point2d *q, 
 				Point2d *t)
 {
   double dx, dy;
@@ -885,7 +883,7 @@ double LineElement::DistanceToX(int x, int y, Point2d *p, Point2d *q,
   return fabs(d);
 }
 
-double LineElement::DistanceToY(int x, int y, Point2d *p, Point2d *q,
+double LineElement::distanceToY(int x, int y, Point2d *p, Point2d *q,
 				Point2d *t)
 {
   double dx, dy;
@@ -932,7 +930,7 @@ double LineElement::DistanceToY(int x, int y, Point2d *p, Point2d *q,
   return fabs(d);
 }
 
-int LineElement::ScaleSymbol(int normalSize)
+int LineElement::scaleSymbol(int normalSize)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -967,7 +965,7 @@ int LineElement::ScaleSymbol(int normalSize)
   return newSize;
 }
 
-void LineElement::GetScreenPoints(MapInfo *mapPtr)
+void LineElement::getScreenPoints(MapInfo *mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -1010,7 +1008,7 @@ void LineElement::GetScreenPoints(MapInfo *mapPtr)
   mapPtr->map = map;
 }
 
-void LineElement::ReducePoints(MapInfo *mapPtr, double tolerance)
+void LineElement::reducePoints(MapInfo *mapPtr, double tolerance)
 {
   int* simple = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
   int* map = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
@@ -1084,7 +1082,7 @@ double LineElement::findSplit(Point2d *points, int i, int j, int *split)
     return maxDist2;
 }
 
-void LineElement::GenerateSteps(MapInfo *mapPtr)
+void LineElement::generateSteps(MapInfo *mapPtr)
 {
   int newSize = ((mapPtr->nScreenPts - 1) * 2) + 1;
   Point2d *screenPts = (Point2d*)malloc(newSize * sizeof(Point2d));
@@ -1111,7 +1109,7 @@ void LineElement::GenerateSteps(MapInfo *mapPtr)
   mapPtr->nScreenPts = newSize;
 }
 
-void LineElement::GenerateSpline(MapInfo *mapPtr)
+void LineElement::generateSpline(MapInfo *mapPtr)
 {
   int nOrigPts = mapPtr->nScreenPts;
   Point2d* origPts = mapPtr->screenPts;
@@ -1197,7 +1195,7 @@ void LineElement::GenerateSpline(MapInfo *mapPtr)
   }
 }
 
-void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
+void LineElement::generateParametricSpline(MapInfo *mapPtr)
 {
   Point2d *origPts, *iPts;
   int *map;
@@ -1306,7 +1304,7 @@ void LineElement::GenerateParametricSpline(MapInfo *mapPtr)
   }
 }
 
-void LineElement::MapSymbols(MapInfo *mapPtr)
+void LineElement::mapSymbols(MapInfo *mapPtr)
 {
   Point2d *pp;
   int i;
@@ -1331,7 +1329,7 @@ void LineElement::MapSymbols(MapInfo *mapPtr)
   symbolPts_.map = map;
 }
 
-void LineElement::MapActiveSymbols()
+void LineElement::mapActiveSymbols()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -1379,7 +1377,7 @@ void LineElement::MapActiveSymbols()
   flags &= ~ACTIVE_PENDING;
 }
 
-void LineElement::MergePens(LineStyle **styleMap)
+void LineElement::mergePens(LineStyle **styleMap)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -1473,7 +1471,7 @@ void LineElement::MergePens(LineStyle **styleMap)
 #define CLIP_RIGHT	(1<<2)
 #define CLIP_LEFT	(1<<3)
 
-int LineElement::OutCode(Region2d *extsPtr, Point2d *p)
+int LineElement::outCode(Region2d *extsPtr, Point2d *p)
 {
   int code =0;
   if (p->x > extsPtr->right)
@@ -1489,7 +1487,7 @@ int LineElement::OutCode(Region2d *extsPtr, Point2d *p)
   return code;
 }
 
-int LineElement::ClipSegment(Region2d *extsPtr, int code1, int code2,
+int LineElement::clipSegment(Region2d *extsPtr, int code1, int code2,
 			     Point2d *p, Point2d *q)
 {
   int inside = ((code1 | code2) == 0);
@@ -1525,7 +1523,7 @@ int LineElement::ClipSegment(Region2d *extsPtr, int code1, int code2,
 	(extsPtr->top - p->y) / (q->y - p->y);
       p->y = extsPtr->top;
     }
-    code1 = OutCode(extsPtr, p);
+    code1 = outCode(extsPtr, p);
 
     inside = ((code1 | code2) == 0);
     outside = ((code1 & code2) != 0);
@@ -1585,7 +1583,7 @@ void LineElement::mapTraces(MapInfo *mapPtr)
   graphPtr_->extents(&exts);
 
   int count = 1;
-  int code1 = OutCode(&exts, mapPtr->screenPts);
+  int code1 = outCode(&exts, mapPtr->screenPts);
   Point2d* p = mapPtr->screenPts;
   Point2d* q = p + 1;
 
@@ -1595,13 +1593,13 @@ void LineElement::mapTraces(MapInfo *mapPtr)
     Point2d s;
     s.x = 0;
     s.y = 0;
-    int code2 = OutCode(&exts, q);
+    int code2 = outCode(&exts, q);
     // Save the coordinates of the last point, before clipping
     if (code2 != 0)
       s = *q;
 
     int broken = BROKEN_TRACE(ops->penDir, p->x, q->x);
-    int offscreen = ClipSegment(&exts, code1, code2, p, q);
+    int offscreen = clipSegment(&exts, code1, code2, p, q);
     if (broken || offscreen) {
       // The last line segment is either totally clipped by the plotting
       // area or the x-direction is wrong, breaking the trace.  Either
@@ -1635,7 +1633,7 @@ void LineElement::mapTraces(MapInfo *mapPtr)
   }
 }
 
-void LineElement::MapFillArea(MapInfo *mapPtr)
+void LineElement::mapFillArea(MapInfo *mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -1761,7 +1759,7 @@ void LineElement::resetLine()
   yeb_.map = NULL;
 }
 
-void LineElement::MapErrorBars(LineStyle **styleMap)
+void LineElement::mapErrorBars(LineStyle **styleMap)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -1908,7 +1906,7 @@ void LineElement::MapErrorBars(LineStyle **styleMap)
   }
 }
 
-int LineElement::ClosestTrace()
+int LineElement::closestTrace()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -1933,11 +1931,11 @@ int LineElement::ClosestTrace()
       double d;
 
       if (searchPtr->along == SEARCH_X)
-	d = DistanceToX(searchPtr->x, searchPtr->y, p, p + 1, &b);
+	d = distanceToX(searchPtr->x, searchPtr->y, p, p + 1, &b);
       else if (searchPtr->along == SEARCH_Y)
-	d = DistanceToY(searchPtr->x, searchPtr->y, p, p + 1, &b);
+	d = distanceToY(searchPtr->x, searchPtr->y, p, p + 1, &b);
       else
-	d = DistanceToLine(searchPtr->x, searchPtr->y, p, p + 1, &b);
+	d = distanceToLine(searchPtr->x, searchPtr->y, p, p + 1, &b);
 
       if (d < dMin) {
 	closest = b;
@@ -1958,7 +1956,7 @@ int LineElement::ClosestTrace()
   return 0;
 }
 
-void LineElement::ClosestPoint(ClosestSearch *searchPtr)
+void LineElement::closestPoint(ClosestSearch *searchPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -2651,7 +2649,7 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   } 
 }
 
-void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
+void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
@@ -2726,8 +2724,8 @@ void LineElement::GetSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
   Blt_Ps_Append(ps, "} def\n\n");
 }
 
-void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
-				      int nSymbolPts, Point2d *symbolPts)
+void LineElement::printSymbols(Blt_Ps ps, LinePen* penPtr, int size,
+			       int nSymbolPts, Point2d *symbolPts)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
@@ -2736,7 +2734,7 @@ void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
     {
       "Li", "Sq", "Ci", "Di", "Pl", "Cr", "Sp", "Sc", "Tr", "Ar", "Bm", NULL
     };
-  GetSymbolPostScriptInfo(ps, penPtr, size);
+  getSymbolPostScriptInfo(ps, penPtr, size);
 
   symbolSize = (double)size;
   switch (pops->symbol.type) {
@@ -2766,7 +2764,7 @@ void LineElement::SymbolsToPostScript(Blt_Ps ps, LinePen* penPtr, int size,
   }
 }
 
-void LineElement::SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
+void LineElement::setLineAttributes(Blt_Ps ps, LinePen* penPtr)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
@@ -2787,7 +2785,7 @@ void LineElement::SetLineAttributes(Blt_Ps ps, LinePen* penPtr)
 
 void LineElement::printTraces(Blt_Ps ps, LinePen* penPtr)
 {
-  SetLineAttributes(ps, penPtr);
+  setLineAttributes(ps, penPtr);
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
        link = Blt_Chain_NextLink(link)) {
     bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
@@ -2800,9 +2798,8 @@ void LineElement::printTraces(Blt_Ps ps, LinePen* penPtr)
   }
 }
 
-void LineElement::ValuesToPostScript(Blt_Ps ps, LinePen* penPtr,
-				     int nSymbolPts, Point2d *symbolPts, 
-				     int *pointToData)
+void LineElement::printValues(Blt_Ps ps, LinePen* penPtr, int nSymbolPts,
+			      Point2d *symbolPts, int *pointToData)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
