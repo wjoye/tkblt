@@ -295,7 +295,10 @@ void BarElement::map()
 	((BarGraph::BarMode)gops->barMode != BarGraph::INFRONT) && 
 	(!gops->stackAxes)) {
       
-      BarSetKey key((float)x[ii], ops->xAxis, NULL);
+      BarSetKey key;
+      key.value =float(x[ii]);
+      key.xAxis =ops->xAxis;
+      key.yAxis =NULL;
       Tcl_HashEntry *hPtr = 
 	Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
 

@@ -35,6 +35,26 @@
 #include "bltGraph.h"
 
 typedef struct {
+  float value;
+  Axis* xAxis;
+  Axis* yAxis;
+} BarSetKey;
+
+class BarGroup {
+ public:
+  int nSegments;
+  Axis* xAxis;
+  Axis* yAxis;
+  float sum;
+  int count;
+  float lastY;
+  size_t index;
+
+ public:
+  BarGroup();
+};
+
+typedef struct {
   double aspect;
   Tk_3DBorder normalBg;
   int borderWidth;
@@ -67,31 +87,6 @@ typedef struct {
   double barWidth;
   double baseline;
 } BarGraphOptions;
-
-class BarGroup {
- public:
-  int nSegments;
-  Axis* xAxis;
-  Axis* yAxis;
-  float sum;
-  int count;
-  float lastY;
-  size_t index;
-
- public:
-  BarGroup();
-};
-
-class BarSetKey {
- public:
-  float value;
-  Axis* xAxis;
-  Axis* yAxis;
-
- public:
-  BarSetKey();
-  BarSetKey(float, Axis*, Axis*);
-};
 
 class BarGraph : public Graph {
  public:
