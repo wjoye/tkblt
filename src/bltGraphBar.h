@@ -106,9 +106,9 @@ class BarGraph : public Graph {
  protected:
   void resetAxes();
   void mapElements();
-  void initBarSetTable();
+  void initBarSets();
   void destroyBarSets();
-  void resetBarGroups();
+  void resetBarSets();
   void computeBarStacks();
 
  public:

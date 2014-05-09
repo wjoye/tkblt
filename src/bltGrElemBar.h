@@ -48,7 +48,7 @@ typedef struct {
 typedef struct {
   Weight weight;
   BarPen* penPtr;
-  XRectangle *bars;
+  XRectangle* bars;
   int nBars;
   GraphSegments xeb;
   GraphSegments yeb;

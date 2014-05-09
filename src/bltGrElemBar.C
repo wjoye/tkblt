@@ -245,6 +245,7 @@ int BarElement::configure()
 
 void BarElement::map()
 {
+  cerr << "BarElement::map()" << endl;
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
@@ -272,18 +273,19 @@ void BarElement::map()
   double* y = ops->coords.y->values;
   int count = 0;
 
-  int i;
+  int ii;
   XRectangle *rp;
-  for (rp = bars, i = 0; i < nPoints; i++) {
-    Point2d c1, c2;			/* Two opposite corners of the rectangle
-					 * in graph coordinates. */
-    if (((x[i] - barWidth) > ops->xAxis->axisRange_.max) ||
-	((x[i] + barWidth) < ops->xAxis->axisRange_.min)) {
-      continue;			/* Abscissa is out of range of the
-				 * x-axis */
-    }
-    c1.x = x[i] - barOffset;
-    c1.y = y[i];
+  for (rp=bars, ii=0; ii<nPoints; ii++) {
+    // Two opposite corners of the rectangle in graph coordinates
+    Point2d c1, c2;
+
+    // check Abscissa is out of range of the x-axis
+    if (((x[ii] - barWidth) > ops->xAxis->axisRange_.max) ||
+	((x[ii] + barWidth) < ops->xAxis->axisRange_.min))
+      continue;			
+
+    c1.x = x[ii] - barOffset;
+    c1.y = y[ii];
     c2.x = c1.x + barWidth;
     c2.y = baseline;
 
@@ -293,14 +295,14 @@ void BarElement::map()
 	((BarGraph::BarMode)gops->barMode != BarGraph::INFRONT) && 
 	(!gops->stackAxes)) {
       
-      BarSetKey key((float)x[i], ops->xAxis, NULL);
+      BarSetKey key((float)x[ii], ops->xAxis, NULL);
       Tcl_HashEntry *hPtr = 
 	Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
 
       if (hPtr) {
+	cerr << "  found " << ii << endl;
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->yAxis->name_;
+	const char *name = (ops->groupName) ? ops->groupName:ops->yAxis->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (hPtr) {
 	  BarGroup* groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
@@ -427,7 +429,7 @@ void BarElement::map()
       rp->height = 1;
 
     // Save the data index corresponding to the rectangle
-    barToData[count] = i;
+    barToData[count] = ii;
     count++;
     rp++;
   }
@@ -670,7 +672,7 @@ void BarElement::draw(Drawable drawable)
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
-    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
