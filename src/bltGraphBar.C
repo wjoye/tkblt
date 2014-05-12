@@ -211,7 +211,6 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
   barGroups_ =NULL;
   nBarGroups_ =0;
   maxBarSetSize_ =0;
-  cerr << sizeof(BarSetKey) << ' ' << sizeof(BarSetKey)/sizeof(int) << endl;
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey)/sizeof(int));
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
@@ -346,7 +345,6 @@ void BarGraph::resetAxes()
 
 void BarGraph::initBarSets()
 {
-  cerr << "BarGraph::initBarSets()" << endl;
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
   
   // Free resources associated with a previous frequency table. This includes
@@ -453,12 +451,10 @@ void BarGraph::initBarSets()
 
   maxBarSetSize_ = max;
   nBarGroups_ = sum;
-  cerr<< "max=" << max << " nBarGroups=" << sum << endl;
 }
 
 void BarGraph::destroyBarSets()
 {
-  cerr << "BarGraph::destroyBarSets()" << endl;
   if (barGroups_) {
     delete [] barGroups_;
     barGroups_ = NULL;
@@ -479,7 +475,6 @@ void BarGraph::destroyBarSets()
 
 void BarGraph::resetBarSets()
 {
-  cerr << "BarGraph::resetBarSets()" << endl;
   BarGroup *gp, *gend;
   for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++) {
     gp->lastY = 0.0;
@@ -489,7 +484,6 @@ void BarGraph::resetBarSets()
 
 void BarGraph::computeBarStacks()
 {
-  cerr << "BarGraph::computsBarStacks()" << endl;
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
   Blt_ChainLink link;

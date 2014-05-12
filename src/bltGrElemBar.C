@@ -245,7 +245,7 @@ int BarElement::configure()
 
 void BarElement::map()
 {
-  cerr << "BarElement::map()" << endl;
+  //  cerr << "BarElement::map()" << endl;
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;
