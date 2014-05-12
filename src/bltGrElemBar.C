@@ -299,10 +299,9 @@ void BarElement::map()
       key.value =x[ii];
       key.xAxis =ops->xAxis;
       key.yAxis =NULL;
-      Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, &key);
+      Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, &key);
 
       if (hPtr) {
-	cerr << "  found " << ii << endl;
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? ops->groupName:ops->yAxis->name_;
 	Tcl_HashEntry* hPtr2 = Tcl_FindHashEntry(tablePtr, name);
@@ -861,7 +860,7 @@ void BarElement::ResetStylePalette(Blt_Chain stylePalette)
 }
 
 void BarElement::checkStacks(Axis* xAxis, Axis* yAxis, 
-				double *minPtr, double *maxPtr)
+			     double* minPtr, double* maxPtr)
 {
   BarGraph* barGraphPtr_ = (BarGraph*)graphPtr_;
   BarGraphOptions* gops = (BarGraphOptions*)graphPtr_->ops_;

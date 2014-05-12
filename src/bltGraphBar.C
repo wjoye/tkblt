@@ -211,6 +211,7 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
   barGroups_ =NULL;
   nBarGroups_ =0;
   maxBarSetSize_ =0;
+  cerr << sizeof(BarSetKey) << ' ' << sizeof(BarSetKey)/sizeof(int) << endl;
   Tcl_InitHashTable(&setTable_, sizeof(BarSetKey)/sizeof(int));
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
@@ -379,7 +380,6 @@ void BarGraph::initBarSets()
 	key.yAxis =NULL;
 
 	int isNew;
-
 	Tcl_HashEntry* hhPtr =Tcl_CreateHashEntry(&setTable, &key, &isNew);
 	Tcl_HashTable* tablePtr;
 	if (isNew) {
@@ -519,7 +519,7 @@ void BarGraph::computeBarStacks()
 	key.value =*x;
 	key.xAxis =ops->xAxis;
 	key.yAxis =NULL;
-	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, (char*)&key);
+	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, &key);
 	if (!hPtr)
 	  continue;
 
