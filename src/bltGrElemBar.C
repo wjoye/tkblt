@@ -274,7 +274,7 @@ void BarElement::map()
   int count = 0;
 
   int ii;
-  XRectangle *rp;
+  XRectangle* rp;
   for (rp=bars, ii=0; ii<nPoints; ii++) {
     // Two opposite corners of the rectangle in graph coordinates
     Point2d c1, c2;
@@ -299,16 +299,15 @@ void BarElement::map()
       key.value =float(x[ii]);
       key.xAxis =ops->xAxis;
       key.yAxis =NULL;
-      Tcl_HashEntry *hPtr = 
-	Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char *)&key);
+      Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, &key);
 
       if (hPtr) {
 	cerr << "  found " << ii << endl;
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
 	const char *name = (ops->groupName) ? ops->groupName:ops->yAxis->name_;
-	hPtr = Tcl_FindHashEntry(tablePtr, name);
-	if (hPtr) {
-	  BarGroup* groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr);
+	Tcl_HashEntry* hPtr2 = Tcl_FindHashEntry(tablePtr, name);
+	if (hPtr2) {
+	  BarGroup* groupPtr = (BarGroup*)Tcl_GetHashValue(hPtr2);
 	  double slice = barWidth / (double)barGraphPtr_->maxBarSetSize_;
 	  double offset = (slice * groupPtr->index);
 	  if (barGraphPtr_->maxBarSetSize_ > 1) {
@@ -614,11 +613,11 @@ void BarElement::closest()
   double minDist = searchPtr->dist;
   int imin = 0;
     
-  int i;
-  XRectangle *bp;
-  for (bp = bars_, i = 0; i < nBars_; i++, bp++) {
+  int ii;
+  XRectangle* bp;
+  for (bp=bars_, ii=0; ii<nBars_; ii++, bp++) {
     if (PointInRectangle(bp, searchPtr->x, searchPtr->y)) {
-      imin = barToData_[i];
+      imin = barToData_[ii];
       minDist = 0.0;
       break;
     }
@@ -634,7 +633,7 @@ void BarElement::closest()
     outline[3].y = outline[2].y = bottom;
 
     Point2d *pp, *pend;
-    for (pp = outline, pend = outline + 4; pp < pend; pp++) {
+    for (pp=outline, pend=outline+4; pp<pend; pp++) {
       Point2d t = Blt_GetProjection(searchPtr->x, searchPtr->y, pp, pp + 1);
       if (t.x > right)
 	t.x = right;
@@ -649,7 +648,7 @@ void BarElement::closest()
       double dist = hypot((t.x - searchPtr->x), (t.y - searchPtr->y));
       if (dist < minDist) {
 	minDist = dist;
-	imin = barToData_[i];
+	imin = barToData_[ii];
       }
     }
   }
