@@ -211,12 +211,7 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
   barGroups_ =NULL;
   nBarGroups_ =0;
   maxBarSetSize_ =0;
-  int ss = (sizeof(float)+2*sizeof(Axis*))/sizeof(int);
-  cerr << sizeof(BarSetKey) << '/' << sizeof(int) << '=' 
-       << sizeof(BarSetKey)/sizeof(int) << '#' 
-       << (sizeof(float)+2*sizeof(Axis*)) << '/' << sizeof(int) << '='
-       << ss << endl;
-  Tcl_InitHashTable(&setTable_, ss);
+  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey)/sizeof(int));
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
   ops->leftMargin.site = MARGIN_LEFT;
@@ -363,8 +358,7 @@ void BarGraph::initBarSets()
   // of the frequency of each x-coordinate and how many abscissas have
   // duplicate mappings.
   Tcl_HashTable setTable;
-  int ss = (sizeof(float)+2*sizeof(Axis*))/sizeof(int);
-  Tcl_InitHashTable(&setTable, ss);
+  Tcl_InitHashTable(&setTable, sizeof(BarSetKey)/sizeof(int));
   int nSegs =0;
 
   for (Blt_ChainLink link = Blt_Chain_FirstLink(elements_.displayList);
@@ -480,8 +474,7 @@ void BarGraph::destroyBarSets()
   }
 
   Tcl_DeleteHashTable(&setTable_);
-  int ss = (sizeof(float)+2*sizeof(Axis*))/sizeof(int);
-  Tcl_InitHashTable(&setTable_, ss);
+  Tcl_InitHashTable(&setTable_, sizeof(BarSetKey)/sizeof(int));
 }
 
 void BarGraph::resetBarSets()

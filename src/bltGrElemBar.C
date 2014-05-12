@@ -296,7 +296,7 @@ void BarElement::map()
 	(!gops->stackAxes)) {
       
       BarSetKey key;
-      key.value =float(x[ii]);
+      key.value =x[ii];
       key.xAxis =ops->xAxis;
       key.yAxis =NULL;
       Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, &key);

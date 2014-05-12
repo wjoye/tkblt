@@ -35,7 +35,7 @@
 #include "bltGraph.h"
 
 typedef struct {
-  float value;
+  double value;
   Axis* xAxis;
   Axis* yAxis;
 } BarSetKey;
