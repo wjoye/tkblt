@@ -103,7 +103,6 @@ typedef struct {
   Tk_3DBorder normalBg;
   int borderWidth;
   Margin margins[4];
-  int backingStore;
   Tk_Cursor cursor;
   TextStyleOptions titleTextStyle;
   int reqHeight;
@@ -176,7 +175,6 @@ class Graph {
   short int cacheHeight_;
 
  protected:
-  void drawPlot(Drawable);
   void layoutGraph();
   
   void drawMargins(Drawable);

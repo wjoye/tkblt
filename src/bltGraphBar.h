@@ -59,7 +59,6 @@ typedef struct {
   Tk_3DBorder normalBg;
   int borderWidth;
   Margin margins[4];
-  int backingStore;
   Tk_Cursor cursor;
   TextStyleOptions titleTextStyle;
   int reqHeight;

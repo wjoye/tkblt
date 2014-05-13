@@ -210,7 +210,7 @@ void Graph::configure()
     adjustAxes();
 
   // Free the pixmap if we're not buffering the display of elements anymore.
-  if ((!ops->backingStore) && (cache_ != None)) {
+  if (cache_ != None) {
     Tk_FreePixmap(display_, cache_);
     cache_ = None;
   }
@@ -259,31 +259,62 @@ void Graph::draw()
   Pixmap drawable = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), 
 				 width_, height_, Tk_Depth(tkwin_));
 
-  if (ops->backingStore) {
-    if ((cache_ == None)||(cacheWidth_ != width_)||(cacheHeight_ != height_)) {
-      if (cache_ != None)
-	Tk_FreePixmap(display_, cache_);
-
-      cache_ = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), width_, height_, 
-			    Tk_Depth(tkwin_));
-      cacheWidth_  = width_;
-      cacheHeight_ = height_;
-      flags |= CACHE_DIRTY;
-    }
+  if (cache_ == None || cacheWidth_ != width_ || cacheHeight_ != height_) {
+    if (cache_ != None)
+      Tk_FreePixmap(display_, cache_);
+    cache_ = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), width_, height_, 
+			  Tk_Depth(tkwin_));
+    cacheWidth_ = width_;
+    cacheHeight_ = height_;
+    flags |= CACHE_DIRTY;
   }
 
-  if (ops->backingStore) {
-    if (flags & CACHE_DIRTY) {
-      drawPlot(cache_);
-      flags &= ~CACHE_DIRTY;
-    }
-    XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
-	      Tk_Height(tkwin_), 0, 0);
-  }
-  else
-    drawPlot(drawable);
+  // Update cache if needed
+  if (flags & CACHE_DIRTY) {
+    drawMargins(cache_);
 
-  // Draw markers above elements
+    switch (legend_->position()) {
+    case Legend::TOP:
+    case Legend::BOTTOM:
+    case Legend::RIGHT:
+    case Legend::LEFT:
+      legend_->draw(cache_);
+      break;
+    default:
+      break;
+    }
+
+    // Draw the background of the plotting area with 3D border
+    Tk_Fill3DRectangle(tkwin_, cache_, ops->plotBg, 
+		       left_-ops->plotBW, 
+		       top_-ops->plotBW, 
+		       right_-left_+1+2*ops->plotBW,
+		       bottom_-top_+1+2*ops->plotBW, 
+		       ops->plotBW, ops->plotRelief);
+  
+    drawAxesGrids(cache_);
+    drawAxes(cache_);
+    drawAxesLimits(cache_);
+    drawMarkers(cache_, MARKER_UNDER);
+
+    if (!legend_->isRaised()) {
+      switch (legend_->position()) {
+      case Legend::PLOT:
+      case Legend::XY:
+	legend_->draw(cache_);
+	break;
+      default:
+	break;
+      }
+    }
+
+    flags &= ~CACHE_DIRTY;
+  }
+
+  XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
+	    Tk_Height(tkwin_), 0, 0);
+
+  drawElements(drawable);
   drawActiveElements(drawable);
 
   if (legend_->isRaised()) {
@@ -324,49 +355,8 @@ void Graph::draw()
 
   flags &= ~MAP_WORLD;
   flags &= ~REDRAW_WORLD;
+
   updateMarginTraces();
-}
-
-void Graph::drawPlot(Drawable drawable)
-{
-  GraphOptions* ops = (GraphOptions*)ops_;
-
-  drawMargins(drawable);
-
-  switch (legend_->position()) {
-  case Legend::TOP:
-  case Legend::BOTTOM:
-  case Legend::RIGHT:
-  case Legend::LEFT:
-    legend_->draw(drawable);
-    break;
-  default:
-    break;
-  }
-
-  // Draw the background of the plotting area with 3D border
-  Tk_Fill3DRectangle(tkwin_, drawable, ops->plotBg, 
-		     left_-ops->plotBW, top_-ops->plotBW, 
-		     right_-left_+1+2*ops->plotBW,bottom_-top_+1+2*ops->plotBW, 
-		     ops->plotBW, ops->plotRelief);
-  
-  drawAxesGrids(drawable);
-  drawAxes(drawable);
-  drawAxesLimits(drawable);
-  drawMarkers(drawable, MARKER_UNDER);
-
-  if (!legend_->isRaised()) {
-    switch (legend_->position()) {
-    case Legend::PLOT:
-    case Legend::XY:
-      legend_->draw(drawable);
-      break;
-    default:
-      break;
-    }
-  }
-
-  drawElements(drawable);
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)

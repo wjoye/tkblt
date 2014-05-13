@@ -38,18 +38,6 @@ using namespace std;
 #include <tk.h>
 
 /*
- * Bit flags definitions:
- *
- * 	All kinds of state information kept here.  All these things happen
- * 	when the window is available to draw into (DisplayGraph). Need the
- * 	window width and height before we can calculate graph layout (i.e. the
- * 	screen coordinates of the axes, elements, titles, etc). But we want to
- * 	do this only when we have to, not every time the graph is redrawn.
- *
- *	Same goes for maintaining a pixmap to double buffer graph elements.
- *	Need to mark when the pixmap needs to updated.
- *
- *
  *	MAP_ITEM		Indicates that the element/marker/axis
  *				configuration has changed such that
  *				its layout of the item (i.e. its
@@ -96,7 +84,6 @@ using namespace std;
  *				3) titles have changed
  *				4) window was resized. 
  *
- *	GRAPH_FOCUS	
  */
 
 #define REDRAW_PENDING		(1<<2) /* 0x0004 */
