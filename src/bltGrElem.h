@@ -51,10 +51,6 @@ class PageSetup;
 #define SHOW_Y		2
 #define SHOW_BOTH	3
 
-#define	LABEL_ACTIVE 	(1<<9)	/* Non-zero indicates that the element's entry
-				 * in the legend should be drawn in its active
-				 * foreground and background colors. */
-
 #define MIN(a,b)	(((a)<(b))?(a):(b))
 #define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues : 0, \
 			       (e)->coords.y ? (e)->coords.y->nValues : 0 )
@@ -134,10 +130,12 @@ class Element {
   Tcl_HashEntry* hashPtr_;
   unsigned short row_;
   unsigned short col_;
-  int *activeIndices_;
   int nActiveIndices_;
+  int* activeIndices_;
+  int active_;		
+  int labelActive_;
+
   Blt_ChainLink link;
-  unsigned int flags;		
 
  protected:
   double FindElemValuesMinimum(ElemValues*, double);

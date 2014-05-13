@@ -67,7 +67,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_SYNONYM, "-background", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_DOUBLE, "-barwidth", "barWidth", "BarWidth",
-   "0", -1, Tk_Offset(BarElementOptions, barWidth), 0, NULL, MAP_ITEM},
+   "0", -1, Tk_Offset(BarElementOptions, barWidth), 0, NULL, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
@@ -81,7 +81,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, Tk_Offset(BarElementOptions, coords),
-   TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &pairsObjOption, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(BarElementOptions, builtinPen.errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -95,16 +95,16 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "no", -1, Tk_Offset(BarElementOptions, hide), 0, NULL, MAP_ITEM},
+   "no", -1, Tk_Offset(BarElementOptions, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label",
    NULL, -1, Tk_Offset(BarElementOptions, label), 
-   TK_OPTION_NULL_OK, NULL, MAP_ITEM},
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(BarElementOptions, legendRelief), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX", 
-   "x", -1, Tk_Offset(BarElementOptions, xAxis), 0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(BarElementOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(BarElementOptions, yAxis), 0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(BarElementOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
    NULL, -1, Tk_Offset(BarElementOptions, builtinPen.outlineColor),
    TK_OPTION_NULL_OK, NULL, 0},
@@ -142,33 +142,33 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(BarElementOptions, w), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
    NULL, -1, Tk_Offset(BarElementOptions, coords.x), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
    NULL, -1, Tk_Offset(BarElementOptions, xError), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
    NULL, -1, Tk_Offset(BarElementOptions, xHigh), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
    NULL, -1, Tk_Offset(BarElementOptions, xLow), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
    NULL, -1, Tk_Offset(BarElementOptions, coords.y), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
    NULL, -1, Tk_Offset(BarElementOptions, yError), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
    NULL, -1, Tk_Offset(BarElementOptions, yHigh), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
    NULL, -1, Tk_Offset(BarElementOptions, yLow), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -699,7 +699,7 @@ void BarElement::drawActive(Drawable drawable)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (ops->hide || !(flags & ACTIVE))
+  if (ops->hide || !active_)
     return;
 
   BarPen* penPtr = (BarPen*)ops->activePenPtr;
@@ -708,8 +708,7 @@ void BarElement::drawActive(Drawable drawable)
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
   if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      mapActive();
+    mapActive();
 
     drawSegments(drawable, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
@@ -795,7 +794,7 @@ void BarElement::printActive(Blt_Ps ps)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (ops->hide || !(flags & ACTIVE))
+  if (ops->hide || !active_)
     return;
 
   BarPen* penPtr = (BarPen*)ops->activePenPtr;
@@ -806,8 +805,7 @@ void BarElement::printActive(Blt_Ps ps)
   Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
   if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      mapActive();
+    mapActive();
     printSegments(ps, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
       printValues(ps, penPtr, activeRects_, nActive_,activeToData_);
@@ -1010,7 +1008,6 @@ void BarElement::mapActive()
     activeRects_ = activeRects;
     activeToData_ = activeToData;
   }
-  flags &= ~ACTIVE_PENDING;
 }
 
 void BarElement::reset()

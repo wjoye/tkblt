@@ -75,8 +75,7 @@ int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    axisPtr->flags |= mask;
-    axisPtr->flags |= DIRTY;
+    //    axisPtr->flags |= mask;
     graphPtr->flags |= REDRAW_WORLD | MAP_WORLD | RESET_AXES | CACHE_DIRTY;
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
@@ -509,10 +508,7 @@ int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp,
   const char *string;
 
   string = Tcl_GetString(objv[2]);
-  if (string[0] == 'a')
-    axisPtr->flags |= ACTIVE;
-  else
-    axisPtr->flags &= ~ACTIVE;
+  axisPtr->active_ = (string[0] == 'a') ? 1 : 0;
 
   if (!ops->hide && axisPtr->use_) {
     graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;

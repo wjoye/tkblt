@@ -165,7 +165,7 @@ class Axis {
   Blt_Chain chain;
   int refCount_;
   int use_;
-  unsigned int flags;		
+  int active_;		
 
   const char *detail_;
   Point2d titlePos_;

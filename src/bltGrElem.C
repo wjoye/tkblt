@@ -50,9 +50,10 @@ Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   nActiveIndices_ =0;
   xRange_ =0;
   yRange_ =0;
+  active_ =0;
+  labelActive_ =0;
 
   link =NULL;
-  flags =0;
 }
 
 Element::~Element()

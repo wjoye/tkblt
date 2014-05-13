@@ -511,7 +511,7 @@ int Graph::invoke(const Ensemble* ensemble, int cmdIndex,
   return TCL_ERROR;
 }
 
-void Graph::reconfigure()	
+void Graph::reconfigure()
 {
   configure();
   legend_->configure();
@@ -722,11 +722,7 @@ void Graph::mapElements()
   for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-
-    if ((flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM)) {
-      elemPtr->map();
-      elemPtr->flags &= ~MAP_ITEM;
-    }
+    elemPtr->map();
   }
 }
 
@@ -1197,10 +1193,8 @@ Point2d Graph::invMap2D(double x, double y, Axis* xAxis, Axis* yAxis)
 
 void Graph::resetAxes()
 {
-  /*
-   * Step 1:  Reset all axes. Initialize the data limits of the axis to
-   *		impossible values.
-   */
+  // Step 1:  Reset all axes. Initialize the data limits of the axis to
+  // impossible values.
   Tcl_HashSearch cursor;
   for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor);
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
@@ -1209,12 +1203,10 @@ void Graph::resetAxes()
     axisPtr->max_ = axisPtr->valueRange_.max = -DBL_MAX;
   }
 
-  /*
-   * Step 2:  For each element that's to be displayed, get the smallest
-   *		and largest data values mapped to each X and Y-axis.  This
-   *		will be the axis limits if the user doesn't override them 
-   *		with -min and -max options.
-   */
+  // Step 2:  For each element that's to be displayed, get the smallest
+  // and largest data values mapped to each X and Y-axis.  This
+  // will be the axis limits if the user doesn't override them 
+  // with -min and -max options.
   for (Blt_ChainLink link = Blt_Chain_FirstLink(elements_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Region2d exts;
@@ -1225,17 +1217,15 @@ void Graph::resetAxes()
     elemops->xAxis->getDataLimits(exts.left, exts.right);
     elemops->yAxis->getDataLimits(exts.top, exts.bottom);
   }
-  /*
-   * Step 3:  Now that we know the range of data values for each axis,
-   *		set axis limits and compute a sweep to generate tick values.
-   */
+
+  // Step 3:  Now that we know the range of data values for each axis,
+  // set axis limits and compute a sweep to generate tick values.
   for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&axes_.table, &cursor);
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
     AxisOptions* ops = (AxisOptions*)axisPtr->ops();
     axisPtr->fixRange();
 
-    /* Calculate min/max tick (major/minor) layouts */
     double min = axisPtr->min_;
     double max = axisPtr->max_;
     if ((!isnan(axisPtr->scrollMin_)) && (min < axisPtr->scrollMin_))
@@ -1249,8 +1239,7 @@ void Graph::resetAxes()
     else
       axisPtr->linearScale(min, max);
 
-    if (axisPtr->use_ && (axisPtr->flags & DIRTY))
-      flags |= CACHE_DIRTY;
+    flags |= CACHE_DIRTY;
   }
 
   flags &= ~RESET_AXES;
@@ -1413,20 +1402,19 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   searchPtr->y = y;
   searchPtr->dist = (double)(searchPtr->halo + 1);
 	
-  Blt_ChainLink link;
-  Element* elemPtr;
-  for (link = Blt_Chain_LastLink(graphPtr->elements_.displayList);
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
-    elemPtr = (Element*)Blt_Chain_GetValue(link);
+  for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList);
+       link; link = Blt_Chain_PrevLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* eops = (ElementOptions*)elemPtr->ops();
-    if (eops->hide || (elemPtr->flags & MAP_ITEM))
+    if (eops->hide)
       continue;
 
     elemPtr->closest();
   }
+
   // Found an element within the minimum halo distance.
   if (searchPtr->dist <= (double)searchPtr->halo) {
-    *contextPtr = (ClientData)elemPtr->classId();
+    *contextPtr = (ClientData)searchPtr->elemPtr->classId();
     return searchPtr->elemPtr;
   }
 

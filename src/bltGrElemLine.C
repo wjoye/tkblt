@@ -57,8 +57,6 @@ using namespace Blt;
 				 * if the linewidth is > 0 and if there is
 				 * more than one data point. */
 
-#define SCALE_SYMBOL	(1<<10)
-
 #define MAX(a,b)	(((a)>(b))?(a):(b))
 #define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
@@ -96,7 +94,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_BORDER, "-areabackground", "areaBackground", "AreaBackground",
    NULL, -1, Tk_Offset(LineElementOptions, fillBg), 
-   TK_OPTION_NULL_OK, NULL, MAP_ITEM},
+   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "all", -1, Tk_Offset(LineElementOptions, tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
@@ -109,7 +107,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, Tk_Offset(LineElementOptions, coords),
-   TK_OPTION_NULL_OK, &pairsObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &pairsObjOption, 0},
   {TK_OPTION_COLOR, "-errorbarcolor", "errorBarColor", "ErrorBarColor",
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.errorBarColor), 
    TK_OPTION_NULL_OK, NULL, 0},
@@ -123,19 +121,19 @@ static Tk_OptionSpec optionSpecs[] = {
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.symbol.fillColor), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "no", -1, Tk_Offset(LineElementOptions, hide), 0, NULL, MAP_ITEM},
+   "no", -1, Tk_Offset(LineElementOptions, hide), 0, NULL, 0},
   {TK_OPTION_STRING, "-label", "label", "Label", 
    NULL, -1, Tk_Offset(LineElementOptions, label), 
-   TK_OPTION_NULL_OK | TK_OPTION_DONT_SET_DEFAULT, NULL, MAP_ITEM},
+   TK_OPTION_NULL_OK | TK_OPTION_DONT_SET_DEFAULT, NULL, 0},
   {TK_OPTION_RELIEF, "-legendrelief", "legendRelief", "LegendRelief",
    "flat", -1, Tk_Offset(LineElementOptions, legendRelief), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "LineWidth",
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.traceWidth),
    0, NULL, 0},
   {TK_OPTION_CUSTOM, "-mapx", "mapX", "MapX",
-   "x", -1, Tk_Offset(LineElementOptions, xAxis), 0, &xAxisObjOption, MAP_ITEM},
+   "x", -1, Tk_Offset(LineElementOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY",
-   "y", -1, Tk_Offset(LineElementOptions, yAxis), 0, &yAxisObjOption, MAP_ITEM},
+   "y", -1, Tk_Offset(LineElementOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_INT, "-maxsymbols", "maxSymbols", "MaxSymbols",
    "0", -1, Tk_Offset(LineElementOptions, reqMaxSymbols), 0, NULL, 0},
   {TK_OPTION_COLOR, "-offdash", "offDash", "OffDash", 
@@ -152,12 +150,11 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &penObjOption, 0},
   {TK_OPTION_PIXELS, "-pixels", "pixels", "Pixels", 
    "0.1i", -1, Tk_Offset(LineElementOptions, builtinPen.symbol.size), 
-   0, NULL, MAP_ITEM},
+   0, NULL, 0},
   {TK_OPTION_DOUBLE, "-reduce", "reduce", "Reduce",
    "0", -1, Tk_Offset(LineElementOptions, rTolerance), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-scalesymbols", "scaleSymbols", "ScaleSymbols",
-   "yes", -1, Tk_Offset(LineElementOptions, scaleSymbols), 
-   0, NULL, (MAP_ITEM | SCALE_SYMBOL)},
+   "yes", -1, Tk_Offset(LineElementOptions, scaleSymbols), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-showerrorbars", "showErrorBars", "ShowErrorBars",
    "both", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarShow), 
    0, &fillObjOption, 0},
@@ -166,7 +163,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, &fillObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-smooth", "smooth", "Smooth", 
    "linear", -1, Tk_Offset(LineElementOptions, reqSmooth), 
-   0, &smoothObjOption, MAP_ITEM},
+   0, &smoothObjOption, 0},
   {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
    "", -1, Tk_Offset(LineElementOptions, stylePalette), 0, &styleObjOption, 0},
   {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
@@ -174,7 +171,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, &symbolObjOption, 0},
   {TK_OPTION_STRING_TABLE, "-trace", "trace", "Trace",
    "both", -1, Tk_Offset(LineElementOptions, penDir), 
-   0, &penDirObjOption, MAP_ITEM},
+   0, &penDirObjOption, 0},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LineElementOptions, builtinPen.valueStyle.anchor),
    0, NULL, 0},
@@ -194,33 +191,33 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, 0},
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(LineElementOptions, w), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
    NULL, -1, Tk_Offset(LineElementOptions, coords.x), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xerror", "xError", "XError", 
    NULL, -1, Tk_Offset(LineElementOptions, xError), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xhigh", "xHigh", "XHigh", 
    NULL, -1, Tk_Offset(LineElementOptions, xHigh), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
    NULL, -1, Tk_Offset(LineElementOptions, xLow), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
    NULL, -1, Tk_Offset(LineElementOptions, coords.y), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-yerror", "yError", "YError", 
    NULL, -1, Tk_Offset(LineElementOptions, yError), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-yhigh", "yHigh", "YHigh",
    NULL, -1, Tk_Offset(LineElementOptions, yHigh), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
    NULL, -1, Tk_Offset(LineElementOptions, yLow), 
-   TK_OPTION_NULL_OK, &valuesObjOption, MAP_ITEM},
+   TK_OPTION_NULL_OK, &valuesObjOption, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
@@ -264,8 +261,6 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   ops->label = Tcl_Alloc(strlen(name)+1);
   if (name)
     strcpy((char*)ops->label,(char*)name);
-
-  flags = SCALE_SYMBOL;
 
   Tk_InitOptions(graphPtr->interp_, (char*)&(ops->builtinPen),
 		 builtinPenPtr->optionTable(), graphPtr->tkwin_);
@@ -326,7 +321,7 @@ void LineElement::map()
   getScreenPoints(&mi);
   mapSymbols(&mi);
 
-  if ((flags & ACTIVE_PENDING) && (nActiveIndices_ > 0))
+  if (nActiveIndices_ > 0)
     mapActiveSymbols();
 
   // Map connecting line segments if they are to be displayed.
@@ -618,14 +613,13 @@ void LineElement::drawActive(Drawable drawable)
     return;
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  if (ops->hide || !(flags & ACTIVE))
+  if (ops->hide || !active_)
     return;
 
   int symbolSize = scaleSymbol(penOps->symbol.size);
 
   if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      mapActiveSymbols();
+    mapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
       drawSymbols(drawable, penPtr, symbolSize, activePts_.length,
@@ -749,15 +743,14 @@ void LineElement::printActive(Blt_Ps ps)
     return;
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  if (ops->hide || !(flags & ACTIVE))
+  if (ops->hide || !active_)
     return;
 
   Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
 
   int symbolSize = scaleSymbol(penOps->symbol.size);
   if (nActiveIndices_ > 0) {
-    if (flags & ACTIVE_PENDING)
-      mapActiveSymbols();
+    mapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
       printSymbols(ps, penPtr, symbolSize, activePts_.length,
@@ -939,15 +932,14 @@ int LineElement::scaleSymbol(int normalSize)
     double xRange = (ops->xAxis->max_ - ops->xAxis->min_);
     double yRange = (ops->yAxis->max_ - ops->yAxis->min_);
     // Save the ranges as a baseline for future scaling
-    if (flags & SCALE_SYMBOL) {
+    if (!xRange_ || !yRange_) {
       xRange_ = xRange;
       yRange_ = yRange;
-      flags &= ~SCALE_SYMBOL;
     }
     else {
       // Scale the symbol by the smallest change in the X or Y axes
-      double xScale = xRange / xRange;
-      double yScale = yRange / yRange;
+      double xScale = xRange_ / xRange;
+      double yScale = yRange_ / yRange;
       scale = MIN(xScale, yScale);
     }
   }
@@ -1374,7 +1366,6 @@ void LineElement::mapActiveSymbols()
     free(map);	
   }
   activePts_.length = count;
-  flags &= ~ACTIVE_PENDING;
 }
 
 void LineElement::mergePens(LineStyle **styleMap)

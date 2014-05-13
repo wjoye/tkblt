@@ -195,7 +195,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   chain =NULL;
   refCount_ =0;
   use_ =0;
-  flags =0;		
+  active_ =0;		
 
   detail_ =NULL;
   titlePos_.x =0;
@@ -508,7 +508,7 @@ void Axis::draw(Drawable drawable)
     tops->angle = titleAngle_;
     tops->font = ops->titleFont;
     tops->anchor = titleAnchor_;
-    tops->color = (flags & ACTIVE) ? ops->activeFgColor : ops->titleColor;
+    tops->color = active_ ? ops->activeFgColor : ops->titleColor;
     tops->justify = ops->titleJustify;
 
     ts.xPad_ = 1;
@@ -584,7 +584,7 @@ void Axis::draw(Drawable drawable)
     tops->angle = ops->tickAngle;
     tops->font = ops->tickFont;
     tops->anchor = tickAnchor_;
-    tops->color = (flags & ACTIVE) ? ops->activeFgColor : ops->tickColor;
+    tops->color = active_ ? ops->activeFgColor : ops->tickColor;
 
     ts.xPad_ = 2;
     ts.yPad_ = 0;
@@ -598,7 +598,7 @@ void Axis::draw(Drawable drawable)
   }
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {	
-    GC gc = (flags & ACTIVE) ? activeTickGC_ : tickGC_;
+    GC gc = active_ ? activeTickGC_ : tickGC_;
     Blt_Draw2DSegments(graphPtr_->display_, drawable, gc, segments_, 
 		       nSegments_);
   }
@@ -935,8 +935,6 @@ void Axis::fixRange()
   }
   if ((max_ != prevMax_) || 
       (min_ != prevMin_)) {
-    /* Indicate if the axis limits have changed */
-    flags |= DIRTY;
     /* and save the previous minimum and maximum values */
     prevMin_ = min_;
     prevMax_ = max_;

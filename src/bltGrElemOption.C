@@ -442,11 +442,8 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
   Element* elemPtr = valuesPtr->elemPtr;
   Graph* graphPtr = elemPtr->graphPtr_;
   graphPtr->flags |= RESET_AXES;
-  elemPtr->flags |= MAP_ITEM;
-  if (elemPtr->link) {
-    graphPtr->flags |= CACHE_DIRTY;
-    graphPtr->eventuallyRedraw();
-  }
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 }
 
 static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr, 

@@ -135,72 +135,45 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend_;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
 
-  unsigned int active, redraw;
-  const char *string;
-  int i;
-
-  string = Tcl_GetString(objv[2]);
-  active = (string[0] == 'a') ? LABEL_ACTIVE : 0;
-  redraw = 0;
-  for (i = 3; i < objc; i++) {
-    Blt_ChainLink link;
-    const char *pattern;
-
-    pattern = Tcl_GetString(objv[i]);
-    for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
+  const char *string = Tcl_GetString(objv[2]);
+  int active = (string[0] == 'a') ? 1 : 0;
+  int redraw = 0;
+  for (int ii=3; ii<objc; ii++) {
+    
+    const char* pattern = Tcl_GetString(objv[ii]);
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (Tcl_StringMatch(elemPtr->name_, pattern)) {
-	fprintf(stderr, "legend %s(%s) %s is currently %d\n",
-		string, pattern, elemPtr->name_, 
-		(elemPtr->flags & LABEL_ACTIVE));
 	if (active) {
-	  if ((elemPtr->flags & LABEL_ACTIVE) == 0) {
-	    elemPtr->flags |= LABEL_ACTIVE;
-	    redraw = 1;
-	  }
-	} else {
-	  if (elemPtr->flags & LABEL_ACTIVE) {
-	    elemPtr->flags &= ~LABEL_ACTIVE;
+	  if (!elemPtr->labelActive_) {
+	    elemPtr->labelActive_ =1;
 	    redraw = 1;
 	  }
 	}
-	fprintf(stderr, "legend %s(%s) %s is now %d\n",
-		string, pattern, elemPtr->name_, 
-		(elemPtr->flags & LABEL_ACTIVE));
+	else {
+	  if (elemPtr->labelActive_) {
+	    elemPtr->labelActive_ =0;
+	    redraw = 1;
+	  }
+	}
       }
     }
   }
-  if ((redraw) && ((ops->hide) == 0)) {
-    /*
-     * See if how much we need to draw. If the graph is already scheduled
-     * for a redraw, just make sure the right flags are set.  Otherwise
-     * redraw only the legend: it's either in an external window or it's
-     * the only thing that need updating.
-     */
-    if (graphPtr->flags & REDRAW_PENDING) {
-      graphPtr->flags |= CACHE_DIRTY;
-      graphPtr->flags |= REDRAW_WORLD; /* Redraw entire graph. */
-    }
-  }
-  {
-    Blt_ChainLink link;
-    Tcl_Obj *listObjPtr;
-	
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    /* List active elements in stacking order. */
-    for (link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
-	 link != NULL; link = Blt_Chain_NextLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-      if (elemPtr->flags & LABEL_ACTIVE) {
-	Tcl_Obj *objPtr;
 
-	objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
-	Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
-      }
+  if (redraw && !ops->hide)
+    graphPtr->flags |= CACHE_DIRTY | REDRAW_WORLD;
+
+  // List active elements in stacking order
+  Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+    if (elemPtr->labelActive_) {
+      Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
+      Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
-    Tcl_SetObjResult(interp, listObjPtr);
   }
+  Tcl_SetObjResult(interp, listObjPtr);
+
   return TCL_OK;
 }
 

@@ -463,11 +463,10 @@ void Legend::draw(Drawable drawable)
       continue;
 
     int isSelected = entryIsSelected(elemPtr);
-    if (elemPtr->flags & LABEL_ACTIVE) {
+    if (elemPtr->labelActive_)
       Tk_Fill3DRectangle(tkwin, pixmap, ops->activeBg, 
 			 x, y, entryWidth_, entryHeight_, 
 			 ops->entryBW, ops->activeRelief);
-    }
     else if (isSelected) {
       XColor* fg = (flags & FOCUS) ?
 	ops->selInFocusFgColor : ops->selOutFocusFgColor;
@@ -606,7 +605,7 @@ void Legend::print(Blt_Ps ps)
     if (!elemOps->label)
       continue;
 
-    if (elemPtr->flags & LABEL_ACTIVE) {
+    if (elemPtr->labelActive_) {
       ops->style.color = ops->activeFgColor;
       Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, entryWidth_, 
 			     entryHeight_, ops->entryBW, 

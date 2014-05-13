@@ -67,8 +67,6 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    elemPtr->flags |= mask;
-    elemPtr->flags |= MAP_ITEM;
     graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
@@ -142,6 +140,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+
   // List all the currently active elements
   if (objc == 3) {
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
@@ -149,7 +148,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_HashSearch iter;
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.table, &iter); hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-      if (elemPtr->flags & ACTIVE)
+      if (elemPtr->active_)
 	Tcl_ListObjAppendElement(interp, listObjPtr,
 				 Tcl_NewStringObj(elemPtr->name_, -1));
     }
@@ -181,7 +180,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   elemPtr->nActiveIndices_ = nIndices;
   elemPtr->activeIndices_ = indices;
 
-  elemPtr->flags |= ACTIVE | ACTIVE_PENDING;
+  elemPtr->active_ = 1;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -243,7 +242,7 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
 	return TCL_ERROR;
 
       ElementOptions* eops = (ElementOptions*)elemPtr->ops();
-      if (!eops->hide && !(elemPtr->flags & MAP_ITEM))
+      if (!eops->hide)
 	elemPtr->closest();
     }
   }
@@ -257,7 +256,7 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
 	 link; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       ElementOptions* eops = (ElementOptions*)elemPtr->ops();
-      if (!eops->hide && !(elemPtr->flags & MAP_ITEM))
+      if (!eops->hide)
 	elemPtr->closest();
     }
   }
@@ -308,7 +307,7 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
       elemPtr->activeIndices_ = NULL;
     }
     elemPtr->nActiveIndices_ = 0;
-    elemPtr->flags &= ~(ACTIVE | ACTIVE_PENDING);
+    elemPtr->active_ = 0;
   }
   graphPtr->eventuallyRedraw();
 
