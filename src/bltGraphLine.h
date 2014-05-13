@@ -40,7 +40,6 @@ typedef struct {
   int borderWidth;
   Margin margins[4];
   int backingStore;
-  int doubleBuffer;
   Tk_Cursor cursor;
   TextStyleOptions titleTextStyle;
   int reqHeight;

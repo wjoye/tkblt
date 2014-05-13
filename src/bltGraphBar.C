@@ -96,8 +96,6 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-bufferelements", "bufferElements", "BufferElements",
    "yes", -1, Tk_Offset(BarGraphOptions, backingStore), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-buffergraph", "bufferGraph", "BufferGraph",
-   "yes", -1, Tk_Offset(BarGraphOptions, doubleBuffer), 0, NULL, 0},
   {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor", 
    "crosshair", -1, Tk_Offset(BarGraphOptions, cursor), 
    TK_OPTION_NULL_OK, NULL, 0},

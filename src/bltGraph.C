@@ -218,7 +218,7 @@ void Graph::configure()
 
 void Graph::map()
 {
-  //  cerr << "Graph::map()" << endl;
+  cerr << "Graph::map()" << endl;
   if (flags & RESET_AXES)
     resetAxes();
 
@@ -239,7 +239,7 @@ void Graph::map()
 
 void Graph::draw()
 {
-  //  cerr << "Graph::draw()" << endl;
+  cerr << "Graph::draw()" << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   flags &= ~REDRAW_PENDING;
@@ -256,12 +256,8 @@ void Graph::draw()
   map();
 
   // Create a pixmap the size of the window for double buffering
-  Pixmap drawable;
-  if (ops->doubleBuffer)
-    drawable = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), 
-			    width_, height_, Tk_Depth(tkwin_));
-  else
-    drawable = Tk_WindowId(tkwin_);
+  Pixmap drawable = Tk_GetPixmap(display_, Tk_WindowId(tkwin_), 
+				 width_, height_, Tk_Depth(tkwin_));
 
   if (ops->backingStore) {
     if ((cache_ == None)||(cacheWidth_ != width_)||(cacheHeight_ != height_)) {
@@ -324,8 +320,7 @@ void Graph::draw()
 	    drawGC_, 0, 0, width_, height_, 0, 0);
 
   enableCrosshairs();
-  if (ops->doubleBuffer)
-    Tk_FreePixmap(display_, drawable);
+  Tk_FreePixmap(display_, drawable);
 
   flags &= ~MAP_WORLD;
   flags &= ~REDRAW_WORLD;
