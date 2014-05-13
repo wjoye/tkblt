@@ -244,6 +244,7 @@ class Axis {
   void getDataLimits(double, double);
   Ticks* generateTicks(TickSweep*);
   int inRange(double, AxisRange*);
+  void getGeometry();
 
   double invHMap(double x);
   double invVMap(double y);

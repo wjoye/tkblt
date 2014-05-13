@@ -205,7 +205,6 @@ class Graph {
   void drawAxes(Drawable);
   void drawAxesLimits(Drawable);
   void drawAxesGrids(Drawable);
-  void getAxisGeometry(Axis*);
   void adjustAxes();
 
  public:

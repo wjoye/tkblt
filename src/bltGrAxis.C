@@ -1829,3 +1829,102 @@ void Axis::updateScrollbar(Tcl_Interp* interp, Tcl_Obj *scrollCmdObjPtr,
   Tcl_DecrRefCount(cmdObjPtr);
 }
 
+void Axis::getGeometry()
+{
+  AxisOptions* ops = (AxisOptions*)ops_;
+  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+  freeTickLabels();
+
+  // Leave room for axis baseline and padding
+  unsigned int y =0;
+  if (ops->exterior && (gops->plotRelief != TK_RELIEF_SOLID))
+    y += ops->lineWidth + 2;
+
+  maxTickHeight_ = maxTickWidth_ = 0;
+
+  if (t1Ptr_)
+    free(t1Ptr_);
+  t1Ptr_ = generateTicks(&majorSweep_);
+  if (t2Ptr_)
+    free(t2Ptr_);
+  t2Ptr_ = generateTicks(&minorSweep_);
+
+  if (ops->showTicks) {
+    Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : t1Ptr_;
+	
+    int nTicks =0;
+    if (t1Ptr)
+      nTicks = t1Ptr->nTicks;
+	
+    unsigned int nLabels =0;
+    for (int ii=0; ii<nTicks; ii++) {
+      double x = t1Ptr->values[ii];
+      double x2 = t1Ptr->values[ii];
+      if (ops->labelOffset)
+	x2 += majorSweep_.step * 0.5;
+
+      if (!inRange(x2, &axisRange_))
+	continue;
+
+      TickLabel* labelPtr = makeLabel(x);
+      Blt_Chain_Append(tickLabels_, labelPtr);
+      nLabels++;
+
+      // Get the dimensions of each tick label.  Remember tick labels
+      // can be multi-lined and/or rotated.
+      int lw, lh;
+      graphPtr_->getTextExtents(ops->tickFont, labelPtr->string, -1, &lw, &lh);
+      labelPtr->width  = lw;
+      labelPtr->height = lh;
+
+      if (ops->tickAngle != 0.0f) {
+	// Rotated label width and height
+	double rlw, rlh;
+	graphPtr_->getBoundingBox(lw, lh, ops->tickAngle, &rlw, &rlh, NULL);
+	lw = rlw;
+	lh = rlh;
+      }
+      if (maxTickWidth_ < int(lw))
+	maxTickWidth_ = lw;
+
+      if (maxTickHeight_ < int(lh))
+	maxTickHeight_ = lh;
+    }
+	
+    unsigned int pad =0;
+    if (ops->exterior) {
+      // Because the axis cap style is "CapProjecting", we need to
+      // account for an extra 1.5 linewidth at the end of each line
+      pad = ((ops->lineWidth * 12) / 8);
+    }
+    if (isHorizontal())
+      y += maxTickHeight_ + pad;
+    else {
+      y += maxTickWidth_ + pad;
+      if (maxTickWidth_ > 0)
+	// Pad either size of label.
+	y += 5;
+    }
+    y += 2 * AXIS_PAD_TITLE;
+    if ((ops->lineWidth > 0) && ops->exterior)
+      // Distance from axis line to tick label.
+      y += ops->tickLength;
+
+  } // showTicks
+
+  if (ops->title) {
+    if (ops->titleAlternate) {
+      if (y < titleHeight_)
+	y = titleHeight_;
+    } 
+    else
+      y += titleHeight_ + AXIS_PAD_TITLE;
+  }
+
+  // Correct for orientation of the axis
+  if (isHorizontal())
+    height_ = y;
+  else
+    width_ = y;
+}
+

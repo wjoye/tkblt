@@ -426,7 +426,7 @@ int Graph::getMarginGeometry(Margin *marginPtr)
       if (!ops->hide && axisPtr->use_) {
 	nVisible++;
 	if (flags & GET_AXIS_GEOMETRY)
-	  getAxisGeometry(axisPtr);
+	  axisPtr->getGeometry();
 
 	if (isHoriz) {
 	  if (h < axisPtr->height_)
@@ -452,7 +452,7 @@ int Graph::getMarginGeometry(Margin *marginPtr)
       if (!ops->hide && axisPtr->use_) {
 	nVisible++;
 	if (flags & GET_AXIS_GEOMETRY)
-	  getAxisGeometry(axisPtr);
+	  axisPtr->getGeometry();
 
 	if ((ops->titleAlternate) && (l < axisPtr->titleWidth_))
 	  l = axisPtr->titleWidth_;
@@ -483,105 +483,6 @@ int Graph::getMarginGeometry(Margin *marginPtr)
   marginPtr->height = h;
   marginPtr->axesOffset = (isHoriz) ? h : w;
   return marginPtr->axesOffset;
-}
-
-void Graph::getAxisGeometry(Axis *axisPtr)
-{
-  GraphOptions* ops = (GraphOptions*)ops_;
-  AxisOptions* aops = (AxisOptions*)axisPtr->ops();
-  axisPtr->freeTickLabels();
-
-  // Leave room for axis baseline and padding
-  unsigned int y =0;
-  if (aops->exterior && (ops->plotRelief != TK_RELIEF_SOLID))
-    y += aops->lineWidth + 2;
-
-  axisPtr->maxTickHeight_ = axisPtr->maxTickWidth_ = 0;
-
-  if (axisPtr->t1Ptr_)
-    free(axisPtr->t1Ptr_);
-  axisPtr->t1Ptr_ = axisPtr->generateTicks(&axisPtr->majorSweep_);
-  if (axisPtr->t2Ptr_)
-    free(axisPtr->t2Ptr_);
-  axisPtr->t2Ptr_ = axisPtr->generateTicks(&axisPtr->minorSweep_);
-
-  if (aops->showTicks) {
-    Ticks* t1Ptr = aops->t1UPtr ? aops->t1UPtr : axisPtr->t1Ptr_;
-	
-    int nTicks =0;
-    if (t1Ptr)
-      nTicks = t1Ptr->nTicks;
-	
-    unsigned int nLabels =0;
-    for (int ii=0; ii<nTicks; ii++) {
-      double x = t1Ptr->values[ii];
-      double x2 = t1Ptr->values[ii];
-      if (aops->labelOffset)
-	x2 += axisPtr->majorSweep_.step * 0.5;
-
-      if (!axisPtr->inRange(x2, &axisPtr->axisRange_))
-	continue;
-
-      TickLabel* labelPtr = axisPtr->makeLabel(x);
-      Blt_Chain_Append(axisPtr->tickLabels_, labelPtr);
-      nLabels++;
-
-      // Get the dimensions of each tick label.  Remember tick labels
-      // can be multi-lined and/or rotated.
-      int lw, lh;
-      getTextExtents(aops->tickFont, labelPtr->string, -1, &lw, &lh);
-      labelPtr->width  = lw;
-      labelPtr->height = lh;
-
-      if (aops->tickAngle != 0.0f) {
-	// Rotated label width and height
-	double rlw, rlh;
-	getBoundingBox(lw, lh, aops->tickAngle, &rlw, &rlh, NULL);
-	lw = rlw;
-	lh = rlh;
-      }
-      if (axisPtr->maxTickWidth_ < int(lw))
-	axisPtr->maxTickWidth_ = lw;
-
-      if (axisPtr->maxTickHeight_ < int(lh))
-	axisPtr->maxTickHeight_ = lh;
-    }
-	
-    unsigned int pad =0;
-    if (aops->exterior) {
-      // Because the axis cap style is "CapProjecting", we need to
-      // account for an extra 1.5 linewidth at the end of each line
-      pad = ((aops->lineWidth * 12) / 8);
-    }
-    if (axisPtr->isHorizontal())
-      y += axisPtr->maxTickHeight_ + pad;
-    else {
-      y += axisPtr->maxTickWidth_ + pad;
-      if (axisPtr->maxTickWidth_ > 0)
-	// Pad either size of label.
-	y += 5;
-    }
-    y += 2 * AXIS_PAD_TITLE;
-    if ((aops->lineWidth > 0) && aops->exterior)
-      // Distance from axis line to tick label.
-      y += aops->tickLength;
-
-  } // showTicks
-
-  if (aops->title) {
-    if (aops->titleAlternate) {
-      if (y < axisPtr->titleHeight_)
-	y = axisPtr->titleHeight_;
-    } 
-    else
-      y += axisPtr->titleHeight_ + AXIS_PAD_TITLE;
-  }
-
-  // Correct for orientation of the axis
-  if (axisPtr->isHorizontal())
-    axisPtr->height_ = y;
-  else
-    axisPtr->width_ = y;
 }
 
 void Graph::getTextExtents(Tk_Font font, const char *text, int textLen,
