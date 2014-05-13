@@ -594,7 +594,7 @@ typedef struct {
 #define BUTTON			0x2
 #define MOTION			0x4
 #define CROSSING		0x8
-#define FOCUS			0x10
+//#define FOCUS			0x10
 #define EXPOSE			0x20
 #define VISIBILITY		0x40
 #define CREATE			0x80
