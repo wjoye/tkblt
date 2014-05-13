@@ -68,7 +68,7 @@ static int LegendObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
+    //    graphPtr->flags |= mask;
     graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
     legendPtr->configure();
     graphPtr->eventuallyRedraw();

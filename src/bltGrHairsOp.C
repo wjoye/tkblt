@@ -58,7 +58,7 @@ static int CrosshairsObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
+    //    graphPtr->flags |= mask;
     chPtr->configure();
 
     break; 

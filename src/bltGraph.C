@@ -355,8 +355,6 @@ void Graph::draw()
 
   flags &= ~MAP_WORLD;
   flags &= ~REDRAW_WORLD;
-
-  updateMarginTraces();
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -611,29 +609,6 @@ void Graph::printMargins(Blt_Ps ps)
     Blt_Ps_Append(ps, "% Graph title\n");
     TextStyle ts(this, &ops->titleTextStyle);
     ts.printText(ps, ops->title, (double)titleX_, (double)titleY_);
-  }
-}
-
-void Graph::updateMarginTraces()
-{
-  GraphOptions* ops = (GraphOptions*)ops_;
-
-  Margin* marginPtr;
-  Margin* endPtr;
-  for (marginPtr = ops->margins, endPtr = marginPtr + 4; 
-       marginPtr < endPtr; marginPtr++) {
-    if (marginPtr->varName) {
-      int size;
-      if ((marginPtr->site == MARGIN_LEFT) || (marginPtr->site == MARGIN_RIGHT))
-	size = marginPtr->width;
-      else
-	size = marginPtr->height;
-
-      ostringstream str;
-      str << size << ends;
-      Tcl_SetVar(interp_, marginPtr->varName, str.str().c_str(),
-		 TCL_GLOBAL_ONLY);
-    }
   }
 }
 

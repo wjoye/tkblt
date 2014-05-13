@@ -82,7 +82,6 @@ typedef struct {
   short int maxTickHeight;
   unsigned int nAxes;
   Blt_Chain axes;
-  const char *varName;
   int reqSize;
   int site;
 } Margin;
@@ -179,7 +178,6 @@ class Graph {
   
   void drawMargins(Drawable);
   void printMargins(Blt_Ps);
-  void updateMarginTraces();
   int getMarginGeometry(Margin*);
 
   void destroyPens();
