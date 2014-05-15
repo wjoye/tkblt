@@ -57,7 +57,7 @@ int PenObjConfigure(Graph* graphPtr, Pen* penPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    //    graphPtr->flags |= mask;
+    graphPtr->flags |= mask;
     graphPtr->flags |= CACHE_DIRTY;
     if (penPtr->configure() != TCL_OK)
       return TCL_ERROR;

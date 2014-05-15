@@ -53,6 +53,7 @@ Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   active_ =0;
   labelActive_ =0;
 
+  flags =0;
   link =NULL;
 }
 

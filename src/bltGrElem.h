@@ -135,6 +135,7 @@ class Element {
   int active_;		
   int labelActive_;
 
+  unsigned int flags;
   Blt_ChainLink link;
 
  protected:

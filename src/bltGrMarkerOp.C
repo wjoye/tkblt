@@ -73,7 +73,7 @@ static int MarkerObjConfigure( Graph* graphPtr,Marker* markerPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    //    markerPtr->flags |= mask;
+    markerPtr->flags |= mask;
     markerPtr->flags |= MAP_ITEM;
     graphPtr->flags |= CACHE_DIRTY;
     if (markerPtr->configure() != TCL_OK)

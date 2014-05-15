@@ -191,11 +191,13 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   className_ = dupstr("none");
 
   hashPtr_ = hPtr;
-  link =NULL;
-  chain =NULL;
   refCount_ =0;
   use_ =0;
   active_ =0;		
+
+  flags =0;
+  link =NULL;
+  chain =NULL;
 
   detail_ =NULL;
   titlePos_.x =0;

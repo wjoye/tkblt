@@ -161,11 +161,13 @@ class Axis {
   const char* className_;
 
   Tcl_HashEntry* hashPtr_;
-  Blt_ChainLink link;
-  Blt_Chain chain;
   int refCount_;
   int use_;
   int active_;		
+
+  unsigned int flags;
+  Blt_ChainLink link;
+  Blt_Chain chain;
 
   const char *detail_;
   Point2d titlePos_;

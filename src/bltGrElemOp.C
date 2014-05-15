@@ -67,6 +67,8 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
+    elemPtr->flags |= mask;
+    elemPtr->flags |= MAP_ITEM;
     graphPtr->flags |= RESET_WORLD | CACHE_DIRTY;
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;

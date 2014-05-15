@@ -86,7 +86,7 @@ int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    //    graphPtr->flags |= mask;
+    graphPtr->flags |= mask;
     graphPtr->configure();
     graphPtr->eventuallyRedraw();
 
