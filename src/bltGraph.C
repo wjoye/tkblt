@@ -218,19 +218,18 @@ void Graph::configure()
 
 void Graph::map()
 {
-  cerr << "Graph::map()" << endl;
-  if (flags & RESET_AXES)
+  if (flags & RESET_AXES) {
     resetAxes();
+    flags &= ~(RESET_AXES);
+  }
 
   if (flags & LAYOUT_NEEDED) {
     layoutGraph();
     flags &= ~LAYOUT_NEEDED;
   }
 
-  if ((vRange_ > 1) && (hRange_ > 1)) {
-    if (flags & MAP_WORLD)
-      mapAxes();
-
+  if ((flags & MAP_ALL) && (vRange_ > 1) && (hRange_ > 1)) {
+    mapAxes();
     mapElements();
     mapMarkers();
     flags &= ~(MAP_ALL);
@@ -239,7 +238,6 @@ void Graph::map()
 
 void Graph::draw()
 {
-  cerr << "Graph::draw()" << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   flags &= ~REDRAW_PENDING;
