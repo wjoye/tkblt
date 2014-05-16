@@ -278,7 +278,7 @@ void Graph::draw()
     case Legend::BOTTOM:
     case Legend::RIGHT:
     case Legend::LEFT:
-      legend_->draw(drawable);
+      legend_->draw(cache_);
       break;
     default:
       break;
