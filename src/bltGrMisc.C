@@ -189,7 +189,6 @@ int Blt_LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
  *	  p.868-877, 1983
  *---------------------------------------------------------------------------
  */
-#define EPSILON  FLT_EPSILON
 #define AddVertex(vx, vy)	    r->x=(vx), r->y=(vy), r++, count++ 
 #define LastVertex(vx, vy)	    r->x=(vx), r->y=(vy), count++ 
 
@@ -214,12 +213,11 @@ int Blt_PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
     dx = q->x - p->x;	/* X-direction */
     dy = q->y - p->y;	/* Y-direction */
 
-    if (fabs(dx) < EPSILON) { 
-      dx = (p->x > regionPtr->left) ? -EPSILON : EPSILON ;
-    }
-    if (fabs(dy) < EPSILON) { 
-      dy = (p->y > regionPtr->top) ? -EPSILON : EPSILON ;
-    }
+    if (fabs(dx) < FLT_EPSILON)
+      dx = (p->x > regionPtr->left) ? -FLT_EPSILON : FLT_EPSILON ;
+
+    if (fabs(dy) < FLT_EPSILON)
+      dy = (p->y > regionPtr->top) ? -FLT_EPSILON : FLT_EPSILON ;
 
     if (dx > 0.0) {		/* Left */
       xin = regionPtr->left;
@@ -308,26 +306,23 @@ int Blt_PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
  */
 Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
 {
-  double dx, dy;
-  Point2d t;
-
-  dx = p->x - q->x;
-  dy = p->y - q->y;
+  double dx = p->x - q->x;
+  double dy = p->y - q->y;
 
   /* Test for horizontal and vertical lines */
+  Point2d t;
   if (fabs(dx) < DBL_EPSILON) {
-    t.x = p->x, t.y = (double)y;
-  } else if (fabs(dy) < DBL_EPSILON) {
-    t.x = (double)x, t.y = p->y;
-  } else {
-    double m1, m2;		/* Slope of both lines */
-    double b1, b2;		/* y-intercepts */
-    double midX, midY;	/* Midpoint of line segment. */
-    double ax, ay, bx, by;
-
+    t.x = p->x;
+    t.y = (double)y;
+  }
+  else if (fabs(dy) < DBL_EPSILON) {
+    t.x = (double)x;
+    t.y = p->y;
+  }
+  else {
     /* Compute the slope and intercept of PQ. */
-    m1 = (dy / dx);
-    b1 = p->y - (p->x * m1);
+    double m1 = (dy / dx);
+    double b1 = p->y - (p->x * m1);
 
     /* 
      * Compute the slope and intercept of a second line segment: one that
@@ -336,17 +331,17 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
      */
 
     /* Find midpoint of PQ. */
-    midX = (p->x + q->x) * 0.5;
-    midY = (p->y + q->y) * 0.5;
+    double midX = (p->x + q->x) * 0.5;
+    double midY = (p->y + q->y) * 0.5;
 
     /* Rotate the line 90 degrees */
-    ax = midX - (0.5 * dy);
-    ay = midY - (0.5 * -dx);
-    bx = midX + (0.5 * dy);
-    by = midY + (0.5 * -dx);
+    double ax = midX - (0.5 * dy);
+    double ay = midY - (0.5 * -dx);
+    double bx = midX + (0.5 * dy);
+    double by = midY + (0.5 * -dx);
 
-    m2 = (ay - by) / (ax - bx);
-    b2 = y - (x * m2);
+    double m2 = (ay - by) / (ax - bx);
+    double b2 = y - (x * m2);
 
     /*
      * Given the equations of two lines which contain the same point,
@@ -364,42 +359,22 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
     t.x = (b2 - b1) / (m1 - m2);
     t.y = m1 * t.x + b1;
   }
+
   return t;
 }
 
-/*
- *---------------------------------------------------------------------------
- * 	Invoke a TCL command to the scrollbar, defining the new position and
- * 	length of the scroll. See the Tk documentation for further information
- * 	on the scrollbar.  It is assumed the scrollbar command prefix is
- * 	valid.
- *---------------------------------------------------------------------------
- */
-/*
- *---------------------------------------------------------------------------
- *      Like Tk_GetGC, but doesn't share the GC with any other widget.  This
- *      is needed because the certain GC parameters (like dashes) can not be
- *      set via XCreateGC, therefore there is no way for Tk's hashing
- *      mechanism to recognize that two such GCs differ.
- *---------------------------------------------------------------------------
- */
 GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
 {
-  GC gc;
-  Pixmap pixmap;
-  Drawable drawable;
-  Display *display;
-
-  pixmap = None;
-  drawable = Tk_WindowId(tkwin);
-  display = Tk_Display(tkwin);
+  Pixmap pixmap = None;
+  Drawable drawable = Tk_WindowId(tkwin);
+  Display* display = Tk_Display(tkwin);
   if (drawable == None)
     drawable = RootWindow(Tk_Display(tkwin),Tk_ScreenNumber(tkwin));
 
-  gc = XCreateGC(display, drawable, gcMask, valuePtr);
-  if (pixmap != None) {
+  GC gc = XCreateGC(display, drawable, gcMask, valuePtr);
+  if (pixmap != None)
     Tk_FreePixmap(display, pixmap);
-  }
+
   return gc;
 }
 
@@ -411,8 +386,8 @@ void Blt_FreePrivateGC(Display *display, GC gc)
 
 void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 {
-  XSetDashes(display, gc, dashesPtr->offset, (const char *)dashesPtr->values,
-	     (int)strlen((char *)dashesPtr->values));
+  XSetDashes(display, gc, dashesPtr->offset, (const char*)dashesPtr->values,
+	     (int)strlen((char*)dashesPtr->values));
 }
 
 void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc,
