@@ -72,19 +72,17 @@ using namespace std;
  *
  */
 
-#define REDRAW_PENDING		(1<<2) /* 0x0004 */
-#define	MAP_ITEM		(1<<4) /* 0x0010 */
-#define FOCUS			(1<<7) /* 0x0080 */
+#define	GRAPH_DELETED		(1<<1)
+#define REDRAW_PENDING		(1<<2)
+#define FOCUS			(1<<3)
 
-#define	MAP_ALL			(1<<8) /* 0x0100 */
-#define LAYOUT_NEEDED		(1<<9) /* 0x0200 */
-#define RESET_AXES		(1<<10)/* 0x0400 */
-#define	GET_AXIS_GEOMETRY	(1<<11)/* 0x0800 */
+#define	MAP_ITEM		(1<<4)
+#define	MAP_ALL			(1<<5)
+#define LAYOUT_NEEDED		(1<<6)
+#define RESET_AXES		(1<<7)
+#define	GET_AXIS_GEOMETRY	(1<<8)
 
-#define	CACHE_DIRTY		(1<<14)/* 0x4000 */
-
-#define	GRAPH_DELETED		(1<<15)/* 0x4000 */
-
+#define	CACHE_DIRTY		(1<<9)
 #define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
 
 #define MARGIN_NONE	-1
