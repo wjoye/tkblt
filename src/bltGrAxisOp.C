@@ -686,6 +686,7 @@ int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp,
     ops->reqMin = EXP10(ops->reqMin);
     ops->reqMax = EXP10(ops->reqMax);
   }
+
   graphPtr->flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | RESET_AXES);
   graphPtr->eventuallyRedraw();
 

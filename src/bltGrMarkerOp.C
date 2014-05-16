@@ -75,9 +75,11 @@ static int MarkerObjConfigure( Graph* graphPtr,Marker* markerPtr,
 
     markerPtr->flags |= mask;
     markerPtr->flags |= MAP_ITEM;
-    graphPtr->flags |= CACHE_DIRTY;
     if (markerPtr->configure() != TCL_OK)
       return TCL_ERROR;
+    MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
+    if (ops->drawUnder)
+      graphPtr->flags |= CACHE_DIRTY;
     graphPtr->eventuallyRedraw();
 
     break; 

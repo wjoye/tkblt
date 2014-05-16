@@ -218,18 +218,19 @@ void Graph::configure()
 
 void Graph::map()
 {
-  if (flags & RESET_AXES) {
+  if (flags & RESET_AXES)
     resetAxes();
-    flags &= ~(RESET_AXES);
-  }
 
   if (flags & LAYOUT_NEEDED) {
+    cerr << "LAYOUT_NEEDED" << endl;
     layoutGraph();
     flags &= ~LAYOUT_NEEDED;
   }
 
-  if ((flags & MAP_ALL) && (vRange_ > 1) && (hRange_ > 1)) {
-    mapAxes();
+  if ((vRange_ > 1) && (hRange_ > 1)) {
+    if (flags & MAP_ALL)
+      mapAxes();
+
     mapElements();
     mapMarkers();
     flags &= ~(MAP_ALL);
@@ -269,6 +270,7 @@ void Graph::draw()
 
   // Update cache if needed
   if (flags & CACHE_DIRTY) {
+    cerr << "CACHE_DIRTY" << endl;
     drawMargins(cache_);
 
     switch (legend_->position()) {
@@ -276,7 +278,7 @@ void Graph::draw()
     case Legend::BOTTOM:
     case Legend::RIGHT:
     case Legend::LEFT:
-      legend_->draw(cache_);
+      legend_->draw(drawable);
       break;
     default:
       break;
@@ -293,9 +295,23 @@ void Graph::draw()
     drawAxesGrids(cache_);
     drawAxes(cache_);
     drawAxesLimits(cache_);
-    drawMarkers(cache_, MARKER_UNDER);
 
     if (!legend_->isRaised()) {
+      switch (legend_->position()) {
+      case Legend::PLOT:
+      case Legend::XY:
+	legend_->draw(cache_);
+	break;
+      default:
+	break;
+      }
+    }
+
+    drawMarkers(cache_, MARKER_UNDER);
+    drawElements(cache_);
+    drawActiveElements(cache_);
+
+    if (legend_->isRaised()) {
       switch (legend_->position()) {
       case Legend::PLOT:
       case Legend::XY:
@@ -311,21 +327,7 @@ void Graph::draw()
 
   XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
 	    Tk_Height(tkwin_), 0, 0);
-
-  drawElements(drawable);
-  drawActiveElements(drawable);
-
-  if (legend_->isRaised()) {
-    switch (legend_->position()) {
-    case Legend::PLOT:
-    case Legend::XY:
-      legend_->draw(drawable);
-      break;
-    default:
-      break;
-    }
-  }
-
+  
   drawMarkers(drawable, MARKER_ABOVE);
 
   // Draw 3D border just inside of the focus highlight ring
@@ -692,10 +694,13 @@ void Graph::configureElements()
 
 void Graph::mapElements()
 {
+  cerr << "mapElements()" << endl;
   for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    elemPtr->map();
+
+    if ((flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM))
+      elemPtr->map();
   }
 }
 
@@ -788,6 +793,7 @@ void Graph::configureMarkers()
 
 void Graph::mapMarkers()
 {
+  cerr << "mapMarkers()" << endl;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
@@ -986,6 +992,7 @@ void Graph::configureAxes()
 
 void Graph::mapAxes()
 {
+  cerr << "mapAxes()" << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
@@ -1166,6 +1173,7 @@ Point2d Graph::invMap2D(double x, double y, Axis* xAxis, Axis* yAxis)
 
 void Graph::resetAxes()
 {
+  cerr << "resetAxes()" << endl;
   // Step 1:  Reset all axes. Initialize the data limits of the axis to
   // impossible values.
   Tcl_HashSearch cursor;
@@ -1211,13 +1219,11 @@ void Graph::resetAxes()
       axisPtr->logScale(min, max);
     else
       axisPtr->linearScale(min, max);
-
-    flags |= CACHE_DIRTY;
   }
 
-  flags &= ~RESET_AXES;
-
   // When any axis changes, we need to layout the entire graph.
+  flags &= ~RESET_AXES;
+  flags |= CACHE_DIRTY;
   flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
 }
 

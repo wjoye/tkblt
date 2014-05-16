@@ -132,19 +132,15 @@ using namespace Blt;
 void Graph::layoutGraph()
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  int titleY;
-  int plotWidth, plotHeight;
-  int inset, inset2;
 
   int width = width_;
   int height = height_;
 
-  /* 
-   * Step 1:  Compute the amount of space needed to display the axes
-   *		associated with each margin.  They can be overridden by 
-   *		-leftmargin, -rightmargin, -bottommargin, and -topmargin
-   *		graph options, respectively.
-   */
+  // Step 1
+  // Compute the amount of space needed to display the axes
+  // associated with each margin.  They can be overridden by 
+  // -leftmargin, -rightmargin, -bottommargin, and -topmargin 
+  // graph options, respectively.
   int left   = getMarginGeometry(&ops->leftMargin);
   int right  = getMarginGeometry(&ops->rightMargin);
   int top    = getMarginGeometry(&ops->topMargin);
@@ -184,36 +180,33 @@ void Graph::layoutGraph()
   if (ops->bottomMargin.reqSize > 0)
     bottom = ops->bottomMargin.reqSize;
 
-  /* 
-   * Step 2:  Add the graph title height to the top margin. 
-   */
+  // Step 2
+  // Add the graph title height to the top margin. 
   if (ops->title)
     top += titleHeight_ + 6;
 
-  inset = (inset_ + ops->plotBW);
-  inset2 = 2 * inset;
+  int inset = (inset_ + ops->plotBW);
+  int inset2 = 2 * inset;
 
-  /* 
-   * Step 3: Estimate the size of the plot area from the remaining
-   *	       space.  This may be overridden by the -plotwidth and
-   *	       -plotheight graph options.  We use this to compute the
-   *	       size of the legend. 
-   */
+  // Step 3
+  // Estimate the size of the plot area from the remaining
+  // space.  This may be overridden by the -plotwidth and
+  // -plotheight graph options.  We use this to compute the
+  // size of the legend. 
   if (width == 0)
     width = 400;
 
   if (height == 0)
     height = 400;
 
-  plotWidth  = (ops->reqPlotWidth > 0) ? ops->reqPlotWidth :
-    width - (inset2 + left + right); /* Plot width. */
-  plotHeight = (ops->reqPlotHeight > 0) ? ops->reqPlotHeight : 
-    height - (inset2 + top + bottom); /* Plot height. */
+  int plotWidth  = (ops->reqPlotWidth > 0) ? ops->reqPlotWidth :
+    width - (inset2 + left + right);
+  int plotHeight = (ops->reqPlotHeight > 0) ? ops->reqPlotHeight : 
+    height - (inset2 + top + bottom);
   legend_->map(plotWidth, plotHeight);
 
-  /* 
-   * Step 2:  Add the legend to the appropiate margin. 
-   */
+  // Step 4
+  // Add the legend to the appropiate margin. 
   if (!legend_->isHidden()) {
     switch (legend_->position()) {
     case Legend::RIGHT:
@@ -230,14 +223,11 @@ void Graph::layoutGraph()
       break;
     case Legend::XY:
     case Legend::PLOT:
-      /* Do nothing. */
       break;
     }
   }
 
-  /* 
-   * Recompute the plotarea or graph size, now accounting for the legend. 
-   */
+  // Recompute the plotarea or graph size, now accounting for the legend. 
   if (ops->reqPlotWidth == 0) {
     plotWidth = width  - (inset2 + left + right);
     if (plotWidth < 1)
@@ -249,18 +239,14 @@ void Graph::layoutGraph()
       plotHeight = 1;
   }
 
-  /*
-   * Step 5: If necessary, correct for the requested plot area aspect
-   *	       ratio.
-   */
+  // Step 5
+  // If necessary, correct for the requested plot area aspect ratio.
   if ((ops->reqPlotWidth == 0) && (ops->reqPlotHeight == 0) && 
       (ops->aspect > 0.0f)) {
     float ratio;
 
-    /* 
-     * Shrink one dimension of the plotarea to fit the requested
-     * width/height aspect ratio.
-     */
+    // Shrink one dimension of the plotarea to fit the requested
+    // width/height aspect ratio.
     ratio = (float)plotWidth / (float)plotHeight;
     if (ratio > ops->aspect) {
       // Shrink the width
@@ -284,12 +270,10 @@ void Graph::layoutGraph()
     }
   }
 
-  /* 
-   * Step 6: If there's multiple axes in a margin, the axis titles will be
-   *	       displayed in the adjoining margins.  Make sure there's room 
-   *	       for the longest axis titles.
-   */
-
+  // Step 6
+  // If there's multiple axes in a margin, the axis titles will be
+  // displayed in the adjoining margins.  Make sure there's room 
+  // for the longest axis titles.
   if (top < ops->leftMargin.axesTitleLength)
     top = ops->leftMargin.axesTitleLength;
 
@@ -302,9 +286,8 @@ void Graph::layoutGraph()
   if (right < ops->topMargin.axesTitleLength)
     right = ops->topMargin.axesTitleLength;
 
-  /* 
-   * Step 7: Override calculated values with requested margin sizes.
-   */
+  // Step 7
+  // Override calculated values with requested margin sizes.
   if (ops->leftMargin.reqSize > 0)
     left = ops->leftMargin.reqSize;
 
@@ -318,59 +301,53 @@ void Graph::layoutGraph()
     bottom = ops->bottomMargin.reqSize;
 
   if (ops->reqPlotWidth > 0) {	
-    /* 
-     * Width of plotarea is constained.  If there's extra space, add it to
-     * th left and/or right margins.  If there's too little, grow the
-     * graph width to accomodate it.
-     */
+    // Width of plotarea is constained.  If there's extra space, add it to
+    // the left and/or right margins.  If there's too little, grow the
+    // graph width to accomodate it.
     int w = plotWidth + inset2 + left + right;
-    if (width > w) {		/* Extra space in window. */
+
+    // Extra space in window
+    if (width > w) {
       int extra = (width - w) / 2;
       if (ops->leftMargin.reqSize == 0) { 
 	left += extra;
-	if (ops->rightMargin.reqSize == 0) { 
+	if (ops->rightMargin.reqSize == 0)
 	  right += extra;
-	}
-	else {
+	else
 	  left += extra;
-	}
       }
-      else if (ops->rightMargin.reqSize == 0) {
+      else if (ops->rightMargin.reqSize == 0)
 	right += extra + extra;
-      }
     }
-    else if (width < w) {
+    else if (width < w)
       width = w;
-    }
   } 
-  if (ops->reqPlotHeight > 0) {	/* Constrain the plotarea height. */
-    /* 
-     * Height of plotarea is constained.  If there's extra space, 
-     * add it to th top and/or bottom margins.  If there's too little,
-     * grow the graph height to accomodate it.
-     */
-    int h = plotHeight + inset2 + top + bottom;
-    if (height > h) {		/* Extra space in window. */
-      int extra;
 
-      extra = (height - h) / 2;
+  // Constrain the plotarea height
+  if (ops->reqPlotHeight > 0) {
+
+    // Height of plotarea is constained.  If there's extra space, 
+    // add it to th top and/or bottom margins.  If there's too little,
+    // grow the graph height to accomodate it.
+    int h = plotHeight + inset2 + top + bottom;
+
+    // Extra space in window
+    if (height > h) {
+      int extra = (height - h) / 2;
       if (ops->topMargin.reqSize == 0) { 
 	top += extra;
-	if (ops->bottomMargin.reqSize == 0) { 
+	if (ops->bottomMargin.reqSize == 0)
 	  bottom += extra;
-	}
-	else {
+	else
 	  top += extra;
-	}
       }
-      else if (ops->bottomMargin.reqSize == 0) {
+      else if (ops->bottomMargin.reqSize == 0)
 	bottom += extra + extra;
-      }
     }
-    else if (height < h) {
+    else if (height < h)
       height = h;
-    }
   }	
+
   width_  = width;
   height_ = height;
   left_   = left + inset;
@@ -399,7 +376,6 @@ void Graph::layoutGraph()
 
   // Calculate the placement of the graph title so it is centered within the
   // space provided for it in the top margin
-  titleY = titleHeight_;
   titleY_ = 3 + inset_;
   titleX_ = (right_ + left_) / 2;
 }
@@ -564,47 +540,39 @@ void Graph::getBoundingBox(int width, int height, float angle,
 			   double *rotWidthPtr, double *rotHeightPtr,
 			   Point2d *bbox)
 {
-  int i;
-  double sinTheta, cosTheta;
-  double radians;
-  double xMax, yMax;
-  double x, y;
-  Point2d corner[4];
-
   angle = fmod(angle, 360.0);
   if (fmod(angle, (double)90.0) == 0.0) {
     int ll, ur, ul, lr;
     double rotWidth, rotHeight;
 
-    /* Handle right-angle rotations specially. */
-
+    // Handle right-angle rotations specially
     int quadrant = (int)(angle / 90.0);
     switch (quadrant) {
-    case ROTATE_270:	/* 270 degrees */
+    case ROTATE_270:
       ul = 3, ur = 0, lr = 1, ll = 2;
       rotWidth = (double)height;
       rotHeight = (double)width;
       break;
-    case ROTATE_90:		/* 90 degrees */
+    case ROTATE_90:
       ul = 1, ur = 2, lr = 3, ll = 0;
       rotWidth = (double)height;
       rotHeight = (double)width;
       break;
-    case ROTATE_180:	/* 180 degrees */
+    case ROTATE_180:
       ul = 2, ur = 3, lr = 0, ll = 1;
       rotWidth = (double)width;
       rotHeight = (double)height;
       break;
     default:
-    case ROTATE_0:		/* 0 degrees */
+    case ROTATE_0:
       ul = 0, ur = 1, lr = 2, ll = 3;
       rotWidth = (double)width;
       rotHeight = (double)height;
       break;
     }
     if (bbox) {
-      x = rotWidth * 0.5;
-      y = rotHeight * 0.5;
+      double x = rotWidth * 0.5;
+      double y = rotHeight * 0.5;
       bbox[ll].x = bbox[ul].x = -x;
       bbox[ur].y = bbox[ul].y = -y;
       bbox[lr].x = bbox[ur].x = x;
@@ -614,21 +582,24 @@ void Graph::getBoundingBox(int width, int height, float angle,
     *rotHeightPtr = rotHeight;
     return;
   }
-  /* Set the four corners of the rectangle whose center is the origin. */
+
+  // Set the four corners of the rectangle whose center is the origin
+  Point2d corner[4];
   corner[1].x = corner[2].x = (double)width * 0.5;
   corner[0].x = corner[3].x = -corner[1].x;
   corner[2].y = corner[3].y = (double)height * 0.5;
   corner[0].y = corner[1].y = -corner[2].y;
 
-  radians = (-angle / 180.0) * M_PI;
-  sinTheta = sin(radians), cosTheta = cos(radians);
-  xMax = yMax = 0.0;
+  double radians = (-angle / 180.0) * M_PI;
+  double sinTheta = sin(radians);
+  double cosTheta = cos(radians);
+  double xMax =0;
+  double yMax =0;
 
-  /* Rotate the four corners and find the maximum X and Y coordinates */
-
-  for (i = 0; i < 4; i++) {
-    x = (corner[i].x * cosTheta) - (corner[i].y * sinTheta);
-    y = (corner[i].x * sinTheta) + (corner[i].y * cosTheta);
+  // Rotate the four corners and find the maximum X and Y coordinates
+  for (int ii=0; ii<4; ii++) {
+    double x = (corner[ii].x * cosTheta) - (corner[ii].y * sinTheta);
+    double y = (corner[ii].x * sinTheta) + (corner[ii].y * cosTheta);
     if (x > xMax)
       xMax = x;
 
@@ -636,15 +607,13 @@ void Graph::getBoundingBox(int width, int height, float angle,
       yMax = y;
 
     if (bbox) {
-      bbox[i].x = x;
-      bbox[i].y = y;
+      bbox[ii].x = x;
+      bbox[ii].y = y;
     }
   }
 
-  /*
-   * By symmetry, the width and height of the bounding box are twice the
-   * maximum x and y coordinates.
-   */
+  // By symmetry, the width and height of the bounding box are twice the
+  // maximum x and y coordinates.
   *rotWidthPtr = xMax + xMax;
   *rotHeightPtr = yMax + yMax;
 }
