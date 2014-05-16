@@ -543,7 +543,6 @@ void Legend::draw(Drawable drawable)
   }
 
   Tk_FreePixmap(graphPtr_->display_, pixmap);
-  graphPtr_->flags &= ~DRAW_LEGEND;
 }
 
 void Legend::print(Blt_Ps ps)

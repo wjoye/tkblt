@@ -422,7 +422,6 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 
   if (eventPtr->type == Expose) {
     if (eventPtr->xexpose.count == 0) {
-      graphPtr->flags |= REDRAW_WORLD;
       graphPtr->eventuallyRedraw();
     }
 
@@ -433,7 +432,6 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 	graphPtr->flags |= FOCUS;
       else
 	graphPtr->flags &= ~FOCUS;
-      graphPtr->flags |= REDRAW_WORLD;
       graphPtr->eventuallyRedraw();
     }
 
@@ -448,7 +446,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   }
   else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= (MAP_WORLD | REDRAW_WORLD);
+    graphPtr->flags |= (MAP_WORLD);
     graphPtr->eventuallyRedraw();
   }
 }

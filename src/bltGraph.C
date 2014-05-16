@@ -377,7 +377,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     height_ = Tk_ReqHeight(tkwin_);
 
   Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
-  flags |= LAYOUT_NEEDED | RESET_WORLD;
+  flags |= LAYOUT_NEEDED | MAP_WORLD;
 
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);

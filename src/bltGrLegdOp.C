@@ -69,7 +69,7 @@ static int LegendObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
     }
 
     graphPtr->flags |= mask;
-    graphPtr->flags |= (RESET_WORLD | CACHE_DIRTY);
+    graphPtr->flags |= (MAP_WORLD | CACHE_DIRTY);
     legendPtr->configure();
     graphPtr->eventuallyRedraw();
 

@@ -99,7 +99,6 @@ using namespace std;
 #define	GRAPH_DELETED		(1<<15)/* 0x4000 */
 
 #define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
-#define RESET_WORLD		(MAP_WORLD)
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */
