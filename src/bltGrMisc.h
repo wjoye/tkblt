@@ -80,8 +80,6 @@ using namespace std;
 #define RESET_AXES		(1<<7)
 #define	CACHE_DIRTY		(1<<8)
 
-#define	MAP_WORLD		(MAP_ALL|RESET_AXES)
-
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */
 #define MARGIN_LEFT	1 		/* y */
