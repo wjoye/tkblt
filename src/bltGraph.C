@@ -1220,8 +1220,7 @@ void Graph::resetAxes()
 
   // When any axis changes, we need to layout the entire graph.
   flags &= ~RESET_AXES;
-  flags |= CACHE_DIRTY;
-  flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL);
+  flags |= LAYOUT_NEEDED | MAP_ALL | CACHE_DIRTY;
 }
 
 Axis* Graph::nearestAxis(int x, int y)

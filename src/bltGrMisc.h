@@ -50,9 +50,6 @@ using namespace std;
  *				of only those markers and elements that
  *				have changed will be reset. 
  *
- *	GET_AXIS_GEOMETRY	Indicates that the size of the axes needs 
- *				to be recalculated. 
- *
  *	RESET_AXES		Flag to call to Blt_ResetAxes routine.  
  *				This routine recalculates the scale offset
  *				(used for mapping coordinates) of each axis.
@@ -77,13 +74,13 @@ using namespace std;
 #define FOCUS			(1<<3)
 
 #define	MAP_ITEM		(1<<4)
+
 #define	MAP_ALL			(1<<5)
 #define LAYOUT_NEEDED		(1<<6)
 #define RESET_AXES		(1<<7)
-#define	GET_AXIS_GEOMETRY	(1<<8)
+#define	CACHE_DIRTY		(1<<8)
 
-#define	CACHE_DIRTY		(1<<9)
-#define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
+#define	MAP_WORLD		(MAP_ALL|RESET_AXES)
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */

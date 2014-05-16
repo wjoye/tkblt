@@ -401,8 +401,7 @@ int Graph::getMarginGeometry(Margin *marginPtr)
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use_) {
 	nVisible++;
-	if (flags & GET_AXIS_GEOMETRY)
-	  axisPtr->getGeometry();
+	axisPtr->getGeometry();
 
 	if (isHoriz) {
 	  if (h < axisPtr->height_)
@@ -427,8 +426,7 @@ int Graph::getMarginGeometry(Margin *marginPtr)
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use_) {
 	nVisible++;
-	if (flags & GET_AXIS_GEOMETRY)
-	  axisPtr->getGeometry();
+	axisPtr->getGeometry();
 
 	if ((ops->titleAlternate) && (l < axisPtr->titleWidth_))
 	  l = axisPtr->titleWidth_;
