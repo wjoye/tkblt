@@ -511,7 +511,7 @@ int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp,
   axisPtr->active_ = (string[0] == 'a') ? 1 : 0;
 
   if (!ops->hide && axisPtr->use_) {
-    graphPtr->flags |= DRAW_MARGINS | CACHE_DIRTY;
+    graphPtr->flags |= CACHE_DIRTY;
     graphPtr->eventuallyRedraw();
   }
 

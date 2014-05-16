@@ -564,8 +564,6 @@ void Graph::drawMargins(Drawable drawable)
     TextStyle ts(this, &ops->titleTextStyle);
     ts.drawText(drawable, ops->title, titleX_, titleY_);
   }
-
-  flags &= ~DRAW_MARGINS;
 }
 
 void Graph::printMargins(Blt_Ps ps)

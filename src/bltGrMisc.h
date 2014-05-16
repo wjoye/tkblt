@@ -70,22 +70,10 @@ using namespace std;
  *	REDRAW_PENDING		Non-zero means a DoWhenIdle handler has 
  *				already been queued to redraw this window. 
  *
- *	DRAW_MARGINS		Indicates that the margins bordering 
- *				the plotting area need to be redrawn. 
- *				The possible reasons are:
- *
- *				1) an axis configuration changed
- *				2) an axis limit changed
- *				3) titles have changed
- *				4) window was resized. 
- *
  */
 
 #define REDRAW_PENDING		(1<<2) /* 0x0004 */
-#define	ACTIVE_PENDING		(1<<3) /* 0x0008 */
 #define	MAP_ITEM		(1<<4) /* 0x0010 */
-#define DIRTY			(1<<5) /* 0x0020 */
-#define ACTIVE			(1<<6) /* 0x0040 */
 #define FOCUS			(1<<7) /* 0x0080 */
 
 #define	MAP_ALL			(1<<8) /* 0x0100 */
@@ -93,7 +81,6 @@ using namespace std;
 #define RESET_AXES		(1<<10)/* 0x0400 */
 #define	GET_AXIS_GEOMETRY	(1<<11)/* 0x0800 */
 
-#define DRAW_MARGINS		(1<<13)/* 0x2000 */
 #define	CACHE_DIRTY		(1<<14)/* 0x4000 */
 
 #define	GRAPH_DELETED		(1<<15)/* 0x4000 */
