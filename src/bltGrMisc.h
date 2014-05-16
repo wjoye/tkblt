@@ -70,11 +70,6 @@ using namespace std;
  *	REDRAW_PENDING		Non-zero means a DoWhenIdle handler has 
  *				already been queued to redraw this window. 
  *
- *	DRAW_LEGEND		Non-zero means redraw the legend. If this is 
- *				the only DRAW_* flag, the legend display 
- *				routine is called instead of the graph 
- *				display routine. 
- *
  *	DRAW_MARGINS		Indicates that the margins bordering 
  *				the plotting area need to be redrawn. 
  *				The possible reasons are:
@@ -98,15 +93,13 @@ using namespace std;
 #define RESET_AXES		(1<<10)/* 0x0400 */
 #define	GET_AXIS_GEOMETRY	(1<<11)/* 0x0800 */
 
-#define DRAW_LEGEND		(1<<12)/* 0x1000 */
 #define DRAW_MARGINS		(1<<13)/* 0x2000 */
 #define	CACHE_DIRTY		(1<<14)/* 0x4000 */
 
 #define	GRAPH_DELETED		(1<<15)/* 0x4000 */
 
 #define	MAP_WORLD		(MAP_ALL|RESET_AXES|GET_AXIS_GEOMETRY)
-#define REDRAW_WORLD		(DRAW_LEGEND)
-#define RESET_WORLD		(REDRAW_WORLD | MAP_WORLD)
+#define RESET_WORLD		(MAP_WORLD)
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */

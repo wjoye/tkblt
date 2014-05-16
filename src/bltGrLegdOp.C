@@ -161,7 +161,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   if (redraw && !ops->hide)
-    graphPtr->flags |= CACHE_DIRTY | REDRAW_WORLD;
+    graphPtr->flags |= CACHE_DIRTY;
 
   // List active elements in stacking order
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);

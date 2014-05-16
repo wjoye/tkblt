@@ -82,7 +82,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
 
-  flags = MAP_WORLD | REDRAW_WORLD;
+  flags = MAP_WORLD;
   nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
@@ -354,7 +354,6 @@ void Graph::draw()
   Tk_FreePixmap(display_, drawable);
 
   flags &= ~MAP_WORLD;
-  flags &= ~REDRAW_WORLD;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -1224,7 +1223,7 @@ void Graph::resetAxes()
   // When any axis changes, we need to layout the entire graph.
   flags &= ~RESET_AXES;
   flags |= CACHE_DIRTY;
-  flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL | REDRAW_WORLD);
+  flags |= (GET_AXIS_GEOMETRY | LAYOUT_NEEDED | MAP_ALL);
 }
 
 Axis* Graph::nearestAxis(int x, int y)
