@@ -49,7 +49,6 @@ extern "C" {
 using namespace Blt;
 
 static void SelectCmdProc(ClientData);
-static Tcl_IdleProc DisplayProc;
 static Tk_SelectionProc SelectionProc;
 static Blt_BindPickProc PickEntryProc;
 
@@ -637,14 +636,6 @@ void Legend::removeElement(Element* elemPtr)
   Blt_DeleteBindings(bindTable_, elemPtr);
 }
 
-void Legend::eventuallyRedraw() 
-{
-  if ((graphPtr_->tkwin_) && !(flags & REDRAW_PENDING)) {
-    Tcl_DoWhenIdle(DisplayProc, this);
-    flags |= REDRAW_PENDING;
-  }
-}
-
 void Legend::eventuallyInvokeSelectCmd()
 {
   if ((flags & SELECT_PENDING) == 0) {
@@ -995,15 +986,6 @@ Element* Legend::getLastElement()
 }
 
 // Support
-
-static void DisplayProc(ClientData clientData)
-{
-  Legend* legendPtr = (Legend*)clientData;
-
-  legendPtr->flags &= ~REDRAW_PENDING;
-  if (Tk_IsMapped(legendPtr->graphPtr_->tkwin_))
-    legendPtr->draw(Tk_WindowId(legendPtr->graphPtr_->tkwin_));
-}
 
 static int SelectionProc(ClientData clientData, int offset, char *buffer,
 			 int maxBytes)

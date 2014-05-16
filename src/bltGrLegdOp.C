@@ -250,7 +250,8 @@ static int FocusOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   Blt_SetFocusItem(legendPtr->bindTable_,legendPtr->focusPtr_,CID_LEGEND_ENTRY);
-  graphPtr->legend_->eventuallyRedraw();
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
     Tcl_SetStringObj(Tcl_GetObjResult(interp),legendPtr->focusPtr_->name_,-1);
@@ -312,7 +313,8 @@ static int SelectionAnchorOp(ClientData clientData, Tcl_Interp* interp,
   if (elemPtr)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
 
-  graphPtr->legend_->eventuallyRedraw();
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -323,7 +325,9 @@ static int SelectionClearallOp(ClientData clientData, Tcl_Interp* interp,
   Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
   legendPtr->clearSelection();
-  legendPtr->eventuallyRedraw();
+
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -377,10 +381,11 @@ static int SelectionMarkOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
     legendPtr->selMarkPtr_ = elemPtr;
 
-    graphPtr->legend_->eventuallyRedraw();
-
     if (ops->selectCmd)
       legendPtr->eventuallyInvokeSelectCmd();
+
+    graphPtr->flags |= CACHE_DIRTY;
+    graphPtr->eventuallyRedraw();
   }
   return TCL_OK;
 }
@@ -453,10 +458,11 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   if (ops->exportSelection)
     Tk_OwnSelection(graphPtr->tkwin_, XA_PRIMARY, LostSelectionProc, legendPtr);
 
-  graphPtr->legend_->eventuallyRedraw();
-
   if (ops->selectCmd)
     legendPtr->eventuallyInvokeSelectCmd();
+
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }
@@ -479,10 +485,13 @@ static void LostSelectionProc(ClientData clientData)
 {
   Legend* legendPtr = (Legend*)clientData;
   LegendOptions* ops = (LegendOptions*)legendPtr->ops();
+  Graph* graphPtr = legendPtr->graphPtr_;
 
   if (ops->exportSelection)
     legendPtr->clearSelection();
-  legendPtr->eventuallyRedraw();
+
+  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->eventuallyRedraw();
 }
 
 

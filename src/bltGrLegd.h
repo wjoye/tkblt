@@ -151,7 +151,6 @@ class Legend {
   void map(int, int);
   void draw(Drawable drawable);
   void print(Blt_Ps ps);
-  void eventuallyRedraw();
   void eventuallyInvokeSelectCmd();
 
   void removeElement(Element*);
