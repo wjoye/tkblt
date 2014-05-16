@@ -82,7 +82,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
 
-  flags = MAP_WORLD;
+  flags = MAP_ALL | RESET_AXES;
   nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
@@ -353,7 +353,7 @@ void Graph::draw()
   enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
 
-  flags &= ~MAP_WORLD;
+  flags &= ~(MAP_ALL | RESET_AXES);
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -377,7 +377,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     height_ = Tk_ReqHeight(tkwin_);
 
   Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
-  flags |= LAYOUT_NEEDED | MAP_WORLD;
+  flags |= LAYOUT_NEEDED | MAP_ALL | RESET_AXES;
 
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);
@@ -456,7 +456,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
  error:
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
-  flags |= MAP_WORLD;
+  flags |= MAP_ALL | RESET_AXES;
   Blt_Ps_SetPrinting(ps, 0);
   reconfigure();
   map();

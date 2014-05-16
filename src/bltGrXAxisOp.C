@@ -194,8 +194,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   // When any axis changes, we need to layout the entire graph.
-  graphPtr->flags |= LAYOUT_NEEDED | RESET_AXES;
-  graphPtr->flags |= (MAP_WORLD);
+  graphPtr->flags |= MAP_ALL | RESET_AXES | LAYOUT_NEEDED;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;

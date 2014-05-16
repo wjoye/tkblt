@@ -446,7 +446,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   }
   else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= (MAP_WORLD);
+    graphPtr->flags |= MAP_ALL | RESET_AXES;
     graphPtr->eventuallyRedraw();
   }
 }

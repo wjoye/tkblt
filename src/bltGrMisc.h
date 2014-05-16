@@ -37,38 +37,6 @@ using namespace std;
 
 #include <tk.h>
 
-/*
- *	MAP_ITEM		Indicates that the element/marker/axis
- *				configuration has changed such that
- *				its layout of the item (i.e. its
- *				position in the graph window) needs
- *				to be recalculated.
- *
- *	MAP_ALL			Indicates that the layout of the axes and 
- *				all elements and markers and the graph need 
- *				to be recalculated. Otherwise, the layout
- *				of only those markers and elements that
- *				have changed will be reset. 
- *
- *	RESET_AXES		Flag to call to Blt_ResetAxes routine.  
- *				This routine recalculates the scale offset
- *				(used for mapping coordinates) of each axis.
- *				If an axis limit has changed, then it sets 
- *				flags to re-layout and redraw the entire 
- *				graph.  This needs to happend before the axis
- *				can compute transformations between graph and 
- *				screen coordinates. 
- *
- *	LAYOUT_NEEDED		
- *
- *	CACHE_DIRTY		If set, redraw all elements into the pixmap 
- *				used for buffering elements. 
- *
- *	REDRAW_PENDING		Non-zero means a DoWhenIdle handler has 
- *				already been queued to redraw this window. 
- *
- */
-
 #define	GRAPH_DELETED		(1<<1)
 #define REDRAW_PENDING		(1<<2)
 #define FOCUS			(1<<3)

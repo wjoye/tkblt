@@ -69,7 +69,7 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
 
     elemPtr->flags |= mask;
     elemPtr->flags |= MAP_ITEM;
-    graphPtr->flags |= MAP_WORLD | CACHE_DIRTY;
+    graphPtr->flags |= MAP_ALL | RESET_AXES | CACHE_DIRTY;
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
     graphPtr->eventuallyRedraw();
@@ -327,7 +327,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     graphPtr->destroyElement(elemPtr);
   }
 
-  graphPtr->flags |= MAP_WORLD;
+  graphPtr->flags |= MAP_ALL | RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -389,7 +389,7 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= MAP_WORLD;
+  graphPtr->flags |= MAP_ALL | RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -454,7 +454,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= MAP_WORLD;
+  graphPtr->flags |= MAP_ALL | RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -501,7 +501,7 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     elemPtr->link = link;
   }
 
-  graphPtr->flags |= MAP_WORLD;
+  graphPtr->flags |= MAP_ALL | RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));

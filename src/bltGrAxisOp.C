@@ -76,7 +76,7 @@ int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
     }
 
     axisPtr->flags |= mask;
-    graphPtr->flags |= MAP_WORLD | RESET_AXES | CACHE_DIRTY;
+    graphPtr->flags |= MAP_ALL | RESET_AXES | CACHE_DIRTY;
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
     graphPtr->eventuallyRedraw();
