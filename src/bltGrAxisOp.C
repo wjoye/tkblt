@@ -79,7 +79,7 @@ int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= RESET_AXES;
+    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -186,7 +186,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
   if (axisPtr->refCount_ == 0)
     delete axisPtr;
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -513,7 +513,7 @@ int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp,
   axisPtr->active_ = (string[0] == 'a') ? 1 : 0;
 
   if (!ops->hide && axisPtr->use_) {
-    graphPtr->flags |= RESET_AXES;
+    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
   }
 
@@ -525,7 +525,7 @@ int AxisInvTransformOp(Axis* axisPtr, Tcl_Interp* interp,
 {
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   int sy;
@@ -549,7 +549,7 @@ int AxisLimitsOp(Axis* axisPtr, Tcl_Interp* interp,
   AxisOptions* ops = (AxisOptions*)axisPtr->ops();
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   double min, max;
@@ -586,7 +586,7 @@ int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp,
 {
   Graph* graphPtr = axisPtr->graphPtr_;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   double x;
@@ -689,7 +689,7 @@ int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp,
     ops->reqMax = EXP10(ops->reqMax);
   }
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;

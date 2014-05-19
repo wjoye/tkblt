@@ -67,11 +67,10 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    elemPtr->flags |= MAP_ITEM;
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= RESET_AXES;
+    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -184,7 +183,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 
   elemPtr->active_ = 1;
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -220,7 +219,7 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   ClosestSearch* searchPtr = &gops->search;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   int x;
@@ -314,7 +313,7 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
     elemPtr->active_ = 0;
   }
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -331,7 +330,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     graphPtr->destroyElement(elemPtr);
   }
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -393,7 +392,7 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -458,7 +457,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -505,7 +504,7 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     elemPtr->link = link;
   }
 
-  graphPtr->flags |= RESET_AXES;
+  graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));

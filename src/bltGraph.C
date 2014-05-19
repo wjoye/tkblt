@@ -82,7 +82,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
 
-  flags = RESET_AXES;
+  flags = RESET;
   nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
@@ -219,10 +219,10 @@ int Graph::configure()
 
 void Graph::map()
 {
-  if (flags & RESET_AXES) {
-    cerr << "RESET_AXES" << endl;
+  if (flags & RESET) {
+    cerr << "RESET" << endl;
     resetAxes();
-    flags &= ~RESET_AXES;
+    flags &= ~RESET;
     flags |= (LAYOUT | CACHE_DIRTY);
   }
 
@@ -230,17 +230,17 @@ void Graph::map()
     cerr << "LAYOUT" << endl;
     layoutGraph();
     flags &= ~LAYOUT;
-    flags |= (MAP_AXES | MAP_ELEMENTS | MAP_MARKERS | CACHE_DIRTY);
+    flags |= (MAP | MAP_MARKERS | CACHE_DIRTY);
   }
 
-  if (flags & MAP_AXES) {
-    cerr << "MAP_AXES" << endl;
+  if (flags & MAP) {
+    cerr << "MAP" << endl;
     mapAxes();
-    flags &= ~MAP_AXES;
+    mapElements();
+    flags &= ~MAP;
     flags |= CACHE_DIRTY;
   }
 
-  mapElements();
   mapMarkers();
 }
 
@@ -384,7 +384,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     height_ = Tk_ReqHeight(tkwin_);
 
   Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
-  flags |= RESET_AXES;
+  flags |= RESET;
 
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);
@@ -468,7 +468,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
 
   // Redraw the graph in order to re-calculate the layout as soon as
   // possible. This is in the case the crosshairs are active.
-  flags |= RESET_AXES;
+  flags |= RESET;
   eventuallyRedraw();
 
   return result;
@@ -700,15 +700,8 @@ void Graph::mapElements()
   for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-
-    if ((flags & MAP_ELEMENTS) || (elemPtr->flags & MAP_ITEM)) {
-      cerr << "MAP_ELEMENTS" << endl;
-      elemPtr->map();
-      elemPtr->flags &= ~MAP_ITEM;
-    }
+    elemPtr->map();
   }
-
-  flags &= ~MAP_ELEMENTS;
 }
 
 void Graph::drawElements(Drawable drawable)
@@ -1350,7 +1343,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
-  if (graphPtr->flags & (MAP_AXES | MAP_ELEMENTS | MAP_MARKERS)) {
+  if (graphPtr->flags & (MAP | MAP_MARKERS)) {
     *contextPtr = (ClientData)NULL;
     return NULL;
   }

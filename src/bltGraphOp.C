@@ -89,7 +89,7 @@ int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
     if (graphPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= RESET_AXES;
+    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -264,7 +264,7 @@ static int InvtransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
       (Tcl_GetDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   // Perform the reverse transformation, converting from window coordinates
@@ -291,7 +291,7 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
       (Tcl_GetDoubleFromObj(interp, objv[3], &y) != TCL_OK))
     return TCL_ERROR;
 
-  if (graphPtr->flags & RESET_AXES)
+  if (graphPtr->flags & RESET)
     graphPtr->resetAxes();
 
   // Perform the transformation from window to graph coordinates.  Note that
@@ -446,7 +446,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   }
   else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= RESET_AXES;
+    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
   }
 }
