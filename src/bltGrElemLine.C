@@ -420,17 +420,13 @@ void LineElement::extents(Region2d *extsPtr)
 
   // Correct the data limits for error bars
   if (ops->xError && ops->xError->nValues > 0) {
-    int i;
-	
     np = MIN(ops->xError->nValues, np);
-    for (i = 0; i < np; i++) {
-      double x;
-
-      x = ops->coords.x->values[i] + ops->xError->values[i];
-      if (x > extsPtr->right) {
+    for (int ii=0; ii<np; ii++) {
+      double x = ops->coords.x->values[ii] + ops->xError->values[ii];
+      if (x > extsPtr->right)
 	extsPtr->right = x;
-      }
-      x = ops->coords.x->values[i] - ops->xError->values[i];
+
+      x = ops->coords.x->values[ii] - ops->xError->values[ii];
       AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
       if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
@@ -451,9 +447,7 @@ void LineElement::extents(Region2d *extsPtr)
     }
     if (ops->xLow && ops->xLow->nValues > 0) {
       double left;
-	    
-      if ((ops->xLow->min <= 0.0) && 
-	  (axisxops->logScale))
+      if ((ops->xLow->min <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
 	left = ops->xLow->min;
@@ -464,41 +458,33 @@ void LineElement::extents(Region2d *extsPtr)
   }
     
   if (ops->yError && ops->yError->nValues > 0) {
-    int i;
-	
     np = MIN(ops->yError->nValues, np);
-    for (i = 0; i < np; i++) {
-      double y;
-
-      y = ops->coords.y->values[i] + ops->yError->values[i];
-      if (y > extsPtr->bottom) {
+    for (int ii=0; ii<np; ii++) {
+      double y = ops->coords.y->values[ii] + ops->yError->values[ii];
+      if (y > extsPtr->bottom)
 	extsPtr->bottom = y;
-      }
-      y = ops->coords.y->values[i] - ops->yError->values[i];
+
+      y = ops->coords.y->values[ii] - ops->yError->values[ii];
       AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
       if (axisyops->logScale) {
-	if (y < 0.0) {
-	  y = -y;		/* Mirror negative values, instead of
-				 * ignoring them. */
-	}
-	if ((y > DBL_MIN) && (y < extsPtr->left)) {
+	// Mirror negative values, instead of ignoring them
+	if (y < 0.0)
+	  y = -y;
+	if ((y > DBL_MIN) && (y < extsPtr->left))
 	  extsPtr->top = y;
-	}
-      } else if (y < extsPtr->top) {
-	extsPtr->top = y;
       }
+      else if (y < extsPtr->top)
+	extsPtr->top = y;
     }
   }
   else {
-    if (ops->yHigh && 
-	(ops->yHigh->nValues > 0) && 
-	(ops->yHigh->max > extsPtr->bottom)) {
+    if (ops->yHigh && (ops->yHigh->nValues > 0) && 
+	(ops->yHigh->max > extsPtr->bottom))
       extsPtr->bottom = ops->yHigh->max;
-    }
+
     if (ops->yLow && ops->yLow->nValues > 0) {
       double top;
-      if ((ops->yLow->min <= 0.0) && 
-	  (axisyops->logScale))
+      if ((ops->yLow->min <= 0.0) && (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
 	top = ops->yLow->min;

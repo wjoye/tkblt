@@ -193,7 +193,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     axisPtr->use_ =1;
   }
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;

@@ -71,7 +71,7 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= (RESET_AXES | LAYOUT);
+    graphPtr->flags |= RESET_AXES;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -184,7 +184,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 
   elemPtr->active_ = 1;
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -314,7 +314,7 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
     elemPtr->active_ = 0;
   }
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -331,7 +331,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     graphPtr->destroyElement(elemPtr);
   }
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -393,7 +393,7 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -458,7 +458,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -505,7 +505,7 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     elemPtr->link = link;
   }
 
-  graphPtr->flags |= (RESET_AXES | LAYOUT);
+  graphPtr->flags |= RESET_AXES;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));

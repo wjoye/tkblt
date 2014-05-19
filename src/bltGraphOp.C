@@ -89,7 +89,7 @@ int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
     if (graphPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= (RESET_AXES | LAYOUT);
+    graphPtr->flags |= RESET_AXES;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -446,7 +446,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   }
   else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= (RESET_AXES | LAYOUT);
+    graphPtr->flags |= RESET_AXES;
     graphPtr->eventuallyRedraw();
   }
 }

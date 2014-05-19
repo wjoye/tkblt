@@ -239,7 +239,7 @@ int BarGraph::createPen(const char* penName, int objc, Tcl_Obj* const objv[])
     return TCL_ERROR;
   }
 
-  flags |= (RESET_AXES | LAYOUT);
+  flags |= RESET_AXES;
   eventuallyRedraw();
 
   return TCL_OK;

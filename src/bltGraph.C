@@ -82,7 +82,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
 
-  flags = (RESET_AXES | LAYOUT);
+  flags = RESET_AXES;
   nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
@@ -206,8 +206,7 @@ int Graph::configure()
 
   // If the -inverted option changed, we need to readjust the pointers
   // to the axes and recompute the their scales.
-  if (flags & RESET_AXES)
-    adjustAxes();
+  adjustAxes();
 
   // Free the pixmap if we're not buffering the display of elements anymore.
   if (cache_ != None) {
@@ -224,7 +223,7 @@ void Graph::map()
     cerr << "RESET_AXES" << endl;
     resetAxes();
     flags &= ~RESET_AXES;
-    flags |= CACHE_DIRTY;
+    flags |= (LAYOUT | CACHE_DIRTY);
   }
 
   if (flags & LAYOUT) {
@@ -385,7 +384,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     height_ = Tk_ReqHeight(tkwin_);
 
   Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
-  flags |= (RESET_AXES | LAYOUT);
+  flags |= RESET_AXES;
 
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);
@@ -469,7 +468,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
 
   // Redraw the graph in order to re-calculate the layout as soon as
   // possible. This is in the case the crosshairs are active.
-  flags |= (RESET_AXES | LAYOUT);
+  flags |= RESET_AXES;
   eventuallyRedraw();
 
   return result;
@@ -1007,6 +1006,7 @@ void Graph::mapAxes()
   for (int ii=0; ii<4; ii++) {
     int count =0;
     int offset =0;
+
     Blt_Chain chain = ops->margins[ii].axes;
     for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
 	 link = Blt_Chain_NextLink(link)) {
