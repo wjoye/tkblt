@@ -185,7 +185,7 @@ int PolygonMarker::configure()
     Tk_FreeGC(graphPtr_->display_, fillGC_);
   fillGC_ = newGC;
 
-  if ((gcMask == 0) && !(graphPtr_->flags & RESET_AXES) && ops->xorr) {
+  if (ops->xorr && (gcMask == 0)) {
     if (drawable != None) {
       map();
       draw(drawable);

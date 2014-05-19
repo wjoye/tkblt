@@ -82,7 +82,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 				   GraphInstCmdProc, this,
 				   GraphInstCmdDeleteProc);
 
-  flags = MAP_ALL | RESET_AXES;
+  flags = (RESET_AXES | LAYOUT);
   nextMarkerId_ = 1;
 
   legend_ = new Legend(this);
@@ -171,7 +171,7 @@ Graph::~Graph()
   free (ops_);
 }
 
-void Graph::configure()	
+int Graph::configure()	
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -214,31 +214,40 @@ void Graph::configure()
     Tk_FreePixmap(display_, cache_);
     cache_ = None;
   }
+
+  return TCL_OK;
 }
 
 void Graph::map()
 {
-  if (flags & RESET_AXES)
+  if (flags & RESET_AXES) {
+    cerr << "RESET_AXES" << endl;
     resetAxes();
+    flags &= ~RESET_AXES;
+    flags |= CACHE_DIRTY;
+  }
 
-  if (flags & LAYOUT_NEEDED) {
-    cerr << "LAYOUT_NEEDED" << endl;
+  if (flags & LAYOUT) {
+    cerr << "LAYOUT" << endl;
     layoutGraph();
-    flags &= ~LAYOUT_NEEDED;
+    flags &= ~LAYOUT;
+    flags |= (MAP_AXES | MAP_ELEMENTS | MAP_MARKERS | CACHE_DIRTY);
   }
 
-  if ((vRange_ > 1) && (hRange_ > 1)) {
-    if (flags & MAP_ALL)
-      mapAxes();
-
-    mapElements();
-    mapMarkers();
-    flags &= ~(MAP_ALL);
+  if (flags & MAP_AXES) {
+    cerr << "MAP_AXES" << endl;
+    mapAxes();
+    flags &= ~MAP_AXES;
+    flags |= CACHE_DIRTY;
   }
+
+  mapElements();
+  mapMarkers();
 }
 
 void Graph::draw()
 {
+  cerr << endl << "flags= " << hex << flags << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   flags &= ~REDRAW_PENDING;
@@ -341,19 +350,18 @@ void Graph::draw()
   // Draw focus highlight ring
   if ((ops->highlightWidth > 0) && (flags & FOCUS)) {
     GC gc = Tk_GCForColor(ops->highlightColor, drawable);
-    Tk_DrawFocusHighlight(tkwin_, gc, ops->highlightWidth,
-			  drawable);
+    Tk_DrawFocusHighlight(tkwin_, gc, ops->highlightWidth, drawable);
   }
 
   // Disable crosshairs before redisplaying to the screen
   disableCrosshairs();
-  XCopyArea(display_, drawable, Tk_WindowId(tkwin_),
-	    drawGC_, 0, 0, width_, height_, 0, 0);
+  XCopyArea(display_, drawable, Tk_WindowId(tkwin_), drawGC_, 
+	    0, 0, width_, height_, 0, 0);
 
   enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
 
-  flags &= ~(MAP_ALL | RESET_AXES);
+  cerr << "flags= " << hex << flags << endl;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -377,7 +385,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
     height_ = Tk_ReqHeight(tkwin_);
 
   Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
-  flags |= LAYOUT_NEEDED | MAP_ALL | RESET_AXES;
+  flags |= (RESET_AXES | LAYOUT);
 
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);
@@ -456,13 +464,12 @@ int Graph::print(const char *ident, Blt_Ps ps)
  error:
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
-  flags |= MAP_ALL | RESET_AXES;
   Blt_Ps_SetPrinting(ps, 0);
   reconfigure();
-  map();
 
   // Redraw the graph in order to re-calculate the layout as soon as
   // possible. This is in the case the crosshairs are active.
+  flags |= (RESET_AXES | LAYOUT);
   eventuallyRedraw();
 
   return result;
@@ -691,14 +698,18 @@ void Graph::configureElements()
 
 void Graph::mapElements()
 {
-  cerr << "mapElements()" << endl;
   for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
-    if ((flags & MAP_ALL) || (elemPtr->flags & MAP_ITEM))
+    if ((flags & MAP_ELEMENTS) || (elemPtr->flags & MAP_ITEM)) {
+      cerr << "MAP_ELEMENTS" << endl;
       elemPtr->map();
+      elemPtr->flags &= ~MAP_ITEM;
+    }
   }
+
+  flags &= ~MAP_ELEMENTS;
 }
 
 void Graph::drawElements(Drawable drawable)
@@ -790,7 +801,6 @@ void Graph::configureMarkers()
 
 void Graph::mapMarkers()
 {
-  cerr << "mapMarkers()" << endl;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
@@ -799,11 +809,14 @@ void Graph::mapMarkers()
     if (mops->hide)
       continue;
 
-    if ((flags & MAP_ALL) || (markerPtr->flags & MAP_ITEM)) {
+    if ((flags & MAP_MARKERS) || (markerPtr->flags & MAP_ITEM)) {
+      cerr << "MAP_MARKERS" << endl;
       markerPtr->map();
       markerPtr->flags &= ~MAP_ITEM;
     }
   }
+
+  flags &= ~MAP_MARKERS;
 }
 
 void Graph::drawMarkers(Drawable drawable, int under)
@@ -989,7 +1002,6 @@ void Graph::configureAxes()
 
 void Graph::mapAxes()
 {
-  cerr << "mapAxes()" << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
@@ -1170,7 +1182,6 @@ Point2d Graph::invMap2D(double x, double y, Axis* xAxis, Axis* yAxis)
 
 void Graph::resetAxes()
 {
-  cerr << "resetAxes()" << endl;
   // Step 1:  Reset all axes. Initialize the data limits of the axis to
   // impossible values.
   Tcl_HashSearch cursor;
@@ -1217,10 +1228,6 @@ void Graph::resetAxes()
     else
       axisPtr->linearScale(min, max);
   }
-
-  // When any axis changes, we need to layout the entire graph.
-  flags &= ~RESET_AXES;
-  flags |= LAYOUT_NEEDED | MAP_ALL | CACHE_DIRTY;
 }
 
 Axis* Graph::nearestAxis(int x, int y)
@@ -1343,7 +1350,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
-  if (graphPtr->flags & MAP_ALL) {
+  if (graphPtr->flags & (MAP_AXES | MAP_ELEMENTS | MAP_MARKERS)) {
     *contextPtr = (ClientData)NULL;
     return NULL;
   }

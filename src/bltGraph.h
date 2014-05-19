@@ -209,7 +209,7 @@ class Graph {
   Graph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);
   virtual ~Graph();
 
-  virtual void configure();
+  virtual int configure();
   void map();
   void draw();
   void eventuallyRedraw();

@@ -37,16 +37,18 @@ using namespace std;
 
 #include <tk.h>
 
-#define	GRAPH_DELETED		(1<<1)
-#define REDRAW_PENDING		(1<<2)
-#define FOCUS			(1<<3)
+#define	GRAPH_DELETED	(1<<1)
+#define REDRAW_PENDING	(1<<2)
+#define FOCUS		(1<<3)
 
-#define	MAP_ITEM		(1<<4)
+#define	MAP_ITEM	(1<<4)
 
-#define	MAP_ALL			(1<<5)
-#define LAYOUT_NEEDED		(1<<6)
-#define RESET_AXES		(1<<7)
-#define	CACHE_DIRTY		(1<<8)
+#define RESET_AXES	(1<<5)
+#define LAYOUT          (1<<6)
+#define	MAP_AXES	(1<<7)
+#define	MAP_ELEMENTS	(1<<8)
+#define	MAP_MARKERS	(1<<9)
+#define	CACHE_DIRTY	(1<<10)
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */

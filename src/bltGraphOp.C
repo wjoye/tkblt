@@ -86,8 +86,10 @@ int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
-    graphPtr->configure();
+    if (graphPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+
+    graphPtr->flags |= (RESET_AXES | LAYOUT);
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -424,7 +426,6 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     if (eventPtr->xexpose.count == 0) {
       graphPtr->eventuallyRedraw();
     }
-
   }
   else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
     if (eventPtr->xfocus.detail != NotifyInferior) {
@@ -434,7 +435,6 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
 	graphPtr->flags &= ~FOCUS;
       graphPtr->eventuallyRedraw();
     }
-
   }
   else if (eventPtr->type == DestroyNotify) {
     if (!(graphPtr->flags & GRAPH_DELETED)) {
@@ -446,7 +446,7 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
     }
   }
   else if (eventPtr->type == ConfigureNotify) {
-    graphPtr->flags |= MAP_ALL | RESET_AXES;
+    graphPtr->flags |= (RESET_AXES | LAYOUT);
     graphPtr->eventuallyRedraw();
   }
 }

@@ -73,7 +73,6 @@ static int MarkerObjConfigure( Graph* graphPtr,Marker* markerPtr,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    markerPtr->flags |= mask;
     markerPtr->flags |= MAP_ITEM;
     if (markerPtr->configure() != TCL_OK)
       return TCL_ERROR;
@@ -255,6 +254,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     }
     delete markerPtr;
   }
+  graphPtr->flags |= CACHE_DIRTY;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -423,7 +423,7 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
 
   if (ops->drawUnder)
     graphPtr->flags |= CACHE_DIRTY;
-    graphPtr->eventuallyRedraw();
+  graphPtr->eventuallyRedraw();
 
   return TCL_OK;
 }

@@ -64,7 +64,7 @@ class Crosshairs {
   Crosshairs(Graph*);
   virtual ~Crosshairs();
 
-  void configure();
+  int configure();
   void on();
   void off();
   void enable();

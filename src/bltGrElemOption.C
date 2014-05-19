@@ -441,8 +441,7 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
 
   Element* elemPtr = valuesPtr->elemPtr;
   Graph* graphPtr = elemPtr->graphPtr_;
-  graphPtr->flags |= RESET_AXES;
-  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->flags |= (RESET_AXES | LAYOUT);
   graphPtr->eventuallyRedraw();
 }
 

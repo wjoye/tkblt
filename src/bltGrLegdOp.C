@@ -68,9 +68,10 @@ static int LegendObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    graphPtr->flags |= mask;
-    graphPtr->flags |= MAP_ALL | RESET_AXES | CACHE_DIRTY;
-    legendPtr->configure();
+    if (legendPtr->configure() != TCL_OK)
+      return TCL_ERROR;
+
+    graphPtr->flags |= LAYOUT;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -160,8 +161,10 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
     }
   }
 
-  if (redraw && !ops->hide)
-    graphPtr->flags |= CACHE_DIRTY;
+  if (redraw && !ops->hide) {
+    graphPtr->flags |= LAYOUT;
+    graphPtr->eventuallyRedraw();
+  }
 
   // List active elements in stacking order
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
@@ -250,7 +253,8 @@ static int FocusOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   Blt_SetFocusItem(legendPtr->bindTable_,legendPtr->focusPtr_,CID_LEGEND_ENTRY);
-  graphPtr->flags |= CACHE_DIRTY;
+
+  graphPtr->flags |= LAYOUT;
   graphPtr->eventuallyRedraw();
 
   if (legendPtr->focusPtr_)
@@ -313,7 +317,7 @@ static int SelectionAnchorOp(ClientData clientData, Tcl_Interp* interp,
   if (elemPtr)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
 
-  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->flags |= LAYOUT;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -326,7 +330,7 @@ static int SelectionClearallOp(ClientData clientData, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend_;
   legendPtr->clearSelection();
 
-  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->flags |= LAYOUT;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -384,7 +388,7 @@ static int SelectionMarkOp(ClientData clientData, Tcl_Interp* interp,
     if (ops->selectCmd)
       legendPtr->eventuallyInvokeSelectCmd();
 
-    graphPtr->flags |= CACHE_DIRTY;
+    graphPtr->flags |= LAYOUT;
     graphPtr->eventuallyRedraw();
   }
   return TCL_OK;
@@ -461,7 +465,7 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   if (ops->selectCmd)
     legendPtr->eventuallyInvokeSelectCmd();
 
-  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->flags |= LAYOUT;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -490,7 +494,7 @@ static void LostSelectionProc(ClientData clientData)
   if (ops->exportSelection)
     legendPtr->clearSelection();
 
-  graphPtr->flags |= CACHE_DIRTY;
+  graphPtr->flags |= LAYOUT;
   graphPtr->eventuallyRedraw();
 }
 

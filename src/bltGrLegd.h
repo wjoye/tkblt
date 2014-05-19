@@ -147,7 +147,7 @@ class Legend {
   Legend(Graph*);
   virtual ~Legend();
 
-  void configure();
+  int configure();
   void map(int, int);
   void draw(Drawable drawable);
   void print(Blt_Ps ps);

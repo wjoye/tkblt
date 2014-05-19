@@ -223,7 +223,7 @@ Legend::~Legend()
   free(ops_);
 }
 
-void Legend::configure()
+int Legend::configure()
 {
   LegendOptions* ops = (LegendOptions*)ops_;
 
@@ -242,6 +242,8 @@ void Legend::configure()
     Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
 
   focusGC_ = newGC;
+
+  return TCL_OK;
 }
 
 void Legend::map(int plotWidth, int plotHeight)

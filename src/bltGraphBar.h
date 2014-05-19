@@ -108,7 +108,7 @@ class BarGraph : public Graph {
   BarGraph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);
   virtual ~BarGraph();
 
-  void configure();
+  int configure();
   int createPen(const char*, int, Tcl_Obj* const []);
   int createElement(int, Tcl_Obj* const []);
 };

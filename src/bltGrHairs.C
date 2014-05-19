@@ -81,7 +81,7 @@ Crosshairs::~Crosshairs()
 
 // Configure
 
-void Crosshairs::configure()
+int Crosshairs::configure()
 {
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -124,6 +124,8 @@ void Crosshairs::configure()
   segArr_[1].x2 = graphPtr_->right_;
 
   enable();
+
+  return TCL_OK;
 }
 
 void Crosshairs::enable()

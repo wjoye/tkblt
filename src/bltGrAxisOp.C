@@ -75,10 +75,11 @@ int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    axisPtr->flags |= mask;
-    graphPtr->flags |= MAP_ALL | RESET_AXES | CACHE_DIRTY;
+    axisPtr->flags |= MAP_ITEM;
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
+
+    graphPtr->flags |= (RESET_AXES | LAYOUT);
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -185,6 +186,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
   if (axisPtr->refCount_ == 0)
     delete axisPtr;
 
+  graphPtr->flags |= (RESET_AXES | LAYOUT);
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
@@ -511,7 +513,7 @@ int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp,
   axisPtr->active_ = (string[0] == 'a') ? 1 : 0;
 
   if (!ops->hide && axisPtr->use_) {
-    graphPtr->flags |= CACHE_DIRTY;
+    graphPtr->flags |= (RESET_AXES | LAYOUT);
     graphPtr->eventuallyRedraw();
   }
 
@@ -687,7 +689,7 @@ int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp,
     ops->reqMax = EXP10(ops->reqMax);
   }
 
-  graphPtr->flags |= LAYOUT_NEEDED | RESET_AXES;
+  graphPtr->flags |= (RESET_AXES | LAYOUT);
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;
