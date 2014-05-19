@@ -223,22 +223,16 @@ void Graph::map()
     cerr << "RESET" << endl;
     resetAxes();
     flags &= ~RESET;
-    flags |= (LAYOUT | CACHE_DIRTY);
+    flags |= LAYOUT;
   }
 
   if (flags & LAYOUT) {
     cerr << "LAYOUT" << endl;
     layoutGraph();
-    flags &= ~LAYOUT;
-    flags |= (MAP | MAP_MARKERS | CACHE_DIRTY);
-  }
-
-  if (flags & MAP) {
-    cerr << "MAP" << endl;
     mapAxes();
     mapElements();
-    flags &= ~MAP;
-    flags |= CACHE_DIRTY;
+    flags &= ~LAYOUT;
+    flags |= MAP_MARKERS | CACHE_DIRTY;
   }
 
   mapMarkers();
@@ -260,6 +254,7 @@ void Graph::draw()
 
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
+
   map();
 
   // Create a pixmap the size of the window for double buffering
@@ -389,6 +384,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
   /* Turn on PostScript measurements when computing the graph's layout. */
   Blt_Ps_SetPrinting(ps, 1);
   reconfigure();
+
   map();
 
   int x = left_ - ops->plotBW;
@@ -455,7 +451,6 @@ int Graph::print(const char *ident, Blt_Ps ps)
     }
   }
   printMarkers(ps, MARKER_ABOVE);
-  // End
 
   Blt_Ps_VarAppend(ps, "\n", "% Unset clipping\n", "grestore\n\n", NULL);
   Blt_Ps_VarAppend(ps, "showpage\n", "%Trailer\n", "grestore\n", "end\n", "%EOF\n", NULL);
@@ -468,7 +463,7 @@ int Graph::print(const char *ident, Blt_Ps ps)
 
   // Redraw the graph in order to re-calculate the layout as soon as
   // possible. This is in the case the crosshairs are active.
-  flags |= RESET;
+  flags |= LAYOUT;
   eventuallyRedraw();
 
   return result;
@@ -1343,7 +1338,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
-  if (graphPtr->flags & (MAP | MAP_MARKERS)) {
+  if (graphPtr->flags & (LAYOUT | MAP_MARKERS)) {
     *contextPtr = (ClientData)NULL;
     return NULL;
   }

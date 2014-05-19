@@ -45,9 +45,8 @@ using namespace std;
 
 #define RESET           (1<<5)
 #define LAYOUT          (1<<6)
-#define	MAP             (1<<7)
-#define	MAP_MARKERS	(1<<8)
-#define	CACHE_DIRTY	(1<<9)
+#define	MAP_MARKERS	(1<<7)
+#define	CACHE_DIRTY	(1<<8)
 
 #define MARGIN_NONE	-1
 #define MARGIN_BOTTOM	0		/* x */
