@@ -136,7 +136,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(BarGraphOptions, rightMargin.reqSize), 0, NULL, RESET},
   {TK_OPTION_SYNONYM, "-rm", NULL, NULL, NULL, -1, 0, 0, "-rightmargin", 0},
   {TK_OPTION_PIXELS, "-searchhalo", "searchhalo", "SearchHalo", 
-   "2m", -1, Tk_Offset(BarGraphOptions, search.halo), 0, NULL, RESET},
+   "2m", -1, Tk_Offset(BarGraphOptions, search.halo), 0, NULL, 0},
   {TK_OPTION_STRING_TABLE, "-searchmode", "searchMode", "SearchMode",
    "points", -1, Tk_Offset(BarGraphOptions, search.mode), 
    0, &searchModeObjOption, 0}, 

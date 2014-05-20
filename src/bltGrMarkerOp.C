@@ -237,6 +237,9 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
   // set in CreateMarker
   // Tcl_SetObjResult(interp, objv[3]);
 
+  graphPtr->flags |= CACHE;
+  graphPtr->eventuallyRedraw();
+
   return TCL_OK;
 }
 
@@ -254,6 +257,7 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     }
     delete markerPtr;
   }
+
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
 
@@ -403,7 +407,6 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
     return TCL_ERROR;
-  MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
 
   Marker* placePtr =NULL;
   if (objc == 5)
@@ -421,8 +424,7 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
   else
     Blt_Chain_LinkBefore(graphPtr->markers_.displayList, link, place);
 
-  if (ops->drawUnder)
-    graphPtr->flags |= CACHE;
+  graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
 
   return TCL_OK;

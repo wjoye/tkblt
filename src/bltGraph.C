@@ -353,6 +353,7 @@ void Graph::draw()
 
   enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
+  cerr << "---" << endl;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
