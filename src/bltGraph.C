@@ -240,7 +240,6 @@ void Graph::map()
 
 void Graph::draw()
 {
-  cerr << endl << "flags= " << hex << flags << endl;
   GraphOptions* ops = (GraphOptions*)ops_;
 
   flags &= ~REDRAW_PENDING;
@@ -355,7 +354,7 @@ void Graph::draw()
   enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
 
-  cerr << "flags= " << hex << flags << endl;
+  cerr << "flags= " << hex << flags << endl << endl;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)

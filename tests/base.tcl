@@ -1,4 +1,5 @@
-set sleep 1000
+#set sleep 1000
+set sleep 500
 
 proc bltPlot {w title} {
     toplevel $w
@@ -22,7 +23,8 @@ proc bltTest {graph option value} {
     set org [$graph cget $option]
     $graph configure $option $value
     update
-    after $sleep
+#    after $sleep
+    read stdin 1
     $graph configure $option $org
     update
     after $sleep
@@ -35,7 +37,8 @@ proc bltTest2 {graph which option value} {
     set org [$graph $which cget $option]
     $graph $which configure $option $value
     update
-    after $sleep
+#    after $sleep
+    read stdin 1
     $graph $which configure $option $org
     update
     after $sleep
@@ -48,7 +51,8 @@ proc bltTest3 {graph which item option value} {
     set org [$graph $which cget $item $option]
     $graph $which configure $item $option $value
     update
-    after $sleep
+#    after $sleep
+    read stdin 1
     $graph $which configure $item $option $org
     update
     after $sleep
@@ -60,7 +64,8 @@ proc bltCmd {graph args} {
     echo " $graph $args"
     eval $graph $args
     update
-    after $sleep
+#    after $sleep
+    read stdin 1
 }
 
 proc bltElements {graph} {

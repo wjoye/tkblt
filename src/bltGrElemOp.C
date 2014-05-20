@@ -69,8 +69,7 @@ int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
 
     if (elemPtr->configure() != TCL_OK)
       return TCL_ERROR;
-
-    graphPtr->flags |= RESET;
+    graphPtr->flags |= mask;
     graphPtr->eventuallyRedraw();
 
     break; 
@@ -293,6 +292,9 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
 
+  graphPtr->flags |= RESET;
+  graphPtr->eventuallyRedraw();
+
   return TCL_OK;
 }
 
@@ -392,7 +394,7 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= RESET;
+  graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
@@ -457,7 +459,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   }	
   Blt_Chain_Destroy(chain);
 
-  graphPtr->flags |= RESET;
+  graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
 
   Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
