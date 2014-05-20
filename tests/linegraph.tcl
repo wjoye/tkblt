@@ -3,7 +3,7 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-echo "Testing LineGraph..."
+echo "Testing Line Graph..."
 
 bltTest $graph -aspect 2
 bltTest $graph -background red

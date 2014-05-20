@@ -3,16 +3,17 @@ source base.tcl
 set w .bar
 set graph [bltBarGraph $w]
 
-$graph element configure data1 -showvalues y
+$graph element configure data1 -color red -showvalues y 
+$graph element configure data2 -color blue
 
 $graph pen create foo -showvalues y -color purple
 $graph element activate data3
 
-echo "Bar Element"
+echo "Testing Bar Element..."
 
 bltTest3 $graph element data3 -activepen foo
 bltTest3 $graph element data2 -background yellow
-bltTest3 $graph element data2 -barwidth 10
+bltTest3 $graph element data2 -barwidth 1
 bltTest3 $graph element data2 -bd 4
 bltTest3 $graph element data2 -bg yellow
 #bltTest3 $graph element data2 -bindtags
@@ -59,9 +60,9 @@ bltTest3 $graph element data2 -yerror {5 5 5 5 5 5 5 5 5 5 5}
 bltCmd $graph element activate data2
 bltCmd $graph element deactivate data2
 #bltCmd $graph element bind data1 <Button-1> [list puts "%x %y"]
-bltCmd $graph element cget data1 -smooth
+bltCmd $graph element cget data1 -showvalues
 bltCmd $graph element configure data1
-bltCmd $graph element configure data1 -smooth
+bltCmd $graph element configure data1 -showvalues
 #bltCmd $graph element closest 50 50
 #bltCmd $graph element closest 50 50 data1 data2
 bltCmd $graph element create data4

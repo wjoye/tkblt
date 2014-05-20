@@ -3,7 +3,7 @@ source base.tcl
 set w .bar
 set graph [bltBarGraph $w]
 
-echo "Testing BarGraph..."
+echo "Testing Bar Graph..."
 
 # Graph
 bltTest $graph -aspect 2

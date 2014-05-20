@@ -354,8 +354,7 @@ void BarGraph::initBarSets()
 	else
 	  tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hhPtr);
 
-	const char* name = (ops->groupName) ? 
-	  ops->groupName : ops->yAxis->name_;
+	const char* name = ops->groupName ? ops->groupName : ops->yAxis->name_;
 	Tcl_HashEntry* hhPtr2 = Tcl_CreateHashEntry(tablePtr, name, &isNew);
 	size_t count =1;
 	if (!isNew) {
@@ -484,8 +483,7 @@ void BarGraph::computeBarStacks()
 	  continue;
 
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);
-	const char *name = (ops->groupName) ? 
-	  ops->groupName : ops->yAxis->name_;
+	const char *name = ops->groupName ? ops->groupName : ops->yAxis->name_;
 	hPtr = Tcl_FindHashEntry(tablePtr, name);
 	if (!hPtr)
 	  continue;
