@@ -48,6 +48,26 @@ bltTest $graph -width 300
 bltTest $graph -plotwidth 300
 bltTest $graph -plotheight 300
 
+##bltCmd $graph axis
+bltCmd $graph cget -background
+bltCmd $graph configure 
+bltCmd $graph configure 
+bltCmd $graph configure -background cyan
+##bltCmd $graph crosshairs
+##bltCmd $graph element
+#bltCmd $graph extents
+#bltCmd $graph inside
+#bltCmd $graph invtransform
+##bltCmd $graph legend
+##bltCmd $graph marker
+##bltCmd $graph pen
+##bltCmd $graph postscript
+#bltCmd $graph transform
+##bltCmd $graph x2axis
+##bltCmd $graph xaxis
+##bltCmd $graph y2axis
+##bltCmd $graph yaxis
+
 echo "done"
 bltPlotDestroy $w
 
