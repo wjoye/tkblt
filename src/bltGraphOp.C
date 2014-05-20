@@ -86,10 +86,9 @@ int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
+    graphPtr->flags |= mask;
     if (graphPtr->configure() != TCL_OK)
       return TCL_ERROR;
-
-    graphPtr->flags |= RESET;
     graphPtr->eventuallyRedraw();
 
     break; 
