@@ -451,8 +451,7 @@ void BarElement::map()
     BarPen* penPtr = stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
-    stylePtr->errorBarCapWidth = 
-      (pops->errorBarCapWidth > 0) 
+    stylePtr->errorBarCapWidth = (pops->errorBarCapWidth > 0) 
       ? pops->errorBarCapWidth : (size * 66666) / 100000;
     stylePtr->errorBarCapWidth /= 2;
   }
