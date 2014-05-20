@@ -59,7 +59,7 @@ int PenObjConfigure(Graph* graphPtr, Pen* penPtr,
 
     if (penPtr->configure() != TCL_OK)
       return TCL_ERROR;
-    graphPtr->flags |= RESET;
+    graphPtr->flags |= mask;
     graphPtr->eventuallyRedraw();
 
     break; 

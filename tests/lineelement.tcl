@@ -27,8 +27,8 @@ bltTest3 $graph element data2 -linewidth 3
 bltTest3 $graph element data2 -mapx x2
 bltTest3 $graph element data2 -mapy y2
 bltTest3 $graph element data1 -maxsymbols 4
-bltTest3 $graph element data1 -offdash red
-bltTest3 $graph element data1 -outline red
+bltTest3 $graph element data1 -offdash black
+bltTest3 $graph element data1 -outline green
 bltTest3 $graph element data1 -outlinewidth 5
 bltTest3 $graph element data2 -pen foo
 bltTest3 $graph element data1 -pixels 20
