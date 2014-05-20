@@ -1,5 +1,4 @@
-#set sleep 1000
-set sleep 500
+set sleep 1000
 
 proc bltPlot {w title} {
     toplevel $w
