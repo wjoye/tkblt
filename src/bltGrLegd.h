@@ -97,7 +97,6 @@ typedef struct {
   XColor* selInFocusFgColor;
   SelectMode selectMode;
   int selRelief;
-  const char *takeFocus;
   const char *title;
   TextStyleOptions titleStyle;
 } LegendOptions;

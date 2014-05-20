@@ -49,7 +49,6 @@ bltTest2 $graph legend -selectborderwidth 3
 #bltTest2 $graph legend -selectforeground
 #bltTest2 $graph legend -selectmode
 bltTest2 $graph legend -selectrelief flat
-bltTest2 $graph legend -takefocus yes
 bltTest2 $graph legend -title "Hello World"
 bltTest2 $graph legend -titlecolor red
 bltTest2 $graph legend -titlefont "times 24 bold italic"

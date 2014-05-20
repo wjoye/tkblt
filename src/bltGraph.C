@@ -232,7 +232,7 @@ void Graph::map()
     mapAxes();
     mapElements();
     flags &= ~LAYOUT;
-    flags |= MAP_MARKERS | CACHE_DIRTY;
+    flags |= MAP_MARKERS | CACHE;
   }
 
   mapMarkers();
@@ -268,12 +268,12 @@ void Graph::draw()
 			  Tk_Depth(tkwin_));
     cacheWidth_ = width_;
     cacheHeight_ = height_;
-    flags |= CACHE_DIRTY;
+    flags |= CACHE;
   }
 
   // Update cache if needed
-  if (flags & CACHE_DIRTY) {
-    cerr << "CACHE_DIRTY" << endl;
+  if (flags & CACHE) {
+    cerr << "CACHE" << endl;
     drawMargins(cache_);
 
     switch (legend_->position()) {
@@ -325,7 +325,7 @@ void Graph::draw()
       }
     }
 
-    flags &= ~CACHE_DIRTY;
+    flags &= ~CACHE;
   }
 
   XCopyArea(display_, cache_, drawable, drawGC_, 0, 0, Tk_Width(tkwin_),
