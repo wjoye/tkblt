@@ -165,7 +165,6 @@ class Axis {
   int use_;
   int active_;		
 
-  unsigned int flags;
   Blt_ChainLink link;
   Blt_Chain chain;
 

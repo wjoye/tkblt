@@ -75,11 +75,10 @@ int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
       Tk_RestoreSavedOptions(&savedOptions);
     }
 
-    axisPtr->flags |= MAP_ITEM;
     if (axisPtr->configure() != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->flags |= RESET;
+    graphPtr->flags |= mask;
     graphPtr->eventuallyRedraw();
 
     break; 
