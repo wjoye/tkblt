@@ -79,7 +79,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-text", "text", "Text", 
    NULL, -1, Tk_Offset(TextMarkerOptions, string), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
-   "no", -1, Tk_Offset(TextMarkerOptions, drawUnder), 0, NULL, 0},
+   "no", -1, Tk_Offset(TextMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(TextMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",

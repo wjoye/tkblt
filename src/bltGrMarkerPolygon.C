@@ -82,7 +82,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "normal", -1, Tk_Offset(PolygonMarkerOptions, state),
    0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
-   "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, 0},
+   "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(PolygonMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",

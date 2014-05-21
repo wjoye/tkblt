@@ -81,7 +81,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
    "normal", -1, Tk_Offset(LineMarkerOptions, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
-   "no", -1, Tk_Offset(LineMarkerOptions, drawUnder), 0, NULL, 0},
+   "no", -1, Tk_Offset(LineMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(LineMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
