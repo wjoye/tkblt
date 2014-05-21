@@ -7,6 +7,7 @@ $graph pen create foo -color red -showvalues y -symbol circle -dashes {4 4}
 $graph element configure data2 -pen foo
 
 echo "Testing Line Pen..."
+$graph element configure data1
 
 bltTest3 $graph pen foo -color yellow
 bltTest3 $graph pen foo -dashes {8 3}

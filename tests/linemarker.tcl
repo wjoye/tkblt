@@ -3,14 +3,15 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-set mm [$graph marker create line tt -element data1 \
+set mm [$graph marker create line tt -element data2 \
 	    -coords {1 50 1.5 100 1 150} -linewidth 5]
-set nn [$graph marker create line ss -element data1 \
+set nn [$graph marker create line ss -element data2 \
 	    -coords {1 150 .5 100 1 50} -linewidth 1 \
 	    -outline green -dashes 4]
 $graph element configure data1 -hide yes
 
 echo "Testing Line Marker..."
+bltCmd $graph marker configure $mm
 
 #bltTest3 $graph marker $mm -bindtags {aa}
 bltTest3 $graph marker $mm -cap round

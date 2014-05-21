@@ -10,6 +10,7 @@ $graph pen create foo -showvalues y -color purple
 $graph element activate data3
 
 echo "Testing Bar Element..."
+bltCmd $graph element data1 configure
 
 bltTest3 $graph element data3 -activepen foo
 bltTest3 $graph element data2 -background yellow

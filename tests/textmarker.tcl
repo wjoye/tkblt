@@ -3,11 +3,12 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-set mm [$graph marker create text tt -element data1 \
+set mm [$graph marker create text tt -element data2 \
 	    -coords {1.5 100} -text {Text Marker} -font {24}]
 $graph element configure data1 -hide yes
 
 echo "Testing Text Marker..."
+bltCmd $graph marker configure $mm
 
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background yellow

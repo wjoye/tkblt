@@ -3,10 +3,11 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-echo "Testing Crosshairs..."
-
 $graph crosshairs configure -hide no
 $graph crosshairs configure -x 200 -y 200
+
+echo "Testing Crosshairs..."
+$graph crosshairs configure
 
 bltTest2 $graph crosshairs -color green
 bltTest2 $graph crosshairs -dashes "8 3"

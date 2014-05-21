@@ -3,9 +3,10 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-$graph xaxis configure -title "X Axis" -limitsformat "%g"
+$graph axis configure x -title "X Axis" -limitsformat "%g"
 
 echo "Testing Axis..."
+bltCmd $graph axis configure x
 
 #bltCmd $graph axis activate
 #bltCmd $graph axis bind

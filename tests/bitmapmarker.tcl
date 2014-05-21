@@ -8,6 +8,7 @@ set mm [$graph marker create bitmap tt -element data2 \
 $graph element configure data1 -hide yes
 
 echo "Testing Bitmap Marker..."
+bltCmd $graph marker configure $mm
 
 bltTest3 $graph marker $mm -anchor nw
 bltTest3 $graph marker $mm -background yellow
