@@ -3,21 +3,21 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-$graph axis configure x -title "X Axis" -limitsformat "%g"
-#$graph axis configure y -bd 4
+$graph axis configure x -bd 2 -background cyan -title "X Axis" -limitsformat "%g"
+$graph axis configure y -bd 2 -background cyan
 bltCmd $graph axis activate y
 
 echo "Testing Axis..."
 bltCmd $graph axis configure x
 
 bltTest3 $graph axis y -activeforeground red
-##bltTest3 $graph axis y -activerelief groove
+bltTest3 $graph axis y -activerelief sunken
 #bltTest3 $graph axis x -autorange 10
 bltTest3 $graph axis x -background yellow
-bltTest3 $graph axis x -bg cyan
+bltTest3 $graph axis x -bg blue
 #bltTest3 $graph axis x -bindtags
-##bltTest3 $graph axis x -bd 2
-##bltTest3 $graph axis x -borderwidth 4
+bltTest3 $graph axis y -bd 4
+bltTest3 $graph axis y -borderwidth 4
 #bltTest3 $graph axis x -checklimits
 bltTest3 $graph axis x -color red
 #bltTest3 $graph axis x -command
@@ -47,7 +47,7 @@ bltTest3 $graph axis x -logscale yes
 #bltTest3 $graph axis x -max
 #bltTest3 $graph axis x -min
 #bltTest3 $graph axis x -minorticks
-##bltTest3 $graph axis x -relief groove
+bltTest3 $graph axis x -relief groove
 bltTest3 $graph axis x -rotate 45
 #bltTest3 $graph axis x -scrollcommand
 #bltTest3 $graph axis x -scrollincrement
@@ -83,6 +83,18 @@ bltCmd $graph axis configure x -color
 #bltCmd $graph axis transform x
 #bltCmd $graph axis type x
 #bltCmd $graph axis view x
+
+#bltCmd $graph xaxis activate
+#bltCmd $graph xaxis bind
+bltCmd $graph xaxis cget -color
+bltCmd $graph xaxis configure
+bltCmd $graph xaxis configure -color
+#bltCmd $graph xaxis deactivate
+#bltCmd $graph xaxis invtransform
+#bltCmd $graph xaxis limits
+#bltCmd $graph xaxis transform
+#bltCmd $graph xaxis use
+#bltCmd $graph xaxis view
 
 echo "done"
 bltPlotDestroy $w
