@@ -1,4 +1,5 @@
-set sleep 1000
+#set sleep 1000
+set sleep 500
 
 proc bltPlot {w title} {
     toplevel $w
@@ -90,12 +91,11 @@ proc bltElements {graph} {
 proc bltBarGraph {w} {
     global sleep
 
-    set title "Bar Graph"
-    bltPlot $w $title
+    bltPlot $w "Bar Graph"
     set graph [blt::barchart ${w}.gr \
 		   -width 600 \
 		   -height 500 \
-		   -title $title \
+		   -title "Bar\nGraph" \
 		   -barwidth .2 \
 		   -barmode aligned \
 		  ]
@@ -110,12 +110,11 @@ proc bltBarGraph {w} {
 proc bltLineGraph {w} {
     global sleep
 
-    set title "Line Graph"
-    bltPlot $w $title
+    bltPlot $w "Line Graph"
     set graph [blt::graph ${w}.gr \
 		   -width 600 \
 		   -height 500 \
-		   -title $title \
+		   -title "Line\nGraph" \
 		  ]
     pack $graph -expand yes -fill both
     bltElements $graph

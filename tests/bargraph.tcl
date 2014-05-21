@@ -31,7 +31,7 @@ bltTest $graph -height 300
 #bltTest $graph -highlightcolor
 #bltTest $graph -highlightthickness
 bltTest $graph -invertxy yes
-#bltTest $graph -justify
+bltTest $graph -justify left
 bltTest $graph -leftmargin 50
 bltTest $graph -lm 50
 bltTest $graph -plotbackground cyan

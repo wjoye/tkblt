@@ -500,10 +500,12 @@ void Axis::draw(Drawable drawable)
   if (ops->hide || !use_)
     return;
 
-  if (ops->normalBg)
+  if (ops->normalBg) {
+    int relief = active_ ? ops->activeRelief : ops->relief;
     Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, ops->normalBg, 
 		       left_, top_, right_ - left_, bottom_ - top_,
-		       ops->borderWidth, ops->relief);
+		       ops->borderWidth, relief);
+  }
 
   if (ops->title) {
     TextStyle ts(graphPtr_);
@@ -517,7 +519,6 @@ void Axis::draw(Drawable drawable)
 
     ts.xPad_ = 1;
     ts.yPad_ = 0;
-
     ts.drawText(drawable, ops->title, titlePos_.x, titlePos_.y);
   }
 
@@ -1669,10 +1670,12 @@ void Axis::print(Blt_Ps ps)
     return;
 
   Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name_);
-  if (ops->normalBg)
+  if (ops->normalBg) {
+    int relief = active_ ? ops->activeRelief : ops->relief;
     Blt_Ps_Fill3DRectangle(ps, ops->normalBg, left_, top_, 
 			   right_ - left_, bottom_ - top_, 
-			   ops->borderWidth, ops->relief);
+			   ops->borderWidth, relief);
+  }
 
   if (ops->title) {
     TextStyle ts(graphPtr_);

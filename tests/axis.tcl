@@ -3,7 +3,7 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-$graph axis configure x -bd 2 -background cyan -title "X Axis" -limitsformat "%g"
+$graph axis configure x -bd 2 -background cyan -title "X\nAxis" -limitsformat "%g"
 $graph axis configure y -bd 2 -background cyan
 bltCmd $graph axis activate y
 
@@ -34,7 +34,7 @@ bltTest3 $graph axis x -gridminorcolor blue
 bltTest3 $graph axis x -gridminordashes {8 3}
 bltTest3 $graph axis x -gridminorlinewidth 2
 bltTest3 $graph axis x -hide yes
-##bltTest3 $graph axis x -justify left
+bltTest3 $graph axis x -justify left
 bltTest3 $graph axis x -labeloffset yes
 bltTest3 $graph axis x -limitscolor red
 bltTest3 $graph axis x -limitsfont "times 18 bold italic"
