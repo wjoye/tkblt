@@ -220,14 +220,14 @@ int Graph::configure()
 void Graph::map()
 {
   if (flags & RESET) {
-    cerr << "RESET" << endl;
+    //    cerr << "RESET" << endl;
     resetAxes();
     flags &= ~RESET;
     flags |= LAYOUT;
   }
 
   if (flags & LAYOUT) {
-    cerr << "LAYOUT" << endl;
+    //    cerr << "LAYOUT" << endl;
     layoutGraph();
     mapAxes();
     mapElements();
@@ -272,7 +272,7 @@ void Graph::draw()
 
   // Update cache if needed
   if (flags & CACHE) {
-    cerr << "CACHE" << endl;
+    //    cerr << "CACHE" << endl;
     drawMargins(cache_);
 
     switch (legend_->position()) {
@@ -353,7 +353,6 @@ void Graph::draw()
 
   enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
-  cerr << "---" << endl;
 }
 
 int Graph::print(const char *ident, Blt_Ps ps)
@@ -656,11 +655,7 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
 
 void Graph::destroyElement(Element* elemPtr)
 {
-  Blt_DeleteBindings(bindTable_, elemPtr);
   legend_->removeElement(elemPtr);
-
-  if (elemPtr->link)
-    Blt_Chain_DeleteLink(elements_.displayList, elemPtr->link);
 
   delete elemPtr;
 }
@@ -795,7 +790,7 @@ void Graph::mapMarkers()
       continue;
 
     if ((flags & MAP_MARKERS) || (markerPtr->flags & MAP_ITEM)) {
-      cerr << "MAP_MARKERS" << endl;
+      //      cerr << "MAP_MARKERS" << endl;
       markerPtr->map();
       markerPtr->flags &= ~MAP_ITEM;
     }

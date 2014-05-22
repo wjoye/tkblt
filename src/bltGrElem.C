@@ -58,14 +58,20 @@ Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 Element::~Element()
 {
+  if (graphPtr_->bindTable_)
+    Blt_DeleteBindings(graphPtr_->bindTable_, this);
+
+  if (link)
+    Blt_Chain_DeleteLink(graphPtr_->elements_.displayList, link);
+
+  if (hashPtr_)
+    Tcl_DeleteHashEntry(hashPtr_);
+
   if (name_)
     delete [] name_;
 
   if (activeIndices_)
     free(activeIndices_);
-
-  if (hashPtr_)
-    Tcl_DeleteHashEntry(hashPtr_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);

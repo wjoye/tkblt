@@ -57,16 +57,17 @@ Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 
 Marker::~Marker()
 {
-  Blt_DeleteBindings(graphPtr_->bindTable_, this);
+  if (graphPtr_->bindTable_)
+    Blt_DeleteBindings(graphPtr_->bindTable_, this);
 
-  if (name_)
-    delete [] name_;
+  if (link)
+    Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  if (link)
-    Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
+  if (name_)
+    delete [] name_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);

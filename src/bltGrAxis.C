@@ -274,13 +274,13 @@ Axis::~Axis()
   if (link)
     Blt_Chain_DeleteLink(chain, link);
 
+  if (hashPtr_)
+    Tcl_DeleteHashEntry(hashPtr_);
+
   if (name_)
     delete [] name_;
   if (className_)
     delete [] className_;
-
-  if (hashPtr_)
-    Tcl_DeleteHashEntry(hashPtr_);
 
   if (tickGC_)
     Tk_FreeGC(graphPtr_->display_, tickGC_);
