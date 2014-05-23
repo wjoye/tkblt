@@ -22,7 +22,6 @@ set foo [$graph marker create line foo]
 bltCmd $graph marker delete $foo
 bltCmd $graph marker exists $mm
 bltCmd $graph marker find enclosed 0 0 2 200
-bltCmd $graph marker get name current
 bltCmd $graph marker lower $mm
 bltCmd $graph marker lower $mm $nn
 bltCmd $graph marker names

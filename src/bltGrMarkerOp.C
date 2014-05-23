@@ -348,25 +348,6 @@ static int FindOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int GetOp(ClientData clientData, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
-    return TCL_ERROR;
-
-  const char* string = Tcl_GetString(objv[3]);
-  if (!strcmp(string, "current")) {
-    Marker* markerPtr = (Marker*)Blt_GetCurrentItem(graphPtr->bindTable_);
-
-    if (markerPtr == NULL)
-      return TCL_OK;
-
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), markerPtr->name_, -1);
-  }
-  return TCL_OK;
-}
-
 static int NamesOp(ClientData clientData, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
@@ -455,7 +436,6 @@ const Ensemble markerEnsemble[] = {
   {"delete",    DeleteOp, 0},
   {"exists",    ExistsOp, 0},
   {"find",      FindOp, 0},
-  {"get",       GetOp, 0},
   {"lower",     RelinkOp, 0},
   {"names",     NamesOp, 0},
   {"raise",     RelinkOp, 0},

@@ -75,7 +75,6 @@ bltCmd $graph axis configure x -color
 #bltCmd $graph axis deactivate foo
 #bltCmd $graph axis delete foo
 #bltCmd $graph axis focus x
-#bltCmd $graph axis get x
 #bltCmd $graph axis invtransform x
 #bltCmd $graph axis limits x
 #bltCmd $graph axis margin x

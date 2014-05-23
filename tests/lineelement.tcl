@@ -83,7 +83,6 @@ bltCmd $graph element create data4
 bltCmd $graph element create data5
 bltCmd $graph element delete data4 data5
 bltCmd $graph element exists data1
-#bltCmd $graph element get
 bltCmd $graph element lower data1
 bltCmd $graph element lower data2 data3
 bltCmd $graph element names

@@ -201,7 +201,6 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   link =NULL;
   chain =NULL;
 
-  detail_ =NULL;
   titlePos_.x =0;
   titlePos_.y =0;
   titleWidth_ =0;

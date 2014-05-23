@@ -653,20 +653,14 @@ int Graph::getPen(Tcl_Obj* objPtr, Pen** penPtrPtr)
 
 // Elements
 
-void Graph::destroyElement(Element* elemPtr)
-{
-  legend_->removeElement(elemPtr);
-
-  delete elemPtr;
-}
-
 void Graph::destroyElements()
 {
   Tcl_HashSearch iter;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&elements_.table, &iter);
        hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
     Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
-    destroyElement(elemPtr);
+    legend_->removeElement(elemPtr);
+    delete elemPtr;
   }
 
   Tcl_DeleteHashTable(&elements_.table);
@@ -1237,7 +1231,6 @@ Axis* Graph::nearestAxis(int x, int y)
 
 	bbox[4] = bbox[0];
 	if (Blt_PointInPolygon(&t, bbox, 5)) {
-	  axisPtr->detail_ = "label";
 	  return axisPtr;
 	}
       }
@@ -1258,14 +1251,12 @@ Axis* Graph::nearestAxis(int x, int y)
 	    
       bbox[4] = bbox[0];
       if (Blt_PointInPolygon(&t, bbox, 5)) {
-	axisPtr->detail_ = "title";
 	return axisPtr;
       }
     }
     if (ops->lineWidth > 0) {
       if ((x <= axisPtr->right_) && (x >= axisPtr->left_) && 
 	  (y <= axisPtr->bottom_) && (y >= axisPtr->top_)) {
-	axisPtr->detail_ = "line";
 	return axisPtr;
       }
     }
@@ -1277,7 +1268,7 @@ Axis* Graph::nearestAxis(int x, int y)
 void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
 		   Blt_List list)
 {
-  Graph* graphPtr = (Graph*)Blt_GetBindingData(table);
+  Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));
 
   switch (classId) {

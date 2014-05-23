@@ -168,7 +168,6 @@ class Axis {
   Blt_ChainLink link;
   Blt_Chain chain;
 
-  const char *detail_;
   Point2d titlePos_;
   unsigned short int titleWidth_;
   unsigned short int titleHeight_;	
