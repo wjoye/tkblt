@@ -32,15 +32,11 @@
 
 #include <tk.h>
 
-#include <bltList.h>
-
 typedef struct _Blt_BindTable *Blt_BindTable;
 
-typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, 
-				      ClientData *contextPtr);
+typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, ClientData *contextPtr);
 
-typedef void (Blt_BindTagProc)(Blt_BindTable bindTable, ClientData object, 
-			       ClientData context, Blt_List list);
+typedef const char** (Blt_BindTagProc)(Blt_BindTable bindTable, ClientData object, ClientData context, int*);
 
 struct _Blt_BindTable {
   unsigned int flags;

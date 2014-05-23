@@ -32,10 +32,7 @@
 #include <tkInt.h>
 #endif
 
-extern "C" {
 #include "bltBind.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrLegd.h"
 #include "bltGrLegdOp.h"

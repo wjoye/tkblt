@@ -29,10 +29,7 @@
 
 #include <string.h>
 
-extern "C" {
 #include "bltBind.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltGrMarkerOp.h"

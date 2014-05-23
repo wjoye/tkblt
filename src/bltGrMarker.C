@@ -31,10 +31,7 @@
 #include <math.h>
 #include <float.h>
 
-extern "C" {
 #include "bltBind.h"
-};
-
 #include "bltGraph.h"
 #include "bltGrMarker.h"
 #include "bltGrAxis.h"

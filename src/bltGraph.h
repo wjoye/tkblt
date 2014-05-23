@@ -34,9 +34,9 @@
 
 extern "C" {
 #include "bltChain.h"
-#include "bltBind.h"
 };
 
+#include "bltBind.h"
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 

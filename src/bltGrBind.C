@@ -34,9 +34,7 @@
 #include <iomanip>
 using namespace std;
 
-extern "C" {
 #include "bltBind.h"
-};
 
 #define MAX_STATIC_TAGS	64
 

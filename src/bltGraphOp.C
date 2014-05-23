@@ -29,10 +29,6 @@
 
 #include <string.h>
 
-extern "C" {
-#include "bltList.h"
-};
-
 #include "bltGraph.h"
 #include "bltGraphLine.h"
 #include "bltGraphBar.h"

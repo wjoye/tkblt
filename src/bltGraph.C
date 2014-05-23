@@ -29,10 +29,7 @@
 
 #include <float.h>
 
-extern "C" {
 #include "bltBind.h"
-};
-
 #include "bltGraph.h"
 #include "bltGraphOp.h"
 
