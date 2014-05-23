@@ -65,7 +65,8 @@ static const char*  positionObjOption[] = {
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BORDER, "-activebackground", "activeBackground",
    "ActiveBackground", 
-   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, activeBg), 0, NULL, CACHE},
+   STD_ACTIVE_BACKGROUND, -1, Tk_Offset(LegendOptions, activeBg), 
+   0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-activeborderwidth", "activeBorderWidth", 
    "ActiveBorderWidth", 
    STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, entryBW), 0, NULL, LAYOUT}, 
@@ -78,7 +79,8 @@ static Tk_OptionSpec optionSpecs[] = {
    "n", -1, Tk_Offset(LegendOptions, anchor), 0, NULL, LAYOUT},
   {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
-   NULL, -1, Tk_Offset(LegendOptions, normalBg), TK_OPTION_NULL_OK, NULL, CACHE},
+   NULL, -1, Tk_Offset(LegendOptions, normalBg), 
+   TK_OPTION_NULL_OK, NULL, CACHE},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, borderWidth), 
    0, NULL, LAYOUT}, 
@@ -91,12 +93,14 @@ static Tk_OptionSpec optionSpecs[] = {
    "dot", -1, Tk_Offset(LegendOptions, focusDashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, CACHE},
   {TK_OPTION_COLOR, "-focusforeground", "focusForeground", "FocusForeground",
-   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, focusColor), 0, NULL, CACHE},
+   STD_ACTIVE_FOREGROUND, -1, Tk_Offset(LegendOptions, focusColor), 
+   0, NULL, CACHE},
   {TK_OPTION_FONT, "-font", "font", "Font", 
    STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, style.font), 0, NULL, LAYOUT},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, fgColor), 0, NULL, CACHE},
+   STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, fgColor), 
+   0, NULL, CACHE},
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "no", -1, Tk_Offset(LegendOptions, hide), 0, NULL, LAYOUT},
   {TK_OPTION_PIXELS, "-ipadx", "iPadX", "Pad", 
@@ -852,8 +856,6 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
 
   if (!strcmp(string, "anchor"))
     elemPtr = selAnchorPtr_;
-  else if (!strcmp(string, "current"))
-    elemPtr = (Element*)Blt_GetCurrentItem(bindTable_);
   else if (!strcmp(string, "first"))
     elemPtr = getFirstElement();
   else if (!strcmp(string, "focus"))
@@ -872,10 +874,11 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     elemPtr = getPreviousColumn(focusPtr_);
   else if (string[0] == '@') {
     int x, y;
-    if (Blt_GetXY(graphPtr_->interp_, graphPtr_->tkwin_, string, &x, &y) !=TCL_OK)
+    if (Blt_GetXY(graphPtr_->interp_, graphPtr_->tkwin_, string, &x, &y) != TCL_OK)
       return TCL_ERROR;
 
-    elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, NULL);
+    ClientData classId;
+    elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, &classId);
   }
   else {
     if (graphPtr_->getElement(objPtr, &elemPtr) != TCL_OK)
@@ -1077,13 +1080,13 @@ static ClientData PickEntryProc(ClientData clientData, int x, int y,
 	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 	if (elemOps->label) {
-	  if (count == n)
+	  if (count == n) {
+	    *contextPtr = (ClientData)elemPtr->classId();
 	    return elemPtr;
+	  }
 	  count++;
 	}
       }	      
-      if (link)
-	return Blt_Chain_GetValue(link);
     }
   }
 

@@ -191,54 +191,6 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-static int FocusOp(ClientData clientData, Tcl_Interp* interp, 
-		   int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  graphPtr->focusPtr_ = NULL;
-  if (objc == 4) {
-    Axis* axisPtr;
-    if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
-      return TCL_ERROR;
-
-    AxisOptions* ops = (AxisOptions*)axisPtr->ops();
-    if (axisPtr && !ops->hide && axisPtr->use_)
-      graphPtr->focusPtr_ = axisPtr;
-  }
-
-  Blt_SetFocusItem(graphPtr->bindTable_, graphPtr->focusPtr_, NULL);
-
-  if (graphPtr->focusPtr_)
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), graphPtr->focusPtr_->name_,-1);
-
-  return TCL_OK;
-}
-
-static int GetOp(ClientData clientData, Tcl_Interp* interp, 
-		 int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
-    return TCL_ERROR;
-
-  Axis* axisPtr = (Axis*)Blt_GetCurrentItem(graphPtr->bindTable_);
-
-  // Report only on axes
-  if ((axisPtr) && 
-      ((axisPtr->classId_ == CID_AXIS_X) || 
-       (axisPtr->classId_ == CID_AXIS_Y) || 
-       (axisPtr->classId_ == CID_NONE))) {
-
-    char  *string = Tcl_GetString(objv[3]);
-    if (!strcmp(string, "current"))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->name_,-1);
-    else if (!strcmp(string, "detail"))
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), axisPtr->detail_, -1);
-  }
-
-  return TCL_OK;
-}
-
 static int InvTransformOp(ClientData clientData, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
@@ -362,8 +314,6 @@ const Ensemble axisEnsemble[] = {
   {"create",       CreateOp, 0},
   {"deactivate",   ActivateOp, 0},
   {"delete",       DeleteOp, 0},
-  {"focus",        FocusOp, 0},
-  {"get",          GetOp, 0},
   {"invtransform", InvTransformOp, 0},
   {"limits",       LimitsOp, 0},
   {"margin",       MarginOp, 0},
@@ -604,15 +554,14 @@ int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp,
 int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp, 
 	       int objc, Tcl_Obj* const objv[])
 {
-  const char *typeName;
-
-  typeName = "";
+  const char* typeName = "";
   if (axisPtr->use_) {
     if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
       typeName = "x";
     else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
       typeName = "y";
   }
+
   Tcl_SetStringObj(Tcl_GetObjResult(interp), typeName, -1);
   return TCL_OK;
 }

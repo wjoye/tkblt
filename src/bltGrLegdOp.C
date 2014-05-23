@@ -247,11 +247,13 @@ static int FocusOp(ClientData clientData, Tcl_Interp* interp,
     if (legendPtr->getElementFromObj(objv[3], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (elemPtr)
+    if (elemPtr) {
       legendPtr->focusPtr_ = elemPtr;
-  }
 
-  Blt_SetFocusItem(legendPtr->bindTable_,legendPtr->focusPtr_,CID_LEGEND_ENTRY);
+      legendPtr->bindTable_->focusItem = (ClientData)elemPtr;
+      legendPtr->bindTable_->focusContext = (ClientData)elemPtr->classId();
+    }
+  }
 
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
@@ -266,7 +268,7 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
 		 int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc<3)
     return TCL_ERROR;
 
   Legend* legendPtr = graphPtr->legend_;

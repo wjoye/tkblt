@@ -149,7 +149,6 @@ LineGraph::LineGraph(ClientData clientData, Tcl_Interp* interp,
   LineGraphOptions* ops = (LineGraphOptions*)ops_;
 
   Tk_SetClass(tkwin_, "Graph");
-  classId_ = CID_ELEM_LINE;
 
   ops->bottomMargin.site = MARGIN_BOTTOM;
   ops->leftMargin.site = MARGIN_LEFT;

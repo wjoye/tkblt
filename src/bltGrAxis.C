@@ -43,13 +43,13 @@
 using namespace Blt;
 
 #define AXIS_PAD_TITLE 2
-#define EXP10(x)	(pow(10.0,(x)))
+#define EXP10(x) (pow(10.0,(x)))
 
 AxisName axisNames[] = { 
-  { "x",  CID_AXIS_X, MARGIN_BOTTOM, MARGIN_LEFT   },
-  { "y",  CID_AXIS_Y, MARGIN_LEFT,   MARGIN_BOTTOM },
-  { "x2", CID_AXIS_X, MARGIN_TOP,    MARGIN_RIGHT  },
-  { "y2", CID_AXIS_Y, MARGIN_RIGHT,  MARGIN_TOP    }
+  { "x",  CID_AXIS_X },
+  { "y",  CID_AXIS_Y },
+  { "x2", CID_AXIS_X },
+  { "y2", CID_AXIS_Y }
 } ;
 
 // Defs

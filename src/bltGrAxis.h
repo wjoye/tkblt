@@ -55,10 +55,8 @@ typedef struct {
 } AxisInfo;
 
 typedef struct {
-  const char *name;
+  const char* name;
   ClassId classId;
-  int margin;
-  int invertMargin;
 } AxisName;
 
 extern AxisName axisNames[];
@@ -222,6 +220,7 @@ class Axis {
 
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
+  ClassId classId() {return classId_;}
 
   int configure();
   void map(int, int);

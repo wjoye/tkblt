@@ -172,7 +172,6 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
   Tk_SetClass(tkwin_, "Barchart");
-  classId_ = CID_ELEM_BAR;
 
   barGroups_ =NULL;
   nBarGroups_ =0;

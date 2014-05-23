@@ -56,7 +56,7 @@ typedef struct _Blt_BindTable BindTable;
 
   static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
 
-static void DoEvent(BindTable *bindPtr, XEvent *eventPtr, ClientData item,
+static void DoEvent(BindTable* bindPtr, XEvent* eventPtr, ClientData item,
 		    ClientData context)
 {
   if (!bindPtr->tkwin || !bindPtr->bindingTable)
@@ -73,7 +73,7 @@ static void DoEvent(BindTable *bindPtr, XEvent *eventPtr, ClientData item,
   Blt_List tagList = Blt_List_Create(BLT_ONE_WORD_KEYS);
   if (!bindPtr->tagProc) {
     Blt_List_Append(tagList, Tk_GetUid("all"), 0);
-    Blt_List_Append(tagList, (char *)item, 0);
+    Blt_List_Append(tagList, (char*)item, 0);
   }
   else
     (*bindPtr->tagProc)(bindPtr, item, context, tagList);
@@ -160,13 +160,11 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
   if (bindPtr->pickEvent.type != LeaveNotify) {
     int x = bindPtr->pickEvent.xcrossing.x;
     int y = bindPtr->pickEvent.xcrossing.y;
-    newItem = (*bindPtr->pickProc) (bindPtr->clientData, x, y, &newContext);
+    newItem = (*bindPtr->pickProc)(bindPtr->clientData, x, y, &newContext);
   }
 
   // Nothing to do:  the current item hasn't changed.
-  if (((newItem == bindPtr->currentItem) && 
-       (newContext == bindPtr->currentContext)) && 
-      ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0))
+  if (((newItem == bindPtr->currentItem) && (newContext == bindPtr->currentContext)) && ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0))
     return;
 
   // Simulate a LeaveNotify event on the previous current item and an
@@ -200,7 +198,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
 	(newContext != bindPtr->newContext)) {
 
       // Generate <Enter> and <Leave> events for objects during button
-      // grabs.  This isn't standard. But for example, it allows one to
+      // grabs. This isn't standard. But for example, it allows one to
       // provide balloon help on the individual entries of the Hierbox
       // widget.
       ClientData savedItem = bindPtr->currentItem;
@@ -349,7 +347,7 @@ int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
   unsigned long mask;
   if (command[0] == '+')
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command + 1, 1);
+			    command+1, 1);
   else
     mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
 			    command, 0);
@@ -397,12 +395,6 @@ void Blt_DestroyBindingTable(BindTable *bindPtr)
 
   free(bindPtr);
   bindPtr = NULL;
-}
-
-void Blt_PickCurrentItem(BindTable *bindPtr)
-{
-  if (bindPtr->activePick)
-    PickCurrentItem(bindPtr, &bindPtr->pickEvent);
 }
 
 void Blt_DeleteBindings(BindTable *bindPtr, ClientData object)

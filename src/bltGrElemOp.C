@@ -329,7 +329,8 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     Element* elemPtr;
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
-    graphPtr->destroyElement(elemPtr);
+    graphPtr->legend_->removeElement(elemPtr);
+    delete elemPtr;
   }
 
   graphPtr->flags |= RESET;
@@ -348,22 +349,6 @@ static int ExistsOp(ClientData clientData, Tcl_Interp* interp,
   Tcl_HashEntry *hPtr = 
     Tcl_FindHashEntry(&graphPtr->elements_.table, Tcl_GetString(objv[3]));
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
-  return TCL_OK;
-}
-
-static int GetOp(ClientData clientData, Tcl_Interp* interp,
-		 int objc, Tcl_Obj* const objv[])
-{
-  Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
-    return TCL_ERROR;
-
-  char *string = Tcl_GetString(objv[3]);
-  if ((string[0] == 'c') && (strcmp(string, "current") == 0)) {
-    Element* elemPtr = (Element*)Blt_GetCurrentItem(graphPtr->bindTable_);
-    if (elemPtr)
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
-  }
   return TCL_OK;
 }
 
@@ -538,7 +523,6 @@ const Ensemble elementEnsemble[] = {
   {"deactivate", DeactivateOp, 0},
   {"delete",     DeleteOp, 0},
   {"exists",     ExistsOp, 0},
-  {"get",        GetOp, 0},
   {"lower",      LowerOp, 0},
   {"names",      NamesOp, 0},
   {"raise",      RaiseOp, 0},

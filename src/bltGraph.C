@@ -1335,7 +1335,7 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
       (y >= exts.bottom) || (y < exts.top)) {
     Axis* axisPtr = graphPtr->nearestAxis(x, y);
     if (axisPtr) {
-      *contextPtr = (ClientData)axisPtr->classId_;
+      *contextPtr = (ClientData)axisPtr->classId();
       return axisPtr;
     }
   }
