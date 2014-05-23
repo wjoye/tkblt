@@ -221,6 +221,7 @@ class Axis {
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
   ClassId classId() {return classId_;}
+  const char* className() {return className_;}
 
   int configure();
   void map(int, int);

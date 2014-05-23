@@ -30,7 +30,6 @@
 #include <float.h>
 
 extern "C" {
-#include "bltList.h"
 #include "bltBind.h"
 };
 
@@ -1266,33 +1265,54 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
-		   Blt_List list)
+const char** Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context, int* num)
 {
   Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));
+
+  const char** tags =NULL;
 
   switch (classId) {
   case CID_ELEM_BAR:		
   case CID_ELEM_LINE: 
     {
       Element* ptr = (Element*)object;
-      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->name_),0);
-      Blt_List_Append(list,(const char*)graphPtr->elementTag(ptr->className()),0);
       ElementOptions* ops = (ElementOptions*)ptr->ops();
-      for (const char** pp = ops->tags; *pp; pp++)
-	Blt_List_Append(list, (const char*)graphPtr->elementTag(*pp),0);
+      int cnt =0;
+      for (const char** pp=ops->tags; *pp; pp++)
+	cnt++;
+      cnt +=2;
+
+      tags = new const char*[cnt];
+      tags[0] = (const char*)graphPtr->elementTag(ptr->name_);
+      tags[1] = (const char*)graphPtr->elementTag(ptr->className());
+      int ii=2;
+      for (const char** pp = ops->tags; *pp; pp++, ii++)
+	tags[ii] = (const char*)graphPtr->elementTag(*pp);
+
+      *num = cnt;
+      return tags;
     }
     break;
   case CID_AXIS_X:
   case CID_AXIS_Y:
     {
       Axis* ptr = (Axis*)object;
-      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->name_),0);
-      Blt_List_Append(list,(const char*)graphPtr->axisTag(ptr->className_),0);
       AxisOptions* ops = (AxisOptions*)ptr->ops();
-      for (const char** pp = ops->tags; *pp; pp++)
-	Blt_List_Append(list, (const char*)graphPtr->axisTag(*pp),0);
+      int cnt =0;
+      for (const char** pp=ops->tags; *pp; pp++)
+	cnt++;
+      cnt +=2;
+
+      tags = new const char*[cnt];
+      tags[0] = (const char*)graphPtr->axisTag(ptr->name_);
+      tags[1] = (const char*)graphPtr->axisTag(ptr->className());
+      int ii=2;
+      for (const char** pp = ops->tags; *pp; pp++, ii++)
+	tags[ii] = (const char*)graphPtr->axisTag(*pp);
+
+      *num = cnt;
+      return tags;
     }
     break;
   case CID_MARKER_BITMAP:
@@ -1301,16 +1321,28 @@ void Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context,
   case CID_MARKER_TEXT:
     {
       Marker* ptr = (Marker*)object;
-      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->name_),0);
-      Blt_List_Append(list,(const char*)graphPtr->markerTag(ptr->className()),0);
       MarkerOptions* ops = (MarkerOptions*)ptr->ops();
-      for (const char** pp = ops->tags; *pp; pp++)
-	Blt_List_Append(list, (const char*)graphPtr->markerTag(*pp),0);
+      int cnt =0;
+      for (const char** pp=ops->tags; *pp; pp++)
+	cnt++;
+      cnt +=2;
+
+      tags = new const char*[cnt];
+      tags[0] = (const char*)graphPtr->markerTag(ptr->name_);
+      tags[1] = (const char*)graphPtr->markerTag(ptr->className());
+      int ii=2;
+      for (const char** pp = ops->tags; *pp; pp++, ii++)
+	tags[ii] = (const char*)graphPtr->markerTag(*pp);
+
+      *num = cnt;
+      return tags;
     }
     break;
   default:
     break;
   }
+
+  return NULL;
 }
 
 // Find the closest point from the set of displayed elements, searching

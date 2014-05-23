@@ -29,6 +29,11 @@
 
 #include <stdlib.h>
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+using namespace std;
+
 extern "C" {
 #include "bltBind.h"
 };
@@ -54,7 +59,7 @@ typedef struct _Blt_BindTable BindTable;
    LeaveWindowMask | KeyPressMask | KeyReleaseMask |		\
    PointerMotionMask | VirtualEventMask)
 
-  static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
+static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
 
 static void DoEvent(BindTable* bindPtr, XEvent* eventPtr, 
 		    ClientData item, ClientData context)
@@ -69,35 +74,13 @@ static void DoEvent(BindTable* bindPtr, XEvent* eventPtr,
   if (!item)
     return;
 
-  // Invoke the binding system.
-  Blt_List tagList = Blt_List_Create(BLT_ONE_WORD_KEYS);
-  if (!bindPtr->tagProc) {
-    Blt_List_Append(tagList, Tk_GetUid("all"), 0);
-    Blt_List_Append(tagList, (char*)item, 0);
-  }
-  else
-    (*bindPtr->tagProc)(bindPtr, item, context, tagList);
+  int nTags;
+  const char** tagArray = (*bindPtr->tagProc)(bindPtr, item, context, &nTags);
+  Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
+	       (void**)tagArray);
 
-  if (Blt_List_GetLength(tagList) > 0) {
-    ClientData staticTags[MAX_STATIC_TAGS];
-    ClientData *tagArray = staticTags;
-    int nTags = Blt_List_GetLength(tagList);
-    if (nTags >= MAX_STATIC_TAGS)
-      tagArray = (ClientData*)malloc(sizeof(ClientData) * nTags);
-
-    nTags = 0;
-    for (Blt_ListNode node = Blt_List_FirstNode(tagList); node;
-	 node = Blt_List_NextNode(node))
-      tagArray[nTags++] = (ClientData)Blt_List_GetKey(node);
-
-    Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
-		 tagArray);
-
-    if (tagArray != staticTags)
-      free(tagArray);
-  }
-
-  Blt_List_Destroy(tagList);
+  if (tagArray)
+    delete [] tagArray;
 }
 
 static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
