@@ -744,7 +744,8 @@ int Graph::getElement(Tcl_Obj *objPtr, Element **elemPtrPtr)
 ClientData Graph::elementTag(const char *tagName)
 {
   int isNew;
-  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&elements_.tagTable,tagName,&isNew);
+  Tcl_HashEntry* hPtr = 
+    Tcl_CreateHashEntry(&elements_.tagTable, tagName, &isNew);
   return Tcl_GetHashKey(&elements_.tagTable, hPtr);
 }
 
@@ -831,7 +832,7 @@ void Graph::printMarkers(Blt_Ps ps, int under)
   }
 }
 
-ClientData Graph::markerTag(const char* tagName)
+ClientData Graph::markerTag(const char* tagName)    
 {
   int isNew;
   Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&markers_.tagTable, tagName,&isNew);
@@ -1362,7 +1363,6 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     ElementOptions* eops = (ElementOptions*)elemPtr->ops();
     if (eops->hide)
       continue;
-
     elemPtr->closest();
   }
 

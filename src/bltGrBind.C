@@ -56,8 +56,8 @@ typedef struct _Blt_BindTable BindTable;
 
   static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
 
-static void DoEvent(BindTable* bindPtr, XEvent* eventPtr, ClientData item,
-		    ClientData context)
+static void DoEvent(BindTable* bindPtr, XEvent* eventPtr, 
+		    ClientData item, ClientData context)
 {
   if (!bindPtr->tkwin || !bindPtr->bindingTable)
     return;

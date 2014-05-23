@@ -196,11 +196,12 @@ static int BindOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
 
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.tagTable, &iter); hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      char *tagName = (char*)Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
-      Tcl_ListObjAppendElement(interp, listObjPtr, 
-			       Tcl_NewStringObj(tagName, -1));
+    for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->elements_.tagTable, &iter); hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+      char* tagName = 
+	(char*)Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
+      Tcl_ListObjAppendElement(interp, listObjPtr,Tcl_NewStringObj(tagName,-1));
     }
+
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
@@ -253,8 +254,7 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
     // searching the display list from back to front.  That way if
     // the points from two different elements overlay each other
     // exactly, the last one picked will be the topmost.  
-
-    for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList); 
+    for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList);
 	 link; link = Blt_Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       ElementOptions* eops = (ElementOptions*)elemPtr->ops();

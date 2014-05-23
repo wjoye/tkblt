@@ -185,18 +185,15 @@ static int BindOp(ClientData clientData, Tcl_Interp* interp,
   Graph* graphPtr = (Graph*)clientData;
 
   if (objc == 3) {
-    Tcl_HashEntry *hPtr;
+    Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     Tcl_HashSearch iter;
-    Tcl_Obj *listObjPtr;
-
-    listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    for (hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.tagTable, &iter);
-	 hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
-      const char *tagName = 
-	(const char*)Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
+    for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&graphPtr->elements_.tagTable, &iter); hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
+      char* tagName = 
+	(char*)Tcl_GetHashKey(&graphPtr->elements_.tagTable, hPtr);
       Tcl_Obj *objPtr = Tcl_NewStringObj(tagName, -1);
       Tcl_ListObjAppendElement(interp, listObjPtr, objPtr);
     }
+
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
   }
