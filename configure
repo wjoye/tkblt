@@ -5526,13 +5526,12 @@ done
 #-----------------------------------------------------------------------
 
     vars="
-	bltBind.C
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C
 	bltGrAxisOp.C
 	bltGrAxisOption.C
-	bltGrXAxisOp.C
+	bltGrBind.C
 	bltGrElemOp.C
 	bltGrElemOption.C
 	bltGrElem.C
@@ -5558,6 +5557,7 @@ done
 	bltGrPenBar.C
 	bltGrPenLine.C
 	bltGrText.C
+	bltGrXAxisOp.C
 	bltGraph.C
 	bltGraphBar.C
 	bltGraphLine.C

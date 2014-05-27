@@ -71,13 +71,12 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
-	bltBind.C
 	bltChain.C
 	bltConfig.C
 	bltGrAxis.C
 	bltGrAxisOp.C
 	bltGrAxisOption.C
-	bltGrXAxisOp.C
+	bltGrBind.C
 	bltGrElemOp.C
 	bltGrElemOption.C
 	bltGrElem.C
@@ -103,6 +102,7 @@ TEA_ADD_SOURCES([
 	bltGrPenBar.C
 	bltGrPenLine.C
 	bltGrText.C
+	bltGrXAxisOp.C
 	bltGraph.C
 	bltGraphBar.C
 	bltGraphLine.C

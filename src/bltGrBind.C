@@ -34,7 +34,7 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltBind.h"
+#include "bltGrBind.h"
 
 static Tk_EventProc BindProc;
 typedef struct _Blt_BindTable BindTable;
@@ -42,10 +42,8 @@ typedef struct _Blt_BindTable BindTable;
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
-static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
-
-static void DoEvent(BindTable* bindPtr, XEvent* eventPtr, 
-		    ClientData item, ClientData context)
+static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
+		       ClientData item, ClientData context)
 {
   if (!bindPtr->tkwin || !bindPtr->bindingTable)
     return;
@@ -150,7 +148,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
     event.xcrossing.detail = NotifyAncestor;
 
     bindPtr->flags |= REPICK_IN_PROGRESS;
-    DoEvent(bindPtr, &event, bindPtr->currentItem, bindPtr->currentContext);
+    BltDoEvent(bindPtr, &event, bindPtr->currentItem, bindPtr->currentContext);
     bindPtr->flags &= ~REPICK_IN_PROGRESS;
 
     // Note: during DoEvent above, it's possible that bindPtr->newItem got
@@ -173,7 +171,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
 	event.type = LeaveNotify;
 	event.xcrossing.detail = NotifyVirtual; // Ancestor
 	bindPtr->currentItem = bindPtr->newItem;
-	DoEvent(bindPtr, &event, bindPtr->newItem, bindPtr->newContext);
+	BltDoEvent(bindPtr, &event, bindPtr->newItem, bindPtr->newContext);
       }
 
       bindPtr->newItem = newItem;
@@ -182,7 +180,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
 	event.type = EnterNotify;
 	event.xcrossing.detail = NotifyVirtual; // Ancestor
 	bindPtr->currentItem = newItem;
-	DoEvent(bindPtr, &event, newItem, newContext);
+	BltDoEvent(bindPtr, &event, newItem, newContext);
       }
 
       bindPtr->currentItem = savedItem;
@@ -201,7 +199,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
     event = bindPtr->pickEvent;
     event.type = EnterNotify;
     event.xcrossing.detail = NotifyAncestor;
-    DoEvent(bindPtr, &event, newItem, newContext);
+    BltDoEvent(bindPtr, &event, newItem, newContext);
   }
 
  done:
@@ -224,9 +222,24 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   case ButtonRelease:
     {
       int mask = 0;
-      if ((eventPtr->xbutton.button >= Button1) &&
-	  (eventPtr->xbutton.button <= Button5)) {
-	mask = buttonMasks[eventPtr->xbutton.button];
+      switch (eventPtr->xbutton.button) {
+      case Button1:
+	mask = Button1Mask;
+	break;
+      case Button2:
+	mask = Button2Mask;
+	break;
+      case Button3:
+	mask = Button3Mask;
+	break;
+      case Button4:
+	mask = Button4Mask;
+	break;
+      case Button5:
+	mask = Button5Mask;
+	break;
+      default:
+	break;
       }
 
       // For button press events, repick the current item using the button
@@ -242,7 +255,8 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
 	bindPtr->state = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);
 	bindPtr->state ^= mask;
-	DoEvent(bindPtr, eventPtr,bindPtr->currentItem,bindPtr->currentContext);
+	BltDoEvent(bindPtr, eventPtr, bindPtr->currentItem,
+		   bindPtr->currentContext);
       }
       else {
 
@@ -250,8 +264,8 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
 	// considered to be down.  Then repick the current item under the
 	// assumption that the button is no longer down.
 	bindPtr->state = eventPtr->xbutton.state;
-	DoEvent(bindPtr, eventPtr, bindPtr->currentItem, 
-		bindPtr->currentContext);
+	BltDoEvent(bindPtr, eventPtr, bindPtr->currentItem, 
+		   bindPtr->currentContext);
 	eventPtr->xbutton.state ^= mask;
 	bindPtr->state = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);
@@ -269,14 +283,16 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   case MotionNotify:
     bindPtr->state = eventPtr->xmotion.state;
     PickCurrentItem(bindPtr, eventPtr);
-    DoEvent(bindPtr, eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+    BltDoEvent(bindPtr, eventPtr, bindPtr->currentItem, 
+	       bindPtr->currentContext);
     break;
 
   case KeyPress:
   case KeyRelease:
     bindPtr->state = eventPtr->xkey.state;
     PickCurrentItem(bindPtr, eventPtr);
-    DoEvent(bindPtr, eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+    BltDoEvent(bindPtr, eventPtr, bindPtr->currentItem, 
+	       bindPtr->currentContext);
     break;
   }
 

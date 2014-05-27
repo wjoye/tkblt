@@ -30,7 +30,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "bltBind.h"
+#include "bltGrBind.h"
 #include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"

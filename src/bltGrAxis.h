@@ -42,7 +42,6 @@ extern "C" {
 class Graph;
 class PageSetup;
 
-#include "bltBind.h"
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 #include "bltPs.h"
