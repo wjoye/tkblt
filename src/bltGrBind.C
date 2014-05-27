@@ -37,12 +37,11 @@ using namespace std;
 #include "bltGrBind.h"
 
 static Tk_EventProc BindProc;
-typedef struct _Blt_BindTable BindTable;
 
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
-static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
+static void BltDoEvent(Blt_BindTable bindPtr, XEvent* eventPtr, 
 		       ClientData item, ClientData context)
 {
   if (!bindPtr->tkwin || !bindPtr->bindingTable)
@@ -64,7 +63,7 @@ static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr,
     delete [] tagArray;
 }
 
-static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
+static void PickCurrentItem(Blt_BindTable bindPtr, XEvent *eventPtr)
 {
   // Check whether or not a button is down.  If so, we'll log entry and exit
   // into and out of the current item, but not entry into any other item.
@@ -213,7 +212,7 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   // bindPtr->state.  This information is used to defer repicks of the
   // current item while buttons are down.
 
-  BindTable *bindPtr = (BindTable*)clientData;
+  Blt_BindTable bindPtr = (Blt_BindTable)clientData;
 
   Tcl_Preserve(bindPtr->clientData);
 
@@ -299,7 +298,7 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   Tcl_Release(bindPtr->clientData);
 }
 
-int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
+int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, Blt_BindTable bindPtr,
 				 ClientData item, int objc,
 				 Tcl_Obj* const objv[])
 {
@@ -357,7 +356,7 @@ Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp, Tk_Window tkwin,
 				     Blt_BindPickProc *pickProc,
 				     Blt_BindTagProc *tagProc)
 {
-  BindTable *bindPtr = (BindTable*)calloc(1, sizeof(BindTable));
+  Blt_BindTable bindPtr = (Blt_BindTable)calloc(1, sizeof(_Blt_BindTable));
   bindPtr->bindingTable = Tk_CreateBindingTable(interp);
   bindPtr->clientData = clientData;
   bindPtr->tkwin = tkwin;
@@ -371,7 +370,7 @@ Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp, Tk_Window tkwin,
   return bindPtr;
 }
 
-void Blt_DestroyBindingTable(BindTable *bindPtr)
+void Blt_DestroyBindingTable(Blt_BindTable bindPtr)
 {
   Tk_DeleteBindingTable(bindPtr->bindingTable);
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
@@ -383,7 +382,7 @@ void Blt_DestroyBindingTable(BindTable *bindPtr)
   bindPtr = NULL;
 }
 
-void Blt_DeleteBindings(BindTable *bindPtr, ClientData object)
+void Blt_DeleteBindings(Blt_BindTable bindPtr, ClientData object)
 {
   Tk_DeleteAllBindings(bindPtr->bindingTable, object);
 
