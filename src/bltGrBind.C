@@ -36,26 +36,11 @@ using namespace std;
 
 #include "bltBind.h"
 
-#define MAX_STATIC_TAGS	64
-
 static Tk_EventProc BindProc;
 typedef struct _Blt_BindTable BindTable;
 
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
-
-#define ALL_BUTTONS_MASK (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask)
-
-#ifndef VirtualEventMask
-#define VirtualEventMask    (1L << 30)
-#endif
-
-#define ALL_VALID_EVENTS_MASK					\
-  (ButtonMotionMask | Button1MotionMask | Button2MotionMask |	\
-   Button3MotionMask | Button4MotionMask | Button5MotionMask |	\
-   ButtonPressMask | ButtonReleaseMask | EnterWindowMask |	\
-   LeaveWindowMask | KeyPressMask | KeyReleaseMask |		\
-   PointerMotionMask | VirtualEventMask)
 
 static int buttonMasks[] = {0, Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask};
 
@@ -88,7 +73,7 @@ static void PickCurrentItem(BindTable *bindPtr,	XEvent *eventPtr)
   // This implements a form of grabbing equivalent to what the X server does
   // for windows.
 
-  int buttonDown = (bindPtr->state & ALL_BUTTONS_MASK);
+  int buttonDown = (bindPtr->state & (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask));
   if (!buttonDown)
     bindPtr->flags &= ~LEFT_GRABBED_ITEM;
 
@@ -335,7 +320,11 @@ int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, BindTable *bindPtr,
   if (!mask)
     return TCL_ERROR;
 
-  if (mask & (unsigned)~ALL_VALID_EVENTS_MASK) {
+  if (mask & (unsigned) ~(ButtonMotionMask|Button1MotionMask
+			  |Button2MotionMask|Button3MotionMask|Button4MotionMask
+			  |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
+			  |EnterWindowMask|LeaveWindowMask|KeyPressMask
+			  |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
     Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
     Tcl_ResetResult(interp);
     Tcl_AppendResult(interp, "requested illegal events; ",
