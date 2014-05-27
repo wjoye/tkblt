@@ -27,45 +27,44 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_BIND_H
-#define _BLT_BIND_H
+#ifndef __BltGrBind_h__
+#define __BltGrBind_h__
 
 #include <tk.h>
 
-typedef struct _Blt_BindTable *Blt_BindTable;
+class BindTable;
 
 typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, ClientData *contextPtr);
 
-typedef const char** (Blt_BindTagProc)(Blt_BindTable bindTable, ClientData object, ClientData context, int*);
+typedef const char** (Blt_BindTagProc)(BindTable* bindTable, ClientData object, ClientData context, int*);
 
-struct _Blt_BindTable {
+class BindTable {
+ public:
   unsigned int flags;
   Tk_BindingTable bindingTable;
-  ClientData currentItem; // The item currently containing the mouse pointer
-  ClientData currentContext; // One word indicating what kind of object
-  ClientData newItem; // The item that is about to become the current one
-  ClientData newContext; // One-word indicating what kind of object was picked
+  ClientData currentItem;
+  ClientData currentContext;
+  ClientData newItem;
+  ClientData newContext;
   ClientData focusItem;
   ClientData focusContext;
-  XEvent pickEvent; // The event upon which the choice of the current tab
-  int activePick; // The pick event has been initialized so that we can repick
-  int state; // Last known modifier state
+  XEvent pickEvent;
+  int activePick;
+  int state;
   ClientData clientData;
   Tk_Window tkwin;
-  Blt_BindPickProc *pickProc; // Routine to report the item the mouse is over
-  Blt_BindTagProc *tagProc; // Routine to report tags picked items
+  Blt_BindPickProc* pickProc;
+  Blt_BindTagProc* tagProc;
+
+ public:
+  BindTable(Tcl_Interp* interp, Tk_Window tkwin, ClientData clientData, 
+	    Blt_BindPickProc* pickProc, Blt_BindTagProc* tagProc);
+  virtual ~BindTable();
+  
+  int configure(Tcl_Interp* interp, ClientData item, int objc, 
+		Tcl_Obj *const *objv);
+  void deleteBindings(ClientData object);
 };
 
-extern Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp, 
-					    Tk_Window tkwin, 
-					    ClientData clientData, 
-					    Blt_BindPickProc *pickProc,
-					    Blt_BindTagProc *tagProc);
-extern void Blt_DestroyBindingTable(Blt_BindTable table);
-extern void Blt_DeleteBindings(Blt_BindTable table, ClientData object);
-extern int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, 
-					Blt_BindTable table, 
-					ClientData item, 
-					int objc, Tcl_Obj *const *objv);
 
 #endif

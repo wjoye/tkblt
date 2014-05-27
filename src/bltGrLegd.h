@@ -125,10 +125,10 @@ class Legend {
   int nRows_;
   int entryWidth_;
   int entryHeight_;
-  Blt_BindTable bindTable_;
-  Element *focusPtr_;
-  Element *selAnchorPtr_;
-  Element *selMarkPtr_;
+  BindTable* bindTable_;
+  Element* focusPtr_;
+  Element* selAnchorPtr_;
+  Element* selMarkPtr_;
   Blt_Chain selected_;
   int titleWidth_;
   int titleHeight_;

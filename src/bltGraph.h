@@ -141,7 +141,7 @@ class Graph {
   Component elements_;
   Component markers_;
   Tcl_HashTable penTable_;
-  Blt_BindTable bindTable_;
+  BindTable* bindTable_;
   Blt_Chain axisChain_[4];
 
   Legend* legend_;

@@ -84,7 +84,7 @@ static int BindOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Axis* axisPtr = GetAxisFromCmd(clientData, objv[1]);
-  return Blt_ConfigureBindingsFromObj(interp, graphPtr->bindTable_, graphPtr->axisTag(axisPtr->name_), objc-3, objv+3);
+  return graphPtr->bindTable_->configure(interp, graphPtr->axisTag(axisPtr->name_), objc-3, objv+3);
 }
 
 static int InvTransformOp(ClientData clientData, Tcl_Interp* interp, 

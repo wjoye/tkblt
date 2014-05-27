@@ -38,10 +38,114 @@ using namespace std;
 
 static Tk_EventProc BindProc;
 
+BindTable::BindTable(Tcl_Interp* interp, Tk_Window tkwinn, 
+		     ClientData clientDataa,
+		     Blt_BindPickProc* pickProcc, Blt_BindTagProc* tagProcc)
+{
+  flags =0;
+  bindingTable = Tk_CreateBindingTable(interp);
+  currentItem =NULL;
+  currentContext =NULL;
+  newItem =NULL;
+  newContext =NULL;
+  focusItem =NULL;
+  focusContext =NULL;
+  //  pickEvent =NULL;
+  activePick =0;
+  state =0;
+  clientData = clientDataa;
+  tkwin = tkwinn;
+  pickProc = pickProcc;
+  tagProc = tagProcc;
+  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
+		       PointerMotionMask);
+  Tk_CreateEventHandler(tkwin, mask, BindProc, this);
+}
+
+BindTable::~BindTable()
+{
+  Tk_DeleteBindingTable(bindingTable);
+  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
+		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
+		       PointerMotionMask);
+  Tk_DeleteEventHandler(tkwin, mask, BindProc, this);
+}
+
+int BindTable::configure(Tcl_Interp* interp, ClientData item, 
+			 int objc, Tcl_Obj* const objv[])
+{
+  if (objc == 0) {
+    Tk_GetAllBindings(interp, bindingTable, item);
+    return TCL_OK;
+  }
+
+  const char *string = Tcl_GetString(objv[0]);
+  if (objc == 1) {
+    const char* command = Tk_GetBinding(interp, bindingTable, item, string);
+    if (!command) {
+      Tcl_ResetResult(interp);
+      Tcl_AppendResult(interp, "invalid binding event \"", string, "\"", NULL);
+      return TCL_ERROR;
+    }
+    Tcl_SetStringObj(Tcl_GetObjResult(interp), command, -1);
+    return TCL_OK;
+  }
+
+  const char* seq = string;
+  const char* command = Tcl_GetString(objv[1]);
+  if (command[0] == '\0')
+    return Tk_DeleteBinding(interp, bindingTable, item, seq);
+
+  unsigned long mask;
+  if (command[0] == '+')
+    mask = Tk_CreateBinding(interp, bindingTable, item, seq, command+1, 1);
+  else
+    mask = Tk_CreateBinding(interp, bindingTable, item, seq, command, 0);
+  if (!mask)
+    return TCL_ERROR;
+
+  if (mask & (unsigned) ~(ButtonMotionMask|Button1MotionMask
+			  |Button2MotionMask|Button3MotionMask|Button4MotionMask
+			  |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
+			  |EnterWindowMask|LeaveWindowMask|KeyPressMask
+			  |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
+    Tk_DeleteBinding(interp, bindingTable, item, seq);
+    Tcl_ResetResult(interp);
+    Tcl_AppendResult(interp, "requested illegal events; ",
+		     "only key, button, motion, enter, leave, and virtual ",
+		     "events may be used", (char *)NULL);
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+void BindTable::deleteBindings(ClientData object)
+{
+  Tk_DeleteAllBindings(bindingTable, object);
+
+  // If this is the object currently picked, we need to repick one.
+  if (currentItem == object) {
+    currentItem =NULL;
+    currentContext =NULL;
+  }
+
+  if (newItem == object) {
+    newItem =NULL;
+    newContext =NULL;
+  }
+
+  if (focusItem == object) {
+    focusItem =NULL;
+    focusContext =NULL;
+  }
+}
+
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
-static void BltDoEvent(Blt_BindTable bindPtr, XEvent* eventPtr, 
+static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
 		       ClientData item, ClientData context)
 {
   if (!bindPtr->tkwin || !bindPtr->bindingTable)
@@ -63,7 +167,7 @@ static void BltDoEvent(Blt_BindTable bindPtr, XEvent* eventPtr,
     delete [] tagArray;
 }
 
-static void PickCurrentItem(Blt_BindTable bindPtr, XEvent *eventPtr)
+static void PickCurrentItem(BindTable* bindPtr, XEvent *eventPtr)
 {
   // Check whether or not a button is down.  If so, we'll log entry and exit
   // into and out of the current item, but not entry into any other item.
@@ -212,7 +316,7 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   // bindPtr->state.  This information is used to defer repicks of the
   // current item while buttons are down.
 
-  Blt_BindTable bindPtr = (Blt_BindTable)clientData;
+  BindTable* bindPtr = (BindTable*)clientData;
 
   Tcl_Preserve(bindPtr->clientData);
 
@@ -298,107 +402,3 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
   Tcl_Release(bindPtr->clientData);
 }
 
-int Blt_ConfigureBindingsFromObj(Tcl_Interp* interp, Blt_BindTable bindPtr,
-				 ClientData item, int objc,
-				 Tcl_Obj* const objv[])
-{
-  if (objc == 0) {
-    Tk_GetAllBindings(interp, bindPtr->bindingTable, item);
-    return TCL_OK;
-  }
-
-  const char *string = Tcl_GetString(objv[0]);
-  if (objc == 1) {
-    const char* command = 
-      Tk_GetBinding(interp, bindPtr->bindingTable, item, string);
-    if (!command) {
-      Tcl_ResetResult(interp);
-      Tcl_AppendResult(interp, "invalid binding event \"", string, "\"", NULL);
-      return TCL_ERROR;
-    }
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), command, -1);
-    return TCL_OK;
-  }
-
-  const char *seq = string;
-  const char* command = Tcl_GetString(objv[1]);
-  if (command[0] == '\0')
-    return Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
-
-  unsigned long mask;
-  if (command[0] == '+')
-    mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command+1, 1);
-  else
-    mask = Tk_CreateBinding(interp, bindPtr->bindingTable, item, seq,
-			    command, 0);
-  if (!mask)
-    return TCL_ERROR;
-
-  if (mask & (unsigned) ~(ButtonMotionMask|Button1MotionMask
-			  |Button2MotionMask|Button3MotionMask|Button4MotionMask
-			  |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
-			  |EnterWindowMask|LeaveWindowMask|KeyPressMask
-			  |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
-    Tk_DeleteBinding(interp, bindPtr->bindingTable, item, seq);
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, "requested illegal events; ",
-		     "only key, button, motion, enter, leave, and virtual ",
-		     "events may be used", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  return TCL_OK;
-}
-
-Blt_BindTable Blt_CreateBindingTable(Tcl_Interp* interp, Tk_Window tkwin,
-				     ClientData clientData,
-				     Blt_BindPickProc *pickProc,
-				     Blt_BindTagProc *tagProc)
-{
-  Blt_BindTable bindPtr = (Blt_BindTable)calloc(1, sizeof(_Blt_BindTable));
-  bindPtr->bindingTable = Tk_CreateBindingTable(interp);
-  bindPtr->clientData = clientData;
-  bindPtr->tkwin = tkwin;
-  bindPtr->pickProc = pickProc;
-  bindPtr->tagProc = tagProc;
-  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-		       PointerMotionMask);
-  Tk_CreateEventHandler(tkwin, mask, BindProc, bindPtr);
-
-  return bindPtr;
-}
-
-void Blt_DestroyBindingTable(Blt_BindTable bindPtr)
-{
-  Tk_DeleteBindingTable(bindPtr->bindingTable);
-  unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
-		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-		       PointerMotionMask);
-  Tk_DeleteEventHandler(bindPtr->tkwin, mask, BindProc, bindPtr);
-
-  free(bindPtr);
-  bindPtr = NULL;
-}
-
-void Blt_DeleteBindings(Blt_BindTable bindPtr, ClientData object)
-{
-  Tk_DeleteAllBindings(bindPtr->bindingTable, object);
-
-  // If this is the object currently picked, we need to repick one.
-  if (bindPtr->currentItem == object) {
-    bindPtr->currentItem = NULL;
-    bindPtr->currentContext = NULL;
-  }
-
-  if (bindPtr->newItem == object) {
-    bindPtr->newItem = NULL;
-    bindPtr->newContext = NULL;
-  }
-
-  if (bindPtr->focusItem == object) {
-    bindPtr->focusItem = NULL;
-    bindPtr->focusContext = NULL;
-  }
-}

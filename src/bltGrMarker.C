@@ -54,7 +54,7 @@ Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 Marker::~Marker()
 {
   if (graphPtr_->bindTable_)
-    Blt_DeleteBindings(graphPtr_->bindTable_, this);
+    graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
     Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);

@@ -194,8 +194,8 @@ Legend::Legend(Graph* graphPtr)
   ops->titleStyle.angle =0;
   ops->titleStyle.justify =TK_JUSTIFY_LEFT;
 
-  bindTable_ = Blt_CreateBindingTable(graphPtr->interp_, graphPtr->tkwin_, 
-				      graphPtr, PickEntryProc, Blt_GraphTags);
+  bindTable_ = new BindTable(graphPtr->interp_, graphPtr->tkwin_, 
+			     graphPtr, PickEntryProc, Blt_GraphTags);
 
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
@@ -210,7 +210,7 @@ Legend::~Legend()
 {
   //  LegendOptions* ops = (LegendOptions*)ops_;
 
-  Blt_DestroyBindingTable(bindTable_);
+  delete bindTable_;
     
   if (focusGC_)
     Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
@@ -636,7 +636,7 @@ void Legend::print(Blt_Ps ps)
 
 void Legend::removeElement(Element* elemPtr)
 {
-  Blt_DeleteBindings(bindTable_, elemPtr);
+  bindTable_->deleteBindings(elemPtr);
 }
 
 void Legend::eventuallyInvokeSelectCmd()

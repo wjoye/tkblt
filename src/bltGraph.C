@@ -119,8 +119,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = Blt_CreateBindingTable(interp_, tkwin_, this, PickEntry, 
-				      Blt_GraphTags);
+  bindTable_ = new BindTable(interp_, tkwin_, this, PickEntry, Blt_GraphTags);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
@@ -151,7 +150,7 @@ Graph::~Graph()
   destroyPens();
 
   if (bindTable_)
-    Blt_DestroyBindingTable(bindTable_);
+    delete bindTable_;
 
   if (drawGC_)
     Tk_FreeGC(display_, drawGC_);
@@ -1261,7 +1260,7 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-const char** Blt_GraphTags(Blt_BindTable table, ClientData object, ClientData context, int* num)
+const char** Blt_GraphTags(BindTable* table, ClientData object, ClientData context, int* num)
 {
   Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));
