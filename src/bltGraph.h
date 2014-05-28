@@ -247,6 +247,4 @@ class Graph {
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
 };
 
-extern Blt_BindTagProc Blt_GraphTags;
-
 #endif

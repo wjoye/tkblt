@@ -119,7 +119,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(interp_, tkwin_, this, PickEntry, Blt_GraphTags);
+  bindTable_ = new BindTable(interp_, tkwin_, this, PickEntry);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
@@ -1260,7 +1260,8 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-const char** Blt_GraphTags(BindTable* table, ClientData object, ClientData context, int* num)
+const char** Blt_GraphTags(BindTable* table, ClientData object, 
+			   ClientData context, int* num)
 {
   Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));

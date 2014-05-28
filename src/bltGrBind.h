@@ -36,8 +36,6 @@ class BindTable;
 
 typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, ClientData *contextPtr);
 
-typedef const char** (Blt_BindTagProc)(BindTable* bindTable, ClientData object, ClientData context, int*);
-
 class BindTable {
  public:
   unsigned int flags;
@@ -49,16 +47,14 @@ class BindTable {
   ClientData focusItem;
   ClientData focusContext;
   XEvent pickEvent;
-  int activePick;
   int state;
   ClientData clientData;
   Tk_Window tkwin;
   Blt_BindPickProc* pickProc;
-  Blt_BindTagProc* tagProc;
 
  public:
   BindTable(Tcl_Interp* interp, Tk_Window tkwin, ClientData clientData, 
-	    Blt_BindPickProc* pickProc, Blt_BindTagProc* tagProc);
+	    Blt_BindPickProc* pickProc);
   virtual ~BindTable();
   
   int configure(Tcl_Interp* interp, ClientData item, int objc, 

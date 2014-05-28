@@ -40,7 +40,7 @@ static Tk_EventProc BindProc;
 
 BindTable::BindTable(Tcl_Interp* interp, Tk_Window tkwinn, 
 		     ClientData clientDataa,
-		     Blt_BindPickProc* pickProcc, Blt_BindTagProc* tagProcc)
+		     Blt_BindPickProc* pickProcc)
 {
   flags =0;
   bindingTable = Tk_CreateBindingTable(interp);
@@ -51,12 +51,10 @@ BindTable::BindTable(Tcl_Interp* interp, Tk_Window tkwinn,
   focusItem =NULL;
   focusContext =NULL;
   //  pickEvent =NULL;
-  activePick =0;
   state =0;
   clientData = clientDataa;
   tkwin = tkwinn;
   pickProc = pickProcc;
-  tagProc = tagProcc;
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
@@ -145,6 +143,8 @@ void BindTable::deleteBindings(ClientData object)
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
+const char** Blt_GraphTags(BindTable* table, ClientData object, ClientData context, int* num);
+
 static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
 		       ClientData item, ClientData context)
 {
@@ -159,7 +159,7 @@ static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr,
     return;
 
   int nTags;
-  const char** tagArray = (*bindPtr->tagProc)(bindPtr, item, context, &nTags);
+  const char** tagArray = Blt_GraphTags(bindPtr, item, context, &nTags);
   Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
 	       (void**)tagArray);
 
@@ -167,7 +167,7 @@ static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr,
     delete [] tagArray;
 }
 
-static void PickCurrentItem(BindTable* bindPtr, XEvent *eventPtr)
+static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
 {
   // Check whether or not a button is down.  If so, we'll log entry and exit
   // into and out of the current item, but not entry into any other item.
@@ -209,9 +209,7 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent *eventPtr)
     }
     else
       bindPtr->pickEvent = *eventPtr;
-
   }
-  bindPtr->activePick = 1;
 
   // If this is a recursive call (there's already a partially completed call
   // pending on the stack; it's in the middle of processing a Leave event
@@ -298,8 +296,7 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent *eventPtr)
   bindPtr->currentItem = bindPtr->newItem = newItem;
   bindPtr->currentContext = bindPtr->newContext = newContext;
   if (bindPtr->currentItem != NULL) {
-    XEvent event;
-    event = bindPtr->pickEvent;
+    XEvent event = bindPtr->pickEvent;
     event.type = EnterNotify;
     event.xcrossing.detail = NotifyAncestor;
     BltDoEvent(bindPtr, &event, newItem, newContext);
@@ -352,7 +349,6 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
       // up before we change the current item).
 
       if (eventPtr->type == ButtonPress) {
-
 	// On a button press, first repick the current item using the
 	// button state before the event, the process the event.
 	bindPtr->state = eventPtr->xbutton.state;
@@ -362,7 +358,6 @@ static void BindProc(ClientData clientData, XEvent *eventPtr)
 		   bindPtr->currentContext);
       }
       else {
-
 	// Button release: first process the event, with the button still
 	// considered to be down.  Then repick the current item under the
 	// assumption that the button is no longer down.
