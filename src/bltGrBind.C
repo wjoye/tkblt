@@ -124,7 +124,6 @@ void BindTable::deleteBindings(ClientData object)
 {
   Tk_DeleteAllBindings(table_, object);
 
-  // If this is the object currently picked, we need to repick one.
   if (currentItem_ == object) {
     currentItem_ =NULL;
     currentContext_ =CID_NONE;
@@ -141,7 +140,6 @@ void BindTable::deleteBindings(ClientData object)
   }
 }
 
-//  ClassId classId = (ClassId)(long(context));
 void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClassId classId)
 {
   if (!graphPtr_->tkwin_ || !table_)

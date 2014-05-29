@@ -59,8 +59,7 @@ Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 Element::~Element()
 {
-  if (graphPtr_->bindTable_)
-    graphPtr_->bindTable_->deleteBindings(this);
+  graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
     Blt_Chain_DeleteLink(graphPtr_->elements_.displayList, link);

@@ -39,13 +39,13 @@
 
 using namespace Blt;
 
-Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
+Marker::Marker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   optionTable_ =NULL;
   ops_ =NULL;
 
-  graphPtr_ =gPtr;  
-  name_ = dupstr(nPtr);
+  graphPtr_ =graphPtr;  
+  name_ = dupstr(name);
   hashPtr_ = hPtr;
   link =NULL;
   flags =0;
@@ -54,8 +54,7 @@ Marker::Marker(Graph* gPtr, const char* nPtr, Tcl_HashEntry* hPtr)
 
 Marker::~Marker()
 {
-  if (graphPtr_->bindTable_)
-    graphPtr_->bindTable_->deleteBindings(this);
+  graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
     Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
