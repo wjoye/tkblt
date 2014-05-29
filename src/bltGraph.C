@@ -1261,9 +1261,8 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-const char** Graph::getTags(ClientData object, ClientData context, int* num)
+const char** Graph::getTags(ClientData object, ClassId classId, int* num)
 {
-  ClassId classId = (ClassId)(long(context));
   const char** tags =NULL;
 
   switch (classId) {

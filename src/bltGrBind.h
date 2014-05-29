@@ -58,9 +58,9 @@ class BindTable {
 	    Blt_BindPickProc* pickProc);
   virtual ~BindTable();
   
-  int configure(Tcl_Interp* interp, ClientData item, int objc, 
-		Tcl_Obj *const *objv);
+  int configure(Tcl_Interp*, ClientData, int, Tcl_Obj *const []);
   void deleteBindings(ClientData object);
+  void doEvent(XEvent*, ClientData, ClientData);
 };
 
 

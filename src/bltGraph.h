@@ -246,7 +246,7 @@ class Graph {
   void getBoundingBox(int, int, float, double*, double*, Point2d*);
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
 
-  const char** getTags(ClientData item, ClientData context, int*);
+  const char** getTags(ClientData, ClassId, int*);
 };
 
 #endif
