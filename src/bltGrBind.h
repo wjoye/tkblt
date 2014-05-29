@@ -40,17 +40,17 @@ typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, Clien
 class BindTable {
  public:
   Graph* graphPtr_;
-  unsigned int flags;
-  Tk_BindingTable bindingTable;
-  ClientData currentItem;
-  ClientData currentContext;
-  ClientData newItem;
-  ClientData newContext;
-  ClientData focusItem;
-  ClientData focusContext;
-  XEvent pickEvent;
-  int state;
-  Blt_BindPickProc* pickProc;
+  unsigned int flags_;
+  Tk_BindingTable table_;
+  ClientData currentItem_;
+  ClientData currentContext_;
+  ClientData newItem_;
+  ClientData newContext_;
+  ClientData focusItem_;
+  ClientData focusContext_;
+  XEvent pickEvent_;
+  int state_;
+  Blt_BindPickProc* pickProc_;
 
  public:
   BindTable(Graph*, Blt_BindPickProc* pickProc);

@@ -39,20 +39,20 @@ using namespace std;
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Graph* graphPtr, Blt_BindPickProc* pickProcc)
+BindTable::BindTable(Graph* graphPtr, Blt_BindPickProc* pickProc)
 {
   graphPtr_ = graphPtr;
-  flags =0;
-  bindingTable = Tk_CreateBindingTable(graphPtr->interp_);
-  currentItem =NULL;
-  currentContext =NULL;
-  newItem =NULL;
-  newContext =NULL;
-  focusItem =NULL;
-  focusContext =NULL;
+  flags_ =0;
+  table_ = Tk_CreateBindingTable(graphPtr->interp_);
+  currentItem_ =NULL;
+  currentContext_ =NULL;
+  newItem_ =NULL;
+  newContext_ =NULL;
+  focusItem_ =NULL;
+  focusContext_ =NULL;
   //  pickEvent =NULL;
-  state =0;
-  pickProc = pickProcc;
+  state_ =0;
+  pickProc_ = pickProc;
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
@@ -61,7 +61,7 @@ BindTable::BindTable(Graph* graphPtr, Blt_BindPickProc* pickProcc)
 
 BindTable::~BindTable()
 {
-  Tk_DeleteBindingTable(bindingTable);
+  Tk_DeleteBindingTable(table_);
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
@@ -71,14 +71,14 @@ BindTable::~BindTable()
 int BindTable::configure(ClientData item, int objc, Tcl_Obj* const objv[])
 {
   if (objc == 0) {
-    Tk_GetAllBindings(graphPtr_->interp_, bindingTable, item);
+    Tk_GetAllBindings(graphPtr_->interp_, table_, item);
     return TCL_OK;
   }
 
   const char *string = Tcl_GetString(objv[0]);
   if (objc == 1) {
     const char* command = 
-      Tk_GetBinding(graphPtr_->interp_, bindingTable, item, string);
+      Tk_GetBinding(graphPtr_->interp_, table_, item, string);
     if (!command) {
       Tcl_ResetResult(graphPtr_->interp_);
       Tcl_AppendResult(graphPtr_->interp_, "invalid binding event \"", 
@@ -92,14 +92,14 @@ int BindTable::configure(ClientData item, int objc, Tcl_Obj* const objv[])
   const char* seq = string;
   const char* command = Tcl_GetString(objv[1]);
   if (command[0] == '\0')
-    return Tk_DeleteBinding(graphPtr_->interp_, bindingTable, item, seq);
+    return Tk_DeleteBinding(graphPtr_->interp_, table_, item, seq);
 
   unsigned long mask;
   if (command[0] == '+')
-    mask = Tk_CreateBinding(graphPtr_->interp_, bindingTable, 
+    mask = Tk_CreateBinding(graphPtr_->interp_, table_, 
 			    item, seq, command+1, 1);
   else
-    mask = Tk_CreateBinding(graphPtr_->interp_, bindingTable, 
+    mask = Tk_CreateBinding(graphPtr_->interp_, table_, 
 			    item, seq, command, 0);
   if (!mask)
     return TCL_ERROR;
@@ -109,7 +109,7 @@ int BindTable::configure(ClientData item, int objc, Tcl_Obj* const objv[])
 			  |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
 			  |EnterWindowMask|LeaveWindowMask|KeyPressMask
 			  |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
-    Tk_DeleteBinding(graphPtr_->interp_, bindingTable, item, seq);
+    Tk_DeleteBinding(graphPtr_->interp_, table_, item, seq);
     Tcl_ResetResult(graphPtr_->interp_);
     Tcl_AppendResult(graphPtr_->interp_, "requested illegal events; ",
 		     "only key, button, motion, enter, leave, and virtual ",
@@ -122,33 +122,33 @@ int BindTable::configure(ClientData item, int objc, Tcl_Obj* const objv[])
 
 void BindTable::deleteBindings(ClientData object)
 {
-  Tk_DeleteAllBindings(bindingTable, object);
+  Tk_DeleteAllBindings(table_, object);
 
   // If this is the object currently picked, we need to repick one.
-  if (currentItem == object) {
-    currentItem =NULL;
-    currentContext =NULL;
+  if (currentItem_ == object) {
+    currentItem_ =NULL;
+    currentContext_ =NULL;
   }
 
-  if (newItem == object) {
-    newItem =NULL;
-    newContext =NULL;
+  if (newItem_ == object) {
+    newItem_ =NULL;
+    newContext_ =NULL;
   }
 
-  if (focusItem == object) {
-    focusItem =NULL;
-    focusContext =NULL;
+  if (focusItem_ == object) {
+    focusItem_ =NULL;
+    focusContext_ =NULL;
   }
 }
 
 void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
 {
-  if (!graphPtr_->tkwin_ || !bindingTable)
+  if (!graphPtr_->tkwin_ || !table_)
     return;
 
   if ((eventPtr->type == KeyPress) || (eventPtr->type == KeyRelease)) {
-    item = focusItem;
-    context = focusContext;
+    item = focusItem_;
+    context = focusContext_;
   }
   if (!item)
     return;
@@ -156,7 +156,7 @@ void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
   int nTags;
   ClassId classId = (ClassId)(long(context));
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
-  Tk_BindEvent(bindingTable, eventPtr, graphPtr_->tkwin_, nTags, 
+  Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, 
 	       (void**)tagArray);
   if (tagArray)
     delete [] tagArray;
@@ -172,9 +172,9 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
   // This implements a form of grabbing equivalent to what the X server does
   // for windows.
 
-  int buttonDown = (bindPtr->state & (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask));
+  int buttonDown = (bindPtr->state_ & (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask));
   if (!buttonDown)
-    bindPtr->flags &= ~LEFT_GRABBED_ITEM;
+    bindPtr->flags_ &= ~LEFT_GRABBED_ITEM;
 
   // Save information about this event in the widget.  The event in the
   // widget is used for two purposes:
@@ -185,60 +185,60 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
   // Translate MotionNotify events into EnterNotify events, since that's
   // what gets reported to item handlers.
 
-  if (eventPtr != &bindPtr->pickEvent) {
+  if (eventPtr != &bindPtr->pickEvent_) {
     if ((eventPtr->type == MotionNotify) || (eventPtr->type == ButtonRelease)) {
-      bindPtr->pickEvent.xcrossing.type = EnterNotify;
-      bindPtr->pickEvent.xcrossing.serial = eventPtr->xmotion.serial;
-      bindPtr->pickEvent.xcrossing.send_event =	eventPtr->xmotion.send_event;
-      bindPtr->pickEvent.xcrossing.display = eventPtr->xmotion.display;
-      bindPtr->pickEvent.xcrossing.window = eventPtr->xmotion.window;
-      bindPtr->pickEvent.xcrossing.root = eventPtr->xmotion.root;
-      bindPtr->pickEvent.xcrossing.subwindow = None;
-      bindPtr->pickEvent.xcrossing.time = eventPtr->xmotion.time;
-      bindPtr->pickEvent.xcrossing.x = eventPtr->xmotion.x;
-      bindPtr->pickEvent.xcrossing.y = eventPtr->xmotion.y;
-      bindPtr->pickEvent.xcrossing.x_root = eventPtr->xmotion.x_root;
-      bindPtr->pickEvent.xcrossing.y_root = eventPtr->xmotion.y_root;
-      bindPtr->pickEvent.xcrossing.mode = NotifyNormal;
-      bindPtr->pickEvent.xcrossing.detail = NotifyNonlinear;
-      bindPtr->pickEvent.xcrossing.same_screen = eventPtr->xmotion.same_screen;
-      bindPtr->pickEvent.xcrossing.focus = False;
-      bindPtr->pickEvent.xcrossing.state = eventPtr->xmotion.state;
+      bindPtr->pickEvent_.xcrossing.type = EnterNotify;
+      bindPtr->pickEvent_.xcrossing.serial = eventPtr->xmotion.serial;
+      bindPtr->pickEvent_.xcrossing.send_event =	eventPtr->xmotion.send_event;
+      bindPtr->pickEvent_.xcrossing.display = eventPtr->xmotion.display;
+      bindPtr->pickEvent_.xcrossing.window = eventPtr->xmotion.window;
+      bindPtr->pickEvent_.xcrossing.root = eventPtr->xmotion.root;
+      bindPtr->pickEvent_.xcrossing.subwindow = None;
+      bindPtr->pickEvent_.xcrossing.time = eventPtr->xmotion.time;
+      bindPtr->pickEvent_.xcrossing.x = eventPtr->xmotion.x;
+      bindPtr->pickEvent_.xcrossing.y = eventPtr->xmotion.y;
+      bindPtr->pickEvent_.xcrossing.x_root = eventPtr->xmotion.x_root;
+      bindPtr->pickEvent_.xcrossing.y_root = eventPtr->xmotion.y_root;
+      bindPtr->pickEvent_.xcrossing.mode = NotifyNormal;
+      bindPtr->pickEvent_.xcrossing.detail = NotifyNonlinear;
+      bindPtr->pickEvent_.xcrossing.same_screen = eventPtr->xmotion.same_screen;
+      bindPtr->pickEvent_.xcrossing.focus = False;
+      bindPtr->pickEvent_.xcrossing.state = eventPtr->xmotion.state;
     }
     else
-      bindPtr->pickEvent = *eventPtr;
+      bindPtr->pickEvent_ = *eventPtr;
   }
 
   // If this is a recursive call (there's already a partially completed call
   // pending on the stack; it's in the middle of processing a Leave event
   // handler for the old current item) then just return; the pending call
   // will do everything that's needed.
-  if (bindPtr->flags & REPICK_IN_PROGRESS)
+  if (bindPtr->flags_ & REPICK_IN_PROGRESS)
     return;
 
   // A LeaveNotify event automatically means that there's no current item,
   // so the check for closest item can be skipped.
   ClientData newContext =NULL;
   ClientData newItem =NULL;
-  if (bindPtr->pickEvent.type != LeaveNotify) {
-    int x = bindPtr->pickEvent.xcrossing.x;
-    int y = bindPtr->pickEvent.xcrossing.y;
-    newItem = (*bindPtr->pickProc)(bindPtr->graphPtr_, x, y, &newContext);
+  if (bindPtr->pickEvent_.type != LeaveNotify) {
+    int x = bindPtr->pickEvent_.xcrossing.x;
+    int y = bindPtr->pickEvent_.xcrossing.y;
+    newItem = (*bindPtr->pickProc_)(bindPtr->graphPtr_, x, y, &newContext);
   }
 
   // Nothing to do:  the current item hasn't changed.
-  if (((newItem == bindPtr->currentItem) && (newContext == bindPtr->currentContext)) && ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0))
+  if (((newItem == bindPtr->currentItem_) && (newContext == bindPtr->currentContext_)) && ((bindPtr->flags_ & LEFT_GRABBED_ITEM) == 0))
     return;
 
   // Simulate a LeaveNotify event on the previous current item and an
   // EnterNotify event on the new current item.  Remove the "current" tag
   // from the previous current item and place it on the new current item.
-  ClientData oldItem = bindPtr->currentItem;
+  ClientData oldItem = bindPtr->currentItem_;
   Tcl_Preserve(oldItem);
   Tcl_Preserve(newItem);
 
-  if ((bindPtr->currentItem != NULL) && ((newItem != bindPtr->currentItem) || (newContext != bindPtr->currentContext)) && ((bindPtr->flags & LEFT_GRABBED_ITEM) == 0)) {
-    XEvent event = bindPtr->pickEvent;
+  if ((bindPtr->currentItem_ != NULL) && ((newItem != bindPtr->currentItem_) || (newContext != bindPtr->currentContext_)) && ((bindPtr->flags_ & LEFT_GRABBED_ITEM) == 0)) {
+    XEvent event = bindPtr->pickEvent_;
     event.type = LeaveNotify;
 
     // If the event's detail happens to be NotifyInferior the binding
@@ -246,54 +246,55 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
     // NotifyAncestor.
     event.xcrossing.detail = NotifyAncestor;
 
-    bindPtr->flags |= REPICK_IN_PROGRESS;
-    bindPtr->doEvent(&event, bindPtr->currentItem, bindPtr->currentContext);
-    bindPtr->flags &= ~REPICK_IN_PROGRESS;
+    bindPtr->flags_ |= REPICK_IN_PROGRESS;
+    bindPtr->doEvent(&event, bindPtr->currentItem_, bindPtr->currentContext_);
+    bindPtr->flags_ &= ~REPICK_IN_PROGRESS;
 
     // Note: during DoEvent above, it's possible that bindPtr->newItem got
     // reset to NULL because the item was deleted.
   }
 
-  if (((newItem != bindPtr->currentItem) || (newContext != bindPtr->currentContext)) && (buttonDown)) {
-    bindPtr->flags |= LEFT_GRABBED_ITEM;
-    XEvent event = bindPtr->pickEvent;
-    if ((newItem != bindPtr->newItem) || (newContext != bindPtr->newContext)) {
+  if (((newItem != bindPtr->currentItem_) || (newContext != bindPtr->currentContext_)) && (buttonDown)) {
+    bindPtr->flags_ |= LEFT_GRABBED_ITEM;
+    XEvent event = bindPtr->pickEvent_;
+    if ((newItem != bindPtr->newItem_) || (newContext != bindPtr->newContext_)) {
 
       // Generate <Enter> and <Leave> events for objects during button
       // grabs. This isn't standard. But for example, it allows one to
       // provide balloon help on the individual entries of the Hierbox
       // widget.
-      ClientData savedItem = bindPtr->currentItem;
-      ClientData savedContext = bindPtr->currentContext;
-      if (bindPtr->newItem != NULL) {
+      ClientData savedItem = bindPtr->currentItem_;
+      ClientData savedContext = bindPtr->currentContext_;
+      if (bindPtr->newItem_ != NULL) {
 	event.type = LeaveNotify;
 	event.xcrossing.detail = NotifyVirtual; // Ancestor
-	bindPtr->currentItem = bindPtr->newItem;
-	bindPtr->doEvent(&event, bindPtr->newItem, bindPtr->newContext);
+	bindPtr->currentItem_ = bindPtr->newItem_;
+	bindPtr->doEvent(&event, bindPtr->newItem_, bindPtr->newContext_);
       }
 
-      bindPtr->newItem = newItem;
-      bindPtr->newContext = newContext;
+      bindPtr->newItem_ = newItem;
+      bindPtr->newContext_ = newContext;
       if (newItem != NULL) {
 	event.type = EnterNotify;
 	event.xcrossing.detail = NotifyVirtual; // Ancestor
-	bindPtr->currentItem = newItem;
+	bindPtr->currentItem_ = newItem;
 	bindPtr->doEvent(&event, newItem, newContext);
       }
 
-      bindPtr->currentItem = savedItem;
-      bindPtr->currentContext = savedContext;
+      bindPtr->currentItem_ = savedItem;
+      bindPtr->currentContext_ = savedContext;
     }
     goto done;
   }
 
-  // Special note:  it's possible that bindPtr->newItem == bindPtr->currentItem
+  // Special note:  
+  // it's possible that bindPtr->newItem_ == bindPtr->currentItem_
   // here. This can happen, for example, if LEFT_GRABBED_ITEM was set.
-  bindPtr->flags &= ~LEFT_GRABBED_ITEM;
-  bindPtr->currentItem = bindPtr->newItem = newItem;
-  bindPtr->currentContext = bindPtr->newContext = newContext;
-  if (bindPtr->currentItem != NULL) {
-    XEvent event = bindPtr->pickEvent;
+  bindPtr->flags_ &= ~LEFT_GRABBED_ITEM;
+  bindPtr->currentItem_ = bindPtr->newItem_ = newItem;
+  bindPtr->currentContext_ = bindPtr->newContext_ = newContext;
+  if (bindPtr->currentItem_ != NULL) {
+    XEvent event = bindPtr->pickEvent_;
     event.type = EnterNotify;
     event.xcrossing.detail = NotifyAncestor;
     bindPtr->doEvent(&event, newItem, newContext);
@@ -348,21 +349,21 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
       if (eventPtr->type == ButtonPress) {
 	// On a button press, first repick the current item using the
 	// button state before the event, the process the event.
-	bindPtr->state = eventPtr->xbutton.state;
+	bindPtr->state_ = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);
-	bindPtr->state ^= mask;
+	bindPtr->state_ ^= mask;
 	bindPtr->doEvent(eventPtr, 
-			 bindPtr->currentItem, bindPtr->currentContext);
+			 bindPtr->currentItem_, bindPtr->currentContext_);
       }
       else {
 	// Button release: first process the event, with the button still
 	// considered to be down.  Then repick the current item under the
 	// assumption that the button is no longer down.
-	bindPtr->state = eventPtr->xbutton.state;
+	bindPtr->state_ = eventPtr->xbutton.state;
 	bindPtr->doEvent(eventPtr, 
-			 bindPtr->currentItem, bindPtr->currentContext);
+			 bindPtr->currentItem_, bindPtr->currentContext_);
 	eventPtr->xbutton.state ^= mask;
-	bindPtr->state = eventPtr->xbutton.state;
+	bindPtr->state_ = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);
 	eventPtr->xbutton.state ^= mask;
       }
@@ -371,21 +372,21 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
 
   case EnterNotify:
   case LeaveNotify:
-    bindPtr->state = eventPtr->xcrossing.state;
+    bindPtr->state_ = eventPtr->xcrossing.state;
     PickCurrentItem(bindPtr, eventPtr);
     break;
 
   case MotionNotify:
-    bindPtr->state = eventPtr->xmotion.state;
+    bindPtr->state_ = eventPtr->xmotion.state;
     PickCurrentItem(bindPtr, eventPtr);
-    bindPtr->doEvent(eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+    bindPtr->doEvent(eventPtr, bindPtr->currentItem_, bindPtr->currentContext_);
     break;
 
   case KeyPress:
   case KeyRelease:
-    bindPtr->state = eventPtr->xkey.state;
+    bindPtr->state_ = eventPtr->xkey.state;
     PickCurrentItem(bindPtr, eventPtr);
-    bindPtr->doEvent(eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+    bindPtr->doEvent(eventPtr, bindPtr->currentItem_, bindPtr->currentContext_);
     break;
   }
 
