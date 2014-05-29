@@ -32,6 +32,7 @@
 #include "bltGraph.h"
 #include "bltGraphOp.h"
 
+#include "bltGrBind.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOp.h"
 #include "bltGrXAxisOp.h"
@@ -119,7 +120,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(interp_, tkwin_, this, GraphPickEntry);
+  bindTable_ = new BindTable(this, interp_, tkwin_, GraphPickEntry);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
@@ -1260,12 +1261,9 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-const char** BltGraphTags(BindTable* table, ClientData object, 
-			  ClientData context, int* num)
+const char** Graph::getTags(ClientData object, ClientData context, int* num)
 {
-  Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));
-
   const char** tags =NULL;
 
   switch (classId) {
@@ -1280,11 +1278,11 @@ const char** BltGraphTags(BindTable* table, ClientData object,
       cnt +=2;
 
       tags = new const char*[cnt];
-      tags[0] = (const char*)graphPtr->elementTag(ptr->name_);
-      tags[1] = (const char*)graphPtr->elementTag(ptr->className());
+      tags[0] = (const char*)elementTag(ptr->name_);
+      tags[1] = (const char*)elementTag(ptr->className());
       int ii=2;
       for (const char** pp = ops->tags; *pp; pp++, ii++)
-	tags[ii] = (const char*)graphPtr->elementTag(*pp);
+	tags[ii] = (const char*)elementTag(*pp);
 
       *num = cnt;
       return tags;
@@ -1301,11 +1299,11 @@ const char** BltGraphTags(BindTable* table, ClientData object,
       cnt +=2;
 
       tags = new const char*[cnt];
-      tags[0] = (const char*)graphPtr->axisTag(ptr->name_);
-      tags[1] = (const char*)graphPtr->axisTag(ptr->className());
+      tags[0] = (const char*)axisTag(ptr->name_);
+      tags[1] = (const char*)axisTag(ptr->className());
       int ii=2;
       for (const char** pp = ops->tags; *pp; pp++, ii++)
-	tags[ii] = (const char*)graphPtr->axisTag(*pp);
+	tags[ii] = (const char*)axisTag(*pp);
 
       *num = cnt;
       return tags;
@@ -1324,11 +1322,11 @@ const char** BltGraphTags(BindTable* table, ClientData object,
       cnt +=2;
 
       tags = new const char*[cnt];
-      tags[0] = (const char*)graphPtr->markerTag(ptr->name_);
-      tags[1] = (const char*)graphPtr->markerTag(ptr->className());
+      tags[0] = (const char*)markerTag(ptr->name_);
+      tags[1] = (const char*)markerTag(ptr->className());
       int ii=2;
       for (const char** pp = ops->tags; *pp; pp++, ii++)
-	tags[ii] = (const char*)graphPtr->markerTag(*pp);
+	tags[ii] = (const char*)markerTag(*pp);
 
       *num = cnt;
       return tags;

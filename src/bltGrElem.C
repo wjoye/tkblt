@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 #include "bltGraph.h"
+#include "bltGrBind.h"
 #include "bltGrElem.h"
 #include "bltGrPen.h"
 

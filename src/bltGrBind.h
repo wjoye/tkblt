@@ -33,11 +33,13 @@
 #include <tk.h>
 
 class BindTable;
+class Graph;
 
 typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, ClientData *contextPtr);
 
 class BindTable {
  public:
+  Graph* graphPtr_;
   unsigned int flags;
   Tk_BindingTable bindingTable;
   ClientData currentItem;
@@ -48,12 +50,11 @@ class BindTable {
   ClientData focusContext;
   XEvent pickEvent;
   int state;
-  ClientData clientData;
   Tk_Window tkwin;
   Blt_BindPickProc* pickProc;
 
  public:
-  BindTable(Tcl_Interp* interp, Tk_Window tkwin, ClientData clientData, 
+  BindTable(Graph*, Tcl_Interp* interp, Tk_Window tkwin,
 	    Blt_BindPickProc* pickProc);
   virtual ~BindTable();
   

@@ -32,6 +32,7 @@
 #include <float.h>
 
 #include "bltGraph.h"
+#include "bltGrBind.h"
 #include "bltGrMarker.h"
 #include "bltGrAxis.h"
 #include "bltGrMisc.h"

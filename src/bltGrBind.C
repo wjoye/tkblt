@@ -35,13 +35,14 @@
 using namespace std;
 
 #include "bltGrBind.h"
+#include "bltGraph.h"
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Tcl_Interp* interp, Tk_Window tkwinn, 
-		     ClientData clientDataa,
+BindTable::BindTable(Graph* graphPtr, Tcl_Interp* interp, Tk_Window tkwinn, 
 		     Blt_BindPickProc* pickProcc)
 {
+  graphPtr_ = graphPtr;
   flags =0;
   bindingTable = Tk_CreateBindingTable(interp);
   currentItem =NULL;
@@ -52,7 +53,6 @@ BindTable::BindTable(Tcl_Interp* interp, Tk_Window tkwinn,
   focusContext =NULL;
   //  pickEvent =NULL;
   state =0;
-  clientData = clientDataa;
   tkwin = tkwinn;
   pickProc = pickProcc;
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
@@ -143,8 +143,6 @@ void BindTable::deleteBindings(ClientData object)
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
-const char** BltGraphTags(BindTable* table, ClientData object, ClientData context, int* num);
-
 static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
 		       ClientData item, ClientData context)
 {
@@ -159,7 +157,7 @@ static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr,
     return;
 
   int nTags;
-  const char** tagArray = BltGraphTags(bindPtr, item, context, &nTags);
+  const char** tagArray = bindPtr->graphPtr_->getTags(item, context, &nTags);
   Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
 	       (void**)tagArray);
 
@@ -225,7 +223,7 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
   if (bindPtr->pickEvent.type != LeaveNotify) {
     int x = bindPtr->pickEvent.xcrossing.x;
     int y = bindPtr->pickEvent.xcrossing.y;
-    newItem = (*bindPtr->pickProc)(bindPtr->clientData, x, y, &newContext);
+    newItem = (*bindPtr->pickProc)(bindPtr->graphPtr_, x, y, &newContext);
   }
 
   // Nothing to do:  the current item hasn't changed.
@@ -315,7 +313,7 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
 
   BindTable* bindPtr = (BindTable*)clientData;
 
-  Tcl_Preserve(bindPtr->clientData);
+  Tcl_Preserve(bindPtr->graphPtr_);
 
   switch (eventPtr->type) {
   case ButtonPress:
@@ -394,6 +392,6 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
     break;
   }
 
-  Tcl_Release(bindPtr->clientData);
+  Tcl_Release(bindPtr->graphPtr_);
 }
 

@@ -36,13 +36,13 @@ extern "C" {
 #include "bltChain.h"
 };
 
-#include "bltGrBind.h"
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 
 typedef struct _Blt_Ps *Blt_Ps;
 
 class Graph;
+class BindTable;
 class Crosshairs;
 class Axis;
 class Element;
@@ -245,6 +245,8 @@ class Graph {
   void getTextExtents(Tk_Font, const char*, int, int*, int*);
   void getBoundingBox(int, int, float, double*, double*, Point2d*);
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
+
+  const char** getTags(ClientData item, ClientData context, int*);
 };
 
 #endif
