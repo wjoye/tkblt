@@ -59,6 +59,7 @@ class BindTable {
   int configure(ClientData, int, Tcl_Obj *const []);
   void deleteBindings(ClientData object);
   void doEvent(XEvent*, ClientData, ClientData);
+  void pickItem(XEvent*);
 };
 
 
