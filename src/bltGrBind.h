@@ -32,10 +32,12 @@
 
 #include <tk.h>
 
+#include "bltGrMisc.h"
+
 class BindTable;
 class Graph;
 
-typedef ClientData (Blt_BindPickProc)(ClientData clientData, int x, int y, ClientData *contextPtr);
+typedef ClientData (BltBindPickProc)(ClientData, int, int, ClassId*);
 
 class BindTable {
  public:
@@ -43,22 +45,22 @@ class BindTable {
   unsigned int flags_;
   Tk_BindingTable table_;
   ClientData currentItem_;
-  ClientData currentContext_;
+  ClassId currentContext_;
   ClientData newItem_;
-  ClientData newContext_;
+  ClassId newContext_;
   ClientData focusItem_;
-  ClientData focusContext_;
+  ClassId focusContext_;
   XEvent pickEvent_;
   int state_;
-  Blt_BindPickProc* pickProc_;
+  BltBindPickProc* pickProc_;
 
  public:
-  BindTable(Graph*, Blt_BindPickProc* pickProc);
+  BindTable(Graph*, BltBindPickProc* pickProc);
   virtual ~BindTable();
   
   int configure(ClientData, int, Tcl_Obj *const []);
   void deleteBindings(ClientData object);
-  void doEvent(XEvent*, ClientData, ClientData);
+  void doEvent(XEvent*, ClientData, ClassId);
   void pickItem(XEvent*);
 };
 
