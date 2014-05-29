@@ -47,7 +47,7 @@ using namespace Blt;
 
 static void SelectCmdProc(ClientData);
 static Tk_SelectionProc SelectionProc;
-static Blt_BindPickProc LegendPickEntry;
+static BltBindPickProc LegendPickEntry;
 
 // OptionSpecs
 
@@ -873,7 +873,7 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     if (Blt_GetXY(graphPtr_->interp_, graphPtr_->tkwin_, string, &x, &y) != TCL_OK)
       return TCL_ERROR;
 
-    ClientData classId;
+    ClassId classId;
     elemPtr = (Element*)LegendPickEntry(graphPtr_, x, y, &classId);
   }
   else {
@@ -1043,7 +1043,7 @@ static void SelectCmdProc(ClientData clientData)
 }
 
 static ClientData LegendPickEntry(ClientData clientData, int x, int y, 
-				  ClientData *contextPtr)
+				  ClassId* contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
@@ -1077,7 +1077,7 @@ static ClientData LegendPickEntry(ClientData clientData, int x, int y,
 	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 	if (elemOps->label) {
 	  if (count == n) {
-	    *contextPtr = (ClientData)elemPtr->classId();
+	    *contextPtr = elemPtr->classId();
 	    return elemPtr;
 	  }
 	  count++;

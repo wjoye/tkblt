@@ -40,19 +40,21 @@ class Graph;
 typedef ClientData (BltBindPickProc)(ClientData, int, int, ClassId*);
 
 class BindTable {
- public:
-  Graph* graphPtr_;
-  unsigned int flags_;
+ protected:
   Tk_BindingTable table_;
-  ClientData currentItem_;
-  ClassId currentContext_;
+  unsigned int flags_;
   ClientData newItem_;
   ClassId newContext_;
+  BltBindPickProc* pickProc_;
+
+ public:
+  Graph* graphPtr_;
+  ClientData currentItem_;
+  ClassId currentContext_;
   ClientData focusItem_;
   ClassId focusContext_;
-  XEvent pickEvent_;
   int state_;
-  BltBindPickProc* pickProc_;
+  XEvent pickEvent_;
 
  public:
   BindTable(Graph*, BltBindPickProc* pickProc);

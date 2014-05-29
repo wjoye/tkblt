@@ -56,7 +56,7 @@ using namespace Blt;
 
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
 
-static Blt_BindPickProc GraphPickEntry;
+static BltBindPickProc GraphPickEntry;
 
 // OptionSpecs
 
@@ -1343,13 +1343,13 @@ const char** Graph::getTags(ClientData object, ClassId classId, int* num)
 // two different elements overlay each other exactly, the one that's on
 // top (visible) is picked.
 static ClientData GraphPickEntry(ClientData clientData, int x, int y, 
-				 ClientData* contextPtr)
+				 ClassId* contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
 
   if (graphPtr->flags & (LAYOUT | MAP_MARKERS)) {
-    *contextPtr = (ClientData)NULL;
+    *contextPtr = CID_NONE;
     return NULL;
   }
 
@@ -1360,7 +1360,7 @@ static ClientData GraphPickEntry(ClientData clientData, int x, int y,
       (y >= exts.bottom) || (y < exts.top)) {
     Axis* axisPtr = graphPtr->nearestAxis(x, y);
     if (axisPtr) {
-      *contextPtr = (ClientData)axisPtr->classId();
+      *contextPtr = axisPtr->classId();
       return axisPtr;
     }
   }
@@ -1371,7 +1371,7 @@ static ClientData GraphPickEntry(ClientData clientData, int x, int y,
   // 3. markers drawn under element (-under true).
   Marker* markerPtr = graphPtr->nearestMarker(x, y, 0);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId();
+    *contextPtr = markerPtr->classId();
     return markerPtr;
   }
 
@@ -1392,17 +1392,17 @@ static ClientData GraphPickEntry(ClientData clientData, int x, int y,
 
   // Found an element within the minimum halo distance.
   if (searchPtr->dist <= (double)searchPtr->halo) {
-    *contextPtr = (ClientData)searchPtr->elemPtr->classId();
+    *contextPtr = searchPtr->elemPtr->classId();
     return searchPtr->elemPtr;
   }
 
   markerPtr = graphPtr->nearestMarker(x, y, 1);
   if (markerPtr) {
-    *contextPtr = (ClientData)markerPtr->classId();
+    *contextPtr = markerPtr->classId();
     return markerPtr;
   }
 
-  *contextPtr = (ClientData)NULL;
+  *contextPtr = CID_NONE;
   return NULL;
 }
 

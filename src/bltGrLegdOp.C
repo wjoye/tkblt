@@ -245,7 +245,7 @@ static int FocusOp(ClientData clientData, Tcl_Interp* interp,
       legendPtr->focusPtr_ = elemPtr;
 
       legendPtr->bindTable_->focusItem_ = (ClientData)elemPtr;
-      legendPtr->bindTable_->focusContext_ = (ClientData)elemPtr->classId();
+      legendPtr->bindTable_->focusContext_ = elemPtr->classId();
     }
   }
 

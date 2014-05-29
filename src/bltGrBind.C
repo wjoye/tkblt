@@ -39,17 +39,17 @@ using namespace std;
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Graph* graphPtr, Blt_BindPickProc* pickProc)
+BindTable::BindTable(Graph* graphPtr, BltBindPickProc* pickProc)
 {
   graphPtr_ = graphPtr;
   flags_ =0;
   table_ = Tk_CreateBindingTable(graphPtr->interp_);
   currentItem_ =NULL;
-  currentContext_ =NULL;
+  currentContext_ =CID_NONE;
   newItem_ =NULL;
-  newContext_ =NULL;
+  newContext_ =CID_NONE;
   focusItem_ =NULL;
-  focusContext_ =NULL;
+  focusContext_ =CID_NONE;
   //  pickEvent =NULL;
   state_ =0;
   pickProc_ = pickProc;
@@ -127,34 +127,34 @@ void BindTable::deleteBindings(ClientData object)
   // If this is the object currently picked, we need to repick one.
   if (currentItem_ == object) {
     currentItem_ =NULL;
-    currentContext_ =NULL;
+    currentContext_ =CID_NONE;
   }
 
   if (newItem_ == object) {
     newItem_ =NULL;
-    newContext_ =NULL;
+    newContext_ =CID_NONE;
   }
 
   if (focusItem_ == object) {
     focusItem_ =NULL;
-    focusContext_ =NULL;
+    focusContext_ =CID_NONE;
   }
 }
 
-void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
+//  ClassId classId = (ClassId)(long(context));
+void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClassId classId)
 {
   if (!graphPtr_->tkwin_ || !table_)
     return;
 
   if ((eventPtr->type == KeyPress) || (eventPtr->type == KeyRelease)) {
     item = focusItem_;
-    context = focusContext_;
+    classId = focusContext_;
   }
   if (!item)
     return;
 
   int nTags;
-  ClassId classId = (ClassId)(long(context));
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
   Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, (void**)tagArray);
   if (tagArray)
@@ -217,8 +217,8 @@ void BindTable::pickItem(XEvent* eventPtr)
 
   // A LeaveNotify event automatically means that there's no current item,
   // so the check for closest item can be skipped.
-  ClientData newContext =NULL;
   ClientData newItem =NULL;
+  ClassId newContext =CID_NONE;
   if (pickEvent_.type != LeaveNotify) {
     int x = pickEvent_.xcrossing.x;
     int y = pickEvent_.xcrossing.y;
@@ -261,7 +261,7 @@ void BindTable::pickItem(XEvent* eventPtr)
       // provide balloon help on the individual entries of the Hierbox
       // widget.
       ClientData savedItem = currentItem_;
-      ClientData savedContext = currentContext_;
+      ClassId savedContext = currentContext_;
       if (newItem_ != NULL) {
 	event.type = LeaveNotify;
 	event.xcrossing.detail = NotifyVirtual; // Ancestor
