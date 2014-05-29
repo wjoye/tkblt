@@ -39,12 +39,11 @@ using namespace std;
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Graph* graphPtr, Tcl_Interp* interp, Tk_Window tkwinn, 
-		     Blt_BindPickProc* pickProcc)
+BindTable::BindTable(Graph* graphPtr, Blt_BindPickProc* pickProcc)
 {
   graphPtr_ = graphPtr;
   flags =0;
-  bindingTable = Tk_CreateBindingTable(interp);
+  bindingTable = Tk_CreateBindingTable(graphPtr->interp_);
   currentItem =NULL;
   currentContext =NULL;
   newItem =NULL;
@@ -53,12 +52,11 @@ BindTable::BindTable(Graph* graphPtr, Tcl_Interp* interp, Tk_Window tkwinn,
   focusContext =NULL;
   //  pickEvent =NULL;
   state =0;
-  tkwin = tkwinn;
   pickProc = pickProcc;
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
-  Tk_CreateEventHandler(tkwin, mask, BindProc, this);
+  Tk_CreateEventHandler(graphPtr->tkwin_, mask, BindProc, this);
 }
 
 BindTable::~BindTable()
@@ -67,39 +65,42 @@ BindTable::~BindTable()
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
-  Tk_DeleteEventHandler(tkwin, mask, BindProc, this);
+  Tk_DeleteEventHandler(graphPtr_->tkwin_, mask, BindProc, this);
 }
 
-int BindTable::configure(Tcl_Interp* interp, ClientData item, 
-			 int objc, Tcl_Obj* const objv[])
+int BindTable::configure(ClientData item, int objc, Tcl_Obj* const objv[])
 {
   if (objc == 0) {
-    Tk_GetAllBindings(interp, bindingTable, item);
+    Tk_GetAllBindings(graphPtr_->interp_, bindingTable, item);
     return TCL_OK;
   }
 
   const char *string = Tcl_GetString(objv[0]);
   if (objc == 1) {
-    const char* command = Tk_GetBinding(interp, bindingTable, item, string);
+    const char* command = 
+      Tk_GetBinding(graphPtr_->interp_, bindingTable, item, string);
     if (!command) {
-      Tcl_ResetResult(interp);
-      Tcl_AppendResult(interp, "invalid binding event \"", string, "\"", NULL);
+      Tcl_ResetResult(graphPtr_->interp_);
+      Tcl_AppendResult(graphPtr_->interp_, "invalid binding event \"", 
+		       string, "\"", NULL);
       return TCL_ERROR;
     }
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), command, -1);
+    Tcl_SetStringObj(Tcl_GetObjResult(graphPtr_->interp_), command, -1);
     return TCL_OK;
   }
 
   const char* seq = string;
   const char* command = Tcl_GetString(objv[1]);
   if (command[0] == '\0')
-    return Tk_DeleteBinding(interp, bindingTable, item, seq);
+    return Tk_DeleteBinding(graphPtr_->interp_, bindingTable, item, seq);
 
   unsigned long mask;
   if (command[0] == '+')
-    mask = Tk_CreateBinding(interp, bindingTable, item, seq, command+1, 1);
+    mask = Tk_CreateBinding(graphPtr_->interp_, bindingTable, 
+			    item, seq, command+1, 1);
   else
-    mask = Tk_CreateBinding(interp, bindingTable, item, seq, command, 0);
+    mask = Tk_CreateBinding(graphPtr_->interp_, bindingTable, 
+			    item, seq, command, 0);
   if (!mask)
     return TCL_ERROR;
 
@@ -108,9 +109,9 @@ int BindTable::configure(Tcl_Interp* interp, ClientData item,
 			  |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
 			  |EnterWindowMask|LeaveWindowMask|KeyPressMask
 			  |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
-    Tk_DeleteBinding(interp, bindingTable, item, seq);
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, "requested illegal events; ",
+    Tk_DeleteBinding(graphPtr_->interp_, bindingTable, item, seq);
+    Tcl_ResetResult(graphPtr_->interp_);
+    Tcl_AppendResult(graphPtr_->interp_, "requested illegal events; ",
 		     "only key, button, motion, enter, leave, and virtual ",
 		     "events may be used", (char *)NULL);
     return TCL_ERROR;
@@ -142,7 +143,7 @@ void BindTable::deleteBindings(ClientData object)
 
 void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
 {
-  if (!tkwin || !bindingTable)
+  if (!graphPtr_->tkwin_ || !bindingTable)
     return;
 
   if ((eventPtr->type == KeyPress) || (eventPtr->type == KeyRelease)) {
@@ -155,7 +156,8 @@ void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
   int nTags;
   ClassId classId = (ClassId)(long(context));
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
-  Tk_BindEvent(bindingTable, eventPtr, tkwin, nTags, (void**)tagArray);
+  Tk_BindEvent(bindingTable, eventPtr, graphPtr_->tkwin_, nTags, 
+	       (void**)tagArray);
   if (tagArray)
     delete [] tagArray;
 }
@@ -255,8 +257,7 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
   if (((newItem != bindPtr->currentItem) || (newContext != bindPtr->currentContext)) && (buttonDown)) {
     bindPtr->flags |= LEFT_GRABBED_ITEM;
     XEvent event = bindPtr->pickEvent;
-    if ((newItem != bindPtr->newItem) || 
-	(newContext != bindPtr->newContext)) {
+    if ((newItem != bindPtr->newItem) || (newContext != bindPtr->newContext)) {
 
       // Generate <Enter> and <Leave> events for objects during button
       // grabs. This isn't standard. But for example, it allows one to
@@ -350,14 +351,16 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
 	bindPtr->state = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);
 	bindPtr->state ^= mask;
-	bindPtr->doEvent(eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+	bindPtr->doEvent(eventPtr, 
+			 bindPtr->currentItem, bindPtr->currentContext);
       }
       else {
 	// Button release: first process the event, with the button still
 	// considered to be down.  Then repick the current item under the
 	// assumption that the button is no longer down.
 	bindPtr->state = eventPtr->xbutton.state;
-	bindPtr->doEvent(eventPtr, bindPtr->currentItem, bindPtr->currentContext);
+	bindPtr->doEvent(eventPtr, 
+			 bindPtr->currentItem, bindPtr->currentContext);
 	eventPtr->xbutton.state ^= mask;
 	bindPtr->state = eventPtr->xbutton.state;
 	PickCurrentItem(bindPtr, eventPtr);

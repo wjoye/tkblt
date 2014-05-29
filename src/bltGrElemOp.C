@@ -203,7 +203,7 @@ static int BindOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  return graphPtr->bindTable_->configure(interp, graphPtr->elementTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  return graphPtr->bindTable_->configure(graphPtr->elementTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int ClosestOp(ClientData clientData, Tcl_Interp* interp,

@@ -50,15 +50,13 @@ class BindTable {
   ClientData focusContext;
   XEvent pickEvent;
   int state;
-  Tk_Window tkwin;
   Blt_BindPickProc* pickProc;
 
  public:
-  BindTable(Graph*, Tcl_Interp* interp, Tk_Window tkwin,
-	    Blt_BindPickProc* pickProc);
+  BindTable(Graph*, Blt_BindPickProc* pickProc);
   virtual ~BindTable();
   
-  int configure(Tcl_Interp*, ClientData, int, Tcl_Obj *const []);
+  int configure(ClientData, int, Tcl_Obj *const []);
   void deleteBindings(ClientData object);
   void doEvent(XEvent*, ClientData, ClientData);
 };

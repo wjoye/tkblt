@@ -120,7 +120,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(this, interp_, tkwin_, GraphPickEntry);
+  bindTable_ = new BindTable(this, GraphPickEntry);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
