@@ -55,7 +55,7 @@ using namespace Blt;
 
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
 
-static Blt_BindPickProc PickEntry;
+static Blt_BindPickProc GraphPickEntry;
 
 // OptionSpecs
 
@@ -119,7 +119,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(interp_, tkwin_, this, PickEntry);
+  bindTable_ = new BindTable(interp_, tkwin_, this, GraphPickEntry);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
@@ -1260,8 +1260,8 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
-const char** Blt_GraphTags(BindTable* table, ClientData object, 
-			   ClientData context, int* num)
+const char** BltGraphTags(BindTable* table, ClientData object, 
+			  ClientData context, int* num)
 {
   Graph* graphPtr = (Graph*)table->clientData;
   ClassId classId = (ClassId)(long(context));
@@ -1345,8 +1345,8 @@ const char** Blt_GraphTags(BindTable* table, ClientData object,
 // the display list from back to front.  That way, if the points from
 // two different elements overlay each other exactly, the one that's on
 // top (visible) is picked.
-static ClientData PickEntry(ClientData clientData, int x, int y, 
-			    ClientData* contextPtr)
+static ClientData GraphPickEntry(ClientData clientData, int x, int y, 
+				 ClientData* contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
   GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
@@ -1356,10 +1356,9 @@ static ClientData PickEntry(ClientData clientData, int x, int y,
     return NULL;
   }
 
+  // Sample coordinate is in one of the graph margins. Can only pick an axis.
   Region2d exts;
   graphPtr->extents(&exts);
-
-  // Sample coordinate is in one of the graph margins. Can only pick an axis.
   if ((x >= exts.right) || (x < exts.left) || 
       (y >= exts.bottom) || (y < exts.top)) {
     Axis* axisPtr = graphPtr->nearestAxis(x, y);

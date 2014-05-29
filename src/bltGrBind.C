@@ -143,7 +143,7 @@ void BindTable::deleteBindings(ClientData object)
 #define REPICK_IN_PROGRESS (1<<0)
 #define LEFT_GRABBED_ITEM  (1<<1)
 
-const char** Blt_GraphTags(BindTable* table, ClientData object, ClientData context, int* num);
+const char** BltGraphTags(BindTable* table, ClientData object, ClientData context, int* num);
 
 static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr, 
 		       ClientData item, ClientData context)
@@ -159,7 +159,7 @@ static void BltDoEvent(BindTable* bindPtr, XEvent* eventPtr,
     return;
 
   int nTags;
-  const char** tagArray = Blt_GraphTags(bindPtr, item, context, &nTags);
+  const char** tagArray = BltGraphTags(bindPtr, item, context, &nTags);
   Tk_BindEvent(bindPtr->bindingTable, eventPtr, bindPtr->tkwin, nTags, 
 	       (void**)tagArray);
 
@@ -307,7 +307,7 @@ static void PickCurrentItem(BindTable* bindPtr, XEvent* eventPtr)
   Tcl_Release(oldItem);
 }
 
-static void BindProc(ClientData clientData, XEvent *eventPtr)
+static void BindProc(ClientData clientData, XEvent* eventPtr)
 {
   // This code below keeps track of the current modifier state in
   // bindPtr->state.  This information is used to defer repicks of the

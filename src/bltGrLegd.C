@@ -47,7 +47,7 @@ using namespace Blt;
 
 static void SelectCmdProc(ClientData);
 static Tk_SelectionProc SelectionProc;
-static Blt_BindPickProc PickEntryProc;
+static Blt_BindPickProc LegendPickEntry;
 
 // OptionSpecs
 
@@ -195,7 +195,7 @@ Legend::Legend(Graph* graphPtr)
   ops->titleStyle.justify =TK_JUSTIFY_LEFT;
 
   bindTable_ = new BindTable(graphPtr->interp_, graphPtr->tkwin_, 
-			     graphPtr, PickEntryProc);
+			     graphPtr, LegendPickEntry);
 
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
@@ -875,7 +875,7 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
       return TCL_ERROR;
 
     ClientData classId;
-    elemPtr = (Element*)PickEntryProc(graphPtr_, x, y, &classId);
+    elemPtr = (Element*)LegendPickEntry(graphPtr_, x, y, &classId);
   }
   else {
     if (graphPtr_->getElement(objPtr, &elemPtr) != TCL_OK)
@@ -1043,8 +1043,8 @@ static void SelectCmdProc(ClientData clientData)
   Tcl_Release(legendPtr);
 }
 
-static ClientData PickEntryProc(ClientData clientData, int x, int y, 
-				ClientData *contextPtr)
+static ClientData LegendPickEntry(ClientData clientData, int x, int y, 
+				  ClientData *contextPtr)
 {
   Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
