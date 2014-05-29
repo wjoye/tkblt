@@ -156,8 +156,7 @@ void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClientData context)
   int nTags;
   ClassId classId = (ClassId)(long(context));
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
-  Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, 
-	       (void**)tagArray);
+  Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, (void**)tagArray);
   if (tagArray)
     delete [] tagArray;
 }
@@ -233,8 +232,6 @@ void BindTable::pickItem(XEvent* eventPtr)
   // Simulate a LeaveNotify event on the previous current item and an
   // EnterNotify event on the new current item.  Remove the "current" tag
   // from the previous current item and place it on the new current item.
-  ClientData oldItem = currentItem_;
-  Tcl_Preserve(oldItem);
   Tcl_Preserve(newItem);
 
   if ((currentItem_ != NULL) && ((newItem != currentItem_) || (newContext != currentContext_)) && ((flags_ & LEFT_GRABBED_ITEM) == 0)) {
@@ -291,18 +288,19 @@ void BindTable::pickItem(XEvent* eventPtr)
   // it's possible that newItem_ == currentItem_
   // here. This can happen, for example, if LEFT_GRABBED_ITEM was set.
   flags_ &= ~LEFT_GRABBED_ITEM;
-  currentItem_ = newItem_ = newItem;
-  currentContext_ = newContext_ = newContext;
+  currentItem_ = newItem;
+  currentContext_ = newContext;
+  newItem_ = newItem;
+  newContext_ = newContext;
   if (currentItem_ != NULL) {
     XEvent event = pickEvent_;
     event.type = EnterNotify;
     event.xcrossing.detail = NotifyAncestor;
-    doEvent(&event, newItem, newContext);
+    doEvent(&event, currentItem_, currentContext_);
   }
 
  done:
   Tcl_Release(newItem);
-  Tcl_Release(oldItem);
 }
 
 static void BindProc(ClientData clientData, XEvent* eventPtr)
