@@ -170,7 +170,7 @@ int LineMarker::configure()
 void LineMarker::draw(Drawable drawable)
 {
   if (nSegments_ > 0)
-    Blt_Draw2DSegments(graphPtr_->display_, drawable, gc_, segments_,nSegments_);
+    graphPtr_->drawSegments(drawable, gc_, segments_, nSegments_);
 }
 
 void LineMarker::map()
@@ -303,7 +303,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
   }
 }
 
-void LineMarker::postscript(Blt_Ps ps)
+void LineMarker::print(Blt_Ps ps)
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
@@ -320,7 +320,7 @@ void LineMarker::postscript(Blt_Ps ps)
     else
       Blt_Ps_Append(ps, "/DashesProc {} def\n");
 
-    Blt_Ps_Draw2DSegments(ps, segments_, nSegments_);
+    graphPtr_->printSegments(ps, segments_, nSegments_);
   }
 }
 

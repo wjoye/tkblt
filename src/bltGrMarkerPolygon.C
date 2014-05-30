@@ -222,8 +222,7 @@ void PolygonMarker::draw(Drawable drawable)
   // outline
   if ((nOutlinePts_ > 0) && (ops->lineWidth > 0) && 
       (ops->outline)) {
-    Blt_Draw2DSegments(graphPtr_->display_, drawable, outlineGC_,
-		       outlinePts_, nOutlinePts_);
+    graphPtr_->drawSegments(drawable, outlineGC_, outlinePts_, nOutlinePts_);
   }
 }
 
@@ -331,7 +330,7 @@ int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
   return 0;
 }
 
-void PolygonMarker::postscript(Blt_Ps ps)
+void PolygonMarker::print(Blt_Ps ps)
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
@@ -356,10 +355,11 @@ void PolygonMarker::postscript(Blt_Ps ps)
       Blt_Ps_Append(ps, "    ");
       Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
       Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
-    } else {
-      Blt_Ps_Append(ps, "/DashesProc {} def\n");
     }
-    Blt_Ps_Draw2DSegments(ps, outlinePts_, nOutlinePts_);
+    else
+      Blt_Ps_Append(ps, "/DashesProc {} def\n");
+
+    graphPtr_->printSegments(ps, outlinePts_, nOutlinePts_);
   }
 }
 

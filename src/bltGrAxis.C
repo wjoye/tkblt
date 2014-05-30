@@ -603,8 +603,7 @@ void Axis::draw(Drawable drawable)
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {	
     GC gc = active_ ? activeTickGC_ : tickGC_;
-    Blt_Draw2DSegments(graphPtr_->display_, drawable, gc, segments_, 
-		       nSegments_);
+    graphPtr_->drawSegments(drawable, gc, segments_, nSegments_);
   }
 }
 
@@ -615,12 +614,12 @@ void Axis::drawGrids(Drawable drawable)
   if (ops->hide || !ops->showGrid || !use_)
     return;
 
-  Blt_Draw2DSegments(graphPtr_->display_, drawable, ops->major.gc,
-		     ops->major.segments, ops->major.nUsed);
+  graphPtr_->drawSegments(drawable, ops->major.gc,
+			  ops->major.segments, ops->major.nUsed);
 
   if (ops->showGridMinor)
-    Blt_Draw2DSegments(graphPtr_->display_, drawable, ops->minor.gc,
-		       ops->minor.segments, ops->minor.nUsed);
+    graphPtr_->drawSegments(drawable, ops->minor.gc,
+			    ops->minor.segments, ops->minor.nUsed);
 }
 
 void Axis::drawLimits(Drawable drawable)
@@ -1715,7 +1714,7 @@ void Axis::print(Blt_Ps ps)
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
     Blt_Ps_XSetLineAttributes(ps, ops->tickColor, ops->lineWidth, 
 			      (Blt_Dashes *)NULL, CapButt, JoinMiter);
-    Blt_Ps_Draw2DSegments(ps, segments_, nSegments_);
+    graphPtr_->printSegments(ps, segments_, nSegments_);
   }
 }
 
@@ -1730,13 +1729,13 @@ void Axis::printGrids(Blt_Ps ps)
   Blt_Ps_XSetLineAttributes(ps, ops->major.color, ops->major.lineWidth, 
 			    &ops->major.dashes, CapButt, JoinMiter);
   Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n", name_);
-  Blt_Ps_Draw2DSegments(ps, ops->major.segments, ops->major.nUsed);
+  graphPtr_->printSegments(ps, ops->major.segments, ops->major.nUsed);
 
   if (ops->showGridMinor) {
     Blt_Ps_XSetLineAttributes(ps, ops->minor.color, ops->minor.lineWidth, 
 			      &ops->minor.dashes, CapButt, JoinMiter);
     Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n", name_);
-    Blt_Ps_Draw2DSegments(ps, ops->minor.segments, ops->minor.nUsed);
+    graphPtr_->printSegments(ps, ops->minor.segments, ops->minor.nUsed);
   }
 }
 

@@ -779,15 +779,4 @@ void Blt_Ps_DrawBitmap(
   Blt_Ps_Append(ps, "    } imagemask\n  grestore\n");
 }
 
-void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments, int nSegments)
-{
-  Segment2d *sp, *send;
-
-  Blt_Ps_Append(ps, "newpath\n");
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    Blt_Ps_Format(ps, "  %g %g moveto %g %g lineto\n", 
-		  sp->p.x, sp->p.y, sp->q.x, sp->q.y);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
-  }
-}
 

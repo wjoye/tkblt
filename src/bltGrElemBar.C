@@ -680,12 +680,12 @@ void BarElement::draw(Drawable drawable)
       drawSegments(drawable, penPtr, stylePtr->bars, stylePtr->nBars);
 
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
-			 stylePtr->xeb.segments, stylePtr->xeb.length);
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
-			 stylePtr->yeb.segments, stylePtr->yeb.length);
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if (pops->valueShow != SHOW_NONE)
       drawValues(drawable, penPtr, stylePtr->bars, stylePtr->nBars, 
@@ -771,14 +771,14 @@ void BarElement::print(Blt_Ps ps)
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      Blt_Ps_Draw2DSegments(ps, stylePtr->xeb.segments,
-			    stylePtr->xeb.length);
+      graphPtr_->printSegments(ps, stylePtr->xeb.segments,
+			       stylePtr->xeb.length);
     }
 
     if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      Blt_Ps_Draw2DSegments(ps, stylePtr->yeb.segments, 
+      graphPtr_->printSegments(ps, stylePtr->yeb.segments, 
 			    stylePtr->yeb.length);
     }
 

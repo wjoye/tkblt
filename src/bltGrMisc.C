@@ -390,27 +390,6 @@ void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 	     (int)strlen((char*)dashesPtr->values));
 }
 
-void Blt_Draw2DSegments(Display *display, Drawable drawable, GC gc,
-			Segment2d *segments, int nSegments)
-{
-  Segment2d *sp, *send;
-
-  XSegment* xsegments = (XSegment*)malloc(nSegments * sizeof(XSegment));
-  if (xsegments == NULL)
-    return;
-
-  XSegment* dp = xsegments;
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    dp->x1 = (short int)sp->p.x;
-    dp->y1 = (short int)sp->p.y;
-    dp->x2 = (short int)sp->q.x;
-    dp->y2 = (short int)sp->q.y;
-    dp++;
-  }
-  XDrawSegments(display, drawable, gc, xsegments, nSegments);
-  free(xsegments);
-}
-
 long Blt_MaxRequestSize(Display *display, size_t elemSize) 
 {
   static long maxSizeBytes = 0L;

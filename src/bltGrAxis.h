@@ -30,8 +30,8 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef ___Blt_GrAxis_h__
-#define ___Blt_GrAxis_h__
+#ifndef ___BltGrAxis_h__
+#define ___BltGrAxis_h__
 
 #include <tk.h>
 

@@ -821,7 +821,7 @@ void Graph::printMarkers(Blt_Ps ps, int under)
 
     Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name_, 
 		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
-    markerPtr->postscript(ps);
+    markerPtr->print(ps);
   }
 }
 
@@ -1259,6 +1259,8 @@ Axis* Graph::nearestAxis(int x, int y)
   return NULL;
 }
  
+// Bind
+
 const char** Graph::getTags(ClientData object, ClassId classId, int* num)
 {
   const char** tags =NULL;
@@ -1394,5 +1396,43 @@ ClientData Graph::pickEntry(int xx, int yy, ClassId* classIdPtr)
 
   *classIdPtr = CID_NONE;
   return NULL;
+}
+
+// Graphics
+
+void Graph::drawSegments(Drawable drawable, GC gc, 
+			 Segment2d* segments, int nSegments)
+{
+  Segment2d* sp;
+  Segment2d* send;
+
+  XSegment* xsegments = new XSegment[nSegments];
+  if (xsegments == NULL)
+    return;
+
+  XSegment* dp = xsegments;
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    dp->x1 = (short int)sp->p.x;
+    dp->y1 = (short int)sp->p.y;
+    dp->x2 = (short int)sp->q.x;
+    dp->y2 = (short int)sp->q.y;
+    dp++;
+  }
+
+  XDrawSegments(display_, drawable, gc, xsegments, nSegments);
+  delete [] xsegments;
+}
+
+void Graph::printSegments(Blt_Ps ps, Segment2d* segments, int nSegments)
+{
+  Segment2d* sp;
+  Segment2d* send;
+
+  Blt_Ps_Append(ps, "newpath\n");
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    Blt_Ps_Format(ps, "  %g %g moveto %g %g lineto\n", 
+		  sp->p.x, sp->p.y, sp->q.x, sp->q.y);
+    Blt_Ps_Append(ps, "DashesProc stroke\n");
+  }
 }
 

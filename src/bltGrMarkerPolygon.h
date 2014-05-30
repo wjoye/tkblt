@@ -73,7 +73,7 @@ namespace Blt {
     void map();
     int pointIn(Point2d*);
     int regionIn(Region2d*, int);
-    void postscript(Blt_Ps);
+    void print(Blt_Ps);
 
   public:
     PolygonMarker(Graph*, const char*, Tcl_HashEntry*);

@@ -259,7 +259,7 @@ int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
-void BitmapMarker::postscript(Blt_Ps ps)
+void BitmapMarker::print(Blt_Ps ps)
 {
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 

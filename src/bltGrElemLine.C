@@ -569,12 +569,12 @@ void LineElement::draw(Drawable drawable)
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
-			 stylePtr->xeb.segments, stylePtr->xeb.length);
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->xeb.segments, stylePtr->xeb.length);
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      Blt_Draw2DSegments(graphPtr_->display_, drawable, penPtr->errorBarGC_, 
-			 stylePtr->yeb.segments, stylePtr->yeb.length);
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if ((stylePtr->symbolPts.length > 0) && 
 	(penOps->symbol.type != SYMBOL_NONE))
@@ -699,13 +699,13 @@ void LineElement::print(Blt_Ps ps)
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      Blt_Ps_Draw2DSegments(ps, stylePtr->xeb.segments, 
+      graphPtr_->printSegments(ps, stylePtr->xeb.segments, 
 			    stylePtr->xeb.length);
     }
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
       Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      Blt_Ps_Draw2DSegments(ps, stylePtr->yeb.segments,
+      graphPtr_->printSegments(ps, stylePtr->yeb.segments,
 			    stylePtr->yeb.length);
     }
     if ((stylePtr->symbolPts.length > 0) &&
