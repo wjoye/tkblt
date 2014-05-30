@@ -91,15 +91,6 @@ extern void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,
 
 extern void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
 
-extern void Blt_Ps_Polyline(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
-
-extern void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n);
-
-extern void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments, 
-				 int nSegments);
-
-extern void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int n);
-
 extern void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
 				   double x, double y, int width, int height, int borderWidth, int relief);
 

@@ -1423,6 +1423,31 @@ void Graph::drawSegments(Drawable drawable, GC gc,
   delete [] xsegments;
 }
 
+void Graph::printPolyline(Blt_Ps ps, Point2d* screenPts, int nScreenPts)
+{
+  Point2d *pp, *pend;
+
+  pp = screenPts;
+  Blt_Ps_Append(ps, "newpath\n");
+  Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
+  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) {
+    Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
+  }
+}
+
+void Graph::printMaxPolyline(Blt_Ps ps, Point2d* points, int nPoints)
+{
+  if (nPoints <= 0)
+    return;
+
+  for (int nLeft = nPoints; nLeft > 0; nLeft -= 1500) {
+    int length = MIN(1500, nLeft);
+    printPolyline(ps, points, length);
+    Blt_Ps_Append(ps, "DashesProc stroke\n");
+    points += length;
+  }
+}
+
 void Graph::printSegments(Blt_Ps ps, Segment2d* segments, int nSegments)
 {
   Segment2d* sp;

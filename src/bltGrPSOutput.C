@@ -47,9 +47,6 @@ using namespace Blt;
 #  define HAVE_UTF	0
 #endif
 
-#define PS_MAXPATH	1500		/* Maximum number of components in a
-					 * PostScript (level 1) path. */
-
 static Tcl_Interp *psInterp = NULL;
 
 int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
@@ -420,18 +417,6 @@ void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n)
   }
 }
 
-void Blt_Ps_Polyline(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
-{
-  Point2d *pp, *pend;
-
-  pp = screenPts;
-  Blt_Ps_Append(ps, "newpath\n");
-  Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
-  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) {
-    Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
-  }
-}
-
 void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
 {
   Point2d *pp, *pend;
@@ -450,17 +435,6 @@ void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
 {
   Blt_Ps_Polygon(ps, screenPts, nScreenPts);
   Blt_Ps_Append(ps, "fill\n");
-}
-
-void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments, int nSegments)
-{
-  XSegment *sp, *send;
-
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    Blt_Ps_Format(ps, "%d %d moveto %d %d lineto\n", sp->x1, sp->y1, 
-		  sp->x2, sp->y2);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
-  }
 }
 
 void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rectangles, int nRectangles)
@@ -723,40 +697,6 @@ void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
   Blt_Ps_Append(ps, "EndText\n");
 }
 #endif
-
-void Blt_Ps_XDrawLines(Blt_Ps ps, XPoint *points, int n)
-{
-  int nLeft;
-
-  if (n <= 0) {
-    return;
-  }
-  for (nLeft = n; nLeft > 0; nLeft -= PS_MAXPATH) {
-    int length;
-
-    length = MIN(PS_MAXPATH, nLeft);
-    Blt_Ps_PolylineFromXPoints(ps, points, length);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
-    points += length;
-  }
-}
-
-void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int nPoints)
-{
-  int nLeft;
-
-  if (nPoints <= 0) {
-    return;
-  }
-  for (nLeft = nPoints; nLeft > 0; nLeft -= PS_MAXPATH) {
-    int length;
-
-    length = MIN(PS_MAXPATH, nLeft);
-    Blt_Ps_Polyline(ps, points, length);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
-    points += length;
-  }
-}
 
 void Blt_Ps_DrawBitmap(
 		       Blt_Ps ps,

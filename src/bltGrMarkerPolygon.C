@@ -335,7 +335,7 @@ void PolygonMarker::print(Blt_Ps ps)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->fill) {
-    Blt_Ps_Polyline(ps, fillPts_, nFillPts_);
+    graphPtr_->printPolyline(ps, fillPts_, nFillPts_);
     if (ops->fillBg) {
       Blt_Ps_XSetBackground(ps, ops->fillBg);
       Blt_Ps_Append(ps, "gsave fill grestore\n");

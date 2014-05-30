@@ -668,7 +668,7 @@ void LineElement::print(Blt_Ps ps)
   if (fillPts_) {
     // Create a path to use for both the polygon and its outline
     Blt_Ps_Append(ps, "% start fill area\n");
-    Blt_Ps_Polyline(ps, fillPts_, nFillPts_);
+    graphPtr_->printPolyline(ps, fillPts_, nFillPts_);
 
     // If the background fill color was specified, draw the polygon in a
     // solid fashion with that color
@@ -2768,8 +2768,8 @@ void LineElement::printTraces(Blt_Ps ps, LinePen* penPtr)
     bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     if (tracePtr->screenPts.length > 0) {
       Blt_Ps_Append(ps, "% start trace\n");
-      Blt_Ps_DrawPolyline(ps, tracePtr->screenPts.points, 
-			  tracePtr->screenPts.length);
+      graphPtr_->printMaxPolyline(ps, tracePtr->screenPts.points, 
+				   tracePtr->screenPts.length);
       Blt_Ps_Append(ps, "% end trace\n");
     }
   }

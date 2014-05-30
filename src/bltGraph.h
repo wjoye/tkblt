@@ -247,18 +247,20 @@ class Graph {
   virtual int createPen(const char*, int, Tcl_Obj* const []) =0;
   int getPen(Tcl_Obj*, Pen**);
 
-  void drawSegments(Drawable, GC, Segment2d*, int);
-  void printSegments(Blt_Ps, Segment2d*, int);
-
-  GC getPrivateGC(unsigned long, XGCValues*);
-  void freePrivateGC(GC);
-
   void getTextExtents(Tk_Font, const char*, int, int*, int*);
   void getBoundingBox(int, int, float, double*, double*, Point2d*);
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
 
   const char** getTags(ClientData, ClassId, int*);
   ClientData pickEntry(int, int, ClassId*);
+
+  void drawSegments(Drawable, GC, Segment2d*, int);
+  void printSegments(Blt_Ps, Segment2d*, int);
+  void printPolyline(Blt_Ps, Point2d*, int);
+  void printMaxPolyline(Blt_Ps, Point2d*, int);
+
+  GC getPrivateGC(unsigned long, XGCValues*);
+  void freePrivateGC(GC);
 };
 
 #endif
