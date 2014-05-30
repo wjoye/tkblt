@@ -245,6 +245,9 @@ class Graph {
   void drawSegments(Drawable, GC, Segment2d*, int);
   void printSegments(Blt_Ps, Segment2d*, int);
 
+  GC getPrivateGC(unsigned long, XGCValues*);
+  void freePrivateGC(GC);
+
   void getTextExtents(Tk_Font, const char*, int, int*, int*);
   void getBoundingBox(int, int, float, double*, double*, Point2d*);
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
