@@ -211,7 +211,7 @@ Legend::~Legend()
   delete bindTable_;
     
   if (focusGC_)
-    Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
+    graphPtr_->freePrivateGC(focusGC_);
 
     if (graphPtr_->tkwin_)
     Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
@@ -232,13 +232,13 @@ int Legend::configure()
   gcValues.foreground = ops->focusColor->pixel;
   gcValues.line_style = (LineIsDashed(ops->focusDashes))
     ? LineOnOffDash : LineSolid;
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->focusDashes)) {
     ops->focusDashes.offset = 2;
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->focusDashes);
   }
   if (focusGC_)
-    Blt_FreePrivateGC(graphPtr_->display_, focusGC_);
+    graphPtr_->freePrivateGC(focusGC_);
 
   focusGC_ = newGC;
 

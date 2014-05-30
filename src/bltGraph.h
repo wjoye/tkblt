@@ -54,6 +54,11 @@ namespace Blt {
 class Marker;
 };
 
+typedef struct {
+  Point2d p;
+  Point2d q;
+} Segment2d;
+
 typedef struct Ensemble {
     const char *name;
     Tcl_ObjCmdProc *proc;

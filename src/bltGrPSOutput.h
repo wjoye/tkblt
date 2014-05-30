@@ -100,9 +100,6 @@ extern void Blt_Ps_XDrawSegments(Blt_Ps ps, XSegment *segments,
 
 extern void Blt_Ps_DrawPolyline(Blt_Ps ps, Point2d *points, int n);
 
-extern void Blt_Ps_Draw2DSegments(Blt_Ps ps, Segment2d *segments,
-				  int nSegments);
-
 extern void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
 				   double x, double y, int width, int height, int borderWidth, int relief);
 

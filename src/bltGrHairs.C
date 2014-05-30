@@ -73,7 +73,7 @@ Crosshairs::Crosshairs(Graph* graphPtr)
 Crosshairs::~Crosshairs()
 {
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display_, gc_);
+    graphPtr_->freePrivateGC(gc_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -104,12 +104,12 @@ int Crosshairs::configure()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
 
   if (gc_ != NULL)
-    Blt_FreePrivateGC(graphPtr_->display_, gc_);
+    graphPtr_->freePrivateGC(gc_);
 
   gc_ = newGC;
 

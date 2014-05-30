@@ -290,12 +290,12 @@ Axis::~Axis()
   if (ops->major.segments) 
     free(ops->major.segments);
   if (ops->major.gc) 
-    Blt_FreePrivateGC(graphPtr_->display_, ops->major.gc);
+    graphPtr_->freePrivateGC(ops->major.gc);
 
   if (ops->minor.segments) 
     free(ops->minor.segments);
   if (ops->minor.gc)
-    Blt_FreePrivateGC(graphPtr_->display_, ops->minor.gc);
+    graphPtr_->freePrivateGC(ops->minor.gc);
 
   if (t1Ptr_)
     free(t1Ptr_);
@@ -1149,12 +1149,12 @@ void Axis::resetTextStyles()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->major.dashes))
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->major.dashes);
 
   if (ops->major.gc)
-    Blt_FreePrivateGC(graphPtr_->display_, ops->major.gc);
+    graphPtr_->freePrivateGC(ops->major.gc);
 
   ops->major.gc = newGC;
 
@@ -1165,12 +1165,12 @@ void Axis::resetTextStyles()
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
   }
-  newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->minor.dashes))
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->minor.dashes);
 
   if (ops->minor.gc)
-    Blt_FreePrivateGC(graphPtr_->display_, ops->minor.gc);
+    graphPtr_->freePrivateGC(ops->minor.gc);
 
   ops->minor.gc = newGC;
 }

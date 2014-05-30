@@ -105,7 +105,7 @@ LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 LineMarker::~LineMarker()
 {
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display_, gc_);
+    graphPtr_->freePrivateGC(gc_);
   if (segments_)
     delete [] segments_;
 }
@@ -148,9 +148,9 @@ int LineMarker::configure()
       draw(drawable);
   }
 
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (gc_)
-    Blt_FreePrivateGC(graphPtr_->display_, gc_);
+    graphPtr_->freePrivateGC(gc_);
 
   if (LineIsDashed(ops->dashes))
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);

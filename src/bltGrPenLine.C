@@ -278,7 +278,7 @@ LinePen::~LinePen()
     Tk_FreeGC(graphPtr_->display_, errorBarGC_);
 
   if (traceGC_)
-    Blt_FreePrivateGC(graphPtr_->display_, traceGC_);
+    graphPtr_->freePrivateGC(traceGC_);
 
   if (ops->symbol.outlineGC)
     Tk_FreeGC(graphPtr_->display_, ops->symbol.outlineGC);
@@ -371,9 +371,9 @@ int LinePen::configure()
       gcValues.line_width = ops->traceWidth;
       gcValues.line_style = !colorPtr ? LineOnOffDash : LineDoubleDash;
     }
-    GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+    GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
     if (traceGC_)
-      Blt_FreePrivateGC(graphPtr_->display_, traceGC_);
+      graphPtr_->freePrivateGC(traceGC_);
 
     if (LineIsDashed(ops->traceDashes)) {
       ops->traceDashes.offset = ops->traceDashes.values[0] / 2;

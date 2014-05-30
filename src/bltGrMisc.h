@@ -68,11 +68,6 @@ typedef struct {
   double bottom;
 } Region2d;
 
-typedef struct {
-  Point2d p;
-  Point2d q;
-} Segment2d;
-
 typedef enum {
   CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
   CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,

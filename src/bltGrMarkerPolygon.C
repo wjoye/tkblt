@@ -113,7 +113,7 @@ PolygonMarker::~PolygonMarker()
   if (fillGC_)
     Tk_FreeGC(graphPtr_->display_, fillGC_);
   if (outlineGC_)
-    Blt_FreePrivateGC(graphPtr_->display_, outlineGC_);
+    graphPtr_->freePrivateGC(outlineGC_);
   if (fillPts_)
     delete [] fillPts_;
   if (outlinePts_)
@@ -163,11 +163,11 @@ int PolygonMarker::configure()
   }
 
   // outlineGC
-  GC newGC = Blt_GetPrivateGC(graphPtr_->tkwin_, gcMask, &gcValues);
+  GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
     Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
   if (outlineGC_)
-    Blt_FreePrivateGC(graphPtr_->display_, outlineGC_);
+    graphPtr_->freePrivateGC(outlineGC_);
   outlineGC_ = newGC;
 
   // fillGC

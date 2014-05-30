@@ -1436,3 +1436,24 @@ void Graph::printSegments(Blt_Ps ps, Segment2d* segments, int nSegments)
   }
 }
 
+GC Graph::getPrivateGC(unsigned long gcMask, XGCValues *valuePtr)
+{
+  Pixmap pixmap = None;
+  Drawable drawable = Tk_WindowId(tkwin_);
+  Display* display = Tk_Display(tkwin_);
+  if (drawable == None)
+    drawable = RootWindow(Tk_Display(tkwin_),Tk_ScreenNumber(tkwin_));
+
+  GC gc = XCreateGC(display, drawable, gcMask, valuePtr);
+  if (pixmap != None)
+    Tk_FreePixmap(display, pixmap);
+
+  return gc;
+}
+
+void Graph::freePrivateGC(GC gc)
+{
+  Tk_FreeXId(display_, (XID)XGContextFromGC(gc));
+  XFreeGC(display_, gc);
+}
+

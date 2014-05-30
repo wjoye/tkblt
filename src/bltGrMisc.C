@@ -363,27 +363,6 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
   return t;
 }
 
-GC Blt_GetPrivateGC(Tk_Window tkwin, unsigned long gcMask, XGCValues *valuePtr)
-{
-  Pixmap pixmap = None;
-  Drawable drawable = Tk_WindowId(tkwin);
-  Display* display = Tk_Display(tkwin);
-  if (drawable == None)
-    drawable = RootWindow(Tk_Display(tkwin),Tk_ScreenNumber(tkwin));
-
-  GC gc = XCreateGC(display, drawable, gcMask, valuePtr);
-  if (pixmap != None)
-    Tk_FreePixmap(display, pixmap);
-
-  return gc;
-}
-
-void Blt_FreePrivateGC(Display *display, GC gc)
-{
-  Tk_FreeXId(display, (XID) XGContextFromGC(gc));
-  XFreeGC(display, gc);
-}
-
 void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
 {
   XSetDashes(display, gc, dashesPtr->offset, (const char*)dashesPtr->values,
