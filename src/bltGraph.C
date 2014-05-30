@@ -56,8 +56,6 @@ using namespace Blt;
 
 extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
 
-static BltBindPickProc GraphPickEntry;
-
 // OptionSpecs
 
 Graph::Graph(ClientData clientData, Tcl_Interp* interp, 
@@ -120,7 +118,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(this, GraphPickEntry);
+  bindTable_ = new BindTable(this, 0);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;
@@ -1338,29 +1336,20 @@ const char** Graph::getTags(ClientData object, ClassId classId, int* num)
   return NULL;
 }
 
-// Find the closest point from the set of displayed elements, searching
-// the display list from back to front.  That way, if the points from
-// two different elements overlay each other exactly, the one that's on
-// top (visible) is picked.
-static ClientData GraphPickEntry(ClientData clientData, int x, int y, 
-				 ClassId* contextPtr)
+ClientData Graph::pickEntry(int xx, int yy, ClassId* classIdPtr)
 {
-  Graph* graphPtr = (Graph*)clientData;
-  GraphOptions* ops = (GraphOptions*)graphPtr->ops_;
-
-  if (graphPtr->flags & (LAYOUT | MAP_MARKERS)) {
-    *contextPtr = CID_NONE;
+  if (flags & (LAYOUT | MAP_MARKERS)) {
+    *classIdPtr = CID_NONE;
     return NULL;
   }
 
   // Sample coordinate is in one of the graph margins. Can only pick an axis.
   Region2d exts;
-  graphPtr->extents(&exts);
-  if ((x >= exts.right) || (x < exts.left) || 
-      (y >= exts.bottom) || (y < exts.top)) {
-    Axis* axisPtr = graphPtr->nearestAxis(x, y);
+  extents(&exts);
+  if (xx >= exts.right || xx < exts.left || yy >= exts.bottom || yy < exts.top) {
+    Axis* axisPtr = nearestAxis(xx, yy);
     if (axisPtr) {
-      *contextPtr = axisPtr->classId();
+      *classIdPtr = axisPtr->classId();
       return axisPtr;
     }
   }
@@ -1369,20 +1358,21 @@ static ClientData GraphPickEntry(ClientData clientData, int x, int y,
   // 1. markers drawn on top (-under false).
   // 2. elements using its display list back to front.
   // 3. markers drawn under element (-under true).
-  Marker* markerPtr = graphPtr->nearestMarker(x, y, 0);
+  Marker* markerPtr = nearestMarker(xx, yy, 0);
   if (markerPtr) {
-    *contextPtr = markerPtr->classId();
+    *classIdPtr = markerPtr->classId();
     return markerPtr;
   }
 
+  GraphOptions* ops = (GraphOptions*)ops_;
   ClosestSearch* searchPtr = &ops->search;
   searchPtr->index = -1;
-  searchPtr->x = x;
-  searchPtr->y = y;
+  searchPtr->x = xx;
+  searchPtr->y = yy;
   searchPtr->dist = (double)(searchPtr->halo + 1);
 	
-  for (Blt_ChainLink link=Blt_Chain_LastLink(graphPtr->elements_.displayList);
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); link;
+       link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* eops = (ElementOptions*)elemPtr->ops();
     if (eops->hide)
@@ -1392,17 +1382,17 @@ static ClientData GraphPickEntry(ClientData clientData, int x, int y,
 
   // Found an element within the minimum halo distance.
   if (searchPtr->dist <= (double)searchPtr->halo) {
-    *contextPtr = searchPtr->elemPtr->classId();
+    *classIdPtr = searchPtr->elemPtr->classId();
     return searchPtr->elemPtr;
   }
 
-  markerPtr = graphPtr->nearestMarker(x, y, 1);
+  markerPtr = nearestMarker(xx, yy, 1);
   if (markerPtr) {
-    *contextPtr = markerPtr->classId();
+    *classIdPtr = markerPtr->classId();
     return markerPtr;
   }
 
-  *contextPtr = CID_NONE;
+  *classIdPtr = CID_NONE;
   return NULL;
 }
 

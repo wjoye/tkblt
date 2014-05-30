@@ -37,15 +37,13 @@
 class BindTable;
 class Graph;
 
-typedef ClientData (BltBindPickProc)(ClientData, int, int, ClassId*);
-
 class BindTable {
  protected:
   Tk_BindingTable table_;
   unsigned int flags_;
   ClientData newItem_;
   ClassId newContext_;
-  BltBindPickProc* pickProc_;
+  int which_;
 
  public:
   Graph* graphPtr_;
@@ -57,12 +55,12 @@ class BindTable {
   XEvent pickEvent_;
 
  public:
-  BindTable(Graph*, BltBindPickProc* pickProc);
+  BindTable(Graph*, int);
   virtual ~BindTable();
   
   int configure(ClientData, int, Tcl_Obj *const []);
   void deleteBindings(ClientData object);
-  void doEvent(XEvent*, ClientData, ClassId);
+  void doEvent(XEvent*);
   void pickItem(XEvent*);
 };
 

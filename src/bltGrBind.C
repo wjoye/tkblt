@@ -36,10 +36,11 @@ using namespace std;
 
 #include "bltGrBind.h"
 #include "bltGraph.h"
+#include "bltGrLegd.h"
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Graph* graphPtr, BltBindPickProc* pickProc)
+BindTable::BindTable(Graph* graphPtr, int which)
 {
   graphPtr_ = graphPtr;
   flags_ =0;
@@ -52,7 +53,8 @@ BindTable::BindTable(Graph* graphPtr, BltBindPickProc* pickProc)
   focusContext_ =CID_NONE;
   //  pickEvent =NULL;
   state_ =0;
-  pickProc_ = pickProc;
+  which_ = which;
+
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 		       PointerMotionMask);
@@ -140,10 +142,13 @@ void BindTable::deleteBindings(ClientData object)
   }
 }
 
-void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClassId classId)
+void BindTable::doEvent(XEvent* eventPtr)
 {
   if (!graphPtr_->tkwin_ || !table_)
     return;
+
+  ClientData item = currentItem_;
+  ClassId classId = currentContext_;
 
   if ((eventPtr->type == KeyPress) || (eventPtr->type == KeyRelease)) {
     item = focusItem_;
@@ -164,14 +169,15 @@ void BindTable::doEvent(XEvent* eventPtr, ClientData item, ClassId classId)
 
 void BindTable::pickItem(XEvent* eventPtr)
 {
+  // This code comes from tkCanvas.c
+
   // Check whether or not a button is down.  If so, we'll log entry and exit
   // into and out of the current item, but not entry into any other item.
   // This implements a form of grabbing equivalent to what the X server does
   // for windows.
 
-  int buttonDown = (state_ & (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask));
-  if (!buttonDown)
-    flags_ &= ~LEFT_GRABBED_ITEM;
+  int buttonDown = state_ & 
+    (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask);
 
   // Save information about this event in the widget.  The event in the
   // widget is used for two purposes:
@@ -215,24 +221,27 @@ void BindTable::pickItem(XEvent* eventPtr)
 
   // A LeaveNotify event automatically means that there's no current item,
   // so the check for closest item can be skipped.
-  ClientData newItem =NULL;
-  ClassId newContext =CID_NONE;
   if (pickEvent_.type != LeaveNotify) {
     int x = pickEvent_.xcrossing.x;
     int y = pickEvent_.xcrossing.y;
-    newItem = (*pickProc_)(graphPtr_, x, y, &newContext);
+    if (which_)
+      newItem_ = graphPtr_->legend_->pickEntry(x, y, &newContext_);
+    else
+      newItem_ = graphPtr_->pickEntry(x, y, &newContext_);
   }
 
-  // Nothing to do:  the current item hasn't changed.
-  if (((newItem == currentItem_) && (newContext == currentContext_)) && ((flags_ & LEFT_GRABBED_ITEM) == 0))
+  // Nothing to do: the current item hasn't changed.
+  if ((newItem_ == currentItem_) && !(flags_ & LEFT_GRABBED_ITEM))
     return;
+
+  if (!buttonDown)
+    flags_ &= ~LEFT_GRABBED_ITEM;
 
   // Simulate a LeaveNotify event on the previous current item and an
   // EnterNotify event on the new current item.  Remove the "current" tag
   // from the previous current item and place it on the new current item.
-  Tcl_Preserve(newItem);
-
-  if ((currentItem_ != NULL) && ((newItem != currentItem_) || (newContext != currentContext_)) && ((flags_ & LEFT_GRABBED_ITEM) == 0)) {
+  if ((newItem_ != currentItem_) && currentItem_ && 
+      !(flags_ & LEFT_GRABBED_ITEM)) {
     XEvent event = pickEvent_;
     event.type = LeaveNotify;
 
@@ -240,69 +249,36 @@ void BindTable::pickItem(XEvent* eventPtr)
     // mechanism will discard the event.  To be consistent, always use
     // NotifyAncestor.
     event.xcrossing.detail = NotifyAncestor;
-
     flags_ |= REPICK_IN_PROGRESS;
-    doEvent(&event, currentItem_, currentContext_);
+    doEvent(&event);
     flags_ &= ~REPICK_IN_PROGRESS;
 
     // Note: during DoEvent above, it's possible that newItem got
     // reset to NULL because the item was deleted.
-  }
-
-  if (((newItem != currentItem_) || (newContext != currentContext_)) && (buttonDown)) {
-    flags_ |= LEFT_GRABBED_ITEM;
-    XEvent event = pickEvent_;
-    if ((newItem != newItem_) || (newContext != newContext_)) {
-
-      // Generate <Enter> and <Leave> events for objects during button
-      // grabs. This isn't standard. But for example, it allows one to
-      // provide balloon help on the individual entries of the Hierbox
-      // widget.
-      ClientData savedItem = currentItem_;
-      ClassId savedContext = currentContext_;
-      if (newItem_ != NULL) {
-	event.type = LeaveNotify;
-	event.xcrossing.detail = NotifyVirtual; // Ancestor
-	currentItem_ = newItem_;
-	doEvent(&event, newItem_, newContext_);
-      }
-
-      newItem_ = newItem;
-      newContext_ = newContext;
-      if (newItem != NULL) {
-	event.type = EnterNotify;
-	event.xcrossing.detail = NotifyVirtual; // Ancestor
-	currentItem_ = newItem;
-	doEvent(&event, newItem, newContext);
-      }
-
-      currentItem_ = savedItem;
-      currentContext_ = savedContext;
+    if ((newItem_ != currentItem_) && buttonDown) {
+      flags_ |= LEFT_GRABBED_ITEM;
+      return;
     }
-    goto done;
   }
 
   // Special note:  
   // it's possible that newItem_ == currentItem_
   // here. This can happen, for example, if LEFT_GRABBED_ITEM was set.
   flags_ &= ~LEFT_GRABBED_ITEM;
-  currentItem_ = newItem;
-  currentContext_ = newContext;
-  newItem_ = newItem;
-  newContext_ = newContext;
+  currentItem_ = newItem_;
+  currentContext_ = newContext_;
   if (currentItem_ != NULL) {
     XEvent event = pickEvent_;
     event.type = EnterNotify;
     event.xcrossing.detail = NotifyAncestor;
-    doEvent(&event, currentItem_, currentContext_);
+    doEvent(&event);
   }
-
- done:
-  Tcl_Release(newItem);
 }
 
 static void BindProc(ClientData clientData, XEvent* eventPtr)
 {
+  // This code comes from tkCanvas.c
+
   // This code below keeps track of the current modifier state in
   // bindPtr->state.  This information is used to defer repicks of the
   // current item while buttons are down.
@@ -348,16 +324,14 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
 	bindPtr->state_ = eventPtr->xbutton.state;
 	bindPtr->pickItem(eventPtr);
 	bindPtr->state_ ^= mask;
-	bindPtr->doEvent(eventPtr, 
-			 bindPtr->currentItem_, bindPtr->currentContext_);
+	bindPtr->doEvent(eventPtr);
       }
       else {
 	// Button release: first process the event, with the button still
 	// considered to be down.  Then repick the current item under the
 	// assumption that the button is no longer down.
 	bindPtr->state_ = eventPtr->xbutton.state;
-	bindPtr->doEvent(eventPtr, 
-			 bindPtr->currentItem_, bindPtr->currentContext_);
+	bindPtr->doEvent(eventPtr);
 	eventPtr->xbutton.state ^= mask;
 	bindPtr->state_ = eventPtr->xbutton.state;
 	bindPtr->pickItem(eventPtr);
@@ -375,14 +349,14 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
   case MotionNotify:
     bindPtr->state_ = eventPtr->xmotion.state;
     bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr, bindPtr->currentItem_, bindPtr->currentContext_);
+    bindPtr->doEvent(eventPtr);
     break;
 
   case KeyPress:
   case KeyRelease:
     bindPtr->state_ = eventPtr->xkey.state;
     bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr, bindPtr->currentItem_, bindPtr->currentContext_);
+    bindPtr->doEvent(eventPtr);
     break;
   }
 

@@ -247,6 +247,7 @@ class Graph {
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);
 
   const char** getTags(ClientData, ClassId, int*);
+  ClientData pickEntry(int, int, ClassId*);
 };
 
 #endif

@@ -47,7 +47,6 @@ using namespace Blt;
 
 static void SelectCmdProc(ClientData);
 static Tk_SelectionProc SelectionProc;
-static BltBindPickProc LegendPickEntry;
 
 // OptionSpecs
 
@@ -194,7 +193,7 @@ Legend::Legend(Graph* graphPtr)
   ops->titleStyle.angle =0;
   ops->titleStyle.justify =TK_JUSTIFY_LEFT;
 
-  bindTable_ = new BindTable(graphPtr, LegendPickEntry);
+  bindTable_ = new BindTable(graphPtr, 1);
 
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
@@ -874,7 +873,7 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
       return TCL_ERROR;
 
     ClassId classId;
-    elemPtr = (Element*)LegendPickEntry(graphPtr_, x, y, &classId);
+    elemPtr = (Element*)pickEntry(x, y, &classId);
   }
   else {
     if (graphPtr_->getElement(objPtr, &elemPtr) != TCL_OK)
@@ -986,6 +985,47 @@ Element* Legend::getLastElement()
   return NULL;
 }
 
+ClientData Legend::pickEntry(int xx, int yy, ClassId* classIdPtr)
+{
+  LegendOptions* ops = (LegendOptions*)ops_;
+
+  int ww = width_;
+  int hh = height_;
+
+  if (titleHeight_ > 0)
+    yy -= titleHeight_ + ops->yPad;
+
+  xx -= x_ + ops->borderWidth;
+  yy -= y_ + ops->borderWidth;
+  ww -= 2 * ops->borderWidth + 2*ops->xPad;
+  hh -= 2 * ops->borderWidth + 2*ops->yPad;
+
+  // In the bounding box? if so, compute the index
+  if (xx >= 0 && xx < ww && yy >= 0 && yy < hh) {
+    int row    = yy / entryHeight_;
+    int column = xx / entryWidth_;
+    int nn = (column * nRows_) + row;
+
+    // Legend entries are stored in bottom-to-top
+    if (nn < nEntries_) {
+      int count = 0;
+      for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr_->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
+	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
+	if (elemOps->label) {
+	  if (count == nn) {
+	    *classIdPtr = elemPtr->classId();
+	    return elemPtr;
+	  }
+	  count++;
+	}
+      }	      
+    }
+  }
+
+  return NULL;
+}
+
 // Support
 
 static int SelectionProc(ClientData clientData, int offset, char *buffer,
@@ -1040,53 +1080,6 @@ static void SelectCmdProc(ClientData clientData)
       Tcl_BackgroundError(interp);
   }
   Tcl_Release(legendPtr);
-}
-
-static ClientData LegendPickEntry(ClientData clientData, int x, int y, 
-				  ClassId* contextPtr)
-{
-  Graph* graphPtr = (Graph*)clientData;
-  Legend* legendPtr = graphPtr->legend_;
-  LegendOptions* ops = (LegendOptions*)legendPtr->ops();
-
-  int w = legendPtr->width();
-  int h = legendPtr->height();
-
-  if (legendPtr->titleHeight_ > 0)
-    y -= legendPtr->titleHeight_ + ops->yPad;
-
-  x -= legendPtr->x() + ops->borderWidth;
-  y -= legendPtr->y() + ops->borderWidth;
-  w -= 2 * ops->borderWidth + 2*ops->xPad;
-  h -= 2 * ops->borderWidth + 2*ops->yPad;
-
-  if ((x >= 0) && (x < w) && (y >= 0) && (y < h)) {
-
-    // It's in the bounding box, so compute the index.
-    int row    = y / legendPtr->entryHeight_;
-    int column = x / legendPtr->entryWidth_;
-    int n = (column * legendPtr->nRows_) + row;
-
-    if (n < legendPtr->nEntries_) {
-      // Legend entries are stored in bottom-to-top
-      int count = 0;
-      Blt_ChainLink link;
-      for (link=Blt_Chain_FirstLink(graphPtr->elements_.displayList); 
-	   link; link = Blt_Chain_NextLink(link)) {
-	Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
-	if (elemOps->label) {
-	  if (count == n) {
-	    *contextPtr = elemPtr->classId();
-	    return elemPtr;
-	  }
-	  count++;
-	}
-      }	      
-    }
-  }
-
-  return NULL;
 }
 
 

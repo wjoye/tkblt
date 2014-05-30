@@ -109,16 +109,17 @@ class Legend {
   Tk_OptionTable optionTable_;
   void* ops_;
 
-  int width_;
-  int height_;
-  int x_;
-  int y_;
   GC focusGC_;
   Tcl_HashTable selectTable_;
 
  public:
   Graph* graphPtr_;
   unsigned int flags;
+
+  int width_;
+  int height_;
+  int x_;
+  int y_;
 
   int nEntries_;
   int nColumns_;
@@ -155,11 +156,6 @@ class Legend {
   void removeElement(Element*);
   int getElementFromObj(Tcl_Obj*, Element**);
 
-  int width() {return width_;}
-  int height() {return height_;}
-  int x() {return x_;}
-  int y() {return y_;}
-
   void selectEntry(Element*);
   void selectElement(Element*);
   void deselectElement(Element*);
@@ -173,6 +169,8 @@ class Legend {
   Position position() {return (Position)((LegendOptions*)ops_)->position;}
   int isRaised() {return ((LegendOptions*)ops_)->raised;}
   int isHidden() {return ((LegendOptions*)ops_)->hide;}
+
+  ClientData pickEntry(int, int, ClassId*);
 };
 
 #endif
