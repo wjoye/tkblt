@@ -176,8 +176,8 @@ void BindTable::pickItem(XEvent* eventPtr)
   // This implements a form of grabbing equivalent to what the X server does
   // for windows.
 
-  int buttonDown = state_ & 
-    (Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask);
+  int buttonDown = state_
+    & (Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask);
 
   // Save information about this event in the widget.  The event in the
   // widget is used for two purposes:
@@ -226,6 +226,10 @@ void BindTable::pickItem(XEvent* eventPtr)
     int y = pickEvent_.xcrossing.y;
     newItem_ = pickPtr_->pickEntry(x, y, &newContext_);
   }
+  else {
+    newItem_ =NULL;
+    newContext_ = CID_NONE;
+  }
 
   // Nothing to do: the current item hasn't changed.
   if ((newItem_ == currentItem_) && !(flags_ & LEFT_GRABBED_ITEM))
@@ -234,11 +238,15 @@ void BindTable::pickItem(XEvent* eventPtr)
   if (!buttonDown)
     flags_ &= ~LEFT_GRABBED_ITEM;
 
+  if ((newItem_ != currentItem_) && buttonDown) {
+    flags_ |= LEFT_GRABBED_ITEM;
+    return;
+  }
+
   // Simulate a LeaveNotify event on the previous current item and an
   // EnterNotify event on the new current item.  Remove the "current" tag
   // from the previous current item and place it on the new current item.
-  if ((newItem_ != currentItem_) && currentItem_ && 
-      !(flags_ & LEFT_GRABBED_ITEM)) {
+  if (currentItem_ && (newItem_ != currentItem_) && !(flags_ & LEFT_GRABBED_ITEM)) {
     XEvent event = pickEvent_;
     event.type = LeaveNotify;
 

@@ -1348,7 +1348,7 @@ ClientData Graph::pickEntry(int xx, int yy, ClassId* classIdPtr)
   // Sample coordinate is in one of the graph margins. Can only pick an axis.
   Region2d exts;
   extents(&exts);
-  if (xx >= exts.right || xx < exts.left || yy >= exts.bottom || yy < exts.top) {
+  if (xx>=exts.right || xx<exts.left || yy>=exts.bottom || yy<exts.top) {
     Axis* axisPtr = nearestAxis(xx, yy);
     if (axisPtr) {
       *classIdPtr = axisPtr->classId();
