@@ -41,7 +41,7 @@ class Graph;
 class BindTable {
  protected:
   Tk_BindingTable table_;
-  unsigned int flags_;
+  unsigned int grab_;
   ClientData newItem_;
   ClassId newContext_;
   Pick* pickPtr_;

@@ -144,9 +144,6 @@ void BindTable::deleteBindings(ClientData object)
 
 void BindTable::doEvent(XEvent* eventPtr)
 {
-  if (!graphPtr_->tkwin_ || !table_)
-    return;
-
   ClientData item = currentItem_;
   ClassId classId = currentContext_;
 
@@ -160,6 +157,7 @@ void BindTable::doEvent(XEvent* eventPtr)
   int nTags;
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
   Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, (void**)tagArray);
+
   if (tagArray)
     delete [] tagArray;
 }
@@ -206,30 +204,22 @@ static void BindProc(ClientData clientData, XEvent* eventPtr)
   case ButtonPress:
   case ButtonRelease:
     bindPtr->state_ = eventPtr->xbutton.state;
-    bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr);
     break;
-
   case EnterNotify:
   case LeaveNotify:
     bindPtr->state_ = eventPtr->xcrossing.state;
-    bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr);
     break;
-
   case MotionNotify:
     bindPtr->state_ = eventPtr->xmotion.state;
-    bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr);
     break;
-
   case KeyPress:
   case KeyRelease:
     bindPtr->state_ = eventPtr->xkey.state;
-    bindPtr->pickItem(eventPtr);
-    bindPtr->doEvent(eventPtr);
     break;
   }
+
+  bindPtr->pickItem(eventPtr);
+  bindPtr->doEvent(eventPtr);
 
   Tcl_Release(bindPtr->graphPtr_);
 }
