@@ -40,9 +40,10 @@ using namespace std;
 
 static Tk_EventProc BindProc;
 
-BindTable::BindTable(Graph* graphPtr, int which)
+BindTable::BindTable(Graph* graphPtr, Pick* pickPtr)
 {
   graphPtr_ = graphPtr;
+  pickPtr_ = pickPtr;
   flags_ =0;
   table_ = Tk_CreateBindingTable(graphPtr->interp_);
   currentItem_ =NULL;
@@ -53,7 +54,6 @@ BindTable::BindTable(Graph* graphPtr, int which)
   focusContext_ =CID_NONE;
   //  pickEvent =NULL;
   state_ =0;
-  which_ = which;
 
   unsigned int mask = (KeyPressMask | KeyReleaseMask | ButtonPressMask |
 		       ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
@@ -224,10 +224,7 @@ void BindTable::pickItem(XEvent* eventPtr)
   if (pickEvent_.type != LeaveNotify) {
     int x = pickEvent_.xcrossing.x;
     int y = pickEvent_.xcrossing.y;
-    if (which_)
-      newItem_ = graphPtr_->legend_->pickEntry(x, y, &newContext_);
-    else
-      newItem_ = graphPtr_->pickEntry(x, y, &newContext_);
+    newItem_ = pickPtr_->pickEntry(x, y, &newContext_);
   }
 
   // Nothing to do: the current item hasn't changed.

@@ -39,6 +39,7 @@
 #include "bltGrText.h"
 
 class Graph;
+class Pick;
 class Element;
 class Legend;
 
@@ -101,7 +102,7 @@ typedef struct {
   TextStyleOptions titleStyle;
 } LegendOptions;
 
-class Legend {
+class Legend : public Pick {
  public:
   enum Position {RIGHT, LEFT, TOP, BOTTOM, PLOT, XY};
 

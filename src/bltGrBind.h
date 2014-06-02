@@ -35,6 +35,7 @@
 #include "bltGrMisc.h"
 
 class BindTable;
+class Pick;
 class Graph;
 
 class BindTable {
@@ -43,7 +44,7 @@ class BindTable {
   unsigned int flags_;
   ClientData newItem_;
   ClassId newContext_;
-  int which_;
+  Pick* pickPtr_;
 
  public:
   Graph* graphPtr_;
@@ -55,7 +56,7 @@ class BindTable {
   XEvent pickEvent_;
 
  public:
-  BindTable(Graph*, int);
+  BindTable(Graph*, Pick*);
   virtual ~BindTable();
   
   int configure(ClientData, int, Tcl_Obj *const []);

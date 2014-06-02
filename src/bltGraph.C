@@ -118,7 +118,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   axes_.displayList = Blt_Chain_Create();
   elements_.displayList = Blt_Chain_Create();
   markers_.displayList = Blt_Chain_Create();
-  bindTable_ = new BindTable(this, 0);
+  bindTable_ = new BindTable(this, this);
 
   if (createAxes() != TCL_OK) {
     valid_ =0;

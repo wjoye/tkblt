@@ -50,6 +50,11 @@ class Legend;
 class Pen;
 class PageSetup;
 
+class Pick {
+ public:
+  virtual ClientData pickEntry(int, int, ClassId*) =0;
+};
+
 namespace Blt {
 class Marker;
 };
@@ -129,7 +134,7 @@ typedef struct {
   int reqPlotHeight;
 } GraphOptions;
 
-class Graph {
+class Graph : public Pick {
  public:
   Tcl_Interp* interp_;
   Tk_Window tkwin_;

@@ -193,7 +193,7 @@ Legend::Legend(Graph* graphPtr)
   ops->titleStyle.angle =0;
   ops->titleStyle.justify =TK_JUSTIFY_LEFT;
 
-  bindTable_ = new BindTable(graphPtr, 1);
+  bindTable_ = new BindTable(graphPtr, this);
 
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
 
