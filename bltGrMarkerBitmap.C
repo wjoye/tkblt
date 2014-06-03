@@ -71,8 +71,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(BitmapMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
-   "normal", -1, Tk_Offset(BitmapMarkerOptions, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(BitmapMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
@@ -259,7 +257,7 @@ int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
-void BitmapMarker::print(Blt_Ps ps)
+void BitmapMarker::print(PostScript* psPtr)
 {
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 
@@ -267,15 +265,15 @@ void BitmapMarker::print(Blt_Ps ps)
     return;
 
   if (ops->fillColor) {
-    Blt_Ps_XSetBackground(ps, ops->fillColor);
-    Blt_Ps_XFillPolygon(ps, outline_, 4);
+    psPtr->setBackground(ops->fillColor);
+    psPtr->fillPolygon(outline_, 4);
   }
-  Blt_Ps_XSetForeground(ps, ops->outlineColor);
+  psPtr->setForeground(ops->outlineColor);
 
-  Blt_Ps_Format(ps, "  gsave\n    %g %g translate\n    %d %d scale\n", 
+  psPtr->format("  gsave\n    %g %g translate\n    %d %d scale\n", 
 		anchorPt_.x, anchorPt_.y + height_, width_, -height_);
-  Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {",
+  psPtr->format("    %d %d true [%d 0 0 %d 0 %d] {",
 		width_, height_, width_, -height_, height_);
-  Blt_Ps_XSetBitmapData(ps, graphPtr_->display_, ops->bitmap, width_, height_);
-  Blt_Ps_VarAppend(ps, "    } imagemask\n", "grestore\n", (char*)NULL);
+  psPtr->setBitmap(graphPtr_->display_, ops->bitmap, width_, height_);
+  psPtr->varAppend("    } imagemask\n", "grestore\n", NULL);
 }

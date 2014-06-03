@@ -53,9 +53,6 @@ void RestoreProc(ClientData clientData, Tk_Window tkwin,
 // Fill
 const char* fillObjOption[] = {"none", "x", "y", "both", NULL};
 
-// State
-const char* stateObjOption[] = {"normal", "active", "disabled", NULL};
-
 // Dashes
 static Tk_CustomOptionSetProc DashesSetProc;
 static Tk_CustomOptionGetProc DashesGetProc;

@@ -78,8 +78,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(LineMarkerOptions, outlineColor), 
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
-   "normal", -1, Tk_Offset(LineMarkerOptions, state), 0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(LineMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
@@ -303,24 +301,24 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
   }
 }
 
-void LineMarker::print(Blt_Ps ps)
+void LineMarker::print(PostScript* psPtr)
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   if (nSegments_ > 0) {
-    Blt_Ps_XSetLineAttributes(ps, ops->outlineColor, ops->lineWidth,
-			      &ops->dashes, ops->capStyle, ops->joinStyle);
+    psPtr->setLineAttributes(ops->outlineColor, ops->lineWidth,
+			     &ops->dashes, ops->capStyle, ops->joinStyle);
     if ((LineIsDashed(ops->dashes)) && (ops->fillColor)) {
-      Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-      Blt_Ps_XSetBackground(ps, ops->fillColor);
-      Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
-      Blt_Ps_VarAppend(ps, "stroke\n", "  grestore\n", "} def\n", (char*)NULL);
+      psPtr->append("/DashesProc {\n  gsave\n    ");
+      psPtr->setBackground(ops->fillColor);
+      psPtr->append("    ");
+      psPtr->setDashes(NULL);
+      psPtr->varAppend("stroke\n", "  grestore\n", "} def\n", NULL);
     } 
     else
-      Blt_Ps_Append(ps, "/DashesProc {} def\n");
+      psPtr->append("/DashesProc {} def\n");
 
-    graphPtr_->printSegments(ps, segments_, nSegments_);
+    psPtr->drawSegments(segments_, nSegments_);
   }
 }
 

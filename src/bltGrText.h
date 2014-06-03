@@ -35,7 +35,7 @@
 #include "bltGrMisc.h"
 
 class Graph;
-typedef struct _Blt_Ps *Blt_Ps;
+class PostScript;
 
 typedef struct {
   Tk_Anchor anchor;
@@ -68,7 +68,7 @@ class TextStyle {
   void* ops() {return ops_;}
   void drawText(Drawable, const char*, int, int);
   void drawText2(Drawable, const char*, int, int, int*, int*);
-  void printText(Blt_Ps, const char*, int, int);
+  void printText(PostScript*, const char*, int, int);
   void getExtents(const char*, int*, int*);
 };
 

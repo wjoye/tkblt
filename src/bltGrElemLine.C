@@ -653,7 +653,7 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
   }
 }
 
-void LineElement::print(Blt_Ps ps)
+void LineElement::print(PostScript* psPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePen* penPtr = NORMALPEN(ops);
@@ -662,27 +662,27 @@ void LineElement::print(Blt_Ps ps)
   if (ops->hide)
     return;
 
-  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name_);
+  psPtr->format("\n%% Element \"%s\"\n\n", name_);
 
   // Draw fill area
   if (fillPts_) {
     // Create a path to use for both the polygon and its outline
-    Blt_Ps_Append(ps, "% start fill area\n");
-    graphPtr_->printPolyline(ps, fillPts_, nFillPts_);
+    psPtr->append("% start fill area\n");
+    psPtr->drawPolyline(fillPts_, nFillPts_);
 
     // If the background fill color was specified, draw the polygon in a
     // solid fashion with that color
     if (ops->fillBg)
-      Blt_Ps_Append(ps, "gsave fill grestore\n");
+      psPtr->append("gsave fill grestore\n");
     else
-      Blt_Ps_Append(ps, "gsave fill grestore\n");
+      psPtr->append("gsave fill grestore\n");
 
-    Blt_Ps_Append(ps, "% end fill area\n");
+    psPtr->append("% end fill area\n");
   }
 
   // traces
   if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
-    printTraces(ps, penPtr);
+    printTraces(psPtr, penPtr);
 
   // Draw symbols, error bars, values
   unsigned int count =0;
@@ -697,31 +697,29 @@ void LineElement::print(Blt_Ps ps)
       colorPtr = penOps->traceColor;
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
+      psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      graphPtr_->printSegments(ps, stylePtr->xeb.segments, 
-			    stylePtr->xeb.length);
+      psPtr->drawSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, penOps->errorBarLineWidth, 
+      psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      graphPtr_->printSegments(ps, stylePtr->yeb.segments,
-			    stylePtr->yeb.length);
+      psPtr->drawSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
     if ((stylePtr->symbolPts.length > 0) &&
 	(penOps->symbol.type != SYMBOL_NONE)) {
-      printSymbols(ps, penPtr, stylePtr->symbolSize, 
+      printSymbols(psPtr, penPtr, stylePtr->symbolSize, 
 		   stylePtr->symbolPts.length, stylePtr->symbolPts.points);
     }
     if (penOps->valueShow != SHOW_NONE) {
-      printValues(ps, penPtr, stylePtr->symbolPts.length, 
+      printValues(psPtr, penPtr, stylePtr->symbolPts.length, 
 		  stylePtr->symbolPts.points, symbolPts_.map + count);
     }
     count += stylePtr->symbolPts.length;
   }
 }
 
-void LineElement::printActive(Blt_Ps ps)
+void LineElement::printActive(PostScript* psPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePen* penPtr = (LinePen *)ops->activePenPtr;
@@ -732,35 +730,35 @@ void LineElement::printActive(Blt_Ps ps)
   if (ops->hide || !active_)
     return;
 
-  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
+  psPtr->format("\n%% Active Element \"%s\"\n\n", name_);
 
   int symbolSize = scaleSymbol(penOps->symbol.size);
   if (nActiveIndices_ > 0) {
     mapActiveSymbols();
 
     if (penOps->symbol.type != SYMBOL_NONE)
-      printSymbols(ps, penPtr, symbolSize, activePts_.length,
+      printSymbols(psPtr, penPtr, symbolSize, activePts_.length,
 			  activePts_.points);
 
     if (penOps->valueShow != SHOW_NONE)
-      printValues(ps, penPtr, activePts_.length, activePts_.points,
+      printValues(psPtr, penPtr, activePts_.length, activePts_.points,
 		  activePts_.map);
   }
   else if (nActiveIndices_ < 0) {
     if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
-      printTraces(ps, (LinePen*)penPtr);
+      printTraces(psPtr, (LinePen*)penPtr);
 
     if (penOps->symbol.type != SYMBOL_NONE)
-      printSymbols(ps, penPtr, symbolSize, symbolPts_.length, 
+      printSymbols(psPtr, penPtr, symbolSize, symbolPts_.length, 
 		   symbolPts_.points);
     if (penOps->valueShow != SHOW_NONE) {
-      printValues(ps, penPtr, symbolPts_.length, symbolPts_.points,
+      printValues(psPtr, penPtr, symbolPts_.length, symbolPts_.points,
 		  symbolPts_.map);
     }
   }
 }
 
-void LineElement::printSymbol(Blt_Ps ps, double x, double y, int size)
+void LineElement::printSymbol(PostScript* psPtr, double x, double y, int size)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -768,20 +766,18 @@ void LineElement::printSymbol(Blt_Ps ps, double x, double y, int size)
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   if (penOps->traceWidth > 0) {
-    /*
-     * Draw an extra line offset by one pixel from the previous to give a
-     * thicker appearance.  This is only for the legend entry.  This routine
-     * is never called for drawing the actual line segments.
-     */
-    Blt_Ps_XSetLineAttributes(ps, penOps->traceColor, penOps->traceWidth, 
+    // Draw an extra line offset by one pixel from the previous to give a
+    // thicker appearance.  This is only for the legend entry.  This routine
+    // is never called for drawing the actual line segments.
+    psPtr->setLineAttributes(penOps->traceColor, penOps->traceWidth, 
 			      &penOps->traceDashes, CapButt, JoinMiter);
-    Blt_Ps_Format(ps, "%g %g %d Li\n", x, y, size + size);
+    psPtr->format("%g %g %d Li\n", x, y, size + size);
   }
   if (penOps->symbol.type != SYMBOL_NONE) {
     Point2d point;
     point.x = x;
     point.y = y;
-    printSymbols(ps, penPtr, size, 1, &point);
+    printSymbols(psPtr, penPtr, size, 1, &point);
   }
 }
 
@@ -2626,7 +2622,7 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   } 
 }
 
-void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
+void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, int size)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
@@ -2640,11 +2636,11 @@ void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
     outlineColor = pops->traceColor;
 
   if (pops->symbol.type == SYMBOL_NONE)
-    Blt_Ps_XSetLineAttributes(ps, pops->traceColor, pops->traceWidth + 2,
-			      &pops->traceDashes, CapButt, JoinMiter);
+    psPtr->setLineAttributes(pops->traceColor, pops->traceWidth + 2,
+			     &pops->traceDashes, CapButt, JoinMiter);
   else {
-    Blt_Ps_XSetLineWidth(ps, pops->symbol.outlineWidth);
-    Blt_Ps_XSetDashes(ps, (Dashes *)NULL);
+    psPtr->setLineWidth(pops->symbol.outlineWidth);
+    psPtr->setDashes(NULL);
   }
 
   /*
@@ -2652,7 +2648,7 @@ void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
    * both the bitmap and its mask. Otherwise fill and stroke the path formed
    * already.
    */
-  Blt_Ps_Append(ps, "\n/DrawSymbolProc {\n");
+  psPtr->append("\n/DrawSymbolProc {\n");
   switch (pops->symbol.type) {
   case SYMBOL_NONE:
     break;				/* Do nothing */
@@ -2671,37 +2667,35 @@ void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
       scale = MIN(sx, sy);
 
       if (pops->symbol.mask != None) {
-	Blt_Ps_VarAppend(ps, "\n  % Bitmap mask is \"",
-			 Tk_NameOfBitmap(graphPtr_->display_, pops->symbol.mask),
+	psPtr->varAppend("\n  % Bitmap mask is \"",
+			 Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.mask),
 			 "\"\n\n  ", NULL);
-	Blt_Ps_XSetBackground(ps, fillColor);
-	Blt_Ps_DrawBitmap(ps, graphPtr_->display_, pops->symbol.mask, 
-			  scale, scale);
+	psPtr->setBackground(fillColor);
+	psPtr->drawBitmap(graphPtr_->display_, pops->symbol.mask, scale, scale);
       }
-      Blt_Ps_VarAppend(ps, "\n  % Bitmap symbol is \"",
-		       Tk_NameOfBitmap(graphPtr_->display_, pops->symbol.bitmap),
+      psPtr->varAppend("\n  % Bitmap symbol is \"",
+		       Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.bitmap),
 		       "\"\n\n  ", NULL);
-      Blt_Ps_XSetForeground(ps, outlineColor);
-      Blt_Ps_DrawBitmap(ps, graphPtr_->display_, pops->symbol.bitmap, 
-			scale, scale);
+      psPtr->setForeground(outlineColor);
+      psPtr->drawBitmap(graphPtr_->display_, pops->symbol.bitmap, scale, scale);
     }
     break;
   default:
-    Blt_Ps_Append(ps, "  ");
-    Blt_Ps_XSetBackground(ps, fillColor);
-    Blt_Ps_Append(ps, "  gsave fill grestore\n");
+    psPtr->append("  ");
+    psPtr->setBackground(fillColor);
+    psPtr->append("  gsave fill grestore\n");
 
     if (pops->symbol.outlineWidth > 0) {
-      Blt_Ps_Append(ps, "  ");
-      Blt_Ps_XSetForeground(ps, outlineColor);
-      Blt_Ps_Append(ps, "  stroke\n");
+      psPtr->append("  ");
+      psPtr->setForeground(outlineColor);
+      psPtr->append("  stroke\n");
     }
     break;
   }
-  Blt_Ps_Append(ps, "} def\n\n");
+  psPtr->append("} def\n\n");
 }
 
-void LineElement::printSymbols(Blt_Ps ps, LinePen* penPtr, int size,
+void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
 			       int nSymbolPts, Point2d *symbolPts)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
@@ -2711,7 +2705,7 @@ void LineElement::printSymbols(Blt_Ps ps, LinePen* penPtr, int size,
     {
       "Li", "Sq", "Ci", "Di", "Pl", "Cr", "Sp", "Sc", "Tr", "Ar", "Bm", NULL
     };
-  getSymbolPostScriptInfo(ps, penPtr, size);
+  getSymbolPostScriptInfo(psPtr, penPtr, size);
 
   symbolSize = (double)size;
   switch (pops->symbol.type) {
@@ -2736,47 +2730,48 @@ void LineElement::printSymbols(Blt_Ps ps, LinePen* penPtr, int size,
 
   Point2d *pp, *endp;
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
-    Blt_Ps_Format(ps, "%g %g %g %s\n", pp->x, pp->y, 
+    psPtr->format("%g %g %g %s\n", pp->x, pp->y, 
 		  symbolSize, symbolMacros[pops->symbol.type]);
   }
 }
 
-void LineElement::setLineAttributes(Blt_Ps ps, LinePen* penPtr)
+void LineElement::setLineAttributes(PostScript* psPtr, LinePen* penPtr)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
-  /* Set the attributes of the line (color, dashes, linewidth) */
-  Blt_Ps_XSetLineAttributes(ps, pops->traceColor, pops->traceWidth, 
-			    &pops->traceDashes, CapButt, JoinMiter);
+  psPtr->setLineAttributes(pops->traceColor, pops->traceWidth, 
+			   &pops->traceDashes, CapButt, JoinMiter);
+
   if ((LineIsDashed(pops->traceDashes)) && 
       (pops->traceOffColor)) {
-    Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
-    Blt_Ps_XSetBackground(ps, pops->traceOffColor);
-    Blt_Ps_Append(ps, "    ");
-    Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
-    Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
+    psPtr->append("/DashesProc {\n  gsave\n    ");
+    psPtr->setBackground(pops->traceOffColor);
+    psPtr->append("    ");
+    psPtr->setDashes(NULL);
+    psPtr->append("stroke\n  grestore\n} def\n");
   } else {
-    Blt_Ps_Append(ps, "/DashesProc {} def\n");
+    psPtr->append("/DashesProc {} def\n");
   }
 }
 
-void LineElement::printTraces(Blt_Ps ps, LinePen* penPtr)
+void LineElement::printTraces(PostScript* psPtr, LinePen* penPtr)
 {
-  setLineAttributes(ps, penPtr);
+  setLineAttributes(psPtr, penPtr);
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
        link = Blt_Chain_NextLink(link)) {
     bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     if (tracePtr->screenPts.length > 0) {
-      Blt_Ps_Append(ps, "% start trace\n");
-      graphPtr_->printMaxPolyline(ps, tracePtr->screenPts.points, 
-				   tracePtr->screenPts.length);
-      Blt_Ps_Append(ps, "% end trace\n");
+      psPtr->append("% start trace\n");
+      psPtr->drawMaxPolyline(tracePtr->screenPts.points, 
+			     tracePtr->screenPts.length);
+      psPtr->append("% end trace\n");
     }
   }
 }
 
-void LineElement::printValues(Blt_Ps ps, LinePen* penPtr, int nSymbolPts,
-			      Point2d *symbolPts, int *pointToData)
+void LineElement::printValues(PostScript* psPtr, LinePen* penPtr, 
+			      int nSymbolPts, Point2d *symbolPts, 
+			      int *pointToData)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
@@ -2804,7 +2799,7 @@ void LineElement::printValues(Blt_Ps ps, LinePen* penPtr, int nSymbolPts,
       snprintf(string + strlen(string), TCL_DOUBLE_SPACE, fmt, y);
     }
 
-    ts.printText(ps, string, pp->x, pp->y);
+    ts.printText(psPtr, string, pp->x, pp->y);
   } 
 }
 

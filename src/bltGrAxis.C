@@ -1660,17 +1660,17 @@ void Axis::makeGridLine(double value, Segment2d *sp)
   }
 }
 
-void Axis::print(Blt_Ps ps)
+void Axis::print(PostScript* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
   if (ops->hide || !use_)
     return;
 
-  Blt_Ps_Format(ps, "%% Axis \"%s\"\n", name_);
+  psPtr->format("%% Axis \"%s\"\n", name_);
   if (ops->normalBg) {
     int relief = active_ ? ops->activeRelief : ops->relief;
-    Blt_Ps_Fill3DRectangle(ps, ops->normalBg, left_, top_, 
+    psPtr->fill3DRectangle(ops->normalBg, left_, top_, 
 			   right_ - left_, bottom_ - top_, 
 			   ops->borderWidth, relief);
   }
@@ -1688,7 +1688,7 @@ void Axis::print(Blt_Ps ps)
     ts.xPad_ = 1;
     ts.yPad_ = 0;
 
-    ts.printText(ps, ops->title, titlePos_.x, titlePos_.y);
+    ts.printText(psPtr, ops->title, titlePos_.x, titlePos_.y);
   }
 
   if (ops->showTicks) {
@@ -1706,40 +1706,40 @@ void Axis::print(Blt_Ps ps)
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link; 
 	 link = Blt_Chain_NextLink(link)) {
       TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      ts.printText(ps, labelPtr->string, labelPtr->anchorPos.x, 
+      ts.printText(psPtr, labelPtr->string, labelPtr->anchorPos.x, 
 		   labelPtr->anchorPos.y);
     }
   }
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
-    Blt_Ps_XSetLineAttributes(ps, ops->tickColor, ops->lineWidth, 
-			      (Dashes*)NULL, CapButt, JoinMiter);
-    graphPtr_->printSegments(ps, segments_, nSegments_);
+    psPtr->setLineAttributes(ops->tickColor, ops->lineWidth, 
+			     (Dashes*)NULL, CapButt, JoinMiter);
+    psPtr->drawSegments(segments_, nSegments_);
   }
 }
 
-void Axis::printGrids(Blt_Ps ps)
+void Axis::printGrids(PostScript* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
   if (ops->hide || !ops->showGrid || !use_)
     return;
 
-  Blt_Ps_Format(ps, "%% Axis %s: grid line attributes\n", name_);
-  Blt_Ps_XSetLineAttributes(ps, ops->major.color, ops->major.lineWidth, 
+  psPtr->format("%% Axis %s: grid line attributes\n", name_);
+  psPtr->setLineAttributes(ops->major.color, ops->major.lineWidth, 
 			    &ops->major.dashes, CapButt, JoinMiter);
-  Blt_Ps_Format(ps, "%% Axis %s: major grid line segments\n", name_);
-  graphPtr_->printSegments(ps, ops->major.segments, ops->major.nUsed);
+  psPtr->format("%% Axis %s: major grid line segments\n", name_);
+  psPtr->drawSegments(ops->major.segments, ops->major.nUsed);
 
   if (ops->showGridMinor) {
-    Blt_Ps_XSetLineAttributes(ps, ops->minor.color, ops->minor.lineWidth, 
-			      &ops->minor.dashes, CapButt, JoinMiter);
-    Blt_Ps_Format(ps, "%% Axis %s: minor grid line segments\n", name_);
-    graphPtr_->printSegments(ps, ops->minor.segments, ops->minor.nUsed);
+    psPtr->setLineAttributes(ops->minor.color, ops->minor.lineWidth, 
+			     &ops->minor.dashes, CapButt, JoinMiter);
+    psPtr->format("%% Axis %s: minor grid line segments\n", name_);
+    psPtr->drawSegments(ops->minor.segments, ops->minor.nUsed);
   }
 }
 
-void Axis::printLimits(Blt_Ps ps)
+void Axis::printLimits(PostScript* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -1775,40 +1775,42 @@ void Axis::printLimits(Blt_Ps ps)
   int textWidth, textHeight;
   TextStyle ts(graphPtr_, &ops->limitsTextStyle);
   if (maxPtr) {
-    graphPtr_->getTextExtents(ops->tickFont, maxPtr, -1, &textWidth, &textHeight);
+    graphPtr_->getTextExtents(ops->tickFont, maxPtr, -1, 
+			      &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
-	ts.printText(ps, maxPtr, (double)graphPtr_->right_, hMax);
+	ts.printText(psPtr, maxPtr, (double)graphPtr_->right_, hMax);
 	hMax -= (textWidth + spacing);
       } 
       else {
 	ops->limitsTextStyle.angle = 0.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
-	ts.printText(ps, maxPtr, vMax, (double)graphPtr_->top_);
+	ts.printText(psPtr, maxPtr, vMax, (double)graphPtr_->top_);
 	vMax += (textWidth + spacing);
       }
     }
   }
 
   if (minPtr) {
-    graphPtr_->getTextExtents(ops->tickFont, minPtr, -1, &textWidth, &textHeight);
+    graphPtr_->getTextExtents(ops->tickFont, minPtr, -1, 
+			      &textWidth, &textHeight);
     if ((textWidth > 0) && (textHeight > 0)) {
       ops->limitsTextStyle.anchor = TK_ANCHOR_SW;
 
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 
-	ts.printText(ps, minPtr, (double)graphPtr_->left_, hMin);
+	ts.printText(psPtr, minPtr, (double)graphPtr_->left_, hMin);
 	hMin -= (textWidth + spacing);
       }
       else {
 	ops->limitsTextStyle.angle = 0.0;
 
-	ts.printText(ps, minPtr, vMin, (double)graphPtr_->bottom_);
+	ts.printText(psPtr, minPtr, vMin, (double)graphPtr_->bottom_);
 	vMin += (textWidth + spacing);
       }
     }

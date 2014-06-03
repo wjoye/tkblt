@@ -35,11 +35,7 @@
 
 #include <tk.h>
 
-#define BLT_STATE_NORMAL		(0)
-#define BLT_STATE_DISABLED		(1<<1)
-
 extern const char* fillObjOption[];
-extern const char* stateObjOption[];
 
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;

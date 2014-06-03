@@ -74,8 +74,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
    "0", -1, Tk_Offset(TextMarkerOptions, style.angle), 0, NULL, 0},
-  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
-   "normal", -1, Tk_Offset(TextMarkerOptions, state), 0, &stateObjOption, 0},
   {TK_OPTION_STRING, "-text", "text", "Text", 
    NULL, -1, Tk_Offset(TextMarkerOptions, string), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
@@ -255,7 +253,7 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
-void TextMarker::print(Blt_Ps ps)
+void TextMarker::print(PostScript* psPtr)
 {
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
@@ -270,10 +268,10 @@ void TextMarker::print(Blt_Ps ps)
       points[ii].x = outline_[ii].x + anchorPt_.x;
       points[ii].y = outline_[ii].y + anchorPt_.y;
     }
-    Blt_Ps_XSetBackground(ps, ops->fillColor);
-    Blt_Ps_XFillPolygon(ps, points, 4);
+    psPtr->setBackground(ops->fillColor);
+    psPtr->fillPolygon(points, 4);
   }
 
   TextStyle ts(graphPtr_, &ops->style);
-  ts.printText(ps, ops->string, anchorPt_.x, anchorPt_.y);
+  ts.printText(psPtr, ops->string, anchorPt_.x, anchorPt_.y);
 }

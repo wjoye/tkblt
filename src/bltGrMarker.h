@@ -57,7 +57,6 @@ namespace Blt {
     Axis* xAxis;
     Axis* yAxis;
     int hide;
-    int state;
     int drawUnder;
     int xOffset;
     int yOffset;
@@ -93,7 +92,7 @@ namespace Blt {
     virtual void map() =0;
     virtual int pointIn(Point2d*) =0;
     virtual int regionIn(Region2d*, int) =0;
-    virtual void print(Blt_Ps) =0;
+    virtual void print(PostScript*) =0;
 
     virtual ClassId classId() =0;
     virtual const char* className() =0;

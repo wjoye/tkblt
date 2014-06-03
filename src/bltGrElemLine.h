@@ -137,14 +137,14 @@ class LineElement : public Element {
   void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
   void drawTraces(Drawable, LinePen*);
   void drawValues(Drawable, LinePen*, int, Point2d*, int*);
-  void setLineAttributes(Blt_Ps, LinePen*);
-  void printTraces(Blt_Ps, LinePen*);
-  void printValues(Blt_Ps, LinePen*, int, Point2d*, int*);
-  void printSymbols(Blt_Ps, LinePen*, int, int, Point2d*);
+  void setLineAttributes(PostScript*, LinePen*);
+  void printTraces(PostScript*, LinePen*);
+  void printValues(PostScript*, LinePen*, int, Point2d*, int*);
+  void printSymbols(PostScript*, LinePen*, int, int, Point2d*);
   double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
-  void getSymbolPostScriptInfo(Blt_Ps, LinePen*, int);
+  void getSymbolPostScriptInfo(PostScript*, LinePen*, int);
   int simplify(Point2d*, int, int, double, int*);
   double findSplit(Point2d*, int, int, int*);
 
@@ -163,9 +163,9 @@ class LineElement : public Element {
   void draw(Drawable);
   void drawActive(Drawable);
   void drawSymbol(Drawable, int, int, int);
-  void print(Blt_Ps);
-  void printActive(Blt_Ps);
-  void printSymbol(Blt_Ps, double, double, int);
+  void print(PostScript*);
+  void printActive(PostScript*);
+  void printSymbol(PostScript*, double, double, int);
 };
 
 #endif

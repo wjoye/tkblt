@@ -54,8 +54,6 @@ using namespace Blt;
 #define MARKER_ABOVE	0
 #define MARKER_UNDER	1
 
-extern int PostScriptPreamble(Graph* graphPtr, const char *fileName, Blt_Ps ps);
-
 // OptionSpecs
 
 Graph::Graph(ClientData clientData, Tcl_Interp* interp, 
@@ -348,10 +346,9 @@ void Graph::draw()
   Tk_FreePixmap(display_, drawable);
 }
 
-int Graph::print(const char *ident, Blt_Ps ps)
+int Graph::print(const char* ident, PostScript* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  PageSetup *setupPtr = pageSetup_;
   PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
 
   // We need to know how big a graph to print.  If the graph hasn't been drawn
@@ -368,11 +365,10 @@ int Graph::print(const char *ident, Blt_Ps ps)
   else if (height_ < 2)
     height_ = Tk_ReqHeight(tkwin_);
 
-  Blt_Ps_ComputeBoundingBox(setupPtr, width_, height_);
+  psPtr->computeBBox(width_, height_);
   flags |= RESET;
 
   /* Turn on PostScript measurements when computing the graph's layout. */
-  Blt_Ps_SetPrinting(ps, 1);
   reconfigure();
 
   map();
@@ -383,72 +379,72 @@ int Graph::print(const char *ident, Blt_Ps ps)
   int w = (right_ - left_ + 1) + (2*ops->plotBW);
   int h = (bottom_ - top_ + 1) + (2*ops->plotBW);
 
-  int result = PostScriptPreamble(this, ident, ps);
+  int result = psPtr->preamble(ident);
   if (result != TCL_OK)
     goto error;
 
-  Blt_Ps_XSetFont(ps, ops->titleTextStyle.font);
+  psPtr->setFont(ops->titleTextStyle.font);
   if (pops->decorations)
-    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->plotBg));
+    psPtr->setBackground(Tk_3DBorderColor(ops->plotBg));
   else
-    Blt_Ps_SetClearBackground(ps);
+    psPtr->setClearBackground();
 
-  Blt_Ps_XFillRectangle(ps, x, y, w, h);
-  Blt_Ps_Rectangle(ps, x, y, w, h);
-  Blt_Ps_Append(ps, "gsave clip\n\n");
+  psPtr->fillRectangle(x, y, w, h);
+  psPtr->drawRectangle(x, y, w, h);
+  psPtr->append("gsave clip\n\n");
 
   // Start
-  printMargins(ps);
+  printMargins(psPtr);
 
   switch (legend_->position()) {
   case Legend::TOP:
   case Legend::BOTTOM:
   case Legend::RIGHT:
   case Legend::LEFT:
-    legend_->print(ps);
+    legend_->print(psPtr);
     break;
   default:
     break;
   }
 
-  printAxesGrids(ps);
-  printAxes(ps);
-  printAxesLimits(ps);
+  printAxesGrids(psPtr);
+  printAxes(psPtr);
+  printAxesLimits(psPtr);
 
   if (!legend_->isRaised()) {
     switch (legend_->position()) {
     case Legend::PLOT:
     case Legend::XY:
-      legend_->print(ps);
+      legend_->print(psPtr);
       break;
     default:
       break;
     }
   }
 
-  printMarkers(ps, MARKER_UNDER);
-  printElements(ps);
-  printActiveElements(ps);
+  printMarkers(psPtr, MARKER_UNDER);
+  printElements(psPtr);
+  printActiveElements(psPtr);
 
   if (legend_->isRaised()) {
     switch (legend_->position()) {
     case Legend::PLOT:
     case Legend::XY:
-      legend_->print(ps);
+      legend_->print(psPtr);
       break;
     default:
       break;
     }
   }
-  printMarkers(ps, MARKER_ABOVE);
+  printMarkers(psPtr, MARKER_ABOVE);
 
-  Blt_Ps_VarAppend(ps, "\n", "% Unset clipping\n", "grestore\n\n", NULL);
-  Blt_Ps_VarAppend(ps, "showpage\n", "%Trailer\n", "grestore\n", "end\n", "%EOF\n", NULL);
+  psPtr->varAppend("\n", "% Unset clipping\n", "grestore\n\n", NULL);
+  psPtr->varAppend("showpage\n", "%Trailer\n", "grestore\n", "end\n", "%EOF\n",
+		   NULL);
 
  error:
   width_ = Tk_Width(tkwin_);
   height_ = Tk_Height(tkwin_);
-  Blt_Ps_SetPrinting(ps, 0);
   reconfigure();
 
   // Redraw the graph in order to re-calculate the layout as soon as
@@ -557,7 +553,7 @@ void Graph::drawMargins(Drawable drawable)
   }
 }
 
-void Graph::printMargins(Blt_Ps ps)
+void Graph::printMargins(PostScript* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
@@ -576,27 +572,27 @@ void Graph::printMargins(Blt_Ps ps)
 
   // Clear the surrounding margins and clip the plotting surface
   if (pops->decorations)
-    Blt_Ps_XSetBackground(ps, Tk_3DBorderColor(ops->normalBg));
+    psPtr->setBackground(Tk_3DBorderColor(ops->normalBg));
   else
-    Blt_Ps_SetClearBackground(ps);
+    psPtr->setClearBackground();
 
-  Blt_Ps_Append(ps, "% Margins\n");
-  Blt_Ps_XFillRectangles(ps, margin, 4);
+  psPtr->append("% Margins\n");
+  psPtr->fillRectangles(margin, 4);
     
-  Blt_Ps_Append(ps, "% Interior 3D border\n");
+  psPtr->append("% Interior 3D border\n");
   if (ops->plotBW > 0) {
     int x = left_ - ops->plotBW;
     int y = top_ - ops->plotBW;
     int w = (right_ - left_) + (2*ops->plotBW);
     int h = (bottom_ - top_) + (2*ops->plotBW);
-    Blt_Ps_Draw3DRectangle(ps, ops->normalBg, (double)x, (double)y, w, h,
+    psPtr->draw3DRectangle(ops->normalBg, (double)x, (double)y, w, h,
 			   ops->plotBW, ops->plotRelief);
   }
 
   if (ops->title) {
-    Blt_Ps_Append(ps, "% Graph title\n");
+    psPtr->append("% Graph title\n");
     TextStyle ts(this, &ops->titleTextStyle);
-    ts.printText(ps, ops->title, (double)titleX_, (double)titleY_);
+    ts.printText(psPtr, ops->title, (double)titleX_, (double)titleY_);
   }
 }
 
@@ -698,21 +694,21 @@ void Graph::drawActiveElements(Drawable drawable)
   }
 }
 
-void Graph::printElements(Blt_Ps ps)
+void Graph::printElements(PostScript* psPtr)
 {
   for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    elemPtr->print(ps);
+    elemPtr->print(psPtr);
   }
 }
 
-void Graph::printActiveElements(Blt_Ps ps)
+void Graph::printActiveElements(PostScript* psPtr)
 {
   for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
-    elemPtr->printActive(ps);
+    elemPtr->printActive(psPtr);
   }
 }
 
@@ -804,7 +800,7 @@ void Graph::drawMarkers(Drawable drawable, int under)
   }
 }
 
-void Graph::printMarkers(Blt_Ps ps, int under)
+void Graph::printMarkers(PostScript* psPtr, int under)
 {
   for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
@@ -819,9 +815,9 @@ void Graph::printMarkers(Blt_Ps ps, int under)
     if (isElementHidden(markerPtr))
       continue;
 
-    Blt_Ps_VarAppend(ps, "\n% Marker \"", markerPtr->name_, 
-		     "\" is a ", markerPtr->className(), ".\n", (char*)NULL);
-    markerPtr->print(ps);
+    psPtr->varAppend("\n% Marker \"", markerPtr->name_, 
+		     "\" is a ", markerPtr->className(), ".\n", NULL);
+    markerPtr->print(psPtr);
   }
 }
 
@@ -848,7 +844,7 @@ Marker* Graph::nearestMarker(int x, int y, int under)
     if (isElementHidden(markerPtr))
       continue;
 
-    if ((mops->drawUnder == under) && (mops->state == BLT_STATE_NORMAL))
+    if (mops->drawUnder == under)
       if (markerPtr->pointIn(&point))
 	return markerPtr;
   }
@@ -1037,7 +1033,7 @@ void Graph::drawAxesGrids(Drawable drawable)
   }
 }
 
-void Graph::printAxes(Blt_Ps ps) 
+void Graph::printAxes(PostScript* psPtr) 
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -1046,12 +1042,12 @@ void Graph::printAxes(Blt_Ps ps)
     for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      axisPtr->print(ps);
+      axisPtr->print(psPtr);
     }
   }
 }
 
-void Graph::printAxesGrids(Blt_Ps ps) 
+void Graph::printAxesGrids(PostScript* psPtr) 
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -1059,18 +1055,18 @@ void Graph::printAxesGrids(Blt_Ps ps)
     for (Blt_ChainLink link=Blt_Chain_FirstLink(ops->margins[ii].axes);
 	 link; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
-      axisPtr->printGrids(ps);
+      axisPtr->printGrids(psPtr);
     }
   }
 }
 
-void Graph::printAxesLimits(Blt_Ps ps)
+void Graph::printAxesLimits(PostScript* psPtr)
 {
   Tcl_HashSearch cursor;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);
        hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
     Axis *axisPtr = (Axis*)Tcl_GetHashValue(hPtr);
-    axisPtr->printLimits(ps);
+    axisPtr->printLimits(psPtr);
   }
 }
 

@@ -78,9 +78,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-outlinebg", "outlinebg", "OutlineBg", 
    NULL, -1, Tk_Offset(PolygonMarkerOptions, outlineBg), 
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_STRING_TABLE, "-state", "state", "State", 
-   "normal", -1, Tk_Offset(PolygonMarkerOptions, state),
-   0, &stateObjOption, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
@@ -330,36 +327,35 @@ int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
   return 0;
 }
 
-void PolygonMarker::print(Blt_Ps ps)
+void PolygonMarker::print(PostScript* psPtr)
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->fill) {
-    graphPtr_->printPolyline(ps, fillPts_, nFillPts_);
+    psPtr->drawPolyline(fillPts_, nFillPts_);
     if (ops->fillBg) {
-      Blt_Ps_XSetBackground(ps, ops->fillBg);
-      Blt_Ps_Append(ps, "gsave fill grestore\n");
+      psPtr->setBackground(ops->fillBg);
+      psPtr->append("gsave fill grestore\n");
     }
-    Blt_Ps_XSetForeground(ps, ops->fill);
-    Blt_Ps_Append(ps, "fill\n");
+    psPtr->setForeground(ops->fill);
+    psPtr->append("fill\n");
   }
 
   if ((ops->lineWidth > 0) && (ops->outline)) {
-
-    Blt_Ps_XSetLineAttributes(ps, ops->outline, ops->lineWidth, &ops->dashes,
-			      ops->capStyle, ops->joinStyle);
+    psPtr->setLineAttributes(ops->outline, ops->lineWidth, &ops->dashes,
+			     ops->capStyle, ops->joinStyle);
 
     if ((ops->outlineBg) && (LineIsDashed(ops->dashes))) {
-      Blt_Ps_Append(ps, "/DashesProc {\ngsave\n    ");
-      Blt_Ps_XSetBackground(ps, ops->outlineBg);
-      Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
-      Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
+      psPtr->append("/DashesProc {\ngsave\n    ");
+      psPtr->setBackground(ops->outlineBg);
+      psPtr->append("    ");
+      psPtr->setDashes((Dashes*)NULL);
+      psPtr->append("stroke\n  grestore\n} def\n");
     }
     else
-      Blt_Ps_Append(ps, "/DashesProc {} def\n");
+      psPtr->append("/DashesProc {} def\n");
 
-    graphPtr_->printSegments(ps, outlinePts_, nOutlinePts_);
+    psPtr->drawSegments(outlinePts_, nOutlinePts_);
   }
 }
 

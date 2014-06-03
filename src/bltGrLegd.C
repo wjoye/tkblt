@@ -494,15 +494,13 @@ void Legend::draw(Drawable drawable)
       if (isSelected) {
 	XColor* color = (flags & FOCUS) ?
 	  ops->selInFocusFgColor : ops->selOutFocusFgColor;
-	XSetForeground(graphPtr_->display_, focusGC_, 
-		       color->pixel);
+	XSetForeground(graphPtr_->display_, focusGC_, color->pixel);
       }
       XDrawRectangle(graphPtr_->display_, pixmap, focusGC_, 
 		     x + 1, y + 1, entryWidth_ - 3, 
 		     entryHeight_ - 3);
       if (isSelected)
-	XSetForeground(graphPtr_->display_, focusGC_, 
-		       ops->focusColor->pixel);
+	XSetForeground(graphPtr_->display_, focusGC_, ops->focusColor->pixel);
     }
 
     // Check when to move to the next column
@@ -545,7 +543,7 @@ void Legend::draw(Drawable drawable)
   Tk_FreePixmap(graphPtr_->display_, pixmap);
 }
 
-void Legend::print(Blt_Ps ps)
+void Legend::print(PostScript* psPtr)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -561,19 +559,19 @@ void Legend::print(Blt_Ps ps)
   int width = width_ - 2*ops->xPad;
   int height = height_ - 2*ops->yPad;
 
-  Blt_Ps_Append(ps, "% Legend\n");
+  psPtr->append("% Legend\n");
   if (pops->decorations) {
     if (ops->normalBg)
-      Blt_Ps_Fill3DRectangle(ps, ops->normalBg, x, y, width, height, 
+      psPtr->fill3DRectangle(ops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
     else
-      Blt_Ps_Draw3DRectangle(ps, gops->normalBg, x, y, width, height, 
+      psPtr->draw3DRectangle(gops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
 
   }
   else {
-    Blt_Ps_SetClearBackground(ps);
-    Blt_Ps_XFillRectangle(ps, x, y, width, height);
+    psPtr->setClearBackground();
+    psPtr->fillRectangle(x, y, width, height);
   }
 
   Tk_FontMetrics fontMetrics;
@@ -588,7 +586,7 @@ void Legend::print(Blt_Ps ps)
   x += ops->borderWidth;
   y += ops->borderWidth;
   TextStyle tts(graphPtr_, &ops->titleStyle);
-  tts.printText(ps, ops->title, x, y);
+  tts.printText(psPtr, ops->title, x, y);
   if (titleHeight_ > 0)
     y += titleHeight_ + ops->yPad;
 
@@ -606,21 +604,20 @@ void Legend::print(Blt_Ps ps)
 
     if (elemPtr->labelActive_) {
       ops->style.color = ops->activeFgColor;
-      Blt_Ps_Fill3DRectangle(ps, ops->activeBg, x, y, entryWidth_, 
+      psPtr->fill3DRectangle(ops->activeBg, x, y, entryWidth_, 
 			     entryHeight_, ops->entryBW, 
 			     ops->activeRelief);
     }
     else {
       ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
-	Blt_Ps_Draw3DRectangle(ps, gops->normalBg, x, y, 
-			       entryWidth_,
-			       entryHeight_, ops->entryBW, 
-			       elemOps->legendRelief);
+	psPtr->draw3DRectangle(gops->normalBg, x, y, entryWidth_, entryHeight_,
+			       ops->entryBW, elemOps->legendRelief);
       }
     }
-    elemPtr->printSymbol(ps, x + xSymbol, y + ySymbol, symbolSize);
-    ts.printText(ps, elemOps->label, x + xLabel, y + ops->entryBW + ops->iyPad);
+    elemPtr->printSymbol(psPtr, x + xSymbol, y + ySymbol, symbolSize);
+    ts.printText(psPtr, elemOps->label, x + xLabel, 
+		 y + ops->entryBW + ops->iyPad);
     count++;
 
     if ((count % nRows_) > 0)

@@ -29,6 +29,7 @@
  */
 
 #include <math.h>
+#include <stdarg.h>
 
 extern "C" {
 #include <tkPort.h>
@@ -47,48 +48,57 @@ using namespace Blt;
 #  define HAVE_UTF	0
 #endif
 
-void Graph::printPolyline(Blt_Ps ps, Point2d* screenPts, int nScreenPts)
+PostScript::PostScript(Graph* graphPtr)
 {
-  Point2d *pp, *pend;
+  graphPtr_ = graphPtr;
 
-  pp = screenPts;
-  Blt_Ps_Append(ps, "newpath\n");
-  Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
-  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) {
-    Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
-  }
+  Tcl_DStringInit(&dString);
 }
 
-void Graph::printMaxPolyline(Blt_Ps ps, Point2d* points, int nPoints)
+PostScript::~PostScript()
+{
+  Tcl_DStringFree(&dString);
+}
+
+void PostScript::drawPolyline(Point2d* screenPts, int nScreenPts)
+{
+  Point2d* pp = screenPts;
+  append("newpath\n");
+  format("  %g %g moveto\n", pp->x, pp->y);
+
+  Point2d* pend;
+  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++)
+    format("  %g %g lineto\n", pp->x, pp->y);
+}
+
+void PostScript::drawMaxPolyline(Point2d* points, int nPoints)
 {
   if (nPoints <= 0)
     return;
 
   for (int nLeft = nPoints; nLeft > 0; nLeft -= 1500) {
     int length = MIN(1500, nLeft);
-    printPolyline(ps, points, length);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
+    drawPolyline(points, length);
+    append("DashesProc stroke\n");
     points += length;
   }
 }
 
-void Graph::printSegments(Blt_Ps ps, Segment2d* segments, int nSegments)
+void PostScript::drawSegments(Segment2d* segments, int nSegments)
 {
+  append("newpath\n");
+
   Segment2d* sp;
   Segment2d* send;
-
-  Blt_Ps_Append(ps, "newpath\n");
   for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    Blt_Ps_Format(ps, "  %g %g moveto %g %g lineto\n", 
-		  sp->p.x, sp->p.y, sp->q.x, sp->q.y);
-    Blt_Ps_Append(ps, "DashesProc stroke\n");
+    format("  %g %g moveto %g %g lineto\n", sp->p.x, sp->p.y, sp->q.x, sp->q.y);
+    append("DashesProc stroke\n");
   }
 }
 
-static Tcl_Interp *psInterp = NULL;
-
-int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
+int PostScript::computeBBox(int width, int height)
 {
+  PageSetup* setupPtr = graphPtr_->pageSetup_;
   PageSetupOptions* pops = (PageSetupOptions*)setupPtr->ops_;
   int paperWidth, paperHeight;
   float hScale, vScale, scale;
@@ -107,19 +117,16 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
     hSize = width;
     vSize = height;
   }
-  /*
-   * If the paper size wasn't specified, set it to the graph size plus the
-   * paper border.
-   */
+
+  // If the paper size wasn't specified, set it to the graph size plus the
+  // paper border.
   paperWidth = (pops->reqPaperWidth > 0) ? pops->reqPaperWidth :
     hSize + hBorder;
   paperHeight = (pops->reqPaperHeight > 0) ? pops->reqPaperHeight :
     vSize + vBorder;
 
-  /*
-   * Scale the plot size (the graph itself doesn't change size) if it's
-   * bigger than the paper or if -maxpect was set.
-   */
+  // Scale the plot size (the graph itself doesn't change size) if it's
+  // bigger than the paper or if -maxpect was set.
   hScale = vScale = 1.0f;
   if ((setupPtr->flags & PS_MAXPECT) || ((hSize + hBorder) > paperWidth)) {
     hScale = (float)(paperWidth - hBorder) / (float)hSize;
@@ -150,324 +157,202 @@ int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int width, int height)
   return paperHeight;
 }
 
-PostScript *Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr)
+const char* PostScript::getValue(int* lengthPtr)
 {
-  PostScript* psPtr = (PostScript*)malloc(sizeof(PostScript));
-  psPtr->setupPtr = setupPtr;
-  psPtr->interp = interp;
-  Tcl_DStringInit(&psPtr->dString);
-  return psPtr;
+  *lengthPtr = strlen(Tcl_DStringValue(&dString));
+  return Tcl_DStringValue(&dString);
 }
 
-void Blt_Ps_SetPrinting(PostScript *psPtr, int state)
+void PostScript::append(const char* string)
 {
-  psInterp = ((state) && (psPtr != NULL)) ? psPtr->interp : NULL;
+  Tcl_DStringAppend(&dString, string, -1);
 }
 
-void Blt_Ps_Free(PostScript *psPtr)
-{
-  Tcl_DStringFree(&psPtr->dString);
-  free(psPtr);
-}
-
-const char *Blt_Ps_GetValue(PostScript *psPtr, int *lengthPtr)
-{
-  *lengthPtr = strlen(Tcl_DStringValue(&psPtr->dString));
-  return Tcl_DStringValue(&psPtr->dString);
-}
-
-char *Blt_Ps_GetScratchBuffer(PostScript *psPtr)
-{
-  return psPtr->scratchArr;
-}
-
-void Blt_Ps_VarAppend TCL_VARARGS_DEF(PostScript *, arg1)
+void PostScript::format(const char* fmt, ...)
 {
   va_list argList;
-  PostScript *psPtr;
-  const char *string;
 
-  psPtr = TCL_VARARGS_START(PostScript, arg1, argList);
-  for (;;) {
-    string = va_arg(argList, char *);
-    if (string == NULL) {
-      break;
-    }
-    Tcl_DStringAppend(&psPtr->dString, string, -1);
-  }
-}
-
-void Blt_Ps_Append(PostScript *psPtr, const char *string)
-{
-  Tcl_DStringAppend(&psPtr->dString, string, -1);
-}
-
-void Blt_Ps_Format TCL_VARARGS_DEF(PostScript *, arg1)
-{
-  va_list argList;
-  PostScript *psPtr;
-  char *fmt;
-
-  psPtr = TCL_VARARGS_START(PostScript, arg1, argList);
-  fmt = va_arg(argList, char *);
-  vsnprintf(psPtr->scratchArr, POSTSCRIPT_BUFSIZ, fmt, argList);
+  va_start(argList, fmt);
+  vsnprintf(scratchArr, POSTSCRIPT_BUFSIZ, fmt, argList);
   va_end(argList);
-  Tcl_DStringAppend(&psPtr->dString, psPtr->scratchArr, -1);
+  Tcl_DStringAppend(&dString, scratchArr, -1);
 }
 
-int Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, const char *fileName)
+void PostScript::varAppend(const char* fmt, ...)
 {
-  Tcl_Channel channel;
-  Tcl_DString dString;
-  char *buf;
-  char *libDir;
-  int nBytes;
+  va_list argList;
 
-  buf = Blt_Ps_GetScratchBuffer(ps);
-
-  /*
-   * Read in a standard prolog file from file and append it to the
-   * PostScript output stored in the Tcl_DString in psPtr.
-   */
-
-  libDir = (char *)Tcl_GetVar(interp, "tkblt_library", TCL_GLOBAL_ONLY);
-  if (libDir == NULL) {
-    Tcl_AppendResult(interp, "couldn't find TKBLT script library:",
-		     "global variable \"tkblt_library\" doesn't exist", (char *)NULL);
-    return TCL_ERROR;
-  }
-  Tcl_DStringInit(&dString);
-  Tcl_DStringAppend(&dString, libDir, -1);
-  Tcl_DStringAppend(&dString, "/", -1);
-  Tcl_DStringAppend(&dString, fileName, -1);
-  fileName = Tcl_DStringValue(&dString);
-  Blt_Ps_VarAppend(ps, "\n% including file \"", fileName, "\"\n\n", 
-		   (char *)NULL);
-  channel = Tcl_OpenFileChannel(interp, fileName, "r", 0);
-  if (channel == NULL) {
-    Tcl_AppendResult(interp, "couldn't open prologue file \"", fileName,
-		     "\": ", Tcl_PosixError(interp), (char *)NULL);
-    return TCL_ERROR;
-  }
-  for(;;) {
-    nBytes = Tcl_Read(channel, buf, POSTSCRIPT_BUFSIZ);
-    if (nBytes < 0) {
-      Tcl_AppendResult(interp, "error reading prologue file \"", 
-		       fileName, "\": ", Tcl_PosixError(interp), 
-		       (char *)NULL);
-      Tcl_Close(interp, channel);
-      Tcl_DStringFree(&dString);
-      return TCL_ERROR;
-    }
-    if (nBytes == 0) {
+  va_start(argList, fmt);
+  for (;;) {
+    char* str = va_arg(argList, char *);
+    if (!str)
       break;
-    }
-    buf[nBytes] = '\0';
-    Blt_Ps_Append(ps, buf);
+    Tcl_DStringAppend(&dString, str, -1);
   }
-  Tcl_DStringFree(&dString);
-  Tcl_Close(interp, channel);
-  return TCL_OK;
+  va_end(argList);
 }
 
-static void XColorToPostScript(Blt_Ps ps, XColor* colorPtr)
+void PostScript::setLineWidth(int lineWidth)
 {
-  Blt_Ps_Format(ps, "%g %g %g",
-		((double)(colorPtr->red >> 8) / 255.0),
-		((double)(colorPtr->green >> 8) / 255.0),
-		((double)(colorPtr->blue >> 8) / 255.0));
+  if (lineWidth < 1)
+    lineWidth = 1;
+  format("%d setlinewidth\n", lineWidth);
 }
 
-void Blt_Ps_XSetBackground(PostScript *psPtr, XColor* colorPtr)
+void PostScript::drawRectangle(int x, int y, int width, int height)
 {
-  PageSetupOptions* pops = (PageSetupOptions*)psPtr->setupPtr->ops_;
-  XColorToPostScript(psPtr, colorPtr);
-  Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (pops->greyscale) {
-    Blt_Ps_Append(psPtr, " currentgray setgray\n");
+  append("newpath\n");
+  format("  %d %d moveto\n", x, y);
+  format("  %d %d rlineto\n", width, 0);
+  format("  %d %d rlineto\n", 0, height);
+  format("  %d %d rlineto\n", -width, 0);
+  append("closepath\n");
+}
+
+void PostScript::fillRectangle(double x, double y, int width, int height)
+{
+  drawRectangle((int)x, (int)y, width, height);
+  append("fill\n");
+}
+
+void PostScript::fillRectangles(XRectangle* rectangles, int nRectangles)
+{
+  XRectangle *rp, *rend;
+  for (rp = rectangles, rend = rp + nRectangles; rp < rend; rp++)
+    fillRectangle((double)rp->x, (double)rp->y, (int)rp->width,(int)rp->height);
+}
+
+void PostScript::setBackground(XColor* colorPtr)
+{
+  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  XColorToPostScript(colorPtr);
+  append(" setrgbcolor\n");
+  if (pops->greyscale)
+    append(" currentgray setgray\n");
+}
+
+void PostScript::setForeground(XColor* colorPtr)
+{
+  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  XColorToPostScript(colorPtr);
+  append(" setrgbcolor\n");
+  if (pops->greyscale)
+    append(" currentgray setgray\n");
+}
+
+void PostScript::setFont(Tk_Font font) 
+{
+#if 0
+  const char* family = FamilyToPsFamily(Blt_FamilyOfFont(font));
+  if (family != NULL) {
+    double pointSize;
+	
+    Tcl_DString dString;
+    Tcl_DStringInit(&dString);
+    pointSize = (double)Blt_PostscriptFontName(font, &dString);
+    format("%g /%s SetFont\n", pointSize, Tcl_DStringValue(&dString));
+    Tcl_DStringFree(&dString);
+    return;
   }
+  append("12.0 /Helvetica-Bold SetFont\n");
+#endif
 }
 
-void Blt_Ps_XSetForeground(PostScript *psPtr, XColor* colorPtr)
+void PostScript::setLineAttributes(XColor* colorPtr,int lineWidth,
+				   Dashes* dashesPtr, int capStyle, 
+				   int joinStyle)
 {
-  PageSetupOptions* pops = (PageSetupOptions*)psPtr->setupPtr->ops_;
-  XColorToPostScript(psPtr, colorPtr);
-  Blt_Ps_Append(psPtr, " setrgbcolor\n");
-  if (pops->greyscale) {
-    Blt_Ps_Append(psPtr, " currentgray setgray\n");
+  setJoinStyle(joinStyle);
+  setCapStyle(capStyle);
+  setForeground(colorPtr);
+  setLineWidth(lineWidth);
+  setDashes(dashesPtr);
+  append("/DashesProc {} def\n");
+}
+
+void PostScript::fill3DRectangle(Tk_3DBorder border, double x, double y,
+				 int width, int height, int borderWidth, 
+				 int relief)
+{
+  TkBorder* borderPtr = (TkBorder*)border;
+
+  setBackground(borderPtr->bgColorPtr);
+  fillRectangle(x, y, width, height);
+  draw3DRectangle(border, x, y, width, height, borderWidth, relief);
+}
+
+void PostScript::setClearBackground()
+{
+  append("1 1 1 setrgbcolor\n");
+}
+
+void PostScript::setDashes(Dashes* dashesPtr)
+{
+
+  append("[ ");
+  if (dashesPtr) {
+    for (unsigned char* vp = dashesPtr->values; *vp != 0; vp++)
+      format(" %d", *vp);
   }
+  append("] 0 setdash\n");
 }
 
-static unsigned char ReverseBits(unsigned char byte)
+void PostScript::fillPolygon(Point2d *screenPts, int nScreenPts)
 {
-  byte = ((byte >> 1) & 0x55) | ((byte << 1) & 0xaa);
-  byte = ((byte >> 2) & 0x33) | ((byte << 2) & 0xcc);
-  byte = ((byte >> 4) & 0x0f) | ((byte << 4) & 0xf0);
-  return byte;
+  drawPolygon(screenPts, nScreenPts);
+  append("fill\n");
 }
 
-static void ByteToHex(unsigned char byte, char *string)
+void PostScript::drawBitmap(Display *display, Pixmap bitmap,
+			    double xScale, double yScale)
 {
-  static char hexDigits[] = "0123456789ABCDEF";
+  int width, height;
+  Tk_SizeOfBitmap(display, bitmap, &width, &height);
 
-  string[0] = hexDigits[byte >> 4];
-  string[1] = hexDigits[byte & 0x0F];
+  double sw = (double)width * xScale;
+  double sh = (double)height * yScale;
+  append("  gsave\n");
+  format("    %g %g translate\n", sw * -0.5, sh * 0.5);
+  format("    %g %g scale\n", sw, -sh);
+  format("    %d %d true [%d 0 0 %d 0 %d] {", 
+		width, height, width, -height, height);
+  setBitmap(display, bitmap, width, height);
+  append("    } imagemask\n  grestore\n");
 }
 
-void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, Pixmap bitmap, 
-			   int w, int h)
+void PostScript::setJoinStyle(int joinStyle)
 {
-  XImage* imagePtr = XGetImage(display, bitmap, 0, 0, w, h, 1, ZPixmap);
-  Blt_Ps_Append(ps, "\t<");
-  int byteCount =0;
-  int bitPos =0;
-  for (int y=0; y<h; y++) {
-    char string[10];
-    unsigned char byte = 0;
-    for (int x=0; x<w; x++) {
-      unsigned long pixel = XGetPixel(imagePtr, x, y);
-      bitPos = x % 8;
-      byte |= (unsigned char)(pixel << bitPos);
-      if (bitPos == 7) {
-	byte = ReverseBits(byte);
-	ByteToHex(byte, string);
-	string[2] = '\0';
-	byteCount++;
-	byte = 0;
-	if (byteCount >= 30) {
-	  string[2] = '\n';
-	  string[3] = '\t';
-	  string[4] = '\0';
-	  byteCount = 0;
-	}
-	Blt_Ps_Append(ps, string);
-      }
-    }			/* x */
-    if (bitPos != 7) {
-      byte = ReverseBits(byte);
-      ByteToHex(byte, string);
-      string[2] = '\0';
-      Blt_Ps_Append(ps, string);
-      byteCount++;
-    }
-  }				/* y */
-  Blt_Ps_Append(ps, ">\n");
-  XDestroyImage(imagePtr);
+  // miter = 0, round = 1, bevel = 2
+  format("%d setlinejoin\n", joinStyle);
 }
 
-void Blt_Ps_SetClearBackground(Blt_Ps ps)
-{
-  Blt_Ps_Append(ps, "1 1 1 setrgbcolor\n");
-}
-
-void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle)
+void PostScript::setCapStyle(int capStyle)
 {
   // X11:not last = 0, butt = 1, round = 2, projecting = 3
   // PS: butt = 0, round = 1, projecting = 2
   if (capStyle > 0)
     capStyle--;
 
-  Blt_Ps_Format(ps, "%d setlinecap\n", capStyle);
+  format("%d setlinecap\n", capStyle);
 }
 
-void Blt_Ps_XSetJoinStyle(Blt_Ps ps, int joinStyle)
-{
-  /*
-   * miter = 0, round = 1, bevel = 2
-   */
-  Blt_Ps_Format(ps, "%d setlinejoin\n", joinStyle);
-}
-
-void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth)
-{
-  if (lineWidth < 1) {
-    lineWidth = 1;
-  }
-  Blt_Ps_Format(ps, "%d setlinewidth\n", lineWidth);
-}
-
-void Blt_Ps_XSetDashes(Blt_Ps ps, Dashes* dashesPtr)
-{
-
-  Blt_Ps_Append(ps, "[ ");
-  if (dashesPtr != NULL) {
-    unsigned char *vp;
-
-    for (vp = dashesPtr->values; *vp != 0; vp++) {
-      Blt_Ps_Format(ps, " %d", *vp);
-    }
-  }
-  Blt_Ps_Append(ps, "] 0 setdash\n");
-}
-
-void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,int lineWidth,
-			       Dashes* dashesPtr, int capStyle, int joinStyle)
-{
-  Blt_Ps_XSetJoinStyle(ps, joinStyle);
-  Blt_Ps_XSetCapStyle(ps, capStyle);
-  Blt_Ps_XSetForeground(ps, colorPtr);
-  Blt_Ps_XSetLineWidth(ps, lineWidth);
-  Blt_Ps_XSetDashes(ps, dashesPtr);
-  Blt_Ps_Append(ps, "/DashesProc {} def\n");
-}
-
-void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int width, int height)
-{
-  Blt_Ps_Append(ps, "newpath\n");
-  Blt_Ps_Format(ps, "  %d %d moveto\n", x, y);
-  Blt_Ps_Format(ps, "  %d %d rlineto\n", width, 0);
-  Blt_Ps_Format(ps, "  %d %d rlineto\n", 0, height);
-  Blt_Ps_Format(ps, "  %d %d rlineto\n", -width, 0);
-  Blt_Ps_Append(ps, "closepath\n");
-}
-
-void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, int width, int height)
-{
-  Blt_Ps_Rectangle(ps, (int)x, (int)y, width, height);
-  Blt_Ps_Append(ps, "fill\n");
-}
-
-void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n)
-{
-  XPoint* pp = points;
-  Blt_Ps_Append(ps, "newpath\n");
-  Blt_Ps_Format(ps, "  %d %d moveto\n", pp->x, pp->y);
-  pp++;
-
-  for (XPoint* pend = points + n; pp < pend; pp++)
-    Blt_Ps_Format(ps, "  %d %d lineto\n", pp->x, pp->y);
-}
-
-void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
+void PostScript::drawPolygon(Point2d *screenPts, int nScreenPts)
 {
   Point2d* pp = screenPts;
-  Blt_Ps_Append(ps, "newpath\n");
-  Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
+  append("newpath\n");
+  format("  %g %g moveto\n", pp->x, pp->y);
 
   Point2d* pend;
   for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) 
-    Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
+    format("  %g %g lineto\n", pp->x, pp->y);
 
-  Blt_Ps_Format(ps, "  %g %g lineto\n", screenPts[0].x, screenPts[0].y);
-  Blt_Ps_Append(ps, "closepath\n");
+  format("  %g %g lineto\n", screenPts[0].x, screenPts[0].y);
+  append("closepath\n");
 }
 
-void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
-{
-  Blt_Ps_Polygon(ps, screenPts, nScreenPts);
-  Blt_Ps_Append(ps, "fill\n");
-}
-
-void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rectangles, int nRectangles)
-{
-  XRectangle *rp, *rend;
-  for (rp = rectangles, rend = rp + nRectangles; rp < rend; rp++)
-    Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
-			  (int)rp->width, (int)rp->height);
-}
-
-void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
-			    int width, int height, int borderWidth, int relief)
+void PostScript::draw3DRectangle(Tk_3DBorder border, double x, double y,
+				 int width, int height, int borderWidth,
+				 int relief)
 {
   TkBorder* borderPtr = (TkBorder*)border;
   XColor* lightPtr, *darkPtr;
@@ -500,17 +385,14 @@ void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
   if ((relief == TK_RELIEF_GROOVE) || (relief == TK_RELIEF_RIDGE)) {
     int halfWidth = borderWidth / 2;
     int insideOffset = borderWidth - halfWidth;
-    Blt_Ps_Draw3DRectangle(ps, border, (double)x, (double)y,
-			   width, height, halfWidth, 
-			   (relief == TK_RELIEF_GROOVE) ? 
-			   TK_RELIEF_SUNKEN : TK_RELIEF_RAISED);
-    Blt_Ps_Draw3DRectangle(ps, border, 
-			   (double)(x + insideOffset), 
-			   (double)(y + insideOffset), 
-			   width - insideOffset * 2, 
-			   height - insideOffset * 2, halfWidth,
-			   (relief == TK_RELIEF_GROOVE) ? 
-			   TK_RELIEF_RAISED : TK_RELIEF_SUNKEN);
+    draw3DRectangle(border, (double)x, (double)y, width, height, halfWidth, 
+		    (relief == TK_RELIEF_GROOVE) ? 
+		    TK_RELIEF_SUNKEN : TK_RELIEF_RAISED);
+    draw3DRectangle(border, (double)(x + insideOffset), 
+		    (double)(y + insideOffset), width - insideOffset * 2, 
+		    height - insideOffset * 2, halfWidth,
+		    (relief == TK_RELIEF_GROOVE) ? 
+		    TK_RELIEF_RAISED : TK_RELIEF_SUNKEN);
     return;
   }
 
@@ -525,9 +407,9 @@ void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
   else
     topPtr = bottomPtr = borderPtr->bgColorPtr;
 
-  Blt_Ps_XSetBackground(ps, bottomPtr);
-  Blt_Ps_XFillRectangle(ps, x, y + height - borderWidth, width, borderWidth);
-  Blt_Ps_XFillRectangle(ps, x + width - borderWidth, y, borderWidth, height);
+  setBackground(bottomPtr);
+  fillRectangle(x, y + height - borderWidth, width, borderWidth);
+  fillRectangle(x + width - borderWidth, y, borderWidth, height);
 
   Point2d points[7];
   points[0].x = points[1].x = points[6].x = x;
@@ -539,63 +421,215 @@ void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
   points[4].x = points[5].x = x + borderWidth;
   points[5].y = y + height - borderWidth;
   if (relief != TK_RELIEF_FLAT)
-    Blt_Ps_XSetBackground(ps, topPtr);
+    setBackground(topPtr);
 
-  Blt_Ps_XFillPolygon(ps, points, 7);
+  fillPolygon(points, 7);
 }
 
-void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
-			    int width, int height, int borderWidth, int relief)
+void PostScript::setBitmap(Display *display, Pixmap bitmap, int w, int h)
 {
-  TkBorder* borderPtr = (TkBorder*)border;
-
-  Blt_Ps_XSetBackground(ps, borderPtr->bgColorPtr);
-  Blt_Ps_XFillRectangle(ps, x, y, width, height);
-  Blt_Ps_Draw3DRectangle(ps, border, x, y, width, height, borderWidth,
-			 relief);
+  XImage* imagePtr = XGetImage(display, bitmap, 0, 0, w, h, 1, ZPixmap);
+  append("\t<");
+  int byteCount =0;
+  int bitPos =0;
+  for (int y=0; y<h; y++) {
+    char string[10];
+    unsigned char byte = 0;
+    for (int x=0; x<w; x++) {
+      unsigned long pixel = XGetPixel(imagePtr, x, y);
+      bitPos = x % 8;
+      byte |= (unsigned char)(pixel << bitPos);
+      if (bitPos == 7) {
+	byte = ReverseBits(byte);
+	ByteToHex(byte, string);
+	string[2] = '\0';
+	byteCount++;
+	byte = 0;
+	if (byteCount >= 30) {
+	  string[2] = '\n';
+	  string[3] = '\t';
+	  string[4] = '\0';
+	  byteCount = 0;
+	}
+	append(string);
+      }
+    }			/* x */
+    if (bitPos != 7) {
+      byte = ReverseBits(byte);
+      ByteToHex(byte, string);
+      string[2] = '\0';
+      append(string);
+      byteCount++;
+    }
+  }				/* y */
+  append(">\n");
+  XDestroyImage(imagePtr);
 }
 
-void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap)
+int PostScript::includeFile(const char *fileName)
 {
-  int width, height;
+  Tcl_Channel channel;
+  Tcl_DString dString;
+  int nBytes;
 
-  Tk_SizeOfBitmap(display, bitmap, &width, &height);
-  Blt_Ps_Format(ps, 
-		"gsave\n"
-		"  clip\n"
-		"  %d %d\n", 
-		width, height);
-  Blt_Ps_XSetBitmapData(ps, display, bitmap, width, height);
-  Blt_Ps_VarAppend(ps, 
-		   "  StippleFill\n"
-		   "grestore\n", (char *)NULL);
-}
+  Tcl_Interp* interp = graphPtr_->interp_;
+  char* buf = scratchArr;
 
-void Blt_Ps_XSetFont(PostScript *psPtr, Tk_Font font) 
-{
-#if 0
-  Tcl_Interp* interp = psPtr->interp;
-  const char *family;
-
-  /*
-   * Check to see if it's a PostScript font. Tk_PostScriptFontName silently
-   * generates a bogus PostScript font name, so we have to check to see if
-   * this is really a PostScript font first before we call it.
-   */
-  family = FamilyToPsFamily(Blt_FamilyOfFont(font));
-  if (family != NULL) {
-    Tcl_DString dString;
-    double pointSize;
-	
-    Tcl_DStringInit(&dString);
-    pointSize = (double)Blt_PostscriptFontName(font, &dString);
-    Blt_Ps_Format(psPtr, "%g /%s SetFont\n", pointSize, 
-		  Tcl_DStringValue(&dString));
-    Tcl_DStringFree(&dString);
-    return;
+  // Read in a standard prolog file from file and append it to the
+  // PostScript output stored in the Tcl_DString in psPtr.
+  char* libDir = (char *)Tcl_GetVar(interp, "tkblt_library", TCL_GLOBAL_ONLY);
+  if (libDir == NULL) {
+    Tcl_AppendResult(interp, "couldn't find TKBLT script library:",
+		     "global variable \"tkblt_library\" doesn't exist",
+		     (char *)NULL);
+    return TCL_ERROR;
   }
-  Blt_Ps_Append(psPtr, "12.0 /Helvetica-Bold SetFont\n");
-#endif
+  Tcl_DStringInit(&dString);
+  Tcl_DStringAppend(&dString, libDir, -1);
+  Tcl_DStringAppend(&dString, "/", -1);
+  Tcl_DStringAppend(&dString, fileName, -1);
+  fileName = Tcl_DStringValue(&dString);
+  varAppend("\n% including file \"", fileName, "\"\n\n", NULL);
+  channel = Tcl_OpenFileChannel(interp, fileName, "r", 0);
+  if (channel == NULL) {
+    Tcl_AppendResult(interp, "couldn't open prologue file \"", fileName,
+		     "\": ", Tcl_PosixError(interp), (char *)NULL);
+    return TCL_ERROR;
+  }
+  for(;;) {
+    nBytes = Tcl_Read(channel, buf, POSTSCRIPT_BUFSIZ);
+    if (nBytes < 0) {
+      Tcl_AppendResult(interp, "error reading prologue file \"", 
+		       fileName, "\": ", Tcl_PosixError(interp), 
+		       (char *)NULL);
+      Tcl_Close(interp, channel);
+      Tcl_DStringFree(&dString);
+      return TCL_ERROR;
+    }
+    if (nBytes == 0) {
+      break;
+    }
+    buf[nBytes] = '\0';
+    append(buf);
+  }
+  Tcl_DStringFree(&dString);
+  Tcl_Close(interp, channel);
+  return TCL_OK;
+}
+
+void PostScript::XColorToPostScript(XColor* colorPtr)
+{
+  format("%g %g %g",
+		((double)(colorPtr->red >> 8) / 255.0),
+		((double)(colorPtr->green >> 8) / 255.0),
+		((double)(colorPtr->blue >> 8) / 255.0));
+}
+
+int PostScript::preamble(const char* fileName)
+{
+  PageSetup* setupPtr = graphPtr_->pageSetup_;
+  PageSetupOptions* ops = (PageSetupOptions*)setupPtr->ops_;
+  time_t ticks;
+  char date[200];			/* Holds the date string from ctime() */
+  char *newline;
+
+  if (!fileName)
+    fileName = Tk_PathName(graphPtr_->tkwin_);
+
+  append("%!PS-Adobe-3.0 EPSF-3.0\n");
+
+  // The "BoundingBox" comment is required for EPS files. The box
+  // coordinates are integers, so we need round away from the center of the
+  // box.
+  format("%%%%BoundingBox: %d %d %d %d\n",
+	 setupPtr->left, setupPtr->paperHeight - setupPtr->top,
+	 setupPtr->right, setupPtr->paperHeight - setupPtr->bottom);
+	
+  append("%%Pages: 0\n");
+
+  format("%%%%Creator: (%s %s %s)\n", PACKAGE_NAME, PACKAGE_VERSION,
+	 Tk_Class(graphPtr_->tkwin_));
+
+  ticks = time((time_t *) NULL);
+  strcpy(date, ctime(&ticks));
+  newline = date + strlen(date) - 1;
+  if (*newline == '\n')
+    *newline = '\0';
+
+  format("%%%%CreationDate: (%s)\n", date);
+  format("%%%%Title: (%s)\n", fileName);
+  append("%%DocumentData: Clean7Bit\n");
+  if (ops->landscape)
+    append("%%Orientation: Landscape\n");
+  else
+    append("%%Orientation: Portrait\n");
+
+  append("%%DocumentNeededResources: font Helvetica Courier\n");
+  addComments(ops->comments);
+  append("%%EndComments\n\n");
+  if (includeFile("bltGraph.pro") != TCL_OK)
+    return TCL_ERROR;
+
+  if (ops->footer) {
+    const char* who = getenv("LOGNAME");
+    if (!who)
+      who = "???";
+
+    varAppend("8 /Helvetica SetFont\n",
+		     "10 30 moveto\n",
+		     "(Date: ", date, ") show\n",
+		     "10 20 moveto\n",
+		     "(File: ", fileName, ") show\n",
+		     "10 10 moveto\n",
+		     "(Created by: ", who, "@", Tcl_GetHostName(), ") show\n",
+		     "0 0 moveto\n",
+		     (char *)NULL);
+  }
+
+  // Set the conversion from PostScript to X11 coordinates.  Scale pica to
+  // pixels and flip the y-axis (the origin is the upperleft corner).
+  varAppend("% Transform coordinate system to use X11 coordinates\n\n",
+		   "% 1. Flip y-axis over by reversing the scale,\n",
+		   "% 2. Translate the origin to the other side of the page,\n",
+		   "%    making the origin the upper left corner\n", NULL);
+  format("1 -1 scale\n");
+
+  // Papersize is in pixels. Translate the new origin *after* changing the scale
+  format("0 %d translate\n\n", -setupPtr->paperHeight);
+  varAppend("% User defined page layout\n\n", "% Set color level\n", NULL);
+  format("%% Set origin\n%d %d translate\n\n", setupPtr->left,setupPtr->bottom);
+  if (ops->landscape)
+    format("%% Landscape orientation\n0 %g translate\n-90 rotate\n",
+		  ((double)graphPtr_->width_ * setupPtr->scale));
+
+  append("\n%%EndSetup\n\n");
+
+  return TCL_OK;
+}
+
+void PostScript::addComments(const char** comments)
+{
+  for (const char** p = comments; *p; p += 2) {
+    if (*(p+1) == NULL)
+      break;
+    format("%% %s: %s\n", *p, *(p+1));
+  }
+}
+
+unsigned char PostScript::ReverseBits(unsigned char byte)
+{
+  byte = ((byte >> 1) & 0x55) | ((byte << 1) & 0xaa);
+  byte = ((byte >> 2) & 0x33) | ((byte << 2) & 0xcc);
+  byte = ((byte >> 4) & 0x0f) | ((byte << 4) & 0xf0);
+  return byte;
+}
+
+void PostScript::ByteToHex(unsigned char byte, char* string)
+{
+  static char hexDigits[] = "0123456789ABCDEF";
+
+  string[0] = hexDigits[byte >> 4];
+  string[1] = hexDigits[byte & 0x0F];
 }
 
 #if 0
@@ -619,17 +653,17 @@ static void TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
     if (fragPtr->count < 1) {
       continue;
     }
-    Blt_Ps_Append(ps, "(");
+    append("(");
     count = 0;
-    dst = Blt_Ps_GetScratchBuffer(ps);
+    dst = scratchArr;
     src = fragPtr->text;
     end = fragPtr->text + fragPtr->count;
     while (src < end) {
       if (count > limit) {
 	/* Don't let the scatch buffer overflow */
-	dst = Blt_Ps_GetScratchBuffer(ps);
+	dst = scratchArr;
 	dst[count] = '\0';
-	Blt_Ps_Append(ps, dst);
+	append(dst);
 	count = 0;
       }
 #if HAVE_UTF
@@ -663,10 +697,10 @@ static void TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
 	count++;
       }
     }
-    bp = Blt_Ps_GetScratchBuffer(ps);
+    bp = scratchArr;
     bp[count] = '\0';
-    Blt_Ps_Append(ps, bp);
-    Blt_Ps_Format(ps, ") %d %d %d DrawAdjText\n",
+    append(bp);
+    format(") %d %d %d DrawAdjText\n",
 		  fragPtr->width, x + fragPtr->x, y + fragPtr->y);
   }
 }
@@ -696,33 +730,15 @@ void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
   }
 
   /* Initialize text (sets translation and rotation) */
-  Blt_Ps_Format(ps, "%d %d %g %g %g BeginText\n", textPtr->width, 
-		textPtr->height, tsPtr->angle, t.x, t.y);
+  format("%d %d %g %g %g BeginText\n", textPtr->width, textPtr->height,
+	 tsPtr->angle, t.x, t.y);
 
-  Blt_Ps_XSetFont(ps, tsPtr->font);
+  setFont(tsPtr->font);
 
-  Blt_Ps_XSetForeground(ps, tsPtr->color);
+  setForeground(tsPtr->color);
   TextLayoutToPostScript(ps, 0, 0, textPtr);
   free(textPtr);
-  Blt_Ps_Append(ps, "EndText\n");
+  append("EndText\n");
 }
 #endif
-
-void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap,
-		       double xScale, double yScale)
-{
-  int width, height;
-  Tk_SizeOfBitmap(display, bitmap, &width, &height);
-
-  double sw = (double)width * xScale;
-  double sh = (double)height * yScale;
-  Blt_Ps_Append(ps, "  gsave\n");
-  Blt_Ps_Format(ps, "    %g %g translate\n", sw * -0.5, sh * 0.5);
-  Blt_Ps_Format(ps, "    %g %g scale\n", sw, -sh);
-  Blt_Ps_Format(ps, "    %d %d true [%d 0 0 %d 0 %d] {", 
-		width, height, width, -height, height);
-  Blt_Ps_XSetBitmapData(ps, display, bitmap, width, height);
-  Blt_Ps_Append(ps, "    } imagemask\n  grestore\n");
-}
-
 

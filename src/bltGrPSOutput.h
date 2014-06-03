@@ -32,97 +32,59 @@
 
 #include <tk.h>
 
-#include "bltConfig.h"
-
-#define POSTSCRIPT_BUFSIZ	((BUFSIZ*2)-1)
-struct _Blt_Ps {
-    Tcl_Interp* interp;
-    Tcl_DString dString;
-    PageSetup *setupPtr;
-    char scratchArr[POSTSCRIPT_BUFSIZ+1];
-};
-
-typedef struct _Blt_Ps PostScript;
-
+#define POSTSCRIPT_BUFSIZ ((BUFSIZ*2)-1)
 #define PS_MAXPECT	(1<<4)
 
-typedef struct _Blt_Ps *Blt_Ps;
+class Graph;
+class PageSetup;
 
-extern Blt_Ps Blt_Ps_Create(Tcl_Interp* interp, PageSetup *setupPtr);
+class PostScript {
+ public:
+  Graph* graphPtr_;
+  Tcl_DString dString;
+  char scratchArr[POSTSCRIPT_BUFSIZ+1];
 
-extern void Blt_Ps_Free(Blt_Ps ps);
+ protected:
+  void addComments(const char**);
+  void XColorToPostScript(XColor*);
+  unsigned char ReverseBits(unsigned char);
+  void ByteToHex(unsigned char, char*);
 
-extern const char *Blt_Ps_GetValue(Blt_Ps ps, int *lengthPtr);
+ public:
+  PostScript(Graph*);
+  virtual ~PostScript();
 
-extern char *Blt_Ps_GetScratchBuffer(Blt_Ps ps);
+  void drawPolyline(Point2d*, int);
+  void drawMaxPolyline(Point2d*, int);
+  void drawSegments(Segment2d*, int);
+  void drawBitmap(Display*, Pixmap, double, double);
+  void drawRectangle(int, int, int, int);
+  void drawPolygon(Point2d*, int);
+  void draw3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
 
-extern void Blt_Ps_Append(Blt_Ps ps, const char *string);
+  void fillRectangle(double, double, int, int);
+  void fillRectangles(XRectangle*, int);
+  void fill3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
+  void fillPolygon(Point2d*, int);
 
-extern void Blt_Ps_VarAppend TCL_VARARGS(Blt_Ps, ps);
+  void setFont(Tk_Font); 
+  void setLineWidth(int);
+  void setBackground(XColor*);
+  void setForeground(XColor*);
+  void setLineAttributes(XColor*,int, Dashes*, int, int);
+  void setClearBackground();
+  void setDashes(Dashes*);
+  void setJoinStyle(int);
+  void setCapStyle(int);
+  void setBitmap(Display*, Pixmap, int, int);
 
-extern void Blt_Ps_Format TCL_VARARGS(Blt_Ps, ps);
+  int preamble(const char*);
+  int computeBBox(int, int);
+  const char* getValue(int*);
+  void append(const char*);
+  void format(const char*, ...);
+  void varAppend(const char*, ...);
+  int includeFile(const char*);
+};
 
-extern void Blt_Ps_SetClearBackground(Blt_Ps ps);
-
-extern int Blt_Ps_IncludeFile(Tcl_Interp* interp, Blt_Ps ps, 
-			      const char *fileName);
-
-extern int Blt_Ps_ComputeBoundingBox(PageSetup *setupPtr, int w, int h);
-
-extern void Blt_Ps_Rectangle(Blt_Ps ps, int x, int y, int w, int h);
-
-
-
-extern void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth);
-
-extern void Blt_Ps_XSetBackground(Blt_Ps ps, XColor* colorPtr);
-
-extern void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, 
-				  Pixmap bitmap, int width, int height);
-
-extern void Blt_Ps_XSetForeground(Blt_Ps ps, XColor* colorPtr);
-
-extern void Blt_Ps_XSetFont(Blt_Ps ps, Tk_Font font);
-
-extern void Blt_Ps_XSetDashes(Blt_Ps ps, Dashes *dashesPtr);
-
-extern void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,
-				      int lineWidth, Dashes *dashesPtr,
-				      int capStyle, int joinStyle);
-
-extern void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
-
-extern void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, 
-				   double x, double y, int width, int height, int borderWidth, int relief);
-
-extern void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x,
-				   double y, int width, int height, int borderWidth, int relief);
-
-extern void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, 
-				  int width, int height);
-
-extern void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rects, int n);
-
-extern void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, 
-				int nScreenPts);
-
-extern void Blt_Ps_DrawPhoto(Blt_Ps ps, Tk_PhotoHandle photoToken,
-			     double x, double y);
-
-extern void Blt_Ps_XDrawWindow(Blt_Ps ps, Tk_Window tkwin, 
-			       double x, double y);
-
-extern void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap, 
-			      double scaleX, double scaleY);
-
-extern void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle);
-
-extern void Blt_Ps_XSetJoinStyle(Blt_Ps ps, int joinStyle);
-
-extern void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n);
-
-extern void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts);
-
-extern void Blt_Ps_SetPrinting(Blt_Ps ps, int value);
-
-#endif /* BLT_PS_H */
+#endif

@@ -744,7 +744,7 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
 		 size, size);
 }
 
-void BarElement::print(Blt_Ps ps)
+void BarElement::print(PostScript* psPtr)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   
@@ -752,7 +752,7 @@ void BarElement::print(Blt_Ps ps)
     return;
 
   // Comment the PostScript to indicate the start of the element
-  Blt_Ps_Format(ps, "\n%% Element \"%s\"\n\n", name_);
+  psPtr->format("\n%% Element \"%s\"\n\n", name_);
 
   int count = 0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
@@ -762,35 +762,33 @@ void BarElement::print(Blt_Ps ps)
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     if (stylePtr->nBars > 0)
-      printSegments(ps, penPtr, stylePtr->bars, stylePtr->nBars);
+      printSegments(psPtr, penPtr, stylePtr->bars, stylePtr->nBars);
 
     XColor* colorPtr = pops->errorBarColor;
     if (!colorPtr)
       colorPtr = pops->outlineColor;
 
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
-				NULL, CapButt, JoinMiter);
-      graphPtr_->printSegments(ps, stylePtr->xeb.segments,
-			       stylePtr->xeb.length);
+      psPtr->setLineAttributes(colorPtr, pops->errorBarLineWidth, 
+			       NULL, CapButt, JoinMiter);
+      psPtr->drawSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
 
     if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y)) {
-      Blt_Ps_XSetLineAttributes(ps, colorPtr, pops->errorBarLineWidth, 
-				NULL, CapButt, JoinMiter);
-      graphPtr_->printSegments(ps, stylePtr->yeb.segments, 
-			    stylePtr->yeb.length);
+      psPtr->setLineAttributes(colorPtr, pops->errorBarLineWidth, 
+			       NULL, CapButt, JoinMiter);
+      psPtr->drawSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
 
     if (pops->valueShow != SHOW_NONE)
-      printValues(ps, penPtr, stylePtr->bars, stylePtr->nBars, 
+      printValues(psPtr, penPtr, stylePtr->bars, stylePtr->nBars, 
 			    barToData_ + count);
 
     count += stylePtr->nBars;
   }
 }
 
-void BarElement::printActive(Blt_Ps ps)
+void BarElement::printActive(PostScript* psPtr)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -802,22 +800,22 @@ void BarElement::printActive(Blt_Ps ps)
     return;
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 	
-  Blt_Ps_Format(ps, "\n%% Active Element \"%s\"\n\n", name_);
+  psPtr->format("\n%% Active Element \"%s\"\n\n", name_);
 
   if (nActiveIndices_ > 0) {
     mapActive();
-    printSegments(ps, penPtr, activeRects_, nActive_);
+    printSegments(psPtr, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
-      printValues(ps, penPtr, activeRects_, nActive_,activeToData_);
+      printValues(psPtr, penPtr, activeRects_, nActive_,activeToData_);
   }
   else if (nActiveIndices_ < 0) {
-    printSegments(ps, penPtr, bars_, nBars_);
+    printSegments(psPtr, penPtr, bars_, nBars_);
     if (pops->valueShow != SHOW_NONE)
-      printValues(ps, penPtr, bars_, nBars_, barToData_);
+      printValues(psPtr, penPtr, bars_, nBars_, barToData_);
   }
 }
 
-void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
+void BarElement::printSymbol(PostScript* psPtr, double x, double y, int size)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -831,16 +829,16 @@ void BarElement::printSymbol(Blt_Ps ps, double x, double y, int size)
    * Build a PostScript procedure to draw the fill and outline of the symbol
    * after the path of the symbol shape has been formed
    */
-  Blt_Ps_Append(ps, "\n"
+  psPtr->append("\n"
 		"/DrawSymbolProc {\n"
 		"gsave\n    ");
   if (pops->outlineColor) {
-    Blt_Ps_XSetForeground(ps, pops->outlineColor);
-    Blt_Ps_Append(ps, "    fill\n");
+    psPtr->setForeground(pops->outlineColor);
+    psPtr->append("    fill\n");
   }
-  Blt_Ps_Append(ps, "  grestore\n");
-  Blt_Ps_Append(ps, "} def\n\n");
-  Blt_Ps_Format(ps, "%g %g %d Sq\n", x, y, size);
+  psPtr->append("  grestore\n");
+  psPtr->append("} def\n\n");
+  psPtr->format("%g %g %d Sq\n", x, y, size);
 }
 
 // Support
@@ -1255,8 +1253,8 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
   }
 }
 
-void BarElement::printSegments(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
-			       int nBars)
+void BarElement::printSegments(PostScript* psPtr, BarPen* penPtr, 
+			       XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
@@ -1269,21 +1267,20 @@ void BarElement::printSegments(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
       continue;
     }
     if (pops->outlineColor) {
-      Blt_Ps_XSetForeground(ps, pops->outlineColor);
-      Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
-			    (int)rp->width - 1, (int)rp->height - 1);
+      psPtr->setForeground(pops->outlineColor);
+      psPtr->fillRectangle((double)rp->x, (double)rp->y, 
+			   (int)rp->width - 1, (int)rp->height - 1);
     }
     if ((pops->fill) && (pops->borderWidth > 0) && 
-	(pops->relief != TK_RELIEF_FLAT)) {
-      Blt_Ps_Draw3DRectangle(ps, pops->fill, (double)rp->x, (double)rp->y,
+	(pops->relief != TK_RELIEF_FLAT))
+      psPtr->draw3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
 			     (int)rp->width, (int)rp->height,
 			     pops->borderWidth, pops->relief);
-    }
   }
 }
 
-void BarElement::printValues(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
-			     int nBars, int *barToData)
+void BarElement::printValues(PostScript* psPtr, BarPen* penPtr, 
+			     XRectangle *bars, int nBars, int *barToData)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;
@@ -1326,7 +1323,7 @@ void BarElement::printValues(Blt_Ps ps, BarPen* penPtr, XRectangle *bars,
 	anchorPos.y += rp->height;
     }
 
-    ts.printText(ps, string, anchorPos.x, anchorPos.y);
+    ts.printText(psPtr, string, anchorPos.x, anchorPos.y);
   }
 }
 

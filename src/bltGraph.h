@@ -39,8 +39,6 @@ extern "C" {
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 
-typedef struct _Blt_Ps *Blt_Ps;
-
 class Graph;
 class BindTable;
 class Crosshairs;
@@ -49,6 +47,7 @@ class Element;
 class Legend;
 class Pen;
 class PageSetup;
+class PostScript;
 
 class Pick {
  public:
@@ -181,7 +180,7 @@ class Graph : public Pick {
   void layoutGraph();
   
   void drawMargins(Drawable);
-  void printMargins(Blt_Ps);
+  void printMargins(PostScript*);
   int getMarginGeometry(Margin*);
 
   void destroyPens();
@@ -191,14 +190,14 @@ class Graph : public Pick {
   virtual void mapElements();
   void drawElements(Drawable);
   void drawActiveElements(Drawable);
-  void printElements(Blt_Ps);
-  void printActiveElements(Blt_Ps);
+  void printElements(PostScript*);
+  void printActiveElements(PostScript*);
 
   void destroyMarkers();
   void configureMarkers();
   void mapMarkers();
   void drawMarkers(Drawable, int);
-  void printMarkers(Blt_Ps, int);
+  void printMarkers(PostScript*, int);
 
   int createAxes();
   void destroyAxes();
@@ -217,7 +216,7 @@ class Graph : public Pick {
   void map();
   void draw();
   void eventuallyRedraw();
-  int print(const char*, Blt_Ps);
+  int print(const char*, PostScript*);
   void extents(Region2d*);
   int invoke(const Ensemble*, int, int, Tcl_Obj* const []);
   void reconfigure();
@@ -226,9 +225,9 @@ class Graph : public Pick {
   void disableCrosshairs();
 
   int createAxis(int, Tcl_Obj* const []);
-  void printAxes(Blt_Ps);
-  void printAxesGrids(Blt_Ps);
-  void printAxesLimits(Blt_Ps);
+  void printAxes(PostScript*);
+  void printAxesGrids(PostScript*);
+  void printAxesLimits(PostScript*);
   int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
   Point2d map2D(double, double, Axis*, Axis*);
@@ -255,9 +254,6 @@ class Graph : public Pick {
   ClientData pickEntry(int, int, ClassId*);
 
   void drawSegments(Drawable, GC, Segment2d*, int);
-  void printSegments(Blt_Ps, Segment2d*, int);
-  void printPolyline(Blt_Ps, Point2d*, int);
-  void printMaxPolyline(Blt_Ps, Point2d*, int);
   void setDashes(GC, Dashes*);
 
   GC getPrivateGC(unsigned long, XGCValues*);

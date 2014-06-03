@@ -41,7 +41,6 @@ namespace Blt {
     Axis* xAxis;
     Axis* yAxis;
     int hide;
-    int state;
     int drawUnder;
     int xOffset;
     int yOffset;
@@ -67,7 +66,7 @@ namespace Blt {
     void map();
     int pointIn(Point2d*);
     int regionIn(Region2d*, int);
-    void print(Blt_Ps);
+    void print(PostScript*);
     int pointInSegments(Point2d *samplePtr, Segment2d *segments, 
 			int nSegments, double halo);
 

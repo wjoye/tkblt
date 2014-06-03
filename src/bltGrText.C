@@ -130,7 +130,7 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
   *hh = h1;
 }
 
-void TextStyle::printText(Blt_Ps ps, const char *text, int x, int y)
+void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
 {
   //  TextStyleOptions* ops = (TextStyleOptions*)ops_;
 
