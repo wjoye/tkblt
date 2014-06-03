@@ -1151,7 +1151,7 @@ void Axis::resetTextStyles()
   }
   newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->major.dashes))
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->major.dashes);
+    graphPtr_->setDashes(newGC, &ops->major.dashes);
 
   if (ops->major.gc)
     graphPtr_->freePrivateGC(ops->major.gc);
@@ -1167,7 +1167,7 @@ void Axis::resetTextStyles()
   }
   newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->minor.dashes))
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->minor.dashes);
+    graphPtr_->setDashes(newGC, &ops->minor.dashes);
 
   if (ops->minor.gc)
     graphPtr_->freePrivateGC(ops->minor.gc);

@@ -1482,3 +1482,9 @@ void Graph::freePrivateGC(GC gc)
   XFreeGC(display_, gc);
 }
 
+void Graph::setDashes(GC gc, Blt_Dashes *dashesPtr)
+{
+  XSetDashes(display_, gc, dashesPtr->offset, (const char*)dashesPtr->values,
+	     (int)strlen((char*)dashesPtr->values));
+}
+

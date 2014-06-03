@@ -62,6 +62,11 @@ typedef struct {
 } Point2d;
 
 typedef struct {
+  Point2d p;
+  Point2d q;
+} Segment2d;
+
+typedef struct {
   double left;
   double right;
   double top;
@@ -84,8 +89,6 @@ typedef struct {
 namespace Blt {
 extern char* dupstr(const char*);
 };
-
-extern void Blt_SetDashes (Display *display, GC gc, Blt_Dashes *dashesPtr);
 
 extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			      int nScreenPts);

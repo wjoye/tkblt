@@ -59,11 +59,6 @@ namespace Blt {
 class Marker;
 };
 
-typedef struct {
-  Point2d p;
-  Point2d q;
-} Segment2d;
-
 typedef struct Ensemble {
     const char *name;
     Tcl_ObjCmdProc *proc;
@@ -263,6 +258,7 @@ class Graph : public Pick {
   void printSegments(Blt_Ps, Segment2d*, int);
   void printPolyline(Blt_Ps, Point2d*, int);
   void printMaxPolyline(Blt_Ps, Point2d*, int);
+  void setDashes(GC, Blt_Dashes*);
 
   GC getPrivateGC(unsigned long, XGCValues*);
   void freePrivateGC(GC);

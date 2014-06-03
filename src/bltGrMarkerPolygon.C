@@ -165,7 +165,7 @@ int PolygonMarker::configure()
   // outlineGC
   GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
+    graphPtr_->setDashes(newGC, &ops->dashes);
   if (outlineGC_)
     graphPtr_->freePrivateGC(outlineGC_);
   outlineGC_ = newGC;

@@ -153,7 +153,7 @@ int LineMarker::configure()
     graphPtr_->freePrivateGC(gc_);
 
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
+    graphPtr_->setDashes(newGC, &ops->dashes);
 
   gc_ = newGC;
   if (ops->xorr) {
