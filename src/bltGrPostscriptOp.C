@@ -127,7 +127,9 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
   if (objc > 3) {
     fileName = Tcl_GetString(objv[3]);
     if (fileName[0] != '-') {
-      objv++, objc--;		/* First argument is the file name. */
+      // First argument is the file name
+      objv++, objc--;
+
       channel = Tcl_OpenFileChannel(interp, fileName, "w", 0666);
       if (!channel)
 	return TCL_ERROR;

@@ -609,10 +609,13 @@ int PostScript::preamble(const char* fileName)
 
 void PostScript::addComments(const char** comments)
 {
-  for (const char** p = comments; *p; p += 2) {
-    if (*(p+1) == NULL)
+  if (!comments)
+    return;
+
+  for (const char** pp = comments; *pp; pp+=2) {
+    if (*(pp+1) == NULL)
       break;
-    format("%% %s: %s\n", *p, *(p+1));
+    format("%% %s: %s\n", *pp, *(pp+1));
   }
 }
 

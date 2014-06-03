@@ -173,7 +173,7 @@ static int ListSetProc(ClientData clientData, Tcl_Interp *interp,
   const char*** listPtr = (const char***)(widgRec + offset);
   *(double*)savePtr = *(double*)listPtr;
 
-  if (!listPtr)
+  if (!(*listPtr))
     return TCL_OK;
 
   const char** argv;
@@ -191,14 +191,14 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
 {
   const char*** listPtr = (const char***)(widgRec + offset);
 
-  if (!listPtr)
+  if (!(*listPtr))
     return Tcl_NewListObj(0, NULL);
 
   // count how many
   int cnt=0;
-  for (const char** p = *listPtr; *p != NULL; p++,cnt++) {}
+  for (const char** p = *listPtr; *p; p++,cnt++) {}
   if (!cnt)
-    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
+    return Tcl_NewListObj(0, NULL);
 
   Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
   for (int ii=0; ii<cnt; ii++)
