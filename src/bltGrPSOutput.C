@@ -440,8 +440,8 @@ void PostScript::setBitmap(Display *display, Pixmap bitmap, int w, int h)
       bitPos = x % 8;
       byte |= (unsigned char)(pixel << bitPos);
       if (bitPos == 7) {
-	byte = ReverseBits(byte);
-	ByteToHex(byte, string);
+	byte = reverseBits(byte);
+	byteToHex(byte, string);
 	string[2] = '\0';
 	byteCount++;
 	byte = 0;
@@ -455,8 +455,8 @@ void PostScript::setBitmap(Display *display, Pixmap bitmap, int w, int h)
       }
     }			/* x */
     if (bitPos != 7) {
-      byte = ReverseBits(byte);
-      ByteToHex(byte, string);
+      byte = reverseBits(byte);
+      byteToHex(byte, string);
       string[2] = '\0';
       append(string);
       byteCount++;
@@ -616,7 +616,7 @@ void PostScript::addComments(const char** comments)
   }
 }
 
-unsigned char PostScript::ReverseBits(unsigned char byte)
+unsigned char PostScript::reverseBits(unsigned char byte)
 {
   byte = ((byte >> 1) & 0x55) | ((byte << 1) & 0xaa);
   byte = ((byte >> 2) & 0x33) | ((byte << 2) & 0xcc);
@@ -624,7 +624,7 @@ unsigned char PostScript::ReverseBits(unsigned char byte)
   return byte;
 }
 
-void PostScript::ByteToHex(unsigned char byte, char* string)
+void PostScript::byteToHex(unsigned char byte, char* string)
 {
   static char hexDigits[] = "0123456789ABCDEF";
 
@@ -632,113 +632,9 @@ void PostScript::ByteToHex(unsigned char byte, char* string)
   string[1] = hexDigits[byte & 0x0F];
 }
 
-#if 0
-static void TextLayoutToPostScript(Blt_Ps ps, int x, int y, TextLayout *textPtr)
+void PostScript::drawText(const char* string, double x, double y)
 {
-  char *bp, *dst;
-  int count;			/* Counts the # of bytes written to the
-				 * intermediate scratch buffer. */
-  const char *src, *end;
-  TextFragment *fragPtr;
-  int i;
-  unsigned char c;
-#if HAVE_UTF
-  Tcl_UniChar ch;
-#endif
-  int limit;
-
-  limit = POSTSCRIPT_BUFSIZ - 4; /* High water mark for scratch buffer. */
-  fragPtr = textPtr->fragments;
-  for (i = 0; i < textPtr->nFrags; i++, fragPtr++) {
-    if (fragPtr->count < 1) {
-      continue;
-    }
-    append("(");
-    count = 0;
-    dst = scratchArr;
-    src = fragPtr->text;
-    end = fragPtr->text + fragPtr->count;
-    while (src < end) {
-      if (count > limit) {
-	/* Don't let the scatch buffer overflow */
-	dst = scratchArr;
-	dst[count] = '\0';
-	append(dst);
-	count = 0;
-      }
-#if HAVE_UTF
-      /*
-       * INTL: For now we just treat the characters as binary data and
-       * display the lower byte.  Eventually this should be revised to
-       * handle international postscript fonts.
-       */
-      src += Tcl_UtfToUniChar(src, &ch);
-      c = (unsigned char)(ch & 0xff);
-#else 
-      c = *src++;
-#endif
-
-      if ((c == '\\') || (c == '(') || (c == ')')) {
-	/*
-	 * If special PostScript characters characters "\", "(", and
-	 * ")" are contained in the text string, prepend backslashes
-	 * to them.
-	 */
-	*dst++ = '\\';
-	*dst++ = c;
-	count += 2;
-      } else if ((c < ' ') || (c > '~')) {
-	/* Convert non-printable characters into octal. */
-	snprintf(dst, 5, "\\%03o", c);
-	dst += 4;
-	count += 4;
-      } else {
-	*dst++ = c;
-	count++;
-      }
-    }
-    bp = scratchArr;
-    bp[count] = '\0';
-    append(bp);
-    format(") %d %d %d DrawAdjText\n",
-		  fragPtr->width, x + fragPtr->x, y + fragPtr->y);
-  }
-}
-#endif
-
-#if 0
-void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
-{
-  TextLayout *textPtr;
-  Point2d t;
-
-  if ((string == NULL) || (*string == '\0')) { /* Empty string, do nothing */
+  if (!string || !(*string))
     return;
-  }
-  textPtr = Blt_Ts_CreateLayout(string, -1, tsPtr);
-  {
-    float angle;
-    double rw, rh;
-	
-    angle = fmod(tsPtr->angle, (double)360.0);
-    graphPtr_->getBoundingBox(textPtr->width, textPtr->height, angle, &rw, &rh, 
-			      NULL);
-
-    t = graphPtr_->anchorPoint(x, y, rw, rh, tsPtr->anchor); 
-    t.x += rw * 0.5;
-    t.y += rh * 0.5;
-  }
-
-  /* Initialize text (sets translation and rotation) */
-  format("%d %d %g %g %g BeginText\n", textPtr->width, textPtr->height,
-	 tsPtr->angle, t.x, t.y);
-
-  setFont(tsPtr->font);
-
-  setForeground(tsPtr->color);
-  TextLayoutToPostScript(ps, 0, 0, textPtr);
-  free(textPtr);
-  append("EndText\n");
 }
-#endif
 

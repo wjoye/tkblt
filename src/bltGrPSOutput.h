@@ -47,8 +47,8 @@ class PostScript {
  protected:
   void addComments(const char**);
   void XColorToPostScript(XColor*);
-  unsigned char ReverseBits(unsigned char);
-  void ByteToHex(unsigned char, char*);
+  unsigned char reverseBits(unsigned char);
+  void byteToHex(unsigned char, char*);
 
  public:
   PostScript(Graph*);
@@ -61,6 +61,7 @@ class PostScript {
   void drawRectangle(int, int, int, int);
   void drawPolygon(Point2d*, int);
   void draw3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
+  void drawText(const char*, double, double);
 
   void fillRectangle(double, double, int, int);
   void fillRectangles(XRectangle*, int);

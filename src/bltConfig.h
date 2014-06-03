@@ -30,16 +30,14 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef BLT_CONFIG_H
-#define BLT_CONFIG_H
+#ifndef __BltConfig_h__
+#define __BltConfig_h__
 
 #include <tk.h>
 
 extern const char* fillObjOption[];
-
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
-
 extern "C" {
   Tk_CustomOptionRestoreProc RestoreProc;
 };
