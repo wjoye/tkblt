@@ -235,7 +235,7 @@ int Legend::configure()
   GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->focusDashes)) {
     ops->focusDashes.offset = 2;
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->focusDashes);
+    graphPtr_->setDashes(newGC, &ops->focusDashes);
   }
   if (focusGC_)
     graphPtr_->freePrivateGC(focusGC_);

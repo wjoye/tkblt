@@ -314,7 +314,7 @@ void LineMarker::print(Blt_Ps ps)
       Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
       Blt_Ps_XSetBackground(ps, ops->fillColor);
       Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Blt_Dashes*)NULL);
+      Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
       Blt_Ps_VarAppend(ps, "stroke\n", "  grestore\n", "} def\n", (char*)NULL);
     } 
     else

@@ -106,7 +106,7 @@ int Crosshairs::configure()
   }
   GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
-    Blt_SetDashes(graphPtr_->display_, newGC, &ops->dashes);
+    graphPtr_->setDashes(newGC, &ops->dashes);
 
   if (gc_ != NULL)
     graphPtr_->freePrivateGC(gc_);

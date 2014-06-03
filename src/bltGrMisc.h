@@ -82,7 +82,7 @@ typedef enum {
 typedef struct {
   unsigned char values[12];
   int offset;
-} Blt_Dashes;
+} Dashes;
 
 #define LineIsDashed(d) ((d).values[0] != 0)
 

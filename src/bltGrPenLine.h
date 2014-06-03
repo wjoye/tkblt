@@ -63,7 +63,7 @@ typedef struct {
 
   Symbol symbol;
   int traceWidth;
-  Blt_Dashes traceDashes;
+  Dashes traceDashes;
   XColor* traceColor;
   XColor* traceOffColor;
 } LinePenOptions;

@@ -68,7 +68,7 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
 			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 			 int offset, char* save, int flags)
 {
-  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
+  Dashes* dashesPtr = (Dashes*)(widgRec + offset);
 
   int length;
   const char* string = Tcl_GetStringFromObj(*objPtr, &length);
@@ -141,7 +141,7 @@ static int DashesSetProc(ClientData clientData, Tcl_Interp *interp,
 static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin, 
 			     char *widgRec, int offset)
 {
-  Blt_Dashes* dashesPtr = (Blt_Dashes*)(widgRec + offset);
+  Dashes* dashesPtr = (Dashes*)(widgRec + offset);
 
   // count how many
   int cnt =0;

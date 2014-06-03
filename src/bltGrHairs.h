@@ -41,7 +41,7 @@ class Graph;
 
 typedef struct {
   XColor* colorPtr;
-  Blt_Dashes dashes;
+  Dashes dashes;
   int hide;
   int lineWidth;
   int x;

@@ -61,7 +61,7 @@ typedef struct {
 extern AxisName axisNames[];
 
 typedef struct {
-  Blt_Dashes dashes;
+  Dashes dashes;
   int lineWidth;
   XColor* color;
   GC gc;

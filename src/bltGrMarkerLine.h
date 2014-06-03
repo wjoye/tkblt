@@ -47,7 +47,7 @@ namespace Blt {
     int yOffset;
 
     int capStyle;
-    Blt_Dashes dashes;
+    Dashes dashes;
     XColor* fillColor;
     int joinStyle;
     int lineWidth;

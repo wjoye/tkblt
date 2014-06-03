@@ -1713,7 +1713,7 @@ void Axis::print(Blt_Ps ps)
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
     Blt_Ps_XSetLineAttributes(ps, ops->tickColor, ops->lineWidth, 
-			      (Blt_Dashes *)NULL, CapButt, JoinMiter);
+			      (Dashes*)NULL, CapButt, JoinMiter);
     graphPtr_->printSegments(ps, segments_, nSegments_);
   }
 }

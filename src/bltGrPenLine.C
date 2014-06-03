@@ -377,7 +377,7 @@ int LinePen::configure()
 
     if (LineIsDashed(ops->traceDashes)) {
       ops->traceDashes.offset = ops->traceDashes.values[0] / 2;
-      Blt_SetDashes(graphPtr_->display_, newGC, &ops->traceDashes);
+      graphPtr_->setDashes(newGC, &ops->traceDashes);
     }
     traceGC_ = newGC;
   }

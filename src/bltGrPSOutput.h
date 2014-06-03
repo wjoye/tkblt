@@ -84,10 +84,11 @@ extern void Blt_Ps_XSetForeground(Blt_Ps ps, XColor* colorPtr);
 
 extern void Blt_Ps_XSetFont(Blt_Ps ps, Tk_Font font);
 
-extern void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr);
+extern void Blt_Ps_XSetDashes(Blt_Ps ps, Dashes *dashesPtr);
 
 extern void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,
-				      int lineWidth, Blt_Dashes *dashesPtr, int capStyle, int joinStyle);
+				      int lineWidth, Dashes *dashesPtr,
+				      int capStyle, int joinStyle);
 
 extern void Blt_Ps_XSetStipple(Blt_Ps ps, Display *display, Pixmap bitmap);
 

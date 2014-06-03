@@ -75,7 +75,7 @@ typedef struct {
   int borderWidth;
   int reqColumns;
   int exportSelection;
-  Blt_Dashes focusDashes;
+  Dashes focusDashes;
   XColor* focusColor;
   TextStyleOptions style;
   int hide;

@@ -2644,7 +2644,7 @@ void LineElement::getSymbolPostScriptInfo(Blt_Ps ps, LinePen* penPtr, int size)
 			      &pops->traceDashes, CapButt, JoinMiter);
   else {
     Blt_Ps_XSetLineWidth(ps, pops->symbol.outlineWidth);
-    Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
+    Blt_Ps_XSetDashes(ps, (Dashes *)NULL);
   }
 
   /*
@@ -2753,7 +2753,7 @@ void LineElement::setLineAttributes(Blt_Ps ps, LinePen* penPtr)
     Blt_Ps_Append(ps, "/DashesProc {\n  gsave\n    ");
     Blt_Ps_XSetBackground(ps, pops->traceOffColor);
     Blt_Ps_Append(ps, "    ");
-    Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
+    Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
     Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
   } else {
     Blt_Ps_Append(ps, "/DashesProc {} def\n");

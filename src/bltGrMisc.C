@@ -363,12 +363,6 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
   return t;
 }
 
-void Blt_SetDashes(Display *display, GC gc, Blt_Dashes *dashesPtr)
-{
-  XSetDashes(display, gc, dashesPtr->offset, (const char*)dashesPtr->values,
-	     (int)strlen((char*)dashesPtr->values));
-}
-
 long Blt_MaxRequestSize(Display *display, size_t elemSize) 
 {
   static long maxSizeBytes = 0L;

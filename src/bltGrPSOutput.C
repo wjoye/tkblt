@@ -358,7 +358,7 @@ void Blt_Ps_XSetLineWidth(Blt_Ps ps, int lineWidth)
   Blt_Ps_Format(ps, "%d setlinewidth\n", lineWidth);
 }
 
-void Blt_Ps_XSetDashes(Blt_Ps ps, Blt_Dashes *dashesPtr)
+void Blt_Ps_XSetDashes(Blt_Ps ps, Dashes* dashesPtr)
 {
 
   Blt_Ps_Append(ps, "[ ");
@@ -376,7 +376,7 @@ void Blt_Ps_XSetLineAttributes(
 			       Blt_Ps ps,
 			       XColor* colorPtr,
 			       int lineWidth,
-			       Blt_Dashes *dashesPtr,
+			       Dashes* dashesPtr,
 			       int capStyle, 
 			       int joinStyle)
 {

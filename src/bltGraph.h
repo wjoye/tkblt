@@ -258,7 +258,7 @@ class Graph : public Pick {
   void printSegments(Blt_Ps, Segment2d*, int);
   void printPolyline(Blt_Ps, Point2d*, int);
   void printMaxPolyline(Blt_Ps, Point2d*, int);
-  void setDashes(GC, Blt_Dashes*);
+  void setDashes(GC, Dashes*);
 
   GC getPrivateGC(unsigned long, XGCValues*);
   void freePrivateGC(GC);

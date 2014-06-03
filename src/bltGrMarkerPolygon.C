@@ -353,7 +353,7 @@ void PolygonMarker::print(Blt_Ps ps)
       Blt_Ps_Append(ps, "/DashesProc {\ngsave\n    ");
       Blt_Ps_XSetBackground(ps, ops->outlineBg);
       Blt_Ps_Append(ps, "    ");
-      Blt_Ps_XSetDashes(ps, (Blt_Dashes *)NULL);
+      Blt_Ps_XSetDashes(ps, (Dashes*)NULL);
       Blt_Ps_Append(ps, "stroke\n  grestore\n} def\n");
     }
     else
