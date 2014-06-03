@@ -35,7 +35,7 @@ extern "C" {
 #include <tk3d.h>
 };
 
-#include "bltGrMisc.h"
+#include "bltGraph.h"
 #include "bltGrPageSetup.h"
 #include "bltPs.h"
 
@@ -46,6 +46,44 @@ using namespace Blt;
 #else
 #  define HAVE_UTF	0
 #endif
+
+void Graph::printPolyline(Blt_Ps ps, Point2d* screenPts, int nScreenPts)
+{
+  Point2d *pp, *pend;
+
+  pp = screenPts;
+  Blt_Ps_Append(ps, "newpath\n");
+  Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
+  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) {
+    Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
+  }
+}
+
+void Graph::printMaxPolyline(Blt_Ps ps, Point2d* points, int nPoints)
+{
+  if (nPoints <= 0)
+    return;
+
+  for (int nLeft = nPoints; nLeft > 0; nLeft -= 1500) {
+    int length = MIN(1500, nLeft);
+    printPolyline(ps, points, length);
+    Blt_Ps_Append(ps, "DashesProc stroke\n");
+    points += length;
+  }
+}
+
+void Graph::printSegments(Blt_Ps ps, Segment2d* segments, int nSegments)
+{
+  Segment2d* sp;
+  Segment2d* send;
+
+  Blt_Ps_Append(ps, "newpath\n");
+  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+    Blt_Ps_Format(ps, "  %g %g moveto %g %g lineto\n", 
+		  sp->p.x, sp->p.y, sp->q.x, sp->q.y);
+    Blt_Ps_Append(ps, "DashesProc stroke\n");
+  }
+}
 
 static Tcl_Interp *psInterp = NULL;
 
@@ -279,23 +317,15 @@ static void ByteToHex(unsigned char byte, char *string)
 void Blt_Ps_XSetBitmapData(Blt_Ps ps, Display *display, Pixmap bitmap, 
 			   int w, int h)
 {
-  XImage *imagePtr;
-  int byteCount;
-  int y, bitPos;
-
-  imagePtr = XGetImage(display, bitmap, 0, 0, w, h, 1, ZPixmap);
+  XImage* imagePtr = XGetImage(display, bitmap, 0, 0, w, h, 1, ZPixmap);
   Blt_Ps_Append(ps, "\t<");
-  byteCount = bitPos = 0;	/* Suppress compiler warning */
-  for (y = 0; y < h; y++) {
-    unsigned char byte;
+  int byteCount =0;
+  int bitPos =0;
+  for (int y=0; y<h; y++) {
     char string[10];
-    int x;
-
-    byte = 0;
-    for (x = 0; x < w; x++) {
-      unsigned long pixel;
-
-      pixel = XGetPixel(imagePtr, x, y);
+    unsigned char byte = 0;
+    for (int x=0; x<w; x++) {
+      unsigned long pixel = XGetPixel(imagePtr, x, y);
       bitPos = x % 8;
       byte |= (unsigned char)(pixel << bitPos);
       if (bitPos == 7) {
@@ -332,13 +362,11 @@ void Blt_Ps_SetClearBackground(Blt_Ps ps)
 
 void Blt_Ps_XSetCapStyle(Blt_Ps ps, int capStyle)
 {
-  /*
-   * X11:not last = 0, butt = 1, round = 2, projecting = 3
-   * PS: butt = 0, round = 1, projecting = 2
-   */
-  if (capStyle > 0) {
+  // X11:not last = 0, butt = 1, round = 2, projecting = 3
+  // PS: butt = 0, round = 1, projecting = 2
+  if (capStyle > 0)
     capStyle--;
-  }
+
   Blt_Ps_Format(ps, "%d setlinecap\n", capStyle);
 }
 
@@ -372,13 +400,8 @@ void Blt_Ps_XSetDashes(Blt_Ps ps, Dashes* dashesPtr)
   Blt_Ps_Append(ps, "] 0 setdash\n");
 }
 
-void Blt_Ps_XSetLineAttributes(
-			       Blt_Ps ps,
-			       XColor* colorPtr,
-			       int lineWidth,
-			       Dashes* dashesPtr,
-			       int capStyle, 
-			       int joinStyle)
+void Blt_Ps_XSetLineAttributes(Blt_Ps ps, XColor* colorPtr,int lineWidth,
+			       Dashes* dashesPtr, int capStyle, int joinStyle)
 {
   Blt_Ps_XSetJoinStyle(ps, joinStyle);
   Blt_Ps_XSetCapStyle(ps, capStyle);
@@ -406,27 +429,25 @@ void Blt_Ps_XFillRectangle(Blt_Ps ps, double x, double y, int width, int height)
 
 void Blt_Ps_PolylineFromXPoints(Blt_Ps ps, XPoint *points, int n)
 {
-  XPoint *pp, *pend;
-
-  pp = points;
+  XPoint* pp = points;
   Blt_Ps_Append(ps, "newpath\n");
   Blt_Ps_Format(ps, "  %d %d moveto\n", pp->x, pp->y);
   pp++;
-  for (pend = points + n; pp < pend; pp++) {
+
+  for (XPoint* pend = points + n; pp < pend; pp++)
     Blt_Ps_Format(ps, "  %d %d lineto\n", pp->x, pp->y);
-  }
 }
 
 void Blt_Ps_Polygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
 {
-  Point2d *pp, *pend;
-
-  pp = screenPts;
+  Point2d* pp = screenPts;
   Blt_Ps_Append(ps, "newpath\n");
   Blt_Ps_Format(ps, "  %g %g moveto\n", pp->x, pp->y);
-  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) {
+
+  Point2d* pend;
+  for (pp++, pend = screenPts + nScreenPts; pp < pend; pp++) 
     Blt_Ps_Format(ps, "  %g %g lineto\n", pp->x, pp->y);
-  }
+
   Blt_Ps_Format(ps, "  %g %g lineto\n", screenPts[0].x, screenPts[0].y);
   Blt_Ps_Append(ps, "closepath\n");
 }
@@ -440,33 +461,23 @@ void Blt_Ps_XFillPolygon(Blt_Ps ps, Point2d *screenPts, int nScreenPts)
 void Blt_Ps_XFillRectangles(Blt_Ps ps, XRectangle *rectangles, int nRectangles)
 {
   XRectangle *rp, *rend;
-
-  for (rp = rectangles, rend = rp + nRectangles; rp < rend; rp++) {
+  for (rp = rectangles, rend = rp + nRectangles; rp < rend; rp++)
     Blt_Ps_XFillRectangle(ps, (double)rp->x, (double)rp->y, 
 			  (int)rp->width, (int)rp->height);
-  }
 }
 
-void Blt_Ps_Draw3DRectangle(
-			    Blt_Ps ps,
-			    Tk_3DBorder border,		/* Token for border to draw. */
-			    double x, double y,		/* Coordinates of rectangle */
-			    int width, int height,	/* Region to be drawn. */
-			    int borderWidth,		/* Desired width for border, in pixels. */
-			    int relief)			/* Should be either TK_RELIEF_RAISED or
-							 * TK_RELIEF_SUNKEN; indicates position of
-							 * interior of window relative to exterior. */
+void Blt_Ps_Draw3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
+			    int width, int height, int borderWidth, int relief)
 {
-  Point2d points[7];
-  TkBorder *borderPtr = (TkBorder *) border;
+  TkBorder* borderPtr = (TkBorder*)border;
   XColor* lightPtr, *darkPtr;
   XColor* topPtr, *bottomPtr;
   XColor light, dark;
   int twiceWidth = (borderWidth * 2);
 
-  if ((width < twiceWidth) || (height < twiceWidth)) {
+  if ((width < twiceWidth) || (height < twiceWidth))
     return;
-  }
+
   if ((relief == TK_RELIEF_SOLID) ||
       (borderPtr->lightColorPtr == NULL) || (borderPtr->darkColorPtr == NULL)) {
     if (relief == TK_RELIEF_SOLID) {
@@ -479,40 +490,46 @@ void Blt_Ps_Draw3DRectangle(
     }
     lightPtr = &light;
     darkPtr = &dark;
-  } else {
+  }
+  else {
     lightPtr = borderPtr->lightColorPtr;
     darkPtr = borderPtr->darkColorPtr;
   }
 
-
-  /* Handle grooves and ridges with recursive calls. */
-
+  // Handle grooves and ridges with recursive calls
   if ((relief == TK_RELIEF_GROOVE) || (relief == TK_RELIEF_RIDGE)) {
-    int halfWidth, insideOffset;
-
-    halfWidth = borderWidth / 2;
-    insideOffset = borderWidth - halfWidth;
+    int halfWidth = borderWidth / 2;
+    int insideOffset = borderWidth - halfWidth;
     Blt_Ps_Draw3DRectangle(ps, border, (double)x, (double)y,
 			   width, height, halfWidth, 
-			   (relief == TK_RELIEF_GROOVE) ? TK_RELIEF_SUNKEN : TK_RELIEF_RAISED);
+			   (relief == TK_RELIEF_GROOVE) ? 
+			   TK_RELIEF_SUNKEN : TK_RELIEF_RAISED);
     Blt_Ps_Draw3DRectangle(ps, border, 
-			   (double)(x + insideOffset), (double)(y + insideOffset), 
-			   width - insideOffset * 2, height - insideOffset * 2, halfWidth,
-			   (relief == TK_RELIEF_GROOVE) ? TK_RELIEF_RAISED : TK_RELIEF_SUNKEN);
+			   (double)(x + insideOffset), 
+			   (double)(y + insideOffset), 
+			   width - insideOffset * 2, 
+			   height - insideOffset * 2, halfWidth,
+			   (relief == TK_RELIEF_GROOVE) ? 
+			   TK_RELIEF_RAISED : TK_RELIEF_SUNKEN);
     return;
   }
+
   if (relief == TK_RELIEF_RAISED) {
     topPtr = lightPtr;
     bottomPtr = darkPtr;
-  } else if (relief == TK_RELIEF_SUNKEN) {
+  }
+  else if (relief == TK_RELIEF_SUNKEN) {
     topPtr = darkPtr;
     bottomPtr = lightPtr;
-  } else {
-    topPtr = bottomPtr = borderPtr->bgColorPtr;
   }
+  else
+    topPtr = bottomPtr = borderPtr->bgColorPtr;
+
   Blt_Ps_XSetBackground(ps, bottomPtr);
   Blt_Ps_XFillRectangle(ps, x, y + height - borderWidth, width, borderWidth);
   Blt_Ps_XFillRectangle(ps, x + width - borderWidth, y, borderWidth, height);
+
+  Point2d points[7];
   points[0].x = points[1].x = points[6].x = x;
   points[0].y = points[6].y = y + height;
   points[1].y = points[2].y = y;
@@ -521,23 +538,16 @@ void Blt_Ps_Draw3DRectangle(
   points[3].y = points[4].y = y + borderWidth;
   points[4].x = points[5].x = x + borderWidth;
   points[5].y = y + height - borderWidth;
-  if (relief != TK_RELIEF_FLAT) {
+  if (relief != TK_RELIEF_FLAT)
     Blt_Ps_XSetBackground(ps, topPtr);
-  }
+
   Blt_Ps_XFillPolygon(ps, points, 7);
 }
 
-void Blt_Ps_Fill3DRectangle(
-			    Blt_Ps ps,
-			    Tk_3DBorder border,		/* Token for border to draw. */
-			    double x, double y,		/* Coordinates of top-left of border area */
-			    int width, int height,	/* Dimension of border to be drawn. */
-			    int borderWidth,		/* Desired width for border, in pixels. */
-			    int relief)			/* Should be either TK_RELIEF_RAISED or
-							 * TK_RELIEF_SUNKEN;  indicates position of
-							 * interior of window relative to exterior. */
+void Blt_Ps_Fill3DRectangle(Blt_Ps ps, Tk_3DBorder border, double x, double y,
+			    int width, int height, int borderWidth, int relief)
 {
-  TkBorder *borderPtr = (TkBorder *) border;
+  TkBorder* borderPtr = (TkBorder*)border;
 
   Blt_Ps_XSetBackground(ps, borderPtr->bgColorPtr);
   Blt_Ps_XFillRectangle(ps, x, y, width, height);
@@ -698,18 +708,14 @@ void Blt_Ps_DrawText(Blt_Ps ps, const char *string, double x, double y)
 }
 #endif
 
-void Blt_Ps_DrawBitmap(
-		       Blt_Ps ps,
-		       Display *display,
-		       Pixmap bitmap,		/* Bitmap to be converted to PostScript */
+void Blt_Ps_DrawBitmap(Blt_Ps ps, Display *display, Pixmap bitmap,
 		       double xScale, double yScale)
 {
   int width, height;
-  double sw, sh;
-
   Tk_SizeOfBitmap(display, bitmap, &width, &height);
-  sw = (double)width * xScale;
-  sh = (double)height * yScale;
+
+  double sw = (double)width * xScale;
+  double sh = (double)height * yScale;
   Blt_Ps_Append(ps, "  gsave\n");
   Blt_Ps_Format(ps, "    %g %g translate\n", sw * -0.5, sh * 0.5);
   Blt_Ps_Format(ps, "    %g %g scale\n", sw, -sh);
