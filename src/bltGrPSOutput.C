@@ -52,12 +52,12 @@ PostScript::PostScript(Graph* graphPtr)
 {
   graphPtr_ = graphPtr;
 
-  Tcl_DStringInit(&dString);
+  Tcl_DStringInit(&dString_);
 }
 
 PostScript::~PostScript()
 {
-  Tcl_DStringFree(&dString);
+  Tcl_DStringFree(&dString_);
 }
 
 void PostScript::drawPolyline(Point2d* screenPts, int nScreenPts)
@@ -159,13 +159,13 @@ int PostScript::computeBBox(int width, int height)
 
 const char* PostScript::getValue(int* lengthPtr)
 {
-  *lengthPtr = strlen(Tcl_DStringValue(&dString));
-  return Tcl_DStringValue(&dString);
+  *lengthPtr = strlen(Tcl_DStringValue(&dString_));
+  return Tcl_DStringValue(&dString_);
 }
 
 void PostScript::append(const char* string)
 {
-  Tcl_DStringAppend(&dString, string, -1);
+  Tcl_DStringAppend(&dString_, string, -1);
 }
 
 void PostScript::format(const char* fmt, ...)
@@ -173,9 +173,9 @@ void PostScript::format(const char* fmt, ...)
   va_list argList;
 
   va_start(argList, fmt);
-  vsnprintf(scratchArr, POSTSCRIPT_BUFSIZ, fmt, argList);
+  vsnprintf(scratchArr_, POSTSCRIPT_BUFSIZ, fmt, argList);
   va_end(argList);
-  Tcl_DStringAppend(&dString, scratchArr, -1);
+  Tcl_DStringAppend(&dString_, scratchArr_, -1);
 }
 
 void PostScript::varAppend(const char* fmt, ...)
@@ -187,7 +187,7 @@ void PostScript::varAppend(const char* fmt, ...)
     char* str = va_arg(argList, char *);
     if (!str)
       break;
-    Tcl_DStringAppend(&dString, str, -1);
+    Tcl_DStringAppend(&dString_, str, -1);
   }
   va_end(argList);
 }
@@ -473,7 +473,7 @@ int PostScript::includeFile(const char *fileName)
   int nBytes;
 
   Tcl_Interp* interp = graphPtr_->interp_;
-  char* buf = scratchArr;
+  char* buf = scratchArr_;
 
   // Read in a standard prolog file from file and append it to the
   // PostScript output stored in the Tcl_DString in psPtr.

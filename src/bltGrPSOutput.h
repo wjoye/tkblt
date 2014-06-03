@@ -39,16 +39,19 @@ class Graph;
 class PageSetup;
 
 class PostScript {
- public:
+ protected:
   Graph* graphPtr_;
-  Tcl_DString dString;
-  char scratchArr[POSTSCRIPT_BUFSIZ+1];
+  Tcl_DString dString_;
+  char scratchArr_[POSTSCRIPT_BUFSIZ+1];
 
  protected:
   void addComments(const char**);
   void XColorToPostScript(XColor*);
   unsigned char reverseBits(unsigned char);
   void byteToHex(unsigned char, char*);
+  void setJoinStyle(int);
+  void setCapStyle(int);
+  int includeFile(const char*);
 
  public:
   PostScript(Graph*);
@@ -75,8 +78,6 @@ class PostScript {
   void setLineAttributes(XColor*,int, Dashes*, int, int);
   void setClearBackground();
   void setDashes(Dashes*);
-  void setJoinStyle(int);
-  void setCapStyle(int);
   void setBitmap(Display*, Pixmap, int, int);
 
   int preamble(const char*);
@@ -85,7 +86,6 @@ class PostScript {
   void append(const char*);
   void format(const char*, ...);
   void varAppend(const char*, ...);
-  int includeFile(const char*);
 };
 
 #endif
