@@ -35,7 +35,7 @@
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 using namespace Blt;
 

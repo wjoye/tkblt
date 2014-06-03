@@ -37,7 +37,7 @@ extern "C" {
 
 #include "bltGrText.h"
 #include "bltGraph.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 TextStyle::TextStyle(Graph* graphPtr)
 {

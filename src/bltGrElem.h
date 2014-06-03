@@ -44,7 +44,7 @@ class PageSetup;
 
 #include "bltGrMisc.h"
 #include "bltGrPen.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 #define SHOW_NONE	0
 #define SHOW_X		1

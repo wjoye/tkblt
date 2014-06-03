@@ -41,7 +41,7 @@ class Axis;
 class PageSetup;
 
 #include "bltGrMisc.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 namespace Blt {
 

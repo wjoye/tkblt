@@ -37,7 +37,7 @@ extern "C" {
 
 #include "bltGraph.h"
 #include "bltGrPageSetup.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 using namespace Blt;
 

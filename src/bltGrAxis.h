@@ -44,7 +44,7 @@ class PageSetup;
 
 #include "bltGrMisc.h"
 #include "bltGrText.h"
-#include "bltPs.h"
+#include "bltGrPs.h"
 
 typedef struct {
   int axis;
