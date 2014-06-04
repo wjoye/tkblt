@@ -275,7 +275,7 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
       return TCL_ERROR;
 
     if (elemPtr)
-      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_,-1);
+      Tcl_SetStringObj(Tcl_GetObjResult(interp), elemPtr->name_, -1);
   }
   return TCL_OK;
 }

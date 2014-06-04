@@ -848,6 +848,8 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
 
   if (!strcmp(string, "anchor"))
     elemPtr = selAnchorPtr_;
+  else if (!strcmp(string, "current"))
+    elemPtr = (Element*)bindTable_->currentItem();
   else if (!strcmp(string, "first"))
     elemPtr = getFirstElement();
   else if (!strcmp(string, "focus"))

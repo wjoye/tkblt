@@ -63,6 +63,16 @@ bltCmd $graph legend configure -fg
 #bltCmd $graph legend deactivate
 bltCmd $graph legend focus data1
 bltCmd $graph legend focus
+#bltCmd $graph legend get anchor
+#bltCmd $graph legend get current
+#bltCmd $graph legend get first
+#bltCmd $graph legend get last
+#bltCmd $graph legend get end
+#bltCmd $graph legend get next.row
+#bltCmd $graph legend get next.column
+#bltCmd $graph legend get previous.row
+#bltCmd $graph legend get previous.column
+#bltCmd $graph legend get @100,100
 #bltCmd $graph legend get data1
 bltCmd $graph legend selection anchor data1
 bltCmd $graph legend selection mark data1

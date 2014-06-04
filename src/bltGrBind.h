@@ -63,6 +63,8 @@ class BindTable {
   void deleteBindings(ClientData object);
   void doEvent(XEvent*);
   void pickItem(XEvent*);
+
+  ClientData currentItem() {return currentItem_;}
 };
 
 
