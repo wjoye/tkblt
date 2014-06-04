@@ -390,7 +390,7 @@ int Graph::print(const char* ident, PostScript* psPtr)
     psPtr->setClearBackground();
 
   psPtr->fillRectangle(x, y, w, h);
-  psPtr->drawRectangle(x, y, w, h);
+  psPtr->printRectangle(x, y, w, h);
   psPtr->append("gsave clip\n\n");
 
   // Start
@@ -585,7 +585,7 @@ void Graph::printMargins(PostScript* psPtr)
     int y = top_ - ops->plotBW;
     int w = (right_ - left_) + (2*ops->plotBW);
     int h = (bottom_ - top_) + (2*ops->plotBW);
-    psPtr->draw3DRectangle(ops->normalBg, (double)x, (double)y, w, h,
+    psPtr->print3DRectangle(ops->normalBg, (double)x, (double)y, w, h,
 			   ops->plotBW, ops->plotRelief);
   }
 
@@ -1394,6 +1394,43 @@ ClientData Graph::pickEntry(int xx, int yy, ClassId* classIdPtr)
   return NULL;
 }
 
+int Graph::getXY(const char* string, int* xPtr, int* yPtr)
+{
+  if (!string || !*string) {
+    *xPtr = -SHRT_MAX;
+    *yPtr = -SHRT_MAX;
+    return TCL_OK;
+  }
+
+  if (*string != '@') {
+    Tcl_AppendResult(interp_, "bad position \"", string, 
+		     "\": should be \"@x,y\"", (char *)NULL);
+    return TCL_ERROR;
+  }
+
+  char* comma = (char*)strchr(string + 1, ',');
+  if (!comma) {
+    Tcl_AppendResult(interp_, "bad position \"", string, 
+		     "\": should be \"@x,y\"", (char *)NULL);
+    return TCL_ERROR;
+  }
+
+  *comma = '\0';
+  int x, y;
+  int result = ((Tk_GetPixels(interp_, tkwin_, string + 1, &x) == TCL_OK) &&
+		(Tk_GetPixels(interp_, tkwin_, comma + 1, &y) == TCL_OK));
+  *comma = ',';
+  if (!result) {
+    Tcl_AppendResult(interp_, ": can't parse position \"", string, "\"",
+		     (char *)NULL);
+    return TCL_ERROR;
+  }
+
+  *xPtr = x;
+  *yPtr = y;
+  return TCL_OK;
+}
+
 // Graphics
 
 void Graph::drawSegments(Drawable drawable, GC gc, 
@@ -1445,4 +1482,3 @@ void Graph::setDashes(GC gc, Dashes* dashesPtr)
   XSetDashes(display_, gc, dashesPtr->offset, (const char*)dashesPtr->values,
 	     (int)strlen((char*)dashesPtr->values));
 }
-

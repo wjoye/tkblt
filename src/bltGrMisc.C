@@ -56,40 +56,6 @@ char* Blt::dupstr(const char* str)
   return copy;
 }
 
-int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, const char* string, 
-	      int* xPtr, int* yPtr)
-{
-  if ((string == NULL) || (*string == '\0')) {
-    *xPtr = *yPtr = -SHRT_MAX;
-    return TCL_OK;
-  }
-
-  if (*string != '@') {
-    Tcl_AppendResult(interp, "bad position \"", string, 
-		     "\": should be \"@x,y\"", (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  char *comma = (char*)strchr(string + 1, ',');
-  if (comma == NULL) {
-  }
-
-  *comma = '\0';
-  int x, y;
-  int result = ((Tk_GetPixels(interp, tkwin, string + 1, &x) == TCL_OK) &&
-		(Tk_GetPixels(interp, tkwin, comma + 1, &y) == TCL_OK));
-  *comma = ',';
-  if (!result) {
-    Tcl_AppendResult(interp, ": can't parse position \"", string, "\"",
-		     (char *)NULL);
-    return TCL_ERROR;
-  }
-
-  *xPtr = x;
-  *yPtr = y;
-  return TCL_OK;
-}
-
 int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
 {
   Point2d *p, *q, *qend;

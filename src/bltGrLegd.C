@@ -565,7 +565,7 @@ void Legend::print(PostScript* psPtr)
       psPtr->fill3DRectangle(ops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
     else
-      psPtr->draw3DRectangle(gops->normalBg, x, y, width, height, 
+      psPtr->print3DRectangle(gops->normalBg, x, y, width, height, 
 			     ops->borderWidth, ops->relief);
 
   }
@@ -611,7 +611,7 @@ void Legend::print(PostScript* psPtr)
     else {
       ops->style.color = ops->fgColor;
       if (elemOps->legendRelief != TK_RELIEF_FLAT) {
-	psPtr->draw3DRectangle(gops->normalBg, x, y, entryWidth_, entryHeight_,
+	psPtr->print3DRectangle(gops->normalBg, x, y, entryWidth_, entryHeight_,
 			       ops->entryBW, elemOps->legendRelief);
       }
     }
@@ -868,7 +868,7 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
     elemPtr = getPreviousColumn(focusPtr_);
   else if (string[0] == '@') {
     int x, y;
-    if (Blt_GetXY(graphPtr_->interp_, graphPtr_->tkwin_, string, &x, &y) != TCL_OK)
+    if (graphPtr_->getXY(string, &x, &y) != TCL_OK)
       return TCL_ERROR;
 
     ClassId classId;

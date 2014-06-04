@@ -771,13 +771,13 @@ void BarElement::print(PostScript* psPtr)
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X)) {
       psPtr->setLineAttributes(colorPtr, pops->errorBarLineWidth, 
 			       NULL, CapButt, JoinMiter);
-      psPtr->drawSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
+      psPtr->printSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
 
     if ((stylePtr->yeb.length > 0) && (pops->errorBarShow & SHOW_Y)) {
       psPtr->setLineAttributes(colorPtr, pops->errorBarLineWidth, 
 			       NULL, CapButt, JoinMiter);
-      psPtr->drawSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
+      psPtr->printSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
 
     if (pops->valueShow != SHOW_NONE)
@@ -1273,7 +1273,7 @@ void BarElement::printSegments(PostScript* psPtr, BarPen* penPtr,
     }
     if ((pops->fill) && (pops->borderWidth > 0) && 
 	(pops->relief != TK_RELIEF_FLAT))
-      psPtr->draw3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
+      psPtr->print3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
 			     (int)rp->width, (int)rp->height,
 			     pops->borderWidth, pops->relief);
   }

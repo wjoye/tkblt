@@ -1682,12 +1682,11 @@ void Axis::print(PostScript* psPtr)
     tops->angle = titleAngle_;
     tops->font = ops->titleFont;
     tops->anchor = titleAnchor_;
-    tops->justify = ops->titleJustify;
     tops->color = ops->titleColor;
+    tops->justify = ops->titleJustify;
 
     ts.xPad_ = 1;
     ts.yPad_ = 0;
-
     ts.printText(psPtr, ops->title, titlePos_.x, titlePos_.y);
   }
 
@@ -1714,7 +1713,7 @@ void Axis::print(PostScript* psPtr)
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
     psPtr->setLineAttributes(ops->tickColor, ops->lineWidth, 
 			     (Dashes*)NULL, CapButt, JoinMiter);
-    psPtr->drawSegments(segments_, nSegments_);
+    psPtr->printSegments(segments_, nSegments_);
   }
 }
 
@@ -1729,13 +1728,13 @@ void Axis::printGrids(PostScript* psPtr)
   psPtr->setLineAttributes(ops->major.color, ops->major.lineWidth, 
 			    &ops->major.dashes, CapButt, JoinMiter);
   psPtr->format("%% Axis %s: major grid line segments\n", name_);
-  psPtr->drawSegments(ops->major.segments, ops->major.nUsed);
+  psPtr->printSegments(ops->major.segments, ops->major.nUsed);
 
   if (ops->showGridMinor) {
     psPtr->setLineAttributes(ops->minor.color, ops->minor.lineWidth, 
 			     &ops->minor.dashes, CapButt, JoinMiter);
     psPtr->format("%% Axis %s: minor grid line segments\n", name_);
-    psPtr->drawSegments(ops->minor.segments, ops->minor.nUsed);
+    psPtr->printSegments(ops->minor.segments, ops->minor.nUsed);
   }
 }
 

@@ -137,7 +137,7 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   if (!text || !(*text))
     return;
 
-  psPtr->drawText(text, x, y);
+  psPtr->printText(text, x, y);
 }
 
 void TextStyle::resetStyle()

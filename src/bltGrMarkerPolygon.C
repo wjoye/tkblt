@@ -332,7 +332,7 @@ void PolygonMarker::print(PostScript* psPtr)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->fill) {
-    psPtr->drawPolyline(fillPts_, nFillPts_);
+    psPtr->printPolyline(fillPts_, nFillPts_);
     if (ops->fillBg) {
       psPtr->setBackground(ops->fillBg);
       psPtr->append("gsave fill grestore\n");
@@ -355,7 +355,7 @@ void PolygonMarker::print(PostScript* psPtr)
     else
       psPtr->append("/DashesProc {} def\n");
 
-    psPtr->drawSegments(outlinePts_, nOutlinePts_);
+    psPtr->printSegments(outlinePts_, nOutlinePts_);
   }
 }
 

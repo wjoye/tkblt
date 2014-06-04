@@ -246,6 +246,7 @@ class Graph : public Pick {
   virtual int createPen(const char*, int, Tcl_Obj* const []) =0;
   int getPen(Tcl_Obj*, Pen**);
 
+  int getXY(const char*, int*, int*);
   void getTextExtents(Tk_Font, const char*, int, int*, int*);
   void getBoundingBox(int, int, float, double*, double*, Point2d*);
   Point2d anchorPoint(double, double, double, double, Tk_Anchor);

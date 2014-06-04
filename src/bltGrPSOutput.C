@@ -62,7 +62,7 @@ PostScript::~PostScript()
   Tcl_DStringFree(&dString_);
 }
 
-void PostScript::drawPolyline(Point2d* screenPts, int nScreenPts)
+void PostScript::printPolyline(Point2d* screenPts, int nScreenPts)
 {
   Point2d* pp = screenPts;
   append("newpath\n");
@@ -73,20 +73,20 @@ void PostScript::drawPolyline(Point2d* screenPts, int nScreenPts)
     format("  %g %g lineto\n", pp->x, pp->y);
 }
 
-void PostScript::drawMaxPolyline(Point2d* points, int nPoints)
+void PostScript::printMaxPolyline(Point2d* points, int nPoints)
 {
   if (nPoints <= 0)
     return;
 
   for (int nLeft = nPoints; nLeft > 0; nLeft -= 1500) {
     int length = MIN(1500, nLeft);
-    drawPolyline(points, length);
+    printPolyline(points, length);
     append("DashesProc stroke\n");
     points += length;
   }
 }
 
-void PostScript::drawSegments(Segment2d* segments, int nSegments)
+void PostScript::printSegments(Segment2d* segments, int nSegments)
 {
   append("newpath\n");
 
@@ -201,7 +201,7 @@ void PostScript::setLineWidth(int lineWidth)
   format("%d setlinewidth\n", lineWidth);
 }
 
-void PostScript::drawRectangle(int x, int y, int width, int height)
+void PostScript::printRectangle(int x, int y, int width, int height)
 {
   append("newpath\n");
   format("  %d %d moveto\n", x, y);
@@ -213,7 +213,7 @@ void PostScript::drawRectangle(int x, int y, int width, int height)
 
 void PostScript::fillRectangle(double x, double y, int width, int height)
 {
-  drawRectangle((int)x, (int)y, width, height);
+  printRectangle((int)x, (int)y, width, height);
   append("fill\n");
 }
 
@@ -280,7 +280,7 @@ void PostScript::fill3DRectangle(Tk_3DBorder border, double x, double y,
 
   setBackground(borderPtr->bgColorPtr);
   fillRectangle(x, y, width, height);
-  draw3DRectangle(border, x, y, width, height, borderWidth, relief);
+  print3DRectangle(border, x, y, width, height, borderWidth, relief);
 }
 
 void PostScript::setClearBackground()
@@ -301,11 +301,11 @@ void PostScript::setDashes(Dashes* dashesPtr)
 
 void PostScript::fillPolygon(Point2d *screenPts, int nScreenPts)
 {
-  drawPolygon(screenPts, nScreenPts);
+  printPolygon(screenPts, nScreenPts);
   append("fill\n");
 }
 
-void PostScript::drawBitmap(Display *display, Pixmap bitmap,
+void PostScript::printBitmap(Display *display, Pixmap bitmap,
 			    double xScale, double yScale)
 {
   int width, height;
@@ -338,7 +338,7 @@ void PostScript::setCapStyle(int capStyle)
   format("%d setlinecap\n", capStyle);
 }
 
-void PostScript::drawPolygon(Point2d *screenPts, int nScreenPts)
+void PostScript::printPolygon(Point2d *screenPts, int nScreenPts)
 {
   Point2d* pp = screenPts;
   append("newpath\n");
@@ -352,7 +352,7 @@ void PostScript::drawPolygon(Point2d *screenPts, int nScreenPts)
   append("closepath\n");
 }
 
-void PostScript::draw3DRectangle(Tk_3DBorder border, double x, double y,
+void PostScript::print3DRectangle(Tk_3DBorder border, double x, double y,
 				 int width, int height, int borderWidth,
 				 int relief)
 {
@@ -387,10 +387,10 @@ void PostScript::draw3DRectangle(Tk_3DBorder border, double x, double y,
   if ((relief == TK_RELIEF_GROOVE) || (relief == TK_RELIEF_RIDGE)) {
     int halfWidth = borderWidth / 2;
     int insideOffset = borderWidth - halfWidth;
-    draw3DRectangle(border, (double)x, (double)y, width, height, halfWidth, 
+    print3DRectangle(border, (double)x, (double)y, width, height, halfWidth, 
 		    (relief == TK_RELIEF_GROOVE) ? 
 		    TK_RELIEF_SUNKEN : TK_RELIEF_RAISED);
-    draw3DRectangle(border, (double)(x + insideOffset), 
+    print3DRectangle(border, (double)(x + insideOffset), 
 		    (double)(y + insideOffset), width - insideOffset * 2, 
 		    height - insideOffset * 2, halfWidth,
 		    (relief == TK_RELIEF_GROOVE) ? 
@@ -586,7 +586,7 @@ void PostScript::byteToHex(unsigned char byte, char* string)
   string[1] = hexDigits[byte & 0x0F];
 }
 
-void PostScript::drawText(const char* string, double x, double y)
+void PostScript::printText(const char* string, double x, double y)
 {
   if (!string || !(*string))
     return;

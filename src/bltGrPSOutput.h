@@ -56,14 +56,14 @@ class PostScript {
   PostScript(Graph*);
   virtual ~PostScript();
 
-  void drawPolyline(Point2d*, int);
-  void drawMaxPolyline(Point2d*, int);
-  void drawSegments(Segment2d*, int);
-  void drawBitmap(Display*, Pixmap, double, double);
-  void drawRectangle(int, int, int, int);
-  void drawPolygon(Point2d*, int);
-  void draw3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
-  void drawText(const char*, double, double);
+  void printPolyline(Point2d*, int);
+  void printMaxPolyline(Point2d*, int);
+  void printSegments(Segment2d*, int);
+  void printBitmap(Display*, Pixmap, double, double);
+  void printRectangle(int, int, int, int);
+  void printPolygon(Point2d*, int);
+  void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
+  void printText(const char*, double, double);
 
   void fillRectangle(double, double, int, int);
   void fillRectangles(XRectangle*, int);

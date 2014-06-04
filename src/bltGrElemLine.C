@@ -668,7 +668,7 @@ void LineElement::print(PostScript* psPtr)
   if (fillPts_) {
     // Create a path to use for both the polygon and its outline
     psPtr->append("% start fill area\n");
-    psPtr->drawPolyline(fillPts_, nFillPts_);
+    psPtr->printPolyline(fillPts_, nFillPts_);
 
     // If the background fill color was specified, draw the polygon in a
     // solid fashion with that color
@@ -699,12 +699,12 @@ void LineElement::print(PostScript* psPtr)
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
       psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      psPtr->drawSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
+      psPtr->printSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
       psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
-      psPtr->drawSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
+      psPtr->printSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
     if ((stylePtr->symbolPts.length > 0) &&
 	(penOps->symbol.type != SYMBOL_NONE)) {
@@ -2671,13 +2671,15 @@ void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, in
 			 Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.mask),
 			 "\"\n\n  ", NULL);
 	psPtr->setBackground(fillColor);
-	psPtr->drawBitmap(graphPtr_->display_, pops->symbol.mask, scale, scale);
+	psPtr->printBitmap(graphPtr_->display_, pops->symbol.mask, scale, 
+			   scale);
       }
       psPtr->varAppend("\n  % Bitmap symbol is \"",
 		       Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.bitmap),
 		       "\"\n\n  ", NULL);
       psPtr->setForeground(outlineColor);
-      psPtr->drawBitmap(graphPtr_->display_, pops->symbol.bitmap, scale, scale);
+      psPtr->printBitmap(graphPtr_->display_, pops->symbol.bitmap, scale,
+			 scale);
     }
     break;
   default:
@@ -2762,7 +2764,7 @@ void LineElement::printTraces(PostScript* psPtr, LinePen* penPtr)
     bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
     if (tracePtr->screenPts.length > 0) {
       psPtr->append("% start trace\n");
-      psPtr->drawMaxPolyline(tracePtr->screenPts.points, 
+      psPtr->printMaxPolyline(tracePtr->screenPts.points, 
 			     tracePtr->screenPts.length);
       psPtr->append("% end trace\n");
     }

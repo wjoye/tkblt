@@ -318,7 +318,7 @@ void LineMarker::print(PostScript* psPtr)
     else
       psPtr->append("/DashesProc {} def\n");
 
-    psPtr->drawSegments(segments_, nSegments_);
+    psPtr->printSegments(segments_, nSegments_);
   }
 }
 
