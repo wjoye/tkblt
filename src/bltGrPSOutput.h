@@ -33,7 +33,6 @@
 #include <tk.h>
 
 #define POSTSCRIPT_BUFSIZ ((BUFSIZ*2)-1)
-#define PS_MAXPECT	(1<<4)
 
 class Graph;
 class PageSetup;
@@ -51,7 +50,7 @@ class PostScript {
   void byteToHex(unsigned char, char*);
   void setJoinStyle(int);
   void setCapStyle(int);
-  int includeFile(const char*);
+  void prolog();
 
  public:
   PostScript(Graph*);
