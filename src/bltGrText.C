@@ -132,12 +132,36 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
 
 void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
 {
-  //  TextStyleOptions* ops = (TextStyleOptions*)ops_;
+  TextStyleOptions* ops = (TextStyleOptions*)ops_;
 
+  cerr << x << ',' << y << '=' << text << endl;
   if (!text || !(*text))
     return;
 
-  psPtr->printText(text, x, y);
+  int w1, h1;
+  Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
+					      ops->justify, 0, &w1, &h1);
+
+  Tk_FontMetrics fm;
+  Tk_GetFontMetrics(ops->font, &fm);
+
+  //  %Stack :  w h theta centerX centerY
+  psPtr->format("%d %d %g %g %g BeginText\n", w1, h1, ops->angle, double(x), double(y));
+  psPtr->setFont(ops->font);
+  psPtr->setForeground(ops->color);
+
+  Tcl_ResetResult(graphPtr_->interp_);
+  Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
+  const char* ss = Blt::dupstr(Tcl_GetStringResult(graphPtr_->interp_));
+  Tcl_ResetResult(graphPtr_->interp_);
+  //  %Stack : str strWidth x y
+  int width = Tk_TextWidth(ops->font, ss, strlen(ss));
+  psPtr->format("%s %d %g %g DrawAdjText\n", ss, width, 0., 0.);
+  delete [] ss;
+
+  psPtr->format("EndText\n");
+
+  //  psPtr->printText(text, x, y);
 }
 
 void TextStyle::resetStyle()

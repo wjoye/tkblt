@@ -62,7 +62,7 @@ bltCmd $graph configure -background cyan
 ##bltCmd $graph legend
 ##bltCmd $graph marker
 ##bltCmd $graph pen
-##bltCmd $graph postscript
+#bltCmd $graph postscript output foo.ps
 #bltCmd $graph transform
 ##bltCmd $graph x2axis
 ##bltCmd $graph xaxis

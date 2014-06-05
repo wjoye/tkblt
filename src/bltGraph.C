@@ -391,7 +391,7 @@ int Graph::print(const char* ident, PostScript* psPtr)
 
   psPtr->fillRectangle(x, y, w, h);
   psPtr->printRectangle(x, y, w, h);
-  psPtr->append("gsave clip\n\n");
+  psPtr->append("gsave\n\n");
 
   // Start
   printMargins(psPtr);

@@ -227,7 +227,7 @@ void PostScript::fillRectangles(XRectangle* rectangles, int nRectangles)
 void PostScript::setBackground(XColor* colorPtr)
 {
   PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
-  XColorToPostScript(colorPtr);
+  printXColor(colorPtr);
   append(" setrgbcolor\n");
   if (pops->greyscale)
     append(" currentgray setgray\n");
@@ -236,7 +236,7 @@ void PostScript::setBackground(XColor* colorPtr)
 void PostScript::setForeground(XColor* colorPtr)
 {
   PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
-  XColorToPostScript(colorPtr);
+  printXColor(colorPtr);
   append(" setrgbcolor\n");
   if (pops->greyscale)
     append(" currentgray setgray\n");
@@ -244,20 +244,11 @@ void PostScript::setForeground(XColor* colorPtr)
 
 void PostScript::setFont(Tk_Font font) 
 {
-#if 0
-  const char* family = FamilyToPsFamily(Blt_FamilyOfFont(font));
-  if (family != NULL) {
-    double pointSize;
-	
-    Tcl_DString dString;
-    Tcl_DStringInit(&dString);
-    pointSize = (double)Blt_PostscriptFontName(font, &dString);
-    format("%g /%s SetFont\n", pointSize, Tcl_DStringValue(&dString));
-    Tcl_DStringFree(&dString);
-    return;
-  }
-  append("12.0 /Helvetica-Bold SetFont\n");
-#endif
+  Tcl_DString psdstr;
+  Tcl_DStringInit(&psdstr);
+  int psSize = Tk_PostscriptFontName(font, &psdstr);
+  format("%d /%s SetFont\n", psSize, Tcl_DStringValue(&psdstr));
+  Tcl_DStringFree(&psdstr);
 }
 
 void PostScript::setLineAttributes(XColor* colorPtr,int lineWidth,
@@ -468,12 +459,12 @@ void PostScript::setBitmap(Display *display, Pixmap bitmap, int w, int h)
   XDestroyImage(imagePtr);
 }
 
-void PostScript::XColorToPostScript(XColor* colorPtr)
+void PostScript::printXColor(XColor* colorPtr)
 {
   format("%g %g %g",
-		((double)(colorPtr->red >> 8) / 255.0),
-		((double)(colorPtr->green >> 8) / 255.0),
-		((double)(colorPtr->blue >> 8) / 255.0));
+	 ((double)(colorPtr->red >> 8) / 255.0),
+	 ((double)(colorPtr->green >> 8) / 255.0),
+	 ((double)(colorPtr->blue >> 8) / 255.0));
 }
 
 int PostScript::preamble(const char* fileName)

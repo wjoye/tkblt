@@ -45,7 +45,7 @@ class PostScript {
 
  protected:
   void addComments(const char**);
-  void XColorToPostScript(XColor*);
+  void printXColor(XColor*);
   unsigned char reverseBits(unsigned char);
   void byteToHex(unsigned char, char*);
   void setJoinStyle(int);
