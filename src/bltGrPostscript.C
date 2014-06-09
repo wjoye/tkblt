@@ -42,7 +42,7 @@ static Tk_OptionSpec optionSpecs[] = {
    NULL, -1, Tk_Offset(PageSetupOptions, comments), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_BOOLEAN, "-decorations", "decorations", "Decorations",
-   "no", -1, Tk_Offset(PageSetupOptions, decorations), 0, NULL, 0},
+   "yes", -1, Tk_Offset(PageSetupOptions, decorations), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-footer", "footer", "Footer",
    "no", -1, Tk_Offset(PageSetupOptions, footer), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-greyscale", "greyscale", "Greyscale",
