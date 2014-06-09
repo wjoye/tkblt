@@ -159,7 +159,6 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   psPtr->format("(%s) %d %g %g DrawAdjText\n",text, width, 0. , h1*.5);
   psPtr->append("EndText\n");
 
-
   //  psPtr->append("gsave\n");
   //  psPtr->format("%g %g %g [\n", ops->angle, x, y);
   //  cerr << ops->angle << ' ' << x << ' ' << y << " [" << endl;
@@ -168,7 +167,7 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   //  const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
   //  psPtr->append(ss);
   //  cerr << ss << endl;
-  Tcl_ResetResult(graphPtr_->interp_);
+  //  Tcl_ResetResult(graphPtr_->interp_);
   //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
   //  cerr << "] " << fm.linespace << ' ' <<  xx/-2.0 << ' ' <<  yy/2.0 << ' ' << justify << " false DrawText" << endl;
   //  psPtr->append("grestore\n");
