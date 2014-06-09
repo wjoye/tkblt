@@ -140,7 +140,22 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   int w1, h1;
   Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
 					      ops->justify, 0, &w1, &h1);
-  //  Point2d rr = rotateText(x, y, w1, h1);
+
+  // cerr << '(' << x << ',' << y << ')' << ' ' << text << endl;
+  psPtr->append("gsave\n");
+  psPtr->format("[\n");
+  //  psPtr->format("%g %g %g [\n", ops->angle, x, y);
+  Tcl_ResetResult(graphPtr_->interp_);
+  Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
+  const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
+  psPtr->append(ss);
+  Tcl_ResetResult(graphPtr_->interp_);
+  psPtr->format("] %d %d \n", x, y);
+  psPtr->format(" DrawText\n");
+  //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
+  psPtr->append("grestore\n");
+
+#if 0
   double w2, h2;
   graphPtr_->getBoundingBox(w1, h1, ops->angle, &w2, &h2, NULL);
 
@@ -158,19 +173,7 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   psPtr->format("%d %d %g %g %g BeginText\n", w1, h1, ops->angle, rr.x, rr.y);
   psPtr->format("(%s) %d %g %g DrawAdjText\n",text, width, 0. , h1*.5);
   psPtr->append("EndText\n");
-
-  //  psPtr->append("gsave\n");
-  //  psPtr->format("%g %g %g [\n", ops->angle, x, y);
-  //  cerr << ops->angle << ' ' << x << ' ' << y << " [" << endl;
-  //  Tcl_ResetResult(graphPtr_->interp_);
-  //  Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
-  //  const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
-  //  psPtr->append(ss);
-  //  cerr << ss << endl;
-  //  Tcl_ResetResult(graphPtr_->interp_);
-  //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
-  //  cerr << "] " << fm.linespace << ' ' <<  xx/-2.0 << ' ' <<  yy/2.0 << ' ' << justify << " false DrawText" << endl;
-  //  psPtr->append("grestore\n");
+#endif
 
   //  psPtr->printText(text, x, y);
 }
