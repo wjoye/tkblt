@@ -831,6 +831,7 @@ void PostScript::prolog()
 "    dup type /stringtype eq\n"
 "    gsave\n"
 "    1 -1 scale\n"
+"%    0 spacing neg moveto\n"
 "    { show } { glyphshow }\n"
 "    ifelse\n"
 "    grestore\n"
