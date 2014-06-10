@@ -150,8 +150,7 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
   psPtr->append(ss);
   Tcl_ResetResult(graphPtr_->interp_);
-  psPtr->format("] %d %d \n", x, y);
-  psPtr->format(" DrawText\n");
+  psPtr->format("] %g %d %d DrawText\n", ops->angle, x, y);
   //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
   psPtr->append("grestore\n");
 
