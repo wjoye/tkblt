@@ -142,14 +142,38 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
 					      ops->justify, 0, &w1, &h1);
 
   // cerr << '(' << x << ',' << y << ')' << ' ' << text << endl;
+
+  int xx =0;
+  int yy =0;
+  switch (ops->anchor) {
+  case TK_ANCHOR_NW:	   xx = 0; yy = 0; break;
+  case TK_ANCHOR_N:	   xx = 1; yy = 0; break;
+  case TK_ANCHOR_NE:	   xx = 2; yy = 0; break;
+  case TK_ANCHOR_E:	   xx = 2; yy = 1; break;
+  case TK_ANCHOR_SE:	   xx = 2; yy = 2; break;
+  case TK_ANCHOR_S:	   xx = 1; yy = 2; break;
+  case TK_ANCHOR_SW:	   xx = 0; yy = 2; break;
+  case TK_ANCHOR_W:	   xx = 0; yy = 1; break;
+  case TK_ANCHOR_CENTER: xx = 1; yy = 1; break;
+  }
+
+  const char* justify =NULL;
+  switch (ops->justify) {
+  case TK_JUSTIFY_LEFT:   justify = "0";   break;
+  case TK_JUSTIFY_CENTER: justify = "0.5"; break;
+  case TK_JUSTIFY_RIGHT:  justify = "1";   break;
+  }
+
+  Tk_FontMetrics fm;
+  Tk_GetFontMetrics(ops->font, &fm);
+
   psPtr->format("%g %d %d [\n", ops->angle, x, y);
   Tcl_ResetResult(graphPtr_->interp_);
   Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
-  const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
-  psPtr->append(ss);
+  psPtr->append(Tcl_GetStringResult(graphPtr_->interp_));
   Tcl_ResetResult(graphPtr_->interp_);
-  psPtr->format("] DrawText\n");
-  //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
+  psPtr->format("] %d %g %g %s DrawText\n", 
+		fm.linespace, xx/-2.0, yy/2.0, justify);
 
 #if 0
   double w2, h2;
