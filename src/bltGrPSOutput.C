@@ -887,6 +887,7 @@ void PostScript::prolog()
 "      show\n"
 "      grestore\n"
 "    } forall\n"
+"    0 spacing neg translate\n"
 "  } forall\n"
 "  grestore\n"
 "} bind def \n"
