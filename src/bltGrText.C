@@ -142,17 +142,14 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
 					      ops->justify, 0, &w1, &h1);
 
   // cerr << '(' << x << ',' << y << ')' << ' ' << text << endl;
-  psPtr->append("gsave\n");
-  psPtr->format("[\n");
-  //  psPtr->format("%g %g %g [\n", ops->angle, x, y);
+  psPtr->format("%g %d %d [\n", ops->angle, x, y);
   Tcl_ResetResult(graphPtr_->interp_);
   Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
   const char* ss = Tcl_GetStringResult(graphPtr_->interp_);
   psPtr->append(ss);
   Tcl_ResetResult(graphPtr_->interp_);
-  psPtr->format("] %g %d %d DrawText\n", ops->angle, x, y);
+  psPtr->format("] DrawText\n");
   //  psPtr->format("] %d %g %g %s %s DrawText\n", fm.linespace, xx/-2.0, yy/2.0, justify, "false");
-  psPtr->append("grestore\n");
 
 #if 0
   double w2, h2;
