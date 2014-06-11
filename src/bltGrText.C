@@ -144,6 +144,16 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   int xx =0;
   int yy =0;
   switch (ops->anchor) {
+  case TK_ANCHOR_NW:	   xx = 0; yy = 2; break;
+  case TK_ANCHOR_N:	   xx = 1; yy = 2; break;
+  case TK_ANCHOR_NE:	   xx = 2; yy = 2; break;
+  case TK_ANCHOR_E:	   xx = 2; yy = 1; break;
+  case TK_ANCHOR_SE:	   xx = 2; yy = 0; break;
+  case TK_ANCHOR_S:	   xx = 1; yy = 0; break;
+  case TK_ANCHOR_SW:	   xx = 0; yy = 0; break;
+  case TK_ANCHOR_W:	   xx = 0; yy = 1; break;
+  case TK_ANCHOR_CENTER: xx = 1; yy = 1; break;
+    /*
   case TK_ANCHOR_NW:	   xx = 0; yy = 0; break;
   case TK_ANCHOR_N:	   xx = 1; yy = 0; break;
   case TK_ANCHOR_NE:	   xx = 2; yy = 0; break;
@@ -153,6 +163,7 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   case TK_ANCHOR_SW:	   xx = 0; yy = 2; break;
   case TK_ANCHOR_W:	   xx = 0; yy = 1; break;
   case TK_ANCHOR_CENTER: xx = 1; yy = 1; break;
+    */
   }
 
   const char* justify =NULL;
@@ -161,6 +172,9 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   case TK_JUSTIFY_CENTER: justify = "0.5"; break;
   case TK_JUSTIFY_RIGHT:  justify = "1";   break;
   }
+
+  cerr << text << ' ' << '(' << x << ',' << y << ')' << ' ' 
+       << '(' << xx << ',' << yy << ')' << ' ' << justify << endl;
 
   Tk_FontMetrics fm;
   Tk_GetFontMetrics(ops->font, &fm);
