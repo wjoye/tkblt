@@ -141,8 +141,6 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
 					      ops->justify, 0, &w1, &h1);
 
-  // cerr << '(' << x << ',' << y << ')' << ' ' << text << endl;
-
   int xx =0;
   int yy =0;
   switch (ops->anchor) {
@@ -166,6 +164,9 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
 
   Tk_FontMetrics fm;
   Tk_GetFontMetrics(ops->font, &fm);
+
+  psPtr->setFont(ops->font);
+  psPtr->setForeground(ops->color);
 
   psPtr->format("%g %d %d [\n", ops->angle, x, y);
   Tcl_ResetResult(graphPtr_->interp_);

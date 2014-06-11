@@ -889,7 +889,7 @@ void PostScript::prolog()
 "    dup cstringwidth pop\n"
 "    justify neg mul 0 moveto\n"
 "    cstringshow\n"
-"    0 spacing neg translate\n"
+"    0 spacing translate\n"
 "  } forall\n"
 "  grestore\n"
 "} bind def \n"
