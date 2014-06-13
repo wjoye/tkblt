@@ -147,21 +147,9 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   psPtr->setFont(ops->font);
   psPtr->setForeground(ops->color);
 
-#if 1
   int xx =0;
   int yy =0;
   switch (ops->anchor) {
-    /*
-  case TK_ANCHOR_NW:	   xx = 0; yy = 2; break;
-  case TK_ANCHOR_N:	   xx = 1; yy = 2; break;
-  case TK_ANCHOR_NE:	   xx = 2; yy = 2; break;
-  case TK_ANCHOR_E:	   xx = 2; yy = 1; break;
-  case TK_ANCHOR_SE:	   xx = 2; yy = 0; break;
-  case TK_ANCHOR_S:	   xx = 1; yy = 0; break;
-  case TK_ANCHOR_SW:	   xx = 0; yy = 0; break;
-  case TK_ANCHOR_W:	   xx = 0; yy = 1; break;
-  case TK_ANCHOR_CENTER: xx = 1; yy = 1; break;
-    */
   case TK_ANCHOR_NW:	   xx = 0; yy = 0; break;
   case TK_ANCHOR_N:	   xx = 1; yy = 0; break;
   case TK_ANCHOR_NE:	   xx = 2; yy = 0; break;
@@ -190,21 +178,6 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   Tcl_ResetResult(graphPtr_->interp_);
   psPtr->format("] %d %g %g %s DrawText\n", 
 		fm.linespace, xx/-2.0, yy/-2.0, justify);
-#endif
-
-#if 0
-  double w2, h2;
-  graphPtr_->getBoundingBox(w1, h1, ops->angle, &w2, &h2, NULL);
-
-  Point2d rr = graphPtr_->anchorPoint(x, y, w2, h2, ops->anchor);
-  rr.x += w2*.5;
-  rr.y += h2*.5;
-
-  int width = Tk_TextWidth(ops->font, text, strlen(text));
-  psPtr->format("%d %d %g %g %g BeginText\n", w1, h1, ops->angle, rr.x, rr.y);
-  psPtr->format("(%s) %d %g %g DrawAdjText\n",text, width, 0. , h1*.5);
-  psPtr->append("EndText\n");
-#endif
 
   //  psPtr->printText(text, x, y);
 }
