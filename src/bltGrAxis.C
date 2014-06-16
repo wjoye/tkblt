@@ -1697,7 +1697,7 @@ void Axis::print(PostScript* psPtr)
     tops->angle = ops->tickAngle;
     tops->font = ops->tickFont;
     tops->anchor = tickAnchor_;
-    tops->color = ops->tickColor;
+    tops->color = active_ ? ops->activeFgColor : ops->tickColor;
 
     ts.xPad_ = 2;
     ts.yPad_ = 0;
@@ -1711,8 +1711,8 @@ void Axis::print(PostScript* psPtr)
   }
 
   if ((nSegments_ > 0) && (ops->lineWidth > 0)) {
-    psPtr->setLineAttributes(ops->tickColor, ops->lineWidth, 
-			     (Dashes*)NULL, CapButt, JoinMiter);
+    psPtr->setLineAttributes(active_ ? ops->activeFgColor : ops->tickColor,
+			     ops->lineWidth, (Dashes*)NULL, CapButt, JoinMiter);
     psPtr->printSegments(segments_, nSegments_);
   }
 }

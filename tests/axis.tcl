@@ -4,7 +4,7 @@ set w .line
 set graph [bltLineGraph $w]
 
 $graph axis configure x -bd 2 -background cyan -title "X\nAxis" -limitsformat "%g"
-$graph axis configure y -bd 2 -background cyan
+$graph axis configure y -bd 2 -background cyan -title "Y\nAxis"
 bltCmd $graph axis activate y
 
 echo "Testing Axis..."
