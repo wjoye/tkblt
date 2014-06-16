@@ -5,7 +5,7 @@ set graph [bltLineGraph $w]
 
 $graph element configure data1 -dash {8 3} -showvalues y -smooth step -symbol circle -outline yellow -outlinewidth 3 -pixels 10
 
-$graph pen create foo -showvalues y -symbol circle -dashes {8 3} -color purple
+$graph pen create foo -showvalues y -symbol circle -dashes {8 3} -color purple -linewidth 2
 $graph element activate data3
 
 echo "Testing Line Element.."
@@ -53,7 +53,14 @@ bltTest3 $graph element data1 -symbol splus $dops
 bltTest3 $graph element data1 -symbol square $dops
 bltTest3 $graph element data1 -symbol triangle $dops
 bltTest3 $graph element data2 -trace both $dops
+bltTest3 $graph element data1 -valueanchor nw $dops
 bltTest3 $graph element data1 -valueanchor n $dops
+bltTest3 $graph element data1 -valueanchor ne $dops
+bltTest3 $graph element data1 -valueanchor e $dops
+bltTest3 $graph element data1 -valueanchor se $dops
+bltTest3 $graph element data1 -valueanchor s $dops
+bltTest3 $graph element data1 -valueanchor sw $dops
+bltTest3 $graph element data1 -valueanchor w $dops
 bltTest3 $graph element data1 -valuecolor cyan $dops
 bltTest3 $graph element data1 -valuefont {times 18 bold italic} $dops
 bltTest3 $graph element data1 -valueformat "%e" $dops

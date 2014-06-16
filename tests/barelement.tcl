@@ -40,7 +40,14 @@ bltTest3 $graph element data1 -showvalues x $dops
 bltTest3 $graph element data1 -showvalues both $dops
 #bltTest3 $graph element data2 -stack $dops
 #bltTest3 $graph element data2 -styles $dops
+bltTest3 $graph element data1 -valueanchor nw $dops
 bltTest3 $graph element data1 -valueanchor n $dops
+bltTest3 $graph element data1 -valueanchor ne $dops
+bltTest3 $graph element data1 -valueanchor e $dops
+bltTest3 $graph element data1 -valueanchor se $dops
+bltTest3 $graph element data1 -valueanchor s $dops
+bltTest3 $graph element data1 -valueanchor sw $dops
+bltTest3 $graph element data1 -valueanchor w $dops
 bltTest3 $graph element data1 -valuecolor cyan $dops
 bltTest3 $graph element data1 -valuefont {times 18 bold italic} $dops
 bltTest3 $graph element data1 -valueformat "%e" $dops

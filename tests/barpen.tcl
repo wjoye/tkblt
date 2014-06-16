@@ -25,7 +25,14 @@ bltTest3 $graph pen foo -showerrorbars no $dops
 bltTest3 $graph pen foo -showvalues none $dops
 bltTest3 $graph pen foo -showvalues x $dops
 bltTest3 $graph pen foo -showvalues both $dops
+bltTest3 $graph pen foo -valueanchor nw $dops
 bltTest3 $graph pen foo -valueanchor n $dops
+bltTest3 $graph pen foo -valueanchor ne $dops
+bltTest3 $graph pen foo -valueanchor e $dops
+bltTest3 $graph pen foo -valueanchor se $dops
+bltTest3 $graph pen foo -valueanchor s $dops
+bltTest3 $graph pen foo -valueanchor sw $dops
+bltTest3 $graph pen foo -valueanchor w $dops
 bltTest3 $graph pen foo -valuecolor cyan $dops
 bltTest3 $graph pen foo -valuefont {times 18 bold italic} $dops
 bltTest3 $graph pen foo -valueformat "%e" $dops

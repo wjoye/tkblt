@@ -528,7 +528,7 @@ void LineElement::draw(Drawable drawable)
     return;
 
   // Fill area under the curve
-  if (fillPts_) {
+  if (ops->fillBg && fillPts_) {
     XPoint *points = (XPoint*)malloc(sizeof(XPoint) * nFillPts_);
 
     unsigned int count =0;
@@ -539,9 +539,8 @@ void LineElement::draw(Drawable drawable)
       points[count].y = pp->y;
       count++;
     }
-    if (ops->fillBg)
-      Tk_Fill3DPolygon(graphPtr_->tkwin_, drawable, ops->fillBg, points, 
-		       nFillPts_, 0, TK_RELIEF_FLAT);
+    Tk_Fill3DPolygon(graphPtr_->tkwin_, drawable, ops->fillBg, points, 
+		     nFillPts_, 0, TK_RELIEF_FLAT);
     free(points);
   }
 
@@ -665,18 +664,10 @@ void LineElement::print(PostScript* psPtr)
   psPtr->format("\n%% Element \"%s\"\n\n", name_);
 
   // Draw fill area
-  if (fillPts_) {
-    // Create a path to use for both the polygon and its outline
+  if (ops->fillBg && fillPts_) {
     psPtr->append("% start fill area\n");
     psPtr->printPolyline(fillPts_, nFillPts_);
-
-    // If the background fill color was specified, draw the polygon in a
-    // solid fashion with that color
-    if (ops->fillBg)
-      psPtr->append("gsave fill grestore\n");
-    else
-      psPtr->append("gsave fill grestore\n");
-
+    psPtr->append("gsave fill grestore\n");
     psPtr->append("% end fill area\n");
   }
 
