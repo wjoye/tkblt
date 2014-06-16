@@ -4,7 +4,6 @@ set w .bar
 set graph [bltBarGraph $w]
 
 echo "Testing Bar Graph..."
-bltCmd $graph configure
 
 # Graph
 bltTest $graph -aspect 2 $dops

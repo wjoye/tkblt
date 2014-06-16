@@ -8,7 +8,6 @@ set mm [$graph marker create polygon tt -element data2 \
 $graph element configure data1 -hide yes
 
 echo "Testing Polygon Marker..."
-bltCmd $graph marker configure $mm
 
 bltTest3 $graph marker $mm -bindtags {aa} 0
 bltTest3 $graph marker $mm -cap round $dops
@@ -24,7 +23,6 @@ bltTest3 $graph marker $mm -mapx x2 $dops
 bltTest3 $graph marker $mm -mapy y2 $dops
 bltTest3 $graph marker $mm -outline green $dops
 bltTest3 $graph marker $mm -outlinebg cyan $dops
-bltTest3 $graph marker $mm -state disabled $dops
 bltTest3 $graph marker $mm -under yes $dops
 bltTest3 $graph marker $mm -xoffset 20 $dops
 bltTest3 $graph marker $mm -xor yes $dops

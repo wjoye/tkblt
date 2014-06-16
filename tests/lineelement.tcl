@@ -9,7 +9,6 @@ $graph pen create foo -showvalues y -symbol circle -dashes {8 3} -color purple
 $graph element activate data3
 
 echo "Testing Line Element.."
-bltTest3 $graph element configure data1
 
 bltTest3 $graph element data3 -activepen foo $dops
 bltTest3 $graph element data2 -areabackground yellow $dops

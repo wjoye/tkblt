@@ -4,7 +4,6 @@ set w .line
 set graph [bltLineGraph $w]
 
 echo "Testing Line Graph..."
-bltCmd $graph configure
 
 bltTest $graph -aspect 2 $dops
 bltTest $graph -background red $dops

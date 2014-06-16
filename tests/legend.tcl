@@ -8,7 +8,6 @@ $graph legend focus data1
 $graph legend configure -selectrelief groove
 
 echo "Testing Legend..."
-$graph legend configure
 
 #bltTest2 $graph legend -activebackground $dops
 #bltTest2 $graph legend -activeborderwidth $dops

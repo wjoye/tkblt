@@ -270,10 +270,12 @@ void BitmapMarker::print(PostScript* psPtr)
   }
   psPtr->setForeground(ops->outlineColor);
 
-  psPtr->format("  gsave\n    %g %g translate\n    %d %d scale\n", 
-		anchorPt_.x, anchorPt_.y + height_, width_, -height_);
-  psPtr->format("    %d %d true [%d 0 0 %d 0 %d] {",
+  psPtr->append("gsave\n");
+  psPtr->format("%g %g translate\n", anchorPt_.x, anchorPt_.y + height_);
+  psPtr->format("%d %d scale\n", width_, -height_);
+  psPtr->format("%d %d true [%d 0 0 %d 0 %d]\n{",
 		width_, height_, width_, -height_, height_);
   psPtr->setBitmap(graphPtr_->display_, ops->bitmap, width_, height_);
-  psPtr->varAppend("    } imagemask\n", "grestore\n", NULL);
+  psPtr->append("}\nimagemask\n");
+  psPtr->append("grestore\n");
 }

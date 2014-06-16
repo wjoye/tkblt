@@ -8,7 +8,6 @@ $graph axis configure y -bd 2 -background cyan -title "Y\nAxis"
 bltCmd $graph axis activate y
 
 echo "Testing Axis..."
-bltCmd $graph axis configure x
 
 bltTest3 $graph axis y -activeforeground red $dops
 bltTest3 $graph axis y -activerelief sunken $dops

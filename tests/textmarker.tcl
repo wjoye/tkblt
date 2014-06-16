@@ -8,7 +8,6 @@ set mm [$graph marker create text tt -element data2 \
 $graph element configure data1 -hide yes
 
 echo "Testing Text Marker..."
-bltCmd $graph marker configure $mm
 
 bltTest3 $graph marker $mm -anchor nw $dops
 bltTest3 $graph marker $mm -background yellow $dops
@@ -26,7 +25,6 @@ bltTest3 $graph marker $mm -mapx x2 $dops
 bltTest3 $graph marker $mm -mapy y2 $dops
 bltTest3 $graph marker $mm -outline green $dops
 bltTest3 $graph marker $mm -rotate 45 $dops
-bltTest3 $graph marker $mm -state disabled $dops
 bltTest3 $graph marker $mm -text {Hello World} $dops
 bltTest3 $graph marker $mm -under yes $dops
 bltTest3 $graph marker $mm -xoffset 20 $dops
