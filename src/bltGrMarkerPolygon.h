@@ -48,11 +48,9 @@ namespace Blt {
     int capStyle;
     Dashes dashes;
     XColor* fill;
-    XColor* fillBg;
     int joinStyle;
     int lineWidth;
     XColor* outline;
-    XColor* outlineBg;
   } PolygonMarkerOptions;
 
   class PolygonMarker : public Marker {

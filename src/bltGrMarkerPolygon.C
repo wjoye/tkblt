@@ -58,9 +58,6 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(PolygonMarkerOptions, fill),
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_COLOR, "-fillbg", "fillbg", "FillBg", 
-   NULL, -1, Tk_Offset(PolygonMarkerOptions, fillBg),
-   TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_CUSTOM, "-join", "join", "Join", 
    "miter", -1, Tk_Offset(PolygonMarkerOptions, joinStyle),
    0, &joinStyleObjOption, 0},
@@ -74,9 +71,6 @@ static Tk_OptionSpec optionSpecs[] = {
    "y", -1, Tk_Offset(PolygonMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline", 
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(PolygonMarkerOptions, outline), 
-   TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_COLOR, "-outlinebg", "outlinebg", "OutlineBg", 
-   NULL, -1, Tk_Offset(PolygonMarkerOptions, outlineBg), 
    TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_BOOLEAN, "-under", "under", "Under",
    "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, CACHE},
@@ -121,15 +115,12 @@ int PolygonMarker::configure()
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
+  // outlineGC
   unsigned long gcMask = (GCLineWidth | GCLineStyle);
   XGCValues gcValues;
   if (ops->outline) {
     gcMask |= GCForeground;
     gcValues.foreground = ops->outline->pixel;
-  }
-  if (ops->outlineBg) {
-    gcMask |= GCBackground;
-    gcValues.background = ops->outlineBg->pixel;
   }
   gcMask |= (GCCapStyle | GCJoinStyle);
   gcValues.cap_style = ops->capStyle;
@@ -137,12 +128,9 @@ int PolygonMarker::configure()
   gcValues.line_style = LineSolid;
   gcValues.dash_offset = 0;
   gcValues.line_width = ops->lineWidth;
-  if (LineIsDashed(ops->dashes)) {
-    gcValues.line_style = (ops->outlineBg == NULL)
-      ? LineOnOffDash : LineDoubleDash;
-  }
+  if (LineIsDashed(ops->dashes))
+    gcValues.line_style = LineOnOffDash;
 
-  // outlineGC
   GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (LineIsDashed(ops->dashes))
     graphPtr_->setDashes(newGC, &ops->dashes);
@@ -155,10 +143,6 @@ int PolygonMarker::configure()
   if (ops->fill) {
     gcMask |= GCForeground;
     gcValues.foreground = ops->fill->pixel;
-  }
-  if (ops->fillBg) {
-    gcMask |= GCBackground;
-    gcValues.background = ops->fillBg->pixel;
   }
   newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
   if (fillGC_)
@@ -192,10 +176,8 @@ void PolygonMarker::draw(Drawable drawable)
   }
 
   // outline
-  if ((nOutlinePts_ > 0) && (ops->lineWidth > 0) && 
-      (ops->outline)) {
+  if ((nOutlinePts_ > 0) && (ops->lineWidth > 0) && (ops->outline))
     graphPtr_->drawSegments(drawable, outlineGC_, outlinePts_, nOutlinePts_);
-  }
 }
 
 void PolygonMarker::map()
@@ -308,10 +290,6 @@ void PolygonMarker::print(PostScript* psPtr)
 
   if (ops->fill) {
     psPtr->printPolyline(fillPts_, nFillPts_);
-    if (ops->fillBg) {
-      psPtr->setBackground(ops->fillBg);
-      psPtr->append("gsave fill grestore\n");
-    }
     psPtr->setForeground(ops->fill);
     psPtr->append("fill\n");
   }
@@ -319,16 +297,7 @@ void PolygonMarker::print(PostScript* psPtr)
   if ((ops->lineWidth > 0) && (ops->outline)) {
     psPtr->setLineAttributes(ops->outline, ops->lineWidth, &ops->dashes,
 			     ops->capStyle, ops->joinStyle);
-
-    if ((ops->outlineBg) && (LineIsDashed(ops->dashes))) {
-      psPtr->append("/DashesProc {\ngsave\n    ");
-      psPtr->setBackground(ops->outlineBg);
-      psPtr->append("    ");
-      psPtr->setDashes((Dashes*)NULL);
-      psPtr->append("stroke\n  grestore\n} def\n");
-    }
-    else
-      psPtr->append("/DashesProc {} def\n");
+    psPtr->append("/DashesProc {} def\n");
 
     psPtr->printSegments(outlinePts_, nOutlinePts_);
   }
