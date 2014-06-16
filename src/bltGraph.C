@@ -815,8 +815,8 @@ void Graph::printMarkers(PostScript* psPtr, int under)
     if (isElementHidden(markerPtr))
       continue;
 
-    psPtr->varAppend("\n% Marker \"", markerPtr->name_, 
-		     "\" is a ", markerPtr->className(), ".\n", NULL);
+    psPtr->format("%% Marker \"%s\" is a %s.\n", 
+		  markerPtr->name_, markerPtr->className());
     markerPtr->print(psPtr);
   }
 }

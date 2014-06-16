@@ -4,7 +4,7 @@ set w .line
 set graph [bltLineGraph $w]
 
 set mm [$graph marker create text tt -element data2 \
-	    -coords {1.5 100} -text "Text\nMarker" -font {24}]
+	    -coords {1. 112} -text "Text\nMarker" -font {helvetica 24}]
 $graph element configure data1 -hide yes
 
 echo "Testing Text Marker..."
@@ -19,7 +19,7 @@ bltTest3 $graph marker $mm -fg cyan $dops
 bltTest3 $graph marker $mm -fill yellow $dops
 bltTest3 $graph marker $mm -font {times 24 bold italic} $dops
 bltTest3 $graph marker $mm -foreground blue $dops
-bltTest3 $graph marker $mm -justify left $dops
+bltTest3 $graph marker $mm -justify right $dops
 bltTest3 $graph marker $mm -hide yes $dops
 bltTest3 $graph marker $mm -mapx x2 $dops
 bltTest3 $graph marker $mm -mapy y2 $dops
