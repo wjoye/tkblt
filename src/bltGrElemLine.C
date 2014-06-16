@@ -2667,16 +2667,14 @@ void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, in
       scale = MIN(sx, sy);
 
       if (pops->symbol.mask != None) {
-	psPtr->varAppend("\n  % Bitmap mask is \"",
-			 Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.mask),
-			 "\"\n\n  ", NULL);
+	psPtr->format("%%Bitmap mask is \"%s\"\n",
+		      Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.mask));
 	psPtr->setBackground(fillColor);
 	psPtr->printBitmap(graphPtr_->display_, pops->symbol.mask, scale, 
 			   scale);
       }
-      psPtr->varAppend("\n  % Bitmap symbol is \"",
-		       Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.bitmap),
-		       "\"\n\n  ", NULL);
+      psPtr->format("%%Bitmap symbol is \"%s\"\n",
+		    Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.bitmap));
       psPtr->setForeground(outlineColor);
       psPtr->printBitmap(graphPtr_->display_, pops->symbol.bitmap, scale,
 			 scale);

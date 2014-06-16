@@ -180,20 +180,6 @@ void PostScript::format(const char* fmt, ...)
   Tcl_DStringAppend(&dString_, scratchArr_, -1);
 }
 
-void PostScript::varAppend(const char* fmt, ...)
-{
-  va_list argList;
-
-  va_start(argList, fmt);
-  for (;;) {
-    char* str = va_arg(argList, char *);
-    if (!str)
-      break;
-    Tcl_DStringAppend(&dString_, str, -1);
-  }
-  va_end(argList);
-}
-
 void PostScript::setLineWidth(int lineWidth)
 {
   if (lineWidth < 1)
@@ -517,28 +503,28 @@ int PostScript::preamble(const char* fileName)
     if (!who)
       who = "???";
 
-    varAppend("8 /Helvetica SetFont\n",
-		     "10 30 moveto\n",
-		     "(Date: ", date, ") show\n",
-		     "10 20 moveto\n",
-		     "(File: ", fileName, ") show\n",
-		     "10 10 moveto\n",
-		     "(Created by: ", who, "@", Tcl_GetHostName(), ") show\n",
-		     "0 0 moveto\n",
-		     (char *)NULL);
+    append("8 /Helvetica SetFont\n");
+    append("10 30 moveto\n");
+    format("(Date: %s) show\n", date);
+    append("10 20 moveto\n");
+    format("(File: %s) show\n", fileName);
+    append("10 10 moveto\n");
+    format("(Created by: %s@%s) show\n", who, Tcl_GetHostName());
+    append("0 0 moveto\n");
   }
 
   // Set the conversion from PostScript to X11 coordinates.  Scale pica to
   // pixels and flip the y-axis (the origin is the upperleft corner).
-  varAppend("% Transform coordinate system to use X11 coordinates\n\n",
-		   "% 1. Flip y-axis over by reversing the scale,\n",
-		   "% 2. Translate the origin to the other side of the page,\n",
-		   "%    making the origin the upper left corner\n", NULL);
+  append("% Transform coordinate system to use X11 coordinates\n\n");
+  append("% 1. Flip y-axis over by reversing the scale,\n");
+  append("% 2. Translate the origin to the other side of the page,\n");
+  append("%    making the origin the upper left corner\n");
   format("1 -1 scale\n");
 
   // Papersize is in pixels. Translate the new origin *after* changing the scale
   format("0 %d translate\n\n", -setupPtr->paperHeight);
-  varAppend("% User defined page layout\n\n", "% Set color level\n", NULL);
+  append("% User defined page layout\n\n");
+  append("% Set color level\n");
   format("%% Set origin\n%d %d translate\n\n", setupPtr->left,setupPtr->bottom);
   if (ops->landscape)
     format("%% Landscape orientation\n0 %g translate\n-90 rotate\n",

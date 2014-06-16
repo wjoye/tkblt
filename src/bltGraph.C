@@ -438,9 +438,14 @@ int Graph::print(const char* ident, PostScript* psPtr)
   }
   printMarkers(psPtr, MARKER_ABOVE);
 
-  psPtr->varAppend("\n", "% Unset clipping\n", "grestore\n\n", NULL);
-  psPtr->varAppend("showpage\n", "%Trailer\n", "grestore\n", "end\n", "%EOF\n",
-		   NULL);
+  psPtr->append("\n");
+  psPtr->append("% Unset clipping\n");
+  psPtr->append("grestore\n\n");
+  psPtr->append("showpage\n");
+  psPtr->append("%Trailer\n");
+  psPtr->append("grestore\n");
+  psPtr->append("end\n");
+  psPtr->append("%EOF\n");
 
  error:
   width_ = Tk_Width(tkwin_);

@@ -313,7 +313,9 @@ void LineMarker::print(PostScript* psPtr)
       psPtr->setBackground(ops->fillColor);
       psPtr->append("    ");
       psPtr->setDashes(NULL);
-      psPtr->varAppend("stroke\n", "  grestore\n", "} def\n", NULL);
+      psPtr->append("stroke\n");
+      psPtr->append("grestore\n");
+      psPtr->append("} def\n");
     } 
     else
       psPtr->append("/DashesProc {} def\n");
