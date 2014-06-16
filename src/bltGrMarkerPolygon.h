@@ -53,7 +53,6 @@ namespace Blt {
     int lineWidth;
     XColor* outline;
     XColor* outlineBg;
-    int xorr;
   } PolygonMarkerOptions;
 
   class PolygonMarker : public Marker {

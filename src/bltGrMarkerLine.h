@@ -51,7 +51,6 @@ namespace Blt {
     int joinStyle;
     int lineWidth;
     XColor* outlineColor;
-    int xorr;
   } LineMarkerOptions;
 
   class LineMarker : public Marker {

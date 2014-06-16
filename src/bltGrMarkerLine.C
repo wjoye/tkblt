@@ -82,8 +82,6 @@ static Tk_OptionSpec optionSpecs[] = {
    "no", -1, Tk_Offset(LineMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(LineMarkerOptions, xOffset), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
-   "no", -1, Tk_Offset(LineMarkerOptions, xorr), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(LineMarkerOptions, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -111,9 +109,7 @@ LineMarker::~LineMarker()
 int LineMarker::configure()
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  Drawable drawable = Tk_WindowId(graphPtr_->tkwin_);
   unsigned long gcMask = (GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle);
   XGCValues gcValues;
   if (ops->outlineColor) {
@@ -132,19 +128,6 @@ int LineMarker::configure()
     gcValues.line_style = 
       (gcMask & GCBackground) ? LineDoubleDash : LineOnOffDash;
   }
-  if (ops->xorr) {
-    unsigned long pixel;
-    gcValues.function = GXxor;
-
-    gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
-    if (gcMask & GCBackground)
-      gcValues.background ^= pixel;
-
-    gcValues.foreground ^= pixel;
-    if (drawable != None)
-      draw(drawable);
-  }
 
   GC newGC = graphPtr_->getPrivateGC(gcMask, &gcValues);
   if (gc_)
@@ -152,15 +135,7 @@ int LineMarker::configure()
 
   if (LineIsDashed(ops->dashes))
     graphPtr_->setDashes(newGC, &ops->dashes);
-
   gc_ = newGC;
-  if (ops->xorr) {
-    if (drawable != None) {
-      map();
-      draw(drawable);
-    }
-    return TCL_OK;
-  }
 
   return TCL_OK;
 }

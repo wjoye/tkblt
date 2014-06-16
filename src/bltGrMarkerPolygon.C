@@ -82,8 +82,6 @@ static Tk_OptionSpec optionSpecs[] = {
    "no", -1, Tk_Offset(PolygonMarkerOptions, drawUnder), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-xoffset", "xOffset", "XOffset",
    "0", -1, Tk_Offset(PolygonMarkerOptions, xOffset), 0, NULL, 0},
-  {TK_OPTION_BOOLEAN, "-xor", "xor", "Xor",
-   "no", -1, Tk_Offset(PolygonMarkerOptions, xorr), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(PolygonMarkerOptions, yOffset), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
@@ -122,9 +120,7 @@ PolygonMarker::~PolygonMarker()
 int PolygonMarker::configure()
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  Drawable drawable = Tk_WindowId(graphPtr_->tkwin_);
   unsigned long gcMask = (GCLineWidth | GCLineStyle);
   XGCValues gcValues;
   if (ops->outline) {
@@ -144,19 +140,6 @@ int PolygonMarker::configure()
   if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = (ops->outlineBg == NULL)
       ? LineOnOffDash : LineDoubleDash;
-  }
-  if (ops->xorr) {
-    unsigned long pixel;
-    gcValues.function = GXxor;
-
-    gcMask |= GCFunction;
-    pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
-    if (gcMask & GCBackground)
-      gcValues.background ^= pixel;
-
-    gcValues.foreground ^= pixel;
-    if (drawable != None)
-      draw(drawable);
   }
 
   // outlineGC
@@ -181,14 +164,6 @@ int PolygonMarker::configure()
   if (fillGC_)
     Tk_FreeGC(graphPtr_->display_, fillGC_);
   fillGC_ = newGC;
-
-  if (ops->xorr && (gcMask == 0)) {
-    if (drawable != None) {
-      map();
-      draw(drawable);
-    }
-    return TCL_OK;
-  }
 
   return TCL_OK;
 }
