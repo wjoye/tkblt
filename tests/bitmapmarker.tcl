@@ -10,6 +10,13 @@ $graph element configure data1 -hide yes
 echo "Testing Bitmap Marker..."
 
 bltTest3 $graph marker $mm -anchor nw $dops
+bltTest3 $graph marker $mm -anchor n $dops
+bltTest3 $graph marker $mm -anchor ne $dops
+bltTest3 $graph marker $mm -anchor e $dops
+bltTest3 $graph marker $mm -anchor se $dops
+bltTest3 $graph marker $mm -anchor s $dops
+bltTest3 $graph marker $mm -anchor sw $dops
+bltTest3 $graph marker $mm -anchor w $dops
 bltTest3 $graph marker $mm -background yellow $dops
 bltTest3 $graph marker $mm -bg red $dops
 bltTest3 $graph marker $mm -bindtags {aa} 0

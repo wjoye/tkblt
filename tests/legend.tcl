@@ -13,7 +13,14 @@ echo "Testing Legend..."
 #bltTest2 $graph legend -activeborderwidth $dops
 #bltTest2 $graph legend -activeforeground $dops
 #bltTest2 $graph legend -activerelief $dops
+bltTest2 $graph legend -anchor nw $dops
+bltTest2 $graph legend -anchor n $dops
+bltTest2 $graph legend -anchor ne $dops
+bltTest2 $graph legend -anchor e $dops
+bltTest2 $graph legend -anchor se $dops
 bltTest2 $graph legend -anchor s $dops
+bltTest2 $graph legend -anchor sw $dops
+bltTest2 $graph legend -anchor w $dops
 bltTest2 $graph legend -bg pink $dops
 bltTest2 $graph legend -background cyan $dops
 bltTest2 $graph legend -borderwidth 20 $dops
