@@ -1,5 +1,8 @@
 #set sleep 1000
 set sleep 500
+if {![info exists dops]} {
+    set dops 0
+}
 
 proc bltPlot {w title} {
     toplevel $w
@@ -16,13 +19,17 @@ proc bltPlotDestroy {w} {
     destroy $w
 }
 
-proc bltTest {graph option value} {
+proc bltTest {graph option value {dops 0}} {
     global sleep
 
     echo "  $option $value"
     set org [$graph cget $option]
     $graph configure $option $value
     update
+    if {$dops} {
+	$graph postscript output foo.ps
+	exec open /Applications/Preview.app/ foo.ps
+    }
 #    after $sleep
     read stdin 1
     $graph configure $option $org
@@ -30,13 +37,17 @@ proc bltTest {graph option value} {
     after $sleep
 }
 
-proc bltTest2 {graph which option value} {
+proc bltTest2 {graph which option value {dops 0}} {
     global sleep
 
     echo "  $option $value"
     set org [$graph $which cget $option]
     $graph $which configure $option $value
     update
+    if {$dops} {
+	$graph postscript output foo.ps
+	exec open /Applications/Preview.app/ foo.ps
+    }
 #    after $sleep
     read stdin 1
     $graph $which configure $option $org
@@ -44,13 +55,17 @@ proc bltTest2 {graph which option value} {
     after $sleep
 }
 
-proc bltTest3 {graph which item option value} {
+proc bltTest3 {graph which item option value {dops 0}} {
     global sleep
 
     echo "  $item $option $value"
     set org [$graph $which cget $item $option]
     $graph $which configure $item $option $value
     update
+    if {$dops} {
+	$graph postscript output foo.ps
+	exec open /Applications/Preview.app/ foo.ps
+    }
 #    after $sleep
     read stdin 1
     $graph $which configure $item $option $org

@@ -12,51 +12,51 @@ $graph element activate data3
 echo "Testing Bar Element..."
 bltCmd $graph element data1 configure
 
-bltTest3 $graph element data3 -activepen foo
-bltTest3 $graph element data2 -background yellow
-bltTest3 $graph element data2 -barwidth 1
-bltTest3 $graph element data2 -bd 4
-bltTest3 $graph element data2 -bg yellow
-#bltTest3 $graph element data2 -bindtags
-bltTest3 $graph element data2 -borderwidth 4
-bltTest3 $graph element data2 -color yellow
-bltTest3 $graph element data1 -data {0.2 8 0.4 20 0.6 31 0.8 41 1.0 50 1.2 59 1.4 65 1.6 70 1.8 75 2.0 85}
-bltTest3 $graph element data2 -errorbarcolor green
-bltTest3 $graph element data2 -errorbarwidth 2
-bltTest3 $graph element data2 -errorbarcap 10
-bltTest3 $graph element data2 -fg yellow
-bltTest3 $graph element data1 -fill cyan
-bltTest3 $graph element data2 -foreground green
-bltTest3 $graph element data2 -hide yes
-bltTest3 $graph element data2 -label "This is a test"
-bltTest3 $graph element data2 -legendrelief groove
-bltTest3 $graph element data2 -mapx x2
-bltTest3 $graph element data2 -mapy y2
-bltTest3 $graph element data1 -outline red
-bltTest3 $graph element data2 -pen foo
-bltTest3 $graph element data2 -relief flat
-bltTest3 $graph element data2 -showerrorbars no
-bltTest3 $graph element data1 -showvalues none
-bltTest3 $graph element data1 -showvalues x
-bltTest3 $graph element data1 -showvalues both
-#bltTest3 $graph element data2 -stack
-#bltTest3 $graph element data2 -styles
-bltTest3 $graph element data1 -valueanchor n
-bltTest3 $graph element data1 -valuecolor cyan
-bltTest3 $graph element data1 -valuefont "times 18 bold italic"
-bltTest3 $graph element data1 -valueformat "%e"
-bltTest3 $graph element data1 -valuerotate 45
-#bltTest3 $graph element data2 -weights
-bltTest3 $graph element data1 -x {0 .2 .4 .6 .8 1 1.2 1.4 1.6 1.8}
-bltTest3 $graph element data1 -xdata {0 .2 .4 .6 .8 1 1.2 1.4 1.6 1.8}
-bltTest3 $graph element data2 -xerror {.1 .1 .1 .1 .1 .1 .1 .1 .1 .1 .1}
-#bltTest3 $graph element data2 -xhigh
-#bltTest3 $graph element data2 -xlow
-bltTest3 $graph element data1 -y {8 20 31 41 50 59 65 70 75 85} 
-bltTest3 $graph element data1 -ydata {8 20 31 41 50 59 65 70 75 85}
-bltTest3 $graph element data2 -yerror {5 5 5 5 5 5 5 5 5 5 5}
-#bltTest3 $graph element data2 -yhigh
-#bltTest3 $graph element data2 -ylow
+bltTest3 $graph element data3 -activepen foo $dops
+bltTest3 $graph element data2 -background yellow $dops
+bltTest3 $graph element data2 -barwidth 1 $dops
+bltTest3 $graph element data2 -bd 4 $dops
+bltTest3 $graph element data2 -bg yellow $dops
+bltTest3 $graph element data2 -bindtags {aa} 0
+bltTest3 $graph element data2 -borderwidth 4 $dops
+bltTest3 $graph element data2 -color yellow $dops
+bltTest3 $graph element data1 -data {0.2 8 0.4 20 0.6 31 0.8 41 1.0 50 1.2 59 1.4 65 1.6 70 1.8 75 2.0 85} $dops
+bltTest3 $graph element data2 -errorbarcolor green $dops
+bltTest3 $graph element data2 -errorbarwidth 2 $dops
+bltTest3 $graph element data2 -errorbarcap 10 $dops
+bltTest3 $graph element data2 -fg yellow $dops
+bltTest3 $graph element data1 -fill cyan $dops
+bltTest3 $graph element data2 -foreground green $dops
+bltTest3 $graph element data2 -hide yes $dops
+bltTest3 $graph element data2 -label "This is a test" $dops
+bltTest3 $graph element data2 -legendrelief groove $dops
+bltTest3 $graph element data2 -mapx x2 $dops
+bltTest3 $graph element data2 -mapy y2 $dops
+bltTest3 $graph element data1 -outline red $dops
+bltTest3 $graph element data2 -pen foo $dops
+bltTest3 $graph element data2 -relief flat $dops
+bltTest3 $graph element data2 -showerrorbars no $dops
+bltTest3 $graph element data1 -showvalues none $dops
+bltTest3 $graph element data1 -showvalues x $dops
+bltTest3 $graph element data1 -showvalues both $dops
+#bltTest3 $graph element data2 -stack $dops
+#bltTest3 $graph element data2 -styles $dops
+bltTest3 $graph element data1 -valueanchor n $dops
+bltTest3 $graph element data1 -valuecolor cyan $dops
+bltTest3 $graph element data1 -valuefont {times 18 bold italic} $dops
+bltTest3 $graph element data1 -valueformat "%e" $dops
+bltTest3 $graph element data1 -valuerotate 45 $dops
+#bltTest3 $graph element data2 -weights $dops
+bltTest3 $graph element data1 -x {0 .2 .4 .6 .8 1 1.2 1.4 1.6 1.8} $dops
+bltTest3 $graph element data1 -xdata {0 .2 .4 .6 .8 1 1.2 1.4 1.6 1.8} $dops
+bltTest3 $graph element data2 -xerror {.1 .1 .1 .1 .1 .1 .1 .1 .1 .1 .1} $dops
+#bltTest3 $graph element data2 -xhigh $dops
+#bltTest3 $graph element data2 -xlow $dops
+bltTest3 $graph element data1 -y {8 20 31 41 50 59 65 70 75 85}  $dops
+bltTest3 $graph element data1 -ydata {8 20 31 41 50 59 65 70 75 85} $dops
+bltTest3 $graph element data2 -yerror {5 5 5 5 5 5 5 5 5 5 5} $dops
+#bltTest3 $graph element data2 -yhigh $dops
+#bltTest3 $graph element data2 -ylow $dops
 
 bltCmd $graph element activate data2
 bltCmd $graph element deactivate data2

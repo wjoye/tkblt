@@ -10,25 +10,25 @@ $graph element configure data1 -hide yes
 echo "Testing Polygon Marker..."
 bltCmd $graph marker configure $mm
 
-#bltTest3 $graph marker $mm -bindtags {aa}
-bltTest3 $graph marker $mm -cap round
-bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150}
-bltTest3 $graph marker $mm -dashes {8 3}
-bltTest3 $graph marker $mm -element data1
-bltTest3 $graph marker $mm -fill yellow
-bltTest3 $graph marker $mm -fillbg blue
-bltTest3 $graph marker $mm -join round
-bltTest3 $graph marker $mm -linewidth 1
-bltTest3 $graph marker $mm -hide yes
-bltTest3 $graph marker $mm -mapx x2
-bltTest3 $graph marker $mm -mapy y2
-bltTest3 $graph marker $mm -outline green
-bltTest3 $graph marker $mm -outlinebg cyan
-bltTest3 $graph marker $mm -state disabled
-bltTest3 $graph marker $mm -under yes
-bltTest3 $graph marker $mm -xoffset 20
-bltTest3 $graph marker $mm -xor yes
-bltTest3 $graph marker $mm -yoffset 20
+bltTest3 $graph marker $mm -bindtags {aa} 0
+bltTest3 $graph marker $mm -cap round $dops
+bltTest3 $graph marker $mm -coords {1 50 1.5 100 2 150} $dops
+bltTest3 $graph marker $mm -dashes {8 3} $dops
+bltTest3 $graph marker $mm -element data1 $dops
+bltTest3 $graph marker $mm -fill yellow $dops
+bltTest3 $graph marker $mm -fillbg blue $dops
+bltTest3 $graph marker $mm -join round $dops
+bltTest3 $graph marker $mm -linewidth 1 $dops
+bltTest3 $graph marker $mm -hide yes $dops
+bltTest3 $graph marker $mm -mapx x2 $dops
+bltTest3 $graph marker $mm -mapy y2 $dops
+bltTest3 $graph marker $mm -outline green $dops
+bltTest3 $graph marker $mm -outlinebg cyan $dops
+bltTest3 $graph marker $mm -state disabled $dops
+bltTest3 $graph marker $mm -under yes $dops
+bltTest3 $graph marker $mm -xoffset 20 $dops
+bltTest3 $graph marker $mm -xor yes $dops
+bltTest3 $graph marker $mm -yoffset 20 $dops
 
 echo "done"
 bltPlotDestroy $w

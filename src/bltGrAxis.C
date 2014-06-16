@@ -1682,7 +1682,7 @@ void Axis::print(PostScript* psPtr)
     tops->angle = titleAngle_;
     tops->font = ops->titleFont;
     tops->anchor = titleAnchor_;
-    tops->color = ops->titleColor;
+    tops->color = active_ ? ops->activeFgColor : ops->titleColor;
     tops->justify = ops->titleJustify;
 
     ts.xPad_ = 1;

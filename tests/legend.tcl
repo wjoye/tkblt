@@ -10,49 +10,49 @@ $graph legend configure -selectrelief groove
 echo "Testing Legend..."
 $graph legend configure
 
-#bltTest2 $graph legend -activebackground
-#bltTest2 $graph legend -activeborderwidth
-#bltTest2 $graph legend -activeforeground
-#bltTest2 $graph legend -activerelief
-bltTest2 $graph legend -anchor s
-bltTest2 $graph legend -bg pink
-bltTest2 $graph legend -background cyan
-bltTest2 $graph legend -borderwidth 20
-bltTest2 $graph legend -bd 20
-bltTest2 $graph legend -columns 2
-#bltTest2 $graph legend -exportselection
-bltTest2 $graph legend -focusdashes "8 3"
-bltTest2 $graph legend -focusforeground red
-bltTest2 $graph legend -font "times 18 bold italic"
-bltTest2 $graph legend -fg yellow
-bltTest2 $graph legend -foreground purple
-bltTest2 $graph legend -hide yes
-bltTest2 $graph legend -ipadx 20
-bltTest2 $graph legend -ipady 20
-#bltTest2 $graph legend -nofocusselectbackground
-#bltTest2 $graph legend -nofocusselectforeground
-bltTest2 $graph legend -padx 20
-bltTest2 $graph legend -pady 20
-bltTest2 $graph legend -position rightmargin
-bltTest2 $graph legend -position leftmargin
-bltTest2 $graph legend -position topmargin
-bltTest2 $graph legend -position bottommargin
-bltTest2 $graph legend -position plotarea
-bltTest2 $graph legend -position xy
-bltTest2 $graph legend -x 250
-bltTest2 $graph legend -y 100
-bltTest2 $graph legend -raised yes
-bltTest2 $graph legend -relief groove
-bltTest2 $graph legend -rows 1
-#bltTest2 $graph legend -selectbackground
-bltTest2 $graph legend -selectborderwidth 3
-#bltTest2 $graph legend -selectcommand
-#bltTest2 $graph legend -selectforeground
-#bltTest2 $graph legend -selectmode
-bltTest2 $graph legend -selectrelief flat
-bltTest2 $graph legend -title "Hello World"
-bltTest2 $graph legend -titlecolor red
-bltTest2 $graph legend -titlefont "times 24 bold italic"
+#bltTest2 $graph legend -activebackground $dops
+#bltTest2 $graph legend -activeborderwidth $dops
+#bltTest2 $graph legend -activeforeground $dops
+#bltTest2 $graph legend -activerelief $dops
+bltTest2 $graph legend -anchor s $dops
+bltTest2 $graph legend -bg pink $dops
+bltTest2 $graph legend -background cyan $dops
+bltTest2 $graph legend -borderwidth 20 $dops
+bltTest2 $graph legend -bd 20 $dops
+bltTest2 $graph legend -columns 2 $dops
+#bltTest2 $graph legend -exportselection $dops
+bltTest2 $graph legend -focusdashes "8 3" $dops
+bltTest2 $graph legend -focusforeground red $dops
+bltTest2 $graph legend -font {times 18 bold italic} $dops
+bltTest2 $graph legend -fg yellow $dops
+bltTest2 $graph legend -foreground purple $dops
+bltTest2 $graph legend -hide yes $dops
+bltTest2 $graph legend -ipadx 20 $dops
+bltTest2 $graph legend -ipady 20 $dops
+#bltTest2 $graph legend -nofocusselectbackground $dops
+#bltTest2 $graph legend -nofocusselectforeground $dops
+bltTest2 $graph legend -padx 20 $dops
+bltTest2 $graph legend -pady 20 $dops
+bltTest2 $graph legend -position rightmargin $dops
+bltTest2 $graph legend -position leftmargin $dops
+bltTest2 $graph legend -position topmargin $dops
+bltTest2 $graph legend -position bottommargin $dops
+bltTest2 $graph legend -position plotarea $dops
+bltTest2 $graph legend -position xy $dops
+bltTest2 $graph legend -x 250 $dops
+bltTest2 $graph legend -y 100 $dops
+bltTest2 $graph legend -raised yes $dops
+bltTest2 $graph legend -relief groove $dops
+bltTest2 $graph legend -rows 1 $dops
+#bltTest2 $graph legend -selectbackground $dops
+bltTest2 $graph legend -selectborderwidth 3 $dops
+#bltTest2 $graph legend -selectcommand $dops
+#bltTest2 $graph legend -selectforeground $dops
+#bltTest2 $graph legend -selectmode $dops
+bltTest2 $graph legend -selectrelief flat $dops
+bltTest2 $graph legend -title "Hello World" $dops
+bltTest2 $graph legend -titlecolor red $dops
+bltTest2 $graph legend -titlefont {times 24 bold italic} $dops
 
 #bltCmd $graph legend activate
 #bltCmd $graph legend bind

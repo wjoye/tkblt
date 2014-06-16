@@ -6,48 +6,48 @@ set graph [bltLineGraph $w]
 echo "Testing Line Graph..."
 bltCmd $graph configure
 
-bltTest $graph -aspect 2
-bltTest $graph -background red
-#bltTest $graph -baseline
-bltTest $graph -bd 50
-bltTest $graph -bg green
-bltTest $graph -bm 50
-bltTest $graph -borderwidth 50
-bltTest $graph -bottommargin 50
-#bltTest $graph -bufferelements
-#bltTest $graph -buffergraph
-bltTest $graph -cursor cross
-bltTest $graph -fg blue
-bltTest $graph -font {times 36 bold italic}
-bltTest $graph -foreground cyan
-#bltTest $graph -halo
-bltTest $graph -height 300
-#bltTest $graph -highlightbackground
-#bltTest $graph -highlightcolor
-#bltTest $graph -highlightthickness
-bltTest $graph -invertxy yes
-bltTest $graph -justify left
-bltTest $graph -leftmargin 50
-bltTest $graph -lm 50
-bltTest $graph -plotbackground cyan
-bltTest $graph -plotborderwidth 50
-bltTest $graph -plotpadx 50
-bltTest $graph -plotpady 50
-bltTest $graph -plotrelief groove
-bltTest $graph -relief groove
-bltTest $graph -rightmargin 50
-bltTest $graph -rm 50
-#bltTest $graph -searchhalo
-#bltTest $graph -searchmode
-#bltTest $graph -searchalong
-#bltTest $graph -stackaxes
-#bltTest $graph -takefocus
-bltTest $graph -title "This is a Title"
-bltTest $graph -tm 50
-bltTest $graph -topmargin 50
-bltTest $graph -width 300
-bltTest $graph -plotwidth 300
-bltTest $graph -plotheight 300
+bltTest $graph -aspect 2 $dops
+bltTest $graph -background red $dops
+#bltTest $graph -baseline $dops
+bltTest $graph -bd 50 $dops
+bltTest $graph -bg green $dops
+bltTest $graph -bm 50 $dops
+bltTest $graph -borderwidth 50 $dops
+bltTest $graph -bottommargin 50 $dops
+#bltTest $graph -bufferelements $dops
+#bltTest $graph -buffergraph $dops
+bltTest $graph -cursor cross $dops
+bltTest $graph -fg blue $dops
+bltTest $graph -font {times 36 bold italic} $dops
+bltTest $graph -foreground cyan $dops
+#bltTest $graph -halo $dops
+bltTest $graph -height 300 $dops
+#bltTest $graph -highlightbackground $dops
+#bltTest $graph -highlightcolor $dops
+#bltTest $graph -highlightthickness $dops
+bltTest $graph -invertxy yes $dops
+bltTest $graph -justify left $dops
+bltTest $graph -leftmargin 50 $dops
+bltTest $graph -lm 50 $dops
+bltTest $graph -plotbackground cyan $dops
+bltTest $graph -plotborderwidth 50 $dops
+bltTest $graph -plotpadx 50 $dops
+bltTest $graph -plotpady 50 $dops
+bltTest $graph -plotrelief groove $dops
+bltTest $graph -relief groove $dops
+bltTest $graph -rightmargin 50 $dops
+bltTest $graph -rm 50 $dops
+#bltTest $graph -searchhalo $dops
+#bltTest $graph -searchmode $dops
+#bltTest $graph -searchalong $dops
+#bltTest $graph -stackaxes $dops
+#bltTest $graph -takefocus $dops
+bltTest $graph -title "This is a Title" $dops
+bltTest $graph -tm 50 $dops
+bltTest $graph -topmargin 50 $dops
+bltTest $graph -width 300 $dops
+bltTest $graph -plotwidth 300 $dops
+bltTest $graph -plotheight 300 $dops
 
 ##bltCmd $graph axis
 bltCmd $graph cget -background

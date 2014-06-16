@@ -10,61 +10,61 @@ bltCmd $graph axis activate y
 echo "Testing Axis..."
 bltCmd $graph axis configure x
 
-bltTest3 $graph axis y -activeforeground red
-bltTest3 $graph axis y -activerelief sunken
-#bltTest3 $graph axis x -autorange 10
-bltTest3 $graph axis x -background yellow
-bltTest3 $graph axis x -bg blue
-#bltTest3 $graph axis x -bindtags
-bltTest3 $graph axis y -bd 4
-bltTest3 $graph axis y -borderwidth 4
-#bltTest3 $graph axis x -checklimits
-bltTest3 $graph axis x -color red
-#bltTest3 $graph axis x -command
-bltTest3 $graph axis x -descending yes
-bltTest3 $graph axis x -exterior no
-bltTest3 $graph axis x -fg magenta
-bltTest3 $graph axis x -foreground yellow
-bltTest3 $graph axis x -grid no
-bltTest3 $graph axis x -gridcolor blue
-bltTest3 $graph axis x -griddashes {8 3}
-bltTest3 $graph axis x -gridlinewidth 2
-bltTest3 $graph axis x -gridminor no
-bltTest3 $graph axis x -gridminorcolor blue
-bltTest3 $graph axis x -gridminordashes {8 3}
-bltTest3 $graph axis x -gridminorlinewidth 2
-bltTest3 $graph axis x -hide yes
-bltTest3 $graph axis x -justify left
-bltTest3 $graph axis x -labeloffset yes
-bltTest3 $graph axis x -limitscolor red
-bltTest3 $graph axis x -limitsfont "times 18 bold italic"
-bltTest3 $graph axis x -limitsformat "%e"
-bltTest3 $graph axis x -linewidth 2
-bltTest3 $graph axis x -logscale yes
-#bltTest3 $graph axis x -loosemin
-#bltTest3 $graph axis x -loosemax
-#bltTest3 $graph axis x -majorticks
-#bltTest3 $graph axis x -max
-#bltTest3 $graph axis x -min
-#bltTest3 $graph axis x -minorticks
-bltTest3 $graph axis x -relief groove
-bltTest3 $graph axis x -rotate 45
-#bltTest3 $graph axis x -scrollcommand
-#bltTest3 $graph axis x -scrollincrement
-#bltTest3 $graph axis x -scrollmax
-#bltTest3 $graph axis x -scrollmin
-##bltTest3 $graph axis x -shiftby 10
-bltTest3 $graph axis x -showticks no
-bltTest3 $graph axis x -stepsize 10
-bltTest3 $graph axis x -subdivisions 4
-##bltTest3 $graph axis x -tickanchor n
-bltTest3 $graph axis x -tickfont {times 12 bold italic}
-bltTest3 $graph axis x -ticklength 20
-bltTest3 $graph axis x -tickdefault 10
-bltTest3 $graph axis x -title {This is a Title}
-bltTest3 $graph axis x -titlealternate yes
-bltTest3 $graph axis x -titlecolor yellow
-bltTest3 $graph axis x -titlefont {times 24 bold italic}
+bltTest3 $graph axis y -activeforeground red $dops
+bltTest3 $graph axis y -activerelief sunken $dops
+#bltTest3 $graph axis x -autorange 10 $dops
+bltTest3 $graph axis x -background yellow $dops
+bltTest3 $graph axis x -bg blue $dops
+bltTest3 $graph axis x -bindtags {aa} 0
+bltTest3 $graph axis y -bd 4 $dops
+bltTest3 $graph axis y -borderwidth 4 $dops
+#bltTest3 $graph axis x -checklimits $dops
+bltTest3 $graph axis x -color red $dops
+#bltTest3 $graph axis x -command $dops
+bltTest3 $graph axis x -descending yes $dops
+bltTest3 $graph axis x -exterior no $dops
+bltTest3 $graph axis x -fg magenta $dops
+bltTest3 $graph axis x -foreground yellow $dops
+bltTest3 $graph axis x -grid no $dops
+bltTest3 $graph axis x -gridcolor blue $dops
+bltTest3 $graph axis x -griddashes {8 3} $dops
+bltTest3 $graph axis x -gridlinewidth 2 $dops
+bltTest3 $graph axis x -gridminor no $dops
+bltTest3 $graph axis x -gridminorcolor blue $dops
+bltTest3 $graph axis x -gridminordashes {8 3} $dops
+bltTest3 $graph axis x -gridminorlinewidth 2 $dops
+bltTest3 $graph axis x -hide yes $dops
+bltTest3 $graph axis x -justify left $dops
+bltTest3 $graph axis x -labeloffset yes $dops
+bltTest3 $graph axis x -limitscolor red $dops
+bltTest3 $graph axis x -limitsfont {times 18 bold italic} $dops
+bltTest3 $graph axis x -limitsformat "%e" $dops
+bltTest3 $graph axis x -linewidth 2 $dops
+bltTest3 $graph axis x -logscale yes $dops
+#bltTest3 $graph axis x -loosemin $dops
+#bltTest3 $graph axis x -loosemax $dops
+#bltTest3 $graph axis x -majorticks $dops
+#bltTest3 $graph axis x -max $dops
+#bltTest3 $graph axis x -min $dops
+#bltTest3 $graph axis x -minorticks $dops
+bltTest3 $graph axis x -relief groove $dops
+bltTest3 $graph axis x -rotate 45 $dops
+#bltTest3 $graph axis x -scrollcommand $dops
+#bltTest3 $graph axis x -scrollincrement $dops
+#bltTest3 $graph axis x -scrollmax $dops
+#bltTest3 $graph axis x -scrollmin $dops
+##bltTest3 $graph axis x -shiftby 10 $dops
+bltTest3 $graph axis x -showticks no $dops
+bltTest3 $graph axis x -stepsize 10 $dops
+bltTest3 $graph axis x -subdivisions 4 $dops
+##bltTest3 $graph axis x -tickanchor n $dops
+bltTest3 $graph axis x -tickfont {times 12 bold italic} $dops
+bltTest3 $graph axis x -ticklength 20 $dops
+bltTest3 $graph axis x -tickdefault 10 $dops
+bltTest3 $graph axis x -title {This is a Title} $dops
+bltTest3 $graph axis x -titlealternate yes $dops
+bltTest3 $graph axis x -titlecolor yellow $dops
+bltTest3 $graph axis x -titlefont {times 24 bold italic} $dops
 
 #bltCmd $graph axis activate foo
 #bltCmd $graph axis bind x
