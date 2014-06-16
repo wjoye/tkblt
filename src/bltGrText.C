@@ -141,12 +141,6 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
 					      ops->justify, 0, &w1, &h1);
 
-  Tk_FontMetrics fm;
-  Tk_GetFontMetrics(ops->font, &fm);
-
-  psPtr->setFont(ops->font);
-  psPtr->setForeground(ops->color);
-
   int xx =0;
   int yy =0;
   switch (ops->anchor) {
@@ -168,18 +162,15 @@ void TextStyle::printText(PostScript* psPtr, const char *text, int x, int y)
   case TK_JUSTIFY_RIGHT:  justify = "1";   break;
   }
 
-  //  cerr << text << ' ' << ops->angle << ' ' << '(' << x << ',' << y << ')' 
-  //       << ' ' << '(' << xx << ',' << yy << ')' << ' ' << justify << endl;
+  psPtr->setFont(ops->font);
+  psPtr->setForeground(ops->color);
 
   psPtr->format("%g %d %d [\n", ops->angle, x, y);
   Tcl_ResetResult(graphPtr_->interp_);
   Tk_TextLayoutToPostscript(graphPtr_->interp_, layout);
   psPtr->append(Tcl_GetStringResult(graphPtr_->interp_));
   Tcl_ResetResult(graphPtr_->interp_);
-  psPtr->format("] %d %g %g %s DrawText\n", 
-		fm.linespace, xx/-2.0, yy/-2.0, justify);
-
-  //  psPtr->printText(text, x, y);
+  psPtr->format("] %g %g %s DrawText\n", xx/-2.0, yy/-2.0, justify);
 }
 
 void TextStyle::resetStyle()

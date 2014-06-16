@@ -63,7 +63,6 @@ class PostScript {
   void printRectangle(int, int, int, int);
   void printPolygon(Point2d*, int);
   void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
-  void printText(const char*, double, double);
 
   void fillRectangle(double, double, int, int);
   void fillRectangles(XRectangle*, int);
