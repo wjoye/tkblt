@@ -2327,7 +2327,6 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
   delete [] polygon;
 }
 
-#define SQRT_PI		1.77245385090552
 #define S_RATIO		0.886226925452758
 void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 			      int nSymbolPts, Point2d* symbolPts)

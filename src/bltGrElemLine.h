@@ -114,7 +114,10 @@ class LineElement : public Element {
 
   void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
   void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawSCross(Display*, Drawable, LinePen*, int, Point2d*, int);
   void drawCross(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawDiamond(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawArrow(Display*, Drawable, LinePen*, int, Point2d*, int);
 
  protected:
   int scaleSymbol(int);
