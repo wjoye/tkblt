@@ -2068,9 +2068,9 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
   delete [] rectangles;
 }
 
-void LineElement::drawCross(Display *display, Drawable drawable, 
-			    LinePen* penPtr, 
-			    int nSymbolPts, Point2d *symbolPts, int r2)
+void LineElement::drawSCross(Display *display, Drawable drawable, 
+			     LinePen* penPtr, 
+			     int nSymbolPts, Point2d *symbolPts, int r2)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2121,6 +2121,212 @@ void LineElement::drawCross(Display *display, Drawable drawable,
   delete [] segments;
 }
 
+void LineElement::drawCross(Display *display, Drawable drawable, 
+			    LinePen* penPtr, 
+			    int nSymbolPts, Point2d *symbolPts, int r2)
+{
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  /*
+   *
+   *          2   3       The plus/cross symbol is a closed polygon
+   *                      of 12 points. The diagram to the left
+   *    0,12  1   4    5  represents the positions of the points
+   *           x,y        which are computed below. The extra
+   *     11  10   7    6  (thirteenth) point connects the first and
+   *                      last points.
+   *          9   8
+   */
+  int d = (r2 / 3);
+  XPoint pattern[13];
+  pattern[0].x = pattern[11].x = pattern[12].x = -r2;
+  pattern[2].x = pattern[1].x = pattern[10].x = pattern[9].x = -d;
+  pattern[3].x = pattern[4].x = pattern[7].x = pattern[8].x = d;
+  pattern[5].x = pattern[6].x = r2;
+  pattern[2].y = pattern[3].y = -r2;
+  pattern[0].y = pattern[1].y = pattern[4].y = pattern[5].y =
+    pattern[12].y = -d;
+  pattern[11].y = pattern[10].y = pattern[7].y = pattern[6].y = d;
+  pattern[9].y = pattern[8].y = r2;
+
+  if (penOps->symbol.type == SYMBOL_CROSS) {
+    // For the cross symbol, rotate the points by 45 degrees
+    for (int ii=0; ii<12; ii++) {
+      double dx = (double)pattern[ii].x * M_SQRT1_2;
+      double dy = (double)pattern[ii].y * M_SQRT1_2;
+      pattern[ii].x = dx - dy;
+      pattern[ii].y = dx + dy;
+    }
+    pattern[12] = pattern[0];
+  }
+
+  int count = 0;
+  XPoint* polygon = new XPoint[nSymbolPts*13];
+  XPoint* xpp = polygon;
+  Point2d *pp, *endp;
+  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+    if (DRAW_SYMBOL()) {
+      int rndx = pp->x;
+      int rndy = pp->y;
+      for (int ii=0; ii<13; ii++) {
+	xpp->x = pattern[ii].x + rndx;
+	xpp->y = pattern[ii].y + rndy;
+	xpp++;
+      }
+      count++;
+    }
+    symbolCounter_++;
+  }
+
+  if (penOps->symbol.fillGC) {
+    XPoint* xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 13)
+      XFillPolygon(graphPtr_->display_, drawable, 
+		   penOps->symbol.fillGC, xpp, 13, Complex, 
+		   CoordModeOrigin);
+  }
+
+  if (penOps->symbol.outlineWidth > 0) {
+    XPoint*xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 13)
+      XDrawLines(graphPtr_->display_, drawable, 
+		 penOps->symbol.outlineGC, xpp, 13, CoordModeOrigin);
+  }
+
+  delete [] polygon;
+}
+
+void LineElement::drawDiamond(Display *display, Drawable drawable, 
+			      LinePen* penPtr, 
+			      int nSymbolPts, Point2d *symbolPts, int r1)
+{
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  /*
+   *
+   *                      The plus symbol is a closed polygon
+   *            1         of 4 points. The diagram to the left
+   *                      represents the positions of the points
+   *       0,4 x,y  2     which are computed below. The extra
+   *                      (fifth) point connects the first and
+   *            3         last points.
+   *
+   */
+  XPoint pattern[5];
+  pattern[1].y = pattern[0].x = -r1;
+  pattern[2].y = pattern[3].x = pattern[0].y = pattern[1].x = 0;
+  pattern[3].y = pattern[2].x = r1;
+  pattern[4] = pattern[0];
+
+  int count = 0;
+  XPoint* polygon = new XPoint[nSymbolPts*5];
+  XPoint* xpp = polygon;
+  Point2d *pp, *endp;
+  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+    if (DRAW_SYMBOL()) {
+      int rndx = pp->x;
+      int rndy = pp->y;
+      for (int ii=0; ii<5; ii++) {
+	xpp->x = pattern[ii].x + rndx;
+	xpp->y = pattern[ii].y + rndy;
+	xpp++;
+      }
+      count++;
+    }
+    symbolCounter_++;
+  }
+
+  if (penOps->symbol.fillGC) {
+    XPoint* xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 5)
+      XFillPolygon(graphPtr_->display_, drawable, 
+		   penOps->symbol.fillGC, xpp, 5, Convex, CoordModeOrigin);
+  }
+
+  if (penOps->symbol.outlineWidth > 0) {
+    XPoint* xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 5)
+      XDrawLines(graphPtr_->display_, drawable, 
+		 penOps->symbol.outlineGC, xpp, 5, CoordModeOrigin);
+  }
+
+  delete [] polygon;
+}
+
+#define B_RATIO		1.3467736870885982
+#define TAN30		0.57735026918962573
+#define COS30		0.86602540378443871
+void LineElement::drawArrow(Display *display, Drawable drawable, 
+			    LinePen* penPtr, 
+			    int nSymbolPts, Point2d *symbolPts, int size)
+{
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  double b = size * B_RATIO * 0.7;
+  int b2 = b * 0.5;
+  int h2 = TAN30 * b2;
+  int h1 = b2 / COS30;
+  /*
+   *
+   *                      The triangle symbol is a closed polygon
+   *           0,3         of 3 points. The diagram to the left
+   *                      represents the positions of the points
+   *           x,y        which are computed below. The extra
+   *                      (fourth) point connects the first and
+   *      2           1   last points.
+   *
+   */
+
+  XPoint pattern[4];
+  if (penOps->symbol.type == SYMBOL_ARROW) {
+    pattern[3].x = pattern[0].x = 0;
+    pattern[3].y = pattern[0].y = h1;
+    pattern[1].x = b2;
+    pattern[2].y = pattern[1].y = -h2;
+    pattern[2].x = -b2;
+  } else {
+    pattern[3].x = pattern[0].x = 0;
+    pattern[3].y = pattern[0].y = -h1;
+    pattern[1].x = b2;
+    pattern[2].y = pattern[1].y = h2;
+    pattern[2].x = -b2;
+  }
+
+  int count = 0;
+  XPoint* polygon = new XPoint[nSymbolPts*4];
+  XPoint* xpp = polygon;
+  Point2d *pp, *endp;
+  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+    if (DRAW_SYMBOL()) {
+      int rndx = pp->x;
+      int rndy = pp->y;
+      for (int ii=0; ii<4; ii++) {
+	xpp->x = pattern[ii].x + rndx;
+	xpp->y = pattern[ii].y + rndy;
+	xpp++;
+      }
+      count++;
+    }
+    symbolCounter_++;
+  }
+
+  if (penOps->symbol.fillGC) {
+    XPoint* xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 4)
+      XFillPolygon(graphPtr_->display_, drawable, 
+		   penOps->symbol.fillGC, xpp, 4, Convex, CoordModeOrigin);
+  }
+
+  if (penOps->symbol.outlineWidth > 0) {
+    XPoint* xpp = polygon;
+    for (int ii=0; ii<count; ii++, xpp += 4)
+      XDrawLines(graphPtr_->display_, drawable, 
+		 penOps->symbol.outlineGC, xpp, 4, CoordModeOrigin);
+  }
+
+  delete [] polygon;
+}
+
 #define SQRT_PI		1.77245385090552
 #define S_RATIO		0.886226925452758
 void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
@@ -2128,7 +2334,6 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  XPoint pattern[13];
   if (size < 3) {
     if (penOps->symbol.fillGC) {
       XPoint* points = new XPoint[nSymbolPts];
@@ -2153,216 +2358,26 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
   switch (penOps->symbol.type) {
   case SYMBOL_NONE:
     break;
-
   case SYMBOL_SQUARE:
-    drawSquare(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r2);
+    drawSquare(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,r2);
     break;
-
   case SYMBOL_CIRCLE:
-    drawCircle(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r1);
+    drawCircle(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,r1);
     break;
-
   case SYMBOL_SPLUS:
   case SYMBOL_SCROSS:
-    drawCross(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r2);
+    drawSCross(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,r2);
     break;
-
   case SYMBOL_PLUS:
   case SYMBOL_CROSS:
-    {
-      /*
-       *
-       *          2   3       The plus/cross symbol is a closed polygon
-       *                      of 12 points. The diagram to the left
-       *    0,12  1   4    5  represents the positions of the points
-       *           x,y        which are computed below. The extra
-       *     11  10   7    6  (thirteenth) point connects the first and
-       *                      last points.
-       *          9   8
-       */
-      int d = (r2 / 3);
-      pattern[0].x = pattern[11].x = pattern[12].x = -r2;
-      pattern[2].x = pattern[1].x = pattern[10].x = pattern[9].x = -d;
-      pattern[3].x = pattern[4].x = pattern[7].x = pattern[8].x = d;
-      pattern[5].x = pattern[6].x = r2;
-      pattern[2].y = pattern[3].y = -r2;
-      pattern[0].y = pattern[1].y = pattern[4].y = pattern[5].y =
-	pattern[12].y = -d;
-      pattern[11].y = pattern[10].y = pattern[7].y = pattern[6].y = d;
-      pattern[9].y = pattern[8].y = r2;
-
-      if (penOps->symbol.type == SYMBOL_CROSS) {
-	// For the cross symbol, rotate the points by 45 degrees
-	for (int ii=0; ii<12; ii++) {
-	  double dx = (double)pattern[ii].x * M_SQRT1_2;
-	  double dy = (double)pattern[ii].y * M_SQRT1_2;
-	  pattern[ii].x = dx - dy;
-	  pattern[ii].y = dx + dy;
-	}
-	pattern[12] = pattern[0];
-      }
-
-      int count = 0;
-      XPoint* polygon = new XPoint[nSymbolPts*13];
-      XPoint* xpp = polygon;
-      Point2d *pp, *endp;
-      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	if (DRAW_SYMBOL()) {
-	  int rndx = pp->x;
-	  int rndy = pp->y;
-	  for (int ii=0; ii<13; ii++) {
-	    xpp->x = pattern[ii].x + rndx;
-	    xpp->y = pattern[ii].y + rndy;
-	    xpp++;
-	  }
-	  count++;
-	}
-	symbolCounter_++;
-      }
-
-      if (penOps->symbol.fillGC) {
-	XPoint* xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 13)
-	  XFillPolygon(graphPtr_->display_, drawable, 
-		       penOps->symbol.fillGC, xpp, 13, Complex, 
-		       CoordModeOrigin);
-      }
-
-      if (penOps->symbol.outlineWidth > 0) {
-	XPoint*xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 13)
-	  XDrawLines(graphPtr_->display_, drawable, 
-		     penOps->symbol.outlineGC, xpp, 13, CoordModeOrigin);
-      }
-
-      delete [] polygon;
-    }
+    drawCross(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,r2);
     break;
-
   case SYMBOL_DIAMOND:
-    {
-      /*
-       *
-       *                      The plus symbol is a closed polygon
-       *            1         of 4 points. The diagram to the left
-       *                      represents the positions of the points
-       *       0,4 x,y  2     which are computed below. The extra
-       *                      (fifth) point connects the first and
-       *            3         last points.
-       *
-       */
-      pattern[1].y = pattern[0].x = -r1;
-      pattern[2].y = pattern[3].x = pattern[0].y = pattern[1].x = 0;
-      pattern[3].y = pattern[2].x = r1;
-      pattern[4] = pattern[0];
-
-      int count = 0;
-      XPoint* polygon = new XPoint[nSymbolPts*5];
-      XPoint* xpp = polygon;
-      Point2d *pp, *endp;
-      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	if (DRAW_SYMBOL()) {
-	  int rndx = pp->x;
-	  int rndy = pp->y;
-	  for (int ii=0; ii<5; ii++) {
-	    xpp->x = pattern[ii].x + rndx;
-	    xpp->y = pattern[ii].y + rndy;
-	    xpp++;
-	  }
-	  count++;
-	}
-	symbolCounter_++;
-      }
-
-      if (penOps->symbol.fillGC) {
-	XPoint* xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 5)
-	  XFillPolygon(graphPtr_->display_, drawable, 
-		       penOps->symbol.fillGC, xpp, 5, Convex, CoordModeOrigin);
-      }
-
-      if (penOps->symbol.outlineWidth > 0) {
-	XPoint* xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 5)
-	  XDrawLines(graphPtr_->display_, drawable, 
-		     penOps->symbol.outlineGC, xpp, 5, CoordModeOrigin);
-      }
-
-      delete [] polygon;
-    }
+    drawDiamond(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,r1);
     break;
-
   case SYMBOL_TRIANGLE:
   case SYMBOL_ARROW:
-    {
-#define H_RATIO		1.1663402261671607
-#define B_RATIO		1.3467736870885982
-#define TAN30		0.57735026918962573
-#define COS30		0.86602540378443871
-
-      double b = size * B_RATIO * 0.7;
-      int b2 = b * 0.5;
-      int h2 = TAN30 * b2;
-      int h1 = b2 / COS30;
-      /*
-       *
-       *                      The triangle symbol is a closed polygon
-       *           0,3         of 3 points. The diagram to the left
-       *                      represents the positions of the points
-       *           x,y        which are computed below. The extra
-       *                      (fourth) point connects the first and
-       *      2           1   last points.
-       *
-       */
-
-      if (penOps->symbol.type == SYMBOL_ARROW) {
-	pattern[3].x = pattern[0].x = 0;
-	pattern[3].y = pattern[0].y = h1;
-	pattern[1].x = b2;
-	pattern[2].y = pattern[1].y = -h2;
-	pattern[2].x = -b2;
-      } else {
-	pattern[3].x = pattern[0].x = 0;
-	pattern[3].y = pattern[0].y = -h1;
-	pattern[1].x = b2;
-	pattern[2].y = pattern[1].y = h2;
-	pattern[2].x = -b2;
-      }
-
-      int count = 0;
-      XPoint* polygon = new XPoint[nSymbolPts*4];
-      XPoint* xpp = polygon;
-      Point2d *pp, *endp;
-      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	if (DRAW_SYMBOL()) {
-	  int rndx = pp->x;
-	  int rndy = pp->y;
-	  for (int ii=0; ii<4; ii++) {
-	    xpp->x = pattern[ii].x + rndx;
-	    xpp->y = pattern[ii].y + rndy;
-	    xpp++;
-	  }
-	  count++;
-	}
-	symbolCounter_++;
-      }
-
-      if (penOps->symbol.fillGC) {
-	XPoint* xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 4)
-	  XFillPolygon(graphPtr_->display_, drawable, 
-		       penOps->symbol.fillGC, xpp, 4, Convex, CoordModeOrigin);
-      }
-
-      if (penOps->symbol.outlineWidth > 0) {
-	XPoint* xpp = polygon;
-	for (int ii=0; ii<count; ii++, xpp += 4)
-	  XDrawLines(graphPtr_->display_, drawable, 
-		     penOps->symbol.outlineGC, xpp, 4, CoordModeOrigin);
-      }
-
-      delete [] polygon;
-    }
+    drawArrow(graphPtr_->display_, drawable, penPtr, nSymbolPts,symbolPts,size);
     break;
   }
 }
