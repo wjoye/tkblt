@@ -6,7 +6,7 @@ set graph [bltLineGraph $w]
 set mm [$graph marker create text tt -element data2 \
 	    -coords {1. 112} -text "Text\nMarker" -font {helvetica 24}]
 $graph element configure data1 -hide yes
-
+return
 echo "Testing Text Marker..."
 
 bltTest3 $graph marker $mm -anchor nw $dops
