@@ -48,14 +48,9 @@ using namespace Blt;
 #define SEARCH_Y	1
 #define SEARCH_BOTH	2
 
-#define SEARCH_POINTS	0	/* Search for closest data point. */
-#define SEARCH_TRACES	1	/* Search for closest point on trace.
-				 * Interpolate the connecting line segments if
-				 * necessary. */
-#define SEARCH_AUTO	2	/* Automatically determine whether to search
-				 * for data points or traces.  Look for traces
-				 * if the linewidth is > 0 and if there is
-				 * more than one data point. */
+#define SEARCH_POINTS	0	// closest data point.
+#define SEARCH_TRACES	1	// closest point on trace.
+#define SEARCH_AUTO	2	// traces if linewidth is > 0 and more than one
 
 #define MAX(a,b)	(((a)>(b))?(a):(b))
 #define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
@@ -587,6 +582,7 @@ void LineElement::draw(Drawable drawable)
   }
 
   symbolInterval_ = 0;
+  symbolCounter_ = 0;
 }
 
 void LineElement::drawActive(Drawable drawable)
@@ -674,7 +670,7 @@ void LineElement::print(PostScript* psPtr)
   if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
     printTraces(psPtr, penPtr);
 
-  // Draw symbols, error bars, values
+  // Symbols, error bars, values
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
@@ -698,17 +694,17 @@ void LineElement::print(PostScript* psPtr)
 
     if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X)) {
       psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
-				NULL, CapButt, JoinMiter);
+			       NULL, CapButt, JoinMiter);
       psPtr->printSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
 
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
       psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
-				NULL, CapButt, JoinMiter);
+			       NULL, CapButt, JoinMiter);
       psPtr->printSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
 
-    if ((stylePtr->symbolPts.length > 0) &&
+    if ((stylePtr->symbolPts.length > 0) && 
 	(penOps->symbol.type != SYMBOL_NONE))
       printSymbols(psPtr, penPtr, stylePtr->symbolSize, 
 		   stylePtr->symbolPts.length, stylePtr->symbolPts.points);
@@ -721,6 +717,7 @@ void LineElement::print(PostScript* psPtr)
   }
 
   symbolInterval_ = 0;
+  symbolCounter_ = 0;
 }
 
 void LineElement::printActive(PostScript* psPtr)
@@ -1975,20 +1972,22 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
   }
 }
 
-/*
- * XDrawLines() points: XMaxRequestSize(dpy) - 3
- * XFillPolygon() points:  XMaxRequestSize(dpy) - 4
- * XDrawSegments() segments:  (XMaxRequestSize(dpy) - 3) / 2
- * XDrawRectangles() rectangles:  (XMaxRequestSize(dpy) - 3) / 2
- * XFillRectangles() rectangles:  (XMaxRequestSize(dpy) - 3) / 2
- * XDrawArcs() or XFillArcs() arcs:  (XMaxRequestSize(dpy) - 3) / 3
- */
+long LineElement::maxRequestSize(Display* display, size_t elemSize) 
+{
+  long maxSizeBytes = 0L;
 
-#define MAX_DRAWLINES(d)	Blt_MaxRequestSize(d, sizeof(XPoint))
-#define MAX_DRAWPOLYGON(d)	Blt_MaxRequestSize(d, sizeof(XPoint))
-#define MAX_DRAWSEGMENTS(d)	Blt_MaxRequestSize(d, sizeof(XSegment))
-#define MAX_DRAWRECTANGLES(d)	Blt_MaxRequestSize(d, sizeof(XRectangle))
-#define MAX_DRAWARCS(d)		Blt_MaxRequestSize(d, sizeof(XArc))
+  if (maxSizeBytes == 0L) {
+    long size;
+    size = XExtendedMaxRequestSize(display);
+    if (size == 0) {
+      size = XMaxRequestSize(display);
+    }
+    size -= (4 * elemSize);
+    //	maxSizeBytes = (size * 4);
+    maxSizeBytes = size;
+  }
+  return (maxSizeBytes / elemSize);
+}
 
 void LineElement::drawCircle(Display *display, Drawable drawable, 
 			     LinePen* penPtr, 
@@ -2015,7 +2014,7 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  int reqSize = MAX_DRAWARCS(display);
+  int reqSize = maxRequestSize(display, sizeof(XArc));
   for (int ii=0; ii<count; ii+= reqSize) {
     int n = ((ii + reqSize) > count) ? (count - ii) : reqSize;
     if (penOps->symbol.fillGC)
@@ -2051,7 +2050,7 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  int reqSize = MAX_DRAWRECTANGLES(display) - 3;
+  int reqSize = maxRequestSize(display, sizeof(XRectangle)) - 3;
   XRectangle *rend;
   for (rp = rectangles, rend = rp + count; rp < rend; rp += reqSize) {
     int n = rend - rp;
@@ -2111,7 +2110,7 @@ void LineElement::drawSCross(Display *display, Drawable drawable,
 
   int nSegs = count * 2;
   // Always draw skinny symbols regardless of the outline width
-  int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display_);
+  int reqSize = maxRequestSize(graphPtr_->display_, sizeof(XSegment));
   for (int ii=0; ii<nSegs; ii+=reqSize) {
     int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
     XDrawSegments(graphPtr_->display_, drawable, 
@@ -2128,7 +2127,6 @@ void LineElement::drawCross(Display *display, Drawable drawable,
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   /*
-   *
    *          2   3       The plus/cross symbol is a closed polygon
    *                      of 12 points. The diagram to the left
    *    0,12  1   4    5  represents the positions of the points
@@ -2203,14 +2201,12 @@ void LineElement::drawDiamond(Display *display, Drawable drawable,
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   /*
-   *
    *                      The plus symbol is a closed polygon
    *            1         of 4 points. The diagram to the left
    *                      represents the positions of the points
    *       0,4 x,y  2     which are computed below. The extra
    *                      (fifth) point connects the first and
    *            3         last points.
-   *
    */
   XPoint pattern[5];
   pattern[1].y = pattern[0].x = -r1;
@@ -2267,14 +2263,12 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
   int h2 = TAN30 * b2;
   int h1 = b2 / COS30;
   /*
-   *
    *                      The triangle symbol is a closed polygon
    *           0,3         of 3 points. The diagram to the left
    *                      represents the positions of the points
    *           x,y        which are computed below. The extra
    *                      (fourth) point connects the first and
    *      2           1   last points.
-   *
    */
 
   XPoint pattern[4];
@@ -2383,7 +2377,7 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 
 void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 {
-  int np = Blt_MaxRequestSize(graphPtr_->display_, sizeof(XPoint)) - 1;
+  int np = maxRequestSize(graphPtr_->display_, sizeof(XPoint)) - 1;
   XPoint *points = (XPoint*)malloc((np + 1) * sizeof(XPoint));
 	    
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
@@ -2542,10 +2536,16 @@ void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
     break;
   }
 
+  int count =0;
   Point2d *pp, *endp;
-  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++)
-    psPtr->format("%g %g %g %s\n", pp->x, pp->y, 
-		  symbolSize, symbolMacros[pops->symbol.type]);
+  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
+    if (DRAW_SYMBOL()) {
+      psPtr->format("%g %g %g %s\n", pp->x, pp->y, symbolSize, 
+		    symbolMacros[pops->symbol.type]);
+      count++;
+    }
+    symbolCounter_++;
+  }
 }
 
 void LineElement::setLineAttributes(PostScript* psPtr, LinePen* penPtr)

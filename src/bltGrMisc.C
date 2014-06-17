@@ -329,23 +329,6 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
   return t;
 }
 
-long Blt_MaxRequestSize(Display *display, size_t elemSize) 
-{
-  static long maxSizeBytes = 0L;
-
-  if (maxSizeBytes == 0L) {
-    long size;
-    size = XExtendedMaxRequestSize(display);
-    if (size == 0) {
-      size = XMaxRequestSize(display);
-    }
-    size -= (4 * elemSize);
-    /*	maxSizeBytes = (size * 4); */
-    maxSizeBytes = size;
-  }
-  return (maxSizeBytes / elemSize);
-}
-
 Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
 {
   while (tkwin) {

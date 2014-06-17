@@ -112,6 +112,7 @@ class LineElement : public Element {
   int symbolCounter_;
   Blt_Chain traces_;
 
+  long maxRequestSize (Display*, size_t);
   void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
   void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);
   void drawSCross(Display*, Drawable, LinePen*, int, Point2d*, int);
