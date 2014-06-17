@@ -64,6 +64,9 @@ using namespace Blt;
 #define BROKEN_TRACE(dir,last,next) (((dir == INCREASING)&&(next < last)) || ((dir == DECREASING)&&(next > last)))
 #define DRAW_SYMBOL() (symbolInterval_==0||(symbolCounter_%symbolInterval_)==0)
 
+static const char* symbolMacros[] =
+  {"Li", "Sq", "Ci", "Di", "Pl", "Cr", "Sp", "Sc", "Tr", "Ar", "Bm", NULL};
+
 // OptionSpecs
 
 static const char* smoothObjOption[] = 
@@ -76,7 +79,6 @@ static Tk_ObjCustomOption styleObjOption =
   {
     "styles", StyleSetProc, StyleGetProc, StyleRestoreProc, StyleFreeProc, 
     (ClientData)sizeof(LineStyle)
-
   };
 
 extern Tk_ObjCustomOption penObjOption;
@@ -1988,9 +1990,9 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
 #define MAX_DRAWRECTANGLES(d)	Blt_MaxRequestSize(d, sizeof(XRectangle))
 #define MAX_DRAWARCS(d)		Blt_MaxRequestSize(d, sizeof(XArc))
 
-void LineElement::drawCircles(Display *display, Drawable drawable, 
-			      LinePen* penPtr, 
-			      int nSymbolPts, Point2d *symbolPts, int radius)
+void LineElement::drawCircle(Display *display, Drawable drawable, 
+			     LinePen* penPtr, 
+			     int nSymbolPts, Point2d *symbolPts, int radius)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2026,9 +2028,9 @@ void LineElement::drawCircles(Display *display, Drawable drawable,
   delete [] arcs;
 }
 
-void LineElement::drawSquares(Display *display, Drawable drawable, 
-			      LinePen* penPtr, 
-			      int nSymbolPts, Point2d *symbolPts, int r)
+void LineElement::drawSquare(Display *display, Drawable drawable, 
+			     LinePen* penPtr, 
+			     int nSymbolPts, Point2d *symbolPts, int r)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2066,10 +2068,63 @@ void LineElement::drawSquares(Display *display, Drawable drawable,
   delete [] rectangles;
 }
 
+void LineElement::drawCross(Display *display, Drawable drawable, 
+			    LinePen* penPtr, 
+			    int nSymbolPts, Point2d *symbolPts, int r2)
+{
+  LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+  XPoint pattern[4];
+  if (penOps->symbol.type == SYMBOL_SCROSS) {
+    r2 = (double)r2 * M_SQRT1_2;
+    pattern[3].y = pattern[2].x = pattern[0].x = pattern[0].y = -r2;
+    pattern[3].x = pattern[2].y = pattern[1].y = pattern[1].x = r2;
+  }
+  else {
+    pattern[0].y = pattern[1].y = pattern[2].x = pattern[3].x = 0;
+    pattern[0].x = pattern[2].y = -r2;
+    pattern[1].x = pattern[3].y = r2;
+  }
+
+  int count = 0;
+  XSegment* segments = new XSegment[nSymbolPts*2];
+  XSegment* sp = segments;
+  Point2d *pp, *endp;
+  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+    if (DRAW_SYMBOL()) {
+      int rndx = pp->x;
+      int rndy = pp->y;
+      sp->x1 = pattern[0].x + rndx;
+      sp->y1 = pattern[0].y + rndy;
+      sp->x2 = pattern[1].x + rndx;
+      sp->y2 = pattern[1].y + rndy;
+      sp++;
+      sp->x1 = pattern[2].x + rndx;
+      sp->y1 = pattern[2].y + rndy;
+      sp->x2 = pattern[3].x + rndx;
+      sp->y2 = pattern[3].y + rndy;
+      sp++;
+      count++;
+    }
+    symbolCounter_++;
+  }
+
+  int nSegs = count * 2;
+  // Always draw skinny symbols regardless of the outline width
+  int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display_);
+  for (int ii=0; ii<nSegs; ii+=reqSize) {
+    int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
+    XDrawSegments(graphPtr_->display_, drawable, 
+		  penOps->symbol.outlineGC, segments + ii, chunk);
+  }
+
+  delete [] segments;
+}
+
 #define SQRT_PI		1.77245385090552
 #define S_RATIO		0.886226925452758
-void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
-			      int size, int nSymbolPts, Point2d *symbolPts)
+void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
+			      int nSymbolPts, Point2d* symbolPts)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2100,63 +2155,16 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
     break;
 
   case SYMBOL_SQUARE:
-    drawSquares(graphPtr_->display_, drawable, penPtr, nSymbolPts,
-		symbolPts, r2);
+    drawSquare(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r2);
     break;
 
   case SYMBOL_CIRCLE:
-    drawCircles(graphPtr_->display_, drawable, penPtr, nSymbolPts,
-		symbolPts, r1);
+    drawCircle(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r1);
     break;
 
   case SYMBOL_SPLUS:
   case SYMBOL_SCROSS:
-    {
-      if (penOps->symbol.type == SYMBOL_SCROSS) {
-	r2 = (double)r2 * M_SQRT1_2;
-	pattern[3].y = pattern[2].x = pattern[0].x = pattern[0].y = -r2;
-	pattern[3].x = pattern[2].y = pattern[1].y = pattern[1].x = r2;
-      }
-      else {
-	pattern[0].y = pattern[1].y = pattern[2].x = pattern[3].x = 0;
-	pattern[0].x = pattern[2].y = -r2;
-	pattern[1].x = pattern[3].y = r2;
-      }
-
-      int count = 0;
-      XSegment* segments = new XSegment[nSymbolPts*2];
-      XSegment* sp = segments;
-      Point2d *pp, *endp;
-      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	if (DRAW_SYMBOL()) {
-	  int rndx = pp->x;
-	  int rndy = pp->y;
-	  sp->x1 = pattern[0].x + rndx;
-	  sp->y1 = pattern[0].y + rndy;
-	  sp->x2 = pattern[1].x + rndx;
-	  sp->y2 = pattern[1].y + rndy;
-	  sp++;
-	  sp->x1 = pattern[2].x + rndx;
-	  sp->y1 = pattern[2].y + rndy;
-	  sp->x2 = pattern[3].x + rndx;
-	  sp->y2 = pattern[3].y + rndy;
-	  sp++;
-	  count++;
-	}
-	symbolCounter_++;
-      }
-
-      int nSegs = count * 2;
-      // Always draw skinny symbols regardless of the outline width
-      int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display_);
-      for (int ii=0; ii<nSegs; ii+=reqSize) {
-	int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
-	XDrawSegments(graphPtr_->display_, drawable, 
-		      penOps->symbol.outlineGC, segments + ii, chunk);
-      }
-
-      delete [] segments;
-    }
+    drawCross(graphPtr_->display_, drawable, penPtr, nSymbolPts, symbolPts, r2);
     break;
 
   case SYMBOL_PLUS:
@@ -2371,14 +2379,12 @@ void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 
     bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
 
-    /*
-     * If the trace has to be split into separate XDrawLines calls, then the
-     * end point of the current trace is also the starting point of the new
-     * split.
-     */
-    /* Step 1. Convert and draw the first section of the trace.
-     *	   It may contain the entire trace. */
+    // If the trace has to be split into separate XDrawLines calls, then the
+    // end point of the current trace is also the starting point of the new
+    // split.
 
+    // Step 1. Convert and draw the first section of the trace.
+    // It may contain the entire trace.
     int n = MIN(np, tracePtr->screenPts.length); 
     for (xpp = points, count = 0; count < n; count++, xpp++) {
       xpp->x = tracePtr->screenPts.points[count].x;
@@ -2387,12 +2393,10 @@ void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
     XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);
 
-    /* Step 2. Next handle any full-size chunks left. */
-
+    // Step 2. Next handle any full-size chunks left.
     while ((count + np) < tracePtr->screenPts.length) {
       int j;
-
-      /* Start with the last point of the previous trace. */
+      // Start with the last point of the previous trace.
       points[0].x = points[np - 1].x;
       points[0].y = points[np - 1].y;
 	    
@@ -2404,11 +2408,10 @@ void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 		 np + 1, CoordModeOrigin);
     }
 	
-    /* Step 3. Convert and draw the remaining points. */
-
+    // Step 3. Convert and draw the remaining points.
     remaining = tracePtr->screenPts.length - count;
     if (remaining > 0) {
-      /* Start with the last point of the previous trace. */
+      // Start with the last point of the previous trace.
       points[0].x = points[np - 1].x;
       points[0].y = points[np - 1].y;
       for (xpp = points + 1; count < tracePtr->screenPts.length; count++, 
@@ -2460,11 +2463,14 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   } 
 }
 
-void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, int size)
+void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
+			       int nSymbolPts, Point2d *symbolPts)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
-  /* Set line and foreground attributes */
+  double symbolSize;
+
+  // Set line and foreground attributes
   XColor* fillColor = pops->symbol.fillColor;
   if (!fillColor)
     fillColor = pops->traceColor;
@@ -2481,15 +2487,11 @@ void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, in
     psPtr->setDashes(NULL);
   }
 
-  /*
-   * Build a PostScript procedure to draw the symbols.  For bitmaps, paint
-   * both the bitmap and its mask. Otherwise fill and stroke the path formed
-   * already.
-   */
+  // build DrawSymbolProc
   psPtr->append("\n/DrawSymbolProc {\n");
   switch (pops->symbol.type) {
   case SYMBOL_NONE:
-    break;				/* Do nothing */
+    break;
   default:
     psPtr->append("  ");
     psPtr->setBackground(fillColor);
@@ -2503,20 +2505,8 @@ void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, in
     break;
   }
   psPtr->append("} def\n\n");
-}
 
-void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
-			       int nSymbolPts, Point2d *symbolPts)
-{
-  LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
-
-  double symbolSize;
-  static const char* symbolMacros[] =
-    {
-      "Li", "Sq", "Ci", "Di", "Pl", "Cr", "Sp", "Sc", "Tr", "Ar", "Bm", NULL
-    };
-  getSymbolPostScriptInfo(psPtr, penPtr, size);
-
+  // set size
   symbolSize = (double)size;
   switch (pops->symbol.type) {
   case SYMBOL_SQUARE:
@@ -2539,10 +2529,9 @@ void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
   }
 
   Point2d *pp, *endp;
-  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
+  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++)
     psPtr->format("%g %g %g %s\n", pp->x, pp->y, 
 		  symbolSize, symbolMacros[pops->symbol.type]);
-  }
 }
 
 void LineElement::setLineAttributes(PostScript* psPtr, LinePen* penPtr)

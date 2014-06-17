@@ -112,6 +112,10 @@ class LineElement : public Element {
   int symbolCounter_;
   Blt_Chain traces_;
 
+  void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawCross(Display*, Drawable, LinePen*, int, Point2d*, int);
+
  protected:
   int scaleSymbol(int);
   void getScreenPoints(MapInfo*);
@@ -132,8 +136,6 @@ class LineElement : public Element {
   void resetLine();
   int closestTrace();
   void closestPoint(ClosestSearch*);
-  void drawCircles(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawSquares(Display*, Drawable, LinePen*, int, Point2d*, int);
   void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
   void drawTraces(Drawable, LinePen*);
   void drawValues(Drawable, LinePen*, int, Point2d*, int*);
@@ -144,7 +146,6 @@ class LineElement : public Element {
   double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
-  void getSymbolPostScriptInfo(PostScript*, LinePen*, int);
   int simplify(Point2d*, int, int, double, int*);
   double findSplit(Point2d*, int, int, int*);
 
