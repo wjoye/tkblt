@@ -77,56 +77,54 @@ static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
   const char* string;
 
   // string
-  {
-    int length;
-    string = Tcl_GetStringFromObj(*objPtr, &length);
-    if (length == 0) {
-      DestroySymbol(Tk_Display(tkwin), symbolPtr);
-      symbolPtr->type = SYMBOL_NONE;
-      return TCL_OK;
-    }
-    char c = string[0];
+  int length;
+  string = Tcl_GetStringFromObj(*objPtr, &length);
+  if (length == 0) {
+    DestroySymbol(Tk_Display(tkwin), symbolPtr);
+    symbolPtr->type = SYMBOL_NONE;
+    return TCL_OK;
+  }
 
-    for (GraphSymbolType* p = graphSymbols; p->name; p++) {
-      if (length < (int)p->minChars) {
-	continue;
-      }
-      if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
-	DestroySymbol(Tk_Display(tkwin), symbolPtr);
-	symbolPtr->type = p->type;
-	return TCL_OK;
-      }
+  char c = string[0];
+  for (GraphSymbolType* p = graphSymbols; p->name; p++) {
+    if (length < (int)p->minChars)
+      continue;
+
+    if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
+      DestroySymbol(Tk_Display(tkwin), symbolPtr);
+      symbolPtr->type = p->type;
+      return TCL_OK;
     }
   }
 
   // bitmap
-  {
-    Tcl_Obj **objv;
-    int objc;
-    if ((Tcl_ListObjGetElements(NULL, *objPtr, &objc, &objv) != TCL_OK) || 
-	(objc > 2)) {
+  Pixmap bitmap = None;
+  Pixmap mask = None;
+  Tcl_Obj** objv;
+  int objc;
+  if ((Tcl_ListObjGetElements(NULL, *objPtr, &objc, &objv) != TCL_OK) || 
+      (objc > 2))
+    goto error;
+
+  if (objc > 0) {
+    bitmap = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[0]);
+    if (!bitmap)
       goto error;
-    }
-    Pixmap bitmap = None;
-    Pixmap mask = None;
-    if (objc > 0) {
-      bitmap = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[0]);
-      if (!bitmap)
-	goto error;
-
-    }
-    if (objc > 1) {
-      mask = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[1]);
-      if (!mask)
-	goto error;
-    }
-    DestroySymbol(Tk_Display(tkwin), symbolPtr);
-    symbolPtr->bitmap = bitmap;
-    symbolPtr->mask = mask;
-    symbolPtr->type = SYMBOL_BITMAP;
-
-    return TCL_OK;
   }
+
+  if (objc > 1) {
+    mask = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[1]);
+    if (!mask)
+      goto error;
+  }
+
+  DestroySymbol(Tk_Display(tkwin), symbolPtr);
+  symbolPtr->bitmap = bitmap;
+  symbolPtr->mask = mask;
+  symbolPtr->type = SYMBOL_BITMAP;
+
+  return TCL_OK;
+
  error:
   Tcl_AppendResult(interp, "bad symbol \"", string, 
 		   "\": should be \"none\", \"circle\", \"square\", \"diamond\", "

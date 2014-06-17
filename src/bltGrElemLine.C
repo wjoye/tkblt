@@ -61,11 +61,8 @@ using namespace Blt;
 #define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
-#define BROKEN_TRACE(dir,last,next)			\
-  (((dir == INCREASING) && (next < last)) ||	\
-   ((dir == DECREASING) && (next > last)))
-
-#define DRAW_SYMBOL() ((symbolCounter_ % symbolInterval_) == 0)
+#define BROKEN_TRACE(dir,last,next) (((dir == INCREASING)&&(next < last)) || ((dir == DECREASING)&&(next > last)))
+#define DRAW_SYMBOL() (symbolInterval_==0||(symbolCounter_%symbolInterval_)==0)
 
 // OptionSpecs
 
@@ -548,6 +545,7 @@ void LineElement::draw(Drawable drawable)
   if ((Blt_Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
     drawTraces(drawable, penPtr);
 
+  // Symbols, error bars, values
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
@@ -559,7 +557,6 @@ void LineElement::draw(Drawable drawable)
     symbolCounter_ = 0;
   }
 
-  // Symbols, error bars, values
   unsigned int count =0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
@@ -676,10 +673,20 @@ void LineElement::print(PostScript* psPtr)
     printTraces(psPtr, penPtr);
 
   // Draw symbols, error bars, values
+  if (ops->reqMaxSymbols > 0) {
+    int total = 0;
+    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
+	 link; link = Blt_Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+      total += stylePtr->symbolPts.length;
+    }
+    symbolInterval_ = total / ops->reqMaxSymbols;
+    symbolCounter_ = 0;
+  }
+
   unsigned int count =0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-
     LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
@@ -692,22 +699,26 @@ void LineElement::print(PostScript* psPtr)
 				NULL, CapButt, JoinMiter);
       psPtr->printSegments(stylePtr->xeb.segments, stylePtr->xeb.length);
     }
+
     if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y)) {
       psPtr->setLineAttributes(colorPtr, penOps->errorBarLineWidth, 
 				NULL, CapButt, JoinMiter);
       psPtr->printSegments(stylePtr->yeb.segments, stylePtr->yeb.length);
     }
+
     if ((stylePtr->symbolPts.length > 0) &&
-	(penOps->symbol.type != SYMBOL_NONE)) {
+	(penOps->symbol.type != SYMBOL_NONE))
       printSymbols(psPtr, penPtr, stylePtr->symbolSize, 
 		   stylePtr->symbolPts.length, stylePtr->symbolPts.points);
-    }
-    if (penOps->valueShow != SHOW_NONE) {
+
+    if (penOps->valueShow != SHOW_NONE)
       printValues(psPtr, penPtr, stylePtr->symbolPts.length, 
 		  stylePtr->symbolPts.points, symbolPts_.map + count);
-    }
+
     count += stylePtr->symbolPts.length;
   }
+
+  symbolInterval_ = 0;
 }
 
 void LineElement::printActive(PostScript* psPtr)
@@ -764,6 +775,7 @@ void LineElement::printSymbol(PostScript* psPtr, double x, double y, int size)
 			      &penOps->traceDashes, CapButt, JoinMiter);
     psPtr->format("%g %g %d Li\n", x, y, size + size);
   }
+
   if (penOps->symbol.type != SYMBOL_NONE) {
     Point2d point;
     point.x = x;
@@ -1984,36 +1996,21 @@ void LineElement::drawCircles(Display *display, Drawable drawable,
 
   int count = 0;
   int s = radius + radius;
-  XArc *arcs = (XArc*)malloc(nSymbolPts * sizeof(XArc));
-
-  if (symbolInterval_ > 0) {
-    XArc* ap = arcs;
-    Point2d *pp, *pend;
-    for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
-      if (DRAW_SYMBOL()) {
-	ap->x = pp->x - radius;
-	ap->y = pp->y - radius;
-	ap->width = (unsigned short)s;
-	ap->height = (unsigned short)s;
-	ap->angle1 = 0;
-	ap->angle2 = 23040;
-	ap++, count++;
-      }
-      symbolCounter_++;
-    }
-  }
-  else {
-    XArc *ap = arcs;
-    Point2d *pp, *pend;
-    for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+  XArc* arcs = new XArc[nSymbolPts];
+  XArc* ap = arcs;
+  Point2d *pp, *pend;
+  for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+    if (DRAW_SYMBOL()) {
       ap->x = pp->x - radius;
       ap->y = pp->y - radius;
-      ap->width = ap->height = (unsigned short)s;
+      ap->width = (unsigned short)s;
+      ap->height = (unsigned short)s;
       ap->angle1 = 0;
       ap->angle2 = 23040;
       ap++;
+      count++;
     }
-    count = nSymbolPts;
+    symbolCounter_++;
   }
 
   int reqSize = MAX_DRAWARCS(display);
@@ -2026,7 +2023,7 @@ void LineElement::drawCircles(Display *display, Drawable drawable,
       XDrawArcs(display, drawable, penOps->symbol.outlineGC, arcs + ii, n);
   }
 
-  free(arcs);
+  delete [] arcs;
 }
 
 void LineElement::drawSquares(Display *display, Drawable drawable, 
@@ -2037,35 +2034,23 @@ void LineElement::drawSquares(Display *display, Drawable drawable,
 
   int count =0;
   int s = r + r;
-  XRectangle *rectangles = (XRectangle*)malloc(nSymbolPts * sizeof(XRectangle));
-
-  if (symbolInterval_ > 0) {
-    XRectangle* rp = rectangles;
-    Point2d *pp, *pend;
-    for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
-      if (DRAW_SYMBOL()) {
-	rp->x = pp->x - r;
-	rp->y = pp->y - r;
-	rp->width = rp->height = (unsigned short)s;
-	rp++, count++;
-      }
-      symbolCounter_++;
-    }
-  }
-  else {
-    XRectangle* rp = rectangles;
-    Point2d *pp, *pend;
-    for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+  XRectangle* rectangles = new XRectangle[nSymbolPts];
+  XRectangle* rp = rectangles;
+  Point2d *pp, *pend;
+  for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+    if (DRAW_SYMBOL()) {
       rp->x = pp->x - r;
       rp->y = pp->y - r;
-      rp->width = rp->height = (unsigned short)s;
+      rp->width = (unsigned short)s;
+      rp->height = (unsigned short)s;
       rp++;
+      count++;
     }
-    count = nSymbolPts;
+    symbolCounter_++;
   }
 
   int reqSize = MAX_DRAWRECTANGLES(display) - 3;
-  XRectangle *rp, *rend;
+  XRectangle *rend;
   for (rp = rectangles, rend = rp + count; rp < rend; rp += reqSize) {
     int n = rend - rp;
     if (n > reqSize)
@@ -2078,7 +2063,7 @@ void LineElement::drawSquares(Display *display, Drawable drawable,
       XDrawRectangles(display, drawable, penOps->symbol.outlineGC, rp, n);
   }
 
-  free(rectangles);
+  delete [] rectangles;
 }
 
 #define SQRT_PI		1.77245385090552
@@ -2089,11 +2074,9 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
   XPoint pattern[13];
-  int count;
-
   if (size < 3) {
     if (penOps->symbol.fillGC) {
-      XPoint* points = (XPoint*)malloc(nSymbolPts * sizeof(XPoint));
+      XPoint* points = new XPoint[nSymbolPts];
       XPoint* xpp = points;
       Point2d *pp, *endp;
       for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
@@ -2103,8 +2086,9 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
       }
       XDrawPoints(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
 		  points, nSymbolPts, CoordModeOrigin);
-      free(points);
+      delete [] points;
     }
+
     return;
   }
 
@@ -2139,35 +2123,12 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	pattern[1].x = pattern[3].y = r2;
       }
 
-      XSegment *segments = (XSegment*)malloc(nSymbolPts * 2 * sizeof(XSegment));
-      if (symbolInterval_ > 0) {
-	XSegment* sp = segments;
-	count = 0;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL()) {
-	    int rndx = pp->x;
-	    int rndy = pp->y;
-	    sp->x1 = pattern[0].x + rndx;
-	    sp->y1 = pattern[0].y + rndy;
-	    sp->x2 = pattern[1].x + rndx;
-	    sp->y2 = pattern[1].y + rndy;
-	    sp++;
-	    sp->x1 = pattern[2].x + rndx;
-	    sp->y1 = pattern[2].y + rndy;
-	    sp->x2 = pattern[3].x + rndx;
-	    sp->y2 = pattern[3].y + rndy;
-	    sp++;
-	    count++;
-	  }
-	  symbolCounter_++;
-	}
-      }
-      else {
-	XSegment* sp = segments;
-	count = nSymbolPts;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+      int count = 0;
+      XSegment* segments = new XSegment[nSymbolPts*2];
+      XSegment* sp = segments;
+      Point2d *pp, *endp;
+      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+	if (DRAW_SYMBOL()) {
 	  int rndx = pp->x;
 	  int rndy = pp->y;
 	  sp->x1 = pattern[0].x + rndx;
@@ -2180,8 +2141,11 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	  sp->x2 = pattern[3].x + rndx;
 	  sp->y2 = pattern[3].y + rndy;
 	  sp++;
+	  count++;
 	}
+	symbolCounter_++;
       }
+
       int nSegs = count * 2;
       // Always draw skinny symbols regardless of the outline width
       int reqSize = MAX_DRAWSEGMENTS(graphPtr_->display_);
@@ -2190,19 +2154,14 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	XDrawSegments(graphPtr_->display_, drawable, 
 		      penOps->symbol.outlineGC, segments + ii, chunk);
       }
-      free(segments);
+
+      delete [] segments;
     }
     break;
 
   case SYMBOL_PLUS:
   case SYMBOL_CROSS:
     {
-      XPoint *polygon;
-      int d;			/* Small delta for cross/plus
-				 * thickness */
-
-      d = (r2 / 3);
-
       /*
        *
        *          2   3       The plus/cross symbol is a closed polygon
@@ -2213,7 +2172,7 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
        *                      last points.
        *          9   8
        */
-
+      int d = (r2 / 3);
       pattern[0].x = pattern[11].x = pattern[12].x = -r2;
       pattern[2].x = pattern[1].x = pattern[10].x = pattern[9].x = -d;
       pattern[3].x = pattern[4].x = pattern[7].x = pattern[8].x = d;
@@ -2225,7 +2184,7 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
       pattern[9].y = pattern[8].y = r2;
 
       if (penOps->symbol.type == SYMBOL_CROSS) {
-	/* For the cross symbol, rotate the points by 45 degrees. */
+	// For the cross symbol, rotate the points by 45 degrees
 	for (int ii=0; ii<12; ii++) {
 	  double dx = (double)pattern[ii].x * M_SQRT1_2;
 	  double dy = (double)pattern[ii].y * M_SQRT1_2;
@@ -2234,29 +2193,13 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	}
 	pattern[12] = pattern[0];
       }
-      polygon = (XPoint*)malloc(nSymbolPts * 13 * sizeof(XPoint));
-      if (symbolInterval_ > 0) {
-	count = 0;
-	XPoint* xpp = polygon;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL()) {
-	    int rndx = pp->x;
-	    int rndy = pp->y;
-	    for (int ii=0; ii<13; ii++) {
-	      xpp->x = pattern[ii].x + rndx;
-	      xpp->y = pattern[ii].y + rndy;
-	      xpp++;
-	    }
-	    count++;
-	  }
-	  symbolCounter_++;
-	}
-      }
-      else {
-	XPoint* xpp = polygon;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+
+      int count = 0;
+      XPoint* polygon = new XPoint[nSymbolPts*13];
+      XPoint* xpp = polygon;
+      Point2d *pp, *endp;
+      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+	if (DRAW_SYMBOL()) {
 	  int rndx = pp->x;
 	  int rndy = pp->y;
 	  for (int ii=0; ii<13; ii++) {
@@ -2264,32 +2207,32 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	    xpp->y = pattern[ii].y + rndy;
 	    xpp++;
 	  }
+	  count++;
 	}
-	count = nSymbolPts;
+	symbolCounter_++;
       }
+
       if (penOps->symbol.fillGC) {
-	int ii;
-	XPoint *xpp;
-	for (xpp = polygon, ii = 0; ii<count; ii++, xpp += 13)
+	XPoint* xpp = polygon;
+	for (int ii=0; ii<count; ii++, xpp += 13)
 	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 13, Complex, 
 		       CoordModeOrigin);
       }
+
       if (penOps->symbol.outlineWidth > 0) {
-	int ii;
-	XPoint *xpp;
-	for (xpp = polygon, ii=0; ii<count; ii++, xpp += 13)
+	XPoint*xpp = polygon;
+	for (int ii=0; ii<count; ii++, xpp += 13)
 	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 13, CoordModeOrigin);
       }
-      free(polygon);
+
+      delete [] polygon;
     }
     break;
 
   case SYMBOL_DIAMOND:
     {
-      XPoint *polygon;
-
       /*
        *
        *                      The plus symbol is a closed polygon
@@ -2305,31 +2248,12 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
       pattern[3].y = pattern[2].x = r1;
       pattern[4] = pattern[0];
 
-      polygon = (XPoint*)malloc(nSymbolPts * 5 * sizeof(XPoint));
-      if (symbolInterval_ > 0) {
-	Point2d *pp, *endp;
-	XPoint *xpp;
-
-	xpp = polygon;
-	count = 0;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL()) {
-	    int rndx = pp->x;
-	    int rndy = pp->y;
-	    for (int ii=0; ii<5; ii++) {
-	      xpp->x = pattern[ii].x + rndx;
-	      xpp->y = pattern[ii].y + rndy;
-	      xpp++;
-	    }
-	    count++;
-	  }
-	  symbolCounter_++;
-	}
-      }
-      else {
-	XPoint* xpp = polygon;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+      int count = 0;
+      XPoint* polygon = new XPoint[nSymbolPts*5];
+      XPoint* xpp = polygon;
+      Point2d *pp, *endp;
+      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+	if (DRAW_SYMBOL()) {
 	  int rndx = pp->x;
 	  int rndy = pp->y;
 	  for (int ii=0; ii<5; ii++) {
@@ -2337,32 +2261,32 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	    xpp->y = pattern[ii].y + rndy;
 	    xpp++;
 	  }
+	  count++;
 	}
-	count = nSymbolPts;
+	symbolCounter_++;
       }
+
       if (penOps->symbol.fillGC) {
-	XPoint *xpp;
-	int i;
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 5)
+	XPoint* xpp = polygon;
+	for (int ii=0; ii<count; ii++, xpp += 5)
 	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 5, Convex, CoordModeOrigin);
       }
+
       if (penOps->symbol.outlineWidth > 0) {
-	XPoint *xpp;
-	int i;
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 5) {
+	XPoint* xpp = polygon;
+	for (int ii=0; ii<count; ii++, xpp += 5)
 	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 5, CoordModeOrigin);
-	}
       }
-      free(polygon);
+
+      delete [] polygon;
     }
     break;
 
   case SYMBOL_TRIANGLE:
   case SYMBOL_ARROW:
     {
-      XPoint *polygon;
 #define H_RATIO		1.1663402261671607
 #define B_RATIO		1.3467736870885982
 #define TAN30		0.57735026918962573
@@ -2396,31 +2320,13 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	pattern[2].y = pattern[1].y = h2;
 	pattern[2].x = -b2;
       }
-      polygon = (XPoint*)malloc(nSymbolPts * 4 * sizeof(XPoint));
-      if (symbolInterval_ > 0) {
-	Point2d *pp, *endp;
-	XPoint *xpp;
 
-	xpp = polygon;
-	count = 0;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL()) {
-	    int rndx = pp->x;
-	    int rndy = pp->y;
-	    for (int ii=0; ii<4; ii++) {
-	      xpp->x = pattern[ii].x + rndx;
-	      xpp->y = pattern[ii].y + rndy;
-	      xpp++;
-	    }
-	    count++;
-	  }
-	  symbolCounter_++;
-	}
-      }
-      else {
-	XPoint* xpp = polygon;
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+      int count = 0;
+      XPoint* polygon = new XPoint[nSymbolPts*4];
+      XPoint* xpp = polygon;
+      Point2d *pp, *endp;
+      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+	if (DRAW_SYMBOL()) {
 	  int rndx = pp->x;
 	  int rndy = pp->y;
 	  for (int ii=0; ii<4; ii++) {
@@ -2428,43 +2334,41 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	    xpp->y = pattern[ii].y + rndy;
 	    xpp++;
 	  }
+	  count++;
 	}
-	count = nSymbolPts;
+	symbolCounter_++;
       }
+
       if (penOps->symbol.fillGC) {
-	int i;
 	XPoint* xpp = polygon;
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 4)
+	for (int ii=0; ii<count; ii++, xpp += 4)
 	  XFillPolygon(graphPtr_->display_, drawable, 
 		       penOps->symbol.fillGC, xpp, 4, Convex, CoordModeOrigin);
       }
+
       if (penOps->symbol.outlineWidth > 0) {
-	int i;
 	XPoint* xpp = polygon;
-	for (xpp = polygon, i = 0; i < count; i++, xpp += 4) {
+	for (int ii=0; ii<count; ii++, xpp += 4)
 	  XDrawLines(graphPtr_->display_, drawable, 
 		     penOps->symbol.outlineGC, xpp, 4, CoordModeOrigin);
-	}
       }
-      free(polygon);
+
+      delete [] polygon;
     }
     break;
 
   case SYMBOL_BITMAP:
     {
-      int w, h, bw, bh;
-      double scale, sx, sy;
-      int dx, dy;
-
+      int w, h;
       Tk_SizeOfBitmap(graphPtr_->display_, penOps->symbol.bitmap, &w, &h);
 
       // Compute the size of the scaled bitmap.  Stretch the bitmap to fit
       // a nxn bounding box.
-      sx = (double)size / (double)w;
-      sy = (double)size / (double)h;
-      scale = MIN(sx, sy);
-      bw = (int)(w * scale);
-      bh = (int)(h * scale);
+      double sx = (double)size / (double)w;
+      double sy = (double)size / (double)h;
+      double scale = MIN(sx, sy);
+      int bw = (int)(w * scale);
+      int bh = (int)(h * scale);
 
       XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, None);
       if (penOps->symbol.mask != None)
@@ -2475,8 +2379,8 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 	XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, 
 		     penOps->symbol.bitmap);
 
-      dx = bw / 2;
-      dy = bh / 2;
+      int dx = bw / 2;
+      int dy = bh / 2;
 
       if (symbolInterval_ > 0) {
 	Point2d *pp, *endp;
@@ -2492,19 +2396,6 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
 		       penOps->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	  }
 	  symbolCounter_++;
-	}
-      }
-      else {
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  int x = pp->x - dx;
-	  int y = pp->y - dy;
-	  if ((penOps->symbol.fillGC == NULL) || 
-	      (penOps->symbol.mask != None))
-	    XSetClipOrigin(graphPtr_->display_, 
-			   penOps->symbol.outlineGC, x, y);
-	  XCopyPlane(graphPtr_->display_, penOps->symbol.bitmap, drawable,
-		     penOps->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
 	}
       }
     }
