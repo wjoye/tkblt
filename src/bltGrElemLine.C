@@ -661,6 +661,7 @@ void LineElement::print(PostScript* psPtr)
   // Draw fill area
   if (ops->fillBg && fillPts_) {
     psPtr->append("% start fill area\n");
+    psPtr->setBackground(ops->fillBg);
     psPtr->printPolyline(fillPts_, nFillPts_);
     psPtr->append("gsave fill grestore\n");
     psPtr->append("% end fill area\n");

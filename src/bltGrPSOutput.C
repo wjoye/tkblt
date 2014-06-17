@@ -228,6 +228,12 @@ void PostScript::setForeground(XColor* colorPtr)
     append(" currentgray setgray\n");
 }
 
+void PostScript::setBackground(Tk_3DBorder border)
+{
+  TkBorder* borderPtr = (TkBorder*)border;
+  setBackground(borderPtr->bgColorPtr);
+}
+
 void PostScript::setFont(Tk_Font font) 
 {
   Tcl_DString psdstr;

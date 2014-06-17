@@ -7,7 +7,7 @@ $graph element configure data1 -dash {8 3} -showvalues y -smooth step -symbol ci
 
 $graph pen create foo -showvalues y -symbol circle -dashes {8 3} -color purple -linewidth 2
 $graph element activate data3
-return
+
 echo "Testing Line Element.."
 
 bltTest3 $graph element data3 -activepen foo $dops

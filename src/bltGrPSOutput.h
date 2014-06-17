@@ -73,6 +73,7 @@ class PostScript {
   void setLineWidth(int);
   void setBackground(XColor*);
   void setForeground(XColor*);
+  void setBackground(Tk_3DBorder);
   void setLineAttributes(XColor*,int, Dashes*, int, int);
   void setClearBackground();
   void setDashes(Dashes*);
