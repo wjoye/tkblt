@@ -97,39 +97,9 @@ static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
     }
   }
 
-  // bitmap
-  Pixmap bitmap = None;
-  Pixmap mask = None;
-  Tcl_Obj** objv;
-  int objc;
-  if ((Tcl_ListObjGetElements(NULL, *objPtr, &objc, &objv) != TCL_OK) || 
-      (objc > 2))
-    goto error;
-
-  if (objc > 0) {
-    bitmap = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[0]);
-    if (!bitmap)
-      goto error;
-  }
-
-  if (objc > 1) {
-    mask = Tk_AllocBitmapFromObj((Tcl_Interp*)NULL, tkwin, objv[1]);
-    if (!mask)
-      goto error;
-  }
-
-  DestroySymbol(Tk_Display(tkwin), symbolPtr);
-  symbolPtr->bitmap = bitmap;
-  symbolPtr->mask = mask;
-  symbolPtr->type = SYMBOL_BITMAP;
-
-  return TCL_OK;
-
- error:
-  Tcl_AppendResult(interp, "bad symbol \"", string, 
-		   "\": should be \"none\", \"circle\", \"square\", \"diamond\", "
-		   "\"plus\", \"cross\", \"splus\", \"scross\", \"triangle\", "
-		   "\"arrow\" or the name of a bitmap", NULL);
+  Tcl_AppendResult(interp, "bad symbol ", string, 
+		   ": should be none, circle, square, diamond, plus, cross,",
+		   " splus, scross, triangle, arrow", NULL);
   return TCL_ERROR;
 }
 
@@ -138,35 +108,15 @@ static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin,
 {
   Symbol* symbolPtr = (Symbol*)(widgRec + offset);
 
-  Tcl_Obj* ll[2];
-  if (symbolPtr->type == SYMBOL_BITMAP) {
-    ll[0] = 
-      Tcl_NewStringObj(Tk_NameOfBitmap(Tk_Display(tkwin),symbolPtr->bitmap),-1);
-    ll[1] = symbolPtr->mask ? 
-      Tcl_NewStringObj(Tk_NameOfBitmap(Tk_Display(tkwin),symbolPtr->mask),-1) :
-      Tcl_NewStringObj("", -1);
-    return Tcl_NewListObj(2, ll);
-  }
-  else {
-    for (GraphSymbolType* p = graphSymbols; p->name; p++) {
-      if (p->type == symbolPtr->type)
-	return Tcl_NewStringObj(p->name, -1);
-    }
-    return Tcl_NewStringObj("?unknown symbol type?", -1);
-  }
+  for (GraphSymbolType* p = graphSymbols; p->name; p++)
+    if (p->type == symbolPtr->type)
+      return Tcl_NewStringObj(p->name, -1);
+
+  return Tcl_NewStringObj("?unknown symbol type?", -1);
 }
 
 static void DestroySymbol(Display* display, Symbol* symbolPtr)
 {
-  if (symbolPtr->bitmap != None) {
-    Tk_FreeBitmap(display, symbolPtr->bitmap);
-    symbolPtr->bitmap = None;
-  }
-  if (symbolPtr->mask != None) {
-    Tk_FreeBitmap(display, symbolPtr->mask);
-    symbolPtr->mask = None;
-  }
-
   symbolPtr->type = SYMBOL_NONE;
 }
 
@@ -232,8 +182,6 @@ LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   traceGC_ =NULL;
   errorBarGC_ =NULL;
 
-  ops->symbol.bitmap = None;
-  ops->symbol.mask = None;
   ops->symbol.type = SYMBOL_NONE;
 
   ops->valueStyle.anchor =TK_ANCHOR_NW;
@@ -255,8 +203,6 @@ LinePen::LinePen(Graph* graphPtr, const char* name, void* options)
   traceGC_ =NULL;
   errorBarGC_ =NULL;
 
-  ops->symbol.bitmap = None;
-  ops->symbol.mask = None;
   ops->symbol.type = SYMBOL_NONE;
 
   ops->valueStyle.anchor =TK_ANCHOR_NW;
@@ -283,16 +229,6 @@ LinePen::~LinePen()
 
   if (ops->symbol.fillGC)
     Tk_FreeGC(graphPtr_->display_, ops->symbol.fillGC);
-
-  if (ops->symbol.bitmap != None) {
-    Tk_FreeBitmap(graphPtr_->display_, ops->symbol.bitmap);
-    ops->symbol.bitmap = None;
-  }
-
-  if (ops->symbol.mask != None) {
-    Tk_FreeBitmap(graphPtr_->display_, ops->symbol.mask);
-    ops->symbol.mask = None;
-  }
 }
 
 int LinePen::configure()
@@ -307,24 +243,6 @@ int LinePen::configure()
       colorPtr = ops->traceColor;
     XGCValues gcValues;
     gcValues.foreground = colorPtr->pixel;
-    if (ops->symbol.type == SYMBOL_BITMAP) {
-      colorPtr = ops->symbol.fillColor;
-      if (!colorPtr)
-	colorPtr = ops->traceColor;
-
-      if (colorPtr) {
-	gcValues.background = colorPtr->pixel;
-	gcMask |= GCBackground;
-	if (ops->symbol.mask != None) {
-	  gcValues.clip_mask = ops->symbol.mask;
-	  gcMask |= GCClipMask;
-	}
-      }
-      else {
-	gcValues.clip_mask = ops->symbol.bitmap;
-	gcMask |= GCClipMask;
-      }
-    }
     gcValues.line_width = ops->symbol.outlineWidth;
     GC newGC = Tk_GetGC(graphPtr_->tkwin_, gcMask, &gcValues);
     if (ops->symbol.outlineGC)

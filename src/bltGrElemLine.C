@@ -2356,50 +2356,6 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr,
       delete [] polygon;
     }
     break;
-
-  case SYMBOL_BITMAP:
-    {
-      int w, h;
-      Tk_SizeOfBitmap(graphPtr_->display_, penOps->symbol.bitmap, &w, &h);
-
-      // Compute the size of the scaled bitmap.  Stretch the bitmap to fit
-      // a nxn bounding box.
-      double sx = (double)size / (double)w;
-      double sy = (double)size / (double)h;
-      double scale = MIN(sx, sy);
-      int bw = (int)(w * scale);
-      int bh = (int)(h * scale);
-
-      XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, None);
-      if (penOps->symbol.mask != None)
-	XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC,
-		     penOps->symbol.mask);
-
-      if (penOps->symbol.fillGC == NULL)
-	XSetClipMask(graphPtr_->display_, penOps->symbol.outlineGC, 
-		     penOps->symbol.bitmap);
-
-      int dx = bw / 2;
-      int dy = bh / 2;
-
-      if (symbolInterval_ > 0) {
-	Point2d *pp, *endp;
-	for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	  if (DRAW_SYMBOL()) {
-	    int x = pp->x - dx;
-	    int y = pp->y - dy;
-	    if ((penOps->symbol.fillGC == NULL) || 
-		(penOps->symbol.mask != None))
-	      XSetClipOrigin(graphPtr_->display_,
-			     penOps->symbol.outlineGC, x, y);
-	    XCopyPlane(graphPtr_->display_, penOps->symbol.bitmap, drawable,
-		       penOps->symbol.outlineGC, 0, 0, bw, bh, x, y, 1);
-	  }
-	  symbolCounter_++;
-	}
-      }
-    }
-    break;
   }
 }
 
@@ -2534,34 +2490,6 @@ void LineElement::getSymbolPostScriptInfo(PostScript* psPtr, LinePen* penPtr, in
   switch (pops->symbol.type) {
   case SYMBOL_NONE:
     break;				/* Do nothing */
-  case SYMBOL_BITMAP:
-    {
-      int w, h;
-      double sx, sy, scale;
-
-      /*
-       * Compute how much to scale the bitmap.  Don't let the scaled
-       * bitmap exceed the bounding square for the symbol.
-       */
-      Tk_SizeOfBitmap(graphPtr_->display_, pops->symbol.bitmap, &w, &h);
-      sx = (double)size / (double)w;
-      sy = (double)size / (double)h;
-      scale = MIN(sx, sy);
-
-      if (pops->symbol.mask != None) {
-	psPtr->format("%%Bitmap mask is \"%s\"\n",
-		      Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.mask));
-	psPtr->setBackground(fillColor);
-	psPtr->printBitmap(graphPtr_->display_, pops->symbol.mask, scale, 
-			   scale);
-      }
-      psPtr->format("%%Bitmap symbol is \"%s\"\n",
-		    Tk_NameOfBitmap(graphPtr_->display_,pops->symbol.bitmap));
-      psPtr->setForeground(outlineColor);
-      psPtr->printBitmap(graphPtr_->display_, pops->symbol.bitmap, scale,
-			 scale);
-    }
-    break;
   default:
     psPtr->append("  ");
     psPtr->setBackground(fillColor);

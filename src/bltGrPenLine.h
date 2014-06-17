@@ -34,8 +34,7 @@
 
 typedef enum {
   SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
-  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW,
-  SYMBOL_BITMAP
+  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW
 } SymbolType;
 
 typedef struct {
@@ -46,10 +45,6 @@ typedef struct {
   GC outlineGC;
   XColor* fillColor;
   GC fillGC;
-
-  // The last two fields are used only for bitmap symbols
-  Pixmap bitmap;
-  Pixmap mask;
 } Symbol;
 
 typedef struct {
