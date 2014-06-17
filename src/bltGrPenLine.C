@@ -38,87 +38,10 @@
 
 using namespace Blt;
 
-typedef struct {
-  const char* name;
-  unsigned int minChars;
-  SymbolType type;
-} GraphSymbolType;
-
-static GraphSymbolType graphSymbols[] = {
-  { "arrow",	  1, SYMBOL_ARROW,	},
-  { "circle",	  2, SYMBOL_CIRCLE,	},
-  { "cross",	  2, SYMBOL_CROSS,	}, 
-  { "diamond",  1, SYMBOL_DIAMOND,	}, 
-  { "none",	  1, SYMBOL_NONE,	}, 
-  { "plus",	  1, SYMBOL_PLUS,	}, 
-  { "scross",	  2, SYMBOL_SCROSS,	}, 
-  { "splus",	  2, SYMBOL_SPLUS,	}, 
-  { "square",	  2, SYMBOL_SQUARE,	}, 
-  { "triangle", 1, SYMBOL_TRIANGLE,	}, 
-  { NULL,       0, SYMBOL_NONE,		}, 
-};
+const char* symbolObjOption[] = 
+  {"none", "square", "circle", "diamond", "plus", "cross", "splus", "scross", "triangle", "arrow", NULL};
 
 // Defs
-
-static void DestroySymbol(Display *display, Symbol *symbolPtr);
-
-static Tk_CustomOptionSetProc SymbolSetProc;
-static Tk_CustomOptionGetProc SymbolGetProc;
-Tk_ObjCustomOption symbolObjOption =
-  {
-    "symbol", SymbolSetProc, SymbolGetProc, NULL, NULL, NULL
-  };
-
-static int SymbolSetProc(ClientData clientData, Tcl_Interp* interp,
-			 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
-			 int offset, char* save, int flags)
-{
-  Symbol* symbolPtr = (Symbol*)(widgRec + offset);
-  const char* string;
-
-  // string
-  int length;
-  string = Tcl_GetStringFromObj(*objPtr, &length);
-  if (length == 0) {
-    DestroySymbol(Tk_Display(tkwin), symbolPtr);
-    symbolPtr->type = SYMBOL_NONE;
-    return TCL_OK;
-  }
-
-  char c = string[0];
-  for (GraphSymbolType* p = graphSymbols; p->name; p++) {
-    if (length < (int)p->minChars)
-      continue;
-
-    if ((c == p->name[0]) && (strncmp(string, p->name, length) == 0)) {
-      DestroySymbol(Tk_Display(tkwin), symbolPtr);
-      symbolPtr->type = p->type;
-      return TCL_OK;
-    }
-  }
-
-  Tcl_AppendResult(interp, "bad symbol ", string, 
-		   ": should be none, circle, square, diamond, plus, cross,",
-		   " splus, scross, triangle, arrow", NULL);
-  return TCL_ERROR;
-}
-
-static Tcl_Obj* SymbolGetProc(ClientData clientData, Tk_Window tkwin, 
-			      char* widgRec, int offset)
-{
-  Symbol* symbolPtr = (Symbol*)(widgRec + offset);
-
-  for (GraphSymbolType* p = graphSymbols; p->name; p++)
-    if (p->type == symbolPtr->type)
-      return Tcl_NewStringObj(p->name, -1);
-
-  return Tcl_NewStringObj("?unknown symbol type?", -1);
-}
-
-static void DestroySymbol(Display* display, Symbol* symbolPtr)
-{
-  symbolPtr->type = SYMBOL_NONE;
-}
 
 static Tk_OptionSpec linePenOptionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
@@ -154,7 +77,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
    0, &fillObjOption, LAYOUT},
   {TK_OPTION_STRING_TABLE, "-showvalues", "showValues", "ShowValues",
    "none", -1, Tk_Offset(LinePenOptions, valueShow), 0, &fillObjOption, CACHE},
-  {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
+  {TK_OPTION_STRING_TABLE, "-symbol", "symbol", "Symbol",
    "none", -1, Tk_Offset(LinePenOptions, symbol), 0, &symbolObjOption, CACHE},
   {TK_OPTION_ANCHOR, "-valueanchor", "valueAnchor", "ValueAnchor",
    "s", -1, Tk_Offset(LinePenOptions, valueStyle.anchor), 0, NULL, CACHE},

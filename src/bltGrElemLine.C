@@ -163,7 +163,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-styles", "styles", "Styles",
    "", -1, Tk_Offset(LineElementOptions, stylePalette), 
    0, &styleObjOption, RESET},
-  {TK_OPTION_CUSTOM, "-symbol", "symbol", "Symbol",
+  {TK_OPTION_STRING_TABLE, "-symbol", "symbol", "Symbol",
    "none", -1, Tk_Offset(LineElementOptions, builtinPen.symbol), 
    0, &symbolObjOption, CACHE},
   {TK_OPTION_STRING_TABLE, "-trace", "trace", "Trace",

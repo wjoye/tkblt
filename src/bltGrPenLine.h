@@ -82,6 +82,6 @@ class LinePen : public Pen {
   int configure();
 };
 
-extern Tk_ObjCustomOption symbolObjOption;
+extern const char* symbolObjOption[];
 
 #endif
