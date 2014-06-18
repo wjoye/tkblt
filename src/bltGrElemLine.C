@@ -45,12 +45,6 @@
 #include "bltGrPs.h"
 
 #ifdef MAC_OSX_TK
-extern void XFillArcs(Display *display, Drawable d, GC gc, XArc *arcs, int
-		      narcs);
-extern void XDrawArcs(Display *display, Drawable d, GC gc, XArc *arcs, int
-		      narcs);
-extern void XDrawRectangles(Display *display, Drawable d, GC gc, 
-			    XRectangle *rectangles, int nrectangles);
 extern long XMaxRequestSize(Display *display);
 #endif
 
@@ -2013,9 +2007,9 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
   int count = 0;
   int s = radius + radius;
   XArc* arcs = new XArc[nSymbolPts];
-  XArc* ap = arcs;
+  XArc *ap, *aend;
   Point2d *pp, *pend;
-  for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+  for (ap=arcs, pp=symbolPts, pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
       ap->x = pp->x - radius;
       ap->y = pp->y - radius;
@@ -2029,14 +2023,14 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  int reqSize = maxRequestSize(display, sizeof(XArc));
-  for (int ii=0; ii<count; ii+= reqSize) {
-    int n = ((ii + reqSize) > count) ? (count - ii) : reqSize;
+  for (ap=arcs, aend=ap+count; ap<aend; ap++) {
     if (penOps->symbol.fillGC)
-      XFillArcs(display, drawable, penOps->symbol.fillGC, arcs + ii, n);
+      XFillArc(display, drawable, penOps->symbol.fillGC, 
+	       ap->x, ap->y, ap->width, ap->height, ap->angle1, ap->angle2);
 
     if (penOps->symbol.outlineWidth > 0)
-      XDrawArcs(display, drawable, penOps->symbol.outlineGC, arcs + ii, n);
+      XDrawArc(display, drawable, penOps->symbol.outlineGC,
+	       ap->x, ap->y, ap->width, ap->height, ap->angle1, ap->angle2);
   }
 
   delete [] arcs;
@@ -2051,9 +2045,9 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
   int count =0;
   int s = r + r;
   XRectangle* rectangles = new XRectangle[nSymbolPts];
-  XRectangle* rp = rectangles;
+  XRectangle *rp, *rend;
   Point2d *pp, *pend;
-  for (pp = symbolPts, pend = pp + nSymbolPts; pp < pend; pp++) {
+  for (rp=rectangles, pp=symbolPts, pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
       rp->x = pp->x - r;
       rp->y = pp->y - r;
@@ -2065,18 +2059,14 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  int reqSize = maxRequestSize(display, sizeof(XRectangle)) - 3;
-  XRectangle *rend;
-  for (rp = rectangles, rend = rp + count; rp < rend; rp += reqSize) {
-    int n = rend - rp;
-    if (n > reqSize)
-      n = reqSize;
-
+  for (rp=rectangles, rend=rp+count; rp<rend; rp ++) {
     if (penOps->symbol.fillGC)
-      XFillRectangles(display, drawable, penOps->symbol.fillGC, rp, n);
+      XFillRectangle(display, drawable, penOps->symbol.fillGC,
+		     rp->x, rp->y, rp->width, rp->height);
 
     if (penOps->symbol.outlineWidth > 0)
-      XDrawRectangles(display, drawable, penOps->symbol.outlineGC, rp, n);
+      XDrawRectangle(display, drawable, penOps->symbol.outlineGC,
+		     rp->x, rp->y, rp->width, rp->height);
   }
 
   delete [] rectangles;
@@ -2102,9 +2092,9 @@ void LineElement::drawSCross(Display *display, Drawable drawable,
 
   int count = 0;
   XSegment* segments = new XSegment[nSymbolPts*2];
-  XSegment* sp = segments;
+  XSegment *sp;
   Point2d *pp, *endp;
-  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+  for (sp=segments, pp=symbolPts, endp=pp+nSymbolPts; pp<endp; pp++) {
     if (DRAW_SYMBOL()) {
       int rndx = pp->x;
       int rndy = pp->y;
@@ -2123,14 +2113,8 @@ void LineElement::drawSCross(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  int nSegs = count * 2;
-  // Always draw skinny symbols regardless of the outline width
-  int reqSize = maxRequestSize(graphPtr_->display_, sizeof(XSegment));
-  for (int ii=0; ii<nSegs; ii+=reqSize) {
-    int chunk = ((ii + reqSize) > nSegs) ? (nSegs - ii) : reqSize;
-    XDrawSegments(graphPtr_->display_, drawable, 
-		  penOps->symbol.outlineGC, segments + ii, chunk);
-  }
+  XDrawSegments(graphPtr_->display_, drawable, penOps->symbol.outlineGC,
+		segments, count);
 
   delete [] segments;
 }
