@@ -694,7 +694,7 @@ void PostScript::prolog()
 "\n"
 "/SetFont { 	\n"
 "  % Stack: pointSize fontName\n"
-"  findfont exch scalefont ISOEncode setfont\n"
+"  findfont exch 1.25 mul scalefont ISOEncode setfont\n"
 "} def\n"
 "\n"
 "/Box {\n"
