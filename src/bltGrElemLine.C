@@ -44,10 +44,6 @@
 #include "bltConfig.h"
 #include "bltGrPs.h"
 
-#ifdef MAC_OSX_TK
-extern long XMaxRequestSize(Display *display);
-#endif
-
 using namespace Blt;
 
 #define SEARCH_X	0
@@ -529,7 +525,7 @@ void LineElement::draw(Drawable drawable)
 
   // Fill area under the curve
   if (ops->fillBg && fillPts_) {
-    XPoint *points = (XPoint*)malloc(sizeof(XPoint) * nFillPts_);
+    XPoint*points = new XPoint[nFillPts_];
 
     unsigned int count =0;
     Point2d *endp, *pp;
@@ -541,7 +537,7 @@ void LineElement::draw(Drawable drawable)
     }
     Tk_Fill3DPolygon(graphPtr_->tkwin_, drawable, ops->fillBg, points, 
 		     nFillPts_, 0, TK_RELIEF_FLAT);
-    free(points);
+    delete [] points;
   }
 
   // traces
@@ -551,8 +547,8 @@ void LineElement::draw(Drawable drawable)
   // Symbols, error bars, values
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link=Blt_Chain_FirstLink(ops->stylePalette); link;
+	 link=Blt_Chain_NextLink(link)) {
       LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
       total += stylePtr->symbolPts.length;
     }
@@ -561,9 +557,9 @@ void LineElement::draw(Drawable drawable)
   }
 
   unsigned int count =0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+  for (Blt_ChainLink link=Blt_Chain_FirstLink(ops->stylePalette); link;
+       link=Blt_Chain_NextLink(link)) {
+    LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -1979,25 +1975,6 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
   }
 }
 
-long LineElement::maxRequestSize(Display* display, size_t elemSize) 
-{
-  long maxSizeBytes = 0L;
-
-  if (maxSizeBytes == 0L) {
-    long size =0;
-#ifndef MAC_OSX_TK
-    size = XExtendedMaxRequestSize(display);
-#endif
-    if (size == 0) {
-      size = XMaxRequestSize(display);
-    }
-    size -= (4 * elemSize);
-    //	maxSizeBytes = (size * 4);
-    maxSizeBytes = size;
-  }
-  return (maxSizeBytes / elemSize);
-}
-
 void LineElement::drawCircle(Display *display, Drawable drawable, 
 			     LinePen* penPtr, 
 			     int nSymbolPts, Point2d *symbolPts, int radius)
@@ -2376,61 +2353,22 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 
 void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 {
-  int np = maxRequestSize(graphPtr_->display_, sizeof(XPoint)) - 1;
-  XPoint *points = (XPoint*)malloc((np + 1) * sizeof(XPoint));
-	    
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
        link = Blt_Chain_NextLink(link)) {
-    XPoint *xpp;
-    int remaining, count;
+    bltTrace* tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
 
-    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
-
-    // If the trace has to be split into separate XDrawLines calls, then the
-    // end point of the current trace is also the starting point of the new
-    // split.
-
-    // Step 1. Convert and draw the first section of the trace.
-    // It may contain the entire trace.
-    int n = MIN(np, tracePtr->screenPts.length); 
-    for (xpp = points, count = 0; count < n; count++, xpp++) {
-      xpp->x = tracePtr->screenPts.points[count].x;
-      xpp->y = tracePtr->screenPts.points[count].y;
+    int count = tracePtr->screenPts.length; 
+    XPoint* points = new XPoint[count];
+    XPoint*xpp;
+    int ii;
+    for (ii=0, xpp=points; ii<count; ii++, xpp++) {
+      xpp->x = tracePtr->screenPts.points[ii].x;
+      xpp->y = tracePtr->screenPts.points[ii].y;
     }
     XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);
-
-    // Step 2. Next handle any full-size chunks left.
-    while ((count + np) < tracePtr->screenPts.length) {
-      int j;
-      // Start with the last point of the previous trace.
-      points[0].x = points[np - 1].x;
-      points[0].y = points[np - 1].y;
-	    
-      for (xpp = points + 1, j = 0; j < np; j++, count++, xpp++) {
-	xpp->x = tracePtr->screenPts.points[count].x;
-	xpp->y = tracePtr->screenPts.points[count].y;
-      }
-      XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
-		 np + 1, CoordModeOrigin);
-    }
-	
-    // Step 3. Convert and draw the remaining points.
-    remaining = tracePtr->screenPts.length - count;
-    if (remaining > 0) {
-      // Start with the last point of the previous trace.
-      points[0].x = points[np - 1].x;
-      points[0].y = points[np - 1].y;
-      for (xpp = points + 1; count < tracePtr->screenPts.length; count++, 
-	     xpp++) {
-	xpp->x = tracePtr->screenPts.points[count].x;
-	xpp->y = tracePtr->screenPts.points[count].y;
-      }	    
-      XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
-		 remaining + 1, CoordModeOrigin);
-    }
+    delete [] points;
   }
-  free(points);
 }
 
 void LineElement::drawValues(Drawable drawable, LinePen* penPtr, 
