@@ -34,6 +34,8 @@ bltTest3 $graph axis x -gridminordashes {8 3} $dops
 bltTest3 $graph axis x -gridminorlinewidth 2 $dops
 bltTest3 $graph axis x -hide yes $dops
 bltTest3 $graph axis x -justify left $dops
+bltTest3 $graph axis x -justify center $dops
+bltTest3 $graph axis x -justify right $dops
 bltTest3 $graph axis x -labeloffset yes $dops
 bltTest3 $graph axis x -limitscolor red $dops
 bltTest3 $graph axis x -limitsfont {times 18 bold italic} $dops

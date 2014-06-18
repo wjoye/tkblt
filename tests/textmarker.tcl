@@ -26,6 +26,8 @@ bltTest3 $graph marker $mm -fg cyan $dops
 bltTest3 $graph marker $mm -fill yellow $dops
 bltTest3 $graph marker $mm -font {times 24 bold italic} $dops
 bltTest3 $graph marker $mm -foreground blue $dops
+bltTest3 $graph marker $mm -justify left $dops
+bltTest3 $graph marker $mm -justify center $dops
 bltTest3 $graph marker $mm -justify right $dops
 bltTest3 $graph marker $mm -hide yes $dops
 bltTest3 $graph marker $mm -mapx x2 $dops

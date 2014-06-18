@@ -31,6 +31,8 @@ bltTest $graph -height 300 $dops
 #bltTest $graph -highlightthickness $dops
 bltTest $graph -invertxy yes $dops
 bltTest $graph -justify left $dops
+bltTest $graph -justify center $dops
+bltTest $graph -justify right $dops
 bltTest $graph -leftmargin 50 $dops
 bltTest $graph -lm 50 $dops
 bltTest $graph -plotbackground cyan $dops
