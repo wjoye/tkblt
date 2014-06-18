@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <X11/Xlib.h>
+
 #include "bltGraph.h"
 #include "bltSpline.h"
 #include "bltGrElemLine.h"
@@ -41,6 +43,16 @@
 #include "bltGrDef.h"
 #include "bltConfig.h"
 #include "bltGrPs.h"
+
+#ifdef MAC_OSX_TK
+extern void XFillArcs(Display *display, Drawable d, GC gc, XArc *arcs, int
+		      narcs);
+extern void XDrawArcs(Display *display, Drawable d, GC gc, XArc *arcs, int
+		      narcs);
+extern void XDrawRectangles(Display *display, Drawable d, GC gc, 
+			    XRectangle *rectangles, int nrectangles);
+extern long XMaxRequestSize(Display *display);
+#endif
 
 using namespace Blt;
 
@@ -1978,8 +1990,10 @@ long LineElement::maxRequestSize(Display* display, size_t elemSize)
   long maxSizeBytes = 0L;
 
   if (maxSizeBytes == 0L) {
-    long size;
+    long size =0;
+#ifndef MAC_OSX_TK
     size = XExtendedMaxRequestSize(display);
+#endif
     if (size == 0) {
       size = XMaxRequestSize(display);
     }
