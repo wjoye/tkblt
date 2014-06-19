@@ -544,7 +544,7 @@ proc blt::ZoomStack::Box { g } {
 	set Y [lindex [$g yaxis use] 0]
 	$g marker create line "zoomOutline" \
 	    -coords $coords -mapx $X -mapy $Y \
-	    -dashes 4 -linewidth 1 -xor yes
+	    -dashes 4 -linewidth 1
 	set interval $_private($g,interval)
 	set id [after $interval [list blt::ZoomStack::MarchingAnts $g 0]]
 	set _private($g,afterId) $id
