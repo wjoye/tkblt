@@ -50,7 +50,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
    "yes", -1, Tk_Offset(CrosshairsOptions, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
-   "0", -1, Tk_Offset(CrosshairsOptions, lineWidth), 0, NULL, 0},
+   "1", -1, Tk_Offset(CrosshairsOptions, lineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-x", "x", "X",
    "0", -1, Tk_Offset(CrosshairsOptions, x), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-y", "y", "Y",

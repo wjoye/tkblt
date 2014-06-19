@@ -30,16 +30,16 @@
 #ifndef __BltGrDef_h__
 #define __BltGrDef_h__
 
-#define STD_NORMAL_BACKGROUND	"gray85"
-#define STD_NORMAL_FOREGROUND	"black"
-#define STD_ACTIVE_BACKGROUND	"gray90"
-#define STD_ACTIVE_FOREGROUND	"black"
+#define STD_NORMAL_BACKGROUND "gray85"
+#define STD_NORMAL_FOREGROUND "black"
+#define STD_ACTIVE_BACKGROUND "gray90"
+#define STD_ACTIVE_FOREGROUND "black"
 
-#define STD_FONT_LARGE		"helvetica 14 normal roman"
-#define STD_FONT_MEDIUM		"helvetica 12 normal roman"
-#define STD_FONT_NORMAL		"helvetica 10 normal roman"
-#define STD_FONT_SMALL		"helvetica 8 normal roman"
+#define STD_FONT_LARGE	"helvetica 16 normal roman"
+#define STD_FONT_MEDIUM	"helvetica 14 normal roman"
+#define STD_FONT_NORMAL	"helvetica 12 normal roman"
+#define STD_FONT_SMALL	"helvetica 10 normal roman"
 
-#define STD_BORDERWIDTH 	"2"
+#define STD_BORDERWIDTH "2"
 
 #endif
