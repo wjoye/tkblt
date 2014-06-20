@@ -72,12 +72,13 @@ proc Blt_ResetCrosshairs { g state } {
 proc Blt_ZoomStack { g args } {
     array set params {
 	-mode click
+	-button "ButtonPress-3"
     }
     array set params $args
     if { $params(-mode) == "click" } {
-	blt::ZoomStack::ClickClick $g
+	blt::ZoomStack::ClickClick $g $params(-button)
     } else {
-	blt::ZoomStack::ClickRelease $g
+	blt::ZoomStack::ClickRelease $g $params(-button)
     }	
 }
 
@@ -213,14 +214,14 @@ proc blt::ZoomStack::Init { g } {
     set _private($g,corner) A
 }
 
-proc blt::ZoomStack::ClickClick { g {start "ButtonPress-1"} {reset "ButtonPress-3"} } {
+proc blt::ZoomStack::ClickClick { g reset } {
     variable _private
     
     Init $g
     
     bind zoom-$g <Enter> "focus %W"
     bind zoom-$g <KeyPress-Escape> { blt::ZoomStack::Reset %W }
-    bind zoom-$g <${start}> { blt::ZoomStack::SetPoint %W %x %y }
+    bind zoom-$g <ButtonPress-1> { blt::ZoomStack::SetPoint %W %x %y }
     bind zoom-$g <${reset}> { 
 	if { [%W inside %x %y] } { 
 	    blt::ZoomStack::Reset %W 
@@ -229,7 +230,7 @@ proc blt::ZoomStack::ClickClick { g {start "ButtonPress-1"} {reset "ButtonPress-
     blt::AddBindTag $g zoom-$g
 }
 
-proc blt::ZoomStack::ClickRelease { g } {
+proc blt::ZoomStack::ClickRelease { g reset } {
     variable _private
     
     Init $g
@@ -238,7 +239,7 @@ proc blt::ZoomStack::ClickRelease { g } {
     bind zoom-$g <ButtonPress-1> {blt::ZoomStack::DragStart %W %x %y}
     bind zoom-$g <B1-Motion> {blt::ZoomStack::DragMotion %W %x %y}
     bind zoom-$g <ButtonRelease-1> {blt::ZoomStack::DragFinish %W %x %y}
-    bind zoom-$g <ButtonPress-3> { 
+    bind zoom-$g <${reset}> { 
 	if { [%W inside %x %y] } { 
 	    blt::ZoomStack::Reset %W 
 	}
