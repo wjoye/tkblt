@@ -221,9 +221,6 @@ class Graph : public Pick {
   int invoke(const Ensemble*, int, int, Tcl_Obj* const []);
   void reconfigure();
 
-  void enableCrosshairs();
-  void disableCrosshairs();
-
   int createAxis(int, Tcl_Obj* const []);
   void printAxes(PostScript*);
   void printAxesGrids(PostScript*);

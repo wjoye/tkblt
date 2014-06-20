@@ -516,29 +516,10 @@ void Legend::draw(Drawable drawable)
   if (!bg)
     bg = gops->normalBg;
 
-  // Disable crosshairs before redisplaying to the screen
-  switch ((Position)ops->position) {
-  case PLOT:
-  case XY:
-    graphPtr_->disableCrosshairs();
-    break;
-  default:
-    break;
-  }
-
   Tk_Draw3DRectangle(tkwin, pixmap, bg, 0, 0, w, h, 
 		     ops->borderWidth, ops->relief);
   XCopyArea(graphPtr_->display_, pixmap, drawable, graphPtr_->drawGC_, 
 	    0, 0, w, h, x_, y_);
-
-  switch ((Position)ops->position) {
-  case PLOT:
-  case XY:
-    graphPtr_->enableCrosshairs();
-    break;
-  default:
-    break;
-  }
 
   Tk_FreePixmap(graphPtr_->display_, pixmap);
 }

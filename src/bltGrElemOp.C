@@ -42,7 +42,7 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
 		    Tcl_Obj *objPtr, int *indexPtr);
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 
-int ElementObjConfigure( Element* elemPtr, Tcl_Interp* interp,
+int ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
 			int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = elemPtr->graphPtr_;
