@@ -57,10 +57,6 @@ static Tcl_ObjCmdProc GraphObjCmd;
 
 static Axis* GetFirstAxis(Blt_Chain chain);
 
-#define PointInRegion(e,x,y)			\
-  (((x) <= (e)->right) && ((x) >= (e)->left) && \
-   ((y) <= (e)->bottom) && ((y) >= (e)->top))
-
 int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
@@ -244,7 +240,7 @@ static int InsideOp(ClientData clientData, Tcl_Interp* interp, int objc,
   Region2d exts;
   graphPtr->extents(&exts);
 
-  int result = PointInRegion(&exts, x, y);
+  int result = (x<=exts.right && x>=exts.left && y<=exts.bottom && y>=exts.top);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), result);
 
   return TCL_OK;
@@ -418,11 +414,10 @@ void GraphEventProc(ClientData clientData, XEvent* eventPtr)
   Graph* graphPtr = (Graph*)clientData;
 
   if (eventPtr->type == Expose) {
-    if (eventPtr->xexpose.count == 0) {
+    if (eventPtr->xexpose.count == 0)
       graphPtr->eventuallyRedraw();
-    }
   }
-  else if ((eventPtr->type == FocusIn) || (eventPtr->type == FocusOut)) {
+  else if (eventPtr->type == FocusIn || eventPtr->type == FocusOut) {
     if (eventPtr->xfocus.detail != NotifyInferior) {
       if (eventPtr->type == FocusIn)
 	graphPtr->flags |= FOCUS;

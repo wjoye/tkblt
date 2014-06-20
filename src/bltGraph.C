@@ -210,16 +210,18 @@ int Graph::configure()
 
 void Graph::map()
 {
+  //  cerr << '.';
   if (flags & RESET) {
-    //    cerr << "RESET" << endl;
+    //    cerr << 'r';
     resetAxes();
     flags &= ~RESET;
     flags |= LAYOUT;
   }
 
   if (flags & LAYOUT) {
-    //    cerr << "LAYOUT" << endl;
+    //    cerr << 'l';
     layoutGraph();
+    crosshairs_->map();
     mapAxes();
     mapElements();
     flags &= ~LAYOUT;
@@ -263,7 +265,7 @@ void Graph::draw()
 
   // Update cache if needed
   if (flags & CACHE) {
-    //    cerr << "CACHE" << endl;
+    //    cerr << 'c';
     drawMargins(cache_);
 
     switch (legend_->position()) {
@@ -337,12 +339,12 @@ void Graph::draw()
     Tk_DrawFocusHighlight(tkwin_, gc, ops->highlightWidth, drawable);
   }
 
-  // Disable crosshairs before redisplaying to the screen
-  disableCrosshairs();
+  // crosshairs
+  crosshairs_->draw(drawable);
+
   XCopyArea(display_, drawable, Tk_WindowId(tkwin_), drawGC_, 
 	    0, 0, width_, height_, 0, 0);
 
-  enableCrosshairs();
   Tk_FreePixmap(display_, drawable);
 }
 
@@ -368,7 +370,7 @@ int Graph::print(const char* ident, PostScript* psPtr)
   psPtr->computeBBox(width_, height_);
   flags |= RESET;
 
-  /* Turn on PostScript measurements when computing the graph's layout. */
+  // Turn on PostScript measurements when computing the graph's layout.
   reconfigure();
 
   map();
@@ -601,18 +603,6 @@ void Graph::printMargins(PostScript* psPtr)
   }
 }
 
-// Crosshairs
-
-void Graph::enableCrosshairs()
-{
-  crosshairs_->enable();
-}
-
-void Graph::disableCrosshairs()
-{
-  crosshairs_->disable();
-}
-
 // Pens
 
 void Graph::destroyPens()
@@ -779,7 +769,6 @@ void Graph::mapMarkers()
       continue;
 
     if ((flags & MAP_MARKERS) || (markerPtr->flags & MAP_ITEM)) {
-      //      cerr << "MAP_MARKERS" << endl;
       markerPtr->map();
       markerPtr->flags &= ~MAP_ITEM;
     }

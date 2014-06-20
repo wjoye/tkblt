@@ -60,6 +60,8 @@ static int CrosshairsObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 
     if (chPtr->configure() != TCL_OK)
       return TCL_ERROR;
+    graphPtr->flags |= mask;
+    graphPtr->eventuallyRedraw();
 
     break; 
   }
@@ -121,12 +123,9 @@ static int OnOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
-  if (ops->hide) {
-    chPtr->on();
-    ops->hide = 0;
-  }
+  chPtr->on();
+
   return TCL_OK;
 }
 
@@ -135,12 +134,9 @@ static int OffOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
-  if (!ops->hide) {
-    chPtr->off();
-    ops->hide = 1;
-  }
+  chPtr->off();
+
   return TCL_OK;
 }
 
@@ -149,10 +145,8 @@ static int ToggleOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Crosshairs *chPtr = graphPtr->crosshairs_;
-  CrosshairsOptions* ops = (CrosshairsOptions*)chPtr->ops();
 
-  ops->hide = (ops->hide == 0);
-  if (ops->hide)
+  if (chPtr->isOn())
     chPtr->off();
   else
     chPtr->on();

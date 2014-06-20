@@ -42,7 +42,6 @@ class Graph;
 typedef struct {
   XColor* colorPtr;
   Dashes dashes;
-  int hide;
   int lineWidth;
   int x;
   int y;
@@ -50,14 +49,12 @@ typedef struct {
 
 class Crosshairs {
  protected:
+  Graph* graphPtr_;
   Tk_OptionTable optionTable_;
   void* ops_;
 
-  GC gc_;
-
- public:
-  Graph* graphPtr_;
   int visible_;
+  GC gc_;
   XSegment segArr_[2];
 
  public:
@@ -65,10 +62,12 @@ class Crosshairs {
   virtual ~Crosshairs();
 
   int configure();
+  void map();
+  void draw(Drawable);
+
   void on();
   void off();
-  void enable();
-  void disable();
+  int isOn() {return visible_;}
 
   Tk_OptionTable optionTable() {return optionTable_;}
   void* ops() {return ops_;}
