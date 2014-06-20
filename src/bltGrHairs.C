@@ -39,16 +39,12 @@
 
 using namespace Blt;
 
-#define PointInGraph(g,x,y) (((x) <= (g)->right_) && ((x) >= (g)->left_) && ((y) <= (g)->bottom_) && ((y) >= (g)->top_))
-
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color", 
    "green", -1, Tk_Offset(CrosshairsOptions, colorPtr), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-dashes", "dashes", "Dashes", 
    NULL, -1, Tk_Offset(CrosshairsOptions, dashes), 
    TK_OPTION_NULL_OK, &dashesObjOption, 0},
-  {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide", 
-   "yes", -1, Tk_Offset(CrosshairsOptions, hide), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-linewidth", "lineWidth", "Linewidth",
    "1", -1, Tk_Offset(CrosshairsOptions, lineWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-x", "x", "X",
@@ -67,7 +63,8 @@ Crosshairs::Crosshairs(Graph* graphPtr)
   gc_ =NULL;
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
-  Tk_InitOptions(graphPtr->interp_, (char*)ops_, optionTable_, graphPtr->tkwin_);
+  Tk_InitOptions(graphPtr->interp_, (char*)ops_, optionTable_, 
+		 graphPtr->tkwin_);
 }
 
 Crosshairs::~Crosshairs()
@@ -84,22 +81,11 @@ Crosshairs::~Crosshairs()
 int Crosshairs::configure()
 {
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
-  GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
-
-  // Turn off the crosshairs temporarily. This is in case the new
-  // configuration changes the size, style, or position of the lines.
-  off();
 
   XGCValues gcValues;
-  gcValues.function = GXxor;
-
-  unsigned long int pixel = Tk_3DBorderColor(gops->plotBg)->pixel;
-  gcValues.background = pixel;
-  gcValues.foreground = (pixel ^ ops->colorPtr->pixel);
-
+  gcValues.foreground = ops->colorPtr->pixel;
   gcValues.line_width = ops->lineWidth;
-  unsigned long gcMask = 
-    (GCForeground | GCBackground | GCFunction | GCLineWidth);
+  unsigned long gcMask = (GCForeground | GCLineWidth);
   if (LineIsDashed(ops->dashes)) {
     gcValues.line_style = LineOnOffDash;
     gcMask |= GCLineStyle;
@@ -108,12 +94,20 @@ int Crosshairs::configure()
   if (LineIsDashed(ops->dashes))
     graphPtr_->setDashes(newGC, &ops->dashes);
 
-  if (gc_ != NULL)
+  if (gc_)
     graphPtr_->freePrivateGC(gc_);
-
   gc_ = newGC;
 
   // Are the new coordinates on the graph?
+  map();
+
+  return TCL_OK;
+}
+
+void Crosshairs::map()
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
+
   segArr_[0].x1 = ops->x;
   segArr_[0].x2 = ops->x;
   segArr_[0].y1 = graphPtr_->bottom_;
@@ -122,48 +116,27 @@ int Crosshairs::configure()
   segArr_[1].y2 = ops->y;
   segArr_[1].x1 = graphPtr_->left_;
   segArr_[1].x2 = graphPtr_->right_;
-
-  enable();
-
-  return TCL_OK;
-}
-
-void Crosshairs::enable()
-{
-  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
-  if (!ops->hide)
-    on();
-}
-
-void Crosshairs::disable()
-{
-  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
-  if (!ops->hide)
-    off();
-}
-
-void Crosshairs::off()
-{
-  if (Tk_IsMapped(graphPtr_->tkwin_) && (visible_)) {
-    XDrawSegments(graphPtr_->display_, Tk_WindowId(graphPtr_->tkwin_),
-		  gc_, segArr_, 2);
-    visible_ = 0;
-  }
 }
 
 void Crosshairs::on()
 {
-  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
-
-  if (Tk_IsMapped(graphPtr_->tkwin_) && (!visible_)) {
-    if (!PointInGraph(graphPtr_, ops->x, ops->y))
-      return;
-
-    XDrawSegments(graphPtr_->display_, Tk_WindowId(graphPtr_->tkwin_),
-		  gc_, segArr_, 2);
-    visible_ = 1;
-  }
+  visible_ =1;
 }
 
+void Crosshairs::off()
+{
+  visible_ =0;
+}
 
+void Crosshairs::draw(Drawable drawable)
+{
+  CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
 
+  if (visible_ && Tk_IsMapped(graphPtr_->tkwin_)) {
+    if (ops->x <= graphPtr_->right_ &&
+	ops->x >= graphPtr_->left_ &&
+	ops->y <= graphPtr_->bottom_ &&
+	ops->y >= graphPtr_->top_)
+      XDrawSegments(graphPtr_->display_, drawable, gc_, segArr_, 2);
+  }
+}
