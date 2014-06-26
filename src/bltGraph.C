@@ -353,6 +353,12 @@ int Graph::print(const char* ident, PostScript* psPtr)
   GraphOptions* ops = (GraphOptions*)ops_;
   PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
 
+  // be sure the window is realized so that relief colors are available
+  if (flags & REDRAW_PENDING) {
+    flags |= REDRAW_PENDING;
+    DisplayGraph(this);
+  }
+
   // We need to know how big a graph to print.  If the graph hasn't been drawn
   // yet, the width and height will be 1.  Instead use the requested size of
   // the widget.  The user can still override this with the -width and -height
