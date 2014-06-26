@@ -1224,8 +1224,6 @@ void Axis::offsets(int margin, int offset, AxisInfo *infoPtr)
   }
 
   int axisPad =0;
-  //  if (graphPtr_->plotRelief != TK_RELIEF_SOLID)
-  //    axisPad = 0;
 
   // Adjust offset for the interior border width and the line width */
   // fixme

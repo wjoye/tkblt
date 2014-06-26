@@ -339,32 +339,11 @@ void PostScript::print3DRectangle(Tk_3DBorder border, double x, double y,
 				 int width, int height, int borderWidth,
 				 int relief)
 {
-  TkBorder* borderPtr = (TkBorder*)border;
-  XColor* lightPtr, *darkPtr;
-  XColor* topPtr, *bottomPtr;
-  XColor light, dark;
   int twiceWidth = (borderWidth * 2);
-
   if ((width < twiceWidth) || (height < twiceWidth))
     return;
 
-  if ((relief == TK_RELIEF_SOLID) ||
-      (borderPtr->lightColorPtr == NULL) || (borderPtr->darkColorPtr == NULL)) {
-    if (relief == TK_RELIEF_SOLID) {
-      dark.red = dark.blue = dark.green = 0x00;
-      light.red = light.blue = light.green = 0x00;
-      relief = TK_RELIEF_SUNKEN;
-    } else {
-      light = *borderPtr->bgColorPtr;
-      dark.red = dark.blue = dark.green = 0xFF;
-    }
-    lightPtr = &light;
-    darkPtr = &dark;
-  }
-  else {
-    lightPtr = borderPtr->lightColorPtr;
-    darkPtr = borderPtr->darkColorPtr;
-  }
+  TkBorder* borderPtr = (TkBorder*)border;
 
   // Handle grooves and ridges with recursive calls
   if ((relief == TK_RELIEF_GROOVE) || (relief == TK_RELIEF_RIDGE)) {
@@ -381,6 +360,24 @@ void PostScript::print3DRectangle(Tk_3DBorder border, double x, double y,
     return;
   }
 
+  XColor* lightPtr = borderPtr->lightColorPtr;
+  XColor* darkPtr = borderPtr->darkColorPtr;
+  XColor light;
+  if (!lightPtr) {
+    light.red = 0x00;
+    light.blue = 0x00;
+    light.green = 0x00;
+    lightPtr = &light;
+  }
+  XColor dark;
+  if (!darkPtr) {
+    dark.red = 0x00;
+    dark.blue = 0x00;
+    dark.green = 0x00;
+    darkPtr = &dark;
+  }
+
+  XColor* topPtr, *bottomPtr;
   if (relief == TK_RELIEF_RAISED) {
     topPtr = lightPtr;
     bottomPtr = darkPtr;
@@ -389,8 +386,14 @@ void PostScript::print3DRectangle(Tk_3DBorder border, double x, double y,
     topPtr = darkPtr;
     bottomPtr = lightPtr;
   }
-  else
-    topPtr = bottomPtr = borderPtr->bgColorPtr;
+  else if (relief == TK_RELIEF_SOLID) {
+    topPtr = lightPtr;
+    bottomPtr = lightPtr;
+  }
+  else {
+    topPtr = borderPtr->bgColorPtr;
+    bottomPtr = borderPtr->bgColorPtr;
+  }
 
   setBackground(bottomPtr);
   fillRectangle(x, y + height - borderWidth, width, borderWidth);

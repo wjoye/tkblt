@@ -13,9 +13,14 @@ $graph xaxis configure -bg cyan -relief raised
 $graph configure -relief raised
 $graph configure -plotrelief raised
 
-$graph postscript output foo.ps
+$graph legend selection set data2
+$graph legend focus data1
+$graph legend configure -selectrelief groove
+
 $graph postscript configure -decorations no
 $graph postscript output bar.ps
+$graph postscript configure -decorations yes
+$graph postscript output foo.ps
 
 #set graph [bltBarGraph $w]
 

@@ -591,10 +591,9 @@ void Legend::print(PostScript* psPtr)
     }
     else {
       ops->style.color = ops->fgColor;
-      if (elemOps->legendRelief != TK_RELIEF_FLAT) {
+      if (elemOps->legendRelief != TK_RELIEF_FLAT)
 	psPtr->print3DRectangle(gops->normalBg, x, y, entryWidth_, entryHeight_,
 			       ops->entryBW, elemOps->legendRelief);
-      }
     }
     elemPtr->printSymbol(psPtr, x + xSymbol, y + ySymbol, symbolSize);
     ts.printText(psPtr, elemOps->label, x + xLabel, 
