@@ -586,14 +586,16 @@ void Graph::printMargins(PostScript* psPtr)
   psPtr->append("% Margins\n");
   psPtr->fillRectangles(margin, 4);
     
-  psPtr->append("% Interior 3D border\n");
-  if (ops->plotBW > 0) {
-    int x = left_ - ops->plotBW;
-    int y = top_ - ops->plotBW;
-    int w = (right_ - left_) + (2*ops->plotBW);
-    int h = (bottom_ - top_) + (2*ops->plotBW);
-    psPtr->print3DRectangle(ops->normalBg, (double)x, (double)y, w, h,
-			   ops->plotBW, ops->plotRelief);
+  if (pops->decorations) {
+    psPtr->append("% Interior 3D border\n");
+    if (ops->plotBW > 0) {
+      int x = left_ - ops->plotBW;
+      int y = top_ - ops->plotBW;
+      int w = (right_ - left_) + (2*ops->plotBW);
+      int h = (bottom_ - top_) + (2*ops->plotBW);
+      psPtr->print3DRectangle(ops->normalBg, (double)x, (double)y, w, h,
+			      ops->plotBW, ops->plotRelief);
+    }
   }
 
   if (ops->title) {

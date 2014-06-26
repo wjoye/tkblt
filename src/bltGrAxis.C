@@ -36,6 +36,7 @@
 #include "bltGrBind.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
+#include "bltGrPageSetup.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
@@ -73,7 +74,7 @@ static Tk_OptionSpec optionSpecs[] = {
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-   "0", -1, Tk_Offset(AxisOptions, borderWidth), 0, NULL, LAYOUT},
+   STD_BORDERWIDTH, -1, Tk_Offset(AxisOptions, borderWidth), 0, NULL, LAYOUT},
   {TK_OPTION_BOOLEAN, "-checklimits", "checkLimits", "CheckLimits", 
    "no", -1, Tk_Offset(AxisOptions, checkLimits), 0, NULL, RESET},
   {TK_OPTION_COLOR, "-color", "color", "Color",
@@ -1663,16 +1664,23 @@ void Axis::makeGridLine(double value, Segment2d *sp)
 void Axis::print(PostScript* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
+  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
 
   if (ops->hide || !use_)
     return;
 
   psPtr->format("%% Axis \"%s\"\n", name_);
-  if (ops->normalBg) {
-    int relief = active_ ? ops->activeRelief : ops->relief;
-    psPtr->fill3DRectangle(ops->normalBg, left_, top_, 
-			   right_ - left_, bottom_ - top_, 
-			   ops->borderWidth, relief);
+  if (pops->decorations) {
+    if (ops->normalBg) {
+      int relief = active_ ? ops->activeRelief : ops->relief;
+      psPtr->fill3DRectangle(ops->normalBg, left_, top_, 
+			     right_-left_, bottom_-top_, 
+			     ops->borderWidth, relief);
+    }
+  }
+  else {
+    psPtr->setClearBackground();
+    psPtr->fillRectangle(left_, top_, right_-left_, bottom_-top_);
   }
 
   if (ops->title) {
