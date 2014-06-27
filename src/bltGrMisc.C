@@ -329,7 +329,7 @@ Point2d Blt::GetProjection(int x, int y, Point2d *p, Point2d *q)
   return t;
 }
 
-Graph* Blt::GetGraphFromWindowData(Tk_Window tkwin)
+Graph* Blt::getGraphFromWindowData(Tk_Window tkwin)
 {
   while (tkwin) {
     TkWindow* winPtr = (TkWindow*)tkwin;

@@ -57,7 +57,7 @@ static int PenSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  Graph* graphPtr = Blt_GetGraphFromWindowData(tkwin);
+  Graph* graphPtr = Blt::GetGraphFromWindowData(tkwin);
   Pen* penPtr;
   if (graphPtr->getPen(*objPtr, &penPtr) != TCL_OK)
     return TCL_ERROR;

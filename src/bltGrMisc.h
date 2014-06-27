@@ -88,12 +88,12 @@ namespace Blt {
   } Dashes;
 
   extern char* dupstr(const char*);
-  extern int PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
+  extern int pointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
 			    int nScreenPts);
-  extern int PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
+  extern int polyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			  int nInputPts, Point2d *outputPts);
   extern int LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
-  extern Point2d GetProjection (int x, int y, Point2d *p, Point2d *q);
+  extern Point2d getProjection (int x, int y, Point2d *p, Point2d *q);
   extern Graph* getGraphFromWindowData(Tk_Window tkwin);
 };
 

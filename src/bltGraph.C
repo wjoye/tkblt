@@ -1222,7 +1222,7 @@ Axis* Graph::nearestAxis(int x, int y)
 	t.y = y - t.y - (rh * 0.5);
 
 	bbox[4] = bbox[0];
-	if (Blt_PointInPolygon(&t, bbox, 5)) {
+	if (PointInPolygon(&t, bbox, 5)) {
 	  return axisPtr;
 	}
       }
@@ -1242,7 +1242,7 @@ Axis* Graph::nearestAxis(int x, int y)
       t.y = y - t.y - (rh * 0.5);
 	    
       bbox[4] = bbox[0];
-      if (Blt_PointInPolygon(&t, bbox, 5)) {
+      if (PointInPolygon(&t, bbox, 5)) {
 	return axisPtr;
       }
     }

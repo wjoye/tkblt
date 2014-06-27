@@ -217,7 +217,7 @@ int TextMarker::pointIn(Point2d *samplePtr)
       points[ii].x = outline_[ii].x + anchorPt_.x;
       points[ii].y = outline_[ii].y + anchorPt_.y;
     }
-    return Blt_PointInPolygon(samplePtr, points, 5);
+    return PointInPolygon(samplePtr, points, 5);
   } 
 
   return ((samplePtr->x >= anchorPt_.x) && 
