@@ -39,10 +39,10 @@
 
 using namespace Blt;
 
-int PageSetupObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
+int PostscriptObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[])
 {
-  PageSetup* setupPtr = graphPtr->pageSetup_;
+  Postscript* setupPtr = graphPtr->postscript_;
   Tk_SavedOptions savedOptions;
   int mask =0;
   int error;
@@ -85,7 +85,7 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
 
-  PageSetup *setupPtr = graphPtr->pageSetup_;
+  Postscript *setupPtr = graphPtr->postscript_;
   Tcl_Obj* objPtr = Tk_GetOptionValue(interp, 
 				      (char*)setupPtr->ops_, 
 				      setupPtr->optionTable_,
@@ -101,7 +101,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  PageSetup* setupPtr = graphPtr->pageSetup_;
+  Postscript* setupPtr = graphPtr->postscript_;
   if (objc <= 4) {
     Tcl_Obj* objPtr = Tk_GetOptionInfo(interp, (char*)setupPtr->ops_, 
 				       setupPtr->optionTable_, 
@@ -114,7 +114,7 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   } 
   else
-    return PageSetupObjConfigure(graphPtr, interp, objc-3, objv+3);
+    return PostscriptObjConfigure(graphPtr, interp, objc-3, objv+3);
 }
 
 static int OutputOp(ClientData clientData, Tcl_Interp* interp, 
@@ -142,7 +142,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
 
   PSOutput* psPtr = new PSOutput(graphPtr);
   
-  if (PageSetupObjConfigure(graphPtr, interp, objc-3, objv+3) != TCL_OK) {
+  if (PostscriptObjConfigure(graphPtr, interp, objc-3, objv+3) != TCL_OK) {
     if (channel)
       Tcl_Close(interp, channel);
     delete psPtr;

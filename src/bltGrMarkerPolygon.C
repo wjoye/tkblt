@@ -284,7 +284,7 @@ int PolygonMarker::regionIn(Region2d *extsPtr, int enclosed)
   return 0;
 }
 
-void PolygonMarker::print(PostScript* psPtr)
+void PolygonMarker::print(PSOutput* psPtr)
 {
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 

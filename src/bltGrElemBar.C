@@ -744,14 +744,13 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
 		 size, size);
 }
 
-void BarElement::print(PostScript* psPtr)
+void BarElement::print(PSOutput* psPtr)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   
   if (ops->hide)
     return;
 
-  // Comment the PostScript to indicate the start of the element
   psPtr->format("\n%% Element \"%s\"\n\n", name_);
 
   int count = 0;
@@ -788,7 +787,7 @@ void BarElement::print(PostScript* psPtr)
   }
 }
 
-void BarElement::printActive(PostScript* psPtr)
+void BarElement::printActive(PSOutput* psPtr)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -815,7 +814,7 @@ void BarElement::printActive(PostScript* psPtr)
   }
 }
 
-void BarElement::printSymbol(PostScript* psPtr, double x, double y, int size)
+void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
@@ -825,10 +824,6 @@ void BarElement::printSymbol(PostScript* psPtr, double x, double y, int size)
   if (!pops->fill && !pops->outlineColor)
     return;
 
-  /*
-   * Build a PostScript procedure to draw the fill and outline of the symbol
-   * after the path of the symbol shape has been formed
-   */
   psPtr->append("\n"
 		"/DrawSymbolProc {\n"
 		"gsave\n    ");
@@ -1253,7 +1248,7 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
   }
 }
 
-void BarElement::printSegments(PostScript* psPtr, BarPen* penPtr, 
+void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr, 
 			       XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
@@ -1279,7 +1274,7 @@ void BarElement::printSegments(PostScript* psPtr, BarPen* penPtr,
   }
 }
 
-void BarElement::printValues(PostScript* psPtr, BarPen* penPtr, 
+void BarElement::printValues(PSOutput* psPtr, BarPen* penPtr, 
 			     XRectangle *bars, int nBars, int *barToData)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();

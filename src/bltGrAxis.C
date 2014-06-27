@@ -1662,7 +1662,7 @@ void Axis::makeGridLine(double value, Segment2d *sp)
 void Axis::print(PSOutput* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
-  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)graphPtr_->postscript_->ops_;
 
   if (ops->hide || !use_)
     return;

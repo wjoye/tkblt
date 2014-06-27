@@ -79,7 +79,7 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
 
   legend_ = new Legend(this);
   crosshairs_ = new Crosshairs(this);
-  pageSetup_ = new PageSetup(this);
+  postscript_ = new Postscript(this);
 
   inset_ =0;
   titleX_ =0;
@@ -141,7 +141,7 @@ Graph::~Graph()
 
   delete crosshairs_;
   delete legend_;
-  delete pageSetup_;
+  delete postscript_;
 
   destroyAxes();
   destroyPens();
@@ -351,7 +351,7 @@ void Graph::draw()
 int Graph::print(const char* ident, PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)postscript_->ops_;
 
   // be sure the window is realized so that relief colors are available
   if (flags & REDRAW_PENDING) {
@@ -569,7 +569,7 @@ void Graph::drawMargins(Drawable drawable)
 void Graph::printMargins(PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)postscript_->ops_;
   XRectangle margin[4];
 
   margin[0].x = margin[0].y = margin[3].x = margin[1].x = 0;

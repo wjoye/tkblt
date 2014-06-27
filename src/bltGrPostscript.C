@@ -37,38 +37,38 @@ using namespace Blt;
 
 static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_BOOLEAN, "-center", "center", "Center", 
-   "yes", -1, Tk_Offset(PageSetupOptions, center), 0, NULL, 0},
+   "yes", -1, Tk_Offset(PostscriptOptions, center), 0, NULL, 0},
   {TK_OPTION_CUSTOM, "-comments", "comments", "Comments",
-   NULL, -1, Tk_Offset(PageSetupOptions, comments), 
+   NULL, -1, Tk_Offset(PostscriptOptions, comments), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
   {TK_OPTION_BOOLEAN, "-decorations", "decorations", "Decorations",
-   "yes", -1, Tk_Offset(PageSetupOptions, decorations), 0, NULL, 0},
+   "yes", -1, Tk_Offset(PostscriptOptions, decorations), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-footer", "footer", "Footer",
-   "no", -1, Tk_Offset(PageSetupOptions, footer), 0, NULL, 0},
+   "no", -1, Tk_Offset(PostscriptOptions, footer), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-greyscale", "greyscale", "Greyscale",
-   "no", -1, Tk_Offset(PageSetupOptions, greyscale), 0, NULL, 0},
+   "no", -1, Tk_Offset(PostscriptOptions, greyscale), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-height", "height", "Height", 
-   "0", -1, Tk_Offset(PageSetupOptions, reqHeight), 0, NULL, 0},
+   "0", -1, Tk_Offset(PostscriptOptions, reqHeight), 0, NULL, 0},
   {TK_OPTION_BOOLEAN, "-landscape", "landscape", "Landscape",
-   "no", -1, Tk_Offset(PageSetupOptions, landscape), 0, NULL, 0},
+   "no", -1, Tk_Offset(PostscriptOptions, landscape), 0, NULL, 0},
   {TK_OPTION_INT, "-level", "level", "Level", 
-   "2", -1, Tk_Offset(PageSetupOptions, level), 0, NULL, 0},
+   "2", -1, Tk_Offset(PostscriptOptions, level), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-padx", "padX", "PadX", 
-   "1.0i", -1, Tk_Offset(PageSetupOptions, xPad), 0, NULL, 0},
+   "1.0i", -1, Tk_Offset(PostscriptOptions, xPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-pady", "padY", "PadY", 
-   "1.0i", -1, Tk_Offset(PageSetupOptions, yPad), 0, NULL, 0},
+   "1.0i", -1, Tk_Offset(PostscriptOptions, yPad), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-paperheight", "paperHeight", "PaperHeight",
-   "11.0i", -1, Tk_Offset(PageSetupOptions, reqPaperHeight), 0, NULL, 0},
+   "11.0i", -1, Tk_Offset(PostscriptOptions, reqPaperHeight), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-paperwidth", "paperWidth", "PaperWidth",
-   "8.5i", -1, Tk_Offset(PageSetupOptions, reqPaperWidth), 0, NULL, 0},
+   "8.5i", -1, Tk_Offset(PostscriptOptions, reqPaperWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-width", "width", "Width", 
-   "0", -1, Tk_Offset(PageSetupOptions, reqWidth), 0, NULL, 0},
+   "0", -1, Tk_Offset(PostscriptOptions, reqWidth), 0, NULL, 0},
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-PageSetup::PageSetup(Graph* graphPtr)
+Postscript::Postscript(Graph* graphPtr)
 {
-  ops_ = (PageSetupOptions*)calloc(1, sizeof(PageSetupOptions));
+  ops_ = (PostscriptOptions*)calloc(1, sizeof(PostscriptOptions));
   graphPtr_ = graphPtr;
 
   optionTable_ =Tk_CreateOptionTable(graphPtr_->interp_, optionSpecs);
@@ -76,7 +76,7 @@ PageSetup::PageSetup(Graph* graphPtr)
 		 graphPtr_->tkwin_);
 }
 
-PageSetup::~PageSetup()
+Postscript::~Postscript()
 {
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);

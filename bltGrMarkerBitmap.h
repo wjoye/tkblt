@@ -69,7 +69,7 @@ namespace Blt {
     void map();
     int pointIn(Point2d*);
     int regionIn(Region2d*, int);
-    void print(PostScript*);
+    void print(PSOutput*);
 
   public:
     BitmapMarker(Graph*, const char*, Tcl_HashEntry*);

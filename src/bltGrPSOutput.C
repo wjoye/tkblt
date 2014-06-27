@@ -100,8 +100,8 @@ void PSOutput::printSegments(Segment2d* segments, int nSegments)
 
 int PSOutput::computeBBox(int width, int height)
 {
-  PageSetup* setupPtr = graphPtr_->pageSetup_;
-  PageSetupOptions* pops = (PageSetupOptions*)setupPtr->ops_;
+  Postscript* setupPtr = graphPtr_->postscript_;
+  PostscriptOptions* pops = (PostscriptOptions*)setupPtr->ops_;
   int paperWidth, paperHeight;
   float hScale, vScale, scale;
 
@@ -212,7 +212,7 @@ void PSOutput::fillRectangles(XRectangle* rectangles, int nRectangles)
 
 void PSOutput::setBackground(XColor* colorPtr)
 {
-  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)graphPtr_->postscript_->ops_;
   printXColor(colorPtr);
   append(" setrgbcolor\n");
   if (pops->greyscale)
@@ -221,7 +221,7 @@ void PSOutput::setBackground(XColor* colorPtr)
 
 void PSOutput::setForeground(XColor* colorPtr)
 {
-  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)graphPtr_->postscript_->ops_;
   printXColor(colorPtr);
   append(" setrgbcolor\n");
   if (pops->greyscale)
@@ -464,8 +464,8 @@ void PSOutput::printXColor(XColor* colorPtr)
 
 int PSOutput::preamble(const char* fileName)
 {
-  PageSetup* setupPtr = graphPtr_->pageSetup_;
-  PageSetupOptions* ops = (PageSetupOptions*)setupPtr->ops_;
+  Postscript* setupPtr = graphPtr_->postscript_;
+  PostscriptOptions* ops = (PostscriptOptions*)setupPtr->ops_;
 
   if (!fileName)
     fileName = Tk_PathName(graphPtr_->tkwin_);

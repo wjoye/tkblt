@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BltGrPageSetup_h__
-#define __BltGrPageSetup_h__
+#ifndef __BltGrPostscript_h__
+#define __BltGrPostscript_h__
 
 #include <tk.h>
 
@@ -46,9 +46,9 @@ typedef struct {
   int reqPaperHeight;
   int reqWidth;
   int reqHeight;
-} PageSetupOptions;
+} PostscriptOptions;
 
-class PageSetup  {
+class Postscript  {
  public:
   Tk_OptionTable optionTable_;
   void* ops_;
@@ -64,8 +64,8 @@ class PageSetup  {
   int paperWidth;
 
  public:
-  PageSetup(Graph*);
-  virtual ~PageSetup();
+  Postscript(Graph*);
+  virtual ~Postscript();
 };
 
 #endif

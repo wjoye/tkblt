@@ -40,7 +40,7 @@ extern "C" {
 class Axis;
 class Element;
 class Pen;
-class PageSetup;
+class Postscript;
 
 #include "bltGrMisc.h"
 #include "bltGrPen.h"

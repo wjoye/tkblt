@@ -253,7 +253,7 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
-void TextMarker::print(PostScript* psPtr)
+void TextMarker::print(PSOutput* psPtr)
 {
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 

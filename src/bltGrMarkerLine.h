@@ -65,7 +65,7 @@ namespace Blt {
     void map();
     int pointIn(Point2d*);
     int regionIn(Region2d*, int);
-    void print(PostScript*);
+    void print(PSOutput*);
     int pointInSegments(Point2d *samplePtr, Segment2d *segments, 
 			int nSegments, double halo);
 

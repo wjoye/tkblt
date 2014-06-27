@@ -649,7 +649,7 @@ void LineElement::drawSymbol(Drawable drawable, int x, int y, int size)
   }
 }
 
-void LineElement::print(PostScript* psPtr)
+void LineElement::print(PSOutput* psPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePen* penPtr = NORMALPEN(ops);
@@ -723,7 +723,7 @@ void LineElement::print(PostScript* psPtr)
   symbolCounter_ = 0;
 }
 
-void LineElement::printActive(PostScript* psPtr)
+void LineElement::printActive(PSOutput* psPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePen* penPtr = (LinePen *)ops->activePenPtr;
@@ -762,7 +762,7 @@ void LineElement::printActive(PostScript* psPtr)
   }
 }
 
-void LineElement::printSymbol(PostScript* psPtr, double x, double y, int size)
+void LineElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
@@ -2408,7 +2408,7 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   } 
 }
 
-void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
+void LineElement::printSymbols(PSOutput* psPtr, LinePen* penPtr, int size,
 			       int nSymbolPts, Point2d *symbolPts)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
@@ -2485,7 +2485,7 @@ void LineElement::printSymbols(PostScript* psPtr, LinePen* penPtr, int size,
   }
 }
 
-void LineElement::setLineAttributes(PostScript* psPtr, LinePen* penPtr)
+void LineElement::setLineAttributes(PSOutput* psPtr, LinePen* penPtr)
 {
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
@@ -2504,7 +2504,7 @@ void LineElement::setLineAttributes(PostScript* psPtr, LinePen* penPtr)
   }
 }
 
-void LineElement::printTraces(PostScript* psPtr, LinePen* penPtr)
+void LineElement::printTraces(PSOutput* psPtr, LinePen* penPtr)
 {
   setLineAttributes(psPtr, penPtr);
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
@@ -2519,7 +2519,7 @@ void LineElement::printTraces(PostScript* psPtr, LinePen* penPtr)
   }
 }
 
-void LineElement::printValues(PostScript* psPtr, LinePen* penPtr, 
+void LineElement::printValues(PSOutput* psPtr, LinePen* penPtr, 
 			      int nSymbolPts, Point2d *symbolPts, 
 			      int *pointToData)
 {

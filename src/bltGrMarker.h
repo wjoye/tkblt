@@ -38,7 +38,7 @@ extern "C" {
 
 class Graph;
 class Axis;
-class PageSetup;
+class Postscript;
 
 #include "bltGrMisc.h"
 #include "bltGrPs.h"

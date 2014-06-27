@@ -46,7 +46,7 @@ class Axis;
 class Element;
 class Legend;
 class Pen;
-class PageSetup;
+class Postscript;
 class PSOutput;
 
 class Pick {
@@ -150,7 +150,7 @@ class Graph : public Pick {
 
   Legend* legend_;
   Crosshairs* crosshairs_;
-  PageSetup* pageSetup_;
+  Postscript* postscript_;
 
   int inset_;
   short int titleX_;

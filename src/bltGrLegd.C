@@ -528,7 +528,7 @@ void Legend::print(PSOutput* psPtr)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
-  PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
+  PostscriptOptions* pops = (PostscriptOptions*)graphPtr_->postscript_->ops_;
 
   if ((ops->hide) || (nEntries_ == 0))
     return;

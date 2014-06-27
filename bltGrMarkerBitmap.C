@@ -257,7 +257,7 @@ int BitmapMarker::regionIn(Region2d *extsPtr, int enclosed)
 	   ((anchorPt_.y + height_) <= extsPtr->top));
 }
 
-void BitmapMarker::print(PostScript* psPtr)
+void BitmapMarker::print(PSOutput* psPtr)
 {
   BitmapMarkerOptions* ops = (BitmapMarkerOptions*)ops_;
 

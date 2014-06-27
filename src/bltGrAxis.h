@@ -40,7 +40,7 @@ extern "C" {
 };
 
 class Graph;
-class PageSetup;
+class Postscript;
 
 #include "bltGrMisc.h"
 #include "bltGrText.h"

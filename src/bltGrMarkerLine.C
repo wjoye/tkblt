@@ -276,7 +276,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
   }
 }
 
-void LineMarker::print(PostScript* psPtr)
+void LineMarker::print(PSOutput* psPtr)
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 

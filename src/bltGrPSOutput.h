@@ -35,7 +35,7 @@
 #define POSTSCRIPT_BUFSIZ ((BUFSIZ*2)-1)
 
 class Graph;
-class PageSetup;
+class Postscript;
 
 class PSOutput {
  protected:
