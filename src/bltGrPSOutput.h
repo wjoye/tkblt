@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_PSOUTPUT_H
-#define _BLT_PSOUTPUT_H
+#ifndef __Blt_GrPSOutput_h__
+#define __Blt_GrPSOutput_h__
 
 #include <tk.h>
 

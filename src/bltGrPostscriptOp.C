@@ -178,7 +178,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble pageSetupEnsemble[] = {
+const Ensemble postscriptEnsemble[] = {
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},
   {"output",    OutputOp, 0},

@@ -37,7 +37,6 @@
 #include "bltGrLegd.h"
 #include "bltGrElem.h"
 #include "bltGrPostscript.h"
-#include "bltGrPostscriptOp.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"

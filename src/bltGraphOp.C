@@ -315,7 +315,7 @@ static const Ensemble graphEnsemble[] = {
   {"line",        0, elementEnsemble},
   {"marker",      0, markerEnsemble},
   {"pen",         0, penEnsemble},
-  {"postscript",  0, pageSetupEnsemble},
+  {"postscript",  0, postscriptEnsemble},
   {"transform",   TransformOp, 0},
   {"xaxis",       0, xaxisEnsemble},
   {"yaxis",       0, xaxisEnsemble},

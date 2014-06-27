@@ -27,14 +27,14 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BltGrPageSetupOp_h__
-#define __BltGrPageSetupOp_h__
+#ifndef __BltGrPostscriptOp_h__
+#define __BltGrPostscriptOp_h__
 
 #include "bltGraph.h"
 
-extern const Ensemble pageSetupEnsemble[];
+extern const Ensemble postscriptEnsemble[];
 
-extern int PageSetupObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp, 
-				 int objc, Tcl_Obj* const objv[]);
+extern int PostscriptObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp, 
+				  int objc, Tcl_Obj* const objv[]);
 
 #endif
