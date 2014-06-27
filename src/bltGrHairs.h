@@ -39,38 +39,41 @@
 
 class Graph;
 
-typedef struct {
-  XColor* colorPtr;
-  Dashes dashes;
-  int lineWidth;
-  int x;
-  int y;
-} CrosshairsOptions;
+namespace Blt {
 
-class Crosshairs {
- protected:
-  Graph* graphPtr_;
-  Tk_OptionTable optionTable_;
-  void* ops_;
+  typedef struct {
+    XColor* colorPtr;
+    Dashes dashes;
+    int lineWidth;
+    int x;
+    int y;
+  } CrosshairsOptions;
 
-  int visible_;
-  GC gc_;
-  XSegment segArr_[2];
+  class Crosshairs {
+  protected:
+    Graph* graphPtr_;
+    Tk_OptionTable optionTable_;
+    void* ops_;
 
- public:
-  Crosshairs(Graph*);
-  virtual ~Crosshairs();
+    int visible_;
+    GC gc_;
+    XSegment segArr_[2];
 
-  int configure();
-  void map();
-  void draw(Drawable);
+  public:
+    Crosshairs(Graph*);
+    virtual ~Crosshairs();
 
-  void on();
-  void off();
-  int isOn() {return visible_;}
+    int configure();
+    void map();
+    void draw(Drawable);
 
-  Tk_OptionTable optionTable() {return optionTable_;}
-  void* ops() {return ops_;}
+    void on();
+    void off();
+    int isOn() {return visible_;}
+
+    Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+  };
 };
 
 #endif

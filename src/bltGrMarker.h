@@ -37,13 +37,13 @@ extern "C" {
 };
 
 class Graph;
-class Axis;
 
 #include "bltGrMisc.h"
 #include "bltGrPSOutput.h"
 
 namespace Blt {
   class Postscript;
+  class Axis;
 
   typedef struct {
     Point2d* points;

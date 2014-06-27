@@ -37,11 +37,11 @@ extern "C" {
 #include "bltChain.h"
 };
 
-class Axis;
 class Element;
 class Pen;
 
 namespace Blt {
+  class Axis;
   class Postscript;
 };
 
@@ -100,8 +100,8 @@ typedef struct {
   Element* elemPtr;
   const char* label;
   const char** tags;
-  Axis* xAxis;
-  Axis* yAxis;
+  Blt::Axis* xAxis;
+  Blt::Axis* yAxis;
   ElemCoords coords;
   ElemValues* w;
   ElemValues* xError;

@@ -60,8 +60,8 @@ typedef struct {
   Element* elemPtr;
   const char *label;
   char** tags;
-  Axis* xAxis;
-  Axis* yAxis;
+  Blt::Axis* xAxis;
+  Blt::Axis* yAxis;
   ElemCoords coords;
   ElemValues* w;
   ElemValues* xError;
@@ -97,7 +97,7 @@ class BarElement : public Element {
 
  protected:
   void ResetStylePalette(Blt_Chain);
-  void checkStacks(Axis*, Axis*, double*, double*);
+  void checkStacks(Blt::Axis*, Blt::Axis*, double*, double*);
   void mergePens(BarStyle**);
   void mapActive();
   void reset();

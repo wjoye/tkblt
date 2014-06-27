@@ -34,26 +34,26 @@
 
 extern const Ensemble axisEnsemble[];
 
-extern int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
+extern int AxisObjConfigure(Blt::Axis* axisPtr, Tcl_Interp* interp,
 			    int objc, Tcl_Obj* const objv[]);
 
-extern int AxisCgetOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisCgetOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
-extern int AxisConfigureOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisConfigureOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			   int objc, Tcl_Obj* const objv[]);
-extern int AxisActivateOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisActivateOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			  int objc, Tcl_Obj* const objv[]);
-extern int AxisInvTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisInvTransformOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			      int objc, Tcl_Obj* const objv[]);
-extern int AxisLimitsOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisLimitsOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			int objc, Tcl_Obj* const objv[]);
-extern int AxisMarginOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisMarginOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			int objc, Tcl_Obj* const objv[]);
-extern int AxisTransformOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisTransformOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 			   int objc, Tcl_Obj* const objv[]);
-extern int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisTypeOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
-extern int AxisViewOp(Axis* axisPtr, Tcl_Interp* interp, 
+extern int AxisViewOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);
 
 #endif

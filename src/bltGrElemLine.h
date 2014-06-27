@@ -67,8 +67,8 @@ typedef struct {
   Element* elemPtr;
   const char* label;
   char** tags;
-  Axis* xAxis;
-  Axis* yAxis;
+  Blt::Axis* xAxis;
+  Blt::Axis* yAxis;
   ElemCoords coords;
   ElemValues* w;
   ElemValues* xError;

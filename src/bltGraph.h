@@ -40,8 +40,6 @@ extern "C" {
 #include "bltGrText.h"
 
 class Graph;
-class Crosshairs;
-class Axis;
 class Element;
 class Legend;
 class Pen;
@@ -52,7 +50,9 @@ class Pick {
 };
 
 namespace Blt {
+  class Axis;
   class BindTable;
+  class Crosshairs;
   class Marker;
   class Postscript;
   class PSOutput;
@@ -149,7 +149,7 @@ class Graph : public Pick {
   Blt_Chain axisChain_[4];
 
   Legend* legend_;
-  Crosshairs* crosshairs_;
+  Blt::Crosshairs* crosshairs_;
   Blt::Postscript* postscript_;
 
   int inset_;
@@ -163,7 +163,7 @@ class Graph : public Pick {
   short int right_;
   short int top_;
   short int bottom_;	
-  Axis *focusPtr_;
+  Blt::Axis* focusPtr_;
   int halo_;
   GC drawGC_;
   int vRange_;
@@ -225,12 +225,12 @@ class Graph : public Pick {
   void printAxes(Blt::PSOutput*);
   void printAxesGrids(Blt::PSOutput*);
   void printAxesLimits(Blt::PSOutput*);
-  int getAxis(Tcl_Obj*, Axis**);
+  int getAxis(Tcl_Obj*, Blt::Axis**);
   ClientData axisTag(const char*);
-  Point2d map2D(double, double, Axis*, Axis*);
-  Point2d invMap2D(double, double, Axis*, Axis*);
+  Point2d map2D(double, double, Blt::Axis*, Blt::Axis*);
+  Point2d invMap2D(double, double, Blt::Axis*, Blt::Axis*);
   virtual void resetAxes();
-  Axis* nearestAxis(int, int);
+  Blt::Axis* nearestAxis(int, int);
 
   ClientData markerTag(const char*);
   Blt::Marker* nearestMarker(int, int, int);

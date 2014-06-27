@@ -36,15 +36,15 @@
 
 typedef struct {
   double value;
-  Axis* xAxis;
-  Axis* yAxis;
+  Blt::Axis* xAxis;
+  Blt::Axis* yAxis;
 } BarSetKey;
 
 class BarGroup {
  public:
   int nSegments;
-  Axis* xAxis;
-  Axis* yAxis;
+  Blt::Axis* xAxis;
+  Blt::Axis* yAxis;
   float sum;
   int count;
   float lastY;

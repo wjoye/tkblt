@@ -39,219 +39,219 @@ extern "C" {
 #include "bltChain.h"
 };
 
-class Graph;
-
-namespace Blt {
-  class Postscript;
-};
-
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 #include "bltGrPSOutput.h"
 
-typedef struct {
-  int axis;
-  int t1;
-  int t2;
-  int label;
-} AxisInfo;
+class Graph;
 
-typedef struct {
-  const char* name;
-  ClassId classId;
-} AxisName;
+namespace Blt {
+  class Postscript;
 
-extern AxisName axisNames[];
+  typedef struct {
+    int axis;
+    int t1;
+    int t2;
+    int label;
+  } AxisInfo;
 
-typedef struct {
-  Dashes dashes;
-  int lineWidth;
-  XColor* color;
-  GC gc;
-  Segment2d *segments;
-  int nUsed;
-  int nAllocated;
-} Grid;
+  typedef struct {
+    const char* name;
+    ClassId classId;
+  } AxisName;
 
-typedef struct {
-  double min;
-  double max;
-  double range;
-  double scale;
-} AxisRange;
+  extern AxisName axisNames[];
 
-typedef struct {
-  Point2d anchorPos;
-  unsigned int width;
-  unsigned int height;
-  char string[1];
-} TickLabel;
+  typedef struct {
+    Dashes dashes;
+    int lineWidth;
+    XColor* color;
+    GC gc;
+    Segment2d *segments;
+    int nUsed;
+    int nAllocated;
+  } Grid;
 
-typedef struct {
-  int nTicks;
-  double values[1];
-} Ticks;
+  typedef struct {
+    double min;
+    double max;
+    double range;
+    double scale;
+  } AxisRange;
 
-typedef struct {
-  double initial;
-  double step;
-  int nSteps;
-} TickSweep;
+  typedef struct {
+    Point2d anchorPos;
+    unsigned int width;
+    unsigned int height;
+    char string[1];
+  } TickLabel;
 
-typedef struct {
-  const char** tags;
-  int checkLimits;
-  int exterior;
-  int showGrid;
-  int showGridMinor;
-  int hide;
-  int showTicks;
+  typedef struct {
+    int nTicks;
+    double values[1];
+  } Ticks;
 
-  double windowSize;
-  const char *formatCmd;
-  int descending;
-  int labelOffset;
-  Blt::TextStyleOptions limitsTextStyle;
-  const char *limitsFormat;
-  int lineWidth;
-  int logScale;
-  int looseMin;
-  int looseMax;
-  Ticks* t1UPtr;
-  Ticks* t2UPtr;
-  double reqMin;
-  double reqMax;
-  Tcl_Obj *scrollCmdObjPtr;
-  int scrollUnits;
-  double reqScrollMin;
-  double reqScrollMax;
-  double shiftBy;
-  double reqStep;
-  int reqNumMajorTicks;
-  int reqNumMinorTicks;
-  int tickLength;
-  const char *title;
-  int titleAlternate;
+  typedef struct {
+    double initial;
+    double step;
+    int nSteps;
+  } TickSweep;
 
-  XColor* activeFgColor;
-  int activeRelief;
-  Tk_3DBorder normalBg;
-  int borderWidth;
-  XColor* tickColor;
-  Grid major;
-  Grid minor;
-  Tk_Justify titleJustify;
-  int relief;
-  double tickAngle;	
-  Tk_Anchor reqTickAnchor;
-  Tk_Font tickFont;
-  Tk_Font titleFont;
-  XColor* titleColor;
-} AxisOptions;
+  typedef struct {
+    const char** tags;
+    int checkLimits;
+    int exterior;
+    int showGrid;
+    int showGridMinor;
+    int hide;
+    int showTicks;
 
-class Axis {
- protected:
-  Tk_OptionTable optionTable_;
-  void* ops_;
+    double windowSize;
+    const char *formatCmd;
+    int descending;
+    int labelOffset;
+    TextStyleOptions limitsTextStyle;
+    const char *limitsFormat;
+    int lineWidth;
+    int logScale;
+    int looseMin;
+    int looseMax;
+    Ticks* t1UPtr;
+    Ticks* t2UPtr;
+    double reqMin;
+    double reqMax;
+    Tcl_Obj *scrollCmdObjPtr;
+    int scrollUnits;
+    double reqScrollMin;
+    double reqScrollMax;
+    double shiftBy;
+    double reqStep;
+    int reqNumMajorTicks;
+    int reqNumMinorTicks;
+    int tickLength;
+    const char *title;
+    int titleAlternate;
 
- public:
-  Graph* graphPtr_;
-  ClassId classId_;
-  const char* name_;
-  const char* className_;
+    XColor* activeFgColor;
+    int activeRelief;
+    Tk_3DBorder normalBg;
+    int borderWidth;
+    XColor* tickColor;
+    Grid major;
+    Grid minor;
+    Tk_Justify titleJustify;
+    int relief;
+    double tickAngle;	
+    Tk_Anchor reqTickAnchor;
+    Tk_Font tickFont;
+    Tk_Font titleFont;
+    XColor* titleColor;
+  } AxisOptions;
 
-  Tcl_HashEntry* hashPtr_;
-  int refCount_;
-  int use_;
-  int active_;		
+  class Axis {
+  protected:
+    Tk_OptionTable optionTable_;
+    void* ops_;
 
-  Blt_ChainLink link;
-  Blt_Chain chain;
+  public:
+    Graph* graphPtr_;
+    ClassId classId_;
+    const char* name_;
+    const char* className_;
 
-  Point2d titlePos_;
-  unsigned short int titleWidth_;
-  unsigned short int titleHeight_;	
-  double min_;
-  double max_;
-  double scrollMin_;
-  double scrollMax_;
-  AxisRange valueRange_;
-  AxisRange axisRange_;
-  double prevMin_;
-  double prevMax_;
-  Ticks* t1Ptr_;
-  Ticks* t2Ptr_;
-  TickSweep minorSweep_;
-  TickSweep majorSweep_;
+    Tcl_HashEntry* hashPtr_;
+    int refCount_;
+    int use_;
+    int active_;		
 
-  int margin_;
-  Segment2d *segments_;
-  int nSegments_;
-  Blt_Chain tickLabels_;
-  short int left_;
-  short int right_;
-  short int top_;
-  short int bottom_;
-  short int width_;
-  short int height_;
-  short int maxTickWidth_;
-  short int maxTickHeight_; 
-  Tk_Anchor tickAnchor_;
-  GC tickGC_;
-  GC activeTickGC_;
-  double titleAngle_;	
-  Tk_Anchor titleAnchor_;
-  double screenScale_;
-  int screenMin_;
-  int screenRange_;
+    Blt_ChainLink link;
+    Blt_Chain chain;
 
- protected:
-  double niceNum(double, int);
-  void setRange(AxisRange*, double, double);
-  void makeGridLine(double, Segment2d*);
-  void makeSegments(AxisInfo*);
-  void resetTextStyles();
-  void makeLine(int, Segment2d*);
-  void makeTick(double, int, int, Segment2d*);
-  void offsets(int, int, AxisInfo*);
-  void updateScrollbar(Tcl_Interp*, Tcl_Obj*, int, int, int);
+    Point2d titlePos_;
+    unsigned short int titleWidth_;
+    unsigned short int titleHeight_;	
+    double min_;
+    double max_;
+    double scrollMin_;
+    double scrollMax_;
+    AxisRange valueRange_;
+    AxisRange axisRange_;
+    double prevMin_;
+    double prevMax_;
+    Ticks* t1Ptr_;
+    Ticks* t2Ptr_;
+    TickSweep minorSweep_;
+    TickSweep majorSweep_;
 
- public:
-  Axis(Graph*, const char*, int, Tcl_HashEntry*);
-  virtual ~Axis();
+    int margin_;
+    Segment2d *segments_;
+    int nSegments_;
+    Blt_Chain tickLabels_;
+    short int left_;
+    short int right_;
+    short int top_;
+    short int bottom_;
+    short int width_;
+    short int height_;
+    short int maxTickWidth_;
+    short int maxTickHeight_; 
+    Tk_Anchor tickAnchor_;
+    GC tickGC_;
+    GC activeTickGC_;
+    double titleAngle_;	
+    Tk_Anchor titleAnchor_;
+    double screenScale_;
+    int screenMin_;
+    int screenRange_;
 
-  Tk_OptionTable optionTable() {return optionTable_;}
-  void* ops() {return ops_;}
-  ClassId classId() {return classId_;}
-  const char* className() {return className_;}
+  protected:
+    double niceNum(double, int);
+    void setRange(AxisRange*, double, double);
+    void makeGridLine(double, Segment2d*);
+    void makeSegments(AxisInfo*);
+    void resetTextStyles();
+    void makeLine(int, Segment2d*);
+    void makeTick(double, int, int, Segment2d*);
+    void offsets(int, int, AxisInfo*);
+    void updateScrollbar(Tcl_Interp*, Tcl_Obj*, int, int, int);
 
-  int configure();
-  void map(int, int);
-  void draw(Drawable);
-  void drawGrids(Drawable);
-  void drawLimits(Drawable);
-  void print(Blt::PSOutput*);
-  void printGrids(Blt::PSOutput*);
-  void printLimits(Blt::PSOutput*);
+  public:
+    Axis(Graph*, const char*, int, Tcl_HashEntry*);
+    virtual ~Axis();
 
-  void mapStacked(int, int);
-  void mapGridlines();
-  void setClass(ClassId);
-  void logScale(double, double);
-  void linearScale(double, double);
-  void fixRange();
-  int isHorizontal();
-  void freeTickLabels();
-  TickLabel* makeLabel(double);
-  void getDataLimits(double, double);
-  Ticks* generateTicks(TickSweep*);
-  int inRange(double, AxisRange*);
-  void getGeometry();
+    Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+    ClassId classId() {return classId_;}
+    const char* className() {return className_;}
 
-  double invHMap(double x);
-  double invVMap(double y);
-  double hMap(double x);
-  double vMap(double y);
+    int configure();
+    void map(int, int);
+    void draw(Drawable);
+    void drawGrids(Drawable);
+    void drawLimits(Drawable);
+    void print(PSOutput*);
+    void printGrids(PSOutput*);
+    void printLimits(PSOutput*);
+
+    void mapStacked(int, int);
+    void mapGridlines();
+    void setClass(ClassId);
+    void logScale(double, double);
+    void linearScale(double, double);
+    void fixRange();
+    int isHorizontal();
+    void freeTickLabels();
+    TickLabel* makeLabel(double);
+    void getDataLimits(double, double);
+    Ticks* generateTicks(TickSweep*);
+    int inRange(double, AxisRange*);
+    void getGeometry();
+
+    double invHMap(double x);
+    double invVMap(double y);
+    double hMap(double x);
+    double vMap(double y);
+  };
 };
 
 #endif

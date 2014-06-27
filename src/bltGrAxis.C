@@ -47,7 +47,7 @@ using namespace Blt;
 #define AXIS_PAD_TITLE 2
 #define EXP10(x) (pow(10.0,(x)))
 
-AxisName axisNames[] = { 
+AxisName Blt::axisNames[] = { 
   { "x",  CID_AXIS_X },
   { "y",  CID_AXIS_Y },
   { "x2", CID_AXIS_X },
