@@ -40,7 +40,6 @@ extern "C" {
 #include "bltGrText.h"
 
 class Graph;
-class BindTable;
 class Crosshairs;
 class Axis;
 class Element;
@@ -53,6 +52,7 @@ class Pick {
 };
 
 namespace Blt {
+  class BindTable;
   class Marker;
   class Postscript;
   class PSOutput;
@@ -145,7 +145,7 @@ class Graph : public Pick {
   Component elements_;
   Component markers_;
   Tcl_HashTable penTable_;
-  BindTable* bindTable_;
+  Blt::BindTable* bindTable_;
   Blt_Chain axisChain_[4];
 
   Legend* legend_;

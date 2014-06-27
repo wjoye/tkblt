@@ -34,37 +34,39 @@
 
 #include "bltGrMisc.h"
 
-class BindTable;
 class Pick;
 class Graph;
 
-class BindTable {
- protected:
-  Tk_BindingTable table_;
-  unsigned int grab_;
-  ClientData newItem_;
-  ClassId newContext_;
-  Pick* pickPtr_;
+namespace Blt {
 
- public:
-  Graph* graphPtr_;
-  ClientData currentItem_;
-  ClassId currentContext_;
-  ClientData focusItem_;
-  ClassId focusContext_;
-  int state_;
-  XEvent pickEvent_;
+  class BindTable {
+  protected:
+    Tk_BindingTable table_;
+    unsigned int grab_;
+    ClientData newItem_;
+    ClassId newContext_;
+    Pick* pickPtr_;
 
- public:
-  BindTable(Graph*, Pick*);
-  virtual ~BindTable();
+  public:
+    Graph* graphPtr_;
+    ClientData currentItem_;
+    ClassId currentContext_;
+    ClientData focusItem_;
+    ClassId focusContext_;
+    int state_;
+    XEvent pickEvent_;
+
+  public:
+    BindTable(Graph*, Pick*);
+    virtual ~BindTable();
   
-  int configure(ClientData, int, Tcl_Obj *const []);
-  void deleteBindings(ClientData object);
-  void doEvent(XEvent*);
-  void pickItem(XEvent*);
+    int configure(ClientData, int, Tcl_Obj *const []);
+    void deleteBindings(ClientData object);
+    void doEvent(XEvent*);
+    void pickItem(XEvent*);
 
-  ClientData currentItem() {return currentItem_;}
+    ClientData currentItem() {return currentItem_;}
+  };
 };
 
 

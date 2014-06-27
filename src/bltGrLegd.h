@@ -41,7 +41,6 @@
 class Graph;
 class Pick;
 class Element;
-class Legend;
 
 /*
  *  Selection related flags:
@@ -127,7 +126,7 @@ class Legend : public Pick {
   int nRows_;
   int entryWidth_;
   int entryHeight_;
-  BindTable* bindTable_;
+  Blt::BindTable* bindTable_;
   Element* focusPtr_;
   Element* selAnchorPtr_;
   Element* selMarkPtr_;
