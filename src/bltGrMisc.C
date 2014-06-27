@@ -116,7 +116,7 @@ static int ClipTest (double ds, double dr, double *t1, double *t2)
  *	  Line Clipping, ACM, TOG,3(1), 1984, pp.1-22.
  *---------------------------------------------------------------------------
  */
-int Blt::lineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
+int Blt::LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 {
   double t1, t2;
   double dx, dy;

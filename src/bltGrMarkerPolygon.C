@@ -250,7 +250,7 @@ void PolygonMarker::map()
     for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
-      if (lineRectClip(&extents, &segPtr->p, &segPtr->q)) {
+      if (LineRectClip(&extents, &segPtr->p, &segPtr->q)) {
 	segPtr++;
       }
     }

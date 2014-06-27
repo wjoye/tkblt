@@ -1199,7 +1199,7 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
     p = origPts[i];
     q = origPts[j];
     count++;
-    if (lineRectClip(&exts, &p, &q)) {
+    if (LineRectClip(&exts, &p, &q)) {
       count += (int)(hypot(q.x - p.x, q.y - p.y) * 0.5);
     }
   }
@@ -1237,7 +1237,7 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
     /* Is any part of the interval (line segment) in the plotting
      * area?  */
 
-    if (lineRectClip(&exts, &p, &q)) {
+    if (LineRectClip(&exts, &p, &q)) {
       double dp, dq;
 
       /* Distance of original point to p. */
@@ -1786,7 +1786,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1794,7 +1794,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.x = segPtr->q.x = p.x;
 	  segPtr->p.y = p.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1802,7 +1802,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.x = segPtr->q.x = q.x;
 	  segPtr->p.y = q.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1855,7 +1855,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1863,7 +1863,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.y = segPtr->q.y = p.y;
 	  segPtr->p.x = p.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1871,7 +1871,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.y = segPtr->q.y = q.y;
 	  segPtr->p.x = q.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
-	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }

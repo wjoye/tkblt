@@ -165,7 +165,7 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
 
       p = *pp;
       q = *(pp + 1);
-      if (lineRectClip(regionPtr, &p, &q))
+      if (LineRectClip(regionPtr, &p, &q))
 	return 1;
     }
 
