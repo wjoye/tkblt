@@ -30,7 +30,7 @@
 #include <stdlib.h>
 
 #include "bltGraph.h"
-#include "bltGrPageSetup.h"
+#include "bltGrPostscript.h"
 #include "bltConfig.h"
 
 using namespace Blt;

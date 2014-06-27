@@ -33,8 +33,8 @@
 #endif
 
 #include "bltGraph.h"
-#include "bltGrPageSetup.h"
-#include "bltGrPageSetupOp.h"
+#include "bltGrPostscript.h"
+#include "bltGrPostscriptOp.h"
 #include "bltGrPs.h"
 
 using namespace Blt;

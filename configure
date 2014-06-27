@@ -5549,13 +5549,13 @@ done
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C
 	bltGrMisc.C
-	bltGrPageSetup.C
-	bltGrPageSetupOp.C
 	bltGrPenOp.C
 	bltGrPenOption.C
 	bltGrPen.C
 	bltGrPenBar.C
 	bltGrPenLine.C
+	bltGrPostscript.C
+	bltGrPostscriptOp.C
 	bltGrPs.C
 	bltGrText.C
 	bltGrXAxisOp.C

@@ -36,7 +36,7 @@
 #include "bltGrBind.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
-#include "bltGrPageSetup.h"
+#include "bltGrPostscript.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
