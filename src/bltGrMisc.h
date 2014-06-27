@@ -54,52 +54,47 @@ using namespace std;
 #define MARGIN_TOP	2		/* x2 */
 #define MARGIN_RIGHT	3		/* y2 */
 
-namespace Blt {
-  class Graph;
-}
-
-typedef struct {
-  double x;
-  double y;
-} Point2d;
-
-typedef struct {
-  Point2d p;
-  Point2d q;
-} Segment2d;
-
-typedef struct {
-  double left;
-  double right;
-  double top;
-  double bottom;
-} Region2d;
-
-typedef enum {
-  CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
-  CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,
-  CID_MARKER_TEXT
-} ClassId;
-
-typedef struct {
-  unsigned char values[12];
-  int offset;
-} Dashes;
-
 #define LineIsDashed(d) ((d).values[0] != 0)
 
 namespace Blt {
-extern char* dupstr(const char*);
-};
+  class Graph;
 
-extern int Blt_PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
-			      int nScreenPts);
-extern int Blt_GetXY(Tcl_Interp* interp, Tk_Window tkwin, 
-		     const char *string, int *xPtr, int *yPtr);
-extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
-			    int nInputPts, Point2d *outputPts);
-extern int Blt_LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
-extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
-extern Blt::Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
+  typedef struct {
+    double x;
+    double y;
+  } Point2d;
+
+  typedef struct {
+    Point2d p;
+    Point2d q;
+  } Segment2d;
+
+  typedef struct {
+    double left;
+    double right;
+    double top;
+    double bottom;
+  } Region2d;
+
+  typedef enum {
+    CID_NONE, CID_AXIS_X, CID_AXIS_Y, CID_ELEM_BAR, CID_ELEM_LINE,
+    CID_MARKER_BITMAP, CID_MARKER_IMAGE, CID_MARKER_LINE, CID_MARKER_POLYGON,
+    CID_MARKER_TEXT
+  } ClassId;
+
+  typedef struct {
+    unsigned char values[12];
+    int offset;
+  } Dashes;
+
+  extern char* dupstr(const char*);
+  extern int PointInPolygon(Point2d *samplePtr, Point2d *screenPts, 
+			    int nScreenPts);
+  extern int PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
+			  int nInputPts, Point2d *outputPts);
+  extern int LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
+  extern Point2d GetProjection (int x, int y, Point2d *p, Point2d *q);
+  extern Graph* GetGraphFromWindowData(Tk_Window tkwin);
+};
 
 #endif
