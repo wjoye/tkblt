@@ -227,8 +227,7 @@ void PolygonMarker::map()
   clipped_ = 1;
   if (ops->fill) {
     Point2d* lfillPts = new Point2d[nScreenPts * 3];
-    int n = 
-      PolyRectClip(&extents, screenPts, ops->worldPts->num,lfillPts);
+    int n = polyRectClip(&extents, screenPts, ops->worldPts->num,lfillPts);
     if (n < 3)
       delete [] lfillPts;
     else {
@@ -251,7 +250,7 @@ void PolygonMarker::map()
     for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
-      if (LineRectClip(&extents, &segPtr->p, &segPtr->q)) {
+      if (lineRectClip(&extents, &segPtr->p, &segPtr->q)) {
 	segPtr++;
       }
     }
@@ -269,7 +268,7 @@ int PolygonMarker::pointIn(Point2d *samplePtr)
   PolygonMarkerOptions* ops = (PolygonMarkerOptions*)ops_;
 
   if (ops->worldPts && (ops->worldPts->num >= 3) && screenPts_)
-    return PointInPolygon(samplePtr, screenPts_, ops->worldPts->num + 1);
+    return pointInPolygon(samplePtr, screenPts_, ops->worldPts->num + 1);
 
   return 0;
 }

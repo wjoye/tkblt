@@ -35,6 +35,8 @@
 
 #include "bltSpline.h"
 
+using namespace Blt;
+
 typedef double TriDiagonalMatrix[3];
 typedef struct {
     double b, c, d;

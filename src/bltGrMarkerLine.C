@@ -180,7 +180,7 @@ void LineMarker::map()
     next.y += ops->yOffset;
     Point2d q = next;
 
-    if (LineRectClip(&extents, &p, &q)) {
+    if (lineRectClip(&extents, &p, &q)) {
       segPtr->p = p;
       segPtr->q = q;
       segPtr++;
@@ -205,7 +205,7 @@ int LineMarker::pointInSegments(Point2d* samplePtr, Segment2d* segments,
   double minDist = DBL_MAX;
   Segment2d *sp, *send;
   for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    Point2d t = GetProjection((int)samplePtr->x, (int)samplePtr->y, 
+    Point2d t = getProjection((int)samplePtr->x, (int)samplePtr->y, 
 			  &sp->p, &sp->q);
     double right;
     double left;
@@ -268,7 +268,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 	 pp < pend; pp++) {
       Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
       Point2d q = mapPoint(pp + 1, ops->xAxis, ops->yAxis);
-      if (LineRectClip(extsPtr, &p, &q))
+      if (lineRectClip(extsPtr, &p, &q))
 	count++;
     }
     return (count > 0);		/* At least 1 segment passes through

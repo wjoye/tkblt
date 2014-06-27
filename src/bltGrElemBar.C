@@ -632,7 +632,7 @@ void BarElement::closest()
 
     Point2d *pp, *pend;
     for (pp=outline, pend=outline+4; pp<pend; pp++) {
-      Point2d t = GetProjection(searchPtr->x, searchPtr->y, pp, pp + 1);
+      Point2d t = getProjection(searchPtr->x, searchPtr->y, pp, pp + 1);
       if (t.x > right)
 	t.x = right;
       else if (t.x < left)

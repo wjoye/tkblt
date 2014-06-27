@@ -92,7 +92,7 @@ namespace Blt {
 			    int nScreenPts);
   extern int polyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			  int nInputPts, Point2d *outputPts);
-  extern int LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
+  extern int lineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
   extern Point2d getProjection (int x, int y, Point2d *p, Point2d *q);
   extern Graph* getGraphFromWindowData(Tk_Window tkwin);
 };
