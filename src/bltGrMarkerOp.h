@@ -32,6 +32,8 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble markerEnsemble[];
+namespace Blt {
+  extern const Ensemble markerEnsemble[];
+};
 
 #endif

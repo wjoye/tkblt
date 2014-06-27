@@ -42,8 +42,8 @@ static int GetIndex(Tcl_Interp* interp, Element* elemPtr,
 		    Tcl_Obj *objPtr, int *indexPtr);
 static Tcl_Obj *DisplayListObj(Graph* graphPtr);
 
-int ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
-			int objc, Tcl_Obj* const objv[])
+int Blt::ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
+			     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = elemPtr->graphPtr_;
   Tk_SavedOptions savedOptions;
@@ -510,7 +510,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble elementEnsemble[] = {
+const Ensemble Blt::elementEnsemble[] = {
   {"activate",   ActivateOp, 0},
   {"bind",       BindOp, 0},
   {"cget",       CgetOp, 0},

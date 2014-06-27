@@ -32,7 +32,9 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble legendEnsemble[];
-extern const Ensemble selectionEnsemble[];
+namespace Blt {
+  extern const Ensemble legendEnsemble[];
+  extern const Ensemble selectionEnsemble[];
+};
 
 #endif

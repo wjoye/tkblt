@@ -207,7 +207,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
   return AxisViewOp(axisPtr, interp, objc, objv);
 }
 
-const Ensemble xaxisEnsemble[] = {
+const Ensemble Blt::xaxisEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget",         CgetOp, 0},

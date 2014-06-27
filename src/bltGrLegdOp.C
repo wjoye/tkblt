@@ -280,7 +280,7 @@ static int GetOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble legendEnsemble[] = {
+const Ensemble Blt::legendEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget",         CgetOp, 0},
@@ -466,7 +466,7 @@ static int SelectionSetOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble selectionEnsemble[] = {
+const Ensemble Blt::selectionEnsemble[] = {
   {"anchor",   SelectionAnchorOp, 0},
   {"clear",    SelectionSetOp, 0},
   {"clearall", SelectionClearallOp, 0},

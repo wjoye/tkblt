@@ -35,6 +35,8 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble crosshairsEnsemble[];
+namespace Blt {
+  extern const Ensemble crosshairsEnsemble[];
+};
 
 #endif

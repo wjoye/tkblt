@@ -35,9 +35,9 @@
 
 using namespace Blt;
 
-int PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
-		    Tcl_Interp* interp, 
-		    int objc, Tcl_Obj* const objv[])
+int Blt::PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
+			 Tcl_Interp* interp, 
+			 int objc, Tcl_Obj* const objv[])
 {
   Tk_SavedOptions savedOptions;
   int mask =0;
@@ -205,7 +205,7 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble penEnsemble[] = {
+const Ensemble Blt::penEnsemble[] = {
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},
   {"create",    CreateOp, 0},

@@ -39,8 +39,8 @@
 
 using namespace Blt;
 
-int PostscriptObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
-			  int objc, Tcl_Obj* const objv[])
+int Blt::PostscriptObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
+				int objc, Tcl_Obj* const objv[])
 {
   Postscript* setupPtr = graphPtr->postscript_;
   Tk_SavedOptions savedOptions;
@@ -178,7 +178,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
   return TCL_OK;
 }
 
-const Ensemble postscriptEnsemble[] = {
+const Ensemble Blt::postscriptEnsemble[] = {
   {"cget",      CgetOp, 0},
   {"configure", ConfigureOp, 0},
   {"output",    OutputOp, 0},

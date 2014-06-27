@@ -32,9 +32,11 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble penEnsemble[];
+namespace Blt {
+  extern const Ensemble penEnsemble[];
+  extern int PenObjConfigure(Blt::Graph* graphPtr, Blt::Pen* penPtr, 
+			     Tcl_Interp* interp,
+			     int objc, Tcl_Obj* const objv[]);
+};
 
-extern int PenObjConfigure(Blt::Graph* graphPtr, Blt::Pen* penPtr, 
-			   Tcl_Interp* interp,
-			   int objc, Tcl_Obj* const objv[]);
 #endif

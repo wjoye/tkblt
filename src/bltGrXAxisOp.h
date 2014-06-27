@@ -32,6 +32,8 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble xaxisEnsemble[];
+namespace Blt {
+  extern const Ensemble xaxisEnsemble[];
+};
 
 #endif

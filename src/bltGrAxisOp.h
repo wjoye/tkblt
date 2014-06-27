@@ -32,10 +32,11 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble axisEnsemble[];
-
-extern int AxisObjConfigure(Blt::Axis* axisPtr, Tcl_Interp* interp,
-			    int objc, Tcl_Obj* const objv[]);
+namespace Blt {
+  extern const Ensemble axisEnsemble[];
+  extern int AxisObjConfigure(Blt::Axis* axisPtr, Tcl_Interp* interp,
+			      int objc, Tcl_Obj* const objv[]);
+};
 
 extern int AxisCgetOp(Blt::Axis* axisPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[]);

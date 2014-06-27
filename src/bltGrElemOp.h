@@ -32,8 +32,10 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble elementEnsemble[];
+namespace Blt {
+  extern const Ensemble elementEnsemble[];
+  extern int ElementObjConfigure(Blt::Element* elemPtr, Tcl_Interp* interp,
+				 int objc, Tcl_Obj* const objv[]);
+};
 
-extern int ElementObjConfigure(Blt::Element* elemPtr, Tcl_Interp* interp,
-			       int objc, Tcl_Obj* const objv[]);
 #endif

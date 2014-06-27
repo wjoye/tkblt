@@ -32,9 +32,10 @@
 
 #include "bltGraph.h"
 
-extern const Ensemble postscriptEnsemble[];
-
-extern int PostscriptObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp, 
-				  int objc, Tcl_Obj* const objv[]);
+namespace Blt {
+  extern const Ensemble postscriptEnsemble[];
+  extern int PostscriptObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp, 
+				    int objc, Tcl_Obj* const objv[]);
+};
 
 #endif

@@ -50,8 +50,8 @@ static double Clamp(double x)
   return (x < 0.0) ? 0.0 : (x > 1.0) ? 1.0 : x;
 }
 
-int AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
-		     int objc, Tcl_Obj* const objv[])
+int Blt::AxisObjConfigure(Axis* axisPtr, Tcl_Interp* interp,
+			  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = axisPtr->graphPtr_;
   Tk_SavedOptions savedOptions;
@@ -303,7 +303,7 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
   return AxisViewOp(axisPtr, interp, objc-1, objv+1);
 }
 
-const Ensemble axisEnsemble[] = {
+const Ensemble Blt::axisEnsemble[] = {
   {"activate",     ActivateOp, 0},
   {"bind",         BindOp, 0},
   {"cget", 	   CgetOp,0 },
