@@ -34,7 +34,7 @@
 
 extern const Ensemble penEnsemble[];
 
-extern int PenObjConfigure(Graph* graphPtr, Pen* penPtr, 
+extern int PenObjConfigure(Graph* graphPtr, Blt::Pen* penPtr, 
 			   Tcl_Interp* interp,
 			   int objc, Tcl_Obj* const objv[]);
 #endif

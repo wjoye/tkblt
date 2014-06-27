@@ -47,7 +47,7 @@ typedef struct {
 
 typedef struct {
   Weight weight;
-  BarPen* penPtr;
+  Blt::BarPen* penPtr;
   XRectangle* bars;
   int nBars;
   GraphSegments xeb;
@@ -73,10 +73,10 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-  BarPen* builtinPenPtr;
-  BarPen* activePenPtr;
-  BarPen* normalPenPtr;
-  BarPenOptions builtinPen;
+  Blt::BarPen* builtinPenPtr;
+  Blt::BarPen* activePenPtr;
+  Blt::BarPen* normalPenPtr;
+  Blt::BarPenOptions builtinPen;
 
   // derived
   double barWidth;
@@ -85,7 +85,7 @@ typedef struct {
 
 class BarElement : public Element {
  protected:
-  BarPen* builtinPenPtr;
+  Blt::BarPen* builtinPenPtr;
   int* barToData_;
   XRectangle* bars_;
   int* activeToData_;
@@ -102,10 +102,10 @@ class BarElement : public Element {
   void mapActive();
   void reset();
   void mapErrorBars(BarStyle**);
-  void drawSegments(Drawable, BarPen*, XRectangle*, int);
-  void drawValues(Drawable, BarPen*, XRectangle*, int, int*);
-  void printSegments(Blt::PSOutput*, BarPen*, XRectangle*, int);
-  void printValues(Blt::PSOutput*, BarPen*, XRectangle*, int, int*);
+  void drawSegments(Drawable, Blt::BarPen*, XRectangle*, int);
+  void drawValues(Drawable, Blt::BarPen*, XRectangle*, int, int*);
+  void printSegments(Blt::PSOutput*, Blt::BarPen*, XRectangle*, int);
+  void printValues(Blt::PSOutput*, Blt::BarPen*, XRectangle*, int, int*);
 
  public:
   BarElement(Graph*, const char*, Tcl_HashEntry*);

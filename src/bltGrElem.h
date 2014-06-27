@@ -38,10 +38,10 @@ extern "C" {
 };
 
 class Element;
-class Pen;
 
 namespace Blt {
   class Axis;
+  class Pen;
   class Postscript;
 };
 
@@ -93,7 +93,7 @@ typedef struct {
 
 typedef struct {
   Weight weight;
-  Pen* penPtr;
+  Blt::Pen* penPtr;
 } PenStyle;
 
 typedef struct {
@@ -113,10 +113,10 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-  Pen* builtinPenPtr;
-  Pen* activePenPtr;
-  Pen* normalPenPtr;
-  PenOptions builtinPen;
+  Blt::Pen* builtinPenPtr;
+  Blt::Pen* activePenPtr;
+  Blt::Pen* normalPenPtr;
+  Blt::PenOptions builtinPen;
 } ElementOptions;
 
 class Element {

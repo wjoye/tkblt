@@ -36,42 +36,45 @@
 
 class Graph;
 
-typedef struct {
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
-  int valueShow;
-  const char* valueFormat;
-  Blt::TextStyleOptions valueStyle;
-} PenOptions;
+namespace Blt {
 
-class Pen {
- protected:
-  Tk_OptionTable optionTable_;
-  void* ops_;
+  typedef struct {
+    int errorBarShow;
+    int errorBarLineWidth;
+    int errorBarCapWidth;
+    XColor* errorBarColor;
+    int valueShow;
+    const char* valueFormat;
+    TextStyleOptions valueStyle;
+  } PenOptions;
 
- public:
-  Graph* graphPtr_;
-  const char *name_;
-  Tcl_HashEntry *hashPtr_;
-  int refCount_;
-  unsigned int flags;
-  int manageOptions_;
+  class Pen {
+  protected:
+    Tk_OptionTable optionTable_;
+    void* ops_;
 
- public:
-  Pen();
-  Pen(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~Pen();
+  public:
+    Graph* graphPtr_;
+    const char *name_;
+    Tcl_HashEntry *hashPtr_;
+    int refCount_;
+    unsigned int flags;
+    int manageOptions_;
 
-  virtual ClassId classId() =0;
-  virtual const char* className() =0;
-  virtual const char* typeName() =0;
+  public:
+    Pen();
+    Pen(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~Pen();
 
-  Tk_OptionTable optionTable() {return optionTable_;}
-  void* ops() {return ops_;}
+    virtual ClassId classId() =0;
+    virtual const char* className() =0;
+    virtual const char* typeName() =0;
 
-  virtual int configure() =0;
+    Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+
+    virtual int configure() =0;
+  };
 };
 
 #endif

@@ -34,39 +34,40 @@
 
 #include "bltGrPen.h"
 
-typedef struct {
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
-  int valueShow;
-  const char *valueFormat;
-  Blt::TextStyleOptions valueStyle;
+namespace Blt {
 
-  XColor* outlineColor;
-  Tk_3DBorder fill;
-  int borderWidth;
-  int relief;
-} BarPenOptions;
+  typedef struct {
+    int errorBarShow;
+    int errorBarLineWidth;
+    int errorBarCapWidth;
+    XColor* errorBarColor;
+    int valueShow;
+    const char *valueFormat;
+    TextStyleOptions valueStyle;
 
-class BarPen : public Pen {
-  friend class BarElement;
+    XColor* outlineColor;
+    Tk_3DBorder fill;
+    int borderWidth;
+    int relief;
+  } BarPenOptions;
 
- protected:
-  GC fillGC_;
-  GC outlineGC_;
-  GC errorBarGC_;
+  class BarPen : public Pen {
+  public:
+    GC fillGC_;
+    GC outlineGC_;
+    GC errorBarGC_;
 
- public:
-  BarPen(Graph*, const char*, Tcl_HashEntry*);
-  BarPen(Graph*, const char*, void*);
-  virtual ~BarPen();
+  public:
+    BarPen(Graph*, const char*, Tcl_HashEntry*);
+    BarPen(Graph*, const char*, void*);
+    virtual ~BarPen();
 
-  ClassId classId() {return CID_ELEM_BAR;}
-  const char* className() {return "BarElement";}
-  const char* typeName() {return "bar";}
+    ClassId classId() {return CID_ELEM_BAR;}
+    const char* className() {return "BarElement";}
+    const char* typeName() {return "bar";}
 
-  int configure();
+    int configure();
+  };
 };
 
 #endif

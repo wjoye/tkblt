@@ -55,7 +55,7 @@ typedef struct {
 
 typedef struct {
   Weight weight;
-  LinePen* penPtr;
+  Blt::LinePen* penPtr;
   GraphPoints symbolPts;
   GraphSegments xeb;
   GraphSegments yeb;
@@ -80,10 +80,10 @@ typedef struct {
   int hide;
   int legendRelief;
   Blt_Chain stylePalette;
-  LinePen *builtinPenPtr;
-  LinePen *activePenPtr;
-  LinePen *normalPenPtr;
-  LinePenOptions builtinPen;
+  Blt::LinePen *builtinPenPtr;
+  Blt::LinePen *activePenPtr;
+  Blt::LinePen *normalPenPtr;
+  Blt::LinePenOptions builtinPen;
 
   // derived
   Tk_3DBorder fillBg;
@@ -100,7 +100,7 @@ class LineElement : public Element {
   enum Smoothing {LINEAR, STEP, CUBIC, QUADRATIC, CATROM};
 
  protected:
-  LinePen* builtinPenPtr;
+  Blt::LinePen* builtinPenPtr;
   Smoothing smooth_;
   Point2d *fillPts_;
   int nFillPts_;
@@ -112,12 +112,12 @@ class LineElement : public Element {
   int symbolCounter_;
   Blt_Chain traces_;
 
-  void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawSCross(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawCross(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawDiamond(Display*, Drawable, LinePen*, int, Point2d*, int);
-  void drawArrow(Display*, Drawable, LinePen*, int, Point2d*, int);
+  void drawCircle(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  void drawSquare(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  void drawSCross(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  void drawCross(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  void drawDiamond(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  void drawArrow(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
 
  protected:
   int scaleSymbol(int);
@@ -139,13 +139,13 @@ class LineElement : public Element {
   void resetLine();
   int closestTrace();
   void closestPoint(ClosestSearch*);
-  void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
-  void drawTraces(Drawable, LinePen*);
-  void drawValues(Drawable, LinePen*, int, Point2d*, int*);
-  void setLineAttributes(Blt::PSOutput*, LinePen*);
-  void printTraces(Blt::PSOutput*, LinePen*);
-  void printValues(Blt::PSOutput*, LinePen*, int, Point2d*, int*);
-  void printSymbols(Blt::PSOutput*, LinePen*, int, int, Point2d*);
+  void drawSymbols(Drawable, Blt::LinePen*, int, int, Point2d*);
+  void drawTraces(Drawable, Blt::LinePen*);
+  void drawValues(Drawable, Blt::LinePen*, int, Point2d*, int*);
+  void setLineAttributes(Blt::PSOutput*, Blt::LinePen*);
+  void printTraces(Blt::PSOutput*, Blt::LinePen*);
+  void printValues(Blt::PSOutput*, Blt::LinePen*, int, Point2d*, int*);
+  void printSymbols(Blt::PSOutput*, Blt::LinePen*, int, int, Point2d*);
   double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToY(int, int, Point2d*, Point2d*, Point2d*);

@@ -40,10 +40,8 @@ extern "C" {
 #include "bltGrText.h"
 
 class Graph;
-class Crosshairs;
 class Element;
 class Legend;
-class Pen;
 
 class Pick {
  public:
@@ -53,7 +51,9 @@ class Pick {
 namespace Blt {
   class Axis;
   class BindTable;
+  class Crosshairs;
   class Marker;
+  class Pen;
   class Postscript;
   class PSOutput;
 };
@@ -149,7 +149,7 @@ class Graph : public Pick {
   Blt_Chain axisChain_[4];
 
   Legend* legend_;
-  Crosshairs* crosshairs_;
+  Blt::Crosshairs* crosshairs_;
   Blt::Postscript* postscript_;
 
   int inset_;
@@ -241,7 +241,7 @@ class Graph : public Pick {
   ClientData elementTag(const char*);
 
   virtual int createPen(const char*, int, Tcl_Obj* const []) =0;
-  int getPen(Tcl_Obj*, Pen**);
+  int getPen(Tcl_Obj*, Blt::Pen**);
 
   int getXY(const char*, int*, int*);
   void getTextExtents(Tk_Font, const char*, int, int*, int*);

@@ -32,54 +32,55 @@
 
 #include "bltGrPen.h"
 
-typedef enum {
-  SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
-  SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW
-} SymbolType;
+namespace Blt {
 
-typedef struct {
-  SymbolType type;
-  int size;
-  XColor* outlineColor;
-  int outlineWidth;
-  GC outlineGC;
-  XColor* fillColor;
-  GC fillGC;
-} Symbol;
+  typedef enum {
+    SYMBOL_NONE, SYMBOL_SQUARE, SYMBOL_CIRCLE, SYMBOL_DIAMOND, SYMBOL_PLUS,
+    SYMBOL_CROSS, SYMBOL_SPLUS, SYMBOL_SCROSS, SYMBOL_TRIANGLE, SYMBOL_ARROW
+  } SymbolType;
 
-typedef struct {
-  int errorBarShow;
-  int errorBarLineWidth;
-  int errorBarCapWidth;
-  XColor* errorBarColor;
-  int valueShow;
-  const char* valueFormat;
-  Blt::TextStyleOptions valueStyle;
+  typedef struct {
+    SymbolType type;
+    int size;
+    XColor* outlineColor;
+    int outlineWidth;
+    GC outlineGC;
+    XColor* fillColor;
+    GC fillGC;
+  } Symbol;
 
-  Symbol symbol;
-  int traceWidth;
-  Dashes traceDashes;
-  XColor* traceColor;
-  XColor* traceOffColor;
-} LinePenOptions;
+  typedef struct {
+    int errorBarShow;
+    int errorBarLineWidth;
+    int errorBarCapWidth;
+    XColor* errorBarColor;
+    int valueShow;
+    const char* valueFormat;
+    TextStyleOptions valueStyle;
 
-class LinePen : public Pen {
-  friend class LineElement;
+    Symbol symbol;
+    int traceWidth;
+    Dashes traceDashes;
+    XColor* traceColor;
+    XColor* traceOffColor;
+  } LinePenOptions;
 
- protected:
-  GC traceGC_;
-  GC errorBarGC_;
+  class LinePen : public Pen {
+  public:
+    GC traceGC_;
+    GC errorBarGC_;
 
- public:
-  LinePen(Graph*, const char*, Tcl_HashEntry*);
-  LinePen(Graph*, const char*, void*);
-  virtual ~LinePen();
+  public:
+    LinePen(Graph*, const char*, Tcl_HashEntry*);
+    LinePen(Graph*, const char*, void*);
+    virtual ~LinePen();
 
-  ClassId classId() {return CID_ELEM_LINE;}
-  const char* className() {return "LineElement";}
-  const char* typeName() {return "line";}
+    ClassId classId() {return CID_ELEM_LINE;}
+    const char* className() {return "LineElement";}
+    const char* typeName() {return "line";}
 
-  int configure();
+    int configure();
+  };
 };
 
 extern const char* symbolObjOption[];
