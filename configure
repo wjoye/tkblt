@@ -5537,6 +5537,7 @@ done
 	bltGrElem.C
 	bltGrElemBar.C
 	bltGrElemLine.C
+	bltGrElemLineSpline.C
 	bltGrHairs.C
 	bltGrHairsOp.C
 	bltGrLegd.C
@@ -5567,7 +5568,6 @@ done
 	bltNsUtil.c
 	bltParse.C
 	bltOp.C
-	bltSpline.C
 	bltSwitch.C
 	bltUtil.c
 	bltVecCmd.c

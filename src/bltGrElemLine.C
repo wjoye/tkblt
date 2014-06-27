@@ -35,7 +35,6 @@
 #include <X11/Xlib.h>
 
 #include "bltGraph.h"
-#include "bltSpline.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
 #include "bltGrAxis.h"
@@ -1154,9 +1153,9 @@ void LineElement::generateSpline(MapInfo *mapPtr)
   niPts = count;
   int result = 0;
   if (smooth_ == CUBIC)
-    result = Blt_NaturalSpline(origPts, nOrigPts, iPts, niPts);
+    result = naturalSpline(origPts, nOrigPts, iPts, niPts);
   else if (smooth_ == QUADRATIC)
-    result = Blt_QuadraticSpline(origPts, nOrigPts, iPts, niPts);
+    result = quadraticSpline(origPts, nOrigPts, iPts, niPts);
 
   // The spline interpolation failed.  We will fall back to the current
   // coordinates and do no smoothing (standard line segments)
@@ -1199,7 +1198,7 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
     p = origPts[i];
     q = origPts[j];
     count++;
-    if (LineRectClip(&exts, &p, &q)) {
+    if (lineRectClip(&exts, &p, &q)) {
       count += (int)(hypot(q.x - p.x, q.y - p.y) * 0.5);
     }
   }
@@ -1237,7 +1236,7 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
     /* Is any part of the interval (line segment) in the plotting
      * area?  */
 
-    if (LineRectClip(&exts, &p, &q)) {
+    if (lineRectClip(&exts, &p, &q)) {
       double dp, dq;
 
       /* Distance of original point to p. */
@@ -1262,10 +1261,9 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
   niPts = count;
   result = 0;
   if (smooth_ == CUBIC)
-    result = Blt_NaturalParametricSpline(origPts, nOrigPts, &exts, 0,
-					 iPts, niPts);
+    result = naturalParametricSpline(origPts, nOrigPts, &exts, 0, iPts, niPts);
   else if (smooth_ == CATROM)
-    result = Blt_CatromParametricSpline(origPts, nOrigPts, iPts, niPts);
+    result = catromParametricSpline(origPts, nOrigPts, iPts, niPts);
 
   // The spline interpolation failed.  We will fall back to the current
   // coordinates and do no smoothing (standard line segments)
@@ -1786,7 +1784,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1794,7 +1792,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.x = segPtr->q.x = p.x;
 	  segPtr->p.y = p.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1802,7 +1800,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.x = segPtr->q.x = q.x;
 	  segPtr->p.y = q.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1855,7 +1853,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1863,7 +1861,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.y = segPtr->q.y = p.y;
 	  segPtr->p.x = p.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }
@@ -1871,7 +1869,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 	  segPtr->p.y = segPtr->q.y = q.y;
 	  segPtr->p.x = q.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&exts, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = i;
 	  }

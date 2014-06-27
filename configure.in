@@ -82,6 +82,7 @@ TEA_ADD_SOURCES([
 	bltGrElem.C
 	bltGrElemBar.C
 	bltGrElemLine.C
+	bltGrElemLineSpline.C
 	bltGrHairs.C
 	bltGrHairsOp.C
 	bltGrLegd.C
@@ -112,7 +113,6 @@ TEA_ADD_SOURCES([
 	bltNsUtil.c
 	bltParse.C
 	bltOp.C
-	bltSpline.C
 	bltSwitch.C
 	bltUtil.c
 	bltVecCmd.c

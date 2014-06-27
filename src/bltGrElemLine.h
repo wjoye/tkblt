@@ -32,6 +32,7 @@
 
 #include <tk.h>
 
+#include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"
 
@@ -153,6 +154,11 @@ namespace Blt {
     double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
     int simplify(Point2d*, int, int, double, int*);
     double findSplit(Point2d*, int, int, int*);
+
+    int naturalSpline(Point2d*, int, Point2d*, int);
+    int quadraticSpline(Point2d*, int, Point2d*, int);
+    int naturalParametricSpline(Point2d*, int, Region2d*, int, Point2d*, int);
+    int catromParametricSpline(Point2d*, int, Point2d*, int);
 
   public:
     LineElement(Graph*, const char*, Tcl_HashEntry*);
