@@ -47,7 +47,7 @@ class Element;
 class Legend;
 class Pen;
 class PageSetup;
-class PostScript;
+class PSOutput;
 
 class Pick {
  public:
@@ -180,7 +180,7 @@ class Graph : public Pick {
   void layoutGraph();
   
   void drawMargins(Drawable);
-  void printMargins(PostScript*);
+  void printMargins(PSOutput*);
   int getMarginGeometry(Margin*);
 
   void destroyPens();
@@ -190,14 +190,14 @@ class Graph : public Pick {
   virtual void mapElements();
   void drawElements(Drawable);
   void drawActiveElements(Drawable);
-  void printElements(PostScript*);
-  void printActiveElements(PostScript*);
+  void printElements(PSOutput*);
+  void printActiveElements(PSOutput*);
 
   void destroyMarkers();
   void configureMarkers();
   void mapMarkers();
   void drawMarkers(Drawable, int);
-  void printMarkers(PostScript*, int);
+  void printMarkers(PSOutput*, int);
 
   int createAxes();
   void destroyAxes();
@@ -216,15 +216,15 @@ class Graph : public Pick {
   void map();
   void draw();
   void eventuallyRedraw();
-  int print(const char*, PostScript*);
+  int print(const char*, PSOutput*);
   void extents(Region2d*);
   int invoke(const Ensemble*, int, int, Tcl_Obj* const []);
   void reconfigure();
 
   int createAxis(int, Tcl_Obj* const []);
-  void printAxes(PostScript*);
-  void printAxesGrids(PostScript*);
-  void printAxesLimits(PostScript*);
+  void printAxes(PSOutput*);
+  void printAxesGrids(PSOutput*);
+  void printAxesLimits(PSOutput*);
   int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
   Point2d map2D(double, double, Axis*, Axis*);

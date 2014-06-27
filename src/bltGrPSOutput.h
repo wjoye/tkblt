@@ -37,7 +37,7 @@
 class Graph;
 class PageSetup;
 
-class PostScript {
+class PSOutput {
  protected:
   Graph* graphPtr_;
   Tcl_DString dString_;
@@ -53,8 +53,8 @@ class PostScript {
   void prolog();
 
  public:
-  PostScript(Graph*);
-  virtual ~PostScript();
+  PSOutput(Graph*);
+  virtual ~PSOutput();
 
   void printPolyline(Point2d*, int);
   void printMaxPolyline(Point2d*, int);

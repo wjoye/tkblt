@@ -227,9 +227,9 @@ class Axis {
   void draw(Drawable);
   void drawGrids(Drawable);
   void drawLimits(Drawable);
-  void print(PostScript*);
-  void printGrids(PostScript*);
-  void printLimits(PostScript*);
+  void print(PSOutput*);
+  void printGrids(PSOutput*);
+  void printLimits(PSOutput*);
 
   void mapStacked(int, int);
   void mapGridlines();

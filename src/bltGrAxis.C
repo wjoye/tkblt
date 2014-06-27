@@ -1659,7 +1659,7 @@ void Axis::makeGridLine(double value, Segment2d *sp)
   }
 }
 
-void Axis::print(PostScript* psPtr)
+void Axis::print(PSOutput* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   PageSetupOptions* pops = (PageSetupOptions*)graphPtr_->pageSetup_->ops_;
@@ -1723,7 +1723,7 @@ void Axis::print(PostScript* psPtr)
   }
 }
 
-void Axis::printGrids(PostScript* psPtr)
+void Axis::printGrids(PSOutput* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
@@ -1744,7 +1744,7 @@ void Axis::printGrids(PostScript* psPtr)
   }
 }
 
-void Axis::printLimits(PostScript* psPtr)
+void Axis::printLimits(PSOutput* psPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;

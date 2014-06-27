@@ -524,7 +524,7 @@ void Legend::draw(Drawable drawable)
   Tk_FreePixmap(graphPtr_->display_, pixmap);
 }
 
-void Legend::print(PostScript* psPtr)
+void Legend::print(PSOutput* psPtr)
 {
   LegendOptions* ops = (LegendOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;

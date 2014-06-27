@@ -348,7 +348,7 @@ void Graph::draw()
   Tk_FreePixmap(display_, drawable);
 }
 
-int Graph::print(const char* ident, PostScript* psPtr)
+int Graph::print(const char* ident, PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
@@ -566,7 +566,7 @@ void Graph::drawMargins(Drawable drawable)
   }
 }
 
-void Graph::printMargins(PostScript* psPtr)
+void Graph::printMargins(PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   PageSetupOptions* pops = (PageSetupOptions*)pageSetup_->ops_;
@@ -697,7 +697,7 @@ void Graph::drawActiveElements(Drawable drawable)
   }
 }
 
-void Graph::printElements(PostScript* psPtr)
+void Graph::printElements(PSOutput* psPtr)
 {
   for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
        link != NULL; link = Blt_Chain_PrevLink(link)) {
@@ -706,7 +706,7 @@ void Graph::printElements(PostScript* psPtr)
   }
 }
 
-void Graph::printActiveElements(PostScript* psPtr)
+void Graph::printActiveElements(PSOutput* psPtr)
 {
   for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
@@ -802,7 +802,7 @@ void Graph::drawMarkers(Drawable drawable, int under)
   }
 }
 
-void Graph::printMarkers(PostScript* psPtr, int under)
+void Graph::printMarkers(PSOutput* psPtr, int under)
 {
   for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
        link; link = Blt_Chain_PrevLink(link)) {
@@ -1035,7 +1035,7 @@ void Graph::drawAxesGrids(Drawable drawable)
   }
 }
 
-void Graph::printAxes(PostScript* psPtr) 
+void Graph::printAxes(PSOutput* psPtr) 
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -1049,7 +1049,7 @@ void Graph::printAxes(PostScript* psPtr)
   }
 }
 
-void Graph::printAxesGrids(PostScript* psPtr) 
+void Graph::printAxesGrids(PSOutput* psPtr) 
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
@@ -1062,7 +1062,7 @@ void Graph::printAxesGrids(PostScript* psPtr)
   }
 }
 
-void Graph::printAxesLimits(PostScript* psPtr)
+void Graph::printAxesLimits(PSOutput* psPtr)
 {
   Tcl_HashSearch cursor;
   for (Tcl_HashEntry* hPtr=Tcl_FirstHashEntry(&axes_.table, &cursor);

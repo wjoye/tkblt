@@ -140,7 +140,7 @@ static int OutputOp(ClientData clientData, Tcl_Interp* interp,
     }
   }
 
-  PostScript* psPtr = new PostScript(graphPtr);
+  PSOutput* psPtr = new PSOutput(graphPtr);
   
   if (PageSetupObjConfigure(graphPtr, interp, objc-3, objv+3) != TCL_OK) {
     if (channel)
