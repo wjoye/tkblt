@@ -220,7 +220,7 @@ BarElement::~BarElement()
   reset();
 
   if (ops->stylePalette) {
-    Blt_FreeStylePalette(ops->stylePalette);
+    freeStylePalette(ops->stylePalette);
     Blt_Chain_Destroy(ops->stylePalette);
   }
 }

@@ -268,10 +268,10 @@ LineElement::~LineElement()
   if (builtinPenPtr)
     delete builtinPenPtr;
 
-  resetLine();
+  reset();
 
   if (ops->stylePalette) {
-    Blt_FreeStylePalette(ops->stylePalette);
+    freeStylePalette(ops->stylePalette);
     Blt_Chain_Destroy(ops->stylePalette);
   }
 
@@ -306,7 +306,7 @@ void LineElement::map()
   if (!link)
     return;
 
-  resetLine();
+  reset();
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues || !ops->coords.y->nValues)
     return;
@@ -1683,7 +1683,7 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
   }
 }
 
-void LineElement::resetLine()
+void LineElement::reset()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 

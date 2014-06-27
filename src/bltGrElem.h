@@ -161,11 +161,11 @@ namespace Blt {
     virtual const char* className() =0;
     virtual const char* typeName() =0;
 
+    void freeStylePalette (Blt_Chain);
+
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}
   };
 };
-
-extern void Blt_FreeStylePalette (Blt_Chain stylePalette);
 
 #endif

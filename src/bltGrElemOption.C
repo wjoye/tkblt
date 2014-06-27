@@ -277,7 +277,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
 
   // Reserve the first entry for the "normal" pen. We'll set the style later
-  Blt_FreeStylePalette(stylePalette);
+  elemPtr->freeStylePalette(stylePalette);
   Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette);
   if (!link) {
     link = Blt_Chain_AllocLink(size);
@@ -295,7 +295,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
     if (GetPenStyleFromObj(interp, elemPtr->graphPtr_, objv[ii], 
 			   elemPtr->classId(), 
 			   (PenStyle*)stylePtr) != TCL_OK) {
-      Blt_FreeStylePalette(stylePalette);
+      elemPtr->freeStylePalette(stylePalette);
       return TCL_ERROR;
     }
     Blt_Chain_LinkAfter(stylePalette, link, NULL);

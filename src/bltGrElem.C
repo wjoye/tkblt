@@ -134,13 +134,13 @@ PenStyle** Element::StyleMap()
   return dataToStyle;
 }
 
-void Blt_FreeStylePalette(Blt_Chain stylePalette)
+void Element::freeStylePalette(Blt_Chain stylePalette)
 {
   // Skip the first slot. It contains the built-in "normal" pen of the element
   Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette);
   if (link) {
     Blt_ChainLink next;
-    for (link = Blt_Chain_NextLink(link); link != NULL; link = next) {
+    for (link=Blt_Chain_NextLink(link); link; link=next) {
       next = Blt_Chain_NextLink(link);
       PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
       Pen* penPtr = stylePtr->penPtr;

@@ -139,7 +139,7 @@ namespace Blt {
     void mapTraces(MapInfo*);
     void mapFillArea(MapInfo*);
     void mapErrorBars(LineStyle**);
-    void resetLine();
+    void reset();
     int closestTrace();
     void closestPoint(ClosestSearch*);
     void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
