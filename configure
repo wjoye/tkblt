@@ -5544,7 +5544,6 @@ done
 	bltGrMarkerOp.C
 	bltGrMarkerOption.C
 	bltGrMarker.C
-	bltGrMarkerBitmap.C
 	bltGrMarkerLine.C
 	bltGrMarkerPolygon.C
 	bltGrMarkerText.C

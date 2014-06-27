@@ -34,7 +34,6 @@
 #include "bltGrElem.h"
 #include "bltGrMarkerOp.h"
 #include "bltGrMarker.h"
-#include "bltGrMarkerBitmap.h"
 #include "bltGrMarkerLine.h"
 #include "bltGrMarkerPolygon.h"
 #include "bltGrMarkerText.h"
@@ -127,9 +126,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   const char* type = Tcl_GetString(objv[3]);
   Marker* markerPtr;
-  if (!strcmp(type, "bitmap"))
-    markerPtr = new BitmapMarker(graphPtr, name, hPtr);
-  else if (!strcmp(type, "line"))
+  if (!strcmp(type, "line"))
     markerPtr = new LineMarker(graphPtr, name, hPtr);
   else if (!strcmp(type, "polygon"))
     markerPtr = new PolygonMarker(graphPtr, name, hPtr);
