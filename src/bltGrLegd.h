@@ -151,7 +151,7 @@ class Legend : public Pick {
   int configure();
   void map(int, int);
   void draw(Drawable drawable);
-  void print(PSOutput* ps);
+  void print(Blt::PSOutput* ps);
   void eventuallyInvokeSelectCmd();
 
   void removeElement(Element*);

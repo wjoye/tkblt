@@ -35,9 +35,9 @@
 #include "bltGrMisc.h"
 
 class Graph;
-class PSOutput;
 
 namespace Blt {
+  class PSOutput;
 
   typedef struct {
     Tk_Anchor anchor;

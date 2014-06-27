@@ -142,10 +142,10 @@ class LineElement : public Element {
   void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
   void drawTraces(Drawable, LinePen*);
   void drawValues(Drawable, LinePen*, int, Point2d*, int*);
-  void setLineAttributes(PSOutput*, LinePen*);
-  void printTraces(PSOutput*, LinePen*);
-  void printValues(PSOutput*, LinePen*, int, Point2d*, int*);
-  void printSymbols(PSOutput*, LinePen*, int, int, Point2d*);
+  void setLineAttributes(Blt::PSOutput*, LinePen*);
+  void printTraces(Blt::PSOutput*, LinePen*);
+  void printValues(Blt::PSOutput*, LinePen*, int, Point2d*, int*);
+  void printSymbols(Blt::PSOutput*, LinePen*, int, int, Point2d*);
   double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
   double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
@@ -167,9 +167,9 @@ class LineElement : public Element {
   void draw(Drawable);
   void drawActive(Drawable);
   void drawSymbol(Drawable, int, int, int);
-  void print(PSOutput*);
-  void printActive(PSOutput*);
-  void printSymbol(PSOutput*, double, double, int);
+  void print(Blt::PSOutput*);
+  void printActive(Blt::PSOutput*);
+  void printSymbol(Blt::PSOutput*, double, double, int);
 };
 
 #endif

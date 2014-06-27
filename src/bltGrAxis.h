@@ -40,7 +40,10 @@ extern "C" {
 };
 
 class Graph;
-class Postscript;
+
+namespace Blt {
+  class Postscript;
+};
 
 #include "bltGrMisc.h"
 #include "bltGrText.h"
@@ -227,9 +230,9 @@ class Axis {
   void draw(Drawable);
   void drawGrids(Drawable);
   void drawLimits(Drawable);
-  void print(PSOutput*);
-  void printGrids(PSOutput*);
-  void printLimits(PSOutput*);
+  void print(Blt::PSOutput*);
+  void printGrids(Blt::PSOutput*);
+  void printLimits(Blt::PSOutput*);
 
   void mapStacked(int, int);
   void mapGridlines();

@@ -27,17 +27,17 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _BLT_PS_H
-#define _BLT_PS_H
+#ifndef _BLT_PSOUTPUT_H
+#define _BLT_PSOUTPUT_H
 
 #include <tk.h>
 
 #define POSTSCRIPT_BUFSIZ ((BUFSIZ*2)-1)
 
 class Graph;
-class Postscript;
 
 namespace Blt {
+  class Postscript;
 
   class PSOutput {
   protected:

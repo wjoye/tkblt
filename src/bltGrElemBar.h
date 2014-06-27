@@ -104,8 +104,8 @@ class BarElement : public Element {
   void mapErrorBars(BarStyle**);
   void drawSegments(Drawable, BarPen*, XRectangle*, int);
   void drawValues(Drawable, BarPen*, XRectangle*, int, int*);
-  void printSegments(PSOutput*, BarPen*, XRectangle*, int);
-  void printValues(PSOutput*, BarPen*, XRectangle*, int, int*);
+  void printSegments(Blt::PSOutput*, BarPen*, XRectangle*, int);
+  void printValues(Blt::PSOutput*, BarPen*, XRectangle*, int, int*);
 
  public:
   BarElement(Graph*, const char*, Tcl_HashEntry*);
@@ -122,9 +122,9 @@ class BarElement : public Element {
   void draw(Drawable);
   void drawActive(Drawable);
   void drawSymbol(Drawable, int, int, int);
-  void print(PSOutput*);
-  void printActive(PSOutput*);
-  void printSymbol(PSOutput*, double, double, int);
+  void print(Blt::PSOutput*);
+  void printActive(Blt::PSOutput*);
+  void printSymbol(Blt::PSOutput*, double, double, int);
 };
 
 #endif

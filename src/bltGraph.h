@@ -46,8 +46,6 @@ class Axis;
 class Element;
 class Legend;
 class Pen;
-class Postscript;
-class PSOutput;
 
 class Pick {
  public:
@@ -55,7 +53,9 @@ class Pick {
 };
 
 namespace Blt {
-class Marker;
+  class Marker;
+  class Postscript;
+  class PSOutput;
 };
 
 typedef struct Ensemble {
@@ -150,7 +150,7 @@ class Graph : public Pick {
 
   Legend* legend_;
   Crosshairs* crosshairs_;
-  Postscript* postscript_;
+  Blt::Postscript* postscript_;
 
   int inset_;
   short int titleX_;
@@ -180,7 +180,7 @@ class Graph : public Pick {
   void layoutGraph();
   
   void drawMargins(Drawable);
-  void printMargins(PSOutput*);
+  void printMargins(Blt::PSOutput*);
   int getMarginGeometry(Margin*);
 
   void destroyPens();
@@ -190,14 +190,14 @@ class Graph : public Pick {
   virtual void mapElements();
   void drawElements(Drawable);
   void drawActiveElements(Drawable);
-  void printElements(PSOutput*);
-  void printActiveElements(PSOutput*);
+  void printElements(Blt::PSOutput*);
+  void printActiveElements(Blt::PSOutput*);
 
   void destroyMarkers();
   void configureMarkers();
   void mapMarkers();
   void drawMarkers(Drawable, int);
-  void printMarkers(PSOutput*, int);
+  void printMarkers(Blt::PSOutput*, int);
 
   int createAxes();
   void destroyAxes();
@@ -216,15 +216,15 @@ class Graph : public Pick {
   void map();
   void draw();
   void eventuallyRedraw();
-  int print(const char*, PSOutput*);
+  int print(const char*, Blt::PSOutput*);
   void extents(Region2d*);
   int invoke(const Ensemble*, int, int, Tcl_Obj* const []);
   void reconfigure();
 
   int createAxis(int, Tcl_Obj* const []);
-  void printAxes(PSOutput*);
-  void printAxesGrids(PSOutput*);
-  void printAxesLimits(PSOutput*);
+  void printAxes(Blt::PSOutput*);
+  void printAxesGrids(Blt::PSOutput*);
+  void printAxesLimits(Blt::PSOutput*);
   int getAxis(Tcl_Obj*, Axis**);
   ClientData axisTag(const char*);
   Point2d map2D(double, double, Axis*, Axis*);
