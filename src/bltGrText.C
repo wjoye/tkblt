@@ -39,6 +39,8 @@ extern "C" {
 #include "bltGraph.h"
 #include "bltGrPSOutput.h"
 
+using namespace Blt;
+
 TextStyle::TextStyle(Graph* graphPtr)
 {
   ops_ = (TextStyleOptions*)calloc(1, sizeof(TextStyleOptions));

@@ -38,6 +38,8 @@ using namespace std;
 #include "bltGraph.h"
 #include "bltGrLegd.h"
 
+using namespace Blt;
+
 static Tk_EventProc BindProc;
 
 BindTable::BindTable(Graph* graphPtr, Pick* pickPtr)
