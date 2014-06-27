@@ -94,7 +94,7 @@ namespace Blt {
 			  int nInputPts, Point2d *outputPts);
   extern int LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
   extern Point2d GetProjection (int x, int y, Point2d *p, Point2d *q);
-  extern Graph* GetGraphFromWindowData(Tk_Window tkwin);
+  extern Graph* getGraphFromWindowData(Tk_Window tkwin);
 };
 
 #endif

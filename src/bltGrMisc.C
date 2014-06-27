@@ -56,7 +56,7 @@ char* Blt::dupstr(const char* str)
   return copy;
 }
 
-int Blt_PointInPolygon(Point2d *s, Point2d *points, int nPoints)
+int Blt::PointInPolygon(Point2d *s, Point2d *points, int nPoints)
 {
   Point2d *p, *q, *qend;
   int count;
@@ -116,7 +116,7 @@ static int ClipTest (double ds, double dr, double *t1, double *t2)
  *	  Line Clipping, ACM, TOG,3(1), 1984, pp.1-22.
  *---------------------------------------------------------------------------
  */
-int Blt_LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
+int Blt::LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 {
   double t1, t2;
   double dx, dy;
@@ -158,8 +158,8 @@ int Blt_LineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 #define AddVertex(vx, vy)	    r->x=(vx), r->y=(vy), r++, count++ 
 #define LastVertex(vx, vy)	    r->x=(vx), r->y=(vy), count++ 
 
-int Blt_PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
-		     Point2d *clipPts)
+int Blt::PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
+		      Point2d *clipPts)
 {
   Point2d *p;			/* First vertex of input polygon edge. */
   Point2d *pend;
@@ -270,7 +270,7 @@ int Blt_PolyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
  *	line.
  *---------------------------------------------------------------------------
  */
-Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
+Point2d Blt::GetProjection(int x, int y, Point2d *p, Point2d *q)
 {
   double dx = p->x - q->x;
   double dy = p->y - q->y;
@@ -329,7 +329,7 @@ Point2d Blt_GetProjection(int x, int y, Point2d *p, Point2d *q)
   return t;
 }
 
-Graph* Blt_GetGraphFromWindowData(Tk_Window tkwin)
+Graph* Blt::GetGraphFromWindowData(Tk_Window tkwin)
 {
   while (tkwin) {
     TkWindow* winPtr = (TkWindow*)tkwin;
