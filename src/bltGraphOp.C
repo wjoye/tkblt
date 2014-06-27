@@ -317,10 +317,10 @@ static const Ensemble graphEnsemble[] = {
   {"pen",         0, Blt::penEnsemble},
   {"postscript",  0, Blt::postscriptEnsemble},
   {"transform",   TransformOp, 0},
-  {"xaxis",       0, xaxisEnsemble},
-  {"yaxis",       0, xaxisEnsemble},
-  {"x2axis",      0, xaxisEnsemble},
-  {"y2axis",      0, xaxisEnsemble},
+  {"xaxis",       0, Blt::xaxisEnsemble},
+  {"yaxis",       0, Blt::xaxisEnsemble},
+  {"x2axis",      0, Blt::xaxisEnsemble},
+  {"y2axis",      0, Blt::xaxisEnsemble},
   { 0,0,0 }
 };
 
