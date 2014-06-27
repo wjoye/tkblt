@@ -1090,7 +1090,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  Point2d q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
@@ -1098,7 +1098,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  segPtr->p.x = segPtr->q.x = p.x;
 	  segPtr->p.y = p.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
@@ -1106,7 +1106,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  segPtr->p.x = segPtr->q.x = q.x;
 	  segPtr->p.y = q.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
@@ -1152,7 +1152,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  Point2d q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
@@ -1160,7 +1160,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  segPtr->p.y = segPtr->q.y = p.y;
 	  segPtr->p.x = p.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
@@ -1168,7 +1168,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	  segPtr->p.y = segPtr->q.y = q.y;
 	  segPtr->p.x = q.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
-	  if (LineRectClip(&reg, &segPtr->p, &segPtr->q)) {
+	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
