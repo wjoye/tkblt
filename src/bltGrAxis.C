@@ -40,7 +40,7 @@
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "bltConfig.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 using namespace Blt;
 

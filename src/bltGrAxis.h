@@ -44,7 +44,7 @@ class Postscript;
 
 #include "bltGrMisc.h"
 #include "bltGrText.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 typedef struct {
   int axis;

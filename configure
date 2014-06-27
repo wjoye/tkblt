@@ -5556,7 +5556,7 @@ done
 	bltGrPenLine.C
 	bltGrPostscript.C
 	bltGrPostscriptOp.C
-	bltGrPs.C
+	bltGrPSOutput.C
 	bltGrText.C
 	bltGrXAxisOp.C
 	bltGraph.C

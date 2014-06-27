@@ -47,7 +47,7 @@
 #include "bltGrHairs.h"
 #include "bltGrDef.h"
 #include "bltGrPostscript.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 using namespace Blt;
 

@@ -44,7 +44,7 @@ class Postscript;
 
 #include "bltGrMisc.h"
 #include "bltGrPen.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 #define SHOW_NONE	0
 #define SHOW_X		1

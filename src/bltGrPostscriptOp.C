@@ -35,7 +35,7 @@
 #include "bltGraph.h"
 #include "bltGrPostscript.h"
 #include "bltGrPostscriptOp.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 using namespace Blt;
 

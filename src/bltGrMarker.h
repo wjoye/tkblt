@@ -41,7 +41,7 @@ class Axis;
 class Postscript;
 
 #include "bltGrMisc.h"
-#include "bltGrPs.h"
+#include "bltGrPSOutput.h"
 
 namespace Blt {
 

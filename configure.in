@@ -101,7 +101,7 @@ TEA_ADD_SOURCES([
 	bltGrPenLine.C
 	bltGrPostscript.C
 	bltGrPostscriptOp.C
-	bltGrPs.C
+	bltGrPSOutput.C
 	bltGrText.C
 	bltGrXAxisOp.C
 	bltGraph.C
