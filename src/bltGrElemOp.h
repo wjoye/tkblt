@@ -34,6 +34,6 @@
 
 extern const Ensemble elementEnsemble[];
 
-extern int ElementObjConfigure(Element* elemPtr, Tcl_Interp* interp,
+extern int ElementObjConfigure(Blt::Element* elemPtr, Tcl_Interp* interp,
 			       int objc, Tcl_Obj* const objv[]);
 #endif

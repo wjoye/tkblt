@@ -40,7 +40,10 @@
 
 class Graph;
 class Pick;
-class Element;
+
+namespace Blt {
+  class Element;
+};
 
 /*
  *  Selection related flags:
@@ -127,21 +130,21 @@ class Legend : public Pick {
   int entryWidth_;
   int entryHeight_;
   Blt::BindTable* bindTable_;
-  Element* focusPtr_;
-  Element* selAnchorPtr_;
-  Element* selMarkPtr_;
+  Blt::Element* focusPtr_;
+  Blt::Element* selAnchorPtr_;
+  Blt::Element* selMarkPtr_;
   Blt_Chain selected_;
   int titleWidth_;
   int titleHeight_;
 
  protected:
   void setOrigin();
-  Element* getNextRow(Element*);
-  Element* getNextColumn(Element*);
-  Element* getPreviousRow(Element*);
-  Element* getPreviousColumn(Element*);
-  Element* getFirstElement();
-  Element* getLastElement();
+  Blt::Element* getNextRow(Blt::Element*);
+  Blt::Element* getNextColumn(Blt::Element*);
+  Blt::Element* getPreviousRow(Blt::Element*);
+  Blt::Element* getPreviousColumn(Blt::Element*);
+  Blt::Element* getFirstElement();
+  Blt::Element* getLastElement();
 
  public:
   Legend(Graph*);
@@ -153,15 +156,15 @@ class Legend : public Pick {
   void print(Blt::PSOutput* ps);
   void eventuallyInvokeSelectCmd();
 
-  void removeElement(Element*);
-  int getElementFromObj(Tcl_Obj*, Element**);
+  void removeElement(Blt::Element*);
+  int getElementFromObj(Tcl_Obj*, Blt::Element**);
 
-  void selectEntry(Element*);
-  void selectElement(Element*);
-  void deselectElement(Element*);
-  int selectRange(Element*, Element*);
+  void selectEntry(Blt::Element*);
+  void selectElement(Blt::Element*);
+  void deselectElement(Blt::Element*);
+  int selectRange(Blt::Element*, Blt::Element*);
   void clearSelection();
-  int entryIsSelected(Element*);
+  int entryIsSelected(Blt::Element*);
 
   void* ops() {return ops_;}
   Tk_OptionTable optionTable() {return optionTable_;}

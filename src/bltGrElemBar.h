@@ -38,93 +38,96 @@
 #include "bltGrElem.h"
 #include "bltGrPenBar.h"
 
-typedef struct {
-  float x1;
-  float y1;
-  float x2;
-  float y2;
-} BarRegion;
+namespace Blt {
 
-typedef struct {
-  Weight weight;
-  Blt::BarPen* penPtr;
-  XRectangle* bars;
-  int nBars;
-  GraphSegments xeb;
-  GraphSegments yeb;
-  int symbolSize;
-  int errorBarCapWidth;
-} BarStyle;
+  typedef struct {
+    float x1;
+    float y1;
+    float x2;
+    float y2;
+  } BarRegion;
 
-typedef struct {
-  Element* elemPtr;
-  const char *label;
-  char** tags;
-  Blt::Axis* xAxis;
-  Blt::Axis* yAxis;
-  ElemCoords coords;
-  ElemValues* w;
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  int hide;
-  int legendRelief;
-  Blt_Chain stylePalette;
-  Blt::BarPen* builtinPenPtr;
-  Blt::BarPen* activePenPtr;
-  Blt::BarPen* normalPenPtr;
-  Blt::BarPenOptions builtinPen;
+  typedef struct {
+    Weight weight;
+    BarPen* penPtr;
+    XRectangle* bars;
+    int nBars;
+    GraphSegments xeb;
+    GraphSegments yeb;
+    int symbolSize;
+    int errorBarCapWidth;
+  } BarStyle;
 
-  // derived
-  double barWidth;
-  const char *groupName;
-} BarElementOptions;
+  typedef struct {
+    Element* elemPtr;
+    const char *label;
+    char** tags;
+    Axis* xAxis;
+    Axis* yAxis;
+    ElemCoords coords;
+    ElemValues* w;
+    ElemValues* xError;
+    ElemValues* yError;
+    ElemValues* xHigh;
+    ElemValues* xLow;
+    ElemValues* yHigh;
+    ElemValues* yLow;
+    int hide;
+    int legendRelief;
+    Blt_Chain stylePalette;
+    BarPen* builtinPenPtr;
+    BarPen* activePenPtr;
+    BarPen* normalPenPtr;
+    BarPenOptions builtinPen;
 
-class BarElement : public Element {
- protected:
-  Blt::BarPen* builtinPenPtr;
-  int* barToData_;
-  XRectangle* bars_;
-  int* activeToData_;
-  XRectangle* activeRects_;
-  int nBars_;
-  int nActive_;
-  GraphSegments xeb_;
-  GraphSegments yeb_;
+    // derived
+    double barWidth;
+    const char *groupName;
+  } BarElementOptions;
 
- protected:
-  void ResetStylePalette(Blt_Chain);
-  void checkStacks(Blt::Axis*, Blt::Axis*, double*, double*);
-  void mergePens(BarStyle**);
-  void mapActive();
-  void reset();
-  void mapErrorBars(BarStyle**);
-  void drawSegments(Drawable, Blt::BarPen*, XRectangle*, int);
-  void drawValues(Drawable, Blt::BarPen*, XRectangle*, int, int*);
-  void printSegments(Blt::PSOutput*, Blt::BarPen*, XRectangle*, int);
-  void printValues(Blt::PSOutput*, Blt::BarPen*, XRectangle*, int, int*);
+  class BarElement : public Element {
+  protected:
+    BarPen* builtinPenPtr;
+    int* barToData_;
+    XRectangle* bars_;
+    int* activeToData_;
+    XRectangle* activeRects_;
+    int nBars_;
+    int nActive_;
+    GraphSegments xeb_;
+    GraphSegments yeb_;
 
- public:
-  BarElement(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~BarElement();
+  protected:
+    void ResetStylePalette(Blt_Chain);
+    void checkStacks(Axis*, Axis*, double*, double*);
+    void mergePens(BarStyle**);
+    void mapActive();
+    void reset();
+    void mapErrorBars(BarStyle**);
+    void drawSegments(Drawable, BarPen*, XRectangle*, int);
+    void drawValues(Drawable, BarPen*, XRectangle*, int, int*);
+    void printSegments(PSOutput*, BarPen*, XRectangle*, int);
+    void printValues(PSOutput*, BarPen*, XRectangle*, int, int*);
 
-  ClassId classId() {return CID_ELEM_BAR;}
-  const char* className() {return "BarElement";}
-  const char* typeName() {return "bar";}
+  public:
+    BarElement(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~BarElement();
 
-  int configure();
-  void map();
-  void extents(Region2d*);
-  void closest();
-  void draw(Drawable);
-  void drawActive(Drawable);
-  void drawSymbol(Drawable, int, int, int);
-  void print(Blt::PSOutput*);
-  void printActive(Blt::PSOutput*);
-  void printSymbol(Blt::PSOutput*, double, double, int);
+    ClassId classId() {return CID_ELEM_BAR;}
+    const char* className() {return "BarElement";}
+    const char* typeName() {return "bar";}
+
+    int configure();
+    void map();
+    void extents(Region2d*);
+    void closest();
+    void draw(Drawable);
+    void drawActive(Drawable);
+    void drawSymbol(Drawable, int, int, int);
+    void print(PSOutput*);
+    void printActive(PSOutput*);
+    void printSymbol(PSOutput*, double, double, int);
+  };
 };
 
 #endif

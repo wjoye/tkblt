@@ -37,14 +37,6 @@ extern "C" {
 #include "bltChain.h"
 };
 
-class Element;
-
-namespace Blt {
-  class Axis;
-  class Pen;
-  class Postscript;
-};
-
 #include "bltGrMisc.h"
 #include "bltGrPen.h"
 #include "bltGrPSOutput.h"
@@ -60,111 +52,118 @@ namespace Blt {
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? \
 		       (e)->builtinPenPtr : (e)->normalPenPtr))
 
-typedef struct {
-  Segment2d *segments;
-  int length;
-  int *map;
-} GraphSegments;
+namespace Blt {
+  class Axis;
+  class Element;
+  class Pen;
+  class Postscript;
 
-typedef struct {
-  Blt_VectorId vector;
-} VectorDataSource;
+  typedef struct {
+    Segment2d *segments;
+    int length;
+    int *map;
+  } GraphSegments;
 
-typedef struct {
-  int type;
-  Element* elemPtr;
-  VectorDataSource vectorSource;
-  double *values;
-  int nValues;
-  double min;
-  double max;
-} ElemValues;
+  typedef struct {
+    Blt_VectorId vector;
+  } VectorDataSource;
 
-typedef struct {
-  ElemValues* x;
-  ElemValues* y;
-} ElemCoords;
+  typedef struct {
+    int type;
+    Element* elemPtr;
+    VectorDataSource vectorSource;
+    double *values;
+    int nValues;
+    double min;
+    double max;
+  } ElemValues;
 
-typedef struct {
-  double min;
-  double max;
-  double range;
-} Weight;
+  typedef struct {
+    ElemValues* x;
+    ElemValues* y;
+  } ElemCoords;
 
-typedef struct {
-  Weight weight;
-  Blt::Pen* penPtr;
-} PenStyle;
+  typedef struct {
+    double min;
+    double max;
+    double range;
+  } Weight;
 
-typedef struct {
-  Element* elemPtr;
-  const char* label;
-  const char** tags;
-  Blt::Axis* xAxis;
-  Blt::Axis* yAxis;
-  ElemCoords coords;
-  ElemValues* w;
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  int hide;
-  int legendRelief;
-  Blt_Chain stylePalette;
-  Blt::Pen* builtinPenPtr;
-  Blt::Pen* activePenPtr;
-  Blt::Pen* normalPenPtr;
-  Blt::PenOptions builtinPen;
-} ElementOptions;
+  typedef struct {
+    Weight weight;
+    Pen* penPtr;
+  } PenStyle;
 
-class Element {
- protected:
-  Tk_OptionTable optionTable_;
-  void* ops_;
+  typedef struct {
+    Element* elemPtr;
+    const char* label;
+    const char** tags;
+    Axis* xAxis;
+    Axis* yAxis;
+    ElemCoords coords;
+    ElemValues* w;
+    ElemValues* xError;
+    ElemValues* yError;
+    ElemValues* xHigh;
+    ElemValues* xLow;
+    ElemValues* yHigh;
+    ElemValues* yLow;
+    int hide;
+    int legendRelief;
+    Blt_Chain stylePalette;
+    Pen* builtinPenPtr;
+    Pen* activePenPtr;
+    Pen* normalPenPtr;
+    PenOptions builtinPen;
+  } ElementOptions;
 
-  double xRange_;
-  double yRange_;
+  class Element {
+  protected:
+    Tk_OptionTable optionTable_;
+    void* ops_;
 
- public:
-  Graph* graphPtr_;
-  const char* name_;
-  Tcl_HashEntry* hashPtr_;
-  unsigned short row_;
-  unsigned short col_;
-  int nActiveIndices_;
-  int* activeIndices_;
-  int active_;		
-  int labelActive_;
+    double xRange_;
+    double yRange_;
 
-  Blt_ChainLink link;
+  public:
+    Graph* graphPtr_;
+    const char* name_;
+    Tcl_HashEntry* hashPtr_;
+    unsigned short row_;
+    unsigned short col_;
+    int nActiveIndices_;
+    int* activeIndices_;
+    int active_;		
+    int labelActive_;
 
- protected:
-  double FindElemValuesMinimum(ElemValues*, double);
-  PenStyle** StyleMap();
+    Blt_ChainLink link;
 
- public:
-  Element(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~Element();
+  protected:
+    double FindElemValuesMinimum(ElemValues*, double);
+    PenStyle** StyleMap();
 
-  virtual int configure() =0;
-  virtual void map() =0;
-  virtual void extents(Region2d*) =0;
-  virtual void draw(Drawable) =0;
-  virtual void drawActive(Drawable) =0;
-  virtual void drawSymbol(Drawable, int, int, int) =0;
-  virtual void closest() =0;
-  virtual void print(Blt::PSOutput*) =0;
-  virtual void printActive(Blt::PSOutput*) =0;
-  virtual void printSymbol(Blt::PSOutput*, double, double, int) =0;
+  public:
+    Element(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~Element();
 
-  virtual ClassId classId() =0;
-  virtual const char* className() =0;
-  virtual const char* typeName() =0;
+    virtual int configure() =0;
+    virtual void map() =0;
+    virtual void extents(Region2d*) =0;
+    virtual void draw(Drawable) =0;
+    virtual void drawActive(Drawable) =0;
+    virtual void drawSymbol(Drawable, int, int, int) =0;
+    virtual void closest() =0;
+    virtual void print(PSOutput*) =0;
+    virtual void printActive(PSOutput*) =0;
+    virtual void printSymbol(PSOutput*, double, double, int) =0;
 
-  Tk_OptionTable optionTable() {return optionTable_;}
-  void* ops() {return ops_;}
+    virtual ClassId classId() =0;
+    virtual const char* className() =0;
+    virtual const char* typeName() =0;
+
+    Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+  };
 };
 
 extern void Blt_FreeStylePalette (Blt_Chain stylePalette);

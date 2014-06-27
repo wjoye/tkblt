@@ -40,7 +40,6 @@ extern "C" {
 #include "bltGrText.h"
 
 class Graph;
-class Element;
 class Legend;
 
 class Pick {
@@ -52,6 +51,7 @@ namespace Blt {
   class Axis;
   class BindTable;
   class Crosshairs;
+  class Element;
   class Marker;
   class Pen;
   class Postscript;
@@ -71,7 +71,7 @@ typedef struct {
   int y;
   int along;
 
-  Element* elemPtr;
+  Blt::Element* elemPtr;
   Point2d point;
   int index;
   double dist;
@@ -237,7 +237,7 @@ class Graph : public Pick {
   int isElementHidden(Blt::Marker*);
 
   virtual int createElement(int, Tcl_Obj* const []) =0;
-  int getElement(Tcl_Obj*, Element**);
+  int getElement(Tcl_Obj*, Blt::Element**);
   ClientData elementTag(const char*);
 
   virtual int createPen(const char*, int, Tcl_Obj* const []) =0;

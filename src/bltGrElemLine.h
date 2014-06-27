@@ -35,141 +35,144 @@
 #include "bltGrElem.h"
 #include "bltGrPenLine.h"
 
-typedef struct {
-  Point2d *screenPts;
-  int nScreenPts;
-  int *styleMap;
-  int *map;
-} MapInfo;
+namespace Blt {
 
-typedef struct {
-  Point2d *points;
-  int length;
-  int *map;
-} GraphPoints;
+  typedef struct {
+    Point2d *screenPts;
+    int nScreenPts;
+    int *styleMap;
+    int *map;
+  } MapInfo;
 
-typedef struct {
-  int start;
-  GraphPoints screenPts;
-} bltTrace;
+  typedef struct {
+    Point2d *points;
+    int length;
+    int *map;
+  } GraphPoints;
 
-typedef struct {
-  Weight weight;
-  Blt::LinePen* penPtr;
-  GraphPoints symbolPts;
-  GraphSegments xeb;
-  GraphSegments yeb;
-  int symbolSize;
-  int errorBarCapWidth;
-} LineStyle;
+  typedef struct {
+    int start;
+    GraphPoints screenPts;
+  } bltTrace;
 
-typedef struct {
-  Element* elemPtr;
-  const char* label;
-  char** tags;
-  Blt::Axis* xAxis;
-  Blt::Axis* yAxis;
-  ElemCoords coords;
-  ElemValues* w;
-  ElemValues* xError;
-  ElemValues* yError;
-  ElemValues* xHigh;
-  ElemValues* xLow;
-  ElemValues* yHigh;
-  ElemValues* yLow;
-  int hide;
-  int legendRelief;
-  Blt_Chain stylePalette;
-  Blt::LinePen *builtinPenPtr;
-  Blt::LinePen *activePenPtr;
-  Blt::LinePen *normalPenPtr;
-  Blt::LinePenOptions builtinPen;
+  typedef struct {
+    Weight weight;
+    LinePen* penPtr;
+    GraphPoints symbolPts;
+    GraphSegments xeb;
+    GraphSegments yeb;
+    int symbolSize;
+    int errorBarCapWidth;
+  } LineStyle;
 
-  // derived
-  Tk_3DBorder fillBg;
-  int reqMaxSymbols;
-  double rTolerance;
-  int scaleSymbols;
-  int reqSmooth;
-  int penDir;
-} LineElementOptions;
+  typedef struct {
+    Element* elemPtr;
+    const char* label;
+    char** tags;
+    Axis* xAxis;
+    Axis* yAxis;
+    ElemCoords coords;
+    ElemValues* w;
+    ElemValues* xError;
+    ElemValues* yError;
+    ElemValues* xHigh;
+    ElemValues* xLow;
+    ElemValues* yHigh;
+    ElemValues* yLow;
+    int hide;
+    int legendRelief;
+    Blt_Chain stylePalette;
+    LinePen *builtinPenPtr;
+    LinePen *activePenPtr;
+    LinePen *normalPenPtr;
+    LinePenOptions builtinPen;
 
-class LineElement : public Element {
- public:
-  enum PenDirection {INCREASING, DECREASING, BOTH_DIRECTIONS};
-  enum Smoothing {LINEAR, STEP, CUBIC, QUADRATIC, CATROM};
+    // derived
+    Tk_3DBorder fillBg;
+    int reqMaxSymbols;
+    double rTolerance;
+    int scaleSymbols;
+    int reqSmooth;
+    int penDir;
+  } LineElementOptions;
 
- protected:
-  Blt::LinePen* builtinPenPtr;
-  Smoothing smooth_;
-  Point2d *fillPts_;
-  int nFillPts_;
-  GraphPoints symbolPts_;
-  GraphPoints activePts_;
-  GraphSegments xeb_;
-  GraphSegments yeb_;
-  int symbolInterval_;
-  int symbolCounter_;
-  Blt_Chain traces_;
+  class LineElement : public Element {
+  public:
+    enum PenDirection {INCREASING, DECREASING, BOTH_DIRECTIONS};
+    enum Smoothing {LINEAR, STEP, CUBIC, QUADRATIC, CATROM};
 
-  void drawCircle(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
-  void drawSquare(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
-  void drawSCross(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
-  void drawCross(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
-  void drawDiamond(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
-  void drawArrow(Display*, Drawable, Blt::LinePen*, int, Point2d*, int);
+  protected:
+    LinePen* builtinPenPtr;
+    Smoothing smooth_;
+    Point2d *fillPts_;
+    int nFillPts_;
+    GraphPoints symbolPts_;
+    GraphPoints activePts_;
+    GraphSegments xeb_;
+    GraphSegments yeb_;
+    int symbolInterval_;
+    int symbolCounter_;
+    Blt_Chain traces_;
 
- protected:
-  int scaleSymbol(int);
-  void getScreenPoints(MapInfo*);
-  void reducePoints(MapInfo*, double);
-  void generateSteps(MapInfo*);
-  void generateSpline(MapInfo*);
-  void generateParametricSpline(MapInfo*);
-  void mapSymbols(MapInfo*);
-  void mapActiveSymbols();
-  void mergePens(LineStyle**);
-  int outCode(Region2d*, Point2d*);
-  int clipSegment(Region2d*, int, int, Point2d*, Point2d*);
-  void saveTrace(int, int, MapInfo*);
-  void freeTraces();
-  void mapTraces(MapInfo*);
-  void mapFillArea(MapInfo*);
-  void mapErrorBars(LineStyle**);
-  void resetLine();
-  int closestTrace();
-  void closestPoint(ClosestSearch*);
-  void drawSymbols(Drawable, Blt::LinePen*, int, int, Point2d*);
-  void drawTraces(Drawable, Blt::LinePen*);
-  void drawValues(Drawable, Blt::LinePen*, int, Point2d*, int*);
-  void setLineAttributes(Blt::PSOutput*, Blt::LinePen*);
-  void printTraces(Blt::PSOutput*, Blt::LinePen*);
-  void printValues(Blt::PSOutput*, Blt::LinePen*, int, Point2d*, int*);
-  void printSymbols(Blt::PSOutput*, Blt::LinePen*, int, int, Point2d*);
-  double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
-  double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
-  double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
-  int simplify(Point2d*, int, int, double, int*);
-  double findSplit(Point2d*, int, int, int*);
+    void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
+    void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);
+    void drawSCross(Display*, Drawable, LinePen*, int, Point2d*, int);
+    void drawCross(Display*, Drawable, LinePen*, int, Point2d*, int);
+    void drawDiamond(Display*, Drawable, LinePen*, int, Point2d*, int);
+    void drawArrow(Display*, Drawable, LinePen*, int, Point2d*, int);
 
- public:
-  LineElement(Graph*, const char*, Tcl_HashEntry*);
-  virtual ~LineElement();
+  protected:
+    int scaleSymbol(int);
+    void getScreenPoints(MapInfo*);
+    void reducePoints(MapInfo*, double);
+    void generateSteps(MapInfo*);
+    void generateSpline(MapInfo*);
+    void generateParametricSpline(MapInfo*);
+    void mapSymbols(MapInfo*);
+    void mapActiveSymbols();
+    void mergePens(LineStyle**);
+    int outCode(Region2d*, Point2d*);
+    int clipSegment(Region2d*, int, int, Point2d*, Point2d*);
+    void saveTrace(int, int, MapInfo*);
+    void freeTraces();
+    void mapTraces(MapInfo*);
+    void mapFillArea(MapInfo*);
+    void mapErrorBars(LineStyle**);
+    void resetLine();
+    int closestTrace();
+    void closestPoint(ClosestSearch*);
+    void drawSymbols(Drawable, LinePen*, int, int, Point2d*);
+    void drawTraces(Drawable, LinePen*);
+    void drawValues(Drawable, LinePen*, int, Point2d*, int*);
+    void setLineAttributes(PSOutput*, LinePen*);
+    void printTraces(PSOutput*, LinePen*);
+    void printValues(PSOutput*, LinePen*, int, Point2d*, int*);
+    void printSymbols(PSOutput*, LinePen*, int, int, Point2d*);
+    double distanceToLine(int, int, Point2d*, Point2d*, Point2d*);
+    double distanceToX(int, int, Point2d*, Point2d*, Point2d*);
+    double distanceToY(int, int, Point2d*, Point2d*, Point2d*);
+    int simplify(Point2d*, int, int, double, int*);
+    double findSplit(Point2d*, int, int, int*);
 
-  ClassId classId() {return CID_ELEM_LINE;}
-  const char* className() {return "LineElement";}
-  const char* typeName() {return "line";}
+  public:
+    LineElement(Graph*, const char*, Tcl_HashEntry*);
+    virtual ~LineElement();
 
-  int configure();
-  void map();
-  void extents(Region2d*);
-  void closest();
-  void draw(Drawable);
-  void drawActive(Drawable);
-  void drawSymbol(Drawable, int, int, int);
-  void print(Blt::PSOutput*);
-  void printActive(Blt::PSOutput*);
-  void printSymbol(Blt::PSOutput*, double, double, int);
+    ClassId classId() {return CID_ELEM_LINE;}
+    const char* className() {return "LineElement";}
+    const char* typeName() {return "line";}
+
+    int configure();
+    void map();
+    void extents(Region2d*);
+    void closest();
+    void draw(Drawable);
+    void drawActive(Drawable);
+    void drawSymbol(Drawable, int, int, int);
+    void print(PSOutput*);
+    void printActive(PSOutput*);
+    void printSymbol(PSOutput*, double, double, int);
+  };
 };
 
 #endif
