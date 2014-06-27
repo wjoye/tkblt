@@ -77,7 +77,7 @@ typedef struct {
   int exportSelection;
   Dashes focusDashes;
   XColor* focusColor;
-  TextStyleOptions style;
+  Blt::TextStyleOptions style;
   int hide;
   int ixPad;
   int iyPad;
@@ -99,7 +99,7 @@ typedef struct {
   SelectMode selectMode;
   int selRelief;
   const char *title;
-  TextStyleOptions titleStyle;
+  Blt::TextStyleOptions titleStyle;
 } LegendOptions;
 
 class Legend : public Pick {

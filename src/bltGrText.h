@@ -37,39 +37,42 @@
 class Graph;
 class PSOutput;
 
-typedef struct {
-  Tk_Anchor anchor;
-  XColor* color;
-  Tk_Font font;
-  double angle;
-  Tk_Justify justify;
-} TextStyleOptions;
+namespace Blt {
 
-class TextStyle {
- protected:
-  Graph* graphPtr_;
-  void* ops_;
-  GC gc_;
-  int manageOptions_;
+  typedef struct {
+    Tk_Anchor anchor;
+    XColor* color;
+    Tk_Font font;
+    double angle;
+    Tk_Justify justify;
+  } TextStyleOptions;
 
- public:
-  int xPad_;
-  int yPad_;
+  class TextStyle {
+  protected:
+    Graph* graphPtr_;
+    void* ops_;
+    GC gc_;
+    int manageOptions_;
 
- protected:
-  void resetStyle();
-  Point2d rotateText(int, int, int, int);
+  public:
+    int xPad_;
+    int yPad_;
 
- public:
-  TextStyle(Graph*);
-  TextStyle(Graph*, TextStyleOptions*);
-  virtual ~TextStyle();
+  protected:
+    void resetStyle();
+    Point2d rotateText(int, int, int, int);
 
-  void* ops() {return ops_;}
-  void drawText(Drawable, const char*, int, int);
-  void drawText2(Drawable, const char*, int, int, int*, int*);
-  void printText(PSOutput*, const char*, int, int);
-  void getExtents(const char*, int*, int*);
+  public:
+    TextStyle(Graph*);
+    TextStyle(Graph*, TextStyleOptions*);
+    virtual ~TextStyle();
+
+    void* ops() {return ops_;}
+    void drawText(Drawable, const char*, int, int);
+    void drawText2(Drawable, const char*, int, int, int*, int*);
+    void printText(PSOutput*, const char*, int, int);
+    void getExtents(const char*, int*, int*);
+  };
 };
 
 #endif

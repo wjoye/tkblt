@@ -60,7 +60,7 @@ typedef struct {
   int borderWidth;
   Margin margins[4];
   Tk_Cursor cursor;
-  TextStyleOptions titleTextStyle;
+  Blt::TextStyleOptions titleTextStyle;
   int reqHeight;
   XColor* highlightBgColor;
   XColor* highlightColor;

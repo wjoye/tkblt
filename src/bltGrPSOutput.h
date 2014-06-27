@@ -37,54 +37,57 @@
 class Graph;
 class Postscript;
 
-class PSOutput {
- protected:
-  Graph* graphPtr_;
-  Tcl_DString dString_;
-  char scratchArr_[POSTSCRIPT_BUFSIZ+1];
+namespace Blt {
 
- protected:
-  void addComments(const char**);
-  void printXColor(XColor*);
-  unsigned char reverseBits(unsigned char);
-  void byteToHex(unsigned char, char*);
-  void setJoinStyle(int);
-  void setCapStyle(int);
-  void prolog();
+  class PSOutput {
+  protected:
+    Graph* graphPtr_;
+    Tcl_DString dString_;
+    char scratchArr_[POSTSCRIPT_BUFSIZ+1];
 
- public:
-  PSOutput(Graph*);
-  virtual ~PSOutput();
+  protected:
+    void addComments(const char**);
+    void printXColor(XColor*);
+    unsigned char reverseBits(unsigned char);
+    void byteToHex(unsigned char, char*);
+    void setJoinStyle(int);
+    void setCapStyle(int);
+    void prolog();
 
-  void printPolyline(Point2d*, int);
-  void printMaxPolyline(Point2d*, int);
-  void printSegments(Segment2d*, int);
-  void printBitmap(Display*, Pixmap, double, double);
-  void printRectangle(int, int, int, int);
-  void printPolygon(Point2d*, int);
-  void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
+  public:
+    PSOutput(Graph*);
+    virtual ~PSOutput();
 
-  void fillRectangle(double, double, int, int);
-  void fillRectangles(XRectangle*, int);
-  void fill3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
-  void fillPolygon(Point2d*, int);
+    void printPolyline(Point2d*, int);
+    void printMaxPolyline(Point2d*, int);
+    void printSegments(Segment2d*, int);
+    void printBitmap(Display*, Pixmap, double, double);
+    void printRectangle(int, int, int, int);
+    void printPolygon(Point2d*, int);
+    void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
 
-  void setFont(Tk_Font); 
-  void setLineWidth(int);
-  void setBackground(XColor*);
-  void setForeground(XColor*);
-  void setBackground(Tk_3DBorder);
-  void setLineAttributes(XColor*,int, Dashes*, int, int);
-  void setClearBackground();
-  void setDashes(Dashes*);
-  void setBitmap(Display*, Pixmap, int, int);
+    void fillRectangle(double, double, int, int);
+    void fillRectangles(XRectangle*, int);
+    void fill3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
+    void fillPolygon(Point2d*, int);
 
-  int preamble(const char*);
-  int computeBBox(int, int);
-  const char* getValue(int*);
-  void append(const char*);
-  void format(const char*, ...);
-  void varAppend(const char*, ...);
+    void setFont(Tk_Font); 
+    void setLineWidth(int);
+    void setBackground(XColor*);
+    void setForeground(XColor*);
+    void setBackground(Tk_3DBorder);
+    void setLineAttributes(XColor*,int, Dashes*, int, int);
+    void setClearBackground();
+    void setDashes(Dashes*);
+    void setBitmap(Display*, Pixmap, int, int);
+
+    int preamble(const char*);
+    int computeBBox(int, int);
+    const char* getValue(int*);
+    void append(const char*);
+    void format(const char*, ...);
+    void varAppend(const char*, ...);
+  };
 };
 
 #endif

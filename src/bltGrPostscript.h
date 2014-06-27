@@ -32,40 +32,43 @@
 
 #include <tk.h>
 
-typedef struct {
-  int center;
-  const char **comments;
-  int decorations;
-  int footer;
-  int greyscale;
-  int landscape;
-  int level;
-  int xPad;
-  int yPad;
-  int reqPaperWidth;
-  int reqPaperHeight;
-  int reqWidth;
-  int reqHeight;
-} PostscriptOptions;
+namespace Blt {
+ 
+  typedef struct {
+    int center;
+    const char **comments;
+    int decorations;
+    int footer;
+    int greyscale;
+    int landscape;
+    int level;
+    int xPad;
+    int yPad;
+    int reqPaperWidth;
+    int reqPaperHeight;
+    int reqWidth;
+    int reqHeight;
+  } PostscriptOptions;
 
-class Postscript  {
- public:
-  Tk_OptionTable optionTable_;
-  void* ops_;
-  Graph* graphPtr_;
-  unsigned int flags;
+  class Postscript  {
+  public:
+    Tk_OptionTable optionTable_;
+    void* ops_;
+    Graph* graphPtr_;
+    unsigned int flags;
 
-  short int left;
-  short int bottom;
-  short int right;
-  short int top;
-  float scale;
-  int paperHeight;
-  int paperWidth;
+    short int left;
+    short int bottom;
+    short int right;
+    short int top;
+    float scale;
+    int paperHeight;
+    int paperWidth;
 
- public:
-  Postscript(Graph*);
-  virtual ~Postscript();
+  public:
+    Postscript(Graph*);
+    virtual ~Postscript();
+  };
 };
 
 #endif

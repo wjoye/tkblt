@@ -43,7 +43,7 @@ typedef struct {
   XColor* errorBarColor;
   int valueShow;
   const char* valueFormat;
-  TextStyleOptions valueStyle;
+  Blt::TextStyleOptions valueStyle;
 } PenOptions;
 
 class Pen {

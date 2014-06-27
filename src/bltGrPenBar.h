@@ -41,7 +41,7 @@ typedef struct {
   XColor* errorBarColor;
   int valueShow;
   const char *valueFormat;
-  TextStyleOptions valueStyle;
+  Blt::TextStyleOptions valueStyle;
 
   XColor* outlineColor;
   Tk_3DBorder fill;
