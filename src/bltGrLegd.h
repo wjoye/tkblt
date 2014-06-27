@@ -38,24 +38,22 @@
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 
-class Graph;
-class Pick;
-
 namespace Blt {
+  class Graph;
+  class Pick;
   class Element;
-};
 
-/*
- *  Selection related flags:
- *	SELECT_PENDING		A "selection" command idle task is pending.
- *	SELECT_CLEAR		Clear selection flag of entry.
- *	SELECT_SET		Set selection flag of entry.
- *	SELECT_TOGGLE		Toggle selection flag of entry.
- *			        Mask of selection set/clear/toggle flags.
- *	SELECT_SORTED		Indicates if the entries in the selection 
- *				should be sorted or displayed in the order 
- *				they were selected.
- */
+  /*
+   *  Selection related flags:
+   *	SELECT_PENDING		A "selection" command idle task is pending.
+   *	SELECT_CLEAR		Clear selection flag of entry.
+   *	SELECT_SET		Set selection flag of entry.
+   *	SELECT_TOGGLE		Toggle selection flag of entry.
+   *			        Mask of selection set/clear/toggle flags.
+   *	SELECT_SORTED		Indicates if the entries in the selection 
+   *				should be sorted or displayed in the order 
+   *				they were selected.
+   */
 
 #define SELECT_CLEAR		(1<<24)
 #define SELECT_PENDING		(1<<25)
@@ -63,117 +61,118 @@ namespace Blt {
 #define SELECT_SORTED		(1<<27)
 #define SELECT_TOGGLE		(SELECT_SET | SELECT_CLEAR)
 
-typedef enum {
-  SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
-} SelectMode;
+  typedef enum {
+    SELECT_MODE_SINGLE, SELECT_MODE_MULTIPLE
+  } SelectMode;
 
-typedef struct {
-  Tk_3DBorder activeBg;
-  XColor* activeFgColor;
-  int activeRelief;
-  Tk_3DBorder normalBg;
-  XColor* fgColor;
-  Tk_Anchor anchor;
-  int borderWidth;
-  int reqColumns;
-  int exportSelection;
-  Dashes focusDashes;
-  XColor* focusColor;
-  Blt::TextStyleOptions style;
-  int hide;
-  int ixPad;
-  int iyPad;
-  int xPad;
-  int yPad;
-  int raised;
-  int relief;
-  int reqRows;
-  int entryBW;
-  int selBW;
-  int xReq;
-  int yReq;
-  int position;
-  const char *selectCmd;
-  Tk_3DBorder selOutFocusBg;
-  Tk_3DBorder selInFocusBg;
-  XColor* selOutFocusFgColor;
-  XColor* selInFocusFgColor;
-  SelectMode selectMode;
-  int selRelief;
-  const char *title;
-  Blt::TextStyleOptions titleStyle;
-} LegendOptions;
+  typedef struct {
+    Tk_3DBorder activeBg;
+    XColor* activeFgColor;
+    int activeRelief;
+    Tk_3DBorder normalBg;
+    XColor* fgColor;
+    Tk_Anchor anchor;
+    int borderWidth;
+    int reqColumns;
+    int exportSelection;
+    Dashes focusDashes;
+    XColor* focusColor;
+    TextStyleOptions style;
+    int hide;
+    int ixPad;
+    int iyPad;
+    int xPad;
+    int yPad;
+    int raised;
+    int relief;
+    int reqRows;
+    int entryBW;
+    int selBW;
+    int xReq;
+    int yReq;
+    int position;
+    const char *selectCmd;
+    Tk_3DBorder selOutFocusBg;
+    Tk_3DBorder selInFocusBg;
+    XColor* selOutFocusFgColor;
+    XColor* selInFocusFgColor;
+    SelectMode selectMode;
+    int selRelief;
+    const char *title;
+    TextStyleOptions titleStyle;
+  } LegendOptions;
 
-class Legend : public Pick {
- public:
-  enum Position {RIGHT, LEFT, TOP, BOTTOM, PLOT, XY};
+  class Legend : public Pick {
+  public:
+    enum Position {RIGHT, LEFT, TOP, BOTTOM, PLOT, XY};
 
- protected:
-  Tk_OptionTable optionTable_;
-  void* ops_;
+  protected:
+    Tk_OptionTable optionTable_;
+    void* ops_;
 
-  GC focusGC_;
-  Tcl_HashTable selectTable_;
+    GC focusGC_;
+    Tcl_HashTable selectTable_;
 
- public:
-  Graph* graphPtr_;
-  unsigned int flags;
+  public:
+    Graph* graphPtr_;
+    unsigned int flags;
 
-  int width_;
-  int height_;
-  int x_;
-  int y_;
+    int width_;
+    int height_;
+    int x_;
+    int y_;
 
-  int nEntries_;
-  int nColumns_;
-  int nRows_;
-  int entryWidth_;
-  int entryHeight_;
-  Blt::BindTable* bindTable_;
-  Blt::Element* focusPtr_;
-  Blt::Element* selAnchorPtr_;
-  Blt::Element* selMarkPtr_;
-  Blt_Chain selected_;
-  int titleWidth_;
-  int titleHeight_;
+    int nEntries_;
+    int nColumns_;
+    int nRows_;
+    int entryWidth_;
+    int entryHeight_;
+    BindTable* bindTable_;
+    Element* focusPtr_;
+    Element* selAnchorPtr_;
+    Element* selMarkPtr_;
+    Blt_Chain selected_;
+    int titleWidth_;
+    int titleHeight_;
 
- protected:
-  void setOrigin();
-  Blt::Element* getNextRow(Blt::Element*);
-  Blt::Element* getNextColumn(Blt::Element*);
-  Blt::Element* getPreviousRow(Blt::Element*);
-  Blt::Element* getPreviousColumn(Blt::Element*);
-  Blt::Element* getFirstElement();
-  Blt::Element* getLastElement();
+  protected:
+    void setOrigin();
+    Element* getNextRow(Element*);
+    Element* getNextColumn(Element*);
+    Element* getPreviousRow(Element*);
+    Element* getPreviousColumn(Element*);
+    Element* getFirstElement();
+    Element* getLastElement();
 
- public:
-  Legend(Graph*);
-  virtual ~Legend();
+  public:
+    Legend(Graph*);
+    virtual ~Legend();
 
-  int configure();
-  void map(int, int);
-  void draw(Drawable drawable);
-  void print(Blt::PSOutput* ps);
-  void eventuallyInvokeSelectCmd();
+    int configure();
+    void map(int, int);
+    void draw(Drawable drawable);
+    void print(PSOutput* ps);
+    void eventuallyInvokeSelectCmd();
 
-  void removeElement(Blt::Element*);
-  int getElementFromObj(Tcl_Obj*, Blt::Element**);
+    void removeElement(Element*);
+    int getElementFromObj(Tcl_Obj*, Element**);
 
-  void selectEntry(Blt::Element*);
-  void selectElement(Blt::Element*);
-  void deselectElement(Blt::Element*);
-  int selectRange(Blt::Element*, Blt::Element*);
-  void clearSelection();
-  int entryIsSelected(Blt::Element*);
+    void selectEntry(Element*);
+    void selectElement(Element*);
+    void deselectElement(Element*);
+    int selectRange(Element*, Element*);
+    void clearSelection();
+    int entryIsSelected(Element*);
 
-  void* ops() {return ops_;}
-  Tk_OptionTable optionTable() {return optionTable_;}
+    void* ops() {return ops_;}
+    Tk_OptionTable optionTable() {return optionTable_;}
 
-  Position position() {return (Position)((LegendOptions*)ops_)->position;}
-  int isRaised() {return ((LegendOptions*)ops_)->raised;}
-  int isHidden() {return ((LegendOptions*)ops_)->hide;}
+    Position position() {return (Position)((LegendOptions*)ops_)->position;}
+    int isRaised() {return ((LegendOptions*)ops_)->raised;}
+    int isHidden() {return ((LegendOptions*)ops_)->hide;}
 
-  ClientData pickEntry(int, int, ClassId*);
+    ClientData pickEntry(int, int, ClassId*);
+  };
 };
 
 #endif

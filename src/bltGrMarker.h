@@ -36,12 +36,11 @@ extern "C" {
 #include "bltChain.h"
 };
 
-class Graph;
-
 #include "bltGrMisc.h"
 #include "bltGrPSOutput.h"
 
 namespace Blt {
+  class Graph;
   class Postscript;
   class Axis;
 

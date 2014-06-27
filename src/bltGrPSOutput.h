@@ -34,9 +34,8 @@
 
 #define POSTSCRIPT_BUFSIZ ((BUFSIZ*2)-1)
 
-class Graph;
-
 namespace Blt {
+  class Graph;
   class Postscript;
 
   class PSOutput {

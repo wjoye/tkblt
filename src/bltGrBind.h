@@ -34,10 +34,9 @@
 
 #include "bltGrMisc.h"
 
-class Pick;
-class Graph;
-
 namespace Blt {
+  class Graph;
+  class Pick;
 
   class BindTable {
   protected:

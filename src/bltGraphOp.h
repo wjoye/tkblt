@@ -32,7 +32,7 @@
 
 #include <tk.h>
 
-extern int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
+extern int GraphObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp,
 			     int objc, Tcl_Obj* const objv[]);
 
 extern Tcl_ObjCmdProc GraphInstCmdProc;

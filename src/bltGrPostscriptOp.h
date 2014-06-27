@@ -34,7 +34,7 @@
 
 extern const Ensemble pageSetupEnsemble[];
 
-extern int PageSetupObjConfigure(Graph* graphPtr, Tcl_Interp* interp, 
+extern int PageSetupObjConfigure(Blt::Graph* graphPtr, Tcl_Interp* interp, 
 				 int objc, Tcl_Obj* const objv[]);
 
 #endif

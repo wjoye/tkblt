@@ -34,9 +34,8 @@
 
 #include "bltGrMisc.h"
 
-class Graph;
-
 namespace Blt {
+  class Graph;
   class PSOutput;
 
   typedef struct {

@@ -37,9 +37,8 @@
 
 #include "bltGrMisc.h"
 
-class Graph;
-
 namespace Blt {
+  class Graph;
 
   typedef struct {
     XColor* colorPtr;

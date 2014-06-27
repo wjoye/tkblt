@@ -34,42 +34,43 @@
 
 #include "bltGraph.h"
 
-typedef struct {
-  double aspect;
-  Tk_3DBorder normalBg;
-  int borderWidth;
-  Margin margins[4];
-  Tk_Cursor cursor;
-  Blt::TextStyleOptions titleTextStyle;
-  int reqHeight;
-  XColor* highlightBgColor;
-  XColor* highlightColor;
-  int highlightWidth;
-  int inverted;
-  Tk_3DBorder plotBg;
-  int plotBW;
-  int xPad;
-  int yPad;
-  int plotRelief;
-  int relief;
-  ClosestSearch search;
-  int stackAxes;
-  const char *takeFocus; // nor used in C code
-  const char *title;
-  int reqWidth;
-  int reqPlotWidth;
-  int reqPlotHeight;
+namespace Blt {
 
-  // line graph
-} LineGraphOptions;
+  typedef struct {
+    double aspect;
+    Tk_3DBorder normalBg;
+    int borderWidth;
+    Margin margins[4];
+    Tk_Cursor cursor;
+    Blt::TextStyleOptions titleTextStyle;
+    int reqHeight;
+    XColor* highlightBgColor;
+    XColor* highlightColor;
+    int highlightWidth;
+    int inverted;
+    Tk_3DBorder plotBg;
+    int plotBW;
+    int xPad;
+    int yPad;
+    int plotRelief;
+    int relief;
+    ClosestSearch search;
+    int stackAxes;
+    const char *takeFocus; // nor used in C code
+    const char *title;
+    int reqWidth;
+    int reqPlotWidth;
+    int reqPlotHeight;
+  } LineGraphOptions;
 
-class LineGraph : public Graph {
- public:
-  LineGraph(ClientData, Tcl_Interp*, int objc, Tcl_Obj* const []);
-  virtual ~LineGraph();
+  class LineGraph : public Graph {
+  public:
+    LineGraph(ClientData, Tcl_Interp*, int objc, Tcl_Obj* const []);
+    virtual ~LineGraph();
 
-  int createElement(int, Tcl_Obj* const []);
-  int createPen(const char*, int, Tcl_Obj* const []);
+    int createElement(int, Tcl_Obj* const []);
+    int createPen(const char*, int, Tcl_Obj* const []);
+  };
 };
 
 #endif

@@ -43,9 +43,8 @@ extern "C" {
 #include "bltGrText.h"
 #include "bltGrPSOutput.h"
 
-class Graph;
-
 namespace Blt {
+  class Graph;
   class Postscript;
 
   typedef struct {

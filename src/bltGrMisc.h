@@ -54,7 +54,9 @@ using namespace std;
 #define MARGIN_TOP	2		/* x2 */
 #define MARGIN_RIGHT	3		/* y2 */
 
-class Graph;
+namespace Blt {
+  class Graph;
+}
 
 typedef struct {
   double x;
@@ -98,6 +100,6 @@ extern int Blt_PolyRectClip(Region2d *extsPtr, Point2d *inputPts,
 			    int nInputPts, Point2d *outputPts);
 extern int Blt_LineRectClip(Region2d *regionPtr, Point2d *p, Point2d *q);
 extern Point2d Blt_GetProjection (int x, int y, Point2d *p, Point2d *q);
-extern Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
+extern Blt::Graph *Blt_GetGraphFromWindowData(Tk_Window tkwin);
 
 #endif

@@ -34,83 +34,86 @@
 
 #include "bltGraph.h"
 
-typedef struct {
-  double value;
-  Blt::Axis* xAxis;
-  Blt::Axis* yAxis;
-} BarSetKey;
+namespace Blt {
 
-class BarGroup {
- public:
-  int nSegments;
-  Blt::Axis* xAxis;
-  Blt::Axis* yAxis;
-  float sum;
-  int count;
-  float lastY;
-  size_t index;
+  typedef struct {
+    double value;
+    Axis* xAxis;
+    Axis* yAxis;
+  } BarSetKey;
 
- public:
-  BarGroup();
-};
+  class BarGroup {
+  public:
+    int nSegments;
+    Axis* xAxis;
+    Axis* yAxis;
+    float sum;
+    int count;
+    float lastY;
+    size_t index;
 
-typedef struct {
-  double aspect;
-  Tk_3DBorder normalBg;
-  int borderWidth;
-  Margin margins[4];
-  Tk_Cursor cursor;
-  Blt::TextStyleOptions titleTextStyle;
-  int reqHeight;
-  XColor* highlightBgColor;
-  XColor* highlightColor;
-  int highlightWidth;
-  int inverted;
-  Tk_3DBorder plotBg;
-  int plotBW;
-  int xPad;
-  int yPad;
-  int plotRelief;
-  int relief;
-  ClosestSearch search;
-  int stackAxes;
-  const char *takeFocus; // nor used in C code
-  const char *title;
-  int reqWidth;
-  int reqPlotWidth;
-  int reqPlotHeight;
+  public:
+    BarGroup();
+  };
 
-  // bar graph
-  int barMode;
-  double barWidth;
-  double baseline;
-} BarGraphOptions;
+  typedef struct {
+    double aspect;
+    Tk_3DBorder normalBg;
+    int borderWidth;
+    Margin margins[4];
+    Tk_Cursor cursor;
+    TextStyleOptions titleTextStyle;
+    int reqHeight;
+    XColor* highlightBgColor;
+    XColor* highlightColor;
+    int highlightWidth;
+    int inverted;
+    Tk_3DBorder plotBg;
+    int plotBW;
+    int xPad;
+    int yPad;
+    int plotRelief;
+    int relief;
+    ClosestSearch search;
+    int stackAxes;
+    const char *takeFocus; // nor used in C code
+    const char *title;
+    int reqWidth;
+    int reqPlotWidth;
+    int reqPlotHeight;
 
-class BarGraph : public Graph {
- public:
-  enum BarMode {INFRONT, STACKED, ALIGNED, OVERLAP};
+    // bar graph
+    int barMode;
+    double barWidth;
+    double baseline;
+  } BarGraphOptions;
 
- public:
-  BarGroup* barGroups_;
-  int nBarGroups_;
-  Tcl_HashTable setTable_;
-  int maxBarSetSize_;
+  class BarGraph : public Graph {
+  public:
+    enum BarMode {INFRONT, STACKED, ALIGNED, OVERLAP};
 
- protected:
-  void resetAxes();
-  void mapElements();
-  void initBarSets();
-  void destroyBarSets();
-  void resetBarSets();
-  void computeBarStacks();
+  public:
+    BarGroup* barGroups_;
+    int nBarGroups_;
+    Tcl_HashTable setTable_;
+    int maxBarSetSize_;
 
- public:
-  BarGraph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);
-  virtual ~BarGraph();
+  protected:
+    void resetAxes();
+    void mapElements();
+    void initBarSets();
+    void destroyBarSets();
+    void resetBarSets();
+    void computeBarStacks();
 
-  int configure();
-  int createPen(const char*, int, Tcl_Obj* const []);
-  int createElement(int, Tcl_Obj* const []);
+  public:
+    BarGraph(ClientData, Tcl_Interp*, int, Tcl_Obj* const []);
+    virtual ~BarGraph();
+
+    int configure();
+    int createPen(const char*, int, Tcl_Obj* const []);
+    int createElement(int, Tcl_Obj* const []);
+  };
 };
 
 #endif

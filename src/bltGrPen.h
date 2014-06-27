@@ -34,9 +34,8 @@
 
 #include "bltGrText.h"
 
-class Graph;
-
 namespace Blt {
+  class Graph;
 
   typedef struct {
     int errorBarShow;
