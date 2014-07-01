@@ -48,7 +48,12 @@ bltTest2 $graph legend -position xy $dops
 bltTest2 $graph legend -x 250 $dops
 bltTest2 $graph legend -y 100 $dops
 bltTest2 $graph legend -raised yes $dops
+bltTest2 $graph legend -relief flat $dops
 bltTest2 $graph legend -relief groove $dops
+bltTest2 $graph legend -relief raised $dops
+bltTest2 $graph legend -relief ridge $dops
+bltTest2 $graph legend -relief solid $dops
+bltTest2 $graph legend -relief sunken $dops
 bltTest2 $graph legend -rows 1 $dops
 #bltTest2 $graph legend -selectbackground $dops
 bltTest2 $graph legend -selectborderwidth 3 $dops
