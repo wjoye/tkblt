@@ -760,12 +760,15 @@ void BarElement::print(PSOutput* psPtr)
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
+
     if (stylePtr->nBars > 0)
       printSegments(psPtr, penPtr, stylePtr->bars, stylePtr->nBars);
 
     XColor* colorPtr = pops->errorBarColor;
     if (!colorPtr)
       colorPtr = pops->outlineColor;
+    if (!colorPtr)
+      colorPtr = Tk_3DBorderColor(pops->fill);
 
     if ((stylePtr->xeb.length > 0) && (pops->errorBarShow & SHOW_X)) {
       psPtr->setLineAttributes(colorPtr, pops->errorBarLineWidth, 
@@ -803,6 +806,7 @@ void BarElement::printActive(PSOutput* psPtr)
 
   if (nActiveIndices_ > 0) {
     mapActive();
+
     printSegments(psPtr, penPtr, activeRects_, nActive_);
     if (pops->valueShow != SHOW_NONE)
       printValues(psPtr, penPtr, activeRects_, nActive_,activeToData_);
@@ -1187,6 +1191,9 @@ void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+    if ((rp->width < 1) || (rp->height < 1))
+      continue;
+
     if (pops->fill)
       Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
 			 pops->fill, rp->x, rp->y, rp->width, rp->height, 
@@ -1258,19 +1265,19 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
     return;
 
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    if ((rp->width < 1) || (rp->height < 1)) {
+    if ((rp->width < 1) || (rp->height < 1))
       continue;
-    }
+
+    if (pops->fill)
+      psPtr->print3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
+			     (int)rp->width, (int)rp->height,
+			     pops->borderWidth, pops->relief);
+
     if (pops->outlineColor) {
       psPtr->setForeground(pops->outlineColor);
       psPtr->fillRectangle((double)rp->x, (double)rp->y, 
 			   (int)rp->width - 1, (int)rp->height - 1);
     }
-    if ((pops->fill) && (pops->borderWidth > 0) && 
-	(pops->relief != TK_RELIEF_FLAT))
-      psPtr->print3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
-			     (int)rp->width, (int)rp->height,
-			     pops->borderWidth, pops->relief);
   }
 }
 

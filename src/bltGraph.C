@@ -398,7 +398,6 @@ int Graph::print(const char* ident, PSOutput* psPtr)
     psPtr->setClearBackground();
 
   psPtr->fillRectangle(x, y, w, h);
-  psPtr->printRectangle(x, y, w, h);
   psPtr->append("gsave\n\n");
 
   // Start
