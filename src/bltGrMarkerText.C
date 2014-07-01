@@ -141,8 +141,6 @@ void TextMarker::draw(Drawable drawable)
     return;
 
   if (fillGC_) {
-    // Simulate the rotated background of the bitmap by filling a bounding
-    // polygon with the background color.
     XPoint points[4];
     for (int ii=0; ii<4; ii++) {
       points[ii].x = (short int)(outline_[ii].x + anchorPt_.x);
@@ -231,8 +229,6 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
   if (ops->style.angle != 0.0f) {
-    // Generate the bounding polygon (isolateral) for the bitmap and see
-    // if the point is inside of it.
     Point2d points[5];
     for (int ii=0; ii<4; ii++) {
       points[ii].x = outline_[ii].x + anchorPt_.x;
@@ -261,8 +257,6 @@ void TextMarker::print(PSOutput* psPtr)
     return;
 
   if (fillGC_) {
-    // Simulate the rotated background of the bitmap by filling a bounding
-    // polygon with the background color.
     Point2d points[4];
     for (int ii=0; ii<4; ii++) {
       points[ii].x = outline_[ii].x + anchorPt_.x;

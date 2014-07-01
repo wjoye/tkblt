@@ -187,19 +187,25 @@ void PSOutput::setLineWidth(int lineWidth)
   format("%d setlinewidth\n", lineWidth);
 }
 
-void PSOutput::printRectangle(int x, int y, int width, int height)
+void PSOutput::printRectangle(double x, double y, int width, int height)
 {
   append("newpath\n");
-  format("  %d %d moveto\n", x, y);
+  format("  %g %g moveto\n", x, y);
   format("  %d %d rlineto\n", width, 0);
   format("  %d %d rlineto\n", 0, height);
   format("  %d %d rlineto\n", -width, 0);
   append("closepath\n");
+  append("stroke\n");
 }
 
 void PSOutput::fillRectangle(double x, double y, int width, int height)
 {
-  printRectangle((int)x, (int)y, width, height);
+  append("newpath\n");
+  format("  %g %g moveto\n", x, y);
+  format("  %d %d rlineto\n", width, 0);
+  format("  %d %d rlineto\n", 0, height);
+  format("  %d %d rlineto\n", -width, 0);
+  append("closepath\n");
   append("fill\n");
 }
 
@@ -286,23 +292,6 @@ void PSOutput::fillPolygon(Point2d *screenPts, int nScreenPts)
 {
   printPolygon(screenPts, nScreenPts);
   append("fill\n");
-}
-
-void PSOutput::printBitmap(Display *display, Pixmap bitmap,
-			    double xScale, double yScale)
-{
-  int width, height;
-  Tk_SizeOfBitmap(display, bitmap, &width, &height);
-
-  double sw = (double)width * xScale;
-  double sh = (double)height * yScale;
-  append("  gsave\n");
-  format("    %g %g translate\n", sw * -0.5, sh * 0.5);
-  format("    %g %g scale\n", sw, -sh);
-  format("    %d %d true [%d 0 0 %d 0 %d] {", 
-		width, height, width, -height, height);
-  setBitmap(display, bitmap, width, height);
-  append("    } imagemask\n  grestore\n");
 }
 
 void PSOutput::setJoinStyle(int joinStyle)
@@ -412,46 +401,6 @@ void PSOutput::print3DRectangle(Tk_3DBorder border, double x, double y,
     setBackground(topPtr);
 
   fillPolygon(points, 7);
-}
-
-void PSOutput::setBitmap(Display *display, Pixmap bitmap, int w, int h)
-{
-  XImage* imagePtr = XGetImage(display, bitmap, 0, 0, w, h, 1, ZPixmap);
-  append("\t<");
-  int byteCount =0;
-  int bitPos =0;
-  for (int y=0; y<h; y++) {
-    char string[10];
-    unsigned char byte = 0;
-    for (int x=0; x<w; x++) {
-      unsigned long pixel = XGetPixel(imagePtr, x, y);
-      bitPos = x % 8;
-      byte |= (unsigned char)(pixel << bitPos);
-      if (bitPos == 7) {
-	byte = reverseBits(byte);
-	byteToHex(byte, string);
-	string[2] = '\0';
-	byteCount++;
-	byte = 0;
-	if (byteCount >= 30) {
-	  string[2] = '\n';
-	  string[3] = '\t';
-	  string[4] = '\0';
-	  byteCount = 0;
-	}
-	append(string);
-      }
-    }			/* x */
-    if (bitPos != 7) {
-      byte = reverseBits(byte);
-      byteToHex(byte, string);
-      string[2] = '\0';
-      append(string);
-      byteCount++;
-    }
-  }				/* y */
-  append(">\n");
-  XDestroyImage(imagePtr);
 }
 
 void PSOutput::printXColor(XColor* colorPtr)

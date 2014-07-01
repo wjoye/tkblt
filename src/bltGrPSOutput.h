@@ -60,8 +60,7 @@ namespace Blt {
     void printPolyline(Point2d*, int);
     void printMaxPolyline(Point2d*, int);
     void printSegments(Segment2d*, int);
-    void printBitmap(Display*, Pixmap, double, double);
-    void printRectangle(int, int, int, int);
+    void printRectangle(double, double, int, int);
     void printPolygon(Point2d*, int);
     void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
 
@@ -78,7 +77,6 @@ namespace Blt {
     void setLineAttributes(XColor*,int, Dashes*, int, int);
     void setClearBackground();
     void setDashes(Dashes*);
-    void setBitmap(Display*, Pixmap, int, int);
 
     int preamble(const char*);
     int computeBBox(int, int);

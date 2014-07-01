@@ -1260,22 +1260,18 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   XRectangle *rp, *rend;
-
-  if (!pops->fill && !pops->outlineColor)
-    return;
-
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
     if (pops->fill)
-      psPtr->print3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
+      psPtr->fill3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
 			     (int)rp->width, (int)rp->height,
 			     pops->borderWidth, pops->relief);
 
     if (pops->outlineColor) {
       psPtr->setForeground(pops->outlineColor);
-      psPtr->fillRectangle((double)rp->x, (double)rp->y, 
+      psPtr->printRectangle((double)rp->x, (double)rp->y, 
 			   (int)rp->width - 1, (int)rp->height - 1);
     }
   }
