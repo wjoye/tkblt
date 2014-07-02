@@ -78,7 +78,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, CACHE},
   {TK_OPTION_BORDER, "-color", "color", "color",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(BarElementOptions, builtinPen.fill),
-   TK_OPTION_NULL_OK, NULL, CACHE},
+   0, NULL, CACHE},
   {TK_OPTION_CUSTOM, "-data", "data", "Data", 
    NULL, -1, Tk_Offset(BarElementOptions, coords),
    TK_OPTION_NULL_OK, &pairsObjOption, RESET},
@@ -728,20 +728,19 @@ void BarElement::drawSymbol(Drawable drawable, int x, int y, int size)
   BarPen* penPtr = NORMALPEN(ops);
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
-  if (!pops->fill && !pops->outlineColor)
-    return;
-
   int radius = (size / 2);
   size--;
 
   x -= radius;
   y -= radius;
 
-  Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, pops->fill, 
-		     x, y, size, size, pops->borderWidth, pops->relief);
+  Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
+		     pops->fill, x, y, size, size, 
+		     pops->borderWidth, pops->relief);
 
-  XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, x, y, 
-		 size, size);
+  if (pops->outlineColor)
+    XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_,
+		   x, y, size, size);
 }
 
 void BarElement::print(PSOutput* psPtr)
@@ -825,19 +824,16 @@ void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
   BarPen* penPtr = NORMALPEN(ops);
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
-  if (!pops->fill && !pops->outlineColor)
-    return;
+  x -= size/2.;
+  y -= size/2.;
 
-  psPtr->append("\n"
-		"/DrawSymbolProc {\n"
-		"gsave\n    ");
+  psPtr->fill3DRectangle(pops->fill, x, y, size, size,
+			 pops->borderWidth, pops->relief);
+
   if (pops->outlineColor) {
     psPtr->setForeground(pops->outlineColor);
-    psPtr->append("    fill\n");
+    psPtr->printRectangle(x, y, size-1, size-1);
   }
-  psPtr->append("  grestore\n");
-  psPtr->append("} def\n\n");
-  psPtr->format("%g %g %d Sq\n", x, y, size);
 }
 
 // Support
@@ -1194,10 +1190,9 @@ void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
-    if (pops->fill)
-      Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
-			 pops->fill, rp->x, rp->y, rp->width, rp->height, 
-			 pops->borderWidth, pops->relief);
+    Tk_Fill3DRectangle(graphPtr_->tkwin_, drawable, 
+		       pops->fill, rp->x, rp->y, rp->width, rp->height, 
+		       pops->borderWidth, pops->relief);
 
     if (pops->outlineColor)
       XDrawRectangle(graphPtr_->display_, drawable, penPtr->outlineGC_, 
@@ -1264,10 +1259,9 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
-    if (pops->fill)
-      psPtr->fill3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
-			     (int)rp->width, (int)rp->height,
-			     pops->borderWidth, pops->relief);
+    psPtr->fill3DRectangle(pops->fill, (double)rp->x, (double)rp->y,
+			   (int)rp->width, (int)rp->height,
+			   pops->borderWidth, pops->relief);
 
     if (pops->outlineColor) {
       psPtr->setForeground(pops->outlineColor);
