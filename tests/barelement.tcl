@@ -34,6 +34,11 @@ bltTest3 $graph element data2 -mapy y2 $dops
 bltTest3 $graph element data1 -outline red $dops
 bltTest3 $graph element data2 -pen foo $dops
 bltTest3 $graph element data2 -relief flat $dops
+bltTest3 $graph element data2 -relief groove $dops
+bltTest3 $graph element data2 -relief raised $dops
+bltTest3 $graph element data2 -relief ridge $dops
+bltTest3 $graph element data2 -relief solid $dops
+bltTest3 $graph element data2 -relief sunken $dops
 bltTest3 $graph element data2 -showerrorbars no $dops
 bltTest3 $graph element data1 -showvalues none $dops
 bltTest3 $graph element data1 -showvalues x $dops

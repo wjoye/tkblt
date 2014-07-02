@@ -832,7 +832,7 @@ void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 
   if (pops->outlineColor) {
     psPtr->setForeground(pops->outlineColor);
-    psPtr->printRectangle(x, y, size-1, size-1);
+    psPtr->printRectangle(x, y, size, size);
   }
 }
 
@@ -1266,7 +1266,7 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
     if (pops->outlineColor) {
       psPtr->setForeground(pops->outlineColor);
       psPtr->printRectangle((double)rp->x, (double)rp->y, 
-			   (int)rp->width - 1, (int)rp->height - 1);
+			   (int)rp->width, (int)rp->height);
     }
   }
 }

@@ -48,7 +48,12 @@ bltTest3 $graph axis x -logscale yes $dops
 #bltTest3 $graph axis x -max $dops
 #bltTest3 $graph axis x -min $dops
 #bltTest3 $graph axis x -minorticks $dops
+bltTest3 $graph axis x -relief flat $dops
 bltTest3 $graph axis x -relief groove $dops
+bltTest3 $graph axis x -relief raised $dops
+bltTest3 $graph axis x -relief ridge $dops
+bltTest3 $graph axis x -relief solid $dops
+bltTest3 $graph axis x -relief sunken $dops
 bltTest3 $graph axis x -rotate 45 $dops
 #bltTest3 $graph axis x -scrollcommand $dops
 #bltTest3 $graph axis x -scrollincrement $dops
