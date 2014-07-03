@@ -85,10 +85,16 @@ namespace Blt {
     char* string;
   } TickLabel;
 
-  typedef struct {
+  class Ticks {
+  public:
     int nTicks;
     double* values;
-  } Ticks;
+
+  public:
+    Ticks();
+    Ticks(int);
+    virtual ~Ticks();
+  };
 
   typedef struct {
     double initial;

@@ -185,6 +185,24 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
+Ticks::Ticks()
+{
+  nTicks =0;
+  values =NULL;
+}
+
+Ticks::Ticks(int cnt)
+{
+  nTicks =cnt;
+  values = new double[cnt];
+}
+
+Ticks::~Ticks()
+{
+  if (values)
+    delete [] values;
+}
+
 Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
 {
   ops_ = (AxisOptions*)calloc(1, sizeof(AxisOptions));
@@ -298,16 +316,10 @@ Axis::~Axis()
   if (ops->minor.gc)
     graphPtr_->freePrivateGC(ops->minor.gc);
 
-  if (t1Ptr_) {
-    if (t1Ptr_->values)
-      delete [] t1Ptr_->values;
+  if (t1Ptr_)
     delete t1Ptr_;
-  }
-  if (t2Ptr_) {
-    if (t2Ptr_->values)
-      delete [] t2Ptr_->values;
+  if (t2Ptr_)
     delete t2Ptr_;
-  }
 
   freeTickLabels();
 
@@ -445,16 +457,11 @@ void Axis::mapGridlines()
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
 
   if (needed == 0) {
-    if (t1Ptr != t1Ptr_) {
-      if (t1Ptr->values)
-	delete [] t1Ptr->values;
+    if (t1Ptr != t1Ptr_)
       delete t1Ptr;
-    }
-    if (t2Ptr != t2Ptr_) {
-      if (t2Ptr->values)
-	delete [] t2Ptr->values;
+    if (t2Ptr != t2Ptr_)
       delete t2Ptr;
-    }
+
     return;			
   }
 
@@ -496,16 +503,10 @@ void Axis::mapGridlines()
     }
   }
 
-  if (t1Ptr != t1Ptr_) {
-    if (t1Ptr->values)
-      delete [] t1Ptr->values;
+  if (t1Ptr != t1Ptr_)
     delete t1Ptr;
-  }
-  if (t2Ptr != t2Ptr_) {
-    if (t2Ptr->values)
-      delete [] t2Ptr->values;
+  if (t2Ptr != t2Ptr_)
     delete t2Ptr;
-  }
 
   ops->major.nUsed = s1 - ops->major.segments;
   ops->minor.nUsed = s2 - ops->minor.segments;
@@ -1625,13 +1626,10 @@ void Axis::makeSegments(AxisInfo *infoPtr)
 
 Ticks* Axis::generateTicks(TickSweep *sweepPtr)
 {
-  Ticks* ticksPtr = new Ticks;
-  ticksPtr->values = new double[sweepPtr->nSteps];
-  ticksPtr->nTicks = 0;
+  Ticks* ticksPtr = new Ticks(sweepPtr->nSteps);
 
   if (sweepPtr->step == 0.0) { 
     // Hack: A zero step indicates to use log values
-    int i;
     // Precomputed log10 values [1..10]
     static double logTable[] = {
       0.0, 
@@ -1645,18 +1643,17 @@ Ticks* Axis::generateTicks(TickSweep *sweepPtr)
       0.954242509439325, 
       1.0
     };
-    for (i = 0; i < sweepPtr->nSteps; i++)
-      ticksPtr->values[i] = logTable[i];
+    for (int ii=0; ii<sweepPtr->nSteps; ii++)
+      ticksPtr->values[ii] = logTable[ii];
   }
   else {
-    double value = sweepPtr->initial;	/* Start from smallest axis tick */
+    double value = sweepPtr->initial;
     for (int ii=0; ii<sweepPtr->nSteps; ii++) {
       value = (value/sweepPtr->step)*sweepPtr->step;
       ticksPtr->values[ii] = value;
       value += sweepPtr->step;
     }
   }
-  ticksPtr->nTicks = sweepPtr->nSteps;
 
   return ticksPtr;
 }
@@ -1878,18 +1875,12 @@ void Axis::getGeometry()
 
   maxTickHeight_ = maxTickWidth_ = 0;
 
-  if (t1Ptr_) {
-    if (t1Ptr_->values)
-      delete [] t1Ptr_->values;
+  if (t1Ptr_)
     delete t1Ptr_;
-  }
   t1Ptr_ = generateTicks(&majorSweep_);
 
-  if (t2Ptr_) {
-    if (t2Ptr_->values)
-      delete [] t2Ptr_->values;
+  if (t2Ptr_)
     delete t2Ptr_;
-  }
   t2Ptr_ = generateTicks(&minorSweep_);
 
   if (ops->showTicks) {
