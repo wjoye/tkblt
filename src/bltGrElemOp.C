@@ -143,7 +143,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
 
     Tcl_HashSearch iter;
-    for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.table, &iter); hPtr != NULL; hPtr = Tcl_NextHashEntry(&iter)) {
+    for (Tcl_HashEntry* hPtr = Tcl_FirstHashEntry(&graphPtr->elements_.table, &iter); hPtr; hPtr = Tcl_NextHashEntry(&iter)) {
       Element* elemPtr = (Element*)Tcl_GetHashValue(hPtr);
       if (elemPtr->active_)
 	Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -162,9 +162,9 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   int nIndices = -1;
   if (objc > 4) {
     nIndices = objc - 4;
-    indices = (int*)malloc(sizeof(int) * nIndices);
+    indices = new int[nIndices];
 
-    int *activePtr = indices;
+    int* activePtr = indices;
     for (int ii=4; ii<objc; ii++) {
       if (GetIndex(interp, elemPtr, objv[ii], activePtr) != TCL_OK)
 	return TCL_ERROR;
@@ -173,7 +173,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   if (elemPtr->activeIndices_)
-    free(elemPtr->activeIndices_);
+    delete [] elemPtr->activeIndices_;
   elemPtr->nActiveIndices_ = nIndices;
   elemPtr->activeIndices_ = indices;
 
@@ -305,7 +305,7 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
       return TCL_ERROR;
 
     if (elemPtr->activeIndices_) {
-      free(elemPtr->activeIndices_);
+      delete [] elemPtr->activeIndices_;
       elemPtr->activeIndices_ = NULL;
     }
     elemPtr->nActiveIndices_ = 0;
