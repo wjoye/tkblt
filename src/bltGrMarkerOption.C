@@ -73,9 +73,9 @@ static int CoordsSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
 
-  Coords* coordsPtr = (Coords*)calloc(1,sizeof(Coords));
+  Coords* coordsPtr = new Coords;
   coordsPtr->num = objc/2;
-  coordsPtr->points = (Point2d*)calloc(coordsPtr->num, sizeof(Point2d));
+  coordsPtr->points = new Point2d[coordsPtr->num];
 
   Point2d* pp = coordsPtr->points;
   for (int ii=0; ii<objc; ii+=2) {
@@ -120,8 +120,8 @@ static void CoordsFreeProc(ClientData clientData, Tk_Window tkwin,
   Coords* coordsPtr = *(Coords**)ptr;
   if (coordsPtr) {
     if (coordsPtr->points)
-      free(coordsPtr->points);
-    free(coordsPtr);
+      delete [] coordsPtr->points;
+    delete coordsPtr;
   }
 }
 
