@@ -78,12 +78,17 @@ namespace Blt {
     double scale;
   } AxisRange;
 
-  typedef struct {
+  class TickLabel {
+  public:
     Point2d anchorPos;
     unsigned int width;
     unsigned int height;
     char* string;
-  } TickLabel;
+
+  public:
+    TickLabel(char*);
+    virtual ~TickLabel();
+  };
 
   class Ticks {
   public:
@@ -91,7 +96,6 @@ namespace Blt {
     double* values;
 
   public:
-    Ticks();
     Ticks(int);
     virtual ~Ticks();
   };

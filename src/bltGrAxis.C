@@ -185,10 +185,19 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
 };
 
-Ticks::Ticks()
+TickLabel::TickLabel(char* str)
 {
-  nTicks =0;
-  values =NULL;
+  anchorPos.x = DBL_MAX;
+  anchorPos.y = DBL_MAX;
+  width =0;
+  height =0;
+  string = dupstr(str);
+}
+
+TickLabel::~TickLabel()
+{
+  if (string)
+    delete [] string;
 }
 
 Ticks::Ticks(int cnt)
@@ -1022,9 +1031,7 @@ void Axis::freeTickLabels()
   for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link;
        link = Blt_Chain_NextLink(link)) {
     TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-    if (labelPtr->string)
-      delete [] labelPtr->string;
-    delete(labelPtr);
+    delete labelPtr;
   }
   Blt_Chain_Reset(chain);
 }
@@ -1063,11 +1070,7 @@ TickLabel* Axis::makeLabel(double value)
     }
   }
 
-  TickLabel* labelPtr = new TickLabel;
-  labelPtr->string = new char[strlen(string)+1];
-  strcpy(labelPtr->string, string);
-  labelPtr->anchorPos.x = DBL_MAX;
-  labelPtr->anchorPos.y = DBL_MAX;
+  TickLabel* labelPtr = new TickLabel(string);
 
   return labelPtr;
 }
