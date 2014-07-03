@@ -71,7 +71,7 @@ Element::~Element()
     delete [] name_;
 
   if (activeIndices_)
-    free(activeIndices_);
+    delete [] activeIndices_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -110,7 +110,7 @@ PenStyle** Element::StyleMap()
 
   // Create a style mapping array (data point index to style), 
   // initialized to the default style.
-  PenStyle **dataToStyle = (PenStyle**)malloc(nPoints * sizeof(PenStyle *));
+  PenStyle** dataToStyle = new PenStyle*[nPoints];
   for (int ii=0; ii<nPoints; ii++)
     dataToStyle[ii] = stylePtr;
 
