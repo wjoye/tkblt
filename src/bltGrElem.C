@@ -106,23 +106,21 @@ PenStyle** Element::StyleMap()
   int nWeights = MIN(ops->w ? ops->w->nValues : 0, nPoints);
   double* w = ops->w ? ops->w->values : NULL;
   Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
-  PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+  PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
   // Create a style mapping array (data point index to style), 
   // initialized to the default style.
-  PenStyle** dataToStyle = new PenStyle*[nPoints];
+  PenStyle** dataToStyle = (PenStyle**)malloc(nPoints*sizeof(PenStyle*));
   for (int ii=0; ii<nPoints; ii++)
     dataToStyle[ii] = stylePtr;
 
   for (int ii=0; ii<nWeights; ii++) {
-    for (link = Blt_Chain_LastLink(ops->stylePalette); link != NULL; 
-	 link = Blt_Chain_PrevLink(link)) {
+    for (link=Blt_Chain_LastLink(ops->stylePalette); link; 
+	 link=Blt_Chain_PrevLink(link)) {
       stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 
       if (stylePtr->weight.range > 0.0) {
-	double norm;
-
-	norm = (w[ii] - stylePtr->weight.min) / stylePtr->weight.range;
+	double norm = (w[ii] - stylePtr->weight.min) / stylePtr->weight.range;
 	if (((norm - 1.0) <= DBL_EPSILON) && 
 	    (((1.0 - norm) - 1.0) <= DBL_EPSILON)) {
 	  dataToStyle[ii] = stylePtr;
@@ -131,6 +129,7 @@ PenStyle** Element::StyleMap()
       }
     }
   }
+
   return dataToStyle;
 }
 
