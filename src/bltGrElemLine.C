@@ -109,7 +109,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "5", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
+   "2", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, LAYOUT},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.symbol.fillColor), 
@@ -363,14 +363,13 @@ void LineElement::map()
   // Set the symbol size of all the pen styles
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+    LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     int size = scaleSymbol(penOps->symbol.size);
     stylePtr->symbolSize = size;
     stylePtr->errorBarCapWidth = (penOps->errorBarCapWidth > 0) 
-      ? penOps->errorBarCapWidth : size * 0.6666666;
-    stylePtr->errorBarCapWidth /= 2;
+      ? penOps->errorBarCapWidth : size*0.66666;
   }
 
   LineStyle** styleMap = (LineStyle**)StyleMap();
@@ -1742,67 +1741,65 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
   Region2d exts;
   graphPtr_->extents(&exts);
 
-  int n =0;
+  int nn =0;
   int np = NUMBEROFPOINTS(ops);
   if (ops->coords.x && ops->coords.y) {
     if (ops->xError && (ops->xError->nValues > 0))
-      n = MIN(ops->xError->nValues, np);
+      nn = MIN(ops->xError->nValues, np);
     else
       if (ops->xHigh && ops->xLow)
-	n = MIN3(ops->xHigh->nValues, ops->xLow->nValues, np);
+	nn = MIN3(ops->xHigh->nValues, ops->xLow->nValues, np);
   }
 
-  if (n > 0) {
-    Segment2d *segPtr;
-    Segment2d *errorBars;
-    int *errorToData;
-    int *indexPtr;
-    int i;
-		
-    segPtr = errorBars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = errorToData = (int*)malloc(n * 3 * sizeof(int));
-    for (i = 0; i < n; i++) {
-      double x, y;
-      double high, low;
-      LineStyle *stylePtr;
+  if (nn) {
+    Segment2d* errorBars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
+    Segment2d* segPtr = errorBars;
+    int* errorToData = (int*)malloc(nn * 3 * sizeof(int));
+    int* indexPtr = errorToData;
 
-      x = ops->coords.x->values[i];
-      y = ops->coords.y->values[i];
-      stylePtr = styleMap[i];
+    for (int ii=0; ii<nn; ii++) {
+      double x = ops->coords.x->values[ii];
+      double y = ops->coords.y->values[ii];
+      LineStyle* stylePtr = styleMap[ii];
+
       if ((isfinite(x)) && (isfinite(y))) {
+	double high;
+	double low;
 	if (ops->xError->nValues > 0) {
-	  high = x + ops->xError->values[i];
-	  low = x - ops->xError->values[i];
-	} else {
-	  high = ops->xHigh ? ops->xHigh->values[i] : 0;
-	  low  = ops->xLow ? ops->xLow->values[i] : 0;
+	  high = x + ops->xError->values[ii];
+	  low = x - ops->xError->values[ii];
+	} 
+	else {
+	  high = ops->xHigh ? ops->xHigh->values[ii] : 0;
+	  low  = ops->xLow ? ops->xLow->values[ii] : 0;
 	}
-	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p, q;
 
-	  p = graphPtr_->map2D(high, y, ops->xAxis, ops->yAxis);
-	  q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
+	if ((isfinite(high)) && (isfinite(low)))  {
+	  Point2d p = graphPtr_->map2D(high, y, ops->xAxis, ops->yAxis);
+	  Point2d q = graphPtr_->map2D(low, y, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
-	  /* Left cap */
-	  segPtr->p.x = segPtr->q.x = p.x;
+	  // Left cap
+	  segPtr->p.x = p.x;
+	  segPtr->q.x = p.x;
 	  segPtr->p.y = p.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
-	  /* Right cap */
-	  segPtr->p.x = segPtr->q.x = q.x;
+	  // Right cap
+	  segPtr->p.x = q.x;
+	  segPtr->q.x = q.x;
 	  segPtr->p.y = q.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	}
       }
@@ -1812,66 +1809,64 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
     xeb_.map = errorToData;
   }
 
-  n =0;
+  nn =0;
   if (ops->coords.x && ops->coords.y) {
     if (ops->yError && (ops->yError->nValues > 0))
-      n = MIN(ops->yError->nValues, np);
+      nn = MIN(ops->yError->nValues, np);
     else
       if (ops->yHigh && ops->yLow)
-	n = MIN3(ops->yHigh->nValues, ops->yLow->nValues, np);
+	nn = MIN3(ops->yHigh->nValues, ops->yLow->nValues, np);
   }
 
-  if (n > 0) {
-    Segment2d *errorBars;
-    Segment2d *segPtr;
-    int *errorToData;
-    int *indexPtr;
-    int i;
-		
-    segPtr = errorBars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
-    indexPtr = errorToData = (int*)malloc(n * 3 * sizeof(int));
-    for (i = 0; i < n; i++) {
-      double x, y;
-      double high, low;
-      LineStyle *stylePtr;
+  if (nn) {
+    Segment2d* errorBars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
+    Segment2d* segPtr = errorBars;
+    int* errorToData = (int*)malloc(nn * 3 * sizeof(int));
+    int* indexPtr = errorToData;
 
-      x = ops->coords.x->values[i];
-      y = ops->coords.y->values[i];
-      stylePtr = styleMap[i];
+    for (int ii=0; ii<nn; ii++) {
+      double x = ops->coords.x->values[ii];
+      double y = ops->coords.y->values[ii];
+      LineStyle* stylePtr = styleMap[ii];
+
       if ((isfinite(x)) && (isfinite(y))) {
-	if (ops->yError->nValues > 0) {
-	  high = y + ops->yError->values[i];
-	  low = y - ops->yError->values[i];
-	} else {
-	  high = ops->yHigh->values[i];
-	  low = ops->yLow->values[i];
-	}
+	double high;
+	double low;
+ 	if (ops->yError->nValues > 0) {
+ 	  high = y + ops->yError->values[ii];
+ 	  low = y - ops->yError->values[ii];
+ 	} 
+	else {
+ 	  high = ops->yHigh->values[ii];
+ 	  low = ops->yLow->values[ii];
+ 	}
+
 	if ((isfinite(high)) && (isfinite(low)))  {
-	  Point2d p, q;
-		    
-	  p = graphPtr_->map2D(x, high, ops->xAxis, ops->yAxis);
-	  q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
+	  Point2d p = graphPtr_->map2D(x, high, ops->xAxis, ops->yAxis);
+	  Point2d q = graphPtr_->map2D(x, low, ops->xAxis, ops->yAxis);
 	  segPtr->p = p;
 	  segPtr->q = q;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
-	  /* Top cap. */
-	  segPtr->p.y = segPtr->q.y = p.y;
+	  // Top cap
+	  segPtr->p.y = p.y;
+	  segPtr->q.y = p.y;
 	  segPtr->p.x = p.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
-	  /* Bottom cap. */
-	  segPtr->p.y = segPtr->q.y = q.y;
+	  // Bottom cap
+	  segPtr->p.y = q.y;
+	  segPtr->q.y = q.y;
 	  segPtr->p.x = q.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&exts, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
-	    *indexPtr++ = i;
+	    *indexPtr++ = ii;
 	  }
 	}
       }

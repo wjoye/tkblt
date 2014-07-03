@@ -89,7 +89,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "5", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
+   "2", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, LAYOUT},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
@@ -451,9 +451,8 @@ void BarElement::map()
     BarPen* penPtr = stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
-    stylePtr->errorBarCapWidth = (pops->errorBarCapWidth > 0) 
-      ? pops->errorBarCapWidth : (size * 66666) / 100000;
-    stylePtr->errorBarCapWidth /= 2;
+    stylePtr->errorBarCapWidth = (pops->errorBarCapWidth > 0) ?
+      pops->errorBarCapWidth : size*.66666;
   }
 
   BarStyle** dataToStyle = (BarStyle**)StyleMap();
@@ -1055,28 +1054,28 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
   graphPtr_->extents(&reg);
 
   int nPoints = NUMBEROFPOINTS(ops);
-  int n =0;
+  int nn =0;
   if (ops->coords.x && ops->coords.y) {
     if (ops->xError && (ops->xError->nValues > 0))
-      n = MIN(ops->xError->nValues, nPoints);
+      nn = MIN(ops->xError->nValues, nPoints);
     else
       if (ops->xHigh && ops->xLow)
-	n = MIN3(ops->xHigh->nValues, ops->xLow->nValues, nPoints);
+	nn = MIN3(ops->xHigh->nValues, ops->xLow->nValues, nPoints);
   }
 
-  if (n > 0) {
-    Segment2d*bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+  if (nn) {
+    Segment2d*bars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
     Segment2d* segPtr = bars;
-    int* map = (int*)malloc(n * 3 * sizeof(int));
+    int* map = (int*)malloc(nn * 3 * sizeof(int));
     int* indexPtr = map;
 
-    for (int ii=0; ii<n; ii++) {
+    for (int ii=0; ii<nn; ii++) {
       double x = ops->coords.x->values[ii];
       double y = ops->coords.y->values[ii];
       BarStyle* stylePtr = dataToStyle[ii];
 
-      double high, low;
       if ((isfinite(x)) && (isfinite(y))) {
+	double high, low;
 	if (ops->xError->nValues > 0) {
 	  high = x + ops->xError->values[ii];
 	  low = x - ops->xError->values[ii];
@@ -1094,16 +1093,18 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
-	  /* Left cap */
-	  segPtr->p.x = segPtr->q.x = p.x;
+	  // Left cap
+	  segPtr->p.x = p.x;
+	  segPtr->q.x = p.x;
 	  segPtr->p.y = p.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = p.y + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
-	  /* Right cap */
-	  segPtr->p.x = segPtr->q.x = q.x;
+	  // Right cap
+	  segPtr->p.x = q.x;
+	  segPtr->q.x = q.x;
 	  segPtr->p.y = q.y - stylePtr->errorBarCapWidth;
 	  segPtr->q.y = q.y + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
@@ -1118,32 +1119,33 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
     xeb_.map = map;
   }
 
-  n =0;
+  nn =0;
   if (ops->coords.x && ops->coords.y) {
     if (ops->yError && (ops->yError->nValues > 0))
-      n = MIN(ops->yError->nValues, nPoints);
+      nn = MIN(ops->yError->nValues, nPoints);
     else
       if (ops->yHigh && ops->yLow)
-	n = MIN3(ops->yHigh->nValues, ops->yLow->nValues, nPoints);
+	nn = MIN3(ops->yHigh->nValues, ops->yLow->nValues, nPoints);
   }
 
-  if (n > 0) {
-    Segment2d* bars = (Segment2d*)malloc(n * 3 * sizeof(Segment2d));
+  if (nn) {
+    Segment2d* bars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
     Segment2d* segPtr = bars;
-    int* map = (int*)malloc(n * 3 * sizeof(int));
+    int* map = (int*)malloc(nn * 3 * sizeof(int));
     int* indexPtr = map;
 
-    for (int ii=0; ii<n; ii++) {
+    for (int ii=0; ii<nn; ii++) {
       double x = ops->coords.x->values[ii];
       double y = ops->coords.y->values[ii];
       BarStyle *stylePtr = dataToStyle[ii];
 
-      double high, low;
       if ((isfinite(x)) && (isfinite(y))) {
+      double high, low;
 	if (ops->yError->nValues > 0) {
 	  high = y + ops->yError->values[ii];
 	  low = y - ops->yError->values[ii];
-	} else {
+	}
+	else {
 	  high = ops->yHigh->values[ii];
 	  low = ops->yLow->values[ii];
 	}
@@ -1156,16 +1158,18 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
-	  /* Top cap. */
-	  segPtr->p.y = segPtr->q.y = p.y;
+	  // Top cap
+	  segPtr->p.y = p.y;
+	  segPtr->q.y = p.y;
 	  segPtr->p.x = p.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = p.x + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {
 	    segPtr++;
 	    *indexPtr++ = ii;
 	  }
-	  /* Bottom cap. */
-	  segPtr->p.y = segPtr->q.y = q.y;
+	  // Bottom cap
+	  segPtr->p.y = q.y;
+	  segPtr->q.y = q.y;
 	  segPtr->p.x = q.x - stylePtr->errorBarCapWidth;
 	  segPtr->q.x = q.x + stylePtr->errorBarCapWidth;
 	  if (lineRectClip(&reg, &segPtr->p, &segPtr->q)) {

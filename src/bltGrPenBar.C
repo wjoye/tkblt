@@ -50,7 +50,7 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
   {TK_OPTION_PIXELS, "-errorbarwidth", "errorBarWidth","ErrorBarWidth",
    "1", -1, Tk_Offset(BarPenOptions, errorBarLineWidth), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "5", -1, Tk_Offset(BarPenOptions, errorBarCapWidth), 0, NULL, LAYOUT},
+   "2", -1, Tk_Offset(BarPenOptions, errorBarCapWidth), 0, NULL, LAYOUT},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
   {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
