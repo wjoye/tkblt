@@ -60,8 +60,8 @@ namespace Blt {
 
   typedef struct {
     Segment2d *segments;
-    int length;
     int *map;
+    int length;
   } GraphSegments;
 
   typedef struct {

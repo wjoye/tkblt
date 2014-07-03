@@ -231,11 +231,11 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   activePts_.map =NULL;
 
   xeb_.segments =NULL;
-  xeb_.length =0;
   xeb_.map =NULL;
+  xeb_.length =0;
   yeb_.segments =NULL;
-  yeb_.length =0;
   yeb_.map =NULL;
+  yeb_.length =0;
 
   symbolInterval_ =0;
   symbolCounter_ =0;
@@ -1393,9 +1393,9 @@ void LineElement::mergePens(LineStyle **styleMap)
   }
 
   if (xeb_.length > 0) {
-    Segment2d *segments = (Segment2d*)malloc(xeb_.length * sizeof(Segment2d));
-    int* map = (int*)malloc(xeb_.length * sizeof(int));
+    Segment2d* segments = new Segment2d[xeb_.length];
     Segment2d *sp = segments;
+    int* map = new int[xeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
@@ -1410,16 +1410,16 @@ void LineElement::mergePens(LineStyle **styleMap)
       }
       stylePtr->xeb.length = sp - stylePtr->xeb.segments;
     }
-    free(xeb_.segments);
-    free(xeb_.map);
+    delete [] xeb_.segments;
     xeb_.segments = segments;
+    delete [] xeb_.map;
     xeb_.map = map;
   }
 
   if (yeb_.length > 0) {
-    Segment2d *segments = (Segment2d*)malloc(yeb_.length * sizeof(Segment2d));
-    int* map = (int*)malloc(yeb_.length * sizeof(int));
-    Segment2d *sp = segments;
+    Segment2d* segments = new Segment2d[yeb_.length];
+    Segment2d* sp = segments;
+    int* map = new int [yeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
@@ -1434,9 +1434,9 @@ void LineElement::mergePens(LineStyle **styleMap)
       }
       stylePtr->yeb.length = sp - stylePtr->yeb.segments;
     }
-    free(yeb_.segments);
+    delete [] yeb_.segments;
     yeb_.segments = segments;
-    free(yeb_.map);
+    delete [] yeb_.map;
     yeb_.map = map;
   }
 }
@@ -1711,22 +1711,20 @@ void LineElement::reset()
   activePts_.map = NULL;
 
   if (xeb_.segments)
-    free(xeb_.segments);
+    delete [] xeb_.segments;
   xeb_.segments = NULL;
-
   if (xeb_.map)
-    free(xeb_.map);
+    delete [] xeb_.map;
   xeb_.map = NULL;
   xeb_.length = 0;
 
   if (yeb_.segments)
-    free(yeb_.segments);
+    delete [] yeb_.segments;
   yeb_.segments = NULL;
-  yeb_.length = 0;
-
   if (yeb_.map)
-    free(yeb_.map);
+    delete [] yeb_.map;
   yeb_.map = NULL;
+  yeb_.length = 0;
 }
 
 void LineElement::mapErrorBars(LineStyle **styleMap)
@@ -1747,9 +1745,9 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
   }
 
   if (nn) {
-    Segment2d* errorBars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
+    Segment2d* errorBars = new Segment2d[nn * 3];
     Segment2d* segPtr = errorBars;
-    int* errorToData = (int*)malloc(nn * 3 * sizeof(int));
+    int* errorToData = new int[nn * 3];
     int* indexPtr = errorToData;
 
     for (int ii=0; ii<nn; ii++) {
@@ -1814,9 +1812,9 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
   }
 
   if (nn) {
-    Segment2d* errorBars = (Segment2d*)malloc(nn * 3 * sizeof(Segment2d));
+    Segment2d* errorBars = new Segment2d[nn * 3];
     Segment2d* segPtr = errorBars;
-    int* errorToData = (int*)malloc(nn * 3 * sizeof(int));
+    int* errorToData = new int[nn * 3];
     int* indexPtr = errorToData;
 
     for (int ii=0; ii<nn; ii++) {
