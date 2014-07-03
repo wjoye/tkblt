@@ -266,8 +266,8 @@ void BarElement::map()
 
   // Create an array of bars representing the screen coordinates of all the
   // segments in the bar.
-  XRectangle* bars = (XRectangle*)calloc(nPoints, sizeof(XRectangle));
-  int* barToData = (int*)calloc(nPoints, sizeof(int));
+  XRectangle* bars = new XRectangle[nPoints];
+  int* barToData = new int[nPoints];
 
   double* x = ops->coords.x->values;
   double* y = ops->coords.y->values;
@@ -895,8 +895,8 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 
   // We have more than one style. Group bar segments of like pen styles together
   if (nBars_ > 0) {
-    XRectangle* bars = (XRectangle*)malloc(nBars_ * sizeof(XRectangle));
-    int* barToData = (int*)malloc(nBars_ * sizeof(int));
+    XRectangle* bars = new XRectangle[nBars_];
+    int* barToData = new int[nBars_];
     XRectangle* bp = bars;
     int* ip = barToData;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link; 
@@ -913,9 +913,9 @@ void BarElement::mergePens(BarStyle** dataToStyle)
       }
       stylePtr->nBars = bp - stylePtr->bars;
     }
-    free(bars_);
-    free(barToData_);
+    delete [] bars_;
     bars_ = bars;
+    delete [] barToData_;
     barToData_ = barToData;
   }
 
@@ -971,19 +971,18 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 void BarElement::mapActive()
 {
   if (activeRects_) {
-    free(activeRects_);
+    delete [] activeRects_;
     activeRects_ = NULL;
   }
   if (activeToData_) {
-    free(activeToData_);
+    delete [] activeToData_;
     activeToData_ = NULL;
   }
   nActive_ = 0;
 
   if (nActiveIndices_ > 0) {
-    XRectangle *activeRects = 
-      (XRectangle*)malloc(sizeof(XRectangle) * nActiveIndices_);
-    int* activeToData = (int*)malloc(sizeof(int) * nActiveIndices_);
+    XRectangle* activeRects = new XRectangle[nActiveIndices_];
+    int* activeToData = new int[nActiveIndices_];
     int count = 0;
     for (int ii=0; ii<nBars_; ii++) {
       int *ip, *iend;
@@ -1008,11 +1007,10 @@ void BarElement::reset()
   ResetStylePalette(ops->stylePalette);
 
   if (activeRects_)
-    free(activeRects_);
+    delete [] activeRects_;
   activeRects_ = NULL;
-
   if (activeToData_)
-    free(activeToData_);
+    delete [] activeToData_;
   activeToData_ = NULL;
 
   if (xeb_.segments)
