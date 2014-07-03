@@ -101,7 +101,7 @@ static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin,
     return Tcl_NewListObj(0, NULL);
 
   int cnt = coordsPtr->num*2;
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[cnt];
 
   Point2d* pp = coordsPtr->points;
   for (int ii=0; ii<cnt; pp++) {
@@ -110,7 +110,7 @@ static Tcl_Obj* CoordsGetProc(ClientData clientData, Tk_Window tkwin,
   }
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
+  delete [] ll;
   return listObjPtr;
 }
 
