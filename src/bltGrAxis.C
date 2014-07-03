@@ -298,10 +298,16 @@ Axis::~Axis()
   if (ops->minor.gc)
     graphPtr_->freePrivateGC(ops->minor.gc);
 
-  if (t1Ptr_)
-    free(t1Ptr_);
-  if (t2Ptr_)
-    free(t2Ptr_);
+  if (t1Ptr_) {
+    if (t1Ptr_->values)
+      delete [] t1Ptr_->values;
+    delete t1Ptr_;
+  }
+  if (t2Ptr_) {
+    if (t2Ptr_->values)
+      delete [] t2Ptr_->values;
+    delete t2Ptr_;
+  }
 
   freeTickLabels();
 
@@ -439,10 +445,16 @@ void Axis::mapGridlines()
     needed += (t1Ptr->nTicks * t2Ptr->nTicks);
 
   if (needed == 0) {
-    if (t1Ptr != t1Ptr_)
-      free(t1Ptr);
-    if (t2Ptr != t2Ptr_)
-      free(t2Ptr);
+    if (t1Ptr != t1Ptr_) {
+      if (t1Ptr->values)
+	delete [] t1Ptr->values;
+      delete t1Ptr;
+    }
+    if (t2Ptr != t2Ptr_) {
+      if (t2Ptr->values)
+	delete [] t2Ptr->values;
+      delete t2Ptr;
+    }
     return;			
   }
 
@@ -484,10 +496,16 @@ void Axis::mapGridlines()
     }
   }
 
-  if (t1Ptr != t1Ptr_)
-    free(t1Ptr);
-  if (t2Ptr != t2Ptr_)
-    free(t2Ptr);
+  if (t1Ptr != t1Ptr_) {
+    if (t1Ptr->values)
+      delete [] t1Ptr->values;
+    delete t1Ptr;
+  }
+  if (t2Ptr != t2Ptr_) {
+    if (t2Ptr->values)
+      delete [] t2Ptr->values;
+    delete t2Ptr;
+  }
 
   ops->major.nUsed = s1 - ops->major.segments;
   ops->minor.nUsed = s2 - ops->minor.segments;
@@ -596,7 +614,7 @@ void Axis::draw(Drawable drawable)
 
     for (Blt_ChainLink link=Blt_Chain_FirstLink(tickLabels_); link;
 	 link = Blt_Chain_NextLink(link)) {	
-      TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+      TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
       ts.drawText(drawable, labelPtr->string, labelPtr->anchorPos.x, 
 		  labelPtr->anchorPos.y);
     }
@@ -1002,8 +1020,10 @@ void Axis::freeTickLabels()
   Blt_Chain chain = tickLabels_;
   for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link;
        link = Blt_Chain_NextLink(link)) {
-    TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-    free(labelPtr);
+    TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+    if (labelPtr->string)
+      delete [] labelPtr->string;
+    delete(labelPtr);
   }
   Blt_Chain_Reset(chain);
 }
@@ -1042,7 +1062,8 @@ TickLabel* Axis::makeLabel(double value)
     }
   }
 
-  TickLabel* labelPtr = (TickLabel*)malloc(sizeof(TickLabel) + strlen(string));
+  TickLabel* labelPtr = new TickLabel;
+  labelPtr->string = new char[strlen(string)+1];
   strcpy(labelPtr->string, string);
   labelPtr->anchorPos.x = DBL_MAX;
   labelPtr->anchorPos.y = DBL_MAX;
@@ -1587,11 +1608,12 @@ void Axis::makeSegments(AxisInfo *infoPtr)
       link = Blt_Chain_NextLink(link);
       Segment2d seg;
       makeTick(t1, infoPtr->t1, infoPtr->axis, &seg);
-      /* Save tick label X-Y position. */
+      // Save tick label X-Y position
       if (isHoriz) {
 	labelPtr->anchorPos.x = seg.p.x;
 	labelPtr->anchorPos.y = labelPos;
-      } else {
+      }
+      else {
 	labelPtr->anchorPos.x = labelPos;
 	labelPtr->anchorPos.y = seg.p.y;
       }
@@ -1603,14 +1625,14 @@ void Axis::makeSegments(AxisInfo *infoPtr)
 
 Ticks* Axis::generateTicks(TickSweep *sweepPtr)
 {
-  Ticks* ticksPtr = 
-    (Ticks*)malloc(sizeof(Ticks) + (sweepPtr->nSteps * sizeof(double)));
+  Ticks* ticksPtr = new Ticks;
+  ticksPtr->values = new double[sweepPtr->nSteps];
   ticksPtr->nTicks = 0;
 
   if (sweepPtr->step == 0.0) { 
-    /* Hack: A zero step indicates to use log values. */
+    // Hack: A zero step indicates to use log values
     int i;
-    /* Precomputed log10 values [1..10] */
+    // Precomputed log10 values [1..10]
     static double logTable[] = {
       0.0, 
       0.301029995663981, 
@@ -1635,6 +1657,7 @@ Ticks* Axis::generateTicks(TickSweep *sweepPtr)
     }
   }
   ticksPtr->nTicks = sweepPtr->nSteps;
+
   return ticksPtr;
 }
 
@@ -1845,6 +1868,7 @@ void Axis::getGeometry()
 {
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
+
   freeTickLabels();
 
   // Leave room for axis baseline and padding
@@ -1854,11 +1878,18 @@ void Axis::getGeometry()
 
   maxTickHeight_ = maxTickWidth_ = 0;
 
-  if (t1Ptr_)
-    free(t1Ptr_);
+  if (t1Ptr_) {
+    if (t1Ptr_->values)
+      delete [] t1Ptr_->values;
+    delete t1Ptr_;
+  }
   t1Ptr_ = generateTicks(&majorSweep_);
-  if (t2Ptr_)
-    free(t2Ptr_);
+
+  if (t2Ptr_) {
+    if (t2Ptr_->values)
+      delete [] t2Ptr_->values;
+    delete t2Ptr_;
+  }
   t2Ptr_ = generateTicks(&minorSweep_);
 
   if (ops->showTicks) {

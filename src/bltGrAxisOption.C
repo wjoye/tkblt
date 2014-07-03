@@ -170,11 +170,13 @@ static int TicksSetProc(ClientData clientData, Tcl_Interp* interp,
 
   Ticks* ticksPtr = NULL;
   if (objc > 0) {
-    ticksPtr = (Ticks*)malloc(sizeof(Ticks) + (objc*sizeof(double)));
-    for (int ii = 0; ii<objc; ii++) {
+    ticksPtr = new Ticks;
+    ticksPtr->values = new double[objc];
+    for (int ii=0; ii<objc; ii++) {
       double value;
       if (Tcl_GetDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
-	free(ticksPtr);
+	delete [] ticksPtr->values;
+	delete ticksPtr;
 	return TCL_ERROR;
       }
       ticksPtr->values[ii] = value;
@@ -196,12 +198,12 @@ static Tcl_Obj* TicksGetProc(ClientData clientData, Tk_Window tkwin,
     return Tcl_NewListObj(0, NULL);
 
   int cnt = ticksPtr->nTicks;
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[cnt];
   for (int ii = 0; ii<cnt; ii++)
     ll[ii] = Tcl_NewDoubleObj(ticksPtr->values[ii]);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
+  delete [] ll;
   return listObjPtr;
 }
 
@@ -209,8 +211,11 @@ static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
 			 char *ptr)
 {
   Ticks* ticksPtr = *(Ticks**)ptr;
-  if (ticksPtr)
-    free(ticksPtr);
+  if (ticksPtr) {
+    if (ticksPtr->values)
+      delete [] ticksPtr->values;
+    delete ticksPtr;
+  }
 }
 
 static Tk_CustomOptionSetProc ObjectSetProc;

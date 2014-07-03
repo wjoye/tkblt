@@ -82,12 +82,12 @@ namespace Blt {
     Point2d anchorPos;
     unsigned int width;
     unsigned int height;
-    char string[1];
+    char* string;
   } TickLabel;
 
   typedef struct {
     int nTicks;
-    double values[1];
+    double* values;
   } Ticks;
 
   typedef struct {

@@ -36,7 +36,7 @@ extern "C" {
 #ifndef ALIGN
 #define ALIGN(a)							\
   (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
-#endif /* ALIGN */
+#endif
 
 typedef int (QSortCompareProc) (const void *, const void *);
 
