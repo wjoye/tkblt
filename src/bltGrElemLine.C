@@ -276,7 +276,7 @@ LineElement::~LineElement()
   }
 
   if (fillPts_)
-    free(fillPts_);
+    delete [] fillPts_;
 }
 
 int LineElement::configure()
@@ -357,8 +357,8 @@ void LineElement::map()
 
     mapTraces(&mi);
   }
-  free(mi.screenPts);
-  free(mi.map);
+  delete [] mi.screenPts;
+  delete [] mi.map;
 
   // Set the symbol size of all the pen styles
   for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
@@ -383,7 +383,7 @@ void LineElement::map()
   }
 
   mergePens(styleMap);
-  free(styleMap);
+  delete styleMap;
 }
 
 void LineElement::extents(Region2d *extsPtr)
@@ -956,8 +956,8 @@ void LineElement::getScreenPoints(MapInfo* mapPtr)
   int np = NUMBEROFPOINTS(ops);
   double* x = ops->coords.x->values;
   double* y = ops->coords.y->values;
-  Point2d *points = (Point2d*)malloc(sizeof(Point2d) * np);
-  int* map = (int*)malloc(sizeof(int) * np);
+  Point2d* points = new Point2d[np];
+  int* map = new int[np];
 
   int count = 0;
   if (gops->inverted) {
@@ -987,9 +987,9 @@ void LineElement::getScreenPoints(MapInfo* mapPtr)
 
 void LineElement::reducePoints(MapInfo *mapPtr, double tolerance)
 {
-  int* simple = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
-  int* map = (int*)malloc(mapPtr->nScreenPts * sizeof(int));
-  Point2d *screenPts = (Point2d*)malloc(mapPtr->nScreenPts * sizeof(Point2d));
+  int* simple = new int[mapPtr->nScreenPts];
+  int* map = new int[mapPtr->nScreenPts];
+  Point2d* screenPts = new Point2d[mapPtr->nScreenPts];
   int np = simplify(mapPtr->screenPts, 0, mapPtr->nScreenPts - 1, 
 		    tolerance, simple);
   for (int ii=0; ii<np; ii++) {
@@ -997,15 +997,16 @@ void LineElement::reducePoints(MapInfo *mapPtr, double tolerance)
     screenPts[ii] = mapPtr->screenPts[kk];
     map[ii] = mapPtr->map[kk];
   }
-  free(mapPtr->screenPts);
-  free(mapPtr->map);
-  free(simple);
+  delete [] simple;
+
+  delete [] mapPtr->screenPts;
   mapPtr->screenPts = screenPts;
+  delete [] mapPtr->map;
   mapPtr->map = map;
   mapPtr->nScreenPts = np;
 }
 
-/* Douglas-Peucker line simplification algorithm */
+// Douglas-Peucker line simplification algorithm
 int LineElement::simplify(Point2d *inputPts, int low, int high, 
 			  double tolerance, int *indices)
 {
@@ -1017,7 +1018,7 @@ int LineElement::simplify(Point2d *inputPts, int low, int high,
     double dist2, tolerance2;
     int s = -1;			/* Points to top stack item. */
 
-    int* stack = (int*)malloc(sizeof(int) * (high - low + 1));
+    int* stack = new int[high - low + 1];
     StackPush(high);
     int count = 0;
     indices[count++] = 0;
@@ -1031,7 +1032,7 @@ int LineElement::simplify(Point2d *inputPts, int low, int high,
 	    StackPop(low);
 	}
     } 
-    free(stack);
+    delete [] stack;
     return count;
 }
 
@@ -1062,8 +1063,8 @@ double LineElement::findSplit(Point2d *points, int i, int j, int *split)
 void LineElement::generateSteps(MapInfo *mapPtr)
 {
   int newSize = ((mapPtr->nScreenPts - 1) * 2) + 1;
-  Point2d *screenPts = (Point2d*)malloc(newSize * sizeof(Point2d));
-  int* map = (int*)malloc(sizeof(int) * newSize);
+  Point2d* screenPts = new Point2d[newSize];
+  int* map = new int[newSize];
   screenPts[0] = mapPtr->screenPts[0];
   map[0] = 0;
 
@@ -1071,17 +1072,17 @@ void LineElement::generateSteps(MapInfo *mapPtr)
   for (int i = 1; i < mapPtr->nScreenPts; i++) {
     screenPts[count + 1] = mapPtr->screenPts[i];
 
-    /* Hold last y-coordinate, use new x-coordinate */
+    // Hold last y-coordinate, use new x-coordinate
     screenPts[count].x = screenPts[count + 1].x;
     screenPts[count].y = screenPts[count - 1].y;
 
-    /* Use the same style for both the hold and the step points */
+    // Use the same style for both the hold and the step points
     map[count] = map[count + 1] = mapPtr->map[i];
     count += 2;
   }
-  free(mapPtr->screenPts);
-  free(mapPtr->map);
+  delete [] mapPtr->map;
   mapPtr->map = map;
+  delete [] mapPtr->screenPts;
   mapPtr->screenPts = screenPts;
   mapPtr->nScreenPts = newSize;
 }
@@ -1108,8 +1109,8 @@ void LineElement::generateSpline(MapInfo *mapPtr)
     return;
 
   int niPts = nOrigPts + extra + 1;
-  Point2d* iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
-  int* map = (int*)malloc(sizeof(int) * niPts);
+  Point2d* iPts = new Point2d[niPts];
+  int* map = new int[niPts];
 
   // Populate the x2 array with both the original X-coordinates and extra
   // X-coordinates for each horizontal pixel that the line segment contains
@@ -1160,13 +1161,13 @@ void LineElement::generateSpline(MapInfo *mapPtr)
   // coordinates and do no smoothing (standard line segments)
   if (!result) {
     smooth_ = LINEAR;
-    free(iPts);
-    free(map);
+    delete [] iPts;
+    delete [] map;
   }
   else {
-    free(mapPtr->screenPts);
-    free(mapPtr->map);
+    delete [] mapPtr->map;
     mapPtr->map = map;
+    delete [] mapPtr->screenPts;
     mapPtr->screenPts = iPts;
     mapPtr->nScreenPts = niPts;
   }
@@ -1202,8 +1203,8 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
     }
   }
   niPts = count;
-  iPts = (Point2d*)malloc(niPts * sizeof(Point2d));
-  map = (int*)malloc(sizeof(int) * niPts);
+  iPts = new Point2d[niPts];
+  map = new int[niPts];
 
   /* 
    * FIXME: This is just plain wrong.  The spline should be computed
@@ -1268,13 +1269,13 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
   // coordinates and do no smoothing (standard line segments)
   if (!result) {
     smooth_ = LINEAR;
-    free(iPts);
-    free(map);
+    delete [] iPts;
+    delete [] map;
   }
   else {
-    free(mapPtr->screenPts);
-    free(mapPtr->map);
+    delete [] mapPtr->map;
     mapPtr->map = map;
+    delete [] mapPtr->screenPts;
     mapPtr->screenPts = iPts;
     mapPtr->nScreenPts = niPts;
   }
@@ -1285,8 +1286,8 @@ void LineElement::mapSymbols(MapInfo *mapPtr)
   Point2d *pp;
   int i;
 
-  Point2d* points = (Point2d*)malloc(sizeof(Point2d) * mapPtr->nScreenPts);
-  int *map = (int*)malloc(sizeof(int) * mapPtr->nScreenPts);
+  Point2d* points = new Point2d[mapPtr->nScreenPts];
+  int *map = new int[mapPtr->nScreenPts];
 
   Region2d exts;
   graphPtr_->extents(&exts);
@@ -1310,19 +1311,19 @@ void LineElement::mapActiveSymbols()
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
   if (activePts_.points) {
-    free(activePts_.points);
+    delete [] activePts_.points;
     activePts_.points = NULL;
   }
   if (activePts_.map) {
-    free(activePts_.map);
+    delete [] activePts_.map;
     activePts_.map = NULL;
   }
 
   Region2d exts;
   graphPtr_->extents(&exts);
 
-  Point2d *points = (Point2d*)malloc(sizeof(Point2d) * nActiveIndices_);
-  int* map = (int*)malloc(sizeof(int) * nActiveIndices_);
+  Point2d *points = new Point2d[nActiveIndices_];
+  int* map = new int[nActiveIndices_];
   int np = NUMBEROFPOINTS(ops);
   int count = 0;
   if (ops->coords.x && ops->coords.y) {
@@ -1346,8 +1347,8 @@ void LineElement::mapActiveSymbols()
     activePts_.map = map;
   }
   else {
-    free(points);
-    free(map);	
+    delete [] points;
+    delete [] map;	
   }
   activePts_.length = count;
 }
@@ -1369,8 +1370,8 @@ void LineElement::mergePens(LineStyle **styleMap)
   }
 
   if (symbolPts_.length > 0) {
-    Point2d* points = (Point2d*)malloc(symbolPts_.length * sizeof(Point2d));
-    int* map = (int*)malloc(symbolPts_.length * sizeof(int));
+    Point2d* points = new Point2d[symbolPts_.length];
+    int* map = new int[symbolPts_.length];
     Point2d *pp = points;
     int* ip = map;
     for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
@@ -1386,9 +1387,9 @@ void LineElement::mergePens(LineStyle **styleMap)
       }
       stylePtr->symbolPts.length = pp - stylePtr->symbolPts.points;
     }
-    free(symbolPts_.points);
-    free(symbolPts_.map);
+    delete [] symbolPts_.points;
     symbolPts_.points = points;
+    delete [] symbolPts_.map;
     symbolPts_.map = map;
   }
 
@@ -1506,11 +1507,11 @@ int LineElement::clipSegment(Region2d *extsPtr, int code1, int code2,
   return (!inside);
 }
 
-void LineElement::saveTrace(int start, int length, MapInfo *mapPtr)
+void LineElement::saveTrace(int start, int length, MapInfo* mapPtr)
 {
-  bltTrace *tracePtr  = (bltTrace*)malloc(sizeof(bltTrace));
-  Point2d *screenPts = (Point2d*)malloc(sizeof(Point2d) * length);
-  int* map = (int*)malloc(sizeof(int) * length);
+  bltTrace* tracePtr  = new bltTrace;
+  Point2d* screenPts = new Point2d[length];
+  int* map = new int[length];
 
   // Copy the screen coordinates of the trace into the point array
   if (mapPtr->map) {
@@ -1541,10 +1542,10 @@ void LineElement::freeTraces()
 {
   for (Blt_ChainLink link = Blt_Chain_FirstLink(traces_); link;
        link = Blt_Chain_NextLink(link)) {
-    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
-    free(tracePtr->screenPts.map);
-    free(tracePtr->screenPts.points);
-    free(tracePtr);
+    bltTrace* tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
+    delete [] tracePtr->screenPts.map;
+    delete [] tracePtr->screenPts.points;
+    delete tracePtr;
   }
   Blt_Chain_Destroy(traces_);
   traces_ = NULL;
@@ -1614,7 +1615,7 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
   if (fillPts_) {
-    free(fillPts_);
+    delete [] fillPts_;
     fillPts_ = NULL;
     nFillPts_ = 0;
   }
@@ -1625,7 +1626,7 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
   Region2d exts;
   graphPtr_->extents(&exts);
 
-  Point2d* origPts = (Point2d*)malloc(sizeof(Point2d) * np);
+  Point2d* origPts = new Point2d[np];
   if (gops->inverted) {
     int i;
     double minX = (double)ops->yAxis->screenMin_;
@@ -1665,12 +1666,12 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
     origPts[i] = origPts[0];
   }
 
-  Point2d *clipPts = (Point2d*)malloc(sizeof(Point2d) * np * 3);
+  Point2d *clipPts = new Point2d[np * 3];
   np = polyRectClip(&exts, origPts, np - 1, clipPts);
 
-  free(origPts);
+  delete [] origPts;
   if (np < 3)
-    free(clipPts);
+    delete [] clipPts;
   else {
     fillPts_ = clipPts;
     nFillPts_ = np;
@@ -1692,22 +1693,22 @@ void LineElement::reset()
   }
 
   if (symbolPts_.points) {
-    free(symbolPts_.points);
+    delete [] symbolPts_.points;
     symbolPts_.points = NULL;
   }
 
   if (symbolPts_.map)
-    free(symbolPts_.map);
+    delete [] symbolPts_.map;
   symbolPts_.map = NULL;
   symbolPts_.length = 0;
 
   if (activePts_.points)
-    free(activePts_.points);
+    delete [] activePts_.points;
   activePts_.points = NULL;
   activePts_.length = 0;
 
   if (activePts_.map)
-    free(activePts_.map);
+    delete [] activePts_.map;
   activePts_.map = NULL;
 
   if (xeb_.segments)

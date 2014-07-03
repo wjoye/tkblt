@@ -627,12 +627,12 @@ static int QuadEval(Point2d origPts[], int nOrigPts, Point2d intpPts[],
 int LineElement::quadraticSpline(Point2d *origPts, int nOrigPts, 
 				 Point2d *intpPts, int nIntpPts)
 {
-  double* work = (double*)malloc(nOrigPts * sizeof(double));
+  double* work = new double[nOrigPts];
   double epsilon = 0.0;
   /* allocate space for vectors used in calculation */
   QuadSlopes(origPts, work, nOrigPts);
   int result = QuadEval(origPts, nOrigPts, intpPts, nIntpPts, work, epsilon);
-  free(work);
+  delete [] work;
   if (result > 1) {
     return 0;
   }
@@ -654,7 +654,7 @@ int LineElement::naturalSpline(Point2d *origPts, int nOrigPts,
   int isKnot;
   int i, j, n;
 
-  double* dx = (double*)malloc(sizeof(double) * nOrigPts);
+  double* dx = new double[nOrigPts];
   /* Calculate vector of differences */
   for (i = 0, j = 1; j < nOrigPts; i++, j++) {
     dx[i] = origPts[j].x - origPts[i].x;
@@ -663,10 +663,9 @@ int LineElement::naturalSpline(Point2d *origPts, int nOrigPts,
     }
   }
   n = nOrigPts - 1;		/* Number of intervals. */
-  TriDiagonalMatrix* A = 
-    (TriDiagonalMatrix*)malloc(sizeof(TriDiagonalMatrix) * nOrigPts);
+  TriDiagonalMatrix* A = new TriDiagonalMatrix[nOrigPts];
   if (!A) {
-    free(dx);
+    delete [] dx;
     return 0;
   }
   /* Vectors to solve the tridiagonal matrix */
@@ -683,10 +682,10 @@ int LineElement::naturalSpline(Point2d *origPts, int nOrigPts,
     A[j][2] = (alpha - dx[i] * A[i][2]) / A[j][0];
   }
 
-  Cubic2D* eq = (Cubic2D*)malloc(sizeof(Cubic2D) * nOrigPts);
+  Cubic2D* eq = new Cubic2D[nOrigPts];
   if (!eq) {
-    free(A);
-    free(dx);
+    delete [] A;
+    delete [] dx;
     return 0;
   }
   eq[0].c = eq[n].c = 0.0;
@@ -696,8 +695,8 @@ int LineElement::naturalSpline(Point2d *origPts, int nOrigPts,
     eq[i].b = (dy) / dx[i] - dx[i] * (eq[j].c + 2.0 * eq[i].c) / 3.0;
     eq[i].d = (eq[j].c - eq[i].c) / (3.0 * dx[i]);
   }
-  free(A);
-  free(dx);
+  delete [] A;
+  delete [] dx;
 
   /* Now calculate the new values */
   for (ip = intpPts, iend = ip + nIntpPts; ip < iend; ip++) {
@@ -718,7 +717,7 @@ int LineElement::naturalSpline(Point2d *origPts, int nOrigPts,
       ip->y = origPts[i].y + x * (eq[i].b + x * (eq[i].c + x * eq[i].d));
     }
   }
-  free(eq);
+  delete [] eq;
   return 1;
 }
 
@@ -841,14 +840,13 @@ static CubicSpline* CubicSlopes(Point2d points[], int nPoints,
   int n, i;
   double norm, dx, dy;
     
-  CubicSpline* spline = (CubicSpline*)malloc(sizeof(CubicSpline) * nPoints);
+  CubicSpline* spline = new CubicSpline[nPoints];
   if (!spline)
     return NULL;
 
-  TriDiagonalMatrix *A 
-    = (TriDiagonalMatrix*)malloc(sizeof(TriDiagonalMatrix) * nPoints);
+  TriDiagonalMatrix *A = new TriDiagonalMatrix[nPoints];
   if (!A) {
-    free(spline);
+    delete [] spline;
     return NULL;
   }
   /*
@@ -928,9 +926,10 @@ static CubicSpline* CubicSlopes(Point2d points[], int nPoints,
 
   if (SolveCubic1(A, n)) {	/* Cholesky decomposition */
     SolveCubic2(A, spline, n); /* A * dxdt2 = b_x */
-  } else {			/* Should not happen, but who knows ... */
-    free(A);
-    free(spline);
+  }
+  else {			/* Should not happen, but who knows ... */
+    delete [] A;
+    delete [] spline;
     return NULL;
   }
   /* Shift all second derivatives one place right and update the ends. */
@@ -949,7 +948,7 @@ static CubicSpline* CubicSlopes(Point2d points[], int nPoints,
     spline[n + 1].x = spline[n].x;
     spline[n + 1].y = spline[n].y;
   }
-  free( A);
+  delete [] A;
   return spline;
 }
 
@@ -1042,7 +1041,7 @@ int LineElement::naturalParametricSpline(Point2d *origPts, int nOrigPts,
 
   int result= CubicEval(origPts, nOrigPts, intpPts, nIntpPts, spline);
 
-  free(spline);
+  delete [] spline;
   return result;
 }
 
