@@ -942,7 +942,7 @@ int LineElement::scaleSymbol(int normalSize)
   return newSize;
 }
 
-void LineElement::getScreenPoints(MapInfo *mapPtr)
+void LineElement::getScreenPoints(MapInfo* mapPtr)
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
@@ -1627,10 +1627,8 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
 
   Point2d* origPts = (Point2d*)malloc(sizeof(Point2d) * np);
   if (gops->inverted) {
-    double minX;
     int i;
-
-    minX = (double)ops->yAxis->screenMin_;
+    double minX = (double)ops->yAxis->screenMin_;
     for (i = 0; i < mapPtr->nScreenPts; i++) {
       origPts[i].x = mapPtr->screenPts[i].x + 1;
       origPts[i].y = mapPtr->screenPts[i].y;
@@ -1638,8 +1636,7 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
 	minX = origPts[i].x;
       }
     }	
-    /* Add edges to make (if necessary) the polygon fill to the bottom of
-     * plotting window */
+    // Add edges to make the polygon fill to the bottom of plotting window
     origPts[i].x = minX;
     origPts[i].y = origPts[i - 1].y;
     i++;
@@ -1650,7 +1647,6 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
   }
   else {
     int i;
-
     double maxY = (double)ops->yAxis->bottom_;
     for (i = 0; i < mapPtr->nScreenPts; i++) {
       origPts[i].x = mapPtr->screenPts[i].x + 1;
@@ -1659,8 +1655,7 @@ void LineElement::mapFillArea(MapInfo *mapPtr)
 	maxY = origPts[i].y;
       }
     }	
-    /* Add edges to extend the fill polygon to the bottom of plotting
-     * window */
+    // Add edges to extend the fill polygon to the bottom of plotting window
     origPts[i].x = origPts[i - 1].x;
     origPts[i].y = maxY;
     i++;

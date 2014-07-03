@@ -893,8 +893,7 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     return;
   }
 
-  // We have more than one style. Group bar segments of like pen styles
-  // together
+  // We have more than one style. Group bar segments of like pen styles together
   if (nBars_ > 0) {
     XRectangle* bars = (XRectangle*)malloc(nBars_ * sizeof(XRectangle));
     int* barToData = (int*)malloc(nBars_ * sizeof(int));
