@@ -289,12 +289,12 @@ Axis::~Axis()
     Tk_FreeGC(graphPtr_->display_, activeTickGC_);
 
   if (ops->major.segments) 
-    free(ops->major.segments);
+    delete [] ops->major.segments;
   if (ops->major.gc) 
     graphPtr_->freePrivateGC(ops->major.gc);
 
   if (ops->minor.segments) 
-    free(ops->minor.segments);
+    delete [] ops->minor.segments;
   if (ops->minor.gc)
     graphPtr_->freePrivateGC(ops->minor.gc);
 
@@ -308,7 +308,7 @@ Axis::~Axis()
   Blt_Chain_Destroy(tickLabels_);
 
   if (segments_)
-    free(segments_);
+    delete [] segments_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -449,19 +449,19 @@ void Axis::mapGridlines()
   needed = t1Ptr->nTicks;
   if (needed != ops->major.nAllocated) {
     if (ops->major.segments) {
-      free(ops->major.segments);
+      delete [] ops->major.segments;
       ops->major.segments = NULL;
     }
-    ops->major.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->major.segments = new Segment2d[needed];
     ops->major.nAllocated = needed;
   }
   needed = (t1Ptr->nTicks * t2Ptr->nTicks);
   if (needed != ops->minor.nAllocated) {
     if (ops->minor.segments) {
-      free(ops->minor.segments);
+      delete [] ops->minor.segments;
       ops->minor.segments = NULL;
     }
-    ops->minor.segments = (Segment2d*)malloc(sizeof(Segment2d) * needed);
+    ops->minor.segments = new Segment2d[needed];
     ops->minor.nAllocated = needed;
   }
 
@@ -1534,7 +1534,7 @@ void Axis::makeSegments(AxisInfo *infoPtr)
   AxisOptions* ops = (AxisOptions*)ops_;
 
   if (segments_) {
-    free(segments_);
+    delete [] segments_;
     segments_ = NULL;	
   }
 
@@ -1545,7 +1545,7 @@ void Axis::makeSegments(AxisInfo *infoPtr)
   int nMinorTicks= t2Ptr ? t2Ptr->nTicks : 0;
 
   int arraySize = 1 + (nMajorTicks * (nMinorTicks + 1));
-  Segment2d* segments = (Segment2d*)malloc(arraySize * sizeof(Segment2d));
+  Segment2d* segments = new Segment2d[arraySize];
   Segment2d* sp = segments;
   if (ops->lineWidth > 0) {
     makeLine(infoPtr->axis, sp);
