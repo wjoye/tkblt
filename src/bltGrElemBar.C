@@ -488,11 +488,11 @@ void BarElement::extents(Region2d *regPtr)
     barWidth = ops->barWidth;
 
   double middle = 0.5;
-  regPtr->left = ops->coords.x->min_ - middle;
-  regPtr->right = ops->coords.x->max_ + middle;
+  regPtr->left = ops->coords.x->min() - middle;
+  regPtr->right = ops->coords.x->max() + middle;
 
-  regPtr->top = ops->coords.y->min_;
-  regPtr->bottom = ops->coords.y->max_;
+  regPtr->top = ops->coords.y->min();
+  regPtr->bottom = ops->coords.y->max();
   if (regPtr->bottom < gops->baseline)
     regPtr->bottom = gops->baseline;
 
@@ -544,15 +544,15 @@ void BarElement::extents(Region2d *regPtr)
   else {
     if ((ops->xHigh) &&
 	(ops->xHigh->nValues_ > 0) && 
-	(ops->xHigh->max_ > regPtr->right))
-      regPtr->right = ops->xHigh->max_;
+	(ops->xHigh->max() > regPtr->right))
+      regPtr->right = ops->xHigh->max();
 
     if (ops->xLow && (ops->xLow->nValues_ > 0)) {
       double left;
-      if ((ops->xLow->min_ <= 0.0) && (axisxops->logScale))
+      if ((ops->xLow->min() <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
-	left = ops->xLow->min_;
+	left = ops->xLow->min();
 
       if (left < regPtr->left)
 	regPtr->left = left;
@@ -584,16 +584,16 @@ void BarElement::extents(Region2d *regPtr)
   else {
     if ((ops->yHigh) &&
 	(ops->yHigh->nValues_ > 0) && 
-	(ops->yHigh->max_ > regPtr->bottom))
-      regPtr->bottom = ops->yHigh->max_;
+	(ops->yHigh->max() > regPtr->bottom))
+      regPtr->bottom = ops->yHigh->max();
 
     if (ops->yLow && ops->yLow->nValues_ > 0) {
       double top;
-      if ((ops->yLow->min_ <= 0.0) && 
+      if ((ops->yLow->min() <= 0.0) && 
 	  (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
-	top = ops->yLow->min_;
+	top = ops->yLow->min();
 
       if (top < regPtr->top)
 	regPtr->top = top;

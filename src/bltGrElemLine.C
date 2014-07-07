@@ -398,19 +398,19 @@ void LineElement::extents(Region2d *extsPtr)
     return;
   int np = NUMBEROFPOINTS(ops);
 
-  extsPtr->right = ops->coords.x->max_;
+  extsPtr->right = ops->coords.x->max();
   AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
-  if ((ops->coords.x->min_ <= 0.0) && (axisxops->logScale))
+  if ((ops->coords.x->min() <= 0.0) && (axisxops->logScale))
     extsPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN);
   else
-    extsPtr->left = ops->coords.x->min_;
+    extsPtr->left = ops->coords.x->min();
 
-  extsPtr->bottom = ops->coords.y->max_;
+  extsPtr->bottom = ops->coords.y->max();
   AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
-  if ((ops->coords.y->min_ <= 0.0) && (axisyops->logScale))
+  if ((ops->coords.y->min() <= 0.0) && (axisyops->logScale))
     extsPtr->top = FindElemValuesMinimum(ops->coords.y, DBL_MIN);
   else
-    extsPtr->top = ops->coords.y->min_;
+    extsPtr->top = ops->coords.y->min();
 
   // Correct the data limits for error bars
   if (ops->xError && ops->xError->nValues_ > 0) {
@@ -436,15 +436,15 @@ void LineElement::extents(Region2d *extsPtr)
   else {
     if (ops->xHigh && 
 	(ops->xHigh->nValues_ > 0) && 
-	(ops->xHigh->max_ > extsPtr->right)) {
-      extsPtr->right = ops->xHigh->max_;
+	(ops->xHigh->max() > extsPtr->right)) {
+      extsPtr->right = ops->xHigh->max();
     }
     if (ops->xLow && ops->xLow->nValues_ > 0) {
       double left;
-      if ((ops->xLow->min_ <= 0.0) && (axisxops->logScale))
+      if ((ops->xLow->min() <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
-	left = ops->xLow->min_;
+	left = ops->xLow->min();
 
       if (left < extsPtr->left)
 	extsPtr->left = left;
@@ -473,15 +473,15 @@ void LineElement::extents(Region2d *extsPtr)
   }
   else {
     if (ops->yHigh && (ops->yHigh->nValues_ > 0) && 
-	(ops->yHigh->max_ > extsPtr->bottom))
-      extsPtr->bottom = ops->yHigh->max_;
+	(ops->yHigh->max() > extsPtr->bottom))
+      extsPtr->bottom = ops->yHigh->max();
 
     if (ops->yLow && ops->yLow->nValues_ > 0) {
       double top;
-      if ((ops->yLow->min_ <= 0.0) && (axisyops->logScale))
+      if ((ops->yLow->min() <= 0.0) && (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
-	top = ops->yLow->min_;
+	top = ops->yLow->min();
 
       if (top < extsPtr->top)
 	extsPtr->top = top;

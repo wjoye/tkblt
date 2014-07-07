@@ -59,17 +59,21 @@ namespace Blt {
   class Postscript;
 
   class ElemValues {
+  protected:
+    double min_;
+    double max_;
+
   public:
     double* values_;
     int nValues_;
-    double min_;
-    double max_;
 
   public:
     ElemValues();
     virtual ~ElemValues();
 
     void reset();
+    double min() {return min_;}
+    double max() {return max_;}
   };
 
   class ElemValuesSource : public ElemValues

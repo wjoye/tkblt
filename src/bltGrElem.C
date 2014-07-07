@@ -102,7 +102,7 @@ ElemValuesVector::ElemValuesVector(Element* ptr, const char* vecName)
 {
   elemPtr_ = ptr;
   Graph* graphPtr = elemPtr_->graphPtr_;
-  source_.vector = Blt_AllocVectorId(graphPtr->interp_, vecName);
+  source_ = Blt_AllocVectorId(graphPtr->interp_, vecName);
 }
 
 ElemValuesVector::~ElemValuesVector()
@@ -115,7 +115,7 @@ int ElemValuesVector::getVector()
   Graph* graphPtr = elemPtr_->graphPtr_;
 
   Blt_Vector *vecPtr;
-  if (Blt_GetVectorById(graphPtr->interp_, source_.vector, &vecPtr) != TCL_OK)
+  if (Blt_GetVectorById(graphPtr->interp_, source_, &vecPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (fetchValues(vecPtr) != TCL_OK) {
@@ -123,7 +123,7 @@ int ElemValuesVector::getVector()
     return TCL_ERROR;
   }
 
-  Blt_SetVectorChangedProc(source_.vector, VectorChangedProc, this);
+  Blt_SetVectorChangedProc(source_, VectorChangedProc, this);
   return TCL_OK;
 }
 
@@ -159,10 +159,10 @@ int ElemValuesVector::fetchValues(Blt_Vector* vector)
 
 void ElemValuesVector::freeSource()
 {
-  if (source_.vector) { 
-    Blt_SetVectorChangedProc(source_.vector, NULL, NULL);
-    Blt_FreeVectorId(source_.vector); 
-    source_.vector = NULL;
+  if (source_) { 
+    Blt_SetVectorChangedProc(source_, NULL, NULL);
+    Blt_FreeVectorId(source_); 
+    source_ = NULL;
   }
 }
 

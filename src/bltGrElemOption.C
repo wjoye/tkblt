@@ -121,7 +121,7 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   if (!valuesPtr)
     return Tcl_NewStringObj("", -1);
     
-  int cnt = valuesPtr->nValues_;
+  int cnt = valuesPtr->nValues();
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
@@ -200,10 +200,10 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
 
   if (!coordsPtr || 
       !coordsPtr->x || !coordsPtr->y || 
-      !coordsPtr->x->nValues_ || !coordsPtr->y->nValues_)
+      !coordsPtr->x->nValues() || !coordsPtr->y->nValues())
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  int cnt = MIN(coordsPtr->x->nValues_, coordsPtr->y->nValues_);
+  int cnt = MIN(coordsPtr->x->nValues(), coordsPtr->y->nValues());
   Tcl_Obj** ll = new Tcl_Obj*[2*cnt];
   for (int ii=0, jj=0; ii<cnt; ii++) {
     ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values_[ii]);
