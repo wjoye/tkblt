@@ -84,6 +84,8 @@ namespace Blt {
   public:
     ElemValues();
     virtual ~ElemValues();
+
+    void findRange();
   };
 
   typedef struct {

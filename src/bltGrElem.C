@@ -27,6 +27,7 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <math.h>
 #include <float.h>
 #include <stdlib.h>
 
@@ -36,6 +37,8 @@
 #include "bltGrPen.h"
 
 using namespace Blt;
+
+// Class ElemValues
 
 ElemValues::ElemValues()
 {
@@ -53,6 +56,25 @@ ElemValues::~ElemValues()
   if (values)
     delete [] values;
 }
+
+void ElemValues::findRange()
+{
+  if (nValues<1 || !values)
+    return;
+
+  min = DBL_MAX;
+  max = -DBL_MAX;
+  for (int ii=0; ii<nValues; ii++) {
+    if (isfinite(values[ii])) {
+      if (values[ii] < min)
+	min = values[ii];
+      if (values[ii] > max)
+	max = values[ii];
+    }
+  }
+}
+
+// Class Element
 
 Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {

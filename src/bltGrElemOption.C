@@ -51,7 +51,6 @@ using namespace Blt;
 
 static void FreeDataValues(ElemValues* valuesPtr);
 static void FreeVectorSource(ElemValues* valuesPtr);
-static void FindRange(ElemValues* valuesPtr);
 static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
@@ -111,7 +110,7 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
       return TCL_ERROR;
     valuesPtr->values = values;
     valuesPtr->nValues = nValues;
-    FindRange(valuesPtr);
+    valuesPtr->findRange();
   }
 
   *valuesPtrPtr = valuesPtr;
@@ -219,8 +218,8 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   }
   delete [] values;
 
-  FindRange(coordsPtr->x);
-  FindRange(coordsPtr->y);
+  coordsPtr->x->findRange();
+  coordsPtr->y->findRange();
 
   return TCL_OK;
 };
@@ -516,32 +515,4 @@ static void FreeDataValues(ElemValues* valuesPtr)
   valuesPtr->max =0;
 }
 
-static void FindRange(ElemValues* valuesPtr)
-{
-  if (!valuesPtr || (valuesPtr->nValues < 1) || !valuesPtr->values)
-    return;
-
-  double* x = valuesPtr->values;
-  double min = DBL_MAX;
-  double max = -DBL_MAX;
-  int ii;
-  for(ii=0; ii<valuesPtr->nValues; ii++) {
-    if (isfinite(x[ii])) {
-      min = max = x[ii];
-      break;
-    }
-  }
-
-  //  Initialize values to track the vector range
-  for (/* empty */; ii<valuesPtr->nValues; ii++) {
-    if (isfinite(x[ii])) {
-      if (x[ii] < min)
-	min = x[ii];
-      else if (x[ii] > max)
-	max = x[ii];
-    }
-  }
-  valuesPtr->min = min;
-  valuesPtr->max = max;
-}
 
