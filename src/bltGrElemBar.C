@@ -255,7 +255,7 @@ void BarElement::map()
 
   reset();
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues || !ops->coords.y->nValues)
+      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
     return;
   int nPoints = NUMBEROFPOINTS(ops);
 
@@ -269,8 +269,8 @@ void BarElement::map()
   XRectangle* bars = new XRectangle[nPoints];
   int* barToData = new int[nPoints];
 
-  double* x = ops->coords.x->values;
-  double* y = ops->coords.y->values;
+  double* x = ops->coords.x->values_;
+  double* y = ops->coords.y->values_;
   int count = 0;
 
   int ii;
@@ -456,12 +456,12 @@ void BarElement::map()
   }
 
   BarStyle** dataToStyle = (BarStyle**)StyleMap();
-  if (((ops->yHigh && ops->yHigh->nValues > 0) && 
-       (ops->yLow && ops->yLow->nValues > 0)) ||
-      ((ops->xHigh && ops->xHigh->nValues > 0) &&
-       (ops->xLow && ops->xLow->nValues > 0)) ||
-      (ops->xError && ops->xError->nValues > 0) || 
-      (ops->yError && ops->yError->nValues > 0)) {
+  if (((ops->yHigh && ops->yHigh->nValues_ > 0) && 
+       (ops->yLow && ops->yLow->nValues_ > 0)) ||
+      ((ops->xHigh && ops->xHigh->nValues_ > 0) &&
+       (ops->xLow && ops->xLow->nValues_ > 0)) ||
+      (ops->xError && ops->xError->nValues_ > 0) || 
+      (ops->yError && ops->yError->nValues_ > 0)) {
     mapErrorBars(dataToStyle);
   }
 
@@ -479,7 +479,7 @@ void BarElement::extents(Region2d *regPtr)
   regPtr->bottom = regPtr->right = -DBL_MAX;
 
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues || !ops->coords.y->nValues)
+      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
     return;
 
   int nPoints = NUMBEROFPOINTS(ops);
@@ -488,11 +488,11 @@ void BarElement::extents(Region2d *regPtr)
     barWidth = ops->barWidth;
 
   double middle = 0.5;
-  regPtr->left = ops->coords.x->min - middle;
-  regPtr->right = ops->coords.x->max + middle;
+  regPtr->left = ops->coords.x->min_ - middle;
+  regPtr->right = ops->coords.x->max_ + middle;
 
-  regPtr->top = ops->coords.y->min;
-  regPtr->bottom = ops->coords.y->max;
+  regPtr->top = ops->coords.y->min_;
+  regPtr->bottom = ops->coords.y->max_;
   if (regPtr->bottom < gops->baseline)
     regPtr->bottom = gops->baseline;
 
@@ -520,14 +520,14 @@ void BarElement::extents(Region2d *regPtr)
   }
 
   // Correct the extents for error bars if they exist
-  if (ops->xError && (ops->xError->nValues > 0)) {
-    nPoints = MIN(ops->xError->nValues, nPoints);
+  if (ops->xError && (ops->xError->nValues_ > 0)) {
+    nPoints = MIN(ops->xError->nValues_, nPoints);
     for (int ii=0; ii<nPoints; ii++) {
-      double x = ops->coords.x->values[ii] + ops->xError->values[ii];
+      double x = ops->coords.x->values_[ii] + ops->xError->values_[ii];
       if (x > regPtr->right)
 	regPtr->right = x;
 
-      x = ops->coords.x->values[ii] - ops->xError->values[ii];
+      x = ops->coords.x->values_[ii] - ops->xError->values_[ii];
       if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (x < 0.0)
@@ -543,31 +543,31 @@ void BarElement::extents(Region2d *regPtr)
   }
   else {
     if ((ops->xHigh) &&
-	(ops->xHigh->nValues > 0) && 
-	(ops->xHigh->max > regPtr->right))
-      regPtr->right = ops->xHigh->max;
+	(ops->xHigh->nValues_ > 0) && 
+	(ops->xHigh->max_ > regPtr->right))
+      regPtr->right = ops->xHigh->max_;
 
-    if (ops->xLow && (ops->xLow->nValues > 0)) {
+    if (ops->xLow && (ops->xLow->nValues_ > 0)) {
       double left;
-      if ((ops->xLow->min <= 0.0) && (axisxops->logScale))
+      if ((ops->xLow->min_ <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
-	left = ops->xLow->min;
+	left = ops->xLow->min_;
 
       if (left < regPtr->left)
 	regPtr->left = left;
     }
   }
 
-  if (ops->yError && (ops->yError->nValues > 0)) {
-    nPoints = MIN(ops->yError->nValues, nPoints);
+  if (ops->yError && (ops->yError->nValues_ > 0)) {
+    nPoints = MIN(ops->yError->nValues_, nPoints);
 
     for (int ii=0; ii<nPoints; ii++) {
-      double y = ops->coords.y->values[ii] + ops->yError->values[ii];
+      double y = ops->coords.y->values_[ii] + ops->yError->values_[ii];
       if (y > regPtr->bottom)
 	regPtr->bottom = y;
 
-      y = ops->coords.y->values[ii] - ops->yError->values[ii];
+      y = ops->coords.y->values_[ii] - ops->yError->values_[ii];
       if (axisyops->logScale) {
 	// Mirror negative values, instead of ignoring them
 	if (y < 0.0) 
@@ -583,17 +583,17 @@ void BarElement::extents(Region2d *regPtr)
   }
   else {
     if ((ops->yHigh) &&
-	(ops->yHigh->nValues > 0) && 
-	(ops->yHigh->max > regPtr->bottom))
-      regPtr->bottom = ops->yHigh->max;
+	(ops->yHigh->nValues_ > 0) && 
+	(ops->yHigh->max_ > regPtr->bottom))
+      regPtr->bottom = ops->yHigh->max_;
 
-    if (ops->yLow && ops->yLow->nValues > 0) {
+    if (ops->yLow && ops->yLow->nValues_ > 0) {
       double top;
-      if ((ops->yLow->min <= 0.0) && 
+      if ((ops->yLow->min_ <= 0.0) && 
 	  (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
-	top = ops->yLow->min;
+	top = ops->yLow->min_;
 
       if (top < regPtr->top)
 	regPtr->top = top;
@@ -654,9 +654,9 @@ void BarElement::closest()
     searchPtr->dist = minDist;
     searchPtr->index = imin;
     searchPtr->point.x = 
-      ops->coords.x ? (double)ops->coords.x->values[imin] : 0;
+      ops->coords.x ? (double)ops->coords.x->values_[imin] : 0;
     searchPtr->point.y = 
-      ops->coords.y ? (double)ops->coords.y->values[imin] : 0;
+      ops->coords.y ? (double)ops->coords.y->values_[imin] : 0;
   }
 }
 
@@ -1050,11 +1050,11 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
   int nPoints = NUMBEROFPOINTS(ops);
   int nn =0;
   if (ops->coords.x && ops->coords.y) {
-    if (ops->xError && (ops->xError->nValues > 0))
-      nn = MIN(ops->xError->nValues, nPoints);
+    if (ops->xError && (ops->xError->nValues_ > 0))
+      nn = MIN(ops->xError->nValues_, nPoints);
     else
       if (ops->xHigh && ops->xLow)
-	nn = MIN3(ops->xHigh->nValues, ops->xLow->nValues, nPoints);
+	nn = MIN3(ops->xHigh->nValues_, ops->xLow->nValues_, nPoints);
   }
 
   if (nn) {
@@ -1064,19 +1064,19 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
     int* indexPtr = map;
 
     for (int ii=0; ii<nn; ii++) {
-      double x = ops->coords.x->values[ii];
-      double y = ops->coords.y->values[ii];
+      double x = ops->coords.x->values_[ii];
+      double y = ops->coords.y->values_[ii];
       BarStyle* stylePtr = dataToStyle[ii];
 
       if ((isfinite(x)) && (isfinite(y))) {
 	double high, low;
-	if (ops->xError->nValues > 0) {
-	  high = x + ops->xError->values[ii];
-	  low = x - ops->xError->values[ii];
+	if (ops->xError->nValues_ > 0) {
+	  high = x + ops->xError->values_[ii];
+	  low = x - ops->xError->values_[ii];
 	}
 	else {
-	  high = ops->xHigh ? ops->xHigh->values[ii] : 0;
-	  low  = ops->xLow  ? ops->xLow->values[ii]  : 0;
+	  high = ops->xHigh ? ops->xHigh->values_[ii] : 0;
+	  low  = ops->xLow  ? ops->xLow->values_[ii]  : 0;
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p = graphPtr_->map2D(high, y, ops->xAxis, ops->yAxis);
@@ -1115,11 +1115,11 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 
   nn =0;
   if (ops->coords.x && ops->coords.y) {
-    if (ops->yError && (ops->yError->nValues > 0))
-      nn = MIN(ops->yError->nValues, nPoints);
+    if (ops->yError && (ops->yError->nValues_ > 0))
+      nn = MIN(ops->yError->nValues_, nPoints);
     else
       if (ops->yHigh && ops->yLow)
-	nn = MIN3(ops->yHigh->nValues, ops->yLow->nValues, nPoints);
+	nn = MIN3(ops->yHigh->nValues_, ops->yLow->nValues_, nPoints);
   }
 
   if (nn) {
@@ -1129,19 +1129,19 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
     int* indexPtr = map;
 
     for (int ii=0; ii<nn; ii++) {
-      double x = ops->coords.x->values[ii];
-      double y = ops->coords.y->values[ii];
+      double x = ops->coords.x->values_[ii];
+      double y = ops->coords.y->values_[ii];
       BarStyle *stylePtr = dataToStyle[ii];
 
       if ((isfinite(x)) && (isfinite(y))) {
       double high, low;
-	if (ops->yError->nValues > 0) {
-	  high = y + ops->yError->values[ii];
-	  low = y - ops->yError->values[ii];
+	if (ops->yError->nValues_ > 0) {
+	  high = y + ops->yError->values_[ii];
+	  low = y - ops->yError->values_[ii];
 	}
 	else {
-	  high = ops->yHigh->values[ii];
-	  low = ops->yLow->values[ii];
+	  high = ops->yHigh->values_[ii];
+	  low = ops->yLow->values_[ii];
 	}
 	if ((isfinite(high)) && (isfinite(low)))  {
 	  Point2d p = graphPtr_->map2D(x, high, ops->xAxis, ops->yAxis);
@@ -1217,8 +1217,8 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
     Point2d anchorPos;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
-    double x = ops->coords.x->values[barToData[count]];
-    double y = ops->coords.y->values[barToData[count]];
+    double x = ops->coords.x->values_[barToData[count]];
+    double y = ops->coords.y->values_[barToData[count]];
 
     count++;
     if (pops->valueShow == SHOW_X)
@@ -1284,8 +1284,8 @@ void BarElement::printValues(PSOutput* psPtr, BarPen* penPtr,
 
   XRectangle *rp, *rend;
   for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
-    double x = ops->coords.x->values[barToData[count]];
-    double y = ops->coords.y->values[barToData[count]];
+    double x = ops->coords.x->values_[barToData[count]];
+    double y = ops->coords.y->values_[barToData[count]];
 
     count++;
     char string[TCL_DOUBLE_SPACE * 2 + 2];

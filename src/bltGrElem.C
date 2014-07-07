@@ -42,47 +42,57 @@ using namespace Blt;
 
 ElemValues::ElemValues()
 {
-  elemPtr =NULL;
-  values =NULL;
-  nValues =0;
-  min =0;
-  max =0;
+  values_ =NULL;
+  nValues_ =0;
+  min_ =0;
+  max_ =0;
 }
 
 ElemValues::~ElemValues()
 {
-  if (values)
-    delete [] values;
+  if (values_)
+    delete [] values_;
 }
 
-void ElemValues::findRange()
+ElemValuesSource::ElemValuesSource(int nn) : ElemValues()
 {
-  if (nValues<1 || !values)
-    return;
-
-  min = DBL_MAX;
-  max = -DBL_MAX;
-  for (int ii=0; ii<nValues; ii++) {
-    if (isfinite(values[ii])) {
-      if (values[ii] < min)
-	min = values[ii];
-      if (values[ii] > max)
-	max = values[ii];
-    }
-  }
+  nValues_ = nn;
+  values_ = new double[nn];
 }
 
-ElemValuesSource::ElemValuesSource()
+ElemValuesSource::ElemValuesSource(int nn, double* vv) : ElemValues()
 {
+  nValues_ = nn;
+  values_ = vv;
 }
 
 ElemValuesSource::~ElemValuesSource()
 {
 }
 
-ElemValuesVector::ElemValuesVector()
+void ElemValuesSource::findRange()
 {
-  vectorSource.vector = NULL;
+  if (nValues_<1 || !values_)
+    return;
+
+  min_ = DBL_MAX;
+  max_ = -DBL_MAX;
+  for (int ii=0; ii<nValues_; ii++) {
+    if (isfinite(values_[ii])) {
+      if (values_[ii] < min_)
+	min_ = values_[ii];
+      if (values_[ii] > max_)
+	max_ = values_[ii];
+    }
+  }
+}
+
+ElemValuesVector::ElemValuesVector(Element* ptr, const char* vecName) 
+  : ElemValues()
+{
+  elemPtr_ = ptr;
+  Graph* graphPtr = elemPtr_->graphPtr_;
+  source_.vector = Blt_AllocVectorId(graphPtr->interp_, vecName);
 }
 
 ElemValuesVector::~ElemValuesVector()
@@ -90,31 +100,33 @@ ElemValuesVector::~ElemValuesVector()
   FreeVectorSource();
 }
 
-int ElemValuesVector::GetVectorData(Tcl_Interp* interp, const char *vecName)
+int ElemValuesVector::GetVectorData()
 {
-  vectorSource.vector = Blt_AllocVectorId(interp, vecName);
+  Graph* graphPtr = elemPtr_->graphPtr_;
 
   Blt_Vector *vecPtr;
-  if (Blt_GetVectorById(interp, vectorSource.vector, &vecPtr) != TCL_OK)
+  if (Blt_GetVectorById(graphPtr->interp_, source_.vector, &vecPtr) != TCL_OK)
     return TCL_ERROR;
 
-  if (FetchVectorValues(interp, vecPtr) != TCL_OK) {
+  if (FetchVectorValues(vecPtr) != TCL_OK) {
     FreeVectorSource();
     return TCL_ERROR;
   }
 
-  Blt_SetVectorChangedProc(vectorSource.vector, VectorChangedProc, this);
+  Blt_SetVectorChangedProc(source_.vector, VectorChangedProc, this);
   return TCL_OK;
 }
 
-int ElemValuesVector::FetchVectorValues(Tcl_Interp* interp, Blt_Vector* vector)
+int ElemValuesVector::FetchVectorValues(Blt_Vector* vector)
 {
-  if (values)
-    delete [] values;
-  values = NULL;
-  nValues = 0;
-  min =0;
-  max =0;
+  Graph* graphPtr = elemPtr_->graphPtr_;
+
+  if (values_)
+    delete [] values_;
+  values_ = NULL;
+  nValues_ = 0;
+  min_ =0;
+  max_ =0;
 
   int ss = Blt_VecLength(vector);
   if (!ss)
@@ -122,25 +134,25 @@ int ElemValuesVector::FetchVectorValues(Tcl_Interp* interp, Blt_Vector* vector)
 
   double* array = new double[ss];
   if (!array) {
-    Tcl_AppendResult(interp, "can't allocate new vector", NULL);
+    Tcl_AppendResult(graphPtr->interp_, "can't allocate new vector", NULL);
     return TCL_ERROR;
   }
 
   memcpy(array, Blt_VecData(vector), ss*sizeof(double));
-  values = array;
-  nValues = Blt_VecLength(vector);
-  min = Blt_VecMin(vector);
-  max = Blt_VecMax(vector);
+  values_ = array;
+  nValues_ = Blt_VecLength(vector);
+  min_ = Blt_VecMin(vector);
+  max_ = Blt_VecMax(vector);
 
   return TCL_OK;
 }
 
 void ElemValuesVector::FreeVectorSource()
 {
-  if (vectorSource.vector) { 
-    Blt_SetVectorChangedProc(vectorSource.vector, NULL, NULL);
-    Blt_FreeVectorId(vectorSource.vector); 
-    vectorSource.vector = NULL;
+  if (source_.vector) { 
+    Blt_SetVectorChangedProc(source_.vector, NULL, NULL);
+    Blt_FreeVectorId(source_.vector); 
+    source_.vector = NULL;
   }
 }
 
@@ -192,8 +204,8 @@ double Element::FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
   if (!valuesPtr)
     return min;
 
-  for (int ii=0; ii<valuesPtr->nValues; ii++) {
-    double x = valuesPtr->values[ii];
+  for (int ii=0; ii<valuesPtr->nValues_; ii++) {
+    double x = valuesPtr->values_[ii];
     // What do you do about negative values when using log
     // scale values seems like a grey area. Mirror.
     if (x < 0.0)
@@ -212,8 +224,8 @@ PenStyle** Element::StyleMap()
   ElementOptions* ops = (ElementOptions*)ops_;
 
   int nPoints = NUMBEROFPOINTS(ops);
-  int nWeights = MIN(ops->w ? ops->w->nValues : 0, nPoints);
-  double* w = ops->w ? ops->w->values : NULL;
+  int nWeights = MIN(ops->w ? ops->w->nValues_ : 0, nPoints);
+  double* w = ops->w ? ops->w->values_ : NULL;
   Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
 

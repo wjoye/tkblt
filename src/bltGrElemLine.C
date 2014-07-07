@@ -308,7 +308,7 @@ void LineElement::map()
 
   reset();
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues || !ops->coords.y->nValues)
+      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
     return;
   int np = NUMBEROFPOINTS(ops);
 
@@ -373,12 +373,12 @@ void LineElement::map()
   }
 
   LineStyle** styleMap = (LineStyle**)StyleMap();
-  if (((ops->yHigh && ops->yHigh->nValues > 0) &&
-       (ops->yLow && ops->yLow->nValues > 0)) ||
-      ((ops->xHigh && ops->xHigh->nValues > 0) &&
-       (ops->xLow && ops->xLow->nValues > 0)) ||
-      (ops->xError && ops->xError->nValues > 0) ||
-      (ops->yError && ops->yError->nValues > 0)) {
+  if (((ops->yHigh && ops->yHigh->nValues_ > 0) &&
+       (ops->yLow && ops->yLow->nValues_ > 0)) ||
+      ((ops->xHigh && ops->xHigh->nValues_ > 0) &&
+       (ops->xLow && ops->xLow->nValues_ > 0)) ||
+      (ops->xError && ops->xError->nValues_ > 0) ||
+      (ops->yError && ops->yError->nValues_ > 0)) {
     mapErrorBars(styleMap);
   }
 
@@ -394,33 +394,33 @@ void LineElement::extents(Region2d *extsPtr)
   extsPtr->bottom = extsPtr->right = -DBL_MAX;
 
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues || !ops->coords.y->nValues)
+      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
     return;
   int np = NUMBEROFPOINTS(ops);
 
-  extsPtr->right = ops->coords.x->max;
+  extsPtr->right = ops->coords.x->max_;
   AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
-  if ((ops->coords.x->min <= 0.0) && (axisxops->logScale))
+  if ((ops->coords.x->min_ <= 0.0) && (axisxops->logScale))
     extsPtr->left = FindElemValuesMinimum(ops->coords.x, DBL_MIN);
   else
-    extsPtr->left = ops->coords.x->min;
+    extsPtr->left = ops->coords.x->min_;
 
-  extsPtr->bottom = ops->coords.y->max;
+  extsPtr->bottom = ops->coords.y->max_;
   AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
-  if ((ops->coords.y->min <= 0.0) && (axisyops->logScale))
+  if ((ops->coords.y->min_ <= 0.0) && (axisyops->logScale))
     extsPtr->top = FindElemValuesMinimum(ops->coords.y, DBL_MIN);
   else
-    extsPtr->top = ops->coords.y->min;
+    extsPtr->top = ops->coords.y->min_;
 
   // Correct the data limits for error bars
-  if (ops->xError && ops->xError->nValues > 0) {
-    np = MIN(ops->xError->nValues, np);
+  if (ops->xError && ops->xError->nValues_ > 0) {
+    np = MIN(ops->xError->nValues_, np);
     for (int ii=0; ii<np; ii++) {
-      double x = ops->coords.x->values[ii] + ops->xError->values[ii];
+      double x = ops->coords.x->values_[ii] + ops->xError->values_[ii];
       if (x > extsPtr->right)
 	extsPtr->right = x;
 
-      x = ops->coords.x->values[ii] - ops->xError->values[ii];
+      x = ops->coords.x->values_[ii] - ops->xError->values_[ii];
       AxisOptions* axisxops = (AxisOptions*)ops->xAxis->ops();
       if (axisxops->logScale) {
 	// Mirror negative values, instead of ignoring them
@@ -435,30 +435,30 @@ void LineElement::extents(Region2d *extsPtr)
   }
   else {
     if (ops->xHigh && 
-	(ops->xHigh->nValues > 0) && 
-	(ops->xHigh->max > extsPtr->right)) {
-      extsPtr->right = ops->xHigh->max;
+	(ops->xHigh->nValues_ > 0) && 
+	(ops->xHigh->max_ > extsPtr->right)) {
+      extsPtr->right = ops->xHigh->max_;
     }
-    if (ops->xLow && ops->xLow->nValues > 0) {
+    if (ops->xLow && ops->xLow->nValues_ > 0) {
       double left;
-      if ((ops->xLow->min <= 0.0) && (axisxops->logScale))
+      if ((ops->xLow->min_ <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
       else
-	left = ops->xLow->min;
+	left = ops->xLow->min_;
 
       if (left < extsPtr->left)
 	extsPtr->left = left;
     }
   }
     
-  if (ops->yError && ops->yError->nValues > 0) {
-    np = MIN(ops->yError->nValues, np);
+  if (ops->yError && ops->yError->nValues_ > 0) {
+    np = MIN(ops->yError->nValues_, np);
     for (int ii=0; ii<np; ii++) {
-      double y = ops->coords.y->values[ii] + ops->yError->values[ii];
+      double y = ops->coords.y->values_[ii] + ops->yError->values_[ii];
       if (y > extsPtr->bottom)
 	extsPtr->bottom = y;
 
-      y = ops->coords.y->values[ii] - ops->yError->values[ii];
+      y = ops->coords.y->values_[ii] - ops->yError->values_[ii];
       AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
       if (axisyops->logScale) {
 	// Mirror negative values, instead of ignoring them
@@ -472,16 +472,16 @@ void LineElement::extents(Region2d *extsPtr)
     }
   }
   else {
-    if (ops->yHigh && (ops->yHigh->nValues > 0) && 
-	(ops->yHigh->max > extsPtr->bottom))
-      extsPtr->bottom = ops->yHigh->max;
+    if (ops->yHigh && (ops->yHigh->nValues_ > 0) && 
+	(ops->yHigh->max_ > extsPtr->bottom))
+      extsPtr->bottom = ops->yHigh->max_;
 
-    if (ops->yLow && ops->yLow->nValues > 0) {
+    if (ops->yLow && ops->yLow->nValues_ > 0) {
       double top;
-      if ((ops->yLow->min <= 0.0) && (axisyops->logScale))
+      if ((ops->yLow->min_ <= 0.0) && (axisyops->logScale))
 	top = FindElemValuesMinimum(ops->yLow, DBL_MIN);
       else
-	top = ops->yLow->min;
+	top = ops->yLow->min_;
 
       if (top < extsPtr->top)
 	extsPtr->top = top;
@@ -954,8 +954,8 @@ void LineElement::getScreenPoints(MapInfo* mapPtr)
   }
 
   int np = NUMBEROFPOINTS(ops);
-  double* x = ops->coords.x->values;
-  double* y = ops->coords.y->values;
+  double* x = ops->coords.x->values_;
+  double* y = ops->coords.y->values_;
   Point2d* points = new Point2d[np];
   int* map = new int[np];
 
@@ -1332,8 +1332,8 @@ void LineElement::mapActiveSymbols()
       if (iPoint >= np)
 	continue;
 
-      double x = ops->coords.x->values[iPoint];
-      double y = ops->coords.y->values[iPoint];
+      double x = ops->coords.x->values_[iPoint];
+      double y = ops->coords.y->values_[iPoint];
       points[count] = graphPtr_->map2D(x, y, ops->xAxis, ops->yAxis);
       map[count] = iPoint;
       if (PointInRegion(&exts, points[count].x, points[count].y)) {
@@ -1738,11 +1738,11 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
   int nn =0;
   int np = NUMBEROFPOINTS(ops);
   if (ops->coords.x && ops->coords.y) {
-    if (ops->xError && (ops->xError->nValues > 0))
-      nn = MIN(ops->xError->nValues, np);
+    if (ops->xError && (ops->xError->nValues_ > 0))
+      nn = MIN(ops->xError->nValues_, np);
     else
       if (ops->xHigh && ops->xLow)
-	nn = MIN3(ops->xHigh->nValues, ops->xLow->nValues, np);
+	nn = MIN3(ops->xHigh->nValues_, ops->xLow->nValues_, np);
   }
 
   if (nn) {
@@ -1752,20 +1752,20 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
     int* indexPtr = errorToData;
 
     for (int ii=0; ii<nn; ii++) {
-      double x = ops->coords.x->values[ii];
-      double y = ops->coords.y->values[ii];
+      double x = ops->coords.x->values_[ii];
+      double y = ops->coords.y->values_[ii];
       LineStyle* stylePtr = styleMap[ii];
 
       if ((isfinite(x)) && (isfinite(y))) {
 	double high;
 	double low;
-	if (ops->xError->nValues > 0) {
-	  high = x + ops->xError->values[ii];
-	  low = x - ops->xError->values[ii];
+	if (ops->xError->nValues_ > 0) {
+	  high = x + ops->xError->values_[ii];
+	  low = x - ops->xError->values_[ii];
 	} 
 	else {
-	  high = ops->xHigh ? ops->xHigh->values[ii] : 0;
-	  low  = ops->xLow ? ops->xLow->values[ii] : 0;
+	  high = ops->xHigh ? ops->xHigh->values_[ii] : 0;
+	  low  = ops->xLow ? ops->xLow->values_[ii] : 0;
 	}
 
 	if ((isfinite(high)) && (isfinite(low)))  {
@@ -1805,11 +1805,11 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
 
   nn =0;
   if (ops->coords.x && ops->coords.y) {
-    if (ops->yError && (ops->yError->nValues > 0))
-      nn = MIN(ops->yError->nValues, np);
+    if (ops->yError && (ops->yError->nValues_ > 0))
+      nn = MIN(ops->yError->nValues_, np);
     else
       if (ops->yHigh && ops->yLow)
-	nn = MIN3(ops->yHigh->nValues, ops->yLow->nValues, np);
+	nn = MIN3(ops->yHigh->nValues_, ops->yLow->nValues_, np);
   }
 
   if (nn) {
@@ -1819,20 +1819,20 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
     int* indexPtr = errorToData;
 
     for (int ii=0; ii<nn; ii++) {
-      double x = ops->coords.x->values[ii];
-      double y = ops->coords.y->values[ii];
+      double x = ops->coords.x->values_[ii];
+      double y = ops->coords.y->values_[ii];
       LineStyle* stylePtr = styleMap[ii];
 
       if ((isfinite(x)) && (isfinite(y))) {
 	double high;
 	double low;
- 	if (ops->yError->nValues > 0) {
- 	  high = y + ops->yError->values[ii];
- 	  low = y - ops->yError->values[ii];
+ 	if (ops->yError->nValues_ > 0) {
+ 	  high = y + ops->yError->values_[ii];
+ 	  low = y - ops->yError->values_[ii];
  	} 
 	else {
- 	  high = ops->yHigh->values[ii];
- 	  low = ops->yLow->values[ii];
+ 	  high = ops->yHigh->values_[ii];
+ 	  low = ops->yLow->values_[ii];
  	}
 
 	if ((isfinite(high)) && (isfinite(low)))  {
@@ -1957,8 +1957,8 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
     searchPtr->elemPtr = (Element*)this;
     searchPtr->dist = dMin;
     searchPtr->index = iClose;
-    searchPtr->point.x = ops->coords.x->values[iClose];
-    searchPtr->point.y = ops->coords.y->values[iClose];
+    searchPtr->point.x = ops->coords.x->values_[iClose];
+    searchPtr->point.y = ops->coords.y->values_[iClose];
   }
 }
 
@@ -2375,7 +2375,7 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
-  xval = ops->coords.x->values, yval = ops->coords.y->values;
+  xval = ops->coords.x->values_, yval = ops->coords.y->values_;
 
   for (pp = points, endp = points + length; pp < endp; pp++) {
     double x = xval[map[count]];
@@ -2521,8 +2521,8 @@ void LineElement::printValues(PSOutput* psPtr, LinePen* penPtr,
   int count = 0;
   Point2d *pp, *endp;
   for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
-    double x = ops->coords.x->values[pointToData[count]];
-    double y = ops->coords.y->values[pointToData[count]];
+    double x = ops->coords.x->values_[pointToData[count]];
+    double y = ops->coords.y->values_[pointToData[count]];
     count++;
 
     char string[TCL_DOUBLE_SPACE * 2 + 2];

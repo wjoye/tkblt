@@ -334,9 +334,9 @@ void BarGraph::initBarSets()
 
     nSegs++;
     if (ops->coords.x) {
-      int nPoints = ops->coords.x->nValues;
+      int nPoints = ops->coords.x->nValues_;
       double *x, *xend;
-      for (x = ops->coords.x->values, xend = x + nPoints; x < xend; x++) {
+      for (x = ops->coords.x->values_, xend = x + nPoints; x < xend; x++) {
 	BarSetKey key;
 	key.value =*x;
 	key.xAxis =ops->xAxis;
@@ -471,8 +471,8 @@ void BarGraph::computeBarStacks()
 
     if (ops->coords.x && ops->coords.y) {
       double *x, *y, *xend;
-      for (x = ops->coords.x->values, y = ops->coords.y->values, 
-	     xend = x + ops->coords.x->nValues; x < xend; x++, y++) {
+      for (x = ops->coords.x->values_, y = ops->coords.y->values_, 
+	     xend = x + ops->coords.x->nValues_; x < xend; x++, y++) {
 	BarSetKey key;
 	key.value =*x;
 	key.xAxis =ops->xAxis;

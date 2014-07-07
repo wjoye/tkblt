@@ -47,8 +47,8 @@ extern "C" {
 #define SHOW_BOTH	3
 
 #define MIN(a,b)	(((a)<(b))?(a):(b))
-#define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues : 0, \
-			       (e)->coords.y ? (e)->coords.y->nValues : 0 )
+#define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues_ : 0, \
+			       (e)->coords.y ? (e)->coords.y->nValues_ : 0 )
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? \
 		       (e)->builtinPenPtr : (e)->normalPenPtr))
 
@@ -64,37 +64,38 @@ namespace Blt {
 
   class ElemValues {
   public:
-    Element* elemPtr;
-    double *values;
-    int nValues;
-    double min;
-    double max;
+    double* values_;
+    int nValues_;
+    double min_;
+    double max_;
 
   public:
     ElemValues();
     virtual ~ElemValues();
-
-    void findRange();
   };
 
   class ElemValuesSource : public ElemValues
   {
   public:
-    ElemValuesSource();
+    ElemValuesSource(int);
+    ElemValuesSource(int, double*);
     ~ElemValuesSource();
+
+    void findRange();
   };
 
   class ElemValuesVector : public ElemValues
   {
   public:
-    VectorDataSource vectorSource;
+    Element* elemPtr_;
+    VectorDataSource source_;
 
   public:
-    ElemValuesVector();
+    ElemValuesVector(Element*, const char*);
     ~ElemValuesVector();
 
-    int GetVectorData(Tcl_Interp*, const char*);
-    int FetchVectorValues(Tcl_Interp*, Blt_Vector*);
+    int GetVectorData();
+    int FetchVectorValues(Blt_Vector*);
     void FreeVectorSource();
   };
 
@@ -105,8 +106,8 @@ namespace Blt {
   } GraphSegments;
 
   typedef struct {
-    ElemValues* x;
-    ElemValues* y;
+    ElemValuesSource* x;
+    ElemValuesSource* y;
   } ElemCoords;
 
   typedef struct {

@@ -88,23 +88,24 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   }
 
   const char *string = Tcl_GetString(objv[0]);
-  if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
-    ElemValuesVector* valuesPtr = new ElemValuesVector();
-    valuesPtr->elemPtr = elemPtr;
-    if (valuesPtr->GetVectorData(interp, string) != TCL_OK)
+  if (objc == 1) {
+    if (Blt_VectorExists2(interp, string)) {
+      ElemValuesVector* valuesPtr = new ElemValuesVector(elemPtr, string);
+      if (valuesPtr->GetVectorData() != TCL_OK) {
+	delete valuesPtr;
+	return TCL_ERROR;
+      }
+      *valuesPtrPtr = valuesPtr;
+    }
+    else
       return TCL_ERROR;
-    *valuesPtrPtr = valuesPtr;
   }
   else {
-    ElemValuesSource* valuesPtr = new ElemValuesSource();
-    valuesPtr->elemPtr = elemPtr;
-
     double* values;
     int nValues;
     if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
       return TCL_ERROR;
-    valuesPtr->values = values;
-    valuesPtr->nValues = nValues;
+    ElemValuesSource* valuesPtr = new ElemValuesSource(nValues, values);
     valuesPtr->findRange();
     *valuesPtrPtr = valuesPtr;
   }
@@ -120,13 +121,13 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   if (!valuesPtr)
     return Tcl_NewStringObj("", -1);
     
-  int cnt = valuesPtr->nValues;
+  int cnt = valuesPtr->nValues_;
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
   Tcl_Obj** ll = new Tcl_Obj*[cnt];
   for (int ii=0; ii<cnt; ii++)
-    ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
+    ll[ii] = Tcl_NewDoubleObj(valuesPtr->values_[ii]);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
   delete [] ll;
 
@@ -161,6 +162,9 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
     return TCL_ERROR;
 
+  if (nValues == 0)
+    return TCL_OK;
+
   if (nValues & 1) {
     Tcl_AppendResult(interp, "odd number of data points", NULL);
     delete [] values;
@@ -168,31 +172,18 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   }
 
   nValues /= 2;
-  size_t newSize = nValues * sizeof(double);
-  if (coordsPtr->x) {
+  if (coordsPtr->x)
     delete coordsPtr->x;
-    coordsPtr->x = NULL;
-  }
-  if (coordsPtr->y) {
+  coordsPtr->x = new ElemValuesSource(nValues);
+
+  if (coordsPtr->y)
     delete coordsPtr->y;
-    coordsPtr->y = NULL;
-  }
-
-  if (newSize == 0)
-    return TCL_OK;
-
-  coordsPtr->x = new ElemValuesSource();
-  coordsPtr->y = new ElemValuesSource();
-
-  coordsPtr->x->values = new double[newSize];
-  coordsPtr->x->nValues = nValues;
-  coordsPtr->y->values = new double[newSize];
-  coordsPtr->y->nValues = nValues;
+  coordsPtr->y = new ElemValuesSource(nValues);
 
   int ii=0;
   for (double* p = values; ii<nValues; ii++) {
-    coordsPtr->x->values[ii] = *p++;
-    coordsPtr->y->values[ii] = *p++;
+    coordsPtr->x->values_[ii] = *p++;
+    coordsPtr->y->values_[ii] = *p++;
   }
   delete [] values;
 
@@ -209,14 +200,14 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
 
   if (!coordsPtr || 
       !coordsPtr->x || !coordsPtr->y || 
-      !coordsPtr->x->nValues || !coordsPtr->y->nValues)
+      !coordsPtr->x->nValues_ || !coordsPtr->y->nValues_)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  int cnt = MIN(coordsPtr->x->nValues, coordsPtr->y->nValues);
+  int cnt = MIN(coordsPtr->x->nValues_, coordsPtr->y->nValues_);
   Tcl_Obj** ll = new Tcl_Obj*[2*cnt];
   for (int ii=0, jj=0; ii<cnt; ii++) {
-    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values[ii]);
-    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->y->values[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values_[ii]);
+    ll[jj++] = Tcl_NewDoubleObj(coordsPtr->y->values_[ii]);
   }
   Tcl_Obj* listObjPtr = Tcl_NewListObj(2*cnt, ll);
   delete [] ll;
@@ -361,21 +352,21 @@ void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
 
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
     valuesPtr->FreeVectorSource();
-    if (valuesPtr->values)
-      delete [] valuesPtr->values;
-    valuesPtr->values = NULL;
-    valuesPtr->nValues = 0;
-    valuesPtr->min =0;
-    valuesPtr->max =0;
+    if (valuesPtr->values_)
+      delete [] valuesPtr->values_;
+    valuesPtr->values_ = NULL;
+    valuesPtr->nValues_ = 0;
+    valuesPtr->min_ =0;
+    valuesPtr->max_ =0;
   }
   else {
     Blt_Vector* vector;
-    Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
-    if (valuesPtr->FetchVectorValues(interp, vector) != TCL_OK)
+    Blt_GetVectorById(interp, valuesPtr->source_.vector, &vector);
+    if (valuesPtr->FetchVectorValues(vector) != TCL_OK)
       return;
   }
 
-  Element* elemPtr = valuesPtr->elemPtr;
+  Element* elemPtr = valuesPtr->elemPtr_;
   Graph* graphPtr = elemPtr->graphPtr_;
 
   graphPtr->flags |= RESET;
@@ -410,5 +401,6 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
     *arrayPtr = array;
     *nValuesPtr = objc;
   }
+
   return TCL_OK;
 }
