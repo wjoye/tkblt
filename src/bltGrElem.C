@@ -74,6 +74,22 @@ void ElemValues::findRange()
   }
 }
 
+ElemValuesSource::ElemValuesSource()
+{
+}
+
+ElemValuesSource::~ElemValuesSource()
+{
+}
+
+ElemValuesVector::ElemValuesVector()
+{
+}
+
+ElemValuesVector::~ElemValuesVector()
+{
+}
+
 // Class Element
 
 Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)

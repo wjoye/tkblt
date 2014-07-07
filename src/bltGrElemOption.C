@@ -91,17 +91,18 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  ElemValues* valuesPtr = new ElemValues();
-  valuesPtr->elemPtr = elemPtr;
-
   const char *string = Tcl_GetString(objv[0]);
   if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
+    ElemValuesVector* valuesPtr = new ElemValuesVector();
+    valuesPtr->elemPtr = elemPtr;
     valuesPtr->type = ElemValues::SOURCE_VECTOR;
-
     if (GetVectorData(interp, valuesPtr, string) != TCL_OK)
       return TCL_ERROR;
+    *valuesPtrPtr = valuesPtr;
   }
   else {
+    ElemValuesSource* valuesPtr = new ElemValuesSource();
+    valuesPtr->elemPtr = elemPtr;
     valuesPtr->type = ElemValues::SOURCE_VALUES;
 
     double* values;
@@ -111,9 +112,9 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
     valuesPtr->values = values;
     valuesPtr->nValues = nValues;
     valuesPtr->findRange();
+    *valuesPtrPtr = valuesPtr;
   }
 
-  *valuesPtrPtr = valuesPtr;
   return TCL_OK;
 }
 
@@ -203,8 +204,8 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   if (newSize == 0)
     return TCL_OK;
 
-  coordsPtr->x = new ElemValues();
-  coordsPtr->y = new ElemValues();
+  coordsPtr->x = new ElemValuesSource();
+  coordsPtr->y = new ElemValuesSource();
 
   coordsPtr->x->values = new double[newSize];
   coordsPtr->x->nValues = nValues;

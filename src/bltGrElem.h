@@ -59,12 +59,6 @@ namespace Blt {
   class Postscript;
 
   typedef struct {
-    Segment2d *segments;
-    int *map;
-    int length;
-  } GraphSegments;
-
-  typedef struct {
     Blt_VectorId vector;
   } VectorDataSource;
 
@@ -87,6 +81,26 @@ namespace Blt {
 
     void findRange();
   };
+
+  class ElemValuesSource : public ElemValues
+  {
+  public:
+    ElemValuesSource();
+    ~ElemValuesSource();
+  };
+
+  class ElemValuesVector : public ElemValues
+  {
+  public:
+    ElemValuesVector();
+    ~ElemValuesVector();
+  };
+
+  typedef struct {
+    Segment2d *segments;
+    int *map;
+    int length;
+  } GraphSegments;
 
   typedef struct {
     ElemValues* x;
