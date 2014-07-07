@@ -214,7 +214,7 @@ double Element::FindElemValuesMinimum(ElemValues* valuesPtr, double minLimit)
   if (!valuesPtr)
     return min;
 
-  for (int ii=0; ii<valuesPtr->nValues_; ii++) {
+  for (int ii=0; ii<valuesPtr->nValues(); ii++) {
     double x = valuesPtr->values_[ii];
     // What do you do about negative values when using log
     // scale values seems like a grey area. Mirror.
@@ -234,7 +234,7 @@ PenStyle** Element::StyleMap()
   ElementOptions* ops = (ElementOptions*)ops_;
 
   int nPoints = NUMBEROFPOINTS(ops);
-  int nWeights = MIN(ops->w ? ops->w->nValues_ : 0, nPoints);
+  int nWeights = MIN(ops->w ? ops->w->nValues() : 0, nPoints);
   double* w = ops->w ? ops->w->values_ : NULL;
   Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);

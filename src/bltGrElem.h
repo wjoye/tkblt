@@ -47,8 +47,8 @@ extern "C" {
 #define SHOW_BOTH	3
 
 #define MIN(a,b)	(((a)<(b))?(a):(b))
-#define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues_ : 0, \
-			       (e)->coords.y ? (e)->coords.y->nValues_ : 0 )
+#define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues() : 0, \
+			       (e)->coords.y ? (e)->coords.y->nValues() : 0 )
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? \
 		       (e)->builtinPenPtr : (e)->normalPenPtr))
 
@@ -62,16 +62,17 @@ namespace Blt {
   protected:
     double min_;
     double max_;
+    int nValues_;
 
   public:
     double* values_;
-    int nValues_;
 
   public:
     ElemValues();
     virtual ~ElemValues();
 
     void reset();
+    int nValues() {return nValues_;}
     double min() {return min_;}
     double max() {return max_;}
   };

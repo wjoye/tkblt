@@ -280,7 +280,7 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(3*cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[3*cnt];
   int ii=0;
   for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
        link = Blt_Chain_NextLink(link)) {
@@ -290,7 +290,7 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.max);
   }
   Tcl_Obj *listObjPtr = Tcl_NewListObj(3*cnt,ll);
-  free(ll);
+  delete [] ll;
 
   return listObjPtr;
 }

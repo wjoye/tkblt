@@ -255,7 +255,7 @@ void BarElement::map()
 
   reset();
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
+      !ops->coords.x->nValues() || !ops->coords.y->nValues())
     return;
   int nPoints = NUMBEROFPOINTS(ops);
 
@@ -456,12 +456,12 @@ void BarElement::map()
   }
 
   BarStyle** dataToStyle = (BarStyle**)StyleMap();
-  if (((ops->yHigh && ops->yHigh->nValues_ > 0) && 
-       (ops->yLow && ops->yLow->nValues_ > 0)) ||
-      ((ops->xHigh && ops->xHigh->nValues_ > 0) &&
-       (ops->xLow && ops->xLow->nValues_ > 0)) ||
-      (ops->xError && ops->xError->nValues_ > 0) || 
-      (ops->yError && ops->yError->nValues_ > 0)) {
+  if (((ops->yHigh && ops->yHigh->nValues() > 0) && 
+       (ops->yLow && ops->yLow->nValues() > 0)) ||
+      ((ops->xHigh && ops->xHigh->nValues() > 0) &&
+       (ops->xLow && ops->xLow->nValues() > 0)) ||
+      (ops->xError && ops->xError->nValues() > 0) || 
+      (ops->yError && ops->yError->nValues() > 0)) {
     mapErrorBars(dataToStyle);
   }
 
@@ -479,7 +479,7 @@ void BarElement::extents(Region2d *regPtr)
   regPtr->bottom = regPtr->right = -DBL_MAX;
 
   if (!ops->coords.x || !ops->coords.y ||
-      !ops->coords.x->nValues_ || !ops->coords.y->nValues_)
+      !ops->coords.x->nValues() || !ops->coords.y->nValues())
     return;
 
   int nPoints = NUMBEROFPOINTS(ops);
@@ -520,8 +520,8 @@ void BarElement::extents(Region2d *regPtr)
   }
 
   // Correct the extents for error bars if they exist
-  if (ops->xError && (ops->xError->nValues_ > 0)) {
-    nPoints = MIN(ops->xError->nValues_, nPoints);
+  if (ops->xError && (ops->xError->nValues() > 0)) {
+    nPoints = MIN(ops->xError->nValues(), nPoints);
     for (int ii=0; ii<nPoints; ii++) {
       double x = ops->coords.x->values_[ii] + ops->xError->values_[ii];
       if (x > regPtr->right)
@@ -543,11 +543,11 @@ void BarElement::extents(Region2d *regPtr)
   }
   else {
     if ((ops->xHigh) &&
-	(ops->xHigh->nValues_ > 0) && 
+	(ops->xHigh->nValues() > 0) && 
 	(ops->xHigh->max() > regPtr->right))
       regPtr->right = ops->xHigh->max();
 
-    if (ops->xLow && (ops->xLow->nValues_ > 0)) {
+    if (ops->xLow && (ops->xLow->nValues() > 0)) {
       double left;
       if ((ops->xLow->min() <= 0.0) && (axisxops->logScale))
 	left = FindElemValuesMinimum(ops->xLow, DBL_MIN);
@@ -559,8 +559,8 @@ void BarElement::extents(Region2d *regPtr)
     }
   }
 
-  if (ops->yError && (ops->yError->nValues_ > 0)) {
-    nPoints = MIN(ops->yError->nValues_, nPoints);
+  if (ops->yError && (ops->yError->nValues() > 0)) {
+    nPoints = MIN(ops->yError->nValues(), nPoints);
 
     for (int ii=0; ii<nPoints; ii++) {
       double y = ops->coords.y->values_[ii] + ops->yError->values_[ii];
@@ -583,11 +583,11 @@ void BarElement::extents(Region2d *regPtr)
   }
   else {
     if ((ops->yHigh) &&
-	(ops->yHigh->nValues_ > 0) && 
+	(ops->yHigh->nValues() > 0) && 
 	(ops->yHigh->max() > regPtr->bottom))
       regPtr->bottom = ops->yHigh->max();
 
-    if (ops->yLow && ops->yLow->nValues_ > 0) {
+    if (ops->yLow && ops->yLow->nValues() > 0) {
       double top;
       if ((ops->yLow->min() <= 0.0) && 
 	  (axisyops->logScale))
@@ -1050,11 +1050,11 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
   int nPoints = NUMBEROFPOINTS(ops);
   int nn =0;
   if (ops->coords.x && ops->coords.y) {
-    if (ops->xError && (ops->xError->nValues_ > 0))
-      nn = MIN(ops->xError->nValues_, nPoints);
+    if (ops->xError && (ops->xError->nValues() > 0))
+      nn = MIN(ops->xError->nValues(), nPoints);
     else
       if (ops->xHigh && ops->xLow)
-	nn = MIN3(ops->xHigh->nValues_, ops->xLow->nValues_, nPoints);
+	nn = MIN3(ops->xHigh->nValues(), ops->xLow->nValues(), nPoints);
   }
 
   if (nn) {
@@ -1070,7 +1070,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 
       if ((isfinite(x)) && (isfinite(y))) {
 	double high, low;
-	if (ops->xError->nValues_ > 0) {
+	if (ops->xError->nValues() > 0) {
 	  high = x + ops->xError->values_[ii];
 	  low = x - ops->xError->values_[ii];
 	}
@@ -1115,11 +1115,11 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 
   nn =0;
   if (ops->coords.x && ops->coords.y) {
-    if (ops->yError && (ops->yError->nValues_ > 0))
-      nn = MIN(ops->yError->nValues_, nPoints);
+    if (ops->yError && (ops->yError->nValues() > 0))
+      nn = MIN(ops->yError->nValues(), nPoints);
     else
       if (ops->yHigh && ops->yLow)
-	nn = MIN3(ops->yHigh->nValues_, ops->yLow->nValues_, nPoints);
+	nn = MIN3(ops->yHigh->nValues(), ops->yLow->nValues(), nPoints);
   }
 
   if (nn) {
@@ -1135,7 +1135,7 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 
       if ((isfinite(x)) && (isfinite(y))) {
       double high, low;
-	if (ops->yError->nValues_ > 0) {
+	if (ops->yError->nValues() > 0) {
 	  high = y + ops->yError->values_[ii];
 	  low = y - ops->yError->values_[ii];
 	}
