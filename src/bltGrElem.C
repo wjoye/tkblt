@@ -30,6 +30,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "bltGraph.h"
 #include "bltGrBind.h"
