@@ -91,7 +91,7 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   if (objc == 1) {
     if (Blt_VectorExists2(interp, string)) {
       ElemValuesVector* valuesPtr = new ElemValuesVector(elemPtr, string);
-      if (valuesPtr->GetVectorData() != TCL_OK) {
+      if (valuesPtr->getVector() != TCL_OK) {
 	delete valuesPtr;
 	return TCL_ERROR;
       }
@@ -351,18 +351,13 @@ void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
     return;
 
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
-    valuesPtr->FreeVectorSource();
-    if (valuesPtr->values_)
-      delete [] valuesPtr->values_;
-    valuesPtr->values_ = NULL;
-    valuesPtr->nValues_ = 0;
-    valuesPtr->min_ =0;
-    valuesPtr->max_ =0;
+    valuesPtr->freeSource();
+    valuesPtr->reset();
   }
   else {
     Blt_Vector* vector;
     Blt_GetVectorById(interp, valuesPtr->source_.vector, &vector);
-    if (valuesPtr->FetchVectorValues(vector) != TCL_OK)
+    if (valuesPtr->fetchValues(vector) != TCL_OK)
       return;
   }
 

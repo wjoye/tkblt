@@ -72,6 +72,8 @@ namespace Blt {
   public:
     ElemValues();
     virtual ~ElemValues();
+
+    void reset();
   };
 
   class ElemValuesSource : public ElemValues
@@ -94,9 +96,9 @@ namespace Blt {
     ElemValuesVector(Element*, const char*);
     ~ElemValuesVector();
 
-    int GetVectorData();
-    int FetchVectorValues(Blt_Vector*);
-    void FreeVectorSource();
+    int getVector();
+    int fetchValues(Blt_Vector*);
+    void freeSource();
   };
 
   typedef struct {
