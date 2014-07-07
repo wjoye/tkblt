@@ -69,7 +69,6 @@ namespace Blt {
   public:
     ElemSource type;
     Element* elemPtr;
-    VectorDataSource vectorSource;
     double *values;
     int nValues;
     double min;
@@ -92,8 +91,15 @@ namespace Blt {
   class ElemValuesVector : public ElemValues
   {
   public:
+    VectorDataSource vectorSource;
+
+  public:
     ElemValuesVector();
     ~ElemValuesVector();
+
+    int GetVectorData(Tcl_Interp*, const char*);
+    int FetchVectorValues(Tcl_Interp*, Blt_Vector*);
+    void FreeVectorSource();
   };
 
   typedef struct {
@@ -191,5 +197,9 @@ namespace Blt {
     void* ops() {return ops_;}
   };
 };
+
+extern void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
+			      Blt_VectorNotify notify);
+
 
 #endif

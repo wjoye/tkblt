@@ -84,10 +84,66 @@ ElemValuesSource::~ElemValuesSource()
 
 ElemValuesVector::ElemValuesVector()
 {
+  vectorSource.vector = NULL;
 }
 
 ElemValuesVector::~ElemValuesVector()
 {
+  FreeVectorSource();
+}
+
+int ElemValuesVector::GetVectorData(Tcl_Interp* interp, const char *vecName)
+{
+  vectorSource.vector = Blt_AllocVectorId(interp, vecName);
+
+  Blt_Vector *vecPtr;
+  if (Blt_GetVectorById(interp, vectorSource.vector, &vecPtr) != TCL_OK)
+    return TCL_ERROR;
+
+  if (FetchVectorValues(interp, vecPtr) != TCL_OK) {
+    FreeVectorSource();
+    return TCL_ERROR;
+  }
+
+  Blt_SetVectorChangedProc(vectorSource.vector, VectorChangedProc, this);
+  return TCL_OK;
+}
+
+int ElemValuesVector::FetchVectorValues(Tcl_Interp* interp, Blt_Vector* vector)
+{
+  if (values)
+    delete [] values;
+  values = NULL;
+  nValues = 0;
+  min =0;
+  max =0;
+
+  int ss = Blt_VecLength(vector);
+  if (!ss)
+    return TCL_OK;
+
+  double* array = new double[ss];
+  if (!array) {
+    Tcl_AppendResult(interp, "can't allocate new vector", NULL);
+    return TCL_ERROR;
+  }
+
+  memcpy(array, Blt_VecData(vector), ss*sizeof(double));
+  values = array;
+  nValues = Blt_VecLength(vector);
+  min = Blt_VecMin(vector);
+  max = Blt_VecMax(vector);
+
+  return TCL_OK;
+}
+
+void ElemValuesVector::FreeVectorSource()
+{
+  if (vectorSource.vector) { 
+    Blt_SetVectorChangedProc(vectorSource.vector, NULL, NULL);
+    Blt_FreeVectorId(vectorSource.vector); 
+    vectorSource.vector = NULL;
+  }
 }
 
 // Class Element

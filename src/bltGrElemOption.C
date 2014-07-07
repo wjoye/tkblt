@@ -49,13 +49,9 @@ using namespace Blt;
 
 // Defs
 
-static void FreeDataValues(ElemValues* valuesPtr);
-static void FreeVectorSource(ElemValues* valuesPtr);
 static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
 			      Tcl_Obj *objPtr, ClassId classId,
 			      PenStyle *stylePtr);
-static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr, 
-			 const char *vecName);
 static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
 		       double **arrayPtr);
 
@@ -96,7 +92,7 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
     ElemValuesVector* valuesPtr = new ElemValuesVector();
     valuesPtr->elemPtr = elemPtr;
     valuesPtr->type = ElemValues::SOURCE_VECTOR;
-    if (GetVectorData(interp, valuesPtr, string) != TCL_OK)
+    if (valuesPtr->GetVectorData(interp, string) != TCL_OK)
       return TCL_ERROR;
     *valuesPtrPtr = valuesPtr;
   }
@@ -130,7 +126,7 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   case ElemValues::SOURCE_VECTOR:
     {
       const char* vecName = 
-	Blt_NameOfVectorId(valuesPtr->vectorSource.vector);
+	Blt_NameOfVectorId(((ElemValuesVector*)valuesPtr)->vectorSource.vector);
       return Tcl_NewStringObj(vecName, -1);
     }
   case ElemValues::SOURCE_VALUES:
@@ -155,10 +151,8 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
 static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   ElemValues* valuesPtr = *(ElemValues**)ptr;
-  if (valuesPtr) {
-    FreeDataValues(valuesPtr);
+  if (valuesPtr)
     delete valuesPtr;
-  }
 }
 
 static Tk_CustomOptionSetProc PairsSetProc;
@@ -191,12 +185,10 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   nValues /= 2;
   size_t newSize = nValues * sizeof(double);
   if (coordsPtr->x) {
-    FreeDataValues(coordsPtr->x);
     delete coordsPtr->x;
     coordsPtr->x = NULL;
   }
   if (coordsPtr->y) {
-    FreeDataValues(coordsPtr->y);
     delete coordsPtr->y;
     coordsPtr->y = NULL;
   }
@@ -375,63 +367,26 @@ static int GetPenStyleFromObj(Tcl_Interp* interp, Graph* graphPtr,
   return TCL_OK;
 }
 
-static void FreeVectorSource(ElemValues* valuesPtr)
+void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
+		       Blt_VectorNotify notify)
 {
+  ElemValuesVector* valuesPtr = (ElemValuesVector*)clientData;
   if (!valuesPtr)
     return;
 
-  if (valuesPtr->vectorSource.vector) { 
-    Blt_SetVectorChangedProc(valuesPtr->vectorSource.vector, NULL, NULL);
-    Blt_FreeVectorId(valuesPtr->vectorSource.vector); 
-    valuesPtr->vectorSource.vector = NULL;
+  if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
+    valuesPtr->FreeVectorSource();
+    if (valuesPtr->values)
+      delete [] valuesPtr->values;
+    valuesPtr->values = NULL;
+    valuesPtr->nValues = 0;
+    valuesPtr->min =0;
+    valuesPtr->max =0;
   }
-}
-
-static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr, 
-			     Blt_Vector* vector)
-{
-  if (!valuesPtr)
-    return TCL_ERROR;
-
-  if (valuesPtr->values)
-    delete [] valuesPtr->values;
-  valuesPtr->values = NULL;
-  valuesPtr->nValues = 0;
-  valuesPtr->min =0;
-  valuesPtr->max =0;
-
-  int ss = Blt_VecLength(vector);
-  if (!ss)
-    return TCL_OK;
-
-  double* array = new double[ss];
-  if (!array) {
-    Tcl_AppendResult(interp, "can't allocate new vector", NULL);
-    return TCL_ERROR;
-  }
-
-  memcpy(array, Blt_VecData(vector), ss*sizeof(double));
-  valuesPtr->values = array;
-  valuesPtr->nValues = Blt_VecLength(vector);
-  valuesPtr->min = Blt_VecMin(vector);
-  valuesPtr->max = Blt_VecMax(vector);
-
-  return TCL_OK;
-}
-
-static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData, 
-			      Blt_VectorNotify notify)
-{
-  ElemValues* valuesPtr = (ElemValues*)clientData;
-  if (!valuesPtr)
-    return;
-
-  if (notify == BLT_VECTOR_NOTIFY_DESTROY)
-    FreeDataValues(valuesPtr);
   else {
     Blt_Vector* vector;
     Blt_GetVectorById(interp, valuesPtr->vectorSource.vector, &vector);
-    if (FetchVectorValues(interp, valuesPtr, vector) != TCL_OK)
+    if (valuesPtr->FetchVectorValues(interp, vector) != TCL_OK)
       return;
   }
 
@@ -440,28 +395,6 @@ static void VectorChangedProc(Tcl_Interp* interp, ClientData clientData,
 
   graphPtr->flags |= RESET;
   graphPtr->eventuallyRedraw();
-}
-
-static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr, 
-			 const char *vecName)
-{
-  if (!valuesPtr)
-    return TCL_ERROR;
-
-  VectorDataSource* srcPtr = &valuesPtr->vectorSource;
-  srcPtr->vector = Blt_AllocVectorId(interp, vecName);
-
-  Blt_Vector *vecPtr;
-  if (Blt_GetVectorById(interp, srcPtr->vector, &vecPtr) != TCL_OK)
-    return TCL_ERROR;
-
-  if (FetchVectorValues(interp, valuesPtr, vecPtr) != TCL_OK) {
-    FreeVectorSource(valuesPtr);
-    return TCL_ERROR;
-  }
-
-  Blt_SetVectorChangedProc(srcPtr->vector, VectorChangedProc, valuesPtr);
-  return TCL_OK;
 }
 
 static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
@@ -494,26 +427,3 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
   }
   return TCL_OK;
 }
-
-static void FreeDataValues(ElemValues* valuesPtr)
-{
-  if (!valuesPtr)
-    return;
-
-  switch (valuesPtr->type) {
-  case ElemValues::SOURCE_VECTOR: 
-    FreeVectorSource(valuesPtr);
-    break;
-  case ElemValues::SOURCE_VALUES:
-    break;
-  }
-  if (valuesPtr->values)
-    delete [] valuesPtr->values;
-  valuesPtr->type = ElemValues::SOURCE_VALUES;
-  valuesPtr->values = NULL;
-  valuesPtr->nValues = 0;
-  valuesPtr->min =0;
-  valuesPtr->max =0;
-}
-
-
