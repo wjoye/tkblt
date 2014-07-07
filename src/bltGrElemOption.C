@@ -91,7 +91,6 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
     ElemValuesVector* valuesPtr = new ElemValuesVector();
     valuesPtr->elemPtr = elemPtr;
-    valuesPtr->type = ElemValues::SOURCE_VECTOR;
     if (valuesPtr->GetVectorData(interp, string) != TCL_OK)
       return TCL_ERROR;
     *valuesPtrPtr = valuesPtr;
@@ -99,7 +98,6 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
   else {
     ElemValuesSource* valuesPtr = new ElemValuesSource();
     valuesPtr->elemPtr = elemPtr;
-    valuesPtr->type = ElemValues::SOURCE_VALUES;
 
     double* values;
     int nValues;
@@ -120,32 +118,19 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   ElemValues* valuesPtr = *(ElemValues**)(widgRec + offset);
 
   if (!valuesPtr)
-   return Tcl_NewStringObj("", -1);
+    return Tcl_NewStringObj("", -1);
     
-  switch (valuesPtr->type) {
-  case ElemValues::SOURCE_VECTOR:
-    {
-      const char* vecName = 
-	Blt_NameOfVectorId(((ElemValuesVector*)valuesPtr)->vectorSource.vector);
-      return Tcl_NewStringObj(vecName, -1);
-    }
-  case ElemValues::SOURCE_VALUES:
-    {
-      int cnt = valuesPtr->nValues;
-      if (!cnt)
-	return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
+  int cnt = valuesPtr->nValues;
+  if (!cnt)
+    return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-      Tcl_Obj** ll = new Tcl_Obj*[cnt];
-      for (int ii=0; ii<cnt; ii++)
-	ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
-      Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-      delete [] ll;
+  Tcl_Obj** ll = new Tcl_Obj*[cnt];
+  for (int ii=0; ii<cnt; ii++)
+    ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
+  Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
+  delete [] ll;
 
-      return listObjPtr;
-    }
- default:
-   return Tcl_NewStringObj("", -1);
-  }
+  return listObjPtr;
 }
 
 static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
@@ -408,14 +393,14 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
   *arrayPtr = NULL;
   *nValuesPtr = 0;
   if (objc > 0) {
-    double *p;
-    int i;
-
     double* array = new double[objc];
     if (!array) {
       Tcl_AppendResult(interp, "can't allocate new vector", NULL);
       return TCL_ERROR;
     }
+
+    double *p;
+    int i;
     for (p = array, i = 0; i < objc; i++, p++) {
       if (Tcl_GetDoubleFromObj(interp, objv[i], p) != TCL_OK) {
 	delete [] array;

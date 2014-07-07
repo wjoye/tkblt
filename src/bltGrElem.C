@@ -42,9 +42,7 @@ using namespace Blt;
 
 ElemValues::ElemValues()
 {
-  type = SOURCE_VALUES;
   elemPtr =NULL;
-  //  vectorSource;
   values =NULL;
   nValues =0;
   min =0;

@@ -64,10 +64,6 @@ namespace Blt {
 
   class ElemValues {
   public:
-    enum ElemSource {SOURCE_VALUES, SOURCE_VECTOR};
-
-  public:
-    ElemSource type;
     Element* elemPtr;
     double *values;
     int nValues;
