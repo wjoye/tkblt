@@ -54,6 +54,16 @@ ElemValues::~ElemValues()
     delete [] values_;
 }
 
+void ElemValues::reset()
+{
+  if (values_)
+    delete [] values_;
+  values_ =NULL;
+  nValues_ =0;
+  min_ =0;
+  max_ =0;
+}
+
 ElemValuesSource::ElemValuesSource(int nn) : ElemValues()
 {
   nValues_ = nn;
@@ -97,10 +107,10 @@ ElemValuesVector::ElemValuesVector(Element* ptr, const char* vecName)
 
 ElemValuesVector::~ElemValuesVector()
 {
-  FreeVectorSource();
+  freeSource();
 }
 
-int ElemValuesVector::GetVectorData()
+int ElemValuesVector::getVector()
 {
   Graph* graphPtr = elemPtr_->graphPtr_;
 
@@ -108,8 +118,8 @@ int ElemValuesVector::GetVectorData()
   if (Blt_GetVectorById(graphPtr->interp_, source_.vector, &vecPtr) != TCL_OK)
     return TCL_ERROR;
 
-  if (FetchVectorValues(vecPtr) != TCL_OK) {
-    FreeVectorSource();
+  if (fetchValues(vecPtr) != TCL_OK) {
+    freeSource();
     return TCL_ERROR;
   }
 
@@ -117,7 +127,7 @@ int ElemValuesVector::GetVectorData()
   return TCL_OK;
 }
 
-int ElemValuesVector::FetchVectorValues(Blt_Vector* vector)
+int ElemValuesVector::fetchValues(Blt_Vector* vector)
 {
   Graph* graphPtr = elemPtr_->graphPtr_;
 
@@ -147,7 +157,7 @@ int ElemValuesVector::FetchVectorValues(Blt_Vector* vector)
   return TCL_OK;
 }
 
-void ElemValuesVector::FreeVectorSource()
+void ElemValuesVector::freeSource()
 {
   if (source_.vector) { 
     Blt_SetVectorChangedProc(source_.vector, NULL, NULL);

@@ -58,10 +58,6 @@ namespace Blt {
   class Pen;
   class Postscript;
 
-  typedef struct {
-    Blt_VectorId vector;
-  } VectorDataSource;
-
   class ElemValues {
   public:
     double* values_;
@@ -90,7 +86,7 @@ namespace Blt {
   {
   public:
     Element* elemPtr_;
-    VectorDataSource source_;
+    Blt_VectorId source_;
 
   public:
     ElemValuesVector(Element*, const char*);
