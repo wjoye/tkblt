@@ -241,7 +241,7 @@ PenStyle** Element::StyleMap()
 
   // Create a style mapping array (data point index to style), 
   // initialized to the default style.
-  PenStyle** dataToStyle = (PenStyle**)malloc(nPoints*sizeof(PenStyle*));
+  PenStyle** dataToStyle = new PenStyle*[nPoints];
   for (int ii=0; ii<nPoints; ii++)
     dataToStyle[ii] = stylePtr;
 

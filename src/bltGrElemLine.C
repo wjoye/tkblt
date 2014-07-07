@@ -383,7 +383,7 @@ void LineElement::map()
   }
 
   mergePens(styleMap);
-  free(styleMap);
+  delete [] styleMap;
 }
 
 void LineElement::extents(Region2d *extsPtr)

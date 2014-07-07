@@ -466,7 +466,7 @@ void BarElement::map()
   }
 
   mergePens(dataToStyle);
-  free(dataToStyle);
+  delete [] dataToStyle;
 }
 
 void BarElement::extents(Region2d *regPtr)
