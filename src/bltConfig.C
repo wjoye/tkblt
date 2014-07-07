@@ -148,11 +148,11 @@ static Tcl_Obj* DashesGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[cnt];
   for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewIntObj(dashesPtr->values[ii]);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
+  delete [] ll;
 
   return listObjPtr;
 };
@@ -200,11 +200,11 @@ static Tcl_Obj* ListGetProc(ClientData clientData, Tk_Window tkwin,
   if (!cnt)
     return Tcl_NewListObj(0, NULL);
 
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[cnt];
   for (int ii=0; ii<cnt; ii++)
     ll[ii] = Tcl_NewStringObj((*listPtr)[ii], -1);
   Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-  free(ll);
+  delete [] ll;
 
   return listObjPtr;
 };
