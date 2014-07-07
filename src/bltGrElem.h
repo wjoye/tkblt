@@ -68,15 +68,23 @@ namespace Blt {
     Blt_VectorId vector;
   } VectorDataSource;
 
-  typedef struct {
-    int type;
+  class ElemValues {
+  public:
+    enum ElemSource {SOURCE_VALUES, SOURCE_VECTOR};
+
+  public:
+    ElemSource type;
     Element* elemPtr;
     VectorDataSource vectorSource;
     double *values;
     int nValues;
     double min;
     double max;
-  } ElemValues;
+
+  public:
+    ElemValues();
+    virtual ~ElemValues();
+  };
 
   typedef struct {
     ElemValues* x;

@@ -37,6 +37,23 @@
 
 using namespace Blt;
 
+ElemValues::ElemValues()
+{
+  type = SOURCE_VALUES;
+  elemPtr =NULL;
+  //  vectorSource;
+  values =NULL;
+  nValues =0;
+  min =0;
+  max =0;
+}
+
+ElemValues::~ElemValues()
+{
+  if (values)
+    delete [] values;
+}
+
 Element::Element(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 {
   graphPtr_ = graphPtr;

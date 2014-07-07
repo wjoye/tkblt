@@ -44,9 +44,6 @@ extern "C" {
 
 using namespace Blt;
 
-#define ELEM_SOURCE_VALUES	0
-#define ELEM_SOURCE_VECTOR	1
-
 #define SETRANGE(l) ((l).range = ((l).max > (l).min) ? ((l).max - (l).min) : DBL_EPSILON)
 #define SETWEIGHT(l, lo, hi) ((l).min = (lo), (l).max = (hi), SETRANGE(l))
 
@@ -95,20 +92,20 @@ static int ValuesSetProc(ClientData clientData, Tcl_Interp* interp,
     return TCL_OK;
   }
 
-  ElemValues* valuesPtr = (ElemValues*)calloc(1, sizeof(ElemValues));
+  ElemValues* valuesPtr = new ElemValues();
   valuesPtr->elemPtr = elemPtr;
 
   const char *string = Tcl_GetString(objv[0]);
   if ((objc == 1) && (Blt_VectorExists2(interp, string))) {
-    valuesPtr->type = ELEM_SOURCE_VECTOR;
+    valuesPtr->type = ElemValues::SOURCE_VECTOR;
 
     if (GetVectorData(interp, valuesPtr, string) != TCL_OK)
       return TCL_ERROR;
   }
   else {
-    valuesPtr->type = ELEM_SOURCE_VALUES;
+    valuesPtr->type = ElemValues::SOURCE_VALUES;
 
-    double *values;
+    double* values;
     int nValues;
     if (ParseValues(interp, *objPtr, &nValues, &values) != TCL_OK)
       return TCL_ERROR;
@@ -130,23 +127,23 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
    return Tcl_NewStringObj("", -1);
     
   switch (valuesPtr->type) {
-  case ELEM_SOURCE_VECTOR:
+  case ElemValues::SOURCE_VECTOR:
     {
       const char* vecName = 
 	Blt_NameOfVectorId(valuesPtr->vectorSource.vector);
       return Tcl_NewStringObj(vecName, -1);
     }
-  case ELEM_SOURCE_VALUES:
+  case ElemValues::SOURCE_VALUES:
     {
       int cnt = valuesPtr->nValues;
       if (!cnt)
 	return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
-      Tcl_Obj** ll = (Tcl_Obj**)calloc(cnt, sizeof(Tcl_Obj*));
+      Tcl_Obj** ll = new Tcl_Obj*[cnt];
       for (int ii=0; ii<cnt; ii++)
 	ll[ii] = Tcl_NewDoubleObj(valuesPtr->values[ii]);
       Tcl_Obj* listObjPtr = Tcl_NewListObj(cnt, ll);
-      free(ll);
+      delete [] ll;
 
       return listObjPtr;
     }
@@ -155,13 +152,12 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
   }
 }
 
-static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin,
-			   char *ptr)
+static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   ElemValues* valuesPtr = *(ElemValues**)ptr;
   if (valuesPtr) {
     FreeDataValues(valuesPtr);
-    free(valuesPtr);
+    delete valuesPtr;
   }
 }
 
@@ -188,7 +184,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
 
   if (nValues & 1) {
     Tcl_AppendResult(interp, "odd number of data points", NULL);
-    free(values);
+    delete [] values;
     return TCL_ERROR;
   }
 
@@ -196,24 +192,24 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   size_t newSize = nValues * sizeof(double);
   if (coordsPtr->x) {
     FreeDataValues(coordsPtr->x);
-    free(coordsPtr->x);
+    delete coordsPtr->x;
     coordsPtr->x = NULL;
   }
   if (coordsPtr->y) {
     FreeDataValues(coordsPtr->y);
-    free(coordsPtr->y);
+    delete coordsPtr->y;
     coordsPtr->y = NULL;
   }
 
   if (newSize == 0)
     return TCL_OK;
 
-  coordsPtr->x = (ElemValues*)calloc(1,sizeof(ElemValues));
-  coordsPtr->y = (ElemValues*)calloc(1,sizeof(ElemValues));
+  coordsPtr->x = new ElemValues();
+  coordsPtr->y = new ElemValues();
 
-  coordsPtr->x->values = (double*)malloc(newSize);
+  coordsPtr->x->values = new double[newSize];
   coordsPtr->x->nValues = nValues;
-  coordsPtr->y->values = (double*)malloc(newSize);
+  coordsPtr->y->values = new double[newSize];
   coordsPtr->y->nValues = nValues;
 
   int ii=0;
@@ -221,7 +217,7 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
     coordsPtr->x->values[ii] = *p++;
     coordsPtr->y->values[ii] = *p++;
   }
-  free(values);
+  delete [] values;
 
   FindRange(coordsPtr->x);
   FindRange(coordsPtr->y);
@@ -240,13 +236,13 @@ static Tcl_Obj* PairsGetProc(ClientData clientData, Tk_Window tkwin,
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
   int cnt = MIN(coordsPtr->x->nValues, coordsPtr->y->nValues);
-  Tcl_Obj** ll = (Tcl_Obj**)calloc(2*cnt,sizeof(Tcl_Obj*));
+  Tcl_Obj** ll = new Tcl_Obj*[2*cnt];
   for (int ii=0, jj=0; ii<cnt; ii++) {
     ll[jj++] = Tcl_NewDoubleObj(coordsPtr->x->values[ii]);
     ll[jj++] = Tcl_NewDoubleObj(coordsPtr->y->values[ii]);
   }
   Tcl_Obj* listObjPtr = Tcl_NewListObj(2*cnt, ll);
-  free(ll);
+  delete [] ll;
 
   return listObjPtr;
 };
@@ -398,7 +394,7 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr,
     return TCL_ERROR;
 
   if (valuesPtr->values)
-    free(valuesPtr->values);
+    delete [] valuesPtr->values;
   valuesPtr->values = NULL;
   valuesPtr->nValues = 0;
   valuesPtr->min =0;
@@ -408,7 +404,7 @@ static int FetchVectorValues(Tcl_Interp* interp, ElemValues* valuesPtr,
   if (!ss)
     return TCL_OK;
 
-  double* array = (double*)malloc(ss*sizeof(double));
+  double* array = new double[ss];
   if (!array) {
     Tcl_AppendResult(interp, "can't allocate new vector", NULL);
     return TCL_ERROR;
@@ -452,7 +448,7 @@ static int GetVectorData(Tcl_Interp* interp, ElemValues* valuesPtr,
   if (!valuesPtr)
     return TCL_ERROR;
 
-  VectorDataSource *srcPtr = &valuesPtr->vectorSource;
+  VectorDataSource* srcPtr = &valuesPtr->vectorSource;
   srcPtr->vector = Blt_AllocVectorId(interp, vecName);
 
   Blt_Vector *vecPtr;
@@ -482,14 +478,14 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
     double *p;
     int i;
 
-    double *array = (double*)malloc(sizeof(double) * objc);
+    double* array = new double[objc];
     if (!array) {
       Tcl_AppendResult(interp, "can't allocate new vector", NULL);
       return TCL_ERROR;
     }
     for (p = array, i = 0; i < objc; i++, p++) {
       if (Tcl_GetDoubleFromObj(interp, objv[i], p) != TCL_OK) {
-	free(array);
+	delete [] array;
 	return TCL_ERROR;
       }
     }
@@ -505,15 +501,15 @@ static void FreeDataValues(ElemValues* valuesPtr)
     return;
 
   switch (valuesPtr->type) {
-  case ELEM_SOURCE_VECTOR: 
+  case ElemValues::SOURCE_VECTOR: 
     FreeVectorSource(valuesPtr);
     break;
-  case ELEM_SOURCE_VALUES:
+  case ElemValues::SOURCE_VALUES:
     break;
   }
   if (valuesPtr->values)
-    free(valuesPtr->values);
-  valuesPtr->type = ELEM_SOURCE_VALUES;
+    delete [] valuesPtr->values;
+  valuesPtr->type = ElemValues::SOURCE_VALUES;
   valuesPtr->values = NULL;
   valuesPtr->nValues = 0;
   valuesPtr->min =0;
