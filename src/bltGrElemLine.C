@@ -2036,9 +2036,9 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
   delete [] rectangles;
 }
 
-void LineElement::drawSCross(Display *display, Drawable drawable, 
+void LineElement::drawSCross(Display* display, Drawable drawable, 
 			     LinePen* penPtr, 
-			     int nSymbolPts, Point2d *symbolPts, int r2)
+			     int nSymbolPts, Point2d* symbolPts, int r2)
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -2056,7 +2056,7 @@ void LineElement::drawSCross(Display *display, Drawable drawable,
 
   int count = 0;
   XSegment* segments = new XSegment[nSymbolPts*2];
-  XSegment *sp;
+  XSegment* sp;
   Point2d *pp, *endp;
   for (sp=segments, pp=symbolPts, endp=pp+nSymbolPts; pp<endp; pp++) {
     if (DRAW_SYMBOL()) {
@@ -2067,6 +2067,7 @@ void LineElement::drawSCross(Display *display, Drawable drawable,
       sp->x2 = pattern[1].x + rndx;
       sp->y2 = pattern[1].y + rndy;
       sp++;
+      count++;
       sp->x1 = pattern[2].x + rndx;
       sp->y1 = pattern[2].y + rndy;
       sp->x2 = pattern[3].x + rndx;
