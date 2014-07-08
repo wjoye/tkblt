@@ -200,6 +200,7 @@ BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
   ops->stylePalette = Blt_Chain_Create();
+
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
   ops->label = Tcl_Alloc(strlen(name)+1);
