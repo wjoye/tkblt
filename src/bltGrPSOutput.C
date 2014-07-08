@@ -31,10 +31,8 @@
 #include <math.h>
 #include <stdarg.h>
 
-extern "C" {
 #include <tkPort.h>
 #include <tk3d.h>
-};
 
 #include "bltGraph.h"
 #include "bltGrPostscript.h"

@@ -31,8 +31,8 @@
 
 #include "bltOp.h"
 
-static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, 
-			  const char *string, int length)
+static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, const char *string,
+			  int length)
 {
   int low = 0;
   int high = nSpecs - 1;
@@ -63,8 +63,8 @@ static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs,
   return -1;				/* Can't find operation */
 }
 
-static int LinearOpSearch(Blt_OpSpec *specs, int nSpecs, 
-			  const char *string, int length)
+static int LinearOpSearch(Blt_OpSpec *specs, int nSpecs, const char *string,
+			  int length)
 {
   char c = string[0];
   int nMatches = 0;

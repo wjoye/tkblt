@@ -48,6 +48,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #include "bltVecInt.h"
@@ -112,6 +113,14 @@ static Blt_SwitchSpec createSwitches[] =
 
 typedef int (VectorCmdProc)(Vector* vecObjPtr, Tcl_Interp* interp, 
 			    int objc, Tcl_Obj* const objv[]);
+
+static char stringRep[200];
+
+const char *Blt_Itoa(int value)
+{
+  snprintf(stringRep, 200, "%d", value);
+  return stringRep;
+}
 
 static char* Blt_Strdup(const char *string)
 {
@@ -1893,3 +1902,4 @@ int Blt_SimplifyLine(Point2d *inputPts, int low, int high, double tolerance,
   free(stack);
   return count;
 }
+

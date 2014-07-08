@@ -114,7 +114,6 @@ TEA_ADD_SOURCES([
 	bltParse.C
 	bltOp.C
 	bltSwitch.C
-	bltUtil.C
 	bltVecCmd.C
 	bltVecMath.C
 	bltVector.C

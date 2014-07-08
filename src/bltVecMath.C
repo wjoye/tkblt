@@ -163,24 +163,7 @@ static int precTable[] =
 static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr, int prec, 
 		     Value *valuePtr);
 
-/*
- *---------------------------------------------------------------------------
- *
- * Sort --
- *
- *	A vector math function.  Sorts the values of the given 
- *	vector.
- *
- * Results:
- *	Always TCL_OK.
- *
- * Side Effects:
- *	The vector is sorted.
- *
- *---------------------------------------------------------------------------
- */
-static int
-Sort(Vector *vPtr)
+static int Sort(Vector *vPtr)
 {
   size_t *map;
   double *values;
@@ -199,33 +182,25 @@ Sort(Vector *vPtr)
   return TCL_OK;
 }
 
-static double
-Length(Blt_Vector *vectorPtr)
+static double Length(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-
   return (double)(vPtr->last - vPtr->first + 1);
 }
 
-double
-Blt_VecMax(Blt_Vector *vectorPtr)
+double Blt_VecMax(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-
   return Blt_Vec_Max(vPtr);
 }
 
-double
-Blt_VecMin(Blt_Vector *vectorPtr)
+double Blt_VecMin(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-
   return Blt_Vec_Min(vPtr);
 }
 
-
-static double
-Product(Blt_Vector *vectorPtr)
+static double Product(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double prod;
@@ -239,8 +214,7 @@ Product(Blt_Vector *vectorPtr)
   return prod;
 }
 
-static double
-Sum(Blt_Vector *vectorPtr)
+static double Sum(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double sum, c;
@@ -266,8 +240,7 @@ Sum(Blt_Vector *vectorPtr)
   return sum;
 }
 
-static double
-Mean(Blt_Vector *vectorPtr)
+static double Mean(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double sum;
@@ -278,11 +251,8 @@ Mean(Blt_Vector *vectorPtr)
   return sum / (double)n;
 }
 
-/*
- *  var = 1/N Sum( (x[i] - mean)^2 )
- */
-static double
-Variance(Blt_Vector *vectorPtr)
+// var = 1/N Sum( (x[i] - mean)^2 )
+static double Variance(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double var, mean;
@@ -307,11 +277,8 @@ Variance(Blt_Vector *vectorPtr)
   return var;
 }
 
-/*
- *  skew = Sum( (x[i] - mean)^3 ) / (var^3/2)
- */
-static double
-Skew(Blt_Vector *vectorPtr)
+// skew = Sum( (x[i] - mean)^3 ) / (var^3/2)
+static double Skew(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double diff, var, skew, mean, diffsq;
@@ -338,8 +305,7 @@ Skew(Blt_Vector *vectorPtr)
   return skew;
 }
 
-static double
-StdDeviation(Blt_Vector *vectorPtr)
+static double StdDeviation(Blt_Vector *vectorPtr)
 {
   double var;
 
@@ -350,9 +316,7 @@ StdDeviation(Blt_Vector *vectorPtr)
   return 0.0;
 }
 
-
-static double
-AvgDeviation(Blt_Vector *vectorPtr)
+static double AvgDeviation(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double diff, avg, mean;
@@ -375,9 +339,7 @@ AvgDeviation(Blt_Vector *vectorPtr)
   return avg;
 }
 
-
-static double
-Kurtosis(Blt_Vector *vectorPtr)
+static double Kurtosis(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double diff, diffsq, kurt, var, mean;
@@ -406,9 +368,7 @@ Kurtosis(Blt_Vector *vectorPtr)
   return kurt - 3.0;		/* Fisher Kurtosis */
 }
 
-
-static double
-Median(Blt_Vector *vectorPtr)
+static double Median(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   size_t *map;
@@ -436,8 +396,7 @@ Median(Blt_Vector *vectorPtr)
   return q2;
 }
 
-static double
-Q1(Blt_Vector *vectorPtr)
+static double Q1(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double q1;
@@ -472,8 +431,7 @@ Q1(Blt_Vector *vectorPtr)
   return q1;
 }
 
-static double
-Q3(Blt_Vector *vectorPtr)
+static double Q3(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
   double q3;
@@ -509,9 +467,7 @@ Q3(Blt_Vector *vectorPtr)
   return q3;
 }
 
-
-static int
-Norm(Blt_Vector *vector)
+static int Norm(Blt_Vector *vector)
 {
   Vector *vPtr = (Vector *)vector;
   double norm, range, min, max;
@@ -527,49 +483,39 @@ Norm(Blt_Vector *vector)
   return TCL_OK;
 }
 
-
-static double
-Nonzeros(Blt_Vector *vector)
+static double Nonzeros(Blt_Vector *vector)
 {
   Vector *vPtr = (Vector *)vector;
   int count;
   double *vp, *vend;
 
   count = 0;
-  for(vp = vPtr->valueArr + vPtr->first,
-	vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    if (*vp == 0.0) {
+  for(vp = vPtr->valueArr + vPtr->first, vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
+    if (*vp == 0.0)
       count++;
-    }
   }
   return (double) count;
 }
 
-static double
-Fabs(double value)
+static double Fabs(double value)
 {
-  if (value < 0.0) {
+  if (value < 0.0)
     return -value;
-  }
   return value;
 }
 
-static double
-Round(double value)
+static double Round(double value)
 {
-  if (value < 0.0) {
+  if (value < 0.0)
     return ceil(value - 0.5);
-  } else {
+  else
     return floor(value + 0.5);
-  }
 }
 
-static double
-Fmod(double x, double y)
+static double Fmod(double x, double y)
 {
-  if (y == 0.0) {
+  if (y == 0.0)
     return 0.0;
-  }
   return x - (floor(x / y) * y);
 }
 
@@ -590,33 +536,31 @@ Fmod(double x, double y)
  *
  *---------------------------------------------------------------------------
  */
-static void
-MathError(
-	  Tcl_Interp* interp,		/* Where to store error message. */
-	  double value)		/* Value returned after error; used to
-				 * distinguish underflows from
-				 * overflows. */
+static void MathError(Tcl_Interp* interp, double value)
 {
   if ((errno == EDOM) || (value != value)) {
     Tcl_AppendResult(interp, "domain error: argument not in valid range",
 		     (char *)NULL);
     Tcl_SetErrorCode(interp, "ARITH", "DOMAIN", 
 		     Tcl_GetStringResult(interp), (char *)NULL);
-  } else if ((errno == ERANGE) || isinf(value)) {
+  }
+  else if ((errno == ERANGE) || isinf(value)) {
     if (value == 0.0) {
       Tcl_AppendResult(interp, 
 		       "floating-point value too small to represent",
 		       (char *)NULL);
       Tcl_SetErrorCode(interp, "ARITH", "UNDERFLOW", 
 		       Tcl_GetStringResult(interp), (char *)NULL);
-    } else {
+    }
+    else {
       Tcl_AppendResult(interp, 
 		       "floating-point value too large to represent",
 		       (char *)NULL);
       Tcl_SetErrorCode(interp, "ARITH", "OVERFLOW", 
 		       Tcl_GetStringResult(interp), (char *)NULL);
     }
-  } else {
+  }
+  else {
     Tcl_AppendResult(interp, "unknown floating-point error, ",
 		     "errno = ", Blt_Itoa(errno), (char *)NULL);
     Tcl_SetErrorCode(interp, "ARITH", "UNKNOWN", 
@@ -624,34 +568,7 @@ MathError(
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ParseString --
- *
- *	Given a string (such as one coming from command or variable
- *	substitution), make a Value based on the string.  The value
- *	will be a floating-point or integer, if possible, or else it
- *	will just be a copy of the string.
- *
- * Results:
- *	TCL_OK is returned under normal circumstances, and TCL_ERROR
- *	is returned if a floating-point overflow or underflow occurred
- *	while reading in a number.  The value at *valuePtr is modified
- *	to hold a number, if possible.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-
-static int
-ParseString(
-	    Tcl_Interp* interp,		/* Where to store error message. */
-	    const char *string,		/* String to turn into value. */
-	    Value *valuePtr)		/* Where to store value information.
-					 * Caller must have initialized pv field. */
+static int ParseString(Tcl_Interp* interp, const char *string, Value *valuePtr)
 {
   const char *endPtr;
   double value;
@@ -699,43 +616,8 @@ ParseString(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * ParseMathFunction --
- *
- *	This procedure is invoked to parse a math function from an
- *	expression string, carry out the function, and return the
- *	value computed.
- *
- * Results:
- *	TCL_OK is returned if all went well and the function's value
- *	was computed successfully.  If the name doesn't match any
- *	known math function, returns TCL_RETURN. And if a format error
- *	was found, TCL_ERROR is returned and an error message is left
- *	in interp->result.
- *
- *	After a successful return piPtr will be updated to point to
- *	the character just after the function call, the token is set
- *	to VALUE, and the value is stored in valuePtr.
- *
- * Side effects:
- *	Embedded commands could have arbitrary side-effects.
- *
- *---------------------------------------------------------------------------
- */
-static int
-ParseMathFunction(
-		  Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
-		  const char *start,		/* Start of string to parse */
-		  ParseInfo *piPtr,		/* Describes the state of the parse.
-						 * piPtr->nextPtr must point to the
-						 * first character of the function's
-						 * name. */
-		  Value *valuePtr)		/* Where to store value, if that is
-						 * what's parsed from string.  Caller
-						 * must have initialized pv field
-						 * correctly. */
+static int ParseMathFunction(Tcl_Interp* interp, const char *start,
+			     ParseInfo *piPtr, Value *valuePtr)
 {
   Tcl_HashEntry *hPtr;
   MathFunction *mathPtr;	/* Info about math function. */
@@ -786,37 +668,7 @@ ParseMathFunction(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NextToken --
- *
- *	Lexical analyzer for expression parser:  parses a single value,
- *	operator, or other syntactic element from an expression string.
- *
- * Results:
- *	TCL_OK is returned unless an error occurred while doing lexical
- *	analysis or executing an embedded command.  In that case a
- *	standard TCL error is returned, using interp->result to hold
- *	an error message.  In the event of a successful return, the token
- *	and field in piPtr is updated to refer to the next symbol in
- *	the expression string, and the expr field is advanced past that
- *	token;  if the token is a value, then the value is stored at
- *	valuePtr.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static int
-NextToken(
-	  Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
-	  ParseInfo *piPtr,		/* Describes the state of the parse. */
-	  Value *valuePtr)		/* Where to store value, if that is
-					 * what's parsed from string.  Caller
-					 * must have initialized pv field
-					 * correctly. */
+static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
 {
   const char *p;
   const char *endPtr;
@@ -1035,37 +887,8 @@ NextToken(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * NextValue --
- *
- *	Parse a "value" from the remainder of the expression in piPtr.
- *
- * Results:
- *	Normally TCL_OK is returned.  The value of the expression is
- *	returned in *valuePtr.  If an error occurred, then interp->result
- *	contains an error message and TCL_ERROR is returned.
- *	InfoPtr->token will be left pointing to the token AFTER the
- *	expression, and piPtr->nextPtr will point to the character just
- *	after the terminating token.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static int
-NextValue(
-	  Tcl_Interp* interp,		/* Interpreter to use for error reporting. */
-	  ParseInfo *piPtr,	/* Describes the state of the parse
-				 * just before the value (i.e. NextToken will
-				 * be called to get first token of value). */
-	  int prec,			/* Treat any un-parenthesized operator
-					 * with precedence <= this as the end
-					 * of the expression. */
-	  Value *valuePtr)		/* Where to store the value of the expression.
-					 * Caller must have initialized pv field. */
+static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr,
+		     int prec, Value *valuePtr)
 {
   Value value2;		/* Second operand for current operator.  */
   int oper;		/* Current operator (either unary or binary). */
@@ -1579,35 +1402,8 @@ NextValue(
   return TCL_ERROR;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * EvaluateExpression --
- *
- *	This procedure provides top-level functionality shared by
- *	procedures like Tcl_ExprInt, Tcl_ExprDouble, etc.
- *
- * Results:
- *	The result is a standard TCL return value.  If an error
- *	occurs then an error message is left in interp->result.
- *	The value of the expression is returned in *valuePtr, in
- *	whatever form it ends up in (could be string or integer
- *	or double).  Caller may need to convert result.  Caller
- *	is also responsible for freeing string memory in *valuePtr,
- *	if any was allocated.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static int
-EvaluateExpression(
-		   Tcl_Interp* interp,		/* Context in which to evaluate the
-						 * expression. */
-		   char *string,		/* Expression to evaluate. */
-		   Value *valuePtr)		/* Where to store result.  Should
-						 * not be initialized by caller. */
+static int EvaluateExpression(Tcl_Interp* interp, char *string,
+			      Value *valuePtr)
 {
   ParseInfo info;
   int result;
@@ -1644,31 +1440,8 @@ EvaluateExpression(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Math Functions --
- *
- *	This page contains the procedures that implement all of the
- *	built-in math functions for expressions.
- *
- * Results:
- *	Each procedure returns TCL_OK if it succeeds and places result
- *	information at *resultPtr.  If it fails it returns TCL_ERROR
- *	and leaves an error message in interp->result.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static int
-ComponentFunc(
-	      ClientData clientData,	/* Contains address of procedure that
-					 * takes one double argument and
-					 * returns a double result. */
-	      Tcl_Interp* interp,
-	      Vector *vPtr)
+static int ComponentFunc(ClientData clientData, Tcl_Interp* interp,
+			 Vector *vPtr)
 {
   ComponentProc *procPtr = (ComponentProc *) clientData;
   double *vp, *vend;
@@ -1692,8 +1465,7 @@ ComponentFunc(
   return TCL_OK;
 }
 
-static int
-ScalarFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
+static int ScalarFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
 {
   double value;
   ScalarProc *procPtr = (ScalarProc *) clientData;
@@ -1711,9 +1483,7 @@ ScalarFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
   return TCL_OK;
 }
 
-/*ARGSUSED*/
-static int
-VectorFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
+static int VectorFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
 {
   VectorProc *procPtr = (VectorProc *) clientData;
 
@@ -1761,8 +1531,7 @@ static MathFunction mathFunctions[] =
     {(char *)NULL,},
   };
 
-void
-Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
+void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
 {
   MathFunction *mathPtr;
 
@@ -1775,8 +1544,7 @@ Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
   }
 }
 
-void
-Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
+void Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -1789,30 +1557,20 @@ Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
   }
 }
 
-
-static void
-InstallIndexProc(
-		 Tcl_HashTable *tablePtr,
-		 const char *string,
-		 Blt_VectorIndexProc *procPtr) /* Pointer to function to be called
-						* when the vector finds the named index.
-						* If NULL, this indicates to remove
-						* the index from the table.
-						*/
+static void InstallIndexProc(Tcl_HashTable *tablePtr, const char *string,
+			     Blt_VectorIndexProc *procPtr)
 {
   Tcl_HashEntry *hPtr;
   int dummy;
 
   hPtr = Tcl_CreateHashEntry(tablePtr, string, &dummy);
-  if (procPtr == NULL) {
+  if (procPtr == NULL)
     Tcl_DeleteHashEntry(hPtr);
-  } else {
+  else
     Tcl_SetHashValue(hPtr, (ClientData)procPtr);
-  }
 }
 
-void
-Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
+void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
 {
   InstallIndexProc(tablePtr, "min",  Blt_VecMin);
   InstallIndexProc(tablePtr, "max",  Blt_VecMax);
@@ -1821,33 +1579,7 @@ Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
   InstallIndexProc(tablePtr, "prod", Product);
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ExprVector --
- *
- *	Evaluates an vector expression and returns its value(s).
- *
- * Results:
- *	Each of the procedures below returns a standard TCL result.
- *	If an error occurs then an error message is left in
- *	interp->result.  Otherwise the value of the expression,
- *	in the appropriate form, is stored at *resultPtr.  If
- *	the expression had a result that was incompatible with the
- *	desired form then an error is returned.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_ExprVector(
-	       Tcl_Interp* interp,		/* Context in which to evaluate the
-						 * expression. */
-	       char *string,		/* Expression to evaluate. */
-	       Blt_Vector *vector)		/* Where to store result. */
+int Blt_ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
   Vector *vPtr = (Vector *)vector;

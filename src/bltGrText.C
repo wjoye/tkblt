@@ -29,11 +29,11 @@
 
 #include <math.h>
 
-extern "C" {
+//extern "C" {
 #include <tk.h>
 #include <tkPort.h>
 #include <tkInt.h>
-};
+//};
 
 #include "bltGrText.h"
 #include "bltGraph.h"

@@ -184,81 +184,15 @@ static unsigned char tclTypeTable[] =
 #define CHAR_TYPE(src,last) \
 	(((src)==(last))?TCL_COMMAND_END:(tclTypeTable+128)[(int)*(src)])
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ParseNestedCmd --
- *
- *	This procedure parses a nested TCL command between
- *	brackets, returning the result of the command.
- *
- * Results:
- *	The return value is a standard TCL result, which is
- *	TCL_OK unless there was an error while executing the
- *	nested command.  If an error occurs then interp->result
- *	contains a standard error message.  *TermPtr is filled
- *	in with the address of the character just after the
- *	last one processed;  this is usually the character just
- *	after the matching close-bracket, or the null character
- *	at the end of the string if the close-bracket was missing
- *	(a missing close bracket is an error).  The result returned
- *	by the command is stored in standard fashion in *parsePtr,
- *	null-terminated, with parsePtr->next pointing to the null
- *	character.
- *
- * Side effects:
- *	The storage space at *parsePtr may be expanded.
- *
- *---------------------------------------------------------------------------
- */
+int Blt_ParseNestedCmd(Tcl_Interp* interp, const char *string,
+		       int flags, const char **termPtr, ParseValue *parsePtr)
 
-int Blt_ParseNestedCmd(
-    Tcl_Interp* interp,		/* Interpreter to use for nested command
-				 * evaluations and error messages. */
-    const char *string,		/* Character just after opening bracket. */
-    int flags,			/* Flags to pass to nested Tcl_Eval. */
-    const char **termPtr,	/* Store address of terminating character
-				 * here. */
-    ParseValue *parsePtr)	/* Information about where to place
-				 * result of command. */
 {
   return TCL_ERROR;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ParseBraces --
- *
- *	This procedure scans the information between matching
- *	curly braces.
- *
- * Results:
- *	The return value is a standard TCL result, which is
- *	TCL_OK unless there was an error while parsing string.
- *	If an error occurs then interp->result contains a
- *	standard error message.  *TermPtr is filled
- *	in with the address of the character just after the
- *	last one successfully processed;  this is usually the
- *	character just after the matching close-brace.  The
- *	information between curly braces is stored in standard
- *	fashion in *parsePtr, null-terminated with parsePtr->next
- *	pointing to the terminating null character.
- *
- * Side effects:
- *	The storage space at *parsePtr may be expanded.
- *
- *---------------------------------------------------------------------------
- */
-
-int Blt_ParseBraces(
-    Tcl_Interp* interp,		/* Interpreter to use for nested command
-				 * evaluations and error messages. */
-    const char *string,		/* Character just after opening bracket. */
-    const char **termPtr,	/* Store address of terminating character
-				 * here. */
-    ParseValue *parsePtr)	/* Information about where to place
-				 * result of command. */
+int Blt_ParseBraces(Tcl_Interp* interp, const char *string,
+		    const char **termPtr, ParseValue *parsePtr)
 {
     int level;
     const char *src;
@@ -339,34 +273,8 @@ int Blt_ParseBraces(
     return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ExpandParseValue --
- *
- *	This procedure is commonly used as the value of the
- *	expandProc in a ParseValue.  It uses malloc to allocate
- *	more space for the result of a parse.
- *
- * Results:
- *	The buffer space in *parsePtr is reallocated to something
- *	larger, and if parsePtr->clientData is non-zero the old
- *	buffer is freed.  Information is copied from the old
- *	buffer to the new one.
- *
- * Side effects:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-void Blt_ExpandParseValue(
-    ParseValue *parsePtr,	/* Information about buffer that
-				 * must be expanded.  If the clientData
-				 * in the structure is non-zero, it
-				 * means that the current buffer is
-				 * dynamically allocated. */
-    int needed)			/* Minimum amount of additional space
-				 * to allocate. */
+void Blt_ExpandParseValue(ParseValue *parsePtr, int needed)
+
 {
     /*
      * Either double the size of the buffer or add enough new space
@@ -395,48 +303,8 @@ void Blt_ExpandParseValue(
     parsePtr->clientData = (ClientData)1;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ParseQuotes --
- *
- *	This procedure parses a double-quoted string such as a
- *	quoted TCL command argument or a quoted value in a Tcl
- *	expression.  This procedure is also used to parse array
- *	element names within parentheses, or anything else that
- *	needs all the substitutions that happen in quotes.
- *
- * Results:
- *	The return value is a standard TCL result, which is
- *	TCL_OK unless there was an error while parsing the
- *	quoted string.  If an error occurs then interp->result
- *	contains a standard error message.  *TermPtr is filled
- *	in with the address of the character just after the
- *	last one successfully processed;  this is usually the
- *	character just after the matching close-quote.  The
- *	fully-substituted contents of the quotes are stored in
- *	standard fashion in *parsePtr, null-terminated with
- *	parsePtr->next pointing to the terminating null character.
- *
- * Side effects:
- *	The buffer space in parsePtr may be enlarged by calling its
- *	expandProc.
- *
- *---------------------------------------------------------------------------
- */
-int Blt_ParseQuotes(
-    Tcl_Interp* interp,		/* Interpreter to use for nested command
-				 * evaluations and error messages. */
-    const char *string,		/* Character just after opening double-
-				 * quote. */
-    int termChar,		/* Character that terminates "quoted" string
-				 * (usually double-quote, but sometimes
-				 * right-paren or something else). */
-    int flags,			/* Flags to pass to nested Tcl_Eval calls. */
-    const char **termPtr,	/* Store address of terminating character
-				 * here. */
-    ParseValue *parsePtr)	/* Information about where to place
-				 * fully-substituted result of parse. */
+int Blt_ParseQuotes(Tcl_Interp* interp, const char *string, int termChar,
+		    int flags, const char **termPtr, ParseValue *parsePtr)
 {
     const char *src;
     char *dest, c;
