@@ -30,21 +30,26 @@
 #ifndef _BLT_PARSE_H
 #define _BLT_PARSE_H
 
-typedef struct _ParseValue ParseValue;
-struct _ParseValue {
+namespace Blt {
+
+  typedef struct _ParseValue ParseValue;
+  struct _ParseValue {
     char *buffer;
     char *next;
     char *end;
     void (*expandProc)(ParseValue *pvPtr, int needed);
     ClientData clientData;
-};
+  };
 
-extern int Blt_ParseBraces(Tcl_Interp* interp, const char *string, 
-	const char **termPtr, ParseValue *pvPtr);
-extern int Blt_ParseNestedCmd(Tcl_Interp* interp, const char *string, 
-	int flags, const char **termPtr, ParseValue *pvPtr);
-extern int Blt_ParseQuotes(Tcl_Interp* interp, const char *string, 
-	int termChar, int flags, const char **termPtr, ParseValue * pvPtr);
-extern void Blt_ExpandParseValue(ParseValue *pvPtr, int needed);
+  extern int ParseBraces(Tcl_Interp* interp, const char *string, 
+			     const char **termPtr, ParseValue *pvPtr);
+  extern int ParseNestedCmd(Tcl_Interp* interp, const char *string, 
+				int flags, const char **termPtr,
+				ParseValue *pvPtr);
+  extern int ParseQuotes(Tcl_Interp* interp, const char *string, 
+			     int termChar, int flags, const char **termPtr,
+			     ParseValue * pvPtr);
+  extern void ExpandParseValue(ParseValue *pvPtr, int needed);
+}
 
 #endif 

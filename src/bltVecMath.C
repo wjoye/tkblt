@@ -40,6 +40,8 @@
 #include "bltNsUtil.h"
 #include "bltParse.h"
 
+using namespace Blt;
+
 /*
  * Three types of math functions:
  *
@@ -169,7 +171,7 @@ static int Sort(Vector *vPtr)
   double *values;
   int i;
 
-  map = Blt_Vec_SortMap(&vPtr, 1);
+  map = Vec_SortMap(&vPtr, 1);
   values = (double*)malloc(sizeof(double) * vPtr->length);
   for(i = vPtr->first; i <= vPtr->last; i++) {
     values[i] = vPtr->valueArr[map[i]];
@@ -191,13 +193,13 @@ static double Length(Blt_Vector *vectorPtr)
 double Blt_VecMax(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  return Blt_Vec_Max(vPtr);
+  return Vec_Max(vPtr);
 }
 
 double Blt_VecMin(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  return Blt_Vec_Min(vPtr);
+  return Vec_Min(vPtr);
 }
 
 static double Product(Blt_Vector *vectorPtr)
@@ -378,7 +380,7 @@ static double Median(Blt_Vector *vectorPtr)
   if (vPtr->length == 0) {
     return -DBL_MAX;
   }
-  map = Blt_Vec_SortMap(&vPtr, 1);
+  map = Vec_SortMap(&vPtr, 1);
   mid = (vPtr->length - 1) / 2;
 
   /*  
@@ -405,7 +407,7 @@ static double Q1(Blt_Vector *vectorPtr)
   if (vPtr->length == 0) {
     return -DBL_MAX;
   } 
-  map = Blt_Vec_SortMap(&vPtr, 1);
+  map = Vec_SortMap(&vPtr, 1);
 
   if (vPtr->length < 4) {
     q1 = vPtr->valueArr[map[0]];
@@ -441,7 +443,7 @@ static double Q3(Blt_Vector *vectorPtr)
     return -DBL_MAX;
   } 
 
-  map = Blt_Vec_SortMap(&vPtr, 1);
+  map = Vec_SortMap(&vPtr, 1);
 
   if (vPtr->length < 4) {
     q3 = vPtr->valueArr[map[vPtr->length - 1]];
@@ -473,8 +475,8 @@ static int Norm(Blt_Vector *vector)
   double norm, range, min, max;
   int i;
 
-  min = Blt_Vec_Min(vPtr);
-  max = Blt_Vec_Max(vPtr);
+  min = Vec_Min(vPtr);
+  max = Vec_Max(vPtr);
   range = max - min;
   for (i = 0; i < vPtr->length; i++) {
     norm = (vPtr->valueArr[i] - min) / range;
@@ -562,7 +564,7 @@ static void MathError(Tcl_Interp* interp, double value)
   }
   else {
     Tcl_AppendResult(interp, "unknown floating-point error, ",
-		     "errno = ", Blt_Itoa(errno), (char *)NULL);
+		     "errno = ", Itoa(errno), (char *)NULL);
     Tcl_SetErrorCode(interp, "ARITH", "UNKNOWN", 
 		     Tcl_GetStringResult(interp), (char *)NULL);
   }
@@ -589,7 +591,7 @@ static int ParseString(Tcl_Interp* interp, const char *string, Value *valuePtr)
       return TCL_ERROR;
     }
     /* Numbers are stored as single element vectors. */
-    if (Blt_Vec_ChangeLength(interp, valuePtr->vPtr, 1) != TCL_OK) {
+    if (Vec_ChangeLength(interp, valuePtr->vPtr, 1) != TCL_OK) {
       return TCL_ERROR;
     }
     valuePtr->vPtr->valueArr[0] = value;
@@ -600,7 +602,7 @@ static int ParseString(Tcl_Interp* interp, const char *string, Value *valuePtr)
     while (isspace((unsigned char)(*string))) {
       string++;		/* Skip spaces leading the vector name. */    
     }
-    vPtr = Blt_Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 
+    vPtr = Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 
 				string, &endPtr, NS_SEARCH_BOTH);
     if (vPtr == NULL) {
       return TCL_ERROR;
@@ -611,7 +613,7 @@ static int ParseString(Tcl_Interp* interp, const char *string, Value *valuePtr)
       return TCL_ERROR;
     }
     /* Copy the designated vector to our temporary. */
-    Blt_Vec_Duplicate(valuePtr->vPtr, vPtr);
+    Vec_Duplicate(valuePtr->vPtr, vPtr);
   }
   return TCL_OK;
 }
@@ -707,7 +709,7 @@ static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
       /*
        * Save the single floating-point value as an 1-component vector.
        */
-      if (Blt_Vec_ChangeLength(interp, valuePtr->vPtr, 1) != TCL_OK) {
+      if (Vec_ChangeLength(interp, valuePtr->vPtr, 1) != TCL_OK) {
 	return TCL_ERROR;
       }
       valuePtr->vPtr->valueArr[0] = value;
@@ -729,7 +731,7 @@ static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
 
   case '[':
     piPtr->token = VALUE;
-    result = Blt_ParseNestedCmd(interp, p + 1, 0, &endPtr, &valuePtr->pv);
+    result = ParseNestedCmd(interp, p + 1, 0, &endPtr, &valuePtr->pv);
     if (result != TCL_OK) {
       return result;
     }
@@ -740,7 +742,7 @@ static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
 
   case '"':
     piPtr->token = VALUE;
-    result = Blt_ParseQuotes(interp, p + 1, '"', 0, &endPtr, &valuePtr->pv);
+    result = ParseQuotes(interp, p + 1, '"', 0, &endPtr, &valuePtr->pv);
     if (result != TCL_OK) {
       return result;
     }
@@ -751,7 +753,7 @@ static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
 
   case '{':
     piPtr->token = VALUE;
-    result = Blt_ParseBraces(interp, p + 1, &endPtr, &valuePtr->pv);
+    result = ParseBraces(interp, p + 1, &endPtr, &valuePtr->pv);
     if (result != TCL_OK) {
       return result;
     }
@@ -875,12 +877,12 @@ static int NextToken(Tcl_Interp* interp, ParseInfo *piPtr, Value *valuePtr)
       while (isspace((unsigned char)(*p))) {
 	p++;		/* Skip spaces leading the vector name. */    
       }
-      vPtr = Blt_Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 
+      vPtr = Vec_ParseElement(interp, valuePtr->vPtr->dataPtr, 
 				  p, &endPtr, NS_SEARCH_BOTH);
       if (vPtr == NULL) {
 	return TCL_ERROR;
       }
-      Blt_Vec_Duplicate(valuePtr->vPtr, vPtr);
+      Vec_Duplicate(valuePtr->vPtr, vPtr);
       piPtr->nextPtr = endPtr;
     }
   }
@@ -905,12 +907,12 @@ static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr,
    */
 
   vPtr = valuePtr->vPtr;
-  v2Ptr = Blt_Vec_New(vPtr->dataPtr);
+  v2Ptr = Vec_New(vPtr->dataPtr);
   gotOp = 0;
   value2.vPtr = v2Ptr;
   value2.pv.buffer = value2.pv.next = value2.staticSpace;
   value2.pv.end = value2.pv.buffer + STATIC_STRING_SPACE - 1;
-  value2.pv.expandProc = Blt_ExpandParseValue;
+  value2.pv.expandProc = ExpandParseValue;
   value2.pv.clientData = NULL;
 
   result = NextToken(interp, piPtr, valuePtr);
@@ -1169,7 +1171,7 @@ static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr,
        * 1st operand is a scalar.
        */
       scalar = vPtr->valueArr[0];
-      Blt_Vec_Duplicate(vPtr, v2Ptr);
+      Vec_Duplicate(vPtr, v2Ptr);
       opnd = vPtr->valueArr;
       switch (oper) {
       case MULT:
@@ -1391,14 +1393,14 @@ static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr,
   if (value2.pv.buffer != value2.staticSpace) {
     free(value2.pv.buffer);
   }
-  Blt_Vec_Free(v2Ptr);
+  Vec_Free(v2Ptr);
   return result;
 
  error:
   if (value2.pv.buffer != value2.staticSpace) {
     free(value2.pv.buffer);
   }
-  Blt_Vec_Free(v2Ptr);
+  Vec_Free(v2Ptr);
   return TCL_ERROR;
 }
 
@@ -1413,7 +1415,7 @@ static int EvaluateExpression(Tcl_Interp* interp, char *string,
   info.expr = info.nextPtr = string;
   valuePtr->pv.buffer = valuePtr->pv.next = valuePtr->staticSpace;
   valuePtr->pv.end = valuePtr->pv.buffer + STATIC_STRING_SPACE - 1;
-  valuePtr->pv.expandProc = Blt_ExpandParseValue;
+  valuePtr->pv.expandProc = ExpandParseValue;
   valuePtr->pv.clientData = NULL;
 
   result = NextValue(interp, &info, -1, valuePtr);
@@ -1476,7 +1478,7 @@ static int ScalarFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
     MathError(interp, value);
     return TCL_ERROR;
   }
-  if (Blt_Vec_ChangeLength(interp, vPtr, 1) != TCL_OK) {
+  if (Vec_ChangeLength(interp, vPtr, 1) != TCL_OK) {
     return TCL_ERROR;
   }
   vPtr->valueArr[0] = value;
@@ -1531,7 +1533,7 @@ static MathFunction mathFunctions[] =
     {(char *)NULL,},
   };
 
-void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
+void Blt::Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
 {
   MathFunction *mathPtr;
 
@@ -1544,7 +1546,7 @@ void Blt_Vec_InstallMathFunctions(Tcl_HashTable *tablePtr)
   }
 }
 
-void Blt_Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
+void Blt::Vec_UninstallMathFunctions(Tcl_HashTable *tablePtr)
 {
   Tcl_HashEntry *hPtr;
   Tcl_HashSearch cursor;
@@ -1570,7 +1572,7 @@ static void InstallIndexProc(Tcl_HashTable *tablePtr, const char *string,
     Tcl_SetHashValue(hPtr, (ClientData)procPtr);
 }
 
-void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
+void Blt::Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
 {
   InstallIndexProc(tablePtr, "min",  Blt_VecMin);
   InstallIndexProc(tablePtr, "max",  Blt_VecMax);
@@ -1579,21 +1581,20 @@ void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr)
   InstallIndexProc(tablePtr, "prod", Product);
 }
 
-int Blt_ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
+int Blt::ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
   Vector *vPtr = (Vector *)vector;
   Value value;
 
-  dataPtr = (vector != NULL) 
-    ? vPtr->dataPtr : Blt_Vec_GetInterpData(interp);
-  value.vPtr = Blt_Vec_New(dataPtr);
+  dataPtr = (vector != NULL) ? vPtr->dataPtr : Vec_GetInterpData(interp);
+  value.vPtr = Vec_New(dataPtr);
   if (EvaluateExpression(interp, string, &value) != TCL_OK) {
-    Blt_Vec_Free(value.vPtr);
+    Vec_Free(value.vPtr);
     return TCL_ERROR;
   }
   if (vPtr != NULL) {
-    Blt_Vec_Duplicate(vPtr, value.vPtr);
+    Vec_Duplicate(vPtr, value.vPtr);
   } else {
     Tcl_Obj *listObjPtr;
     double *vp, *vend;
@@ -1606,6 +1607,6 @@ int Blt_ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
     }
     Tcl_SetObjResult(interp, listObjPtr);
   }
-  Blt_Vec_Free(value.vPtr);
+  Vec_Free(value.vPtr);
   return TCL_OK;
 }

@@ -39,6 +39,8 @@ using namespace std;
 
 #include "bltSwitch.h"
 
+using namespace Blt;
+
 #define COUNT_NNEG		0
 #define COUNT_POS		1
 #define COUNT_ANY		2
@@ -295,7 +297,7 @@ static int DoSwitch(Tcl_Interp* interp, Blt_SwitchSpec *sp,
   return TCL_OK;
 }
 
-int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specs,
+int Blt::ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specs,
 		      int objc, Tcl_Obj* const objv[], void *record,
 		      int flags)
 {
@@ -372,7 +374,7 @@ int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specs,
   return count;
 }
 
-void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *record, int needFlags)
+void Blt::FreeSwitches(Blt_SwitchSpec *specs, void *record, int needFlags)
 {
   for (Blt_SwitchSpec *sp = specs; sp->type != BLT_SWITCH_END; sp++) {
     if ((sp->flags & needFlags) == needFlags) {

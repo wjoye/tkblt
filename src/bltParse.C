@@ -35,6 +35,8 @@ using namespace std;
 
 #include "bltParse.h"
 
+using namespace Blt;
+
 /*
  * A table used to classify input characters to assist in parsing
  * TCL commands.  The table should be indexed with a signed character
@@ -184,14 +186,14 @@ static unsigned char tclTypeTable[] =
 #define CHAR_TYPE(src,last) \
 	(((src)==(last))?TCL_COMMAND_END:(tclTypeTable+128)[(int)*(src)])
 
-int Blt_ParseNestedCmd(Tcl_Interp* interp, const char *string,
+int Blt::ParseNestedCmd(Tcl_Interp* interp, const char *string,
 		       int flags, const char **termPtr, ParseValue *parsePtr)
 
 {
   return TCL_ERROR;
 }
 
-int Blt_ParseBraces(Tcl_Interp* interp, const char *string,
+int Blt::ParseBraces(Tcl_Interp* interp, const char *string,
 		    const char **termPtr, ParseValue *parsePtr)
 {
     int level;
@@ -273,7 +275,7 @@ int Blt_ParseBraces(Tcl_Interp* interp, const char *string,
     return TCL_OK;
 }
 
-void Blt_ExpandParseValue(ParseValue *parsePtr, int needed)
+void Blt::ExpandParseValue(ParseValue *parsePtr, int needed)
 
 {
     /*
@@ -303,7 +305,7 @@ void Blt_ExpandParseValue(ParseValue *parsePtr, int needed)
     parsePtr->clientData = (ClientData)1;
 }
 
-int Blt_ParseQuotes(Tcl_Interp* interp, const char *string, int termChar,
+int Blt::ParseQuotes(Tcl_Interp* interp, const char *string, int termChar,
 		    int flags, const char **termPtr, ParseValue *parsePtr)
 {
     const char *src;
@@ -356,7 +358,7 @@ int Blt_ParseQuotes(Tcl_Interp* interp, const char *string, int termChar,
 	    int result;
 
 	    parsePtr->next = dest;
-	    result = Blt_ParseNestedCmd(interp, src, flags, termPtr, parsePtr);
+	    result = ParseNestedCmd(interp, src, flags, termPtr, parsePtr);
 	    if (result != TCL_OK) {
 		return result;
 	    }

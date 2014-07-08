@@ -38,26 +38,27 @@
 #define NS_SEARCH_GLOBAL	(1<<1)
 #define NS_SEARCH_BOTH		(NS_SEARCH_GLOBAL | NS_SEARCH_CURRENT)
 
-typedef struct {
-    const char *name;
-    Tcl_Namespace *nsPtr;
-} Blt_ObjectName;
-
 #define BLT_NO_DEFAULT_NS	(1<<0)
 #define BLT_NO_ERROR_MSG	(1<<1)
 
-/* 
- * Auxillary procedures 
- */
-extern Tcl_Namespace *Blt_GetVariableNamespace(Tcl_Interp* interp, 
-	const char *varName);
+namespace Blt {
 
-extern Tcl_Namespace *Blt_GetCommandNamespace(Tcl_Command cmdToken);
+  typedef struct {
+    const char *name;
+    Tcl_Namespace *nsPtr;
+  } Blt_ObjectName;
 
-extern int Blt_ParseObjectName(Tcl_Interp* interp, const char *name, 
-	Blt_ObjectName *objNamePtr, unsigned int flags);
+  extern Tcl_Namespace* GetVariableNamespace(Tcl_Interp* interp, 
+					     const char *varName);
 
-extern char *Blt_MakeQualifiedName(Blt_ObjectName *objNamePtr, 
-	Tcl_DString *resultPtr);
+  extern Tcl_Namespace* GetCommandNamespace(Tcl_Command cmdToken);
+
+  extern int ParseObjectName(Tcl_Interp* interp, const char *name, 
+				 Blt_ObjectName *objNamePtr, 
+				 unsigned int flags);
+
+  extern char* MakeQualifiedName(Blt_ObjectName *objNamePtr, 
+				 Tcl_DString *resultPtr);
+};
 
 #endif /* BLT_NS_UTIL_H */

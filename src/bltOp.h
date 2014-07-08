@@ -35,30 +35,33 @@
 
 #include <tk.h>
 
-typedef struct {
+#define BLT_OP_BINARY_SEARCH	0
+#define BLT_OP_LINEAR_SEARCH	1
+
+namespace Blt {
+
+  typedef struct {
     const char *name;		/* Name of operation */
     int minChars;		/* Minimum # characters to disambiguate */
     void *proc;
     int minArgs;		/* Minimum # args required */
     int maxArgs;		/* Maximum # args required */
     const char *usage;		/* Usage message */
-} Blt_OpSpec;
+  } Blt_OpSpec;
 
-typedef enum {
+  typedef enum {
     BLT_OP_ARG0,		/* Op is the first argument. */
     BLT_OP_ARG1,		/* Op is the second argument. */
     BLT_OP_ARG2,		/* Op is the third argument. */
     BLT_OP_ARG3,		/* Op is the fourth argument. */
     BLT_OP_ARG4			/* Op is the fifth argument. */
 
-} Blt_OpIndex;
+  } Blt_OpIndex;
 
-#define BLT_OP_BINARY_SEARCH	0
-#define BLT_OP_LINEAR_SEARCH	1
-
-void *Blt_GetOpFromObj(Tcl_Interp* interp, int nSpecs, 
-		       Blt_OpSpec *specs, int operPos, int objc, 
-		       Tcl_Obj* const objv[], int flags);
+  void *GetOpFromObj(Tcl_Interp* interp, int nSpecs, 
+		     Blt_OpSpec *specs, int operPos, int objc, 
+		     Tcl_Obj* const objv[], int flags);
+};
 
 #endif
 

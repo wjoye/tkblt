@@ -29,15 +29,18 @@
 
 #include <tclPort.h>
 #include <tclInt.h>
+
 #include "bltNsUtil.h"
 
-Tcl_Namespace* Blt_GetCommandNamespace(Tcl_Command cmdToken)
+using namespace Blt;
+
+Tcl_Namespace* Blt::GetCommandNamespace(Tcl_Command cmdToken)
 {
   Command* cmdPtr = (Command*)cmdToken;
   return (Tcl_Namespace *)cmdPtr->nsPtr;
 }
 
-int Blt_ParseObjectName(Tcl_Interp* interp, const char *path, 
+int Blt::ParseObjectName(Tcl_Interp* interp, const char *path, 
 			Blt_ObjectName *namePtr, unsigned int flags)
 {
   namePtr->nsPtr = NULL;
@@ -78,7 +81,7 @@ int Blt_ParseObjectName(Tcl_Interp* interp, const char *path,
   return 1;
 }
 
-char* Blt_MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
+char* Blt::MakeQualifiedName(Blt_ObjectName *namePtr, Tcl_DString *resultPtr)
 {
   Tcl_DStringInit(resultPtr);
   if ((namePtr->nsPtr->fullName[0] != ':') || 
@@ -103,10 +106,10 @@ static Tcl_Namespace* NamespaceOfVariable(Var *varPtr)
   return NULL;
 }
 
-Tcl_Namespace* Blt_GetVariableNamespace(Tcl_Interp* interp, const char *path)
+Tcl_Namespace* Blt::GetVariableNamespace(Tcl_Interp* interp, const char *path)
 {
   Blt_ObjectName objName;
-  if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS))
+  if (!ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS))
     return NULL;
 
   if (objName.nsPtr == NULL) {

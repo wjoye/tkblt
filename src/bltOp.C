@@ -31,6 +31,8 @@
 
 #include "bltOp.h"
 
+using namespace Blt;
+
 static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, const char *string,
 			  int length)
 {
@@ -90,7 +92,7 @@ static int LinearOpSearch(Blt_OpSpec *specs, int nSpecs, const char *string,
   return last;			/* Op found. */
 }
 
-void* Blt_GetOpFromObj(Tcl_Interp* interp, int nSpecs, Blt_OpSpec *specs,
+void* Blt::GetOpFromObj(Tcl_Interp* interp, int nSpecs, Blt_OpSpec *specs,
 		       int operPos, int objc, Tcl_Obj* const objv[],
 		       int flags)
 {

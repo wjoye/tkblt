@@ -56,6 +56,8 @@
 #include "bltSwitch.h"
 #include "bltOp.h"
 
+using namespace Blt;
+
 #define DEF_ARRAY_SIZE		64
 #define TRACE_ALL  (TCL_TRACE_WRITES | TCL_TRACE_READS | TCL_TRACE_UNSETS)
 
@@ -116,7 +118,7 @@ typedef int (VectorCmdProc)(Vector* vecObjPtr, Tcl_Interp* interp,
 
 static char stringRep[200];
 
-const char *Blt_Itoa(int value)
+const char *Blt::Itoa(int value)
 {
   snprintf(stringRep, 200, "%d", value);
   return stringRep;
@@ -136,7 +138,7 @@ static Vector* FindVectorInNamespace(VectorInterpData *dataPtr,
 				     Blt_ObjectName *objNamePtr)
 {
   Tcl_DString dString;
-  const char* name = Blt_MakeQualifiedName(objNamePtr, &dString);
+  const char* name = MakeQualifiedName(objNamePtr, &dString);
   Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, name);
   Tcl_DStringFree(&dString);
   if (hPtr != NULL)
@@ -150,7 +152,7 @@ static Vector* GetVectorObject(VectorInterpData *dataPtr, const char *name,
 {
   Tcl_Interp* interp = dataPtr->interp;
   Blt_ObjectName objName;
-  if (!Blt_ParseObjectName(interp, name, &objName, BLT_NO_ERROR_MSG | BLT_NO_DEFAULT_NS))
+  if (!ParseObjectName(interp, name, &objName, BLT_NO_ERROR_MSG | BLT_NO_DEFAULT_NS))
     return NULL;
 
   Vector* vPtr = NULL;
@@ -170,7 +172,7 @@ static Vector* GetVectorObject(VectorInterpData *dataPtr, const char *name,
   return vPtr;
 }
 
-void Blt_Vec_UpdateRange(Vector* vPtr)
+void Blt::Vec_UpdateRange(Vector* vPtr)
 {
   double* vp = vPtr->valueArr + vPtr->first;
   double* vend = vPtr->valueArr + vPtr->last;
@@ -187,7 +189,7 @@ void Blt_Vec_UpdateRange(Vector* vPtr)
   vPtr->notifyFlags &= ~UPDATE_RANGE;
 }
 
-int Blt_Vec_GetIndex(Tcl_Interp* interp, Vector* vPtr, const char *string,
+int Blt::Vec_GetIndex(Tcl_Interp* interp, Vector* vPtr, const char *string,
 		     int *indexPtr, int flags, Blt_VectorIndexProc **procPtrPtr)
 {
   int value;
@@ -253,8 +255,8 @@ int Blt_Vec_GetIndex(Tcl_Interp* interp, Vector* vPtr, const char *string,
   return TCL_OK;
 }
 
-int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
-			  int flags, Blt_VectorIndexProc** procPtrPtr)
+int Blt::Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
+			   int flags, Blt_VectorIndexProc** procPtrPtr)
 {
   int ielem;
   char* colon = NULL;
@@ -269,7 +271,7 @@ int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
       int result;
 
       *colon = '\0';
-      result = Blt_Vec_GetIndex(interp, vPtr, string, &ielem, flags,
+      result = Vec_GetIndex(interp, vPtr, string, &ielem, flags,
 				(Blt_VectorIndexProc **) NULL);
       *colon = ':';
       if (result != TCL_OK) {
@@ -281,7 +283,7 @@ int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
       /* Default to the last index */
       vPtr->last = (vPtr->length > 0) ? vPtr->length - 1 : 0;
     } else {
-      if (Blt_Vec_GetIndex(interp, vPtr, colon + 1, &ielem, flags,
+      if (Vec_GetIndex(interp, vPtr, colon + 1, &ielem, flags,
 			   (Blt_VectorIndexProc **) NULL) != TCL_OK) {
 	return TCL_ERROR;
       }
@@ -295,7 +297,7 @@ int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
       return TCL_ERROR;
     }
   } else {
-    if (Blt_Vec_GetIndex(interp, vPtr, string, &ielem, flags, 
+    if (Vec_GetIndex(interp, vPtr, string, &ielem, flags, 
 			 procPtrPtr) != TCL_OK) {
       return TCL_ERROR;
     }
@@ -304,7 +306,7 @@ int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
   return TCL_OK;
 }
 
-Vector* Blt_Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
+Vector* Blt::Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
 			     const char* start, const char** endPtr, int flags)
 {
   char* p = (char*)start;
@@ -354,8 +356,7 @@ Vector* Blt_Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
       return NULL;
     }
     *p = '\0';
-    result = Blt_Vec_GetIndexRange(interp, vPtr, start, 
-				   (INDEX_COLON | INDEX_CHECK), (Blt_VectorIndexProc **) NULL);
+    result = Vec_GetIndexRange(interp, vPtr, start, (INDEX_COLON | INDEX_CHECK), (Blt_VectorIndexProc **) NULL);
     *p = ')';
     if (result != TCL_OK) {
       return NULL;
@@ -397,7 +398,7 @@ void Blt_Vec_NotifyClients(ClientData clientData)
   }
 }
 
-void Blt_Vec_UpdateClients(Vector* vPtr)
+void Blt::Vec_UpdateClients(Vector* vPtr)
 {
   vPtr->dirty++;
   vPtr->max = vPtr->min = NAN;
@@ -415,7 +416,7 @@ void Blt_Vec_UpdateClients(Vector* vPtr)
   }
 }
 
-void Blt_Vec_FlushCache(Vector* vPtr)
+void Blt::Vec_FlushCache(Vector* vPtr)
 {
   Tcl_Interp* interp = vPtr->interp;
 
@@ -426,7 +427,7 @@ void Blt_Vec_FlushCache(Vector* vPtr)
    * elements in the array.  */
 
   Tcl_UntraceVar2(interp, vPtr->arrayName, (char *)NULL,
-		  TRACE_ALL | vPtr->varFlags, Blt_Vec_VarTrace, vPtr);
+		  TRACE_ALL | vPtr->varFlags, Vec_VarTrace, vPtr);
 
   /* Clear all the element entries from the entire array */
   Tcl_UnsetVar2(interp, vPtr->arrayName, (char *)NULL, vPtr->varFlags);
@@ -434,15 +435,15 @@ void Blt_Vec_FlushCache(Vector* vPtr)
   /* Restore the "end" index by default and the trace on the entire array */
   Tcl_SetVar2(interp, vPtr->arrayName, "end", "", vPtr->varFlags);
   Tcl_TraceVar2(interp, vPtr->arrayName, (char *)NULL,
-		TRACE_ALL | vPtr->varFlags, Blt_Vec_VarTrace, vPtr);
+		TRACE_ALL | vPtr->varFlags, Vec_VarTrace, vPtr);
 }
 
-int Blt_Vec_LookupName(VectorInterpData *dataPtr, const char *vecName,
+int Blt::Vec_LookupName(VectorInterpData *dataPtr, const char *vecName,
 		       Vector** vPtrPtr)
 {
 
   const char *endPtr;
-  Vector* vPtr = Blt_Vec_ParseElement(dataPtr->interp, dataPtr, vecName, &endPtr, NS_SEARCH_BOTH);
+  Vector* vPtr = Vec_ParseElement(dataPtr->interp, dataPtr, vecName, &endPtr, NS_SEARCH_BOTH);
   if (vPtr == NULL)
     return TCL_ERROR;
 
@@ -456,7 +457,7 @@ int Blt_Vec_LookupName(VectorInterpData *dataPtr, const char *vecName,
   return TCL_OK;
 }
 
-double Blt_Vec_Min(Vector* vecObjPtr)
+double Blt::Vec_Min(Vector* vecObjPtr)
 {
   double* vp = vecObjPtr->valueArr + vecObjPtr->first;
   double* vend = vecObjPtr->valueArr + vecObjPtr->last;
@@ -469,7 +470,7 @@ double Blt_Vec_Min(Vector* vecObjPtr)
   return vecObjPtr->min;
 }
 
-double Blt_Vec_Max(Vector* vecObjPtr)
+double Blt::Vec_Max(Vector* vecObjPtr)
 {
   double max = NAN;
   double* vp = vecObjPtr->valueArr + vecObjPtr->first;
@@ -493,8 +494,8 @@ static void DeleteCommand(Vector* vPtr)
 
   Tcl_DStringInit(&dString);
   objName.name = Tcl_GetCommandName(interp, vPtr->cmdToken);
-  objName.nsPtr = Blt_GetCommandNamespace(vPtr->cmdToken);
-  qualName = Blt_MakeQualifiedName(&objName, &dString);
+  objName.nsPtr = GetCommandNamespace(vPtr->cmdToken);
+  qualName = MakeQualifiedName(&objName, &dString);
   if (Tcl_GetCommandInfo(interp, qualName, &cmdInfo)) {
     // Disable the callback before deleting the TCL command
     cmdInfo.deleteProc = NULL;	
@@ -511,7 +512,7 @@ static void UnmapVariable(Vector* vPtr)
 
   // Unset the entire array
   Tcl_UntraceVar2(interp, vPtr->arrayName, (char *)NULL,
-		  (TRACE_ALL | vPtr->varFlags), Blt_Vec_VarTrace, vPtr);
+		  (TRACE_ALL | vPtr->varFlags), Vec_VarTrace, vPtr);
   Tcl_UnsetVar2(interp, vPtr->arrayName, (char *)NULL, vPtr->varFlags);
 
   if (vPtr->arrayName != NULL) {
@@ -520,7 +521,7 @@ static void UnmapVariable(Vector* vPtr)
   }
 }
 
-int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
+int Blt::Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
 {
   Blt_ObjectName objName;
   char *newPath;
@@ -536,7 +537,7 @@ int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
 				 * existing variable. */
   }
   /* Get the variable name (without the namespace qualifier). */
-  if (!Blt_ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
+  if (!ParseObjectName(interp, path, &objName, BLT_NO_DEFAULT_NS)) {
     return TCL_ERROR;
   }
   if (objName.nsPtr == NULL) {
@@ -544,12 +545,12 @@ int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
      * If there was no namespace qualifier, try harder to see if the
      * variable is non-local.
      */
-    objName.nsPtr = Blt_GetVariableNamespace(interp, objName.name);
+    objName.nsPtr = GetVariableNamespace(interp, objName.name);
   } 
   Tcl_DStringInit(&dString);
   vPtr->varFlags = 0;
   if (objName.nsPtr != NULL) {	/* Global or namespace variable. */
-    newPath = Blt_MakeQualifiedName(&objName, &dString);
+    newPath = MakeQualifiedName(&objName, &dString);
     vPtr->varFlags |= (TCL_GLOBAL_ONLY);
   } else {			/* Local variable. */
     newPath = (char *)objName.name;
@@ -572,14 +573,14 @@ int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
     return TCL_ERROR;
   }
   /* Create a full-array trace on reads, writes, and unsets. */
-  Tcl_TraceVar2(interp, newPath, (char *)NULL, TRACE_ALL, Blt_Vec_VarTrace,
+  Tcl_TraceVar2(interp, newPath, (char *)NULL, TRACE_ALL, Vec_VarTrace,
 		vPtr);
   vPtr->arrayName = Blt_Strdup(newPath);
   Tcl_DStringFree(&dString);
   return TCL_OK;
 }
 
-int Blt_Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
+int Blt::Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
 {
   if (newSize <= 0) {
     newSize = DEF_ARRAY_SIZE;
@@ -594,7 +595,7 @@ int Blt_Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
     if (newArr == NULL) {
       if (interp != NULL) {
 	Tcl_AppendResult(interp, "can't reallocate ", 
-			 Blt_Itoa(newSize), " elements for vector \"", 
+			 Itoa(newSize), " elements for vector \"", 
 			 vPtr->name, "\"", (char *)NULL); 
       }
       return TCL_ERROR;
@@ -612,7 +613,7 @@ int Blt_Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
     if (newArr == NULL) {
       if (interp != NULL) {
 	Tcl_AppendResult(interp, "can't allocate ", 
-			 Blt_Itoa(newSize), " elements for vector \"", 
+			 Itoa(newSize), " elements for vector \"", 
 			 vPtr->name, "\"", (char *)NULL); 
       }
       return TCL_ERROR;
@@ -653,10 +654,10 @@ int Blt_Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
   return TCL_OK;
 }
 
-int Blt_Vec_SetLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
+int Blt::Vec_SetLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
 {
   if (vPtr->size < newLength) {
-    if (Blt_Vec_SetSize(interp, vPtr, newLength) != TCL_OK) {
+    if (Vec_SetSize(interp, vPtr, newLength) != TCL_OK) {
       return TCL_ERROR;
     }
   }
@@ -666,7 +667,7 @@ int Blt_Vec_SetLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
   return TCL_OK;
 }
 
-int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
+int Blt::Vec_ChangeLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
 {
   if (newLength < 0) {
     newLength = 0;
@@ -681,7 +682,7 @@ int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
       newSize += newSize;
     }
     if (newSize != vPtr->size) {
-      if (Blt_Vec_SetSize(interp, vPtr, newSize) != TCL_OK) {
+      if (Vec_SetSize(interp, vPtr, newSize) != TCL_OK) {
 	return TCL_ERROR;
       }
     }
@@ -693,7 +694,7 @@ int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
     
 }
 
-int Blt_Vec_Reset(Vector* vPtr, double *valueArr, int length,
+int Blt::Vec_Reset(Vector* vPtr, double *valueArr, int length,
 		  int size, Tcl_FreeProc *freeProc)
 {
   if (vPtr->valueArr != valueArr) {	/* New array of values resides
@@ -705,7 +706,7 @@ int Blt_Vec_Reset(Vector* vPtr, double *valueArr, int length,
       size = DEF_ARRAY_SIZE;
       if (valueArr == NULL) {
 	Tcl_AppendResult(vPtr->interp, "can't allocate ", 
-			 Blt_Itoa(size), " elements for vector \"", 
+			 Itoa(size), " elements for vector \"", 
 			 vPtr->name, "\"", (char *)NULL);
 	return TCL_ERROR;
       }
@@ -717,7 +718,7 @@ int Blt_Vec_Reset(Vector* vPtr, double *valueArr, int length,
       double* newArr = (double*)malloc(size * sizeof(double));
       if (newArr == NULL) {
 	Tcl_AppendResult(vPtr->interp, "can't allocate ", 
-			 Blt_Itoa(size), " elements for vector \"", 
+			 Itoa(size), " elements for vector \"", 
 			 vPtr->name, "\"", (char *)NULL);
 	return TCL_ERROR;
       }
@@ -743,13 +744,13 @@ int Blt_Vec_Reset(Vector* vPtr, double *valueArr, int length,
 
   vPtr->length = length;
   if (vPtr->flush) {
-    Blt_Vec_FlushCache(vPtr);
+    Vec_FlushCache(vPtr);
   }
-  Blt_Vec_UpdateClients(vPtr);
+  Vec_UpdateClients(vPtr);
   return TCL_OK;
 }
 
-Vector* Blt_Vec_New(VectorInterpData *dataPtr)
+Vector* Blt::Vec_New(VectorInterpData *dataPtr)
 {
   Vector* vPtr = (Vector*)calloc(1, sizeof(Vector));
   vPtr->valueArr = (double*)malloc(sizeof(double) * DEF_ARRAY_SIZE);
@@ -770,7 +771,7 @@ Vector* Blt_Vec_New(VectorInterpData *dataPtr)
   return vPtr;
 }
 
-void Blt_Vec_Free(Vector* vPtr)
+void Blt::Vec_Free(Vector* vPtr)
 {
   Blt_ChainLink link;
 
@@ -818,10 +819,10 @@ static void VectorInstDeleteProc(ClientData clientData)
 {
   Vector* vPtr = (Vector*)clientData;
   vPtr->cmdToken = 0;
-  Blt_Vec_Free(vPtr);
+  Vec_Free(vPtr);
 }
 
-Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
+Vector* Blt::Vec_Create(VectorInterpData *dataPtr, const char *vecName,
 		       const char *cmdName, const char *varName, int *isNewPtr)
 {
   Tcl_DString dString;
@@ -833,7 +834,7 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
   int isNew = 0;
   Vector* vPtr = NULL;
 
-  if (!Blt_ParseObjectName(interp, vecName, &objName, 0))
+  if (!ParseObjectName(interp, vecName, &objName, 0))
     return NULL;
 
   Tcl_DStringInit(&dString);
@@ -844,7 +845,7 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
 
       snprintf(string, 200, "vector%d", dataPtr->nextId++);
       objName.name = string;
-      qualName = Blt_MakeQualifiedName(&objName, &dString);
+      qualName = MakeQualifiedName(&objName, &dString);
       hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, qualName);
     } while (hPtr != NULL);
   } else {
@@ -858,13 +859,13 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
 	goto error;
       }
     }
-    qualName = Blt_MakeQualifiedName(&objName, &dString);
-    vPtr = Blt_Vec_ParseElement((Tcl_Interp *)NULL, dataPtr, qualName, 
+    qualName = MakeQualifiedName(&objName, &dString);
+    vPtr = Vec_ParseElement((Tcl_Interp *)NULL, dataPtr, qualName, 
 				NULL, NS_SEARCH_CURRENT);
   }
   if (vPtr == NULL) {
     hPtr = Tcl_CreateHashEntry(&dataPtr->vectorTable, qualName, &isNew);
-    vPtr = Blt_Vec_New(dataPtr);
+    vPtr = Vec_New(dataPtr);
     vPtr->hashPtr = hPtr;
     vPtr->nsPtr = objName.nsPtr;
 
@@ -900,13 +901,13 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
 	
     Tcl_DStringInit(&dString2);
     if (cmdName != qualName) {
-      if (!Blt_ParseObjectName(interp, cmdName, &objName, 0)) {
+      if (!ParseObjectName(interp, cmdName, &objName, 0)) {
 	goto error;
       }
-      cmdName = Blt_MakeQualifiedName(&objName, &dString2);
+      cmdName = MakeQualifiedName(&objName, &dString2);
     }
-    vPtr->cmdToken = Tcl_CreateObjCommand(interp, (char *)cmdName, 
-					  Blt_Vec_InstCmd, vPtr, VectorInstDeleteProc);
+    vPtr->cmdToken = Tcl_CreateObjCommand(interp, (char *)cmdName, Vec_InstCmd,
+					  vPtr, VectorInstDeleteProc);
     Tcl_DStringFree(&dString2);
   }
  checkVariable:
@@ -914,7 +915,7 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
     if ((varName[0] == '#') && (strcmp(varName, "#auto") == 0)) {
       varName = qualName;
     }
-    if (Blt_Vec_MapVariable(interp, vPtr, varName) != TCL_OK) {
+    if (Vec_MapVariable(interp, vPtr, varName) != TCL_OK) {
       goto error;
     }
   }
@@ -926,12 +927,12 @@ Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
  error:
   Tcl_DStringFree(&dString);
   if (vPtr != NULL) {
-    Blt_Vec_Free(vPtr);
+    Vec_Free(vPtr);
   }
   return NULL;
 }
 
-int Blt_Vec_Duplicate(Vector* destPtr, Vector* srcPtr)
+int Blt::Vec_Duplicate(Vector* destPtr, Vector* srcPtr)
 {
   size_t nBytes;
   size_t length;
@@ -940,7 +941,7 @@ int Blt_Vec_Duplicate(Vector* destPtr, Vector* srcPtr)
     /* Copying the same vector. */
   }
   length = srcPtr->last - srcPtr->first + 1;
-  if (Blt_Vec_ChangeLength(destPtr->interp, destPtr, length) != TCL_OK) {
+  if (Vec_ChangeLength(destPtr->interp, destPtr, length) != TCL_OK) {
     return TCL_ERROR;
   }
   nBytes = length * sizeof(double);
@@ -1017,7 +1018,7 @@ static int VectorCreate2(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
   memset(&switches, 0, sizeof(switches));
-  if (Blt_ParseSwitches(interp, createSwitches, objc - i, objv + i, 
+  if (ParseSwitches(interp, createSwitches, objc - i, objv + i, 
 			&switches, BLT_SWITCH_DEFAULTS) < 0) {
     return TCL_ERROR;
   }
@@ -1093,7 +1094,7 @@ static int VectorCreate2(ClientData clientData, Tcl_Interp* interp,
     /*
      * By default, we create a TCL command by the name of the vector.
      */
-    vPtr = Blt_Vec_Create(dataPtr, string,
+    vPtr = Vec_Create(dataPtr, string,
 			  (switches.cmdName == NULL) ? string : switches.cmdName,
 			  (switches.varName == NULL) ? string : switches.varName, &isNew);
     if (leftParen != NULL) {
@@ -1106,25 +1107,25 @@ static int VectorCreate2(ClientData clientData, Tcl_Interp* interp,
     vPtr->flush = switches.flush;
     vPtr->offset = first;
     if (size > 0) {
-      if (Blt_Vec_ChangeLength(interp, vPtr, size) != TCL_OK) {
+      if (Vec_ChangeLength(interp, vPtr, size) != TCL_OK) {
 	goto error;
       }
     }
     if (!isNew) {
       if (vPtr->flush) {
-	Blt_Vec_FlushCache(vPtr);
+	Vec_FlushCache(vPtr);
       }
-      Blt_Vec_UpdateClients(vPtr);
+      Vec_UpdateClients(vPtr);
     }
   }
-  Blt_FreeSwitches(createSwitches, (char *)&switches, 0);
+  FreeSwitches(createSwitches, (char *)&switches, 0);
   if (vPtr != NULL) {
     /* Return the name of the last vector created  */
     Tcl_SetStringObj(Tcl_GetObjResult(interp), vPtr->name, -1);
   }
   return TCL_OK;
  error:
-  Blt_FreeSwitches(createSwitches, (char *)&switches, 0);
+  FreeSwitches(createSwitches, (char *)&switches, 0);
   return TCL_ERROR;
 }
 
@@ -1141,9 +1142,9 @@ static int VectorDestroyOp(ClientData clientData, Tcl_Interp* interp,
 
   for (int ii=2; ii<objc; ii++) {
     Vector* vPtr;
-    if (Blt_Vec_LookupName(dataPtr, Tcl_GetString(objv[ii]), &vPtr) != TCL_OK)
+    if (Vec_LookupName(dataPtr, Tcl_GetString(objv[ii]), &vPtr) != TCL_OK)
       return TCL_ERROR;
-    Blt_Vec_Free(vPtr);
+    Vec_Free(vPtr);
   }
   return TCL_OK;
 }
@@ -1151,7 +1152,7 @@ static int VectorDestroyOp(ClientData clientData, Tcl_Interp* interp,
 static int VectorExprOp(ClientData clientData, Tcl_Interp* interp,
 			int objc,    Tcl_Obj* const objv[])
 {
-  return Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector* )NULL);
+  return ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector* )NULL);
 }
 
 static Blt_OpSpec vectorCmdOps[] =
@@ -1191,8 +1192,8 @@ static int VectorCmd(ClientData clientData, Tcl_Interp* interp,
   }
  doOp:
   /* Do the usual vector operation lookup now. */
-  proc = (VectorCmdProc*)Blt_GetOpFromObj(interp, nCmdOps, vectorCmdOps, BLT_OP_ARG1, 
-					  objc, objv,0);
+  proc = (VectorCmdProc*)GetOpFromObj(interp, nCmdOps, vectorCmdOps, 
+				      BLT_OP_ARG1, objc, objv,0);
   if (proc == NULL) {
     return TCL_ERROR;
   }
@@ -1209,12 +1210,12 @@ static void VectorInterpDeleteProc(ClientData clientData, Tcl_Interp* interp)
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
     Vector* vPtr = (Vector*)Tcl_GetHashValue(hPtr);
     vPtr->hashPtr = NULL;
-    Blt_Vec_Free(vPtr);
+    Vec_Free(vPtr);
   }
   Tcl_DeleteHashTable(&dataPtr->vectorTable);
 
   /* If any user-defined math functions were installed, remove them.  */
-  Blt_Vec_UninstallMathFunctions(&dataPtr->mathProcTable);
+  Vec_UninstallMathFunctions(&dataPtr->mathProcTable);
   Tcl_DeleteHashTable(&dataPtr->mathProcTable);
 
   Tcl_DeleteHashTable(&dataPtr->indexProcTable);
@@ -1222,7 +1223,7 @@ static void VectorInterpDeleteProc(ClientData clientData, Tcl_Interp* interp)
   free(dataPtr);
 }
 
-VectorInterpData *Blt_Vec_GetInterpData(Tcl_Interp* interp)
+VectorInterpData* Blt::Vec_GetInterpData(Tcl_Interp* interp)
 {
   VectorInterpData *dataPtr;
   Tcl_InterpDeleteProc *proc;
@@ -1238,8 +1239,8 @@ VectorInterpData *Blt_Vec_GetInterpData(Tcl_Interp* interp)
     Tcl_InitHashTable(&dataPtr->vectorTable, TCL_STRING_KEYS);
     Tcl_InitHashTable(&dataPtr->mathProcTable, TCL_STRING_KEYS);
     Tcl_InitHashTable(&dataPtr->indexProcTable, TCL_STRING_KEYS);
-    Blt_Vec_InstallMathFunctions(&dataPtr->mathProcTable);
-    Blt_Vec_InstallSpecialIndices(&dataPtr->indexProcTable);
+    Vec_InstallMathFunctions(&dataPtr->mathProcTable);
+    Vec_InstallSpecialIndices(&dataPtr->indexProcTable);
     srand48(time((time_t *) NULL));
   }
   return dataPtr;
@@ -1259,7 +1260,7 @@ int Blt_VectorCmdInitProc(Tcl_Interp* interp)
   if (cmdToken)
     return TCL_OK;
   cmdToken = Tcl_CreateObjCommand(interp, cmdPath, VectorCmd, 
-				  Blt_Vec_GetInterpData(interp), NULL);
+				  Vec_GetInterpData(interp), NULL);
   if (Tcl_Export(interp, nsPtr, "vector", 0) != TCL_OK)
     return TCL_ERROR;
 
@@ -1278,21 +1279,21 @@ int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName,
   char *nameCopy;
 
   if (initialSize < 0) {
-    Tcl_AppendResult(interp, "bad vector size \"", Blt_Itoa(initialSize),
+    Tcl_AppendResult(interp, "bad vector size \"", Itoa(initialSize),
 		     "\"", (char *)NULL);
     return TCL_ERROR;
   }
-  dataPtr = Blt_Vec_GetInterpData(interp);
+  dataPtr = Vec_GetInterpData(interp);
 
   nameCopy = Blt_Strdup(vecName);
-  vPtr = Blt_Vec_Create(dataPtr, nameCopy, cmdName, varName, &isNew);
+  vPtr = Vec_Create(dataPtr, nameCopy, cmdName, varName, &isNew);
   free(nameCopy);
 
   if (vPtr == NULL) {
     return TCL_ERROR;
   }
   if (initialSize > 0) {
-    if (Blt_Vec_ChangeLength(interp, vPtr, initialSize) != TCL_OK) {
+    if (Vec_ChangeLength(interp, vPtr, initialSize) != TCL_OK) {
       return TCL_ERROR;
     }
   }
@@ -1312,25 +1313,25 @@ int Blt_DeleteVector(Blt_Vector* vecPtr)
 {
   Vector* vPtr = (Vector* )vecPtr;
 
-  Blt_Vec_Free(vPtr);
+  Vec_Free(vPtr);
   return TCL_OK;
 }
 
 int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
 {
   // If the vector name was passed via a read-only string (e.g. "x"), the
-  // Blt_Vec_ParseElement routine will segfault when it tries to write into
+  // Vec_ParseElement routine will segfault when it tries to write into
   // the string.  Therefore make a writable copy and free it when we're done.
   char* nameCopy = Blt_Strdup(name);
-  VectorInterpData *dataPtr = Blt_Vec_GetInterpData(interp);
+  VectorInterpData *dataPtr = Vec_GetInterpData(interp);
   Vector* vPtr;
-  int result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
+  int result = Vec_LookupName(dataPtr, nameCopy, &vPtr);
   free(nameCopy);
 
   if (result != TCL_OK)
     return TCL_ERROR;
 
-  Blt_Vec_Free(vPtr);
+  Vec_Free(vPtr);
   return TCL_OK;
 }
 
@@ -1338,7 +1339,7 @@ int Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
 {
   VectorInterpData *dataPtr;
 
-  dataPtr = Blt_Vec_GetInterpData(interp);
+  dataPtr = Vec_GetInterpData(interp);
   if (GetVectorObject(dataPtr, vecName, NS_SEARCH_BOTH) != NULL) {
     return 1;
   }
@@ -1369,7 +1370,7 @@ int Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector* *vecPtrPtr)
   char *nameCopy;
   int result;
 
-  dataPtr = Blt_Vec_GetInterpData(interp);
+  dataPtr = Vec_GetInterpData(interp);
   /*
    * If the vector name was passed via a read-only string (e.g. "x"), the
    * Blt_VectorParseName routine will segfault when it tries to write into
@@ -1377,12 +1378,12 @@ int Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector* *vecPtrPtr)
    * done.
    */
   nameCopy = Blt_Strdup(name);
-  result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
+  result = Vec_LookupName(dataPtr, nameCopy, &vPtr);
   free(nameCopy);
   if (result != TCL_OK) {
     return TCL_ERROR;
   }
-  Blt_Vec_UpdateRange(vPtr);
+  Vec_UpdateRange(vPtr);
   *vecPtrPtr = (Blt_Vector* ) vPtr;
   return TCL_OK;
 }
@@ -1393,11 +1394,11 @@ int Blt_GetVectorFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr,
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
   Vector* vPtr;
 
-  dataPtr = Blt_Vec_GetInterpData(interp);
-  if (Blt_Vec_LookupName(dataPtr, Tcl_GetString(objPtr), &vPtr) != TCL_OK) {
+  dataPtr = Vec_GetInterpData(interp);
+  if (Vec_LookupName(dataPtr, Tcl_GetString(objPtr), &vPtr) != TCL_OK) {
     return TCL_ERROR;
   }
-  Blt_Vec_UpdateRange(vPtr);
+  Vec_UpdateRange(vPtr);
   *vecPtrPtr = (Blt_Vector* ) vPtr;
   return TCL_OK;
 }
@@ -1411,22 +1412,22 @@ int Blt_ResetVector(Blt_Vector* vecPtr,	double *valueArr, int length,
     Tcl_AppendResult(vPtr->interp, "bad array size", (char *)NULL);
     return TCL_ERROR;
   }
-  return Blt_Vec_Reset(vPtr, valueArr, length, size, freeProc);
+  return Vec_Reset(vPtr, valueArr, length, size, freeProc);
 }
 
 int Blt_ResizeVector(Blt_Vector* vecPtr, int length)
 {
   Vector* vPtr = (Vector* )vecPtr;
 
-  if (Blt_Vec_ChangeLength((Tcl_Interp *)NULL, vPtr, length) != TCL_OK) {
+  if (Vec_ChangeLength((Tcl_Interp *)NULL, vPtr, length) != TCL_OK) {
     Tcl_AppendResult(vPtr->interp, "can't resize vector \"", vPtr->name,
 		     "\"", (char *)NULL);
     return TCL_ERROR;
   }
   if (vPtr->flush) {
-    Blt_Vec_FlushCache(vPtr);
+    Vec_FlushCache(vPtr);
   }
-  Blt_Vec_UpdateClients(vPtr);
+  Vec_UpdateClients(vPtr);
   return TCL_OK;
 }
 
@@ -1439,7 +1440,7 @@ Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
   int result;
   char *nameCopy;
 
-  dataPtr = Blt_Vec_GetInterpData(interp);
+  dataPtr = Vec_GetInterpData(interp);
   /*
    * If the vector name was passed via a read-only string (e.g. "x"), the
    * Blt_VectorParseName routine will segfault when it tries to write into
@@ -1447,7 +1448,7 @@ Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
    * done.
    */
   nameCopy = Blt_Strdup(name);
-  result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
+  result = Vec_LookupName(dataPtr, nameCopy, &vPtr);
   free(nameCopy);
 
   if (result != TCL_OK) {
@@ -1507,17 +1508,6 @@ const char* Blt_NameOfVector(Blt_Vector* vecPtr) /* Vector to query. */
   return vPtr->name;
 }
 
-int Blt_VectorNotifyPending(Blt_VectorId clientId)
-{
-  VectorClient *clientPtr = (VectorClient *)clientId;
-
-  if ((clientPtr == NULL) || (clientPtr->magic != VECTOR_MAGIC) || 
-      (clientPtr->serverPtr == NULL)) {
-    return 0;
-  }
-  return (clientPtr->serverPtr->notifyFlags & NOTIFY_PENDING);
-}
-
 int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId,
 		      Blt_Vector* *vecPtrPtr)
 {
@@ -1531,7 +1521,7 @@ int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId,
     Tcl_AppendResult(interp, "vector no longer exists", (char *)NULL);
     return TCL_ERROR;
   }
-  Blt_Vec_UpdateRange(clientPtr->serverPtr);
+  Vec_UpdateRange(clientPtr->serverPtr);
   *vecPtrPtr = (Blt_Vector* ) clientPtr->serverPtr;
   return TCL_OK;
 }
@@ -1543,7 +1533,7 @@ void Blt_InstallIndexProc(Tcl_Interp* interp, const char *string,
   Tcl_HashEntry *hPtr;
   int isNew;
 
-  dataPtr = Blt_Vec_GetInterpData(interp);
+  dataPtr = Vec_GetInterpData(interp);
   hPtr = Tcl_CreateHashEntry(&dataPtr->indexProcTable, string, &isNew);
   if (procPtr == NULL) {
     Tcl_DeleteHashEntry(hPtr);
@@ -1618,7 +1608,7 @@ smallest_power_of_2_not_less_than(int x)
   return pow2;
 }
 
-int Blt_Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
+int Blt::Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
 		Vector* freqPtr, double delta, int flags, Vector* srcPtr) 
 {
   int length;
@@ -1649,7 +1639,7 @@ int Blt_Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
 		       "\" can't be the same as the source", (char *)NULL);
       return TCL_ERROR;
     }
-    if (Blt_Vec_ChangeLength(interp, phasesPtr, 
+    if (Vec_ChangeLength(interp, phasesPtr, 
 			     pow2len/2-noconstant+middle) != TCL_OK) {
       return TCL_ERROR;
     }
@@ -1660,7 +1650,7 @@ int Blt_Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
 		       "\" can't be the same as the source", (char *)NULL);
       return TCL_ERROR;
     }
-    if (Blt_Vec_ChangeLength(interp, freqPtr, 
+    if (Vec_ChangeLength(interp, freqPtr, 
 			     pow2len/2-noconstant+middle) != TCL_OK) {
       return TCL_ERROR;
     }
@@ -1760,7 +1750,7 @@ int Blt_Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
 }
 
 
-int Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector* srcImagPtr, 
+int Blt::Vec_InverseFFT(Tcl_Interp* interp, Vector* srcImagPtr, 
 		       Vector* destRealPtr, Vector* destImagPtr, Vector* srcPtr)
 {
   int length;
@@ -1779,10 +1769,10 @@ int Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector* srcImagPtr,
   pow2len = smallest_power_of_2_not_less_than( (length-1)*2 );
   oneOverN = 1.0 / pow2len;
 
-  if (Blt_Vec_ChangeLength(interp, destRealPtr, pow2len) != TCL_OK) {
+  if (Vec_ChangeLength(interp, destRealPtr, pow2len) != TCL_OK) {
     return TCL_ERROR;
   }
-  if (Blt_Vec_ChangeLength(interp, destImagPtr, pow2len) != TCL_OK) {
+  if (Vec_ChangeLength(interp, destImagPtr, pow2len) != TCL_OK) {
     return TCL_ERROR;
   }
 
