@@ -5565,14 +5565,14 @@ done
 	bltGraphOp.C
 	bltGraphSup.C
 	bltInt.C
-	bltNsUtil.c
+	bltNsUtil.C
 	bltParse.C
 	bltOp.C
 	bltSwitch.C
-	bltUtil.c
-	bltVecCmd.c
-	bltVecMath.c
-	bltVector.c
+	bltUtil.C
+	bltVecCmd.C
+	bltVecMath.C
+	bltVector.C
 	"
     for i in $vars; do
 	case $i in

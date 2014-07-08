@@ -33,9 +33,7 @@ using namespace std;
 
 #include <tcl.h>
 
-extern "C" {
 #include "bltParse.h"
-};
 
 /*
  * A table used to classify input characters to assist in parsing

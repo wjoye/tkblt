@@ -110,14 +110,14 @@ TEA_ADD_SOURCES([
 	bltGraphOp.C
 	bltGraphSup.C
 	bltInt.C
-	bltNsUtil.c
+	bltNsUtil.C
 	bltParse.C
 	bltOp.C
 	bltSwitch.C
-	bltUtil.c
-	bltVecCmd.c
-	bltVecMath.c
-	bltVector.c
+	bltUtil.C
+	bltVecCmd.C
+	bltVecMath.C
+	bltVector.C
 	])
 TEA_ADD_HEADERS([bltVector.h])
 TEA_ADD_INCLUDES([-I.])

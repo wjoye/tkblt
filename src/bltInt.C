@@ -32,9 +32,9 @@
 extern "C" {
 Tcl_AppInitProc Tkblt_Init;
 Tcl_AppInitProc Tkblt_SafeInit;
-Tcl_AppInitProc Blt_VectorCmdInitProc;
 };
 
+Tcl_AppInitProc Blt_VectorCmdInitProc;
 Tcl_AppInitProc Blt_GraphCmdInitProc;
 
 int Tkblt_Init(Tcl_Interp* interp)

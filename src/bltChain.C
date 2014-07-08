@@ -29,9 +29,7 @@
 
 #include <stdlib.h>
 
-extern "C" {
 #include "bltChain.h"
-};
 
 #ifndef ALIGN
 #define ALIGN(a)							\

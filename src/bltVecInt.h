@@ -56,11 +56,11 @@ typedef struct {
 } Point2d;
 
 typedef struct {
-    Tcl_HashTable vectorTable;	/* Table of vectors */
-    Tcl_HashTable mathProcTable; /* Table of vector math functions */
-    Tcl_HashTable indexProcTable;
-    Tcl_Interp* interp;
-    unsigned int nextId;
+  Tcl_HashTable vectorTable;	/* Table of vectors */
+  Tcl_HashTable mathProcTable; /* Table of vector math functions */
+  Tcl_HashTable indexProcTable;
+  Tcl_Interp* interp;
+  unsigned int nextId;
 } VectorInterpData;
 
 /*
@@ -82,68 +82,68 @@ typedef struct {
 
 typedef struct {
 
-    /*
-     * If you change these fields, make sure you change the definition of
-     * Blt_Vector in blt.h too.
-     */
+  /*
+   * If you change these fields, make sure you change the definition of
+   * Blt_Vector in blt.h too.
+   */
 
-    double *valueArr;		/* Array of values (malloc-ed) */
+  double *valueArr;		/* Array of values (malloc-ed) */
 
-    int length;			/* Current number of values in the array. */
+  int length;			/* Current number of values in the array. */
 
-    int size;			/* Maximum number of values that can be stored
+  int size;			/* Maximum number of values that can be stored
 				 * in the value array. */
 
-    double min, max;		/* Minimum and maximum values in the vector */
+  double min, max;		/* Minimum and maximum values in the vector */
 
-    int dirty;			/* Indicates if the vector has been updated */
+  int dirty;			/* Indicates if the vector has been updated */
 
-    int reserved;
+  int reserved;
 
-    /* The following fields are local to this module  */
+  /* The following fields are local to this module  */
 
-    const char *name;		/* The namespace-qualified name of the vector.
+  const char *name;		/* The namespace-qualified name of the vector.
 				 * It points to the hash key allocated for the
 				 * entry in the vector hash table. */
 
-    VectorInterpData *dataPtr;
-    Tcl_Interp* interp;		/* Interpreter associated with the
+  VectorInterpData *dataPtr;
+  Tcl_Interp* interp;		/* Interpreter associated with the
 				 * vector */
 
-    Tcl_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
+  Tcl_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
 				 * track the vectors in use. */
 
-    Tcl_FreeProc *freeProc;	/* Address of procedure to call to release
+  Tcl_FreeProc *freeProc;	/* Address of procedure to call to release
 				 * storage for the value array, Optionally can
 				 * be one of the following: TCL_STATIC,
 				 * TCL_DYNAMIC, or TCL_VOLATILE. */
 
-    const char *arrayName;	/* The name of the TCL array variable mapped
+  const char *arrayName;	/* The name of the TCL array variable mapped
 				 * to the vector (malloc'ed). If NULL,
 				 * indicates that the vector isn't mapped to
 				 * any variable */
 
-    Tcl_Namespace *nsPtr;	/* Namespace context of the vector itself. */
+  Tcl_Namespace *nsPtr;	/* Namespace context of the vector itself. */
 
-    int offset;			/* Offset from zero of the vector's starting
+  int offset;			/* Offset from zero of the vector's starting
 				 * index */
 
-    Tcl_Command cmdToken;	/* Token for vector's TCL command. */
+  Tcl_Command cmdToken;	/* Token for vector's TCL command. */
 
-    Blt_Chain chain;		/* List of clients using this vector */
+  Blt_Chain chain;		/* List of clients using this vector */
 
-    int notifyFlags;		/* Notification flags. See definitions
+  int notifyFlags;		/* Notification flags. See definitions
 				 * below */
 
-    int varFlags;		/* Indicate if the variable is global,
-				 * namespace, or local */
+  int varFlags;		/* Indicate if the variable is global,
+			 * namespace, or local */
 
-    int freeOnUnset;		/* For backward compatibility only: If
+  int freeOnUnset;		/* For backward compatibility only: If
 				 * non-zero, free the vector when its variable
 				 * is unset. */
-    int flush;
+  int flush;
 
-    int first, last;		/* Selected region of vector. This is used
+  int first, last;		/* Selected region of vector. This is used
 				 * mostly for the math routines */
 } Vector;
 
@@ -169,22 +169,22 @@ typedef struct {
 					 * they are needed */
 
 #define FindRange(array, first, last, min, max) \
-{ \
-    min = max = 0.0; \
-    if (first <= last) { \
-	register int i; \
-	min = max = array[first]; \
-	for (i = first + 1; i <= last; i++) { \
-	    if (min > array[i]) { \
-		min = array[i]; \
-	    } else if (max < array[i]) { \
-		max = array[i]; \
-	    } \
-	} \
-    } \
-}
+  {						\
+    min = max = 0.0;				\
+    if (first <= last) {			\
+      register int i;				\
+      min = max = array[first];			\
+      for (i = first + 1; i <= last; i++) {	\
+	if (min > array[i]) {			\
+	  min = array[i];			\
+	} else if (max < array[i]) {		\
+	  max = array[i];			\
+	}					\
+      }						\
+    }						\
+  }
 
-extern const char *Blt_Itoa(int value);
+  extern const char *Blt_Itoa(int value);
 
 extern void Blt_Vec_InstallSpecialIndices(Tcl_HashTable *tablePtr);
 
@@ -202,28 +202,28 @@ extern Vector *Blt_Vec_New(VectorInterpData *dataPtr);
 extern int Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr);
 
 extern int Blt_Vec_SetLength(Tcl_Interp* interp, Vector *vPtr, 
-	int length);
+			     int length);
 
 extern int Blt_Vec_SetSize(Tcl_Interp* interp, Vector *vPtr, 
-	int size);
+			   int size);
 
 extern int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector *vPtr, 
-	int length);
+				int length);
 
 extern Vector *Blt_Vec_ParseElement(Tcl_Interp* interp, 
-	VectorInterpData *dataPtr, const char *start, const char **endPtr, 
-	int flags);
+				    VectorInterpData *dataPtr, const char *start, const char **endPtr, 
+				    int flags);
 
 extern void Blt_Vec_Free(Vector *vPtr);
 
 extern size_t *Blt_Vec_SortMap(Vector **vectors, int nVectors);
 
 extern int Blt_Vec_LookupName(VectorInterpData *dataPtr, 
-	const char *vecName, Vector **vPtrPtr);
+			      const char *vecName, Vector **vPtrPtr);
 
 extern Vector *Blt_Vec_Create(VectorInterpData *dataPtr, 
-	const char *name, const char *cmdName, const char *varName, 
-	int *newPtr);
+			      const char *name, const char *cmdName, const char *varName, 
+			      int *newPtr);
 
 extern void Blt_Vec_UpdateRange(Vector *vPtr);
 
@@ -232,24 +232,24 @@ extern void Blt_Vec_UpdateClients(Vector *vPtr);
 extern void Blt_Vec_FlushCache(Vector *vPtr);
 
 extern int Blt_Vec_Reset(Vector *vPtr, double *dataArr,
-	int nValues, int arraySize, Tcl_FreeProc *freeProc);
+			 int nValues, int arraySize, Tcl_FreeProc *freeProc);
 
 extern int  Blt_Vec_GetIndex(Tcl_Interp* interp, Vector *vPtr, 
-	const char *string, int *indexPtr, int flags, 
-	Blt_VectorIndexProc **procPtrPtr);
+			     const char *string, int *indexPtr, int flags, 
+			     Blt_VectorIndexProc **procPtrPtr);
 
 extern int  Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector *vPtr, 
-	const char *string, int flags, Blt_VectorIndexProc **procPtrPtr);
+				  const char *string, int flags, Blt_VectorIndexProc **procPtrPtr);
 
 extern int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector *vPtr, 
-	const char *name);
+			       const char *name);
 
 extern int Blt_Vec_FFT(Tcl_Interp* interp, Vector *realPtr,
-	Vector *phasesPtr, Vector *freqPtr, double delta, 
-	int flags, Vector *srcPtr);
+		       Vector *phasesPtr, Vector *freqPtr, double delta, 
+		       int flags, Vector *srcPtr);
 
 extern int Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector *iSrcPtr, 
-	Vector *rDestPtr, Vector *iDestPtr, Vector *srcPtr);
+			      Vector *rDestPtr, Vector *iDestPtr, Vector *srcPtr);
 
 extern Tcl_ObjCmdProc Blt_Vec_InstCmd;
 

@@ -29,9 +29,7 @@
 
 #include <string.h>
 
-extern "C" {
 #include "bltOp.h"
-};
 
 static int BinaryOpSearch(Blt_OpSpec *specs, int nSpecs, 
 			  const char *string, int length)

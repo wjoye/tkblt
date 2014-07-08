@@ -37,9 +37,7 @@ using namespace std;
 
 #include <tcl.h>
 
-extern "C" {
 #include "bltSwitch.h"
-};
 
 #define COUNT_NNEG		0
 #define COUNT_POS		1
@@ -56,7 +54,7 @@ static char* Blt_Strdup(const char *string)
 }
 
 static int Blt_GetCountFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int check,
-			long *valuePtr)
+			       long *valuePtr)
 {
   long count;
   if (Tcl_GetLongFromObj(interp, objPtr, &count) != TCL_OK)

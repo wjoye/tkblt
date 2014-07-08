@@ -36,19 +36,19 @@
 #  include <stddef.h>
 
 typedef int (Blt_SwitchParseProc)(ClientData clientData, Tcl_Interp* interp, 
-	const char *switchName, Tcl_Obj *valueObjPtr, char *record, int offset,
-	int flags);
+				  const char *switchName, Tcl_Obj *valueObjPtr, char *record, int offset,
+				  int flags);
 typedef void (Blt_SwitchFreeProc)(char *record, int offset, int flags);
 
 typedef struct {
-    Blt_SwitchParseProc *parseProc; /* Procedure to parse a switch
-				     * value and store it in its *
-				     * converted form in the data *
-				     * record. */
+  Blt_SwitchParseProc *parseProc; /* Procedure to parse a switch
+				   * value and store it in its *
+				   * converted form in the data *
+				   * record. */
 
-    Blt_SwitchFreeProc *freeProc; /* Procedure to free a switch. */
+  Blt_SwitchFreeProc *freeProc; /* Procedure to free a switch. */
 
-    ClientData clientData;	/* Arbitrary one-word value used by
+  ClientData clientData;	/* Arbitrary one-word value used by
 				 * switch parser, passed to
 				 * parseProc. */
 } Blt_SwitchCustom;
@@ -59,50 +59,50 @@ typedef struct {
  * documentation for details.
  */
 typedef enum {
-    BLT_SWITCH_BOOLEAN, 
-    BLT_SWITCH_DOUBLE, 
-    BLT_SWITCH_BITMASK, 
-    BLT_SWITCH_BITMASK_INVERT, 
-    BLT_SWITCH_FLOAT, 
-    BLT_SWITCH_INT, 
-    BLT_SWITCH_INT_NNEG, 
-    BLT_SWITCH_INT_POS,
-    BLT_SWITCH_LIST, 
-    BLT_SWITCH_LONG, 
-    BLT_SWITCH_LONG_NNEG, 
-    BLT_SWITCH_LONG_POS,
-    BLT_SWITCH_OBJ,
-    BLT_SWITCH_STRING, 
-    BLT_SWITCH_VALUE, 
-    BLT_SWITCH_CUSTOM, 
-    BLT_SWITCH_END
+  BLT_SWITCH_BOOLEAN, 
+  BLT_SWITCH_DOUBLE, 
+  BLT_SWITCH_BITMASK, 
+  BLT_SWITCH_BITMASK_INVERT, 
+  BLT_SWITCH_FLOAT, 
+  BLT_SWITCH_INT, 
+  BLT_SWITCH_INT_NNEG, 
+  BLT_SWITCH_INT_POS,
+  BLT_SWITCH_LIST, 
+  BLT_SWITCH_LONG, 
+  BLT_SWITCH_LONG_NNEG, 
+  BLT_SWITCH_LONG_POS,
+  BLT_SWITCH_OBJ,
+  BLT_SWITCH_STRING, 
+  BLT_SWITCH_VALUE, 
+  BLT_SWITCH_CUSTOM, 
+  BLT_SWITCH_END
 } Blt_SwitchTypes;
 
 
 typedef struct {
-    Blt_SwitchTypes type;	/* Type of option, such as
-				 * BLT_SWITCH_COLOR; see definitions
-				 * below.  Last option in table must
-				 * have type BLT_SWITCH_END. */
+  Blt_SwitchTypes type;	/* Type of option, such as
+			 * BLT_SWITCH_COLOR; see definitions
+			 * below.  Last option in table must
+			 * have type BLT_SWITCH_END. */
 
-    const char *switchName;	/* Switch used to specify option in
+  const char *switchName;	/* Switch used to specify option in
 				 * argv.  NULL means this spec is part
 				 * of a group. */
 
-    const char *help;		/* Help string. */
-    int offset;			/* Where in widget record to store
+  const char *help;		/* Help string. */
+  int offset;			/* Where in widget record to store
 				 * value; use Blt_Offset macro to
 				 * generate values for this. */
 
-    int flags;			/* Any combination of the values
+  int flags;			/* Any combination of the values
 				 * defined below. */
 
-    unsigned int mask;
+  unsigned int mask;
 
-    Blt_SwitchCustom *customPtr; /* If type is BLT_SWITCH_CUSTOM then
-				 * this is a pointer to info about how
-				 * to parse and print the option.
-				 * Otherwise it is irrelevant. */
+  Blt_SwitchCustom *customPtr; /* If type is BLT_SWITCH_CUSTOM then
+				* this is a pointer to info about how
+				* to parse and print the option.
+				* Otherwise it is irrelevant. */
 } Blt_SwitchSpec;
 
 #define BLT_SWITCH_DEFAULTS		(0)
@@ -120,7 +120,7 @@ typedef struct {
 #define BLT_SWITCH_USER_BIT		(1<<8)
 
 extern int Blt_ParseSwitches(Tcl_Interp* interp, Blt_SwitchSpec *specPtr, 
-	int objc, Tcl_Obj *const *objv, void *rec, int flags);
+			     int objc, Tcl_Obj *const *objv, void *rec, int flags);
 
 extern void Blt_FreeSwitches(Blt_SwitchSpec *specs, void *rec, int flags);
 

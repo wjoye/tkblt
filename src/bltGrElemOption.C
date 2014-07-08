@@ -32,9 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" {
 #include "bltChain.h"
-};
 
 #include "bltGraph.h"
 #include "bltGrElem.h"

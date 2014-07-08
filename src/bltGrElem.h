@@ -32,10 +32,8 @@
 
 #include <tk.h>
 
-extern "C" {
 #include "bltVector.h"
 #include "bltChain.h"
-};
 
 #include "bltGrMisc.h"
 #include "bltGrPen.h"

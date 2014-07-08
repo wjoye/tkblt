@@ -32,9 +32,7 @@
 
 #include <tk.h>
 
-extern "C" {
 #include "bltChain.h"
-};
 
 #include "bltGrMisc.h"
 #include "bltGrPSOutput.h"

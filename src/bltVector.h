@@ -36,8 +36,8 @@
 #include <tcl.h>
 
 typedef enum {
-    BLT_VECTOR_NOTIFY_UPDATE = 1, /* The vector's values has been updated */
-    BLT_VECTOR_NOTIFY_DESTROY	/* The vector has been destroyed and the client
+  BLT_VECTOR_NOTIFY_UPDATE = 1, /* The vector's values has been updated */
+  BLT_VECTOR_NOTIFY_DESTROY	/* The vector has been destroyed and the client
 				 * should no longer use its data (calling
 				 * Blt_FreeVectorId) */
 } Blt_VectorNotify;
@@ -45,24 +45,24 @@ typedef enum {
 typedef struct _Blt_VectorId *Blt_VectorId;
 
 typedef void (Blt_VectorChangedProc)(Tcl_Interp* interp, ClientData clientData,
-	Blt_VectorNotify notify);
+				     Blt_VectorNotify notify);
 
 typedef struct {
-    double *valueArr;		/* Array of values (possibly malloc-ed) */
-    int numValues;		/* Number of values in the array */
-    int arraySize;		/* Size of the allocated space */
-    double min, max;		/* Minimum and maximum values in the vector */
-    int dirty;			/* Indicates if the vector has been updated */
-    int reserved;		/* Reserved for future use */
+  double *valueArr;		/* Array of values (possibly malloc-ed) */
+  int numValues;		/* Number of values in the array */
+  int arraySize;		/* Size of the allocated space */
+  double min, max;		/* Minimum and maximum values in the vector */
+  int dirty;			/* Indicates if the vector has been updated */
+  int reserved;		/* Reserved for future use */
 
 } Blt_Vector;
 
 typedef double (Blt_VectorIndexProc)(Blt_Vector * vecPtr);
 
 typedef enum {
-    BLT_MATH_FUNC_SCALAR = 1,	/* The function returns a single double
+  BLT_MATH_FUNC_SCALAR = 1,	/* The function returns a single double
 				 * precision value. */
-    BLT_MATH_FUNC_VECTOR	/* The function processes the entire vector. */
+  BLT_MATH_FUNC_VECTOR	/* The function processes the entire vector. */
 } Blt_MathFuncType;
 
 /*
@@ -91,15 +91,15 @@ extern double Blt_VecMin(Blt_Vector *vPtr);
 extern double Blt_VecMax(Blt_Vector *vPtr);
 
 extern Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, 
-	const char *vecName);
+				      const char *vecName);
 
 extern void Blt_SetVectorChangedProc(Blt_VectorId clientId, 
-	Blt_VectorChangedProc *proc, ClientData clientData);
+				     Blt_VectorChangedProc *proc, ClientData clientData);
 
 extern void Blt_FreeVectorId(Blt_VectorId clientId);
 
 extern int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId, 
-	Blt_Vector **vecPtrPtr);
+			     Blt_Vector **vecPtrPtr);
 
 extern const char *Blt_NameOfVectorId(Blt_VectorId clientId);
 
@@ -108,22 +108,22 @@ extern const char *Blt_NameOfVector(Blt_Vector *vecPtr);
 extern int Blt_VectorNotifyPending(Blt_VectorId clientId);
 
 extern int Blt_CreateVector(Tcl_Interp* interp, const char *vecName, 
-	int size, Blt_Vector ** vecPtrPtr);
+			    int size, Blt_Vector ** vecPtrPtr);
 
 extern int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName, 
-	const char *cmdName, const char *varName, int initialSize, 
-	Blt_Vector **vecPtrPtr);
+			     const char *cmdName, const char *varName, int initialSize, 
+			     Blt_Vector **vecPtrPtr);
 
-extern int Blt_GetVector(Tcl_Interp* interp, const char *vecName, 
-	Blt_Vector **vecPtrPtr);
+extern "C" {
+  int Blt_GetVector(Tcl_Interp* interp, const char *vecName, Blt_Vector **vecPtrPtr);
+  int Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr, int n, int arraySize, Tcl_FreeProc *freeProc);
+}
 
 extern int Blt_GetVectorFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
-	Blt_Vector **vecPtrPtr);
+				Blt_Vector **vecPtrPtr);
 
 extern int Blt_VectorExists(Tcl_Interp* interp, const char *vecName);
 
-extern int Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr, int n, 
-	int arraySize, Tcl_FreeProc *freeProc);
 
 extern int Blt_ResizeVector(Blt_Vector *vecPtr, int n);
 
@@ -132,10 +132,10 @@ extern int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *vecName);
 extern int Blt_DeleteVector(Blt_Vector *vecPtr);
 
 extern int Blt_ExprVector(Tcl_Interp* interp, char *expr, 
-	Blt_Vector *vecPtr);
+			  Blt_Vector *vecPtr);
 
 extern void Blt_InstallIndexProc(Tcl_Interp* interp, const char *indexName,
-	Blt_VectorIndexProc * procPtr);
+				 Blt_VectorIndexProc * procPtr);
 
 extern int Blt_VectorExists2(Tcl_Interp* interp, const char *vecName);
 
