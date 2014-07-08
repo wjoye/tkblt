@@ -74,18 +74,14 @@
 typedef struct {
   unsigned int magic;		/* Magic value designating whether this really
 				 * is a vector token or not */
-
-  Vector *serverPtr;		/* Pointer to the master record of the vector.
+  Vector* serverPtr;		/* Pointer to the master record of the vector.
 				 * If NULL, indicates that the vector has been
 				 * destroyed but as of yet, this client hasn't
 				 * recognized it. */
-
   Blt_VectorChangedProc *proc;/* Routine to call when the contents of the
 			       * vector change or the vector is deleted. */
-
   ClientData clientData;	/* Data passed whenever the vector change
 				 * procedure is called. */
-
   Blt_ChainLink link;		/* Used to quickly remove this entry from its
 				 * server's client chain. */
 } VectorClient;
@@ -114,69 +110,44 @@ static Blt_SwitchSpec createSwitches[] =
     {BLT_SWITCH_END}
   };
 
-typedef int (VectorCmdProc)(Vector *vecObjPtr, Tcl_Interp* interp, 
+typedef int (VectorCmdProc)(Vector* vecObjPtr, Tcl_Interp* interp, 
 			    int objc, Tcl_Obj* const objv[]);
 
 static char* Blt_Strdup(const char *string)
 {
   size_t size = strlen(string) + 1;
   char* ptr = (char*)malloc(size * sizeof(char));
-  if (ptr != NULL) {
+  if (ptr != NULL)
     strcpy(ptr, string);
-  }
+
   return ptr;
 }
 
-static Vector *
-FindVectorInNamespace(
-		      VectorInterpData *dataPtr,	/* Interpreter-specific data. */
-		      Blt_ObjectName *objNamePtr)
+static Vector* FindVectorInNamespace(VectorInterpData *dataPtr,	
+				     Blt_ObjectName *objNamePtr)
 {
   Tcl_DString dString;
-  const char *name;
-  Tcl_HashEntry *hPtr;
-
-  name = Blt_MakeQualifiedName(objNamePtr, &dString);
-  hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, name);
+  const char* name = Blt_MakeQualifiedName(objNamePtr, &dString);
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&dataPtr->vectorTable, name);
   Tcl_DStringFree(&dString);
-  if (hPtr != NULL) {
+  if (hPtr != NULL)
     return (Vector*)Tcl_GetHashValue(hPtr);
-  }
+
   return NULL;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * GetVectorObject --
- *
- *	Searches for the vector associated with the name given.  Allow for a
- *	range specification.
- *
- * Results:
- *	Returns a pointer to the vector if found, otherwise NULL.
- *
- *---------------------------------------------------------------------------
- */
-static Vector *
-GetVectorObject(
-		VectorInterpData *dataPtr,	/* Interpreter-specific data. */
-		const char *name,
-		int flags)
+static Vector* GetVectorObject(VectorInterpData *dataPtr, const char *name,
+			       int flags)
 {
+  Tcl_Interp* interp = dataPtr->interp;
   Blt_ObjectName objName;
-  Vector *vPtr;
-  Tcl_Interp* interp;
+  if (!Blt_ParseObjectName(interp, name, &objName, BLT_NO_ERROR_MSG | BLT_NO_DEFAULT_NS))
+    return NULL;
 
-  interp = dataPtr->interp;
-  if (!Blt_ParseObjectName(interp, name, &objName, 
-			   BLT_NO_ERROR_MSG | BLT_NO_DEFAULT_NS)) {
-    return NULL;		/* Can't find namespace. */
-  } 
-  vPtr = NULL;
-  if (objName.nsPtr != NULL) {
+  Vector* vPtr = NULL;
+  if (objName.nsPtr != NULL)
     vPtr = FindVectorInNamespace(dataPtr, &objName);
-  } else {
+  else {
     if (flags & NS_SEARCH_CURRENT) {
       objName.nsPtr = Tcl_GetCurrentNamespace(interp);
       vPtr = FindVectorInNamespace(dataPtr, &objName);
@@ -186,62 +157,34 @@ GetVectorObject(
       vPtr = FindVectorInNamespace(dataPtr, &objName);
     }
   }
+
   return vPtr;
 }
 
-void
-Blt_Vec_UpdateRange(Vector *vPtr)
+void Blt_Vec_UpdateRange(Vector* vPtr)
 {
-  double min, max;
-  double *vp, *vend;
-
-  vp = vPtr->valueArr + vPtr->first;
-  vend = vPtr->valueArr + vPtr->last;
-  min = max = *vp++;
+  double* vp = vPtr->valueArr + vPtr->first;
+  double* vend = vPtr->valueArr + vPtr->last;
+  double min = *vp;
+  double max = *vp++;
   for (/* empty */; vp <= vend; vp++) {
-    if (min > *vp) {
+    if (min > *vp)
       min = *vp; 
-    } else if (max < *vp) { 
+    else if (max < *vp)
       max = *vp; 
-    } 
   } 
   vPtr->min = min;
   vPtr->max = max;
   vPtr->notifyFlags &= ~UPDATE_RANGE;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_GetIndex --
- *
- *	Converts the string representing an index in the vector, to its
- *	numeric value.  A valid index may be an numeric string of the string
- *	"end" (indicating the last element in the string).
- *
- * Results:
- *	A standard TCL result.  If the string is a valid index, TCL_OK is
- *	returned.  Otherwise TCL_ERROR is returned and interp->result will
- *	contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_GetIndex(
-		 Tcl_Interp* interp,
-		 Vector *vPtr,
-		 const char *string,
-		 int *indexPtr,
-		 int flags,
-		 Blt_VectorIndexProc **procPtrPtr)
+int Blt_Vec_GetIndex(Tcl_Interp* interp, Vector* vPtr, const char *string,
+		     int *indexPtr, int flags, Blt_VectorIndexProc **procPtrPtr)
 {
-  char c;
   int value;
+  char c = string[0];
 
-  c = string[0];
-
-  /* Treat the index "end" like a numeric index.  */
-
+  // Treat the index "end" like a numeric index
   if ((c == 'e') && (strcmp(string, "end") == 0)) {
     if (vPtr->length < 1) {
       if (interp != NULL) {
@@ -301,41 +244,19 @@ Blt_Vec_GetIndex(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_GetIndexRange --
- *
- *	Converts the string representing an index in the vector, to its
- *	numeric value.  A valid index may be an numeric string of the string
- *	"end" (indicating the last element in the string).
- *
- * Results:
- *	A standard TCL result.  If the string is a valid index, TCL_OK is
- *	returned.  Otherwise TCL_ERROR is returned and interp->result will
- *	contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_GetIndexRange(
-		      Tcl_Interp* interp,
-		      Vector *vPtr,
-		      const char *string,
-		      int flags,
-		      Blt_VectorIndexProc **procPtrPtr)
+int Blt_Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
+			  int flags, Blt_VectorIndexProc** procPtrPtr)
 {
   int ielem;
-  char *colon;
-
-  colon = NULL;
-  if (flags & INDEX_COLON) {
+  char* colon = NULL;
+  if (flags & INDEX_COLON)
     colon = strchr(string, ':');
-  }
+
   if (colon != NULL) {
     if (string == colon) {
       vPtr->first = 0;	/* Default to the first index */
-    } else {
+    }
+    else {
       int result;
 
       *colon = '\0';
@@ -374,27 +295,18 @@ Blt_Vec_GetIndexRange(
   return TCL_OK;
 }
 
-Vector *
-Blt_Vec_ParseElement(
-		     Tcl_Interp* interp,
-		     VectorInterpData *dataPtr,	/* Interpreter-specific data. */
-		     const char *start,
-		     const char **endPtr,
-		     int flags)
+Vector* Blt_Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
+			     const char* start, const char** endPtr, int flags)
 {
-  char *p;
-  char saved;
-  Vector *vPtr;
-
-  p = (char *)start;
-  /* Find the end of the vector name */
+  char* p = (char*)start;
+  // Find the end of the vector name
   while (VECTOR_CHAR(*p)) {
     p++;
   }
-  saved = *p;
+  char saved = *p;
   *p = '\0';
 
-  vPtr = GetVectorObject(dataPtr, start, flags);
+  Vector* vPtr = GetVectorObject(dataPtr, start, flags);
   if (vPtr == NULL) {
     if (interp != NULL) {
       Tcl_AppendResult(interp, "can't find vector \"", start, "\"", 
@@ -447,27 +359,7 @@ Blt_Vec_ParseElement(
   return vPtr;
 }
 
-
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_NotifyClients --
- *
- *	Notifies each client of the vector that the vector has changed
- *	(updated or destroyed) by calling the provided function back.  The
- *	function pointer may be NULL, in that case the client is not notified.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The results depend upon what actions the client callbacks
- *	take.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Vec_NotifyClients(ClientData clientData)
+void Blt_Vec_NotifyClients(ClientData clientData)
 {
   Vector* vPtr = (Vector*)clientData;
   Blt_ChainLink link, next;
@@ -483,11 +375,10 @@ Blt_Vec_NotifyClients(ClientData clientData)
       (*clientPtr->proc) (vPtr->interp, clientPtr->clientData, notify);
     }
   }
-  /*
-   * Some clients may not handle the "destroy" callback properly (they
-   * should call Blt_FreeVectorId to release the client identifier), so mark
-   * any remaining clients to indicate that vector's server has gone away.
-   */
+
+  // Some clients may not handle the "destroy" callback properly (they
+  // should call Blt_FreeVectorId to release the client identifier), so mark
+  // any remaining clients to indicate that vector's server has gone away.
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
     for (link = Blt_Chain_FirstLink(vPtr->chain); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
@@ -497,24 +388,7 @@ Blt_Vec_NotifyClients(ClientData clientData)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_UpdateClients --
- *
- *	Notifies each client of the vector that the vector has changed
- *	(updated or destroyed) by calling the provided function back.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The individual client callbacks are eventually invoked.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Vec_UpdateClients(Vector *vPtr)
+void Blt_Vec_UpdateClients(Vector* vPtr)
 {
   vPtr->dirty++;
   vPtr->max = vPtr->min = NAN;
@@ -532,38 +406,13 @@ Blt_Vec_UpdateClients(Vector *vPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_FlushCache --
- *
- *	Unsets all the elements of the TCL array variable associated with the
- *	vector, freeing memory associated with the variable.  This includes
- *	both the hash table and the hash keys.  The down side is that this
- *	effectively flushes the caching of vector elements in the array.  This
- *	means that the subsequent reads of the array will require a decimal to
- *	string conversion.
- *
- *	This is needed when the vector changes its values, making the array
- *	variable out-of-sync.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	All elements of array variable (except one) are unset, freeing
- *	the memory associated with the variable.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Vec_FlushCache(Vector *vPtr)
+void Blt_Vec_FlushCache(Vector* vPtr)
 {
   Tcl_Interp* interp = vPtr->interp;
 
-  if (vPtr->arrayName == NULL) {
-    return;			/* Doesn't use the variable API */
-  }
+  if (vPtr->arrayName == NULL)
+    return;
+
   /* Turn off the trace temporarily so that we can unset all the
    * elements in the array.  */
 
@@ -579,99 +428,56 @@ Blt_Vec_FlushCache(Vector *vPtr)
 		TRACE_ALL | vPtr->varFlags, Blt_Vec_VarTrace, vPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_LookupName --
- *
- *	Searches for the vector associated with the name given.  Allow for a
- *	range specification.
- *
- * Results:
- *	Returns a pointer to the vector if found, otherwise NULL.  If the name
- *	is not associated with a vector and the TCL_LEAVE_ERR_MSG flag is set,
- *	and interp->result will contain an error message.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_LookupName(
-		   VectorInterpData *dataPtr,	/* Interpreter-specific data. */
-		   const char *vecName,
-		   Vector **vPtrPtr)
+int Blt_Vec_LookupName(VectorInterpData *dataPtr, const char *vecName,
+		       Vector** vPtrPtr)
 {
-  Vector *vPtr;
-  const char *endPtr;
 
-  vPtr = Blt_Vec_ParseElement(dataPtr->interp, dataPtr, vecName, &endPtr, 
-			      NS_SEARCH_BOTH);
-  if (vPtr == NULL) {
+  const char *endPtr;
+  Vector* vPtr = Blt_Vec_ParseElement(dataPtr->interp, dataPtr, vecName, &endPtr, NS_SEARCH_BOTH);
+  if (vPtr == NULL)
     return TCL_ERROR;
-  }
+
   if (*endPtr != '\0') {
     Tcl_AppendResult(dataPtr->interp, 
 		     "extra characters after vector name", (char *)NULL);
     return TCL_ERROR;
   }
+
   *vPtrPtr = vPtr;
   return TCL_OK;
 }
 
-double
-Blt_Vec_Min(Vector *vecObjPtr)
+double Blt_Vec_Min(Vector* vecObjPtr)
 {
-  double *vp, *vend;
-  double min;
-
-  vp = vecObjPtr->valueArr + vecObjPtr->first;
-  vend = vecObjPtr->valueArr + vecObjPtr->last;
-  min = *vp++;
+  double* vp = vecObjPtr->valueArr + vecObjPtr->first;
+  double* vend = vecObjPtr->valueArr + vecObjPtr->last;
+  double min = *vp++;
   for (/* empty */; vp <= vend; vp++) {
-    if (min > *vp) {
+    if (min > *vp)
       min = *vp; 
-    } 
   } 
   vecObjPtr->min = min;
   return vecObjPtr->min;
 }
 
-double
-Blt_Vec_Max(Vector *vecObjPtr)
+double Blt_Vec_Max(Vector* vecObjPtr)
 {
-  double max;
-  double *vp, *vend;
-
-  max = NAN;
-  vp = vecObjPtr->valueArr + vecObjPtr->first;
-  vend = vecObjPtr->valueArr + vecObjPtr->last;
+  double max = NAN;
+  double* vp = vecObjPtr->valueArr + vecObjPtr->first;
+  double* vend = vecObjPtr->valueArr + vecObjPtr->last;
   max = *vp++;
   for (/* empty */; vp <= vend; vp++) {
-    if (max < *vp) {
+    if (max < *vp)
       max = *vp; 
-    } 
   } 
   vecObjPtr->max = max;
   return vecObjPtr->max;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * DeleteCommand --
- *
- *	Deletes the TCL command associated with the vector, without triggering
- *	a callback to "VectorInstDeleteProc".
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-DeleteCommand(Vector *vPtr) /* Vector associated with the TCL command. */
+static void DeleteCommand(Vector* vPtr)
 {
   Tcl_Interp* interp = vPtr->interp;
-  char *qualName;		/* Name of TCL command. */
+  char *qualName;
   Tcl_CmdInfo cmdInfo;
   Tcl_DString dString;
   Blt_ObjectName objName;
@@ -681,7 +487,7 @@ DeleteCommand(Vector *vPtr) /* Vector associated with the TCL command. */
   objName.nsPtr = Blt_GetCommandNamespace(vPtr->cmdToken);
   qualName = Blt_MakeQualifiedName(&objName, &dString);
   if (Tcl_GetCommandInfo(interp, qualName, &cmdInfo)) {
-    /* Disable the callback before deleting the TCL command.*/	
+    // Disable the callback before deleting the TCL command
     cmdInfo.deleteProc = NULL;	
     Tcl_SetCommandInfo(interp, qualName, &cmdInfo);
     Tcl_DeleteCommandFromToken(interp, vPtr->cmdToken);
@@ -690,25 +496,11 @@ DeleteCommand(Vector *vPtr) /* Vector associated with the TCL command. */
   vPtr->cmdToken = 0;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * UnmapVariable --
- *
- *	Destroys the trace on the current TCL variable designated to access
- *	the vector.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-UnmapVariable(Vector *vPtr)
+static void UnmapVariable(Vector* vPtr)
 {
   Tcl_Interp* interp = vPtr->interp;
 
-  /* Unset the entire array */
+  // Unset the entire array
   Tcl_UntraceVar2(interp, vPtr->arrayName, (char *)NULL,
 		  (TRACE_ALL | vPtr->varFlags), Blt_Vec_VarTrace, vPtr);
   Tcl_UnsetVar2(interp, vPtr->arrayName, (char *)NULL, vPtr->varFlags);
@@ -719,33 +511,7 @@ UnmapVariable(Vector *vPtr)
   }
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_MapVariable --
- *
- *	Sets up traces on a TCL variable to access the vector.
- *
- *	If another variable is already mapped, it's first untraced and
- *	removed.  Don't do anything else for variables named "" (even though
- *	Tcl allows this pathology). Saves the name of the new array variable.
- *
- * Results:
- *	A standard TCL result. If an error occurs setting the variable
- *	TCL_ERROR is returned and an error message is left in the interpreter.
- *
- * Side effects:
- *	Traces are set for the new variable. The new variable name is saved in
- *	a malloc'ed string in vPtr->arrayName.  If this variable is non-NULL,
- *	it indicates that a TCL variable has been mapped to this vector.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_MapVariable(
-		    Tcl_Interp* interp, 
-		    Vector *vPtr, 
-		    const char *path)
+int Blt_Vec_MapVariable(Tcl_Interp* interp, Vector* vPtr, const char *path)
 {
   Blt_ObjectName objName;
   char *newPath;
@@ -804,33 +570,7 @@ Blt_Vec_MapVariable(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_SetSize --
- *
- *	Resizes the vector to the designated new size.
- *
- *	If the new size is the same as the old, simply return.  Otherwise
- *	we're copying the data from one memory location to another.
- *
- *	If the storage changed memory locations, free up the old location if
- *	it was dynamically allocated.
- *
- * Results:
- *	A standard TCL result.  If the reallocation is successful,
- *	TCL_OK is returned, otherwise TCL_ERROR.
- *
- * Side effects:
- *	Memory for the array is reallocated.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_SetSize(
-		Tcl_Interp* interp, 
-		Vector *vPtr, 
-		int newSize)		/* Size of array in elements */
+int Blt_Vec_SetSize(Tcl_Interp* interp, Vector* vPtr, int newSize)
 {
   if (newSize <= 0) {
     newSize = DEF_ARRAY_SIZE;
@@ -904,29 +644,7 @@ Blt_Vec_SetSize(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_SetSize --
- *
- *	Set the length (the number of elements currently in use) of the
- *	vector.  If the new length is greater than the size (total number of
- *	slots), then the vector is grown.
- *
- * Results:
- *	A standard TCL result.  If the reallocation is successful, TCL_OK is
- *	returned, otherwise TCL_ERROR.
- *
- * Side effects:
- *	Memory for the array is possibly reallocated.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_SetLength(
-		  Tcl_Interp* interp, 
-		  Vector *vPtr, 
-		  int newLength)		/* Size of array in elements */
+int Blt_Vec_SetLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
 {
   if (vPtr->size < newLength) {
     if (Blt_Vec_SetSize(interp, vPtr, newLength) != TCL_OK) {
@@ -939,40 +657,7 @@ Blt_Vec_SetLength(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_ChangeLength --
- *
- *	Resizes the vector to the new size.
- *
- *	The new size of the vector is computed by doubling the size of the
- *	vector until it fits the number of slots needed (designated by
- *	*length*).
- *
- *	If the new size is the same as the old, simply adjust the length of
- *	the vector.  Otherwise we're copying the data from one memory location
- *	to another. The trailing elements of the vector need to be reset to
- *	zero.
- *
- *	If the storage changed memory locations, free up the old location if
- *	it was dynamically allocated.
- *
- * Results:
- *	A standard TCL result.  If the reallocation is successful,
- *	TCL_OK is returned, otherwise TCL_ERROR.
- *
- * Side effects:
- *	Memory for the array is reallocated.
- *
- *---------------------------------------------------------------------------
- */
-
-int
-Blt_Vec_ChangeLength(
-		     Tcl_Interp* interp, 
-		     Vector *vPtr, 
-		     int newLength)
+int Blt_Vec_ChangeLength(Tcl_Interp* interp, Vector* vPtr, int newLength)
 {
   if (newLength < 0) {
     newLength = 0;
@@ -999,40 +684,8 @@ Blt_Vec_ChangeLength(
     
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_Reset --
- *
- *	Resets the vector data.  This is called by a client to indicate that
- *	the vector data has changed.  The vector does not need to point to
- *	different memory.  Any clients of the vector will be notified of the
- *	change.
- *
- * Results:
- *	A standard TCL result.  If the new array size is invalid, TCL_ERROR is
- *	returned.  Otherwise TCL_OK is returned and the new vector data is
- *	recorded.
- *
- * Side Effects:
- *	Any client designated callbacks will be posted.  Memory may be changed
- *	for the vector array.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_Vec_Reset(
-	      Vector *vPtr,
-	      double *valueArr,		/* Array containing the elements of the
-					 * vector. If NULL, indicates to reset the 
-					 * vector size to the default. */
-	      int length,			/* The number of elements that the vector 
-						 * currently holds. */
-	      int size,			/* The maximum number of elements that the
-					 * array can hold. */
-	      Tcl_FreeProc *freeProc)	/* Address of memory deallocation routine
-					 * for the array of values.  Can also be
-					 * TCL_STATIC, TCL_DYNAMIC, or TCL_VOLATILE. */
+int Blt_Vec_Reset(Vector* vPtr, double *valueArr, int length,
+		  int size, Tcl_FreeProc *freeProc)
 {
   if (vPtr->valueArr != valueArr) {	/* New array of values resides
 					 * in different memory than
@@ -1087,8 +740,7 @@ Blt_Vec_Reset(
   return TCL_OK;
 }
 
-Vector *
-Blt_Vec_New(VectorInterpData *dataPtr) /* Interpreter-specific data. */
+Vector* Blt_Vec_New(VectorInterpData *dataPtr)
 {
   Vector* vPtr = (Vector*)calloc(1, sizeof(Vector));
   vPtr->valueArr = (double*)malloc(sizeof(double) * DEF_ARRAY_SIZE);
@@ -1109,31 +761,7 @@ Blt_Vec_New(VectorInterpData *dataPtr) /* Interpreter-specific data. */
   return vPtr;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_Free --
- *
- *	Removes the memory and frees resources associated with the vector.
- *
- *	o Removes the trace and the TCL array variable and unsets
- *	  the variable.
- *	o Notifies clients of the vector that the vector is being
- *	  destroyed.
- *	o Removes any clients that are left after notification.
- *	o Frees the memory (if necessary) allocated for the array.
- *	o Removes the entry from the hash table of vectors.
- *	o Frees the memory allocated for the name.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_Vec_Free(Vector *vPtr)
+void Blt_Vec_Free(Vector* vPtr)
 {
   Blt_ChainLink link;
 
@@ -1177,71 +805,28 @@ Blt_Vec_Free(Vector *vPtr)
   free(vPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorInstDeleteProc --
- *
- *	Deletes the command associated with the vector.  This is called only
- *	when the command associated with the vector is destroyed.
- *
- * Results:
- *	None.
- *
- *---------------------------------------------------------------------------
- */
-static void
-VectorInstDeleteProc(ClientData clientData)
+static void VectorInstDeleteProc(ClientData clientData)
 {
-  Vector *vPtr = (Vector*)clientData;
+  Vector* vPtr = (Vector*)clientData;
   vPtr->cmdToken = 0;
   Blt_Vec_Free(vPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_Vec_Create --
- *
- *	Creates a vector structure and the following items:
- *
- *	o TCL command
- *	o TCL array variable and establishes traces on the variable
- *	o Adds a  new entry in the vector hash table
- *
- * Results:
- *	A pointer to the new vector structure.  If an error occurred NULL is
- *	returned and an error message is left in interp->result.
- *
- * Side effects:
- *	A new TCL command and array variable is added to the interpreter.
- *
- * ---------------------------------------------------------------------- 
- */
-Vector *
-Blt_Vec_Create(
-	       VectorInterpData *dataPtr,	/* Interpreter-specific data. */
-	       const char *vecName,	/* Namespace-qualified name of the vector */
-	       const char *cmdName,	/* Name of the TCL command mapped to
-					 * the vector */
-	       const char *varName,	/* Name of the TCL array mapped to the
-					 * vector */
-	       int *isNewPtr)
+Vector* Blt_Vec_Create(VectorInterpData *dataPtr, const char *vecName,
+		       const char *cmdName, const char *varName, int *isNewPtr)
 {
   Tcl_DString dString;
-  Vector *vPtr;
-  int isNew;
   Blt_ObjectName objName;
   char *qualName;
   Tcl_HashEntry *hPtr;
   Tcl_Interp* interp = dataPtr->interp;
 
-  isNew = 0;
-  vPtr = NULL;
+  int isNew = 0;
+  Vector* vPtr = NULL;
 
-  if (!Blt_ParseObjectName(interp, vecName, &objName, 0)) {
+  if (!Blt_ParseObjectName(interp, vecName, &objName, 0))
     return NULL;
-  }
+
   Tcl_DStringInit(&dString);
   if ((objName.name[0] == '#') && (strcmp(objName.name, "#auto") == 0)) {
 
@@ -1337,9 +922,7 @@ Blt_Vec_Create(
   return NULL;
 }
 
-
-int
-Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr)
+int Blt_Vec_Duplicate(Vector* destPtr, Vector* srcPtr)
 {
   size_t nBytes;
   size_t length;
@@ -1358,26 +941,8 @@ Blt_Vec_Duplicate(Vector *destPtr, Vector *srcPtr)
 }
 
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorNamesOp --
- *
- *	Reports the names of all the current vectors in the interpreter.
- *
- * Results:
- *	A standard TCL result.  interp->result will contain a list of
- *	all the names of the vector instances.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-VectorNamesOp(
-	      ClientData clientData,	/* Interpreter-specific data. */
-	      Tcl_Interp* interp,
-	      int objc,
-	      Tcl_Obj* const objv[])
+static int VectorNamesOp(ClientData clientData, Tcl_Interp* interp,
+			 int objc, Tcl_Obj* const objv[])
 {
   VectorInterpData* dataPtr = (VectorInterpData*)clientData;
   Tcl_Obj *listObjPtr;
@@ -1417,45 +982,16 @@ VectorNamesOp(
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorCreateOp --
- *
- *	Creates a TCL command, and array variable representing an instance of
- *	a vector.
- *
- *	vector a
- *	vector b(20)
- *	vector c(-5:14)
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-
-/*ARGSUSED*/
-static int
-VectorCreate2(
-	      ClientData clientData,	/* Interpreter-specific data. */
-	      Tcl_Interp* interp,
-	      int argStart,
-	      int objc,
-	      Tcl_Obj* const objv[])
+static int VectorCreate2(ClientData clientData, Tcl_Interp* interp,
+			 int argStart, int objc, Tcl_Obj* const objv[])
 {
   VectorInterpData *dataPtr = (VectorInterpData*)clientData;
-  Vector *vPtr;
+  Vector* vPtr;
   int count, i;
   CreateSwitches switches;
 
-  /*
-   * Handle switches to the vector command and collect the vector name
-   * arguments into an array.
-   */
+  // Handle switches to the vector command and collect the vector name
+  // arguments into an array.
   count = 0;
   vPtr = NULL;
   for (i = argStart; i < objc; i++) {
@@ -1583,93 +1119,30 @@ VectorCreate2(
   return TCL_ERROR;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorCreateOp --
- *
- *	Creates a TCL command, and array variable representing an instance of
- *	a vector.
- *
- *	vector a
- *	vector b(20)
- *	vector c(-5:14)
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
 static int VectorCreateOp(ClientData clientData, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   return VectorCreate2(clientData, interp, 2, objc, objv);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorDestroyOp --
- *
- *	Destroys the vector and its related TCL command and array variable (if
- *	they exist).
- *
- * Results:
- *	A standard TCL result.
- *
- * Side effects:
- *	Deletes the vector.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-VectorDestroyOp(
-		ClientData clientData,	/* Interpreter-specific data. */
-		Tcl_Interp* interp,		/* Not used. */
-		int objc,
-		Tcl_Obj* const objv[])
+static int VectorDestroyOp(ClientData clientData, Tcl_Interp* interp,
+			   int objc,Tcl_Obj* const objv[])
 {
   VectorInterpData *dataPtr = (VectorInterpData*)clientData;
-  Vector *vPtr;
-  int i;
 
-  for (i = 2; i < objc; i++) {
-    if (Blt_Vec_LookupName(dataPtr, Tcl_GetString(objv[i]), &vPtr) 
-	!= TCL_OK) {
+  for (int ii=2; ii<objc; ii++) {
+    Vector* vPtr;
+    if (Blt_Vec_LookupName(dataPtr, Tcl_GetString(objv[ii]), &vPtr) != TCL_OK)
       return TCL_ERROR;
-    }
     Blt_Vec_Free(vPtr);
   }
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorExprOp --
- *
- *	Computes the result of the expression which may be either a scalar
- *	(single value) or vector (list of values).
- *
- * Results:
- *	A standard TCL result.
- *
- *---------------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-VectorExprOp(
-	     ClientData clientData,	/* Not Used. */
-	     Tcl_Interp* interp,
-	     int objc,			/* Not used. */
-	     Tcl_Obj* const objv[])
+static int VectorExprOp(ClientData clientData, Tcl_Interp* interp,
+			int objc,    Tcl_Obj* const objv[])
 {
-  return Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector *)NULL);
+  return Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector* )NULL);
 }
 
 static Blt_OpSpec vectorCmdOps[] =
@@ -1684,18 +1157,11 @@ static Blt_OpSpec vectorCmdOps[] =
 
 static int nCmdOps = sizeof(vectorCmdOps) / sizeof(Blt_OpSpec);
 
-/*ARGSUSED*/
-static int
-VectorCmd(
-	  ClientData clientData,	/* Interpreter-specific data. */
-	  Tcl_Interp* interp,
-	  int objc,
-	  Tcl_Obj* const objv[])
+static int VectorCmd(ClientData clientData, Tcl_Interp* interp,
+		     int objc, Tcl_Obj* const objv[])
 {
   VectorCmdProc *proc;
-  /*
-   * Try to replicate the old vector command's behavior:
-   */
+
   if (objc > 1) {
     char *string;
     char c;
@@ -1710,10 +1176,8 @@ VectorCmd(
 	goto doOp;
       }
     }
-    /*
-     * The first argument is not an operation, so assume that its
-     * actually the name of a vector to be created
-     */
+    // The first argument is not an operation, so assume that its
+    // actually the name of a vector to be created
     return VectorCreate2(clientData, interp, 1, objc, objv);
   }
  doOp:
@@ -1726,28 +1190,7 @@ VectorCmd(
   return (*proc) ((Vector*)clientData, interp, objc, objv);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * VectorInterpDeleteProc --
- *
- *	This is called when the interpreter hosting the "vector" command
- *	is deleted.  
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Destroys the math and index hash tables.  In addition removes
- *	the hash table managing all vector names.
- *
- *---------------------------------------------------------------------------
- */
-/* ARGSUSED */
-static void
-VectorInterpDeleteProc(
-		       ClientData clientData,	/* Interpreter-specific data. */
-		       Tcl_Interp* interp)
+static void VectorInterpDeleteProc(ClientData clientData, Tcl_Interp* interp)
 {
   VectorInterpData *dataPtr = (VectorInterpData*)clientData;
   Tcl_HashEntry *hPtr;
@@ -1755,7 +1198,7 @@ VectorInterpDeleteProc(
     
   for (hPtr = Tcl_FirstHashEntry(&dataPtr->vectorTable, &cursor);
        hPtr != NULL; hPtr = Tcl_NextHashEntry(&cursor)) {
-    Vector *vPtr = (Vector*)Tcl_GetHashValue(hPtr);
+    Vector* vPtr = (Vector*)Tcl_GetHashValue(hPtr);
     vPtr->hashPtr = NULL;
     Blt_Vec_Free(vPtr);
   }
@@ -1770,8 +1213,7 @@ VectorInterpDeleteProc(
   free(dataPtr);
 }
 
-VectorInterpData *
-Blt_Vec_GetInterpData(Tcl_Interp* interp)
+VectorInterpData *Blt_Vec_GetInterpData(Tcl_Interp* interp)
 {
   VectorInterpData *dataPtr;
   Tcl_InterpDeleteProc *proc;
@@ -1817,35 +1259,12 @@ int Blt_VectorCmdInitProc(Tcl_Interp* interp)
 
 /* C Application interface to vectors */
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_CreateVector --
- *
- *	Creates a new vector by the name and size.
- *
- * Results:
- *	A standard TCL result.  If the new array size is invalid or a vector
- *	already exists by that name, TCL_ERROR is returned.  Otherwise TCL_OK
- *	is returned and the new vector is created.
- *
- * Side Effects:
- *	Memory will be allocated for the new vector.  A new TCL command and
- *	Tcl array variable will be created.
- *
- *---------------------------------------------------------------------------
- */
-
-/*LINTLIBRARY*/
-int
-Blt_CreateVector2(
-		  Tcl_Interp* interp,
-		  const char *vecName, const char *cmdName, const char *varName,
-		  int initialSize,
-		  Blt_Vector **vecPtrPtr)
+int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName,
+		      const char *cmdName, const char *varName,
+		      int initialSize, Blt_Vector* *vecPtrPtr)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
-  Vector *vPtr;
+  Vector* vPtr;
   int isNew;
   char *nameCopy;
 
@@ -1869,20 +1288,20 @@ Blt_CreateVector2(
     }
   }
   if (vecPtrPtr != NULL) {
-    *vecPtrPtr = (Blt_Vector *) vPtr;
+    *vecPtrPtr = (Blt_Vector* ) vPtr;
   }
   return TCL_OK;
 }
 
 int Blt_CreateVector(Tcl_Interp* interp, const char *name, int size,
-		     Blt_Vector **vecPtrPtr)
+		     Blt_Vector* *vecPtrPtr)
 {
   return Blt_CreateVector2(interp, name, name, name, size, vecPtrPtr);
 }
 
-int Blt_DeleteVector(Blt_Vector *vecPtr)
+int Blt_DeleteVector(Blt_Vector* vecPtr)
 {
-  Vector *vPtr = (Vector *)vecPtr;
+  Vector* vPtr = (Vector* )vecPtr;
 
   Blt_Vec_Free(vPtr);
   return TCL_OK;
@@ -1895,7 +1314,7 @@ int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
   // the string.  Therefore make a writable copy and free it when we're done.
   char* nameCopy = Blt_Strdup(name);
   VectorInterpData *dataPtr = Blt_Vec_GetInterpData(interp);
-  Vector *vPtr;
+  Vector* vPtr;
   int result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
   free(nameCopy);
 
@@ -1906,23 +1325,9 @@ int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_VectorExists2 --
- *
- *	Returns whether the vector associated with the client token still
- *	exists.
- *
- * Results:
- *	Returns 1 is the vector still exists, 0 otherwise.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
+int Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
 {
-  VectorInterpData *dataPtr;	/* Interpreter-specific data. */
+  VectorInterpData *dataPtr;
 
   dataPtr = Blt_Vec_GetInterpData(interp);
   if (GetVectorObject(dataPtr, vecName, NS_SEARCH_BOTH) != NULL) {
@@ -1931,21 +1336,7 @@ Blt_VectorExists2(Tcl_Interp* interp, const char *vecName)
   return 0;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_VectorExists --
- *
- *	Returns whether the vector associated with the client token
- *	still exists.
- *
- * Results:
- *	Returns 1 is the vector still exists, 0 otherwise.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_VectorExists(Tcl_Interp* interp, const char *vecName)
+int Blt_VectorExists(Tcl_Interp* interp, const char *vecName)
 {
   char *nameCopy;
   int result;
@@ -1962,25 +1353,10 @@ Blt_VectorExists(Tcl_Interp* interp, const char *vecName)
   return result;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetVector --
- *
- *	Returns a pointer to the vector associated with the given name.
- *
- * Results:
- *	A standard TCL result.  If there is no vector "name", TCL_ERROR is
- *	returned.  Otherwise TCL_OK is returned and vecPtrPtr will point to
- *	the vector.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector **vecPtrPtr)
+int Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector* *vecPtrPtr)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
-  Vector *vPtr;
+  Vector* vPtr;
   char *nameCopy;
   int result;
 
@@ -1998,78 +1374,29 @@ Blt_GetVector(Tcl_Interp* interp, const char *name, Blt_Vector **vecPtrPtr)
     return TCL_ERROR;
   }
   Blt_Vec_UpdateRange(vPtr);
-  *vecPtrPtr = (Blt_Vector *) vPtr;
+  *vecPtrPtr = (Blt_Vector* ) vPtr;
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetVectorFromObj --
- *
- *	Returns a pointer to the vector associated with the given name.
- *
- * Results:
- *	A standard TCL result.  If there is no vector "name", TCL_ERROR
- *	is returned.  Otherwise TCL_OK is returned and vecPtrPtr will
- *	point to the vector.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetVectorFromObj(
-		     Tcl_Interp* interp,
-		     Tcl_Obj *objPtr,
-		     Blt_Vector **vecPtrPtr)
+int Blt_GetVectorFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr,
+			 Blt_Vector* *vecPtrPtr)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
-  Vector *vPtr;
+  Vector* vPtr;
 
   dataPtr = Blt_Vec_GetInterpData(interp);
   if (Blt_Vec_LookupName(dataPtr, Tcl_GetString(objPtr), &vPtr) != TCL_OK) {
     return TCL_ERROR;
   }
   Blt_Vec_UpdateRange(vPtr);
-  *vecPtrPtr = (Blt_Vector *) vPtr;
+  *vecPtrPtr = (Blt_Vector* ) vPtr;
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ResetVector --
- *
- *	Resets the vector data.  This is called by a client to indicate that
- *	the vector data has changed.  The vector does not need to point to
- *	different memory.  Any clients of the vector will be notified of the
- *	change.
- *
- * Results:
- *	A standard TCL result.  If the new array size is invalid,
- *	TCL_ERROR is returned.  Otherwise TCL_OK is returned and the
- *	new vector data is recorded.
- *
- * Side Effects:
- *	Any client designated callbacks will be posted.  Memory may
- *	be changed for the vector array.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_ResetVector(
-		Blt_Vector *vecPtr,
-		double *valueArr,		/* Array containing the elements of the
-						 * vector. If NULL, indicates to reset the 
-						 * vector.*/
-		int length,			/* The number of elements that the vector 
-						 * currently holds. */
-		int size,			/* The maximum number of elements that the
-						 * array can hold. */
-		Tcl_FreeProc *freeProc)	/* Address of memory deallocation routine
-					 * for the array of values.  Can also be
-					 * TCL_STATIC, TCL_DYNAMIC, or TCL_VOLATILE. */
+int Blt_ResetVector(Blt_Vector* vecPtr,	double *valueArr, int length,
+		    int size, Tcl_FreeProc *freeProc)
 {
-  Vector *vPtr = (Vector *)vecPtr;
+  Vector* vPtr = (Vector* )vecPtr;
 
   if (size < 0) {
     Tcl_AppendResult(vPtr->interp, "bad array size", (char *)NULL);
@@ -2078,28 +1405,9 @@ Blt_ResetVector(
   return Blt_Vec_Reset(vPtr, valueArr, length, size, freeProc);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_ResizeVector --
- *
- *	Changes the size of the vector.  All clients with designated callback
- *	routines will be notified of the size change.
- *
- * Results:
- *	A standard TCL result.  If no vector exists by that name, TCL_ERROR is
- *	returned.  Otherwise TCL_OK is returned and vector is resized.
- *
- * Side Effects:
- *	Memory may be reallocated for the new vector size.  All clients which
- *	set call back procedures will be notified.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_ResizeVector(Blt_Vector *vecPtr, int length)
+int Blt_ResizeVector(Blt_Vector* vecPtr, int length)
 {
-  Vector *vPtr = (Vector *)vecPtr;
+  Vector* vPtr = (Vector* )vecPtr;
 
   if (Blt_Vec_ChangeLength((Tcl_Interp *)NULL, vPtr, length) != TCL_OK) {
     Tcl_AppendResult(vPtr->interp, "can't resize vector \"", vPtr->name,
@@ -2113,27 +1421,10 @@ Blt_ResizeVector(Blt_Vector *vecPtr, int length)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_AllocVectorId --
- *
- *	Creates an identifier token for an existing vector.  The identifier is
- *	used by the client routines to get call backs when (and if) the vector
- *	changes.
- *
- * Results:
- *	A standard TCL result.  If "vecName" is not associated with a vector,
- *	TCL_ERROR is returned and interp->result is filled with an error
- *	message.
- *
- *---------------------------------------------------------------------------
- */
-Blt_VectorId
-Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
+Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
-  Vector *vPtr;
+  Vector* vPtr;
   VectorClient *clientPtr;
   Blt_VectorId clientId;
   int result;
@@ -2164,32 +1455,9 @@ Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
   return clientId;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_SetVectorChangedProc --
- *
- *	Sets the routine to be called back when the vector is changed or
- *	deleted.  *clientData* will be provided as an argument. If *proc* is
- *	NULL, no callback will be made.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The designated routine will be called when the vector is changed
- *	or deleted.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_SetVectorChangedProc(
-			 Blt_VectorId clientId,	/* Client token identifying the vector */
-			 Blt_VectorChangedProc *proc,/* Address of routine to call when the contents
-						      * of the vector change. If NULL, no routine
-						      * will be called */
-			 ClientData clientData)	/* One word of information to pass along when
-						 * the above routine is called */
+void Blt_SetVectorChangedProc(Blt_VectorId clientId,
+			      Blt_VectorChangedProc *proc,
+			      ClientData clientData)
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
@@ -2200,27 +1468,7 @@ Blt_SetVectorChangedProc(
   clientPtr->proc = proc;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_FreeVectorId --
- *
- *	Releases the token for an existing vector.  This indicates that the
- *	client is no longer interested the vector.  Any previously specified
- *	callback routine will no longer be invoked when (and if) the vector
- *	changes.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Any previously specified callback routine will no longer be
- *	invoked when (and if) the vector changes.
- *
- *---------------------------------------------------------------------------
- */
-void
-Blt_FreeVectorId(Blt_VectorId clientId)
+void Blt_FreeVectorId(Blt_VectorId clientId)
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
@@ -2234,20 +1482,7 @@ Blt_FreeVectorId(Blt_VectorId clientId)
   free(clientPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_NameOfVectorId --
- *
- *	Returns the name of the vector (and array variable).
- *
- * Results:
- *	The name of the array variable is returned.
- *
- *---------------------------------------------------------------------------
- */
-const char *
-Blt_NameOfVectorId(Blt_VectorId clientId) 
+const char* Blt_NameOfVectorId(Blt_VectorId clientId) 
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
@@ -2257,27 +1492,13 @@ Blt_NameOfVectorId(Blt_VectorId clientId)
   return clientPtr->serverPtr->name;
 }
 
-const char *
-Blt_NameOfVector(Blt_Vector *vecPtr) /* Vector to query. */
+const char* Blt_NameOfVector(Blt_Vector* vecPtr) /* Vector to query. */
 {
-  Vector *vPtr = (Vector *)vecPtr;
+  Vector* vPtr = (Vector* )vecPtr;
   return vPtr->name;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_VectorNotifyPending --
- *
- *	Returns the name of the vector (and array variable).
- *
- * Results:
- *	The name of the array variable is returned.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_VectorNotifyPending(Blt_VectorId clientId)
+int Blt_VectorNotifyPending(Blt_VectorId clientId)
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
@@ -2288,26 +1509,8 @@ Blt_VectorNotifyPending(Blt_VectorId clientId)
   return (clientPtr->serverPtr->notifyFlags & NOTIFY_PENDING);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_GetVectorById --
- *
- *	Returns a pointer to the vector associated with the client
- *	token.
- *
- * Results:
- *	A standard TCL result.  If the client token is not associated
- *	with a vector any longer, TCL_ERROR is returned. Otherwise,
- *	TCL_OK is returned and vecPtrPtr will point to vector.
- *
- *---------------------------------------------------------------------------
- */
-int
-Blt_GetVectorById(
-		  Tcl_Interp* interp,
-		  Blt_VectorId clientId,	/* Client token identifying the vector */
-		  Blt_Vector **vecPtrPtr)
+int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId,
+		      Blt_Vector* *vecPtrPtr)
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
@@ -2320,14 +1523,12 @@ Blt_GetVectorById(
     return TCL_ERROR;
   }
   Blt_Vec_UpdateRange(clientPtr->serverPtr);
-  *vecPtrPtr = (Blt_Vector *) clientPtr->serverPtr;
+  *vecPtrPtr = (Blt_Vector* ) clientPtr->serverPtr;
   return TCL_OK;
 }
 
-/*LINTLIBRARY*/
-void
-Blt_InstallIndexProc(Tcl_Interp* interp, const char *string, 
-		     Blt_VectorIndexProc *procPtr) 
+void Blt_InstallIndexProc(Tcl_Interp* interp, const char *string, 
+			  Blt_VectorIndexProc *procPtr) 
 {
   VectorInterpData *dataPtr;	/* Interpreter-specific data. */
   Tcl_HashEntry *hPtr;
@@ -2342,9 +1543,6 @@ Blt_InstallIndexProc(Tcl_Interp* interp, const char *string,
   }
 }
 
-/* spinellia@acm.org START */
-
-
 #define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 
 /* routine by Brenner
@@ -2353,8 +1551,7 @@ Blt_InstallIndexProc(Tcl_Interp* interp, const char *string,
  * nn is the number of complex points, i.e. half the length of data
  * isign is 1 for forward, -1 for inverse
  */
-static void 
-four1(double *data, unsigned long nn, int isign)
+static void four1(double *data, unsigned long nn, int isign)
 {
   unsigned long n,mmax,m,j,istep,i;
   double wtemp,wr,wpr,wpi,wi,theta;
@@ -2412,23 +1609,8 @@ smallest_power_of_2_not_less_than(int x)
   return pow2;
 }
 
-
-int
-Blt_Vec_FFT(
-	    Tcl_Interp* interp,		/* Interpreter to report errors to */
-	    Vector *realPtr,	/* If non-NULL, indicates to compute and
-				   store the real values in this vector.  */
-	    Vector *phasesPtr,	/* If non-NULL, indicates to compute
-				 * and store the imaginary values in
-				 * this vector. */
-	    Vector *freqPtr,	/* If non-NULL, indicates to compute
-				 * and store the frequency values in
-				 * this vector.  */
-	    double delta,		/*  */
-	    int flags,			/* Bit mask representing various
-					 * flags: FFT_NO_constANT,
-					 * FFT_SPECTRUM, and FFT_BARTLETT. */
-	    Vector *srcPtr) 
+int Blt_Vec_FFT(Tcl_Interp* interp, Vector* realPtr, Vector* phasesPtr,
+		Vector* freqPtr, double delta, int flags, Vector* srcPtr) 
 {
   int length;
   int pow2len;
@@ -2569,9 +1751,8 @@ Blt_Vec_FFT(
 }
 
 
-int
-Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector *srcImagPtr, Vector *destRealPtr, 
-		   Vector *destImagPtr, Vector *srcPtr)
+int Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector* srcImagPtr, 
+		       Vector* destRealPtr, Vector* destImagPtr, Vector* srcPtr)
 {
   int length;
   int pow2len;
@@ -2642,13 +1823,7 @@ Blt_Vec_InverseFFT(Tcl_Interp* interp, Vector *srcImagPtr, Vector *destRealPtr,
   return TCL_OK;
 }
 
-
-/* spinellia@acm.org STOP */
-
-
-
-static double
-FindSplit(Point2d *points, int i, int j, int *split)	
+static double FindSplit(Point2d *points, int i, int j, int *split)	
 {    
   double maxDist2;
     
@@ -2687,11 +1862,9 @@ FindSplit(Point2d *points, int i, int j, int *split)
   return maxDist2;
 }
 
-
-/* Douglas-Peucker line simplification algorithm */
-int
-Blt_SimplifyLine(Point2d *inputPts, int low, int high, double tolerance,
-		 int *indices)
+// Douglas-Peucker line simplification algorithm */
+int Blt_SimplifyLine(Point2d *inputPts, int low, int high, double tolerance,
+		     int *indices)
 {
 #define StackPush(a)	s++, stack[s] = (a)
 #define StackPop(a)	(a) = stack[s], s--
