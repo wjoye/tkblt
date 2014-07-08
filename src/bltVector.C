@@ -1874,38 +1874,13 @@ Blt_CreateVector2(
   return TCL_OK;
 }
 
-int
-Blt_CreateVector(
-		 Tcl_Interp* interp,
-		 const char *name,
-		 int size,
-		 Blt_Vector **vecPtrPtr)
+int Blt_CreateVector(Tcl_Interp* interp, const char *name, int size,
+		     Blt_Vector **vecPtrPtr)
 {
   return Blt_CreateVector2(interp, name, name, name, size, vecPtrPtr);
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DeleteVector --
- *
- *	Deletes the vector of the given name.  All clients with designated
- *	callback routines will be notified.
- *
- * Results:
- *	A standard TCL result.  If no vector exists by that name, TCL_ERROR is
- *	returned.  Otherwise TCL_OK is returned and vector is deleted.
- *
- * Side Effects:
- *	Memory will be released for the new vector.  Both the TCL command and
- *	array variable will be deleted.  All clients which set call back
- *	procedures will be notified.
- *
- *---------------------------------------------------------------------------
- */
-/*LINTLIBRARY*/
-int
-Blt_DeleteVector(Blt_Vector *vecPtr)
+int Blt_DeleteVector(Blt_Vector *vecPtr)
 {
   Vector *vPtr = (Vector *)vecPtr;
 
@@ -1913,48 +1888,20 @@ Blt_DeleteVector(Blt_Vector *vecPtr)
   return TCL_OK;
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * Blt_DeleteVectorByName --
- *
- *	Deletes the vector of the given name.  All clients with designated
- *	callback routines will be notified.
- *
- * Results:
- *	A standard TCL result.  If no vector exists by that name, TCL_ERROR is
- *	returned.  Otherwise TCL_OK is returned and vector is deleted.
- *
- * Side Effects:
- *	Memory will be released for the new vector.  Both the TCL command and
- *	array variable will be deleted.  All clients which set call back
- *	procedures will be notified.
- *
- *---------------------------------------------------------------------------
- */
-/*LINTLIBRARY*/
-int
-Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
+int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *name)
 {
-  VectorInterpData *dataPtr;	/* Interpreter-specific data. */
+  // If the vector name was passed via a read-only string (e.g. "x"), the
+  // Blt_Vec_ParseElement routine will segfault when it tries to write into
+  // the string.  Therefore make a writable copy and free it when we're done.
+  char* nameCopy = Blt_Strdup(name);
+  VectorInterpData *dataPtr = Blt_Vec_GetInterpData(interp);
   Vector *vPtr;
-  char *nameCopy;
-  int result;
-
-  /*
-   * If the vector name was passed via a read-only string (e.g. "x"), the
-   * Blt_Vec_ParseElement routine will segfault when it tries to write into
-   * the string.  Therefore make a writable copy and free it when we're
-   * done.
-   */
-  nameCopy = Blt_Strdup(name);
-  dataPtr = Blt_Vec_GetInterpData(interp);
-  result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
+  int result = Blt_Vec_LookupName(dataPtr, nameCopy, &vPtr);
   free(nameCopy);
 
-  if (result != TCL_OK) {
+  if (result != TCL_OK)
     return TCL_ERROR;
-  }
+
   Blt_Vec_Free(vPtr);
   return TCL_OK;
 }
