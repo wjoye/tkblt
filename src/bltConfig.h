@@ -38,6 +38,6 @@
 extern const char* fillObjOption[];
 extern Tk_ObjCustomOption dashesObjOption;
 extern Tk_ObjCustomOption listObjOption;
-extern  Tk_CustomOptionRestoreProc RestoreProc;
+extern Tk_CustomOptionRestoreProc RestoreProc;
 
 #endif

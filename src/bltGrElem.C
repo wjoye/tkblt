@@ -194,7 +194,7 @@ Element::~Element()
   graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
-    Blt_Chain_DeleteLink(graphPtr_->elements_.displayList, link);
+    Chain_DeleteLink(graphPtr_->elements_.displayList, link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
@@ -280,7 +280,7 @@ void Element::freeStylePalette(Blt_Chain stylePalette)
 	if (penPtr->refCount_ == 0)
 	  delete penPtr;
       }
-      Blt_Chain_DeleteLink(stylePalette, link);
+      Chain_DeleteLink(stylePalette, link);
     }
   }
 }

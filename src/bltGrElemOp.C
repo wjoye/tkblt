@@ -356,25 +356,25 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
 
   // Move the links of lowered elements out of the display list into
   // a temporary list
-  Blt_Chain chain = Blt_Chain_Create();
+  Blt_Chain chain = Chain_Create();
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    Blt_Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
-    Blt_Chain_LinkAfter(chain, elemPtr->link, NULL); 
+    Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
+    Chain_LinkAfter(chain, elemPtr->link, NULL); 
   }
 
   // Append the links to end of the display list
   Blt_ChainLink link, next;
   for (link = Blt_Chain_FirstLink(chain); link != NULL; link = next) {
     next = Blt_Chain_NextLink(link);
-    Blt_Chain_UnlinkLink(chain, link); 
-    Blt_Chain_LinkAfter(graphPtr->elements_.displayList, link, NULL); 
+    Chain_UnlinkLink(chain, link); 
+    Chain_LinkAfter(graphPtr->elements_.displayList, link, NULL); 
   }	
-  Blt_Chain_Destroy(chain);
+  Chain_Destroy(chain);
 
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
@@ -421,25 +421,25 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
 
-  Blt_Chain chain = Blt_Chain_Create();
+  Blt_Chain chain = Chain_Create();
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    Blt_Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
-    Blt_Chain_LinkAfter(chain, elemPtr->link, NULL); 
+    Chain_UnlinkLink(graphPtr->elements_.displayList, elemPtr->link); 
+    Chain_LinkAfter(chain, elemPtr->link, NULL); 
   }
 
   // Prepend the links to beginning of the display list in reverse order
   Blt_ChainLink link, prev;
   for (link = Blt_Chain_LastLink(chain); link != NULL; link = prev) {
     prev = Blt_Chain_PrevLink(link);
-    Blt_Chain_UnlinkLink(chain, link); 
-    Blt_Chain_LinkBefore(graphPtr->elements_.displayList, link, NULL); 
+    Chain_UnlinkLink(chain, link); 
+    Chain_LinkBefore(graphPtr->elements_.displayList, link, NULL); 
   }	
-  Blt_Chain_Destroy(chain);
+  Chain_Destroy(chain);
 
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
@@ -461,15 +461,15 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
 
   // Collect the named elements into a list
-  Blt_Chain chain = Blt_Chain_Create();
+  Blt_Chain chain = Chain_Create();
   for (int ii=0; ii<elemObjc; ii++) {
     Element* elemPtr;
     if (graphPtr->getElement(elemObjv[ii], &elemPtr) != TCL_OK) {
-      Blt_Chain_Destroy(chain);
+      Chain_Destroy(chain);
       return TCL_ERROR;
     }
 
-    Blt_Chain_Append(chain, elemPtr);
+    Chain_Append(chain, elemPtr);
   }
 
   // Clear the links from the currently displayed elements
@@ -478,7 +478,7 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->link = NULL;
   }
-  Blt_Chain_Destroy(graphPtr->elements_.displayList);
+  Chain_Destroy(graphPtr->elements_.displayList);
   graphPtr->elements_.displayList = chain;
 
   // Set links on all the displayed elements

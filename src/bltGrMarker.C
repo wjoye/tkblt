@@ -57,7 +57,7 @@ Marker::~Marker()
   graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
-    Blt_Chain_DeleteLink(graphPtr_->markers_.displayList, link);
+    Chain_DeleteLink(graphPtr_->markers_.displayList, link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
@@ -165,7 +165,7 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
 
       p = *pp;
       q = *(pp + 1);
-      if (LineRectClip(regionPtr, &p, &q))
+      if (lineRectClip(regionPtr, &p, &q))
 	return 1;
     }
 

@@ -250,7 +250,7 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
-  ops->stylePalette = Blt_Chain_Create();
+  ops->stylePalette = Chain_Create();
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
   ops->label = Tcl_Alloc(strlen(name)+1);
@@ -272,7 +272,7 @@ LineElement::~LineElement()
 
   if (ops->stylePalette) {
     freeStylePalette(ops->stylePalette);
-    Blt_Chain_Destroy(ops->stylePalette);
+    Chain_Destroy(ops->stylePalette);
   }
 
   if (fillPts_)
@@ -290,8 +290,8 @@ int LineElement::configure()
   // selected.
   Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   if (!link) {
-    link = Blt_Chain_AllocLink(sizeof(LineStyle));
-    Blt_Chain_LinkAfter(ops->stylePalette, link, NULL);
+    link = Chain_AllocLink(sizeof(LineStyle));
+    Chain_LinkAfter(ops->stylePalette, link, NULL);
   } 
   LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
@@ -1533,9 +1533,9 @@ void LineElement::saveTrace(int start, int length, MapInfo* mapPtr)
   tracePtr->screenPts.map = map;
   tracePtr->start = start;
   if (traces_ == NULL)
-    traces_ = Blt_Chain_Create();
+    traces_ = Chain_Create();
 
-  Blt_Chain_Append(traces_, tracePtr);
+  Chain_Append(traces_, tracePtr);
 }
 
 void LineElement::freeTraces()
@@ -1547,7 +1547,7 @@ void LineElement::freeTraces()
     delete [] tracePtr->screenPts.points;
     delete tracePtr;
   }
-  Blt_Chain_Destroy(traces_);
+  Chain_Destroy(traces_);
   traces_ = NULL;
 }
 

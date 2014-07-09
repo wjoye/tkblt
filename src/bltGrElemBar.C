@@ -199,7 +199,7 @@ BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
-  ops->stylePalette = Blt_Chain_Create();
+  ops->stylePalette = Chain_Create();
 
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
@@ -222,7 +222,7 @@ BarElement::~BarElement()
 
   if (ops->stylePalette) {
     freeStylePalette(ops->stylePalette);
-    Blt_Chain_Destroy(ops->stylePalette);
+    Chain_Destroy(ops->stylePalette);
   }
 }
 
@@ -236,8 +236,8 @@ int BarElement::configure()
   // Point to the static normal pen if no external pens have been selected.
   Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
   if (!link) {
-    link = Blt_Chain_AllocLink(sizeof(BarStyle));
-    Blt_Chain_LinkAfter(ops->stylePalette, link, NULL);
+    link = Chain_AllocLink(sizeof(BarStyle));
+    Chain_LinkAfter(ops->stylePalette, link, NULL);
   }
   BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);

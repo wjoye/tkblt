@@ -242,14 +242,14 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
   elemPtr->freeStylePalette(stylePalette);
   Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette);
   if (!link) {
-    link = Blt_Chain_AllocLink(size);
-    Blt_Chain_LinkAfter(stylePalette, link, NULL);
+    link = Chain_AllocLink(size);
+    Chain_LinkAfter(stylePalette, link, NULL);
   }
 
   PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
   for (int ii = 0; ii<objc; ii++) {
-    link = Blt_Chain_AllocLink(size);
+    link = Chain_AllocLink(size);
     stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
     stylePtr->weight.min = (double)ii;
     stylePtr->weight.max = (double)ii + 1.0;
@@ -260,7 +260,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
       elemPtr->freeStylePalette(stylePalette);
       return TCL_ERROR;
     }
-    Blt_Chain_LinkAfter(stylePalette, link, NULL);
+    Chain_LinkAfter(stylePalette, link, NULL);
   }
 
   return TCL_OK;

@@ -260,7 +260,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   margin_ = margin;
   segments_ =NULL;
   nSegments_ =0;
-  tickLabels_ = Blt_Chain_Create();
+  tickLabels_ = Chain_Create();
   left_ =0;
   right_ =0;
   top_ =0;
@@ -299,7 +299,7 @@ Axis::~Axis()
   graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
-    Blt_Chain_DeleteLink(chain, link);
+    Chain_DeleteLink(chain, link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
@@ -332,7 +332,7 @@ Axis::~Axis()
 
   freeTickLabels();
 
-  Blt_Chain_Destroy(tickLabels_);
+  Chain_Destroy(tickLabels_);
 
   if (segments_)
     delete [] segments_;
@@ -1033,7 +1033,7 @@ void Axis::freeTickLabels()
     TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
     delete labelPtr;
   }
-  Blt_Chain_Reset(chain);
+  Chain_Reset(chain);
 }
 
 TickLabel* Axis::makeLabel(double value)
@@ -1904,7 +1904,7 @@ void Axis::getGeometry()
 	continue;
 
       TickLabel* labelPtr = makeLabel(x);
-      Blt_Chain_Append(tickLabels_, labelPtr);
+      Chain_Append(tickLabels_, labelPtr);
       nLabels++;
 
       // Get the dimensions of each tick label.  Remember tick labels

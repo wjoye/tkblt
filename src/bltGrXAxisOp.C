@@ -168,7 +168,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
       axisPtr->setClass(CID_NONE);
   }
 
-  Blt_Chain_Reset(chain);
+  Chain_Reset(chain);
   for (int ii=0; ii<axisObjc; ii++) {
     Axis* axisPtr;
     if (graphPtr->getAxis(axisObjv[ii], &axisPtr) != TCL_OK)
@@ -184,11 +184,11 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     }
     if (axisPtr->link) {
       /* Move the axis from the old margin's "use" list to the new. */
-      Blt_Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
+      Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
       Blt_Chain_AppendLink(chain, axisPtr->link);
     }
     else
-      axisPtr->link = Blt_Chain_Append(chain, axisPtr);
+      axisPtr->link = Chain_Append(chain, axisPtr);
 
     axisPtr->chain = chain;
     axisPtr->use_ =1;

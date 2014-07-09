@@ -176,7 +176,7 @@ Legend::Legend(Graph* graphPtr)
   focusPtr_ =NULL;
   selAnchorPtr_ =NULL;
   selMarkPtr_ =NULL;
-  selected_ = Blt_Chain_Create();
+  selected_ = Chain_Create();
   titleWidth_ =0;
   titleHeight_ =0;
 
@@ -215,7 +215,7 @@ Legend::~Legend()
     if (graphPtr_->tkwin_)
     Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
 
-  Blt_Chain_Destroy(selected_);
+  Chain_Destroy(selected_);
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -762,7 +762,7 @@ void Legend::selectElement(Element* elemPtr)
   int isNew;
   Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, elemPtr, &isNew);
   if (isNew) {
-    Blt_ChainLink link = Blt_Chain_Append(selected_, elemPtr);
+    Blt_ChainLink link = Chain_Append(selected_, elemPtr);
     Tcl_SetHashValue(hPtr, link);
   }
 }
@@ -772,7 +772,7 @@ void Legend::deselectElement(Element* elemPtr)
   Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, elemPtr);
   if (hPtr) {
     Blt_ChainLink link = (Blt_ChainLink)Tcl_GetHashValue(hPtr);
-    Blt_Chain_DeleteLink(selected_, link);
+    Chain_DeleteLink(selected_, link);
     Tcl_DeleteHashEntry(hPtr);
   }
 }
@@ -780,7 +780,7 @@ void Legend::deselectElement(Element* elemPtr)
 
 int Legend::selectRange(Element *fromPtr, Element *toPtr)
 {
-  if (Blt_Chain_IsBefore(fromPtr->link, toPtr->link)) {
+  if (Chain_IsBefore(fromPtr->link, toPtr->link)) {
     for (Blt_ChainLink link=fromPtr->link; link; 
 	 link=Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
@@ -808,7 +808,7 @@ void Legend::clearSelection()
 
   Tcl_DeleteHashTable(&selectTable_);
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
-  Blt_Chain_Reset(selected_);
+  Chain_Reset(selected_);
 
   if (ops->selectCmd)
     eventuallyInvokeSelectCmd();

@@ -278,7 +278,7 @@ int BarGraph::createElement(int objc, Tcl_Obj* const objv[])
     return TCL_ERROR;
   }
 
-  elemPtr->link = Blt_Chain_Append(elements_.displayList, elemPtr);
+  elemPtr->link = Chain_Append(elements_.displayList, elemPtr);
 
   return TCL_OK;
 }
