@@ -266,7 +266,7 @@ void Legend::map(int plotWidth, int plotHeight)
   int maxWidth =0;
   int maxHeight =0;
   TextStyle ts(graphPtr_, &ops->style);
-  for (Blt_ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
+  for (ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
        link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -374,7 +374,7 @@ void Legend::map(int plotWidth, int plotHeight)
   int row =0;
   int col =0;
   int count =0;
-  for (Blt_ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
+  for (ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
        link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     count++;
@@ -454,7 +454,7 @@ void Legend::draw(Drawable drawable)
   int yStart = y;
   TextStyle ts(graphPtr_, &ops->style);
 
-  for (Blt_ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList);
+  for (ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList);
        link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -574,7 +574,7 @@ void Legend::print(PSOutput* psPtr)
   double yStart = y;
   TextStyle ts(graphPtr_, &ops->style);
 
-  for (Blt_ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
+  for (ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList); 
        link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -762,7 +762,7 @@ void Legend::selectElement(Element* elemPtr)
   int isNew;
   Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, elemPtr, &isNew);
   if (isNew) {
-    Blt_ChainLink link = Chain_Append(selected_, elemPtr);
+    ChainLink link = Chain_Append(selected_, elemPtr);
     Tcl_SetHashValue(hPtr, link);
   }
 }
@@ -771,7 +771,7 @@ void Legend::deselectElement(Element* elemPtr)
 {
   Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, elemPtr);
   if (hPtr) {
-    Blt_ChainLink link = (Blt_ChainLink)Tcl_GetHashValue(hPtr);
+    ChainLink link = (ChainLink)Tcl_GetHashValue(hPtr);
     Chain_DeleteLink(selected_, link);
     Tcl_DeleteHashEntry(hPtr);
   }
@@ -781,7 +781,7 @@ void Legend::deselectElement(Element* elemPtr)
 int Legend::selectRange(Element *fromPtr, Element *toPtr)
 {
   if (Chain_IsBefore(fromPtr->link, toPtr->link)) {
-    for (Blt_ChainLink link=fromPtr->link; link; 
+    for (ChainLink link=fromPtr->link; link; 
 	 link=Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       selectEntry(elemPtr);
@@ -790,7 +790,7 @@ int Legend::selectRange(Element *fromPtr, Element *toPtr)
     }
   } 
   else {
-    for (Blt_ChainLink link=fromPtr->link; link;
+    for (ChainLink link=fromPtr->link; link;
 	 link=Chain_PrevLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       selectEntry(elemPtr);
@@ -875,7 +875,7 @@ Element* Legend::getNextRow(Element* focusPtr)
 {
   int col = focusPtr->col_;
   int row = focusPtr->row_ + 1;
-  for (Blt_ChainLink link=focusPtr->link; link; link=Chain_NextLink(link)) {
+  for (ChainLink link=focusPtr->link; link; link=Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
@@ -892,7 +892,7 @@ Element* Legend::getNextColumn(Element* focusPtr)
 {
   int col = focusPtr->col_ + 1;
   int row = focusPtr->row_;
-  for (Blt_ChainLink link=focusPtr->link; link; link=Chain_NextLink(link)) {
+  for (ChainLink link=focusPtr->link; link; link=Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
@@ -909,7 +909,7 @@ Element* Legend::getPreviousRow(Element* focusPtr)
 {
   int col = focusPtr->col_;
   int row = focusPtr->row_ - 1;
-  for (Blt_ChainLink link=focusPtr->link; link; link=Chain_PrevLink(link)) {
+  for (ChainLink link=focusPtr->link; link; link=Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
@@ -926,7 +926,7 @@ Element* Legend::getPreviousColumn(Element* focusPtr)
 {
   int col = focusPtr->col_ - 1;
   int row = focusPtr->row_;
-  for (Blt_ChainLink link=focusPtr->link; link; link=Chain_PrevLink(link)) {
+  for (ChainLink link=focusPtr->link; link; link=Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 
@@ -941,7 +941,7 @@ Element* Legend::getPreviousColumn(Element* focusPtr)
 
 Element* Legend::getFirstElement()
 {
-  for (Blt_ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList);
+  for (ChainLink link=Chain_FirstLink(graphPtr_->elements_.displayList);
        link; link=Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -953,7 +953,7 @@ Element* Legend::getFirstElement()
 
 Element* Legend::getLastElement()
 {
-  for (Blt_ChainLink link=Chain_LastLink(graphPtr_->elements_.displayList); 
+  for (ChainLink link=Chain_LastLink(graphPtr_->elements_.displayList); 
        link; link=Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -987,7 +987,7 @@ ClientData Legend::pickEntry(int xx, int yy, ClassId* classIdPtr)
     // Legend entries are stored in bottom-to-top
     if (nn < nEntries_) {
       int count = 0;
-      for (Blt_ChainLink link = Chain_FirstLink(graphPtr_->elements_.displayList); link; link = Chain_NextLink(link)) {
+      for (ChainLink link = Chain_FirstLink(graphPtr_->elements_.displayList); link; link = Chain_NextLink(link)) {
 	Element* elemPtr = (Element*)Chain_GetValue(link);
 	ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
 	if (elemOps->label) {
@@ -1020,7 +1020,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
   Tcl_DString dString;
   Tcl_DStringInit(&dString);
   if (legendPtr->flags & SELECT_SORTED) {
-    for (Blt_ChainLink link=Chain_FirstLink(legendPtr->selected_); 
+    for (ChainLink link=Chain_FirstLink(legendPtr->selected_); 
 	 link; link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       Tcl_DStringAppend(&dString, elemPtr->name_, -1);
@@ -1028,7 +1028,7 @@ static int SelectionProc(ClientData clientData, int offset, char *buffer,
     }
   }
   else {
-    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList);
+    for (ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList);
 	 link; link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       if (legendPtr->entryIsSelected(elemPtr)) {

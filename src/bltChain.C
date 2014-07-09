@@ -38,9 +38,7 @@ using namespace Blt;
   (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
 #endif
 
-typedef int (QSortCompareProc) (const void *, const void *);
-
-typedef struct _Blt_ChainLink ChainLink;
+//typedef struct _Blt_ChainLink ChainLink;
 typedef struct _Blt_Chain Chain;
 
 Blt_Chain Blt::Chain_Create(void)
@@ -52,10 +50,10 @@ Blt_Chain Blt::Chain_Create(void)
   return chainPtr;
 }
 
-Blt_ChainLink Blt::Chain_AllocLink(size_t extraSize)
+ChainLink Blt::Chain_AllocLink(size_t extraSize)
 {
-  size_t linkSize = ALIGN(sizeof(ChainLink));
-  ChainLink* linkPtr = (ChainLink*)calloc(1, linkSize + extraSize);
+  size_t linkSize = ALIGN(sizeof(_ChainLink));
+  ChainLink linkPtr = (ChainLink)calloc(1, linkSize + extraSize);
   if (extraSize > 0) {
     // Point clientData at the memory beyond the normal structure
     linkPtr->clientData = (ClientData)((char *)linkPtr + linkSize);
@@ -63,15 +61,15 @@ Blt_ChainLink Blt::Chain_AllocLink(size_t extraSize)
   return linkPtr;
 }
 
-void Blt::Chain_InitLink(ChainLink* linkPtr)
+void Blt::Chain_InitLink(ChainLink linkPtr)
 {
   linkPtr->clientData = NULL;
   linkPtr->next = linkPtr->prev = NULL;
 }
 
-Blt_ChainLink Blt::Chain_NewLink(void)
+ChainLink Blt::Chain_NewLink(void)
 {
-  ChainLink* linkPtr = (ChainLink*)malloc(sizeof(ChainLink));
+  ChainLink linkPtr = (ChainLink)malloc(sizeof(_ChainLink));
   linkPtr->clientData = NULL;
   linkPtr->next = linkPtr->prev = NULL;
   return linkPtr;
@@ -80,8 +78,8 @@ Blt_ChainLink Blt::Chain_NewLink(void)
 void Blt::Chain_Reset(Chain* chainPtr)
 {
   if (chainPtr) {
-    ChainLink* oldPtr;
-    ChainLink* linkPtr = chainPtr->head;
+    ChainLink oldPtr;
+    ChainLink linkPtr = chainPtr->head;
 
     while (linkPtr) {
       oldPtr = linkPtr;
@@ -107,8 +105,8 @@ void Blt::Chain_Init(Chain* chainPtr)
   chainPtr->head = chainPtr->tail = NULL;
 }
 
-void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink* linkPtr, 
-			 ChainLink* afterPtr)
+void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink linkPtr, 
+			 ChainLink afterPtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -133,8 +131,8 @@ void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink* linkPtr,
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink* linkPtr, 
-			  ChainLink* beforePtr)
+void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink linkPtr, 
+			  ChainLink beforePtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -159,7 +157,7 @@ void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink* linkPtr,
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink* linkPtr)
+void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink linkPtr)
 {
   // Indicates if the link is actually remove from the chain
   int unlinked;
@@ -187,36 +185,32 @@ void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink* linkPtr)
   linkPtr->prev = linkPtr->next = NULL;
 }
 
-void Blt::Chain_DeleteLink(Blt_Chain chain, Blt_ChainLink link)
+void Blt::Chain_DeleteLink(Blt_Chain chain, ChainLink link)
 {
   Chain_UnlinkLink(chain, link);
   free(link);
   link = NULL;
 }
 
-Blt_ChainLink Blt::Chain_Append(Blt_Chain chain, ClientData clientData)
+ChainLink Blt::Chain_Append(Blt_Chain chain, ClientData clientData)
 {
-  Blt_ChainLink link;
-
-  link = Chain_NewLink();
-  Chain_LinkAfter(chain, link, (Blt_ChainLink)NULL);
+  ChainLink link = Chain_NewLink();
+  Chain_LinkAfter(chain, link, (ChainLink)NULL);
   Chain_SetValue(link, clientData);
   return link;
 }
 
-Blt_ChainLink Blt::Chain_Prepend(Blt_Chain chain, ClientData clientData)
+ChainLink Blt::Chain_Prepend(Blt_Chain chain, ClientData clientData)
 {
-  Blt_ChainLink link;
-
-  link = Chain_NewLink();
-  Chain_LinkBefore(chain, link, (Blt_ChainLink)NULL);
+  ChainLink link = Chain_NewLink();
+  Chain_LinkBefore(chain, link, (ChainLink)NULL);
   Chain_SetValue(link, clientData);
   return link;
 }
 
-int Blt::Chain_IsBefore(ChainLink* firstPtr, ChainLink* lastPtr)
+int Blt::Chain_IsBefore(ChainLink firstPtr, ChainLink lastPtr)
 {
-  for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next) {
+  for (ChainLink linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next) {
     if (linkPtr == lastPtr)
       return 1;
   }

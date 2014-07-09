@@ -321,7 +321,7 @@ static int FindOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   int enclosed = (mode == FIND_ENCLOSED);
-  for (Blt_ChainLink link = Chain_FirstLink(graphPtr->markers_.displayList);
+  for (ChainLink link = Chain_FirstLink(graphPtr->markers_.displayList);
        link; link = Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -348,7 +348,7 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
   Graph* graphPtr = (Graph*)clientData;
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
-    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
+    for (ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -356,7 +356,7 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
     }
   } 
   else {
-    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
+    for (ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Chain_GetValue(link);
       for (int ii = 3; ii<objc; ii++) {
@@ -390,10 +390,10 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
     if (GetMarkerFromObj(interp, graphPtr, objv[4], &placePtr) != TCL_OK)
       return TCL_ERROR;
 
-  Blt_ChainLink link = markerPtr->link;
+  ChainLink link = markerPtr->link;
   Chain_UnlinkLink(graphPtr->markers_.displayList, markerPtr->link);
 
-  Blt_ChainLink place = placePtr ? placePtr->link : NULL;
+  ChainLink place = placePtr ? placePtr->link : NULL;
 
   const char* string = Tcl_GetString(objv[2]);
   if (string[0] == 'l')

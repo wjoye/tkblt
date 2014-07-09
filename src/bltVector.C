@@ -85,7 +85,7 @@ typedef struct {
 			       * vector change or the vector is deleted. */
   ClientData clientData;	/* Data passed whenever the vector change
 				 * procedure is called. */
-  Blt_ChainLink link;		/* Used to quickly remove this entry from its
+  ChainLink link;		/* Used to quickly remove this entry from its
 				 * server's client chain. */
 } VectorClient;
 
@@ -372,7 +372,7 @@ Vector* Blt::Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
 void Blt_Vec_NotifyClients(ClientData clientData)
 {
   Vector* vPtr = (Vector*)clientData;
-  Blt_ChainLink link, next;
+  ChainLink link, next;
   Blt_VectorNotify notify;
 
   notify = (vPtr->notifyFlags & NOTIFY_DESTROYED)
@@ -772,7 +772,7 @@ Vector* Blt::Vec_New(VectorInterpData *dataPtr)
 
 void Blt::Vec_Free(Vector* vPtr)
 {
-  Blt_ChainLink link;
+  ChainLink link;
 
   if (vPtr->cmdToken != 0) {
     DeleteCommand(vPtr);

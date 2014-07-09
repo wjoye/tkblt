@@ -328,7 +328,7 @@ static const Ensemble graphEnsemble[] = {
 
 static Axis* GetFirstAxis(Blt_Chain chain)
 {
-  Blt_ChainLink link = Chain_FirstLink(chain);
+  ChainLink link = Chain_FirstLink(chain);
   if (!link)
     return NULL;
 

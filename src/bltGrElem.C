@@ -237,7 +237,7 @@ PenStyle** Element::StyleMap()
   int nPoints = NUMBEROFPOINTS(ops);
   int nWeights = MIN(ops->w ? ops->w->nValues() : 0, nPoints);
   double* w = ops->w ? ops->w->values_ : NULL;
-  Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
+  ChainLink link = Chain_FirstLink(ops->stylePalette);
   PenStyle* stylePtr = (PenStyle*)Chain_GetValue(link);
 
   // Create a style mapping array (data point index to style), 
@@ -268,9 +268,9 @@ PenStyle** Element::StyleMap()
 void Element::freeStylePalette(Blt_Chain stylePalette)
 {
   // Skip the first slot. It contains the built-in "normal" pen of the element
-  Blt_ChainLink link = Chain_FirstLink(stylePalette);
+  ChainLink link = Chain_FirstLink(stylePalette);
   if (link) {
-    Blt_ChainLink next;
+    ChainLink next;
     for (link=Chain_NextLink(link); link; link=next) {
       next = Chain_NextLink(link);
       PenStyle *stylePtr = (PenStyle*)Chain_GetValue(link);

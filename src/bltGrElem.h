@@ -164,7 +164,7 @@ namespace Blt {
     int active_;		
     int labelActive_;
 
-    Blt_ChainLink link;
+    ChainLink link;
 
   protected:
     double FindElemValuesMinimum(ElemValues*, double);

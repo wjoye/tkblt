@@ -171,7 +171,7 @@ namespace Blt {
     int use_;
     int active_;		
 
-    Blt_ChainLink link;
+    ChainLink link;
     Blt_Chain chain;
 
     Point2d titlePos_;
