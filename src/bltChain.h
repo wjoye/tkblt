@@ -47,8 +47,8 @@
 
 namespace Blt {
 
-  typedef struct _Blt_Chain *Blt_Chain;
-  typedef struct _ChainLink *ChainLink;
+  typedef struct _Chain* Chain;
+  typedef struct _ChainLink* ChainLink;
 
   struct _ChainLink {
     ChainLink prev;		/* Link to the previous link */
@@ -56,25 +56,26 @@ namespace Blt {
     ClientData clientData;	/* Pointer to the data object */
   };
 
-  struct _Blt_Chain {
+  struct _Chain {
     ChainLink head;		/* Pointer to first element in chain */
     ChainLink tail;		/* Pointer to last element in chain */
     long nLinks;		/* Number of elements in chain */
   };
 
-  extern Blt_Chain Chain_Create(void);
+  extern Chain Chain_Create(void);
   extern ChainLink Chain_AllocLink(size_t size);
   extern void Chain_InitLink(ChainLink link);
-  extern void Chain_Init(Blt_Chain chain);
+  extern void Chain_Init(Chain chain);
   extern ChainLink Chain_NewLink(void);
-  extern void Chain_Reset(Blt_Chain chain);
-  extern void Chain_Destroy(Blt_Chain chain);
-  extern void Chain_LinkAfter(Blt_Chain chain, ChainLink link, ChainLink after);
-  extern void Chain_LinkBefore(Blt_Chain chain, ChainLink link, ChainLink before);
-  extern void Chain_UnlinkLink(Blt_Chain chain, ChainLink link);
-  extern void Chain_DeleteLink(Blt_Chain chain, ChainLink link);
-  extern ChainLink Chain_Append(Blt_Chain chain, ClientData clientData);
-  extern ChainLink Chain_Prepend(Blt_Chain chain, ClientData clientData);
+  extern void Chain_Reset(Chain chain);
+  extern void Chain_Destroy(Chain chain);
+  extern void Chain_LinkAfter(Chain chain, ChainLink link, ChainLink after);
+  extern void Chain_LinkBefore(Chain chain, ChainLink link, ChainLink before);
+  extern void Chain_UnlinkLink(Chain chain, ChainLink link);
+  extern void Chain_DeleteLink(Chain chain, ChainLink link);
+  extern ChainLink Chain_Append(Chain chain, ClientData clientData);
+  extern ChainLink Chain_Prepend(Chain chain, ClientData clientData);
   extern int Chain_IsBefore(ChainLink first, ChainLink last);
 };
+
 #endif /* _BLT_CHAIN_H */

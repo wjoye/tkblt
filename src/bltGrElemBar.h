@@ -74,7 +74,7 @@ namespace Blt {
     ElemValues* yLow;
     int hide;
     int legendRelief;
-    Blt_Chain stylePalette;
+    Chain stylePalette;
     BarPen* builtinPenPtr;
     BarPen* activePenPtr;
     BarPen* normalPenPtr;
@@ -98,7 +98,7 @@ namespace Blt {
     GraphSegments yeb_;
 
   protected:
-    void ResetStylePalette(Blt_Chain);
+    void ResetStylePalette(Chain);
     void checkStacks(Axis*, Axis*, double*, double*);
     void mergePens(BarStyle**);
     void mapActive();

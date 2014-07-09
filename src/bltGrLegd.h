@@ -131,7 +131,7 @@ namespace Blt {
     Element* focusPtr_;
     Element* selAnchorPtr_;
     Element* selMarkPtr_;
-    Blt_Chain selected_;
+    Chain selected_;
     int titleWidth_;
     int titleHeight_;
 

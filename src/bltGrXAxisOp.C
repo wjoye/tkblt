@@ -137,7 +137,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
   else
     return TCL_ERROR;
 
-  Blt_Chain chain = ops->margins[margin].axes;
+  Chain chain = ops->margins[margin].axes;
 
   if (objc == 3) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);

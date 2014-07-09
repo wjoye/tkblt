@@ -228,7 +228,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 		 Tk_Window tkwin, Tcl_Obj** objPtr, char* widgRec,
 		 int offset, char* save, int flags)
 {
-  Blt_Chain stylePalette = *(Blt_Chain*)(widgRec + offset);
+  Chain stylePalette = *(Chain*)(widgRec + offset);
   ElementOptions* ops = (ElementOptions*)(widgRec);
   Element* elemPtr = ops->elemPtr;
   size_t size = (size_t)clientData;
@@ -269,7 +269,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin, 
 		      char *widgRec, int offset)
 {
-  Blt_Chain stylePalette = *(Blt_Chain*)(widgRec + offset);
+  Chain stylePalette = *(Chain*)(widgRec + offset);
 
   // count how many
   int cnt =0;

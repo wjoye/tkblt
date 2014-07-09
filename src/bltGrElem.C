@@ -265,7 +265,7 @@ PenStyle** Element::StyleMap()
   return dataToStyle;
 }
 
-void Element::freeStylePalette(Blt_Chain stylePalette)
+void Element::freeStylePalette(Chain stylePalette)
 {
   // Skip the first slot. It contains the built-in "normal" pen of the element
   ChainLink link = Chain_FirstLink(stylePalette);

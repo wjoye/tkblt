@@ -838,7 +838,7 @@ void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 
 // Support
 
-void BarElement::ResetStylePalette(Blt_Chain stylePalette)
+void BarElement::ResetStylePalette(Chain stylePalette)
 {
   for (ChainLink link = Chain_FirstLink(stylePalette); link; 
        link = Chain_NextLink(link)) {

@@ -106,16 +106,11 @@ namespace Blt {
     // If you change these fields, make sure you change the definition of
     // Blt_Vector in blt.h too.
     double *valueArr;		/* Array of values (malloc-ed) */
-
     int length;			/* Current number of values in the array. */
-
     int size;			/* Maximum number of values that can be stored
 				 * in the value array. */
-
     double min, max;		/* Minimum and maximum values in the vector */
-
     int dirty;			/* Indicates if the vector has been updated */
-
     int reserved;
 
     /* The following fields are local to this module  */
@@ -123,44 +118,31 @@ namespace Blt {
     const char *name;		/* The namespace-qualified name of the vector.
 				 * It points to the hash key allocated for the
 				 * entry in the vector hash table. */
-
     VectorInterpData *dataPtr;
-    Tcl_Interp* interp;		/* Interpreter associated with the
-				 * vector */
-
+    Tcl_Interp* interp;		/* Interpreter associated with the vector */
     Tcl_HashEntry *hashPtr;	/* If non-NULL, pointer in a hash table to
 				 * track the vectors in use. */
-
     Tcl_FreeProc *freeProc;	/* Address of procedure to call to release
 				 * storage for the value array, Optionally can
 				 * be one of the following: TCL_STATIC,
 				 * TCL_DYNAMIC, or TCL_VOLATILE. */
-
     const char *arrayName;	/* The name of the TCL array variable mapped
 				 * to the vector (malloc'ed). If NULL,
 				 * indicates that the vector isn't mapped to
 				 * any variable */
-
     Tcl_Namespace *nsPtr;	/* Namespace context of the vector itself. */
-
     int offset;			/* Offset from zero of the vector's starting
 				 * index */
-
     Tcl_Command cmdToken;	/* Token for vector's TCL command. */
-
-    Blt_Chain chain;		/* List of clients using this vector */
-
+    Chain chain;		/* List of clients using this vector */
     int notifyFlags;		/* Notification flags. See definitions
 				 * below */
-
     int varFlags;		/* Indicate if the variable is global,
 				 * namespace, or local */
-
     int freeOnUnset;		/* For backward compatibility only: If
 				 * non-zero, free the vector when its variable
 				 * is unset. */
     int flush;
-
     int first, last;		/* Selected region of vector. This is used
 				 * mostly for the math routines */
   } Vector;

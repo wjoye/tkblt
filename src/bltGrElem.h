@@ -138,7 +138,7 @@ namespace Blt {
     ElemValues* yLow;
     int hide;
     int legendRelief;
-    Blt_Chain stylePalette;
+    Chain stylePalette;
     Pen* builtinPenPtr;
     Pen* activePenPtr;
     Pen* normalPenPtr;
@@ -189,7 +189,7 @@ namespace Blt {
     virtual const char* className() =0;
     virtual const char* typeName() =0;
 
-    void freeStylePalette (Blt_Chain);
+    void freeStylePalette (Chain);
 
     Tk_OptionTable optionTable() {return optionTable_;}
     void* ops() {return ops_;}

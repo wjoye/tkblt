@@ -38,15 +38,11 @@ using namespace Blt;
   (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
 #endif
 
-//typedef struct _Blt_ChainLink ChainLink;
-typedef struct _Blt_Chain Chain;
-
-Blt_Chain Blt::Chain_Create(void)
+Chain Blt::Chain_Create(void)
 {
-  Chain* chainPtr =(Chain*)malloc(sizeof(Chain));
-  if (chainPtr) {
+  Chain chainPtr =(Chain)malloc(sizeof(_Chain));
+  if (chainPtr)
     Chain_Init(chainPtr);
-  }
   return chainPtr;
 }
 
@@ -75,7 +71,7 @@ ChainLink Blt::Chain_NewLink(void)
   return linkPtr;
 }
 
-void Blt::Chain_Reset(Chain* chainPtr)
+void Blt::Chain_Reset(Chain chainPtr)
 {
   if (chainPtr) {
     ChainLink oldPtr;
@@ -90,7 +86,7 @@ void Blt::Chain_Reset(Chain* chainPtr)
   }
 }
 
-void Blt::Chain_Destroy(Chain* chainPtr)
+void Blt::Chain_Destroy(Chain chainPtr)
 {
   if (chainPtr) {
     Chain_Reset(chainPtr);
@@ -99,14 +95,13 @@ void Blt::Chain_Destroy(Chain* chainPtr)
   }
 }
 
-void Blt::Chain_Init(Chain* chainPtr)
+void Blt::Chain_Init(Chain chainPtr)
 {
   chainPtr->nLinks = 0;
   chainPtr->head = chainPtr->tail = NULL;
 }
 
-void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink linkPtr, 
-			 ChainLink afterPtr)
+void Blt::Chain_LinkAfter(Chain chainPtr, ChainLink linkPtr, ChainLink afterPtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -131,8 +126,8 @@ void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink linkPtr,
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink linkPtr, 
-			  ChainLink beforePtr)
+void Blt::Chain_LinkBefore(Chain chainPtr, ChainLink linkPtr, 
+			   ChainLink beforePtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -157,7 +152,7 @@ void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink linkPtr,
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink linkPtr)
+void Blt::Chain_UnlinkLink(Chain chainPtr, ChainLink linkPtr)
 {
   // Indicates if the link is actually remove from the chain
   int unlinked;
@@ -185,14 +180,14 @@ void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink linkPtr)
   linkPtr->prev = linkPtr->next = NULL;
 }
 
-void Blt::Chain_DeleteLink(Blt_Chain chain, ChainLink link)
+void Blt::Chain_DeleteLink(Chain chain, ChainLink link)
 {
   Chain_UnlinkLink(chain, link);
   free(link);
   link = NULL;
 }
 
-ChainLink Blt::Chain_Append(Blt_Chain chain, ClientData clientData)
+ChainLink Blt::Chain_Append(Chain chain, ClientData clientData)
 {
   ChainLink link = Chain_NewLink();
   Chain_LinkAfter(chain, link, (ChainLink)NULL);
@@ -200,7 +195,7 @@ ChainLink Blt::Chain_Append(Blt_Chain chain, ClientData clientData)
   return link;
 }
 
-ChainLink Blt::Chain_Prepend(Blt_Chain chain, ClientData clientData)
+ChainLink Blt::Chain_Prepend(Chain chain, ClientData clientData)
 {
   ChainLink link = Chain_NewLink();
   Chain_LinkBefore(chain, link, (ChainLink)NULL);

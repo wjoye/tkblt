@@ -356,7 +356,7 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
 
   // Move the links of lowered elements out of the display list into
   // a temporary list
-  Blt_Chain chain = Chain_Create();
+  Chain chain = Chain_Create();
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
@@ -421,7 +421,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
 
-  Blt_Chain chain = Chain_Create();
+  Chain chain = Chain_Create();
 
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
@@ -461,7 +461,7 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
 
   // Collect the named elements into a list
-  Blt_Chain chain = Chain_Create();
+  Chain chain = Chain_Create();
   for (int ii=0; ii<elemObjc; ii++) {
     Element* elemPtr;
     if (graphPtr->getElement(elemObjv[ii], &elemPtr) != TCL_OK) {

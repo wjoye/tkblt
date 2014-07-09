@@ -876,7 +876,7 @@ int Graph::createAxes()
     int isNew;
     Tcl_HashEntry* hPtr = 
       Tcl_CreateHashEntry(&axes_.table, axisNames[ii].name, &isNew);
-    Blt_Chain chain = Chain_Create();
+    Chain chain = Chain_Create();
 
     Axis* axisPtr = new Axis(this, axisNames[ii].name, ii, hPtr);
     if (!axisPtr)
@@ -973,7 +973,7 @@ void Graph::mapAxes()
     int count =0;
     int offset =0;
 
-    Blt_Chain chain = ops->margins[ii].axes;
+    Chain chain = ops->margins[ii].axes;
     for (ChainLink link=Chain_FirstLink(chain); link; 
 	 link = Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Chain_GetValue(link);

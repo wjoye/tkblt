@@ -1027,7 +1027,7 @@ int Axis::isHorizontal()
 
 void Axis::freeTickLabels()
 {
-  Blt_Chain chain = tickLabels_;
+  Chain chain = tickLabels_;
   for (ChainLink link=Chain_FirstLink(chain); link;
        link = Chain_NextLink(link)) {
     TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);

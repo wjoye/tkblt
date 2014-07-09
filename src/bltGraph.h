@@ -80,14 +80,14 @@ namespace Blt {
     short int maxTickWidth;
     short int maxTickHeight;
     unsigned int nAxes;
-    Blt_Chain axes;
+    Chain axes;
     int reqSize;
     int site;
   } Margin;
 
   typedef struct {
     Tcl_HashTable table;
-    Blt_Chain displayList;
+    Chain displayList;
     Tcl_HashTable tagTable;
   } Component;
 
@@ -141,7 +141,7 @@ namespace Blt {
     Component markers_;
     Tcl_HashTable penTable_;
     BindTable* bindTable_;
-    Blt_Chain axisChain_[4];
+    Chain axisChain_[4];
 
     Legend* legend_;
     Crosshairs* crosshairs_;
