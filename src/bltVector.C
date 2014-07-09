@@ -378,9 +378,9 @@ void Blt_Vec_NotifyClients(ClientData clientData)
   notify = (vPtr->notifyFlags & NOTIFY_DESTROYED)
     ? BLT_VECTOR_NOTIFY_DESTROY : BLT_VECTOR_NOTIFY_UPDATE;
   vPtr->notifyFlags &= ~(NOTIFY_UPDATED | NOTIFY_DESTROYED | NOTIFY_PENDING);
-  for (link = Chain_FirstLink(vPtr->chain); link != NULL; link = next) {
+  for (link = Chain_FirstLink(vPtr->chain); link; link = next) {
     next = Chain_NextLink(link);
-    VectorClient *clientPtr = (VectorClient*)Blt_Chain_GetValue(link);
+    VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
     if ((clientPtr->proc != NULL) && (clientPtr->serverPtr != NULL)) {
       (*clientPtr->proc) (vPtr->interp, clientPtr->clientData, notify);
     }
@@ -390,9 +390,8 @@ void Blt_Vec_NotifyClients(ClientData clientData)
   // should call Blt_FreeVectorId to release the client identifier), so mark
   // any remaining clients to indicate that vector's server has gone away.
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
-    for (link = Chain_FirstLink(vPtr->chain); link != NULL;
-	 link = Chain_NextLink(link)) {
-      VectorClient *clientPtr = (VectorClient*)Blt_Chain_GetValue(link);
+    for (link=Chain_FirstLink(vPtr->chain); link; link=Chain_NextLink(link)) {
+      VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
       clientPtr->serverPtr = NULL;
     }
   }
@@ -791,9 +790,8 @@ void Blt::Vec_Free(Vector* vPtr)
   vPtr->notifyFlags |= NOTIFY_DESTROYED;
   Blt_Vec_NotifyClients(vPtr);
 
-  for (link = Chain_FirstLink(vPtr->chain); link != NULL;
-       link = Chain_NextLink(link)) {
-    VectorClient *clientPtr = (VectorClient*)Blt_Chain_GetValue(link);
+  for (link=Chain_FirstLink(vPtr->chain); link; link=Chain_NextLink(link)) {
+    VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
     free(clientPtr);
   }
   Chain_Destroy(vPtr->chain);

@@ -239,7 +239,7 @@ int BarElement::configure()
     link = Chain_AllocLink(sizeof(BarStyle));
     Chain_LinkAfter(ops->stylePalette, link, NULL);
   }
-  BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+  BarStyle* stylePtr = (BarStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
 
   return TCL_OK;
@@ -447,8 +447,8 @@ void BarElement::map()
 
   // Set the symbol size of all the pen styles
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
     BarPen* penPtr = stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
@@ -670,9 +670,9 @@ void BarElement::draw(Drawable drawable)
 
   int count = 0;
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
+       link = Chain_NextLink(link)) {
 
-    BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarStyle* stylePtr = (BarStyle*)Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
@@ -754,9 +754,9 @@ void BarElement::print(PSOutput* psPtr)
 
   int count = 0;
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
+       link = Chain_NextLink(link)) {
 
-    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
     BarPen* penPtr = (BarPen*)stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
 
@@ -841,8 +841,8 @@ void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 void BarElement::ResetStylePalette(Blt_Chain stylePalette)
 {
   for (Blt_ChainLink link = Chain_FirstLink(stylePalette); link; 
-       link = Blt_Chain_NextLink(link)) {
-    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
     stylePtr->xeb.length = 0;
     stylePtr->yeb.length = 0;
     stylePtr->nBars = 0;
@@ -883,7 +883,7 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 
   if (Chain_GetLength(ops->stylePalette) < 2) {
     Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
-    BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+    BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
     stylePtr->nBars = nBars_;
     stylePtr->bars = bars_;
     stylePtr->symbolSize = bars_->width / 2;
@@ -901,8 +901,8 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     XRectangle* bp = bars;
     int* ip = barToData;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+	 link = Chain_NextLink(link)) {
+      BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
       stylePtr->symbolSize = bp->width / 2;
       stylePtr->bars = bp;
       for (int ii=0; ii<nBars_; ii++) {
@@ -926,8 +926,8 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     int* map = new int[xeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
       for (int ii=0; ii<xeb_.length; ii++) {
 	int iData = xeb_.map[ii];
@@ -950,8 +950,8 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     int* map = new int[yeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
+	 link = Chain_NextLink(link)) {
+      BarStyle *stylePtr = (BarStyle*)Chain_GetValue(link);
       stylePtr->yeb.segments = sp;
       for (int ii=0; ii<yeb_.length; ii++) {
 	int iData = yeb_.map[ii];

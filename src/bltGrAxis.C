@@ -623,8 +623,8 @@ void Axis::draw(Drawable drawable)
     ts.yPad_ = 0;
 
     for (Blt_ChainLink link=Chain_FirstLink(tickLabels_); link;
-	 link = Blt_Chain_NextLink(link)) {	
-      TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+	 link = Chain_NextLink(link)) {	
+      TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
       ts.drawText(drawable, labelPtr->string, labelPtr->anchorPos.x, 
 		  labelPtr->anchorPos.y);
     }
@@ -1029,8 +1029,8 @@ void Axis::freeTickLabels()
 {
   Blt_Chain chain = tickLabels_;
   for (Blt_ChainLink link=Chain_FirstLink(chain); link;
-       link = Blt_Chain_NextLink(link)) {
-    TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
     delete labelPtr;
   }
   Chain_Reset(chain);
@@ -1608,8 +1608,8 @@ void Axis::makeSegments(AxisInfo *infoPtr)
       if (!inRange(t1, &axisRange_))
 	continue;
 
-      TickLabel* labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
-      link = Blt_Chain_NextLink(link);
+      TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
+      link = Chain_NextLink(link);
       Segment2d seg;
       makeTick(t1, infoPtr->t1, infoPtr->axis, &seg);
       // Save tick label X-Y position
@@ -1732,8 +1732,8 @@ void Axis::print(PSOutput* psPtr)
     ts.yPad_ = 0;
 
     for (Blt_ChainLink link=Chain_FirstLink(tickLabels_); link; 
-	 link = Blt_Chain_NextLink(link)) {
-      TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
+	 link = Chain_NextLink(link)) {
+      TickLabel *labelPtr = (TickLabel*)Chain_GetValue(link);
       ts.printText(psPtr, labelPtr->string, labelPtr->anchorPos.x, 
 		   labelPtr->anchorPos.y);
     }

@@ -253,7 +253,7 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
     // exactly, the last one picked will be the topmost.  
     for (Blt_ChainLink link=Chain_LastLink(graphPtr->elements_.displayList);
 	 link; link = Chain_PrevLink(link)) {
-      Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+      Element* elemPtr = (Element*)Chain_GetValue(link);
       ElementOptions* eops = (ElementOptions*)elemPtr->ops();
       if (!eops->hide)
 	elemPtr->closest();
@@ -369,8 +369,8 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
 
   // Append the links to end of the display list
   Blt_ChainLink link, next;
-  for (link = Chain_FirstLink(chain); link != NULL; link = next) {
-    next = Blt_Chain_NextLink(link);
+  for (link = Chain_FirstLink(chain); link; link = next) {
+    next = Chain_NextLink(link);
     Chain_UnlinkLink(chain, link); 
     Chain_LinkAfter(graphPtr->elements_.displayList, link, NULL); 
   }	
@@ -434,7 +434,7 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
 
   // Prepend the links to beginning of the display list in reverse order
   Blt_ChainLink link, prev;
-  for (link = Chain_LastLink(chain); link != NULL; link = prev) {
+  for (link = Chain_LastLink(chain); link; link = prev) {
     prev = Chain_PrevLink(link);
     Chain_UnlinkLink(chain, link); 
     Chain_LinkBefore(graphPtr->elements_.displayList, link, NULL); 
@@ -474,8 +474,8 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 
   // Clear the links from the currently displayed elements
   for (Blt_ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList);
-       link; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+       link; link = Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Chain_GetValue(link);
     elemPtr->link = NULL;
   }
   Chain_Destroy(graphPtr->elements_.displayList);
@@ -483,8 +483,8 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 
   // Set links on all the displayed elements
   for (Blt_ChainLink link = Chain_FirstLink(chain); link; 
-       link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Chain_GetValue(link);
     elemPtr->link = link;
   }
 
@@ -534,8 +534,8 @@ static Tcl_Obj *DisplayListObj(Graph* graphPtr)
 {
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
 
-  for (Blt_ChainLink link = Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
-    Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
+  for (Blt_ChainLink link = Chain_FirstLink(graphPtr->elements_.displayList); link; link = Chain_NextLink(link)) {
+    Element* elemPtr = (Element*)Chain_GetValue(link);
     Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
     Tcl_ListObjAppendElement(graphPtr->interp_, listObjPtr, objPtr);
   }

@@ -246,11 +246,11 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
     Chain_LinkAfter(stylePalette, link, NULL);
   }
 
-  PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+  PenStyle* stylePtr = (PenStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
   for (int ii = 0; ii<objc; ii++) {
     link = Chain_AllocLink(size);
-    stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+    stylePtr = (PenStyle*)Chain_GetValue(link);
     stylePtr->weight.min = (double)ii;
     stylePtr->weight.max = (double)ii + 1.0;
     stylePtr->weight.range = 1.0;
@@ -274,15 +274,15 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
   // count how many
   int cnt =0;
   for (Blt_ChainLink link = Chain_FirstLink(stylePalette); !link; 
-       link = Blt_Chain_NextLink(link), cnt++) {}
+       link = Chain_NextLink(link), cnt++) {}
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
   Tcl_Obj** ll = new Tcl_Obj*[3*cnt];
   int ii=0;
   for (Blt_ChainLink link = Chain_FirstLink(stylePalette); !link; 
-       link = Blt_Chain_NextLink(link)) {
-    PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    PenStyle *stylePtr = (PenStyle*)Chain_GetValue(link);
     ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name_, -1);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.min);
     ll[ii++] = Tcl_NewDoubleObj(stylePtr->weight.max);

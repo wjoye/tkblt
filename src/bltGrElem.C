@@ -238,7 +238,7 @@ PenStyle** Element::StyleMap()
   int nWeights = MIN(ops->w ? ops->w->nValues() : 0, nPoints);
   double* w = ops->w ? ops->w->values_ : NULL;
   Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
-  PenStyle* stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+  PenStyle* stylePtr = (PenStyle*)Chain_GetValue(link);
 
   // Create a style mapping array (data point index to style), 
   // initialized to the default style.
@@ -249,7 +249,7 @@ PenStyle** Element::StyleMap()
   for (int ii=0; ii<nWeights; ii++) {
     for (link=Chain_LastLink(ops->stylePalette); link; 
 	 link=Chain_PrevLink(link)) {
-      stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+      stylePtr = (PenStyle*)Chain_GetValue(link);
 
       if (stylePtr->weight.range > 0.0) {
 	double norm = (w[ii] - stylePtr->weight.min) / stylePtr->weight.range;
@@ -271,9 +271,9 @@ void Element::freeStylePalette(Blt_Chain stylePalette)
   Blt_ChainLink link = Chain_FirstLink(stylePalette);
   if (link) {
     Blt_ChainLink next;
-    for (link=Blt_Chain_NextLink(link); link; link=next) {
-      next = Blt_Chain_NextLink(link);
-      PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
+    for (link=Chain_NextLink(link); link; link=next) {
+      next = Chain_NextLink(link);
+      PenStyle *stylePtr = (PenStyle*)Chain_GetValue(link);
       Pen* penPtr = stylePtr->penPtr;
       if (penPtr) {
 	penPtr->refCount_--;

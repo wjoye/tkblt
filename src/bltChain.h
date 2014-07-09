@@ -34,14 +34,14 @@
 
 #include <tcl.h>
 
-#define Chain_GetLength(c)	(((c) == NULL) ? 0 : (c)->nLinks)
-#define Chain_FirstLink(c)	(((c) == NULL) ? NULL : (c)->head)
-#define Chain_LastLink(c)	(((c) == NULL) ? NULL : (c)->tail)
-#define Chain_PrevLink(l)	((l)->prev)
-#define Chain_NextLink(l) 	((l)->next)
-#define Chain_GetValue(l)  	((l)->clientData)
-#define Chain_FirstValue(c)	(((c)->head == NULL) ? NULL : (c)->head->clientData)
-#define Chain_SetValue(l, value) ((l)->clientData = (ClientData)(value))
+#define Chain_GetLength(c) (((c) == NULL) ? 0 : (c)->nLinks)
+#define Chain_FirstLink(c) (((c) == NULL) ? NULL : (c)->head)
+#define Chain_LastLink(c) (((c) == NULL) ? NULL : (c)->tail)
+#define Chain_PrevLink(l) ((l)->prev)
+#define Chain_NextLink(l) ((l)->next)
+#define Chain_GetValue(l) ((l)->clientData)
+#define Chain_FirstValue(c) (((c)->head == NULL) ? NULL : (c)->head->clientData)
+#define Chain_SetValue(l, v) ((l)->clientData = (ClientData)(v))
 #define Chain_AppendLink(c, l) (Chain_LinkAfter((c), (l), (Blt_ChainLink)NULL))
 #define Chain_PrependLink(c, l) (Chain_LinkBefore((c), (l), (Blt_ChainLink)NULL))
 
@@ -55,8 +55,6 @@ namespace Blt {
     Blt_ChainLink next;		/* Link to the next link */
     ClientData clientData;	/* Pointer to the data object */
   };
-
-  typedef int (Blt_ChainCompareProc)(Blt_ChainLink *l1Ptr, Blt_ChainLink *l2Ptr);
 
   struct _Blt_Chain {
     Blt_ChainLink head;		/* Pointer to first element in chain */

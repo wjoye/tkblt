@@ -56,7 +56,7 @@ static Axis* GetAxisFromCmd(ClientData clientData, Tcl_Obj* obj)
     return NULL;
 
   Blt_ChainLink link = Chain_FirstLink(ops->margins[margin].axes);
-  return (Axis*)Blt_Chain_GetValue(link);
+  return (Axis*)Chain_GetValue(link);
 }
 
 static int CgetOp(ClientData clientData, Tcl_Interp* interp,
@@ -142,8 +142,8 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
   if (objc == 3) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
     for (Blt_ChainLink link = Chain_FirstLink(chain); link;
-	 link = Blt_Chain_NextLink(link)) {
-      Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
+	 link = Chain_NextLink(link)) {
+      Axis* axisPtr = (Axis*)Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
 			       Tcl_NewStringObj(axisPtr->name_, -1));
     }
@@ -157,10 +157,10 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
 
   for (Blt_ChainLink link = Chain_FirstLink(chain); link; 
-       link = Blt_Chain_NextLink(link)) {
+       link = Chain_NextLink(link)) {
     Axis* axisPtr;
 
-    axisPtr = (Axis*)Blt_Chain_GetValue(link);
+    axisPtr = (Axis*)Chain_GetValue(link);
     axisPtr->link = NULL;
     axisPtr->use_ =0;
     // Clear the axis type if it's not currently used
@@ -185,7 +185,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     if (axisPtr->link) {
       /* Move the axis from the old margin's "use" list to the new. */
       Chain_UnlinkLink(axisPtr->chain, axisPtr->link);
-      Blt_Chain_AppendLink(chain, axisPtr->link);
+      Chain_AppendLink(chain, axisPtr->link);
     }
     else
       axisPtr->link = Chain_Append(chain, axisPtr);

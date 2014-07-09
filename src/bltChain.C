@@ -200,7 +200,7 @@ Blt_ChainLink Blt::Chain_Append(Blt_Chain chain, ClientData clientData)
 
   link = Chain_NewLink();
   Chain_LinkAfter(chain, link, (Blt_ChainLink)NULL);
-  Blt_Chain_SetValue(link, clientData);
+  Chain_SetValue(link, clientData);
   return link;
 }
 
@@ -210,7 +210,7 @@ Blt_ChainLink Blt::Chain_Prepend(Blt_Chain chain, ClientData clientData)
 
   link = Chain_NewLink();
   Chain_LinkBefore(chain, link, (Blt_ChainLink)NULL);
-  Blt_Chain_SetValue(link, clientData);
+  Chain_SetValue(link, clientData);
   return link;
 }
 

@@ -332,7 +332,7 @@ static Axis* GetFirstAxis(Blt_Chain chain)
   if (!link)
     return NULL;
 
-  return (Axis*)Blt_Chain_GetValue(link);
+  return (Axis*)Chain_GetValue(link);
 }
 
 // Tk Interface

@@ -322,8 +322,8 @@ static int FindOp(ClientData clientData, Tcl_Interp* interp,
 
   int enclosed = (mode == FIND_ENCLOSED);
   for (Blt_ChainLink link = Chain_FirstLink(graphPtr->markers_.displayList);
-       link; link = Blt_Chain_NextLink(link)) {
-    Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+       link; link = Chain_NextLink(link)) {
+    Marker* markerPtr = (Marker*)Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
     if (ops->hide)
       continue;
@@ -349,16 +349,16 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      Marker* markerPtr = (Marker*)Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
 			       Tcl_NewStringObj(markerPtr->name_, -1));
     }
   } 
   else {
     for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      Marker* markerPtr = (Marker*)Chain_GetValue(link);
       for (int ii = 3; ii<objc; ii++) {
 	const char* pattern = (const char*)Tcl_GetString(objv[ii]);
 	if (Tcl_StringMatch(markerPtr->name_, pattern)) {

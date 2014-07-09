@@ -293,7 +293,7 @@ int LineElement::configure()
     link = Chain_AllocLink(sizeof(LineStyle));
     Chain_LinkAfter(ops->stylePalette, link, NULL);
   } 
-  LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+  LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
 
   return TCL_OK;
@@ -362,8 +362,8 @@ void LineElement::map()
 
   // Set the symbol size of all the pen styles
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
-    LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     int size = scaleSymbol(penOps->symbol.size);
@@ -546,8 +546,8 @@ void LineElement::draw(Drawable drawable)
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
     for (Blt_ChainLink link=Chain_FirstLink(ops->stylePalette); link;
-	 link=Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+	 link=Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
       total += stylePtr->symbolPts.length;
     }
     symbolInterval_ = total / ops->reqMaxSymbols;
@@ -556,8 +556,8 @@ void LineElement::draw(Drawable drawable)
 
   unsigned int count =0;
   for (Blt_ChainLink link=Chain_FirstLink(ops->stylePalette); link;
-       link=Blt_Chain_NextLink(link)) {
-    LineStyle* stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+       link=Chain_NextLink(link)) {
+    LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
@@ -675,8 +675,8 @@ void LineElement::print(PSOutput* psPtr)
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
       total += stylePtr->symbolPts.length;
     }
     symbolInterval_ = total / ops->reqMaxSymbols;
@@ -685,8 +685,8 @@ void LineElement::print(PSOutput* psPtr)
 
   unsigned int count =0;
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     XColor* colorPtr = penOps->errorBarColor;
@@ -1359,7 +1359,7 @@ void LineElement::mergePens(LineStyle **styleMap)
 
   if (Chain_GetLength(ops->stylePalette) < 2) {
     Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
-    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+    LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
     stylePtr->symbolPts.length = symbolPts_.length;
     stylePtr->symbolPts.points = symbolPts_.points;
     stylePtr->xeb.length = xeb_.length;
@@ -1375,8 +1375,8 @@ void LineElement::mergePens(LineStyle **styleMap)
     Point2d *pp = points;
     int* ip = map;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
       stylePtr->symbolPts.points = pp;
       for (int ii=0; ii<symbolPts_.length; ii++) {
 	int iData = symbolPts_.map[ii];
@@ -1399,8 +1399,8 @@ void LineElement::mergePens(LineStyle **styleMap)
     int* map = new int[xeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
       for (int ii=0; ii<xeb_.length; ii++) {
 	int iData = xeb_.map[ii];
@@ -1423,8 +1423,8 @@ void LineElement::mergePens(LineStyle **styleMap)
     int* map = new int [yeb_.length];
     int* ip = map;
     for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
-	 link; link = Blt_Chain_NextLink(link)) {
-      LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+	 link; link = Chain_NextLink(link)) {
+      LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
       stylePtr->yeb.segments = sp;
       for (int ii=0; ii<yeb_.length; ii++) {
 	int iData = yeb_.map[ii];
@@ -1541,8 +1541,8 @@ void LineElement::saveTrace(int start, int length, MapInfo* mapPtr)
 void LineElement::freeTraces()
 {
   for (Blt_ChainLink link = Chain_FirstLink(traces_); link;
-       link = Blt_Chain_NextLink(link)) {
-    bltTrace* tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    bltTrace* tracePtr = (bltTrace*)Chain_GetValue(link);
     delete [] tracePtr->screenPts.map;
     delete [] tracePtr->screenPts.points;
     delete tracePtr;
@@ -1685,8 +1685,8 @@ void LineElement::reset()
   freeTraces();
 
   for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
-       link = Blt_Chain_NextLink(link)) {
-    LineStyle *stylePtr = (LineStyle*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    LineStyle *stylePtr = (LineStyle*)Chain_GetValue(link);
     stylePtr->symbolPts.length = 0;
     stylePtr->xeb.length = 0;
     stylePtr->yeb.length = 0;
@@ -1886,10 +1886,10 @@ int LineElement::closestTrace()
   dMin = searchPtr->dist;
   closest.x = closest.y = 0;		/* Suppress compiler warning. */
   for (link = Chain_FirstLink(traces_); link;
-       link = Blt_Chain_NextLink(link)) {
+       link = Chain_NextLink(link)) {
     Point2d *p, *pend;
 
-    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
+    bltTrace *tracePtr = (bltTrace*)Chain_GetValue(link);
     for (p = tracePtr->screenPts.points, 
 	   pend = p + (tracePtr->screenPts.length - 1); p < pend; p++) {
       Point2d b;
@@ -2342,8 +2342,8 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 {
   for (Blt_ChainLink link = Chain_FirstLink(traces_); link;
-       link = Blt_Chain_NextLink(link)) {
-    bltTrace* tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    bltTrace* tracePtr = (bltTrace*)Chain_GetValue(link);
 
     int count = tracePtr->screenPts.length; 
     XPoint* points = new XPoint[count];
@@ -2496,8 +2496,8 @@ void LineElement::printTraces(PSOutput* psPtr, LinePen* penPtr)
 {
   setLineAttributes(psPtr, penPtr);
   for (Blt_ChainLink link = Chain_FirstLink(traces_); link;
-       link = Blt_Chain_NextLink(link)) {
-    bltTrace *tracePtr = (bltTrace*)Blt_Chain_GetValue(link);
+       link = Chain_NextLink(link)) {
+    bltTrace *tracePtr = (bltTrace*)Chain_GetValue(link);
     if (tracePtr->screenPts.length > 0) {
       psPtr->append("% start trace\n");
       psPtr->printMaxPolyline(tracePtr->screenPts.points, 

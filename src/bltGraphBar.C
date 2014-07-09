@@ -326,8 +326,8 @@ void BarGraph::initBarSets()
   int nSegs =0;
 
   for (Blt_ChainLink link = Chain_FirstLink(elements_.displayList);
-       link; link = Blt_Chain_NextLink(link)) {
-    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+       link; link = Chain_NextLink(link)) {
+    BarElement* bePtr = (BarElement*)Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
     if (ops->hide)
       continue;
@@ -463,8 +463,8 @@ void BarGraph::computeBarStacks()
   // abscissas
 
   for (link = Chain_FirstLink(elements_.displayList); 
-       link; link = Blt_Chain_NextLink(link)) {
-    BarElement* bePtr = (BarElement*)Blt_Chain_GetValue(link);
+       link; link = Chain_NextLink(link)) {
+    BarElement* bePtr = (BarElement*)Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
     if (ops->hide)
       continue;
