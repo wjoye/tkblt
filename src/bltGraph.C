@@ -113,9 +113,9 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   Tcl_InitHashTable(&markers_.tagTable, TCL_STRING_KEYS);
   Tcl_InitHashTable(&penTable_, TCL_STRING_KEYS);
 
-  axes_.displayList = Chain_Create();
-  elements_.displayList = Chain_Create();
-  markers_.displayList = Chain_Create();
+  axes_.displayList = new Chain();
+  elements_.displayList = new Chain();
+  markers_.displayList = new Chain();
   bindTable_ = new BindTable(this, this);
 
   if (createAxes() != TCL_OK) {
@@ -656,7 +656,7 @@ void Graph::destroyElements()
 
   Tcl_DeleteHashTable(&elements_.table);
   Tcl_DeleteHashTable(&elements_.tagTable);
-  Chain_Destroy(elements_.displayList);
+  delete elements_.displayList;
 }
 
 void Graph::configureElements()
@@ -752,7 +752,7 @@ void Graph::destroyMarkers()
   }
   Tcl_DeleteHashTable(&markers_.table);
   Tcl_DeleteHashTable(&markers_.tagTable);
-  Chain_Destroy(markers_.displayList);
+  delete markers_.displayList;
 }
 
 
@@ -876,7 +876,7 @@ int Graph::createAxes()
     int isNew;
     Tcl_HashEntry* hPtr = 
       Tcl_CreateHashEntry(&axes_.table, axisNames[ii].name, &isNew);
-    Chain* chain = Chain_Create();
+    Chain* chain = new Chain();
 
     Axis* axisPtr = new Axis(this, axisNames[ii].name, ii, hPtr);
     if (!axisPtr)
@@ -901,7 +901,7 @@ int Graph::createAxes()
       ops->hide = 1;
 
     axisChain_[ii] = chain;
-    axisPtr->link = Chain_Append(chain, axisPtr);
+    axisPtr->link = chain->append(axisPtr);
     axisPtr->chain = chain;
   }
   return TCL_OK;
@@ -949,10 +949,10 @@ void Graph::destroyAxes()
   Tcl_DeleteHashTable(&axes_.table);
 
   for (int ii=0; ii<4; ii++)
-    Chain_Destroy(axisChain_[ii]);
+    delete axisChain_[ii];
 
   Tcl_DeleteHashTable(&axes_.tagTable);
-  Chain_Destroy(axes_.displayList);
+  delete axes_.displayList;
 }
 
 void Graph::configureAxes()

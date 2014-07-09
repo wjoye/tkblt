@@ -176,7 +176,7 @@ Legend::Legend(Graph* graphPtr)
   focusPtr_ =NULL;
   selAnchorPtr_ =NULL;
   selMarkPtr_ =NULL;
-  selected_ = Chain_Create();
+  selected_ = new Chain();
   titleWidth_ =0;
   titleHeight_ =0;
 
@@ -215,7 +215,7 @@ Legend::~Legend()
     if (graphPtr_->tkwin_)
     Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
 
-  Chain_Destroy(selected_);
+  delete selected_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -762,7 +762,7 @@ void Legend::selectElement(Element* elemPtr)
   int isNew;
   Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, elemPtr, &isNew);
   if (isNew) {
-    ChainLink* link = Chain_Append(selected_, elemPtr);
+    ChainLink* link = selected_->append(elemPtr);
     Tcl_SetHashValue(hPtr, link);
   }
 }
@@ -772,7 +772,7 @@ void Legend::deselectElement(Element* elemPtr)
   Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, elemPtr);
   if (hPtr) {
     ChainLink* link = (ChainLink*)Tcl_GetHashValue(hPtr);
-    Chain_DeleteLink(selected_, link);
+    selected_->deleteLink(link);
     Tcl_DeleteHashEntry(hPtr);
   }
 }
@@ -806,7 +806,7 @@ void Legend::clearSelection()
 
   Tcl_DeleteHashTable(&selectTable_);
   Tcl_InitHashTable(&selectTable_, TCL_ONE_WORD_KEYS);
-  Chain_Reset(selected_);
+  selected_->reset();
 
   if (ops->selectCmd)
     eventuallyInvokeSelectCmd();

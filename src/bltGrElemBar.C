@@ -199,7 +199,7 @@ BarElement::BarElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
-  ops->stylePalette = Chain_Create();
+  ops->stylePalette = new Chain();
 
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
@@ -222,7 +222,7 @@ BarElement::~BarElement()
 
   if (ops->stylePalette) {
     freeStylePalette(ops->stylePalette);
-    Chain_Destroy(ops->stylePalette);
+    delete ops->stylePalette;
   }
 }
 
@@ -237,7 +237,7 @@ int BarElement::configure()
   ChainLink* link = Chain_FirstLink(ops->stylePalette);
   if (!link) {
     link = Chain_AllocLink(sizeof(BarStyle));
-    Chain_LinkAfter(ops->stylePalette, link, NULL);
+    ops->stylePalette->linkAfter(link, NULL);
   }
   BarStyle* stylePtr = (BarStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);

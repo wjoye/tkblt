@@ -57,7 +57,7 @@ Marker::~Marker()
   graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
-    Chain_DeleteLink(graphPtr_->markers_.displayList, link);
+    graphPtr_->markers_.displayList->deleteLink(link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);

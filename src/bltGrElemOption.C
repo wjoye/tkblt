@@ -243,7 +243,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
   ChainLink* link = Chain_FirstLink(stylePalette);
   if (!link) {
     link = Chain_AllocLink(size);
-    Chain_LinkAfter(stylePalette, link, NULL);
+    stylePalette->linkAfter(link, NULL);
   }
 
   PenStyle* stylePtr = (PenStyle*)Chain_GetValue(link);
@@ -260,7 +260,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
       elemPtr->freeStylePalette(stylePalette);
       return TCL_ERROR;
     }
-    Chain_LinkAfter(stylePalette, link, NULL);
+    stylePalette->linkAfter(link, NULL);
   }
 
   return TCL_OK;

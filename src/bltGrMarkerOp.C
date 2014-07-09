@@ -145,7 +145,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   }
 
   // Unlike elements, new markers are drawn on top of old markers
-  markerPtr->link = Chain_Prepend(graphPtr->markers_.displayList, markerPtr);
+  markerPtr->link = graphPtr->markers_.displayList->prepend(markerPtr);
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
 
@@ -391,15 +391,15 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
       return TCL_ERROR;
 
   ChainLink* link = markerPtr->link;
-  Chain_UnlinkLink(graphPtr->markers_.displayList, markerPtr->link);
+  graphPtr->markers_.displayList->unlinkLink(markerPtr->link);
 
   ChainLink* place = placePtr ? placePtr->link : NULL;
 
   const char* string = Tcl_GetString(objv[2]);
   if (string[0] == 'l')
-    Chain_LinkAfter(graphPtr->markers_.displayList, link, place);
+    graphPtr->markers_.displayList->linkAfter(link, place);
   else
-    Chain_LinkBefore(graphPtr->markers_.displayList, link, place);
+    graphPtr->markers_.displayList->linkBefore(link, place);
 
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();

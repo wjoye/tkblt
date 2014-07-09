@@ -260,7 +260,7 @@ Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
   margin_ = margin;
   segments_ =NULL;
   nSegments_ =0;
-  tickLabels_ = Chain_Create();
+  tickLabels_ = new Chain();
   left_ =0;
   right_ =0;
   top_ =0;
@@ -299,7 +299,7 @@ Axis::~Axis()
   graphPtr_->bindTable_->deleteBindings(this);
 
   if (link)
-    Chain_DeleteLink(chain, link);
+    chain->deleteLink(link);
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
@@ -332,7 +332,7 @@ Axis::~Axis()
 
   freeTickLabels();
 
-  Chain_Destroy(tickLabels_);
+  delete tickLabels_;
 
   if (segments_)
     delete [] segments_;
@@ -421,19 +421,19 @@ void Axis::mapStacked(int count, int margin)
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  if ((gops->margins[margin_].axes->nLinks > 1) ||
+  if ((gops->margins[margin_].axes->nLinks() > 1) ||
       (ops->reqNumMajorTicks <= 0)) {
     ops->reqNumMajorTicks = 4;
   }
 
   unsigned int slice;
   if (isHorizontal()) {
-    slice = graphPtr_->hRange_ / gops->margins[margin].axes->nLinks;
+    slice = graphPtr_->hRange_ / gops->margins[margin].axes->nLinks();
     screenMin_ = graphPtr_->hOffset_;
     width_ = slice;
   }
   else {
-    slice = graphPtr_->vRange_ / gops->margins[margin].axes->nLinks;
+    slice = graphPtr_->vRange_ / gops->margins[margin].axes->nLinks();
     screenMin_ = graphPtr_->vOffset_;
     height_ = slice;
   }
@@ -1033,7 +1033,7 @@ void Axis::freeTickLabels()
     TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
     delete labelPtr;
   }
-  Chain_Reset(chain);
+  chain->reset();
 }
 
 TickLabel* Axis::makeLabel(double value)
@@ -1904,7 +1904,7 @@ void Axis::getGeometry()
 	continue;
 
       TickLabel* labelPtr = makeLabel(x);
-      Chain_Append(tickLabels_, labelPtr);
+      tickLabels_->append(labelPtr);
       nLabels++;
 
       // Get the dimensions of each tick label.  Remember tick labels

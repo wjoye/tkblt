@@ -763,7 +763,7 @@ Vector* Blt::Vec_New(VectorInterpData *dataPtr)
   vPtr->length = 0;
   vPtr->interp = dataPtr->interp;
   vPtr->hashPtr = NULL;
-  vPtr->chain = Chain_Create();
+  vPtr->chain = new Chain();
   vPtr->flush = 0;
   vPtr->min = vPtr->max = NAN;
   vPtr->notifyFlags = NOTIFY_WHENIDLE;
@@ -795,7 +795,7 @@ void Blt::Vec_Free(Vector* vPtr)
     VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
     free(clientPtr);
   }
-  Chain_Destroy(vPtr->chain);
+  delete vPtr->chain;
   if ((vPtr->valueArr != NULL) && (vPtr->freeProc != TCL_STATIC)) {
     if (vPtr->freeProc == TCL_DYNAMIC) {
       free(vPtr->valueArr);
@@ -1458,7 +1458,7 @@ Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *name)
   clientPtr->magic = VECTOR_MAGIC;
 
   /* Add the new client to the server's list of clients */
-  clientPtr->link = Chain_Append(vPtr->chain, clientPtr);
+  clientPtr->link = vPtr->chain->append(clientPtr);
   clientPtr->serverPtr = vPtr;
   clientId = (Blt_VectorId) clientPtr;
   return clientId;
@@ -1481,12 +1481,12 @@ void Blt_FreeVectorId(Blt_VectorId clientId)
 {
   VectorClient *clientPtr = (VectorClient *)clientId;
 
-  if (clientPtr->magic != VECTOR_MAGIC) {
-    return;			/* Not a valid token */
-  }
+  if (clientPtr->magic != VECTOR_MAGIC)
+    return;
+
   if (clientPtr->serverPtr != NULL) {
-    /* Remove the client from the server's list */
-    Chain_DeleteLink(clientPtr->serverPtr->chain, clientPtr->link);
+    // Remove the client from the server's list
+    clientPtr->serverPtr->chain->deleteLink(clientPtr->link);
   }
   free(clientPtr);
 }

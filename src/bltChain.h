@@ -32,16 +32,14 @@
 #ifndef _BLT_CHAIN_H
 #define _BLT_CHAIN_H
 
-#define Chain_GetLength(c) (((c) == NULL) ? 0 : (c)->nLinks)
-#define Chain_FirstLink(c) (((c) == NULL) ? NULL : (c)->head)
-#define Chain_LastLink(c) (((c) == NULL) ? NULL : (c)->tail)
+#define Chain_GetLength(c) (((c) == NULL) ? 0 : (c)->nLinks())
+#define Chain_FirstLink(c) (((c) == NULL) ? NULL : (c)->head())
+#define Chain_LastLink(c) (((c) == NULL) ? NULL : (c)->tail())
 #define Chain_PrevLink(l) ((l)->prev)
 #define Chain_NextLink(l) ((l)->next)
 #define Chain_GetValue(l) ((l)->clientData)
 #define Chain_FirstValue(c) (((c)->head == NULL) ? NULL : (c)->head->clientData)
 #define Chain_SetValue(l, v) ((l)->clientData = (void*)(v))
-#define Chain_AppendLink(c, l) (Chain_LinkAfter((c), (l), (ChainLink*)NULL))
-#define Chain_PrependLink(c, l) (Chain_LinkBefore((c), (l), (ChainLink*)NULL))
 
 namespace Blt {
 
@@ -51,25 +49,33 @@ namespace Blt {
     void* clientData;
   };
 
-  struct Chain {
-    ChainLink* head;
-    ChainLink* tail;
-    long nLinks;
+  class Chain {
+  protected:
+    ChainLink* head_;
+    ChainLink* tail_;
+    long nLinks_;
+
+  public:
+    Chain();
+    virtual ~Chain();
+
+    ChainLink* head() {return head_;}
+    ChainLink* tail() {return tail_;}
+    long nLinks() {return nLinks_;}
+
+    void reset();
+    void linkAfter(ChainLink* link, ChainLink* after);
+    void linkBefore(ChainLink* link, ChainLink* before);
+    void unlinkLink(ChainLink* linkPtr);
+    void deleteLink(ChainLink* link);
+    ChainLink* append(void* clientData);
+    ChainLink* prepend(void* clientData);
   };
 
-  extern Chain* Chain_Create(void);
   extern ChainLink* Chain_AllocLink(size_t size);
   extern void Chain_InitLink(ChainLink* link);
   extern void Chain_Init(Chain* chain);
   extern ChainLink* Chain_NewLink(void);
-  extern void Chain_Reset(Chain* chain);
-  extern void Chain_Destroy(Chain* chain);
-  extern void Chain_LinkAfter(Chain* chain, ChainLink* link, ChainLink* after);
-  extern void Chain_LinkBefore(Chain* chain, ChainLink* link,ChainLink* before);
-  extern void Chain_UnlinkLink(Chain* chain, ChainLink* link);
-  extern void Chain_DeleteLink(Chain* chain, ChainLink* link);
-  extern ChainLink* Chain_Append(Chain* chain, void* clientData);
-  extern ChainLink* Chain_Prepend(Chain* chain, void* clientData);
   extern int Chain_IsBefore(ChainLink* first, ChainLink* last);
 };
 

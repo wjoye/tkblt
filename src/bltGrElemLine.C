@@ -250,7 +250,7 @@ LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
   optionTable_ = Tk_CreateOptionTable(graphPtr->interp_, optionSpecs);
 
-  ops->stylePalette = Chain_Create();
+  ops->stylePalette = new Chain();
   // this is an option and will be freed via Tk_FreeConfigOptions
   // By default an element's name and label are the same
   ops->label = Tcl_Alloc(strlen(name)+1);
@@ -272,7 +272,7 @@ LineElement::~LineElement()
 
   if (ops->stylePalette) {
     freeStylePalette(ops->stylePalette);
-    Chain_Destroy(ops->stylePalette);
+    delete ops->stylePalette;
   }
 
   if (fillPts_)
@@ -291,7 +291,7 @@ int LineElement::configure()
   ChainLink* link = Chain_FirstLink(ops->stylePalette);
   if (!link) {
     link = Chain_AllocLink(sizeof(LineStyle));
-    Chain_LinkAfter(ops->stylePalette, link, NULL);
+    ops->stylePalette->linkAfter(link, NULL);
   } 
   LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
@@ -1533,9 +1533,9 @@ void LineElement::saveTrace(int start, int length, MapInfo* mapPtr)
   tracePtr->screenPts.map = map;
   tracePtr->start = start;
   if (traces_ == NULL)
-    traces_ = Chain_Create();
+    traces_ = new Chain();
 
-  Chain_Append(traces_, tracePtr);
+  traces_->append(tracePtr);
 }
 
 void LineElement::freeTraces()
@@ -1547,7 +1547,7 @@ void LineElement::freeTraces()
     delete [] tracePtr->screenPts.points;
     delete tracePtr;
   }
-  Chain_Destroy(traces_);
+  delete traces_;
   traces_ = NULL;
 }
 
