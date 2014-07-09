@@ -38,44 +38,46 @@ using namespace Blt;
   (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
 #endif
 
-Chain Blt::Chain_Create(void)
+Chain* Blt::Chain_Create(void)
 {
-  Chain chainPtr =(Chain)malloc(sizeof(_Chain));
+  Chain* chainPtr =(Chain*)malloc(sizeof(Chain));
   if (chainPtr)
     Chain_Init(chainPtr);
+
   return chainPtr;
 }
 
-ChainLink Blt::Chain_AllocLink(size_t extraSize)
+ChainLink* Blt::Chain_AllocLink(size_t extraSize)
 {
-  size_t linkSize = ALIGN(sizeof(_ChainLink));
-  ChainLink linkPtr = (ChainLink)calloc(1, linkSize + extraSize);
+  size_t linkSize = ALIGN(sizeof(ChainLink));
+  ChainLink* linkPtr = (ChainLink*)calloc(1, linkSize + extraSize);
   if (extraSize > 0) {
     // Point clientData at the memory beyond the normal structure
     linkPtr->clientData = (ClientData)((char *)linkPtr + linkSize);
   }
+
   return linkPtr;
 }
 
-void Blt::Chain_InitLink(ChainLink linkPtr)
+void Blt::Chain_InitLink(ChainLink* linkPtr)
 {
   linkPtr->clientData = NULL;
   linkPtr->next = linkPtr->prev = NULL;
 }
 
-ChainLink Blt::Chain_NewLink(void)
+ChainLink* Blt::Chain_NewLink(void)
 {
-  ChainLink linkPtr = (ChainLink)malloc(sizeof(_ChainLink));
+  ChainLink* linkPtr = (ChainLink*)malloc(sizeof(ChainLink));
   linkPtr->clientData = NULL;
   linkPtr->next = linkPtr->prev = NULL;
   return linkPtr;
 }
 
-void Blt::Chain_Reset(Chain chainPtr)
+void Blt::Chain_Reset(Chain* chainPtr)
 {
   if (chainPtr) {
-    ChainLink oldPtr;
-    ChainLink linkPtr = chainPtr->head;
+    ChainLink* oldPtr;
+    ChainLink* linkPtr = chainPtr->head;
 
     while (linkPtr) {
       oldPtr = linkPtr;
@@ -86,7 +88,7 @@ void Blt::Chain_Reset(Chain chainPtr)
   }
 }
 
-void Blt::Chain_Destroy(Chain chainPtr)
+void Blt::Chain_Destroy(Chain* chainPtr)
 {
   if (chainPtr) {
     Chain_Reset(chainPtr);
@@ -95,13 +97,14 @@ void Blt::Chain_Destroy(Chain chainPtr)
   }
 }
 
-void Blt::Chain_Init(Chain chainPtr)
+void Blt::Chain_Init(Chain* chainPtr)
 {
   chainPtr->nLinks = 0;
   chainPtr->head = chainPtr->tail = NULL;
 }
 
-void Blt::Chain_LinkAfter(Chain chainPtr, ChainLink linkPtr, ChainLink afterPtr)
+void Blt::Chain_LinkAfter(Chain* chainPtr, ChainLink* linkPtr, 
+			  ChainLink* afterPtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -126,8 +129,8 @@ void Blt::Chain_LinkAfter(Chain chainPtr, ChainLink linkPtr, ChainLink afterPtr)
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_LinkBefore(Chain chainPtr, ChainLink linkPtr, 
-			   ChainLink beforePtr)
+void Blt::Chain_LinkBefore(Chain* chainPtr, ChainLink* linkPtr, 
+			   ChainLink* beforePtr)
 {
   if (chainPtr->head == NULL)
     chainPtr->tail = chainPtr->head = linkPtr;
@@ -152,7 +155,7 @@ void Blt::Chain_LinkBefore(Chain chainPtr, ChainLink linkPtr,
   chainPtr->nLinks++;
 }
 
-void Blt::Chain_UnlinkLink(Chain chainPtr, ChainLink linkPtr)
+void Blt::Chain_UnlinkLink(Chain* chainPtr, ChainLink* linkPtr)
 {
   // Indicates if the link is actually remove from the chain
   int unlinked;
@@ -180,35 +183,35 @@ void Blt::Chain_UnlinkLink(Chain chainPtr, ChainLink linkPtr)
   linkPtr->prev = linkPtr->next = NULL;
 }
 
-void Blt::Chain_DeleteLink(Chain chain, ChainLink link)
+void Blt::Chain_DeleteLink(Chain* chain, ChainLink* link)
 {
   Chain_UnlinkLink(chain, link);
   free(link);
   link = NULL;
 }
 
-ChainLink Blt::Chain_Append(Chain chain, ClientData clientData)
+ChainLink* Blt::Chain_Append(Chain* chain, ClientData clientData)
 {
-  ChainLink link = Chain_NewLink();
-  Chain_LinkAfter(chain, link, (ChainLink)NULL);
+  ChainLink* link = Chain_NewLink();
+  Chain_LinkAfter(chain, link, NULL);
   Chain_SetValue(link, clientData);
   return link;
 }
 
-ChainLink Blt::Chain_Prepend(Chain chain, ClientData clientData)
+ChainLink* Blt::Chain_Prepend(Chain* chain, ClientData clientData)
 {
-  ChainLink link = Chain_NewLink();
-  Chain_LinkBefore(chain, link, (ChainLink)NULL);
+  ChainLink* link = Chain_NewLink();
+  Chain_LinkBefore(chain, link, NULL);
   Chain_SetValue(link, clientData);
   return link;
 }
 
-int Blt::Chain_IsBefore(ChainLink firstPtr, ChainLink lastPtr)
+int Blt::Chain_IsBefore(ChainLink* firstPtr, ChainLink* lastPtr)
 {
-  for (ChainLink linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next) {
+  for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next)
     if (linkPtr == lastPtr)
       return 1;
-  }
+
   return 0;
 }
 
