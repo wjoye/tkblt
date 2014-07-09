@@ -661,7 +661,7 @@ void Graph::destroyElements()
 
 void Graph::configureElements()
 {
-  for (Blt_ChainLink link=Blt_Chain_FirstLink(elements_.displayList); 
+  for (Blt_ChainLink link=Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->configure();
@@ -670,7 +670,7 @@ void Graph::configureElements()
 
 void Graph::mapElements()
 {
-  for (Blt_ChainLink link =Blt_Chain_FirstLink(elements_.displayList); 
+  for (Blt_ChainLink link =Chain_FirstLink(elements_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->map();
@@ -680,8 +680,8 @@ void Graph::mapElements()
 void Graph::drawElements(Drawable drawable)
 {
   // Draw with respect to the stacking order
-  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Chain_LastLink(elements_.displayList); 
+       link; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->draw(drawable);
   }
@@ -689,8 +689,8 @@ void Graph::drawElements(Drawable drawable)
 
 void Graph::drawActiveElements(Drawable drawable)
 {
-  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Chain_LastLink(elements_.displayList); 
+       link; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->drawActive(drawable);
   }
@@ -698,8 +698,8 @@ void Graph::drawActiveElements(Drawable drawable)
 
 void Graph::printElements(PSOutput* psPtr)
 {
-  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
-       link != NULL; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Chain_LastLink(elements_.displayList); 
+       link != NULL; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->print(psPtr);
   }
@@ -707,8 +707,8 @@ void Graph::printElements(PSOutput* psPtr)
 
 void Graph::printActiveElements(PSOutput* psPtr)
 {
-  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Chain_LastLink(elements_.displayList); 
+       link; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     elemPtr->printActive(psPtr);
   }
@@ -758,7 +758,7 @@ void Graph::destroyMarkers()
 
 void Graph::configureMarkers()
 {
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
+  for (Blt_ChainLink link = Chain_FirstLink(markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     markerPtr->configure();
@@ -767,7 +767,7 @@ void Graph::configureMarkers()
 
 void Graph::mapMarkers()
 {
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList); 
+  for (Blt_ChainLink link = Chain_FirstLink(markers_.displayList); 
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
@@ -786,8 +786,8 @@ void Graph::mapMarkers()
 
 void Graph::drawMarkers(Drawable drawable, int under)
 {
-  for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link = Chain_LastLink(markers_.displayList); 
+       link; link = Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
 
@@ -803,8 +803,8 @@ void Graph::drawMarkers(Drawable drawable, int under)
 
 void Graph::printMarkers(PSOutput* psPtr, int under)
 {
-  for (Blt_ChainLink link = Blt_Chain_LastLink(markers_.displayList); 
-       link; link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link = Chain_LastLink(markers_.displayList); 
+       link; link = Chain_PrevLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
     if (mops->drawUnder != under)
@@ -834,7 +834,7 @@ Marker* Graph::nearestMarker(int x, int y, int under)
   Point2d point;
   point.x = (double)x;
   point.y = (double)y;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(markers_.displayList);
+  for (Blt_ChainLink link = Chain_FirstLink(markers_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* mops = (MarkerOptions*)markerPtr->ops();
@@ -974,7 +974,7 @@ void Graph::mapAxes()
     int offset =0;
 
     Blt_Chain chain = ops->margins[ii].axes;
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(chain); link; 
+    for (Blt_ChainLink link=Chain_FirstLink(chain); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       AxisOptions* aops = (AxisOptions*)axisPtr->ops();
@@ -1003,8 +1003,8 @@ void Graph::drawAxes(Drawable drawable)
   GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link = Blt_Chain_LastLink(ops->margins[ii].axes); 
-	 link != NULL; link = Blt_Chain_PrevLink(link)) {
+    for (Blt_ChainLink link = Chain_LastLink(ops->margins[ii].axes); 
+	 link != NULL; link = Chain_PrevLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->draw(drawable);
     }
@@ -1026,7 +1026,7 @@ void Graph::drawAxesGrids(Drawable drawable)
   GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->margins[ii].axes);
+    for (Blt_ChainLink link = Chain_FirstLink(ops->margins[ii].axes);
 	 link; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->drawGrids(drawable);
@@ -1040,7 +1040,7 @@ void Graph::printAxes(PSOutput* psPtr)
 
   Margin *mp, *mend;
   for (mp = ops->margins, mend = mp + 4; mp < mend; mp++) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(mp->axes); link; 
+    for (Blt_ChainLink link=Chain_FirstLink(mp->axes); link; 
 	 link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->print(psPtr);
@@ -1053,7 +1053,7 @@ void Graph::printAxesGrids(PSOutput* psPtr)
   GraphOptions* ops = (GraphOptions*)ops_;
 
   for (int ii=0; ii<4; ii++) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(ops->margins[ii].axes);
+    for (Blt_ChainLink link=Chain_FirstLink(ops->margins[ii].axes);
 	 link; link = Blt_Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Blt_Chain_GetValue(link);
       axisPtr->printGrids(psPtr);
@@ -1162,7 +1162,7 @@ void Graph::resetAxes()
   // and largest data values mapped to each X and Y-axis.  This
   // will be the axis limits if the user doesn't override them 
   // with -min and -max options.
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(elements_.displayList);
+  for (Blt_ChainLink link = Chain_FirstLink(elements_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Region2d exts;
 
@@ -1207,7 +1207,7 @@ Axis* Graph::nearestAxis(int x, int y)
       continue;
 
     if (ops->showTicks) {
-      for (Blt_ChainLink link=Blt_Chain_FirstLink(axisPtr->tickLabels_);
+      for (Blt_ChainLink link=Chain_FirstLink(axisPtr->tickLabels_);
 	   link; link = Blt_Chain_NextLink(link)) {	
 	TickLabel *labelPtr = (TickLabel*)Blt_Chain_GetValue(link);
 	double rw, rh;
@@ -1370,8 +1370,8 @@ ClientData Graph::pickEntry(int xx, int yy, ClassId* classIdPtr)
   searchPtr->y = yy;
   searchPtr->dist = (double)(searchPtr->halo + 1);
 	
-  for (Blt_ChainLink link=Blt_Chain_LastLink(elements_.displayList); link;
-       link = Blt_Chain_PrevLink(link)) {
+  for (Blt_ChainLink link=Chain_LastLink(elements_.displayList); link;
+       link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     ElementOptions* eops = (ElementOptions*)elemPtr->ops();
     if (eops->hide)

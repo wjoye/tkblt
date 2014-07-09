@@ -55,7 +55,7 @@ static Axis* GetAxisFromCmd(ClientData clientData, Tcl_Obj* obj)
   else
     return NULL;
 
-  Blt_ChainLink link = Blt_Chain_FirstLink(ops->margins[margin].axes);
+  Blt_ChainLink link = Chain_FirstLink(ops->margins[margin].axes);
   return (Axis*)Blt_Chain_GetValue(link);
 }
 
@@ -141,7 +141,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
 
   if (objc == 3) {
     Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link;
+    for (Blt_ChainLink link = Chain_FirstLink(chain); link;
 	 link = Blt_Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -156,7 +156,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
   if (Tcl_ListObjGetElements(interp, objv[3], &axisObjc, &axisObjv) != TCL_OK)
     return TCL_ERROR;
 
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(chain); link; 
+  for (Blt_ChainLink link = Chain_FirstLink(chain); link; 
        link = Blt_Chain_NextLink(link)) {
     Axis* axisPtr;
 

@@ -34,10 +34,10 @@
 
 #include <tcl.h>
 
-#define Blt_Chain_GetLength(c)	(((c) == NULL) ? 0 : (c)->nLinks)
-#define Blt_Chain_FirstLink(c)	(((c) == NULL) ? NULL : (c)->head)
-#define Blt_Chain_LastLink(c)	(((c) == NULL) ? NULL : (c)->tail)
-#define Blt_Chain_PrevLink(l)	((l)->prev)
+#define Chain_GetLength(c)	(((c) == NULL) ? 0 : (c)->nLinks)
+#define Chain_FirstLink(c)	(((c) == NULL) ? NULL : (c)->head)
+#define Chain_LastLink(c)	(((c) == NULL) ? NULL : (c)->tail)
+#define Chain_PrevLink(l)	((l)->prev)
 #define Blt_Chain_NextLink(l) 	((l)->next)
 #define Blt_Chain_GetValue(l)  	((l)->clientData)
 #define Blt_Chain_FirstValue(c)	(((c)->head == NULL) ? NULL : (c)->head->clientData)

@@ -240,7 +240,7 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
 
   // Reserve the first entry for the "normal" pen. We'll set the style later
   elemPtr->freeStylePalette(stylePalette);
-  Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette);
+  Blt_ChainLink link = Chain_FirstLink(stylePalette);
   if (!link) {
     link = Chain_AllocLink(size);
     Chain_LinkAfter(stylePalette, link, NULL);
@@ -273,14 +273,14 @@ Tcl_Obj* StyleGetProc(ClientData clientData, Tk_Window tkwin,
 
   // count how many
   int cnt =0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
+  for (Blt_ChainLink link = Chain_FirstLink(stylePalette); !link; 
        link = Blt_Chain_NextLink(link), cnt++) {}
   if (!cnt)
     return Tcl_NewListObj(0, (Tcl_Obj**)NULL);
 
   Tcl_Obj** ll = new Tcl_Obj*[3*cnt];
   int ii=0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); !link; 
+  for (Blt_ChainLink link = Chain_FirstLink(stylePalette); !link; 
        link = Blt_Chain_NextLink(link)) {
     PenStyle *stylePtr = (PenStyle*)Blt_Chain_GetValue(link);
     ll[ii++] = Tcl_NewStringObj(stylePtr->penPtr->name_, -1);

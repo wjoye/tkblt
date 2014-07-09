@@ -234,7 +234,7 @@ int BarElement::configure()
     return TCL_ERROR;
 
   // Point to the static normal pen if no external pens have been selected.
-  Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
+  Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
   if (!link) {
     link = Chain_AllocLink(sizeof(BarStyle));
     Chain_LinkAfter(ops->stylePalette, link, NULL);
@@ -446,7 +446,7 @@ void BarElement::map()
     size = bars->width;
 
   // Set the symbol size of all the pen styles
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
+  for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     BarPen* penPtr = stylePtr->penPtr;
@@ -669,7 +669,7 @@ void BarElement::draw(Drawable drawable)
     return;
 
   int count = 0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
+  for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
     BarStyle* stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
@@ -753,7 +753,7 @@ void BarElement::print(PSOutput* psPtr)
   psPtr->format("\n%% Element \"%s\"\n\n", name_);
 
   int count = 0;
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link;
+  for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link;
        link = Blt_Chain_NextLink(link)) {
 
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
@@ -840,7 +840,7 @@ void BarElement::printSymbol(PSOutput* psPtr, double x, double y, int size)
 
 void BarElement::ResetStylePalette(Blt_Chain stylePalette)
 {
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(stylePalette); link; 
+  for (Blt_ChainLink link = Chain_FirstLink(stylePalette); link; 
        link = Blt_Chain_NextLink(link)) {
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     stylePtr->xeb.length = 0;
@@ -881,8 +881,8 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (Blt_Chain_GetLength(ops->stylePalette) < 2) {
-    Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette);
+  if (Chain_GetLength(ops->stylePalette) < 2) {
+    Blt_ChainLink link = Chain_FirstLink(ops->stylePalette);
     BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
     stylePtr->nBars = nBars_;
     stylePtr->bars = bars_;
@@ -900,7 +900,7 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     int* barToData = new int[nBars_];
     XRectangle* bp = bars;
     int* ip = barToData;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link; 
+    for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->symbolSize = bp->width / 2;
@@ -925,7 +925,7 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     Segment2d *sp = bars;
     int* map = new int[xeb_.length];
     int* ip = map;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); 
+    for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); 
 	 link; link = Blt_Chain_NextLink(link)) {
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->xeb.segments = sp;
@@ -949,7 +949,7 @@ void BarElement::mergePens(BarStyle** dataToStyle)
     Segment2d* sp = bars;
     int* map = new int[yeb_.length];
     int* ip = map;
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(ops->stylePalette); link; 
+    for (Blt_ChainLink link = Chain_FirstLink(ops->stylePalette); link; 
 	 link = Blt_Chain_NextLink(link)) {
       BarStyle *stylePtr = (BarStyle*)Blt_Chain_GetValue(link);
       stylePtr->yeb.segments = sp;

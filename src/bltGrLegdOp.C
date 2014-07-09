@@ -138,7 +138,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   for (int ii=3; ii<objc; ii++) {
     
     const char* pattern = Tcl_GetString(objv[ii]);
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       if (Tcl_StringMatch(elemPtr->name_, pattern)) {
 	if (active) {
@@ -164,7 +164,7 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 
   // List active elements in stacking order
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
+  for (Blt_ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList); link; link = Blt_Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
     if (elemPtr->labelActive_) {
       Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
@@ -207,7 +207,7 @@ static int CurselectionOp(ClientData clientData, Tcl_Interp* interp,
   if (legendPtr->flags & SELECT_SORTED) {
     Blt_ChainLink link;
 
-    for (link = Blt_Chain_FirstLink(legendPtr->selected_); link != NULL;
+    for (link = Chain_FirstLink(legendPtr->selected_); link != NULL;
 	 link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
       Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
@@ -216,7 +216,7 @@ static int CurselectionOp(ClientData clientData, Tcl_Interp* interp,
   }
   else {
     // List of selected entries is in stacking order
-    for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
+    for (Blt_ChainLink link = Chain_FirstLink(graphPtr->elements_.displayList); link != NULL; link = Blt_Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Blt_Chain_GetValue(link);
 
       if (legendPtr->entryIsSelected(elemPtr)) {
@@ -364,9 +364,9 @@ static int SelectionMarkOp(ClientData clientData, Tcl_Interp* interp,
   if (legendPtr->selMarkPtr_ != elemPtr) {
     // Deselect entry from the list all the way back to the anchor
     Blt_ChainLink link, next;
-    for (link = Blt_Chain_LastLink(legendPtr->selected_); link != NULL; 
+    for (link = Chain_LastLink(legendPtr->selected_); link != NULL; 
 	 link = next) {
-      next = Blt_Chain_PrevLink(link);
+      next = Chain_PrevLink(link);
       Element *selectPtr = (Element*)Blt_Chain_GetValue(link);
       if (selectPtr == legendPtr->selAnchorPtr_)
 	break;
@@ -394,7 +394,7 @@ static int SelectionPresentOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Legend* legendPtr = graphPtr->legend_;
-  int boo = (Blt_Chain_GetLength(legendPtr->selected_) > 0);
+  int boo = (Chain_GetLength(legendPtr->selected_) > 0);
   Tcl_SetBooleanObj(Tcl_GetObjResult(interp), boo);
   return TCL_OK;
 }

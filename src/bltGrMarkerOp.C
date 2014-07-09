@@ -321,7 +321,7 @@ static int FindOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   int enclosed = (mode == FIND_ENCLOSED);
-  for (Blt_ChainLink link = Blt_Chain_FirstLink(graphPtr->markers_.displayList);
+  for (Blt_ChainLink link = Chain_FirstLink(graphPtr->markers_.displayList);
        link; link = Blt_Chain_NextLink(link)) {
     Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
     MarkerOptions* ops = (MarkerOptions*)markerPtr->ops();
@@ -348,7 +348,7 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
   Graph* graphPtr = (Graph*)clientData;
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
+    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       Tcl_ListObjAppendElement(interp, listObjPtr,
@@ -356,7 +356,7 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
     }
   } 
   else {
-    for (Blt_ChainLink link=Blt_Chain_FirstLink(graphPtr->markers_.displayList); 
+    for (Blt_ChainLink link=Chain_FirstLink(graphPtr->markers_.displayList); 
 	 link; link = Blt_Chain_NextLink(link)) {
       Marker* markerPtr = (Marker*)Blt_Chain_GetValue(link);
       for (int ii = 3; ii<objc; ii++) {

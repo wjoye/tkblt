@@ -302,7 +302,7 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
 }
 
 static const Ensemble graphEnsemble[] = {
-  {"axis",        0, axisEnsemble},
+  {"axis",        0, Blt::axisEnsemble},
   {"bar",         0, Blt::elementEnsemble},
   {"cget", 	  CgetOp, 0},
   {"configure",   ConfigureOp, 0},
@@ -328,7 +328,7 @@ static const Ensemble graphEnsemble[] = {
 
 static Axis* GetFirstAxis(Blt_Chain chain)
 {
-  Blt_ChainLink link = Blt_Chain_FirstLink(chain);
+  Blt_ChainLink link = Chain_FirstLink(chain);
   if (!link)
     return NULL;
 
