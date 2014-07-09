@@ -82,7 +82,7 @@ namespace Blt {
     ElemValues* yLow;
     int hide;
     int legendRelief;
-    Chain stylePalette;
+    Chain* stylePalette;
     LinePen *builtinPenPtr;
     LinePen *activePenPtr;
     LinePen *normalPenPtr;
@@ -113,7 +113,7 @@ namespace Blt {
     GraphSegments yeb_;
     int symbolInterval_;
     int symbolCounter_;
-    Chain traces_;
+    Chain* traces_;
 
     void drawCircle(Display*, Drawable, LinePen*, int, Point2d*, int);
     void drawSquare(Display*, Drawable, LinePen*, int, Point2d*, int);

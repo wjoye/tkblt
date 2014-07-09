@@ -395,8 +395,8 @@ int Graph::getMarginGeometry(Margin *marginPtr)
   marginPtr->maxTickHeight =0;
 
   if (ops->stackAxes) {
-    for (ChainLink link = Chain_FirstLink(marginPtr->axes);
-	 link; link = Chain_NextLink(link)) {
+    for (ChainLink* link = Chain_FirstLink(marginPtr->axes); link;
+	 link = Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use_) {
@@ -420,8 +420,8 @@ int Graph::getMarginGeometry(Margin *marginPtr)
     }
   }
   else {
-    for (ChainLink link = Chain_FirstLink(marginPtr->axes);
-	 link; link = Chain_NextLink(link)) {
+    for (ChainLink* link = Chain_FirstLink(marginPtr->axes); link;
+	 link = Chain_NextLink(link)) {
       Axis* axisPtr = (Axis*)Chain_GetValue(link);
       AxisOptions* ops = (AxisOptions*)axisPtr->ops();
       if (!ops->hide && axisPtr->use_) {

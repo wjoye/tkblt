@@ -68,7 +68,7 @@ namespace Blt {
     Graph* graphPtr_;
     const char *name_;
     Tcl_HashEntry* hashPtr_;
-    ChainLink link;
+    ChainLink* link;
     unsigned int flags;		
     int clipped_;
 

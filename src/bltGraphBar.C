@@ -325,7 +325,7 @@ void BarGraph::initBarSets()
   Tcl_InitHashTable(&setTable, sizeof(BarSetKey)/sizeof(int));
   int nSegs =0;
 
-  for (ChainLink link = Chain_FirstLink(elements_.displayList);
+  for (ChainLink* link = Chain_FirstLink(elements_.displayList);
        link; link = Chain_NextLink(link)) {
     BarElement* bePtr = (BarElement*)Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
@@ -450,7 +450,6 @@ void BarGraph::computeBarStacks()
 {
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
-  ChainLink link;
   if (((BarMode)ops->barMode != STACKED) || (nBarGroups_ == 0))
     return;
 
@@ -462,8 +461,8 @@ void BarGraph::computeBarStacks()
   // Consider each bar x-y coordinate. Add the ordinates of duplicate
   // abscissas
 
-  for (link = Chain_FirstLink(elements_.displayList); 
-       link; link = Chain_NextLink(link)) {
+  for (ChainLink* link = Chain_FirstLink(elements_.displayList); link;
+       link = Chain_NextLink(link)) {
     BarElement* bePtr = (BarElement*)Chain_GetValue(link);
     BarElementOptions* ops = (BarElementOptions*)bePtr->ops();
     if (ops->hide)

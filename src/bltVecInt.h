@@ -134,7 +134,7 @@ namespace Blt {
     int offset;			/* Offset from zero of the vector's starting
 				 * index */
     Tcl_Command cmdToken;	/* Token for vector's TCL command. */
-    Chain chain;		/* List of clients using this vector */
+    Chain* chain;		/* List of clients using this vector */
     int notifyFlags;		/* Notification flags. See definitions
 				 * below */
     int varFlags;		/* Indicate if the variable is global,

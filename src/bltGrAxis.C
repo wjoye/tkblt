@@ -622,7 +622,7 @@ void Axis::draw(Drawable drawable)
     ts.xPad_ = 2;
     ts.yPad_ = 0;
 
-    for (ChainLink link=Chain_FirstLink(tickLabels_); link;
+    for (ChainLink* link = Chain_FirstLink(tickLabels_); link;
 	 link = Chain_NextLink(link)) {	
       TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
       ts.drawText(drawable, labelPtr->string, labelPtr->anchorPos.x, 
@@ -1027,8 +1027,8 @@ int Axis::isHorizontal()
 
 void Axis::freeTickLabels()
 {
-  Chain chain = tickLabels_;
-  for (ChainLink link=Chain_FirstLink(chain); link;
+  Chain* chain = tickLabels_;
+  for (ChainLink* link = Chain_FirstLink(chain); link;
        link = Chain_NextLink(link)) {
     TickLabel* labelPtr = (TickLabel*)Chain_GetValue(link);
     delete labelPtr;
@@ -1597,7 +1597,7 @@ void Axis::makeSegments(AxisInfo *infoPtr)
       sp++;
     }
 
-    ChainLink link = Chain_FirstLink(tickLabels_);
+    ChainLink* link = Chain_FirstLink(tickLabels_);
     double labelPos = (double)infoPtr->label;
 
     for (int ii=0; ii< nMajorTicks; ii++) {
@@ -1731,7 +1731,7 @@ void Axis::print(PSOutput* psPtr)
     ts.xPad_ = 2;
     ts.yPad_ = 0;
 
-    for (ChainLink link=Chain_FirstLink(tickLabels_); link; 
+    for (ChainLink* link = Chain_FirstLink(tickLabels_); link; 
 	 link = Chain_NextLink(link)) {
       TickLabel *labelPtr = (TickLabel*)Chain_GetValue(link);
       ts.printText(psPtr, labelPtr->string, labelPtr->anchorPos.x, 

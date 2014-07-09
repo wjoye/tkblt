@@ -171,8 +171,8 @@ namespace Blt {
     int use_;
     int active_;		
 
-    ChainLink link;
-    Chain chain;
+    ChainLink* link;
+    Chain* chain;
 
     Point2d titlePos_;
     unsigned short int titleWidth_;
@@ -193,7 +193,7 @@ namespace Blt {
     int margin_;
     Segment2d *segments_;
     int nSegments_;
-    Chain tickLabels_;
+    Chain* tickLabels_;
     short int left_;
     short int right_;
     short int top_;

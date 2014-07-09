@@ -32,8 +32,6 @@
 #ifndef _BLT_CHAIN_H
 #define _BLT_CHAIN_H
 
-#include <tcl.h>
-
 #define Chain_GetLength(c) (((c) == NULL) ? 0 : (c)->nLinks)
 #define Chain_FirstLink(c) (((c) == NULL) ? NULL : (c)->head)
 #define Chain_LastLink(c) (((c) == NULL) ? NULL : (c)->tail)
@@ -41,25 +39,22 @@
 #define Chain_NextLink(l) ((l)->next)
 #define Chain_GetValue(l) ((l)->clientData)
 #define Chain_FirstValue(c) (((c)->head == NULL) ? NULL : (c)->head->clientData)
-#define Chain_SetValue(l, v) ((l)->clientData = (ClientData)(v))
+#define Chain_SetValue(l, v) ((l)->clientData = (void*)(v))
 #define Chain_AppendLink(c, l) (Chain_LinkAfter((c), (l), (ChainLink*)NULL))
 #define Chain_PrependLink(c, l) (Chain_LinkBefore((c), (l), (ChainLink*)NULL))
 
 namespace Blt {
 
-  typedef struct _Chain Chain;
-  typedef struct _ChainLink ChainLink;
-
-  struct _ChainLink {
-    ChainLink* prev;		/* Link to the previous link */
-    ChainLink* next;		/* Link to the next link */
-    ClientData clientData;	/* Pointer to the data object */
+  struct ChainLink {
+    ChainLink* prev;
+    ChainLink* next;
+    void* clientData;
   };
 
-  struct _Chain {
-    ChainLink* head;		/* Pointer to first element in chain */
-    ChainLink* tail;		/* Pointer to last element in chain */
-    long nLinks;		/* Number of elements in chain */
+  struct Chain {
+    ChainLink* head;
+    ChainLink* tail;
+    long nLinks;
   };
 
   extern Chain* Chain_Create(void);
@@ -73,9 +68,9 @@ namespace Blt {
   extern void Chain_LinkBefore(Chain* chain, ChainLink* link,ChainLink* before);
   extern void Chain_UnlinkLink(Chain* chain, ChainLink* link);
   extern void Chain_DeleteLink(Chain* chain, ChainLink* link);
-  extern ChainLink* Chain_Append(Chain* chain, ClientData clientData);
-  extern ChainLink* Chain_Prepend(Chain* chain, ClientData clientData);
+  extern ChainLink* Chain_Append(Chain* chain, void* clientData);
+  extern ChainLink* Chain_Prepend(Chain* chain, void* clientData);
   extern int Chain_IsBefore(ChainLink* first, ChainLink* last);
 };
 
-#endif /* _BLT_CHAIN_H */
+#endif

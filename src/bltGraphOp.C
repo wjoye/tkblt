@@ -55,7 +55,7 @@ using namespace Blt;
 static Tcl_ObjCmdProc BarchartObjCmd;
 static Tcl_ObjCmdProc GraphObjCmd;
 
-static Axis* GetFirstAxis(Chain chain);
+static Axis* GetFirstAxis(Chain* chain);
 
 int GraphObjConfigure(Graph* graphPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
@@ -326,9 +326,9 @@ static const Ensemble graphEnsemble[] = {
 
 // Support
 
-static Axis* GetFirstAxis(Chain chain)
+static Axis* GetFirstAxis(Chain* chain)
 {
-  ChainLink link = Chain_FirstLink(chain);
+  ChainLink* link = Chain_FirstLink(chain);
   if (!link)
     return NULL;
 

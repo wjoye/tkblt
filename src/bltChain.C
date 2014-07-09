@@ -53,7 +53,7 @@ ChainLink* Blt::Chain_AllocLink(size_t extraSize)
   ChainLink* linkPtr = (ChainLink*)calloc(1, linkSize + extraSize);
   if (extraSize > 0) {
     // Point clientData at the memory beyond the normal structure
-    linkPtr->clientData = (ClientData)((char *)linkPtr + linkSize);
+    linkPtr->clientData = ((char *)linkPtr + linkSize);
   }
 
   return linkPtr;
@@ -190,7 +190,7 @@ void Blt::Chain_DeleteLink(Chain* chain, ChainLink* link)
   link = NULL;
 }
 
-ChainLink* Blt::Chain_Append(Chain* chain, ClientData clientData)
+ChainLink* Blt::Chain_Append(Chain* chain, void* clientData)
 {
   ChainLink* link = Chain_NewLink();
   Chain_LinkAfter(chain, link, NULL);
@@ -198,7 +198,7 @@ ChainLink* Blt::Chain_Append(Chain* chain, ClientData clientData)
   return link;
 }
 
-ChainLink* Blt::Chain_Prepend(Chain* chain, ClientData clientData)
+ChainLink* Blt::Chain_Prepend(Chain* chain, void* clientData)
 {
   ChainLink* link = Chain_NewLink();
   Chain_LinkBefore(chain, link, NULL);

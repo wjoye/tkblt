@@ -138,7 +138,8 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
   for (int ii=3; ii<objc; ii++) {
     
     const char* pattern = Tcl_GetString(objv[ii]);
-    for (ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList); link; link = Chain_NextLink(link)) {
+    for (ChainLink* link = Chain_FirstLink(graphPtr->elements_.displayList);
+	 link; link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       if (Tcl_StringMatch(elemPtr->name_, pattern)) {
 	if (active) {
@@ -164,7 +165,8 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 
   // List active elements in stacking order
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  for (ChainLink link=Chain_FirstLink(graphPtr->elements_.displayList); link; link = Chain_NextLink(link)) {
+  for (ChainLink* link = Chain_FirstLink(graphPtr->elements_.displayList);
+       link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     if (elemPtr->labelActive_) {
       Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
@@ -205,9 +207,7 @@ static int CurselectionOp(ClientData clientData, Tcl_Interp* interp,
   Legend* legendPtr = graphPtr->legend_;
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (legendPtr->flags & SELECT_SORTED) {
-    ChainLink link;
-
-    for (link = Chain_FirstLink(legendPtr->selected_); link;
+    for (ChainLink* link = Chain_FirstLink(legendPtr->selected_); link;
 	 link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       Tcl_Obj *objPtr = Tcl_NewStringObj(elemPtr->name_, -1);
@@ -216,7 +216,8 @@ static int CurselectionOp(ClientData clientData, Tcl_Interp* interp,
   }
   else {
     // List of selected entries is in stacking order
-    for (ChainLink link = Chain_FirstLink(graphPtr->elements_.displayList); link; link = Chain_NextLink(link)) {
+    for (ChainLink* link = Chain_FirstLink(graphPtr->elements_.displayList);
+	 link; link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
 
       if (legendPtr->entryIsSelected(elemPtr)) {
@@ -363,7 +364,7 @@ static int SelectionMarkOp(ClientData clientData, Tcl_Interp* interp,
 
   if (legendPtr->selMarkPtr_ != elemPtr) {
     // Deselect entry from the list all the way back to the anchor
-    ChainLink link, next;
+    ChainLink *link, *next;
     for (link = Chain_LastLink(legendPtr->selected_); link; link = next) {
       next = Chain_PrevLink(link);
       Element *selectPtr = (Element*)Chain_GetValue(link);

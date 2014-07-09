@@ -85,7 +85,7 @@ typedef struct {
 			       * vector change or the vector is deleted. */
   ClientData clientData;	/* Data passed whenever the vector change
 				 * procedure is called. */
-  ChainLink link;		/* Used to quickly remove this entry from its
+  ChainLink* link;		/* Used to quickly remove this entry from its
 				 * server's client chain. */
 } VectorClient;
 
@@ -372,7 +372,7 @@ Vector* Blt::Vec_ParseElement(Tcl_Interp* interp, VectorInterpData *dataPtr,
 void Blt_Vec_NotifyClients(ClientData clientData)
 {
   Vector* vPtr = (Vector*)clientData;
-  ChainLink link, next;
+  ChainLink *link, *next;
   Blt_VectorNotify notify;
 
   notify = (vPtr->notifyFlags & NOTIFY_DESTROYED)
@@ -390,7 +390,8 @@ void Blt_Vec_NotifyClients(ClientData clientData)
   // should call Blt_FreeVectorId to release the client identifier), so mark
   // any remaining clients to indicate that vector's server has gone away.
   if (notify == BLT_VECTOR_NOTIFY_DESTROY) {
-    for (link=Chain_FirstLink(vPtr->chain); link; link=Chain_NextLink(link)) {
+    for (link = Chain_FirstLink(vPtr->chain); link; 
+	 link = Chain_NextLink(link)) {
       VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
       clientPtr->serverPtr = NULL;
     }
@@ -772,7 +773,7 @@ Vector* Blt::Vec_New(VectorInterpData *dataPtr)
 
 void Blt::Vec_Free(Vector* vPtr)
 {
-  ChainLink link;
+  ChainLink* link;
 
   if (vPtr->cmdToken != 0) {
     DeleteCommand(vPtr);
@@ -790,7 +791,7 @@ void Blt::Vec_Free(Vector* vPtr)
   vPtr->notifyFlags |= NOTIFY_DESTROYED;
   Blt_Vec_NotifyClients(vPtr);
 
-  for (link=Chain_FirstLink(vPtr->chain); link; link=Chain_NextLink(link)) {
+  for (link = Chain_FirstLink(vPtr->chain); link; link = Chain_NextLink(link)) {
     VectorClient *clientPtr = (VectorClient*)Chain_GetValue(link);
     free(clientPtr);
   }
