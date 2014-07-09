@@ -38,14 +38,12 @@
 #define Chain_FirstLink(c)	(((c) == NULL) ? NULL : (c)->head)
 #define Chain_LastLink(c)	(((c) == NULL) ? NULL : (c)->tail)
 #define Chain_PrevLink(l)	((l)->prev)
-#define Blt_Chain_NextLink(l) 	((l)->next)
-#define Blt_Chain_GetValue(l)  	((l)->clientData)
-#define Blt_Chain_FirstValue(c)	(((c)->head == NULL) ? NULL : (c)->head->clientData)
-#define Blt_Chain_SetValue(l, value) ((l)->clientData = (ClientData)(value))
-#define Blt_Chain_AppendLink(c, l) \
-	(Chain_LinkAfter((c), (l), (Blt_ChainLink)NULL))
-#define Blt_Chain_PrependLink(c, l) \
-	(Chain_LinkBefore((c), (l), (Blt_ChainLink)NULL))
+#define Chain_NextLink(l) 	((l)->next)
+#define Chain_GetValue(l)  	((l)->clientData)
+#define Chain_FirstValue(c)	(((c)->head == NULL) ? NULL : (c)->head->clientData)
+#define Chain_SetValue(l, value) ((l)->clientData = (ClientData)(value))
+#define Chain_AppendLink(c, l) (Chain_LinkAfter((c), (l), (Blt_ChainLink)NULL))
+#define Chain_PrependLink(c, l) (Chain_LinkBefore((c), (l), (Blt_ChainLink)NULL))
 
 namespace Blt {
 
