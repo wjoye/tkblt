@@ -242,14 +242,14 @@ int StyleSetProc(ClientData clientData, Tcl_Interp* interp,
   elemPtr->freeStylePalette(stylePalette);
   ChainLink* link = Chain_FirstLink(stylePalette);
   if (!link) {
-    link = Chain_AllocLink(size);
+    link = new ChainLink(size);
     stylePalette->linkAfter(link, NULL);
   }
 
   PenStyle* stylePtr = (PenStyle*)Chain_GetValue(link);
   stylePtr->penPtr = NORMALPEN(ops);
   for (int ii = 0; ii<objc; ii++) {
-    link = Chain_AllocLink(size);
+    link = new ChainLink(size);
     stylePtr = (PenStyle*)Chain_GetValue(link);
     stylePtr->weight.min = (double)ii;
     stylePtr->weight.max = (double)ii + 1.0;

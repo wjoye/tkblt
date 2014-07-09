@@ -290,7 +290,7 @@ int LineElement::configure()
   // selected.
   ChainLink* link = Chain_FirstLink(ops->stylePalette);
   if (!link) {
-    link = Chain_AllocLink(sizeof(LineStyle));
+    link = new ChainLink(sizeof(LineStyle));
     ops->stylePalette->linkAfter(link, NULL);
   } 
   LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);

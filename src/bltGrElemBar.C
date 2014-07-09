@@ -236,7 +236,7 @@ int BarElement::configure()
   // Point to the static normal pen if no external pens have been selected.
   ChainLink* link = Chain_FirstLink(ops->stylePalette);
   if (!link) {
-    link = Chain_AllocLink(sizeof(BarStyle));
+    link = new ChainLink(sizeof(BarStyle));
     ops->stylePalette->linkAfter(link, NULL);
   }
   BarStyle* stylePtr = (BarStyle*)Chain_GetValue(link);

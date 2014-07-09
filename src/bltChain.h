@@ -35,18 +35,33 @@
 #define Chain_GetLength(c) (((c) == NULL) ? 0 : (c)->nLinks())
 #define Chain_FirstLink(c) (((c) == NULL) ? NULL : (c)->head())
 #define Chain_LastLink(c) (((c) == NULL) ? NULL : (c)->tail())
-#define Chain_PrevLink(l) ((l)->prev)
-#define Chain_NextLink(l) ((l)->next)
-#define Chain_GetValue(l) ((l)->clientData)
-#define Chain_FirstValue(c) (((c)->head == NULL) ? NULL : (c)->head->clientData)
-#define Chain_SetValue(l, v) ((l)->clientData = (void*)(v))
+
+#define Chain_PrevLink(l) ((l)->prev())
+#define Chain_NextLink(l) ((l)->next())
+#define Chain_GetValue(l) ((l)->clientData())
 
 namespace Blt {
 
-  struct ChainLink {
-    ChainLink* prev;
-    ChainLink* next;
-    void* clientData;
+  class Chain;
+
+  class ChainLink {
+    friend class Chain;
+
+  protected:
+    ChainLink* prev_;
+    ChainLink* next_;
+    int manage_;
+    void* clientData_;
+
+  public:
+    ChainLink(void*);
+    ChainLink(size_t);
+    virtual ~ChainLink();
+
+    ChainLink* prev() {return prev_;}
+    ChainLink* next() {return next_;}
+    void* clientData() {return clientData_;}
+    void setClientData(void* d) {clientData_ =d;}
   };
 
   class Chain {
@@ -72,10 +87,6 @@ namespace Blt {
     ChainLink* prepend(void* clientData);
   };
 
-  extern ChainLink* Chain_AllocLink(size_t size);
-  extern void Chain_InitLink(ChainLink* link);
-  extern void Chain_Init(Chain* chain);
-  extern ChainLink* Chain_NewLink(void);
   extern int Chain_IsBefore(ChainLink* first, ChainLink* last);
 };
 

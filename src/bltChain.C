@@ -33,10 +33,31 @@
 
 using namespace Blt;
 
-#ifndef ALIGN
-#define ALIGN(a)							\
-  (((size_t)a + (sizeof(double) - 1)) & (~(sizeof(double) - 1)))
-#endif
+// ChainLink
+
+ChainLink::ChainLink(void* clientData)
+{
+  prev_ =NULL;
+  next_ =NULL;
+  manage_ =0;
+  clientData_ = clientData;
+}
+
+ChainLink::ChainLink(size_t ss)
+{
+  prev_ =NULL;
+  next_ =NULL;
+  manage_ =1;
+  clientData_ = (void*)calloc(1,ss);
+}
+
+ChainLink::~ChainLink()
+{
+  if (manage_ && clientData_)
+    free(clientData_);
+}
+
+// Chain
 
 Chain::Chain()
 {
@@ -50,8 +71,8 @@ Chain::~Chain()
   ChainLink* linkPtr = head_;
   while (linkPtr) {
     ChainLink* oldPtr =linkPtr;
-    linkPtr = linkPtr->next;
-    free(oldPtr);
+    linkPtr = linkPtr->next_;
+    delete oldPtr;
   }
 }
 
@@ -60,8 +81,8 @@ void Chain::reset()
   ChainLink* linkPtr = head_;
   while (linkPtr) {
     ChainLink* oldPtr = linkPtr;
-    linkPtr = linkPtr->next;
-    free(oldPtr);
+    linkPtr = linkPtr->next_;
+    delete oldPtr;
   }
   head_ =NULL;
   tail_ =NULL;
@@ -76,19 +97,19 @@ void Chain::linkAfter(ChainLink* linkPtr, ChainLink* afterPtr)
   }
   else {
     if (!afterPtr) {
-      linkPtr->next = NULL;
-      linkPtr->prev = tail_;
-      tail_->next = linkPtr;
+      linkPtr->next_ = NULL;
+      linkPtr->prev_ = tail_;
+      tail_->next_ = linkPtr;
       tail_ = linkPtr;
     } 
     else {
-      linkPtr->next = afterPtr->next;
-      linkPtr->prev = afterPtr;
+      linkPtr->next_ = afterPtr->next_;
+      linkPtr->prev_ = afterPtr;
       if (afterPtr == tail_)
 	tail_ = linkPtr;
       else
-	afterPtr->next->prev = linkPtr;
-      afterPtr->next = linkPtr;
+	afterPtr->next_->prev_ = linkPtr;
+      afterPtr->next_ = linkPtr;
     }
   }
 
@@ -103,19 +124,19 @@ void Chain::linkBefore(ChainLink* linkPtr, ChainLink* beforePtr)
   }
   else {
     if (beforePtr == NULL) {
-      linkPtr->next = head_;
-      linkPtr->prev = NULL;
-      head_->prev = linkPtr;
+      linkPtr->next_ = head_;
+      linkPtr->prev_ = NULL;
+      head_->prev_ = linkPtr;
       head_ = linkPtr;
     }
     else {
-      linkPtr->prev = beforePtr->prev;
-      linkPtr->next = beforePtr;
+      linkPtr->prev_ = beforePtr->prev_;
+      linkPtr->next_ = beforePtr;
       if (beforePtr == head_)
 	head_ = linkPtr;
       else
-	beforePtr->prev->next = linkPtr;
-      beforePtr->prev = linkPtr;
+	beforePtr->prev_->next_ = linkPtr;
+      beforePtr->prev_ = linkPtr;
     }
   }
 
@@ -129,83 +150,57 @@ void Chain::unlinkLink(ChainLink* linkPtr)
 
   unlinked = 0;
   if (head_ == linkPtr) {
-    head_ = linkPtr->next;
+    head_ = linkPtr->next_;
     unlinked = 1;
   }
   if (tail_ == linkPtr) {
-    tail_ = linkPtr->prev;
+    tail_ = linkPtr->prev_;
     unlinked = 1;
   }
-  if (linkPtr->next) {
-    linkPtr->next->prev = linkPtr->prev;
+  if (linkPtr->next_) {
+    linkPtr->next_->prev_ = linkPtr->prev_;
     unlinked = 1;
   }
-  if (linkPtr->prev) {
-    linkPtr->prev->next = linkPtr->next;
+  if (linkPtr->prev_) {
+    linkPtr->prev_->next_ = linkPtr->next_;
     unlinked = 1;
   }
   if (unlinked)
     nLinks_--;
 
-  linkPtr->prev =NULL;
-  linkPtr->next =NULL;
+  linkPtr->prev_ =NULL;
+  linkPtr->next_ =NULL;
 }
 
 void Chain::deleteLink(ChainLink* link)
 {
   unlinkLink(link);
-  free(link);
+  delete link;
   link = NULL;
 }
 
 ChainLink* Chain::append(void* clientData)
 {
-  ChainLink* link = Chain_NewLink();
+  ChainLink* link = new ChainLink(clientData);
   linkAfter(link, NULL);
-  Chain_SetValue(link, clientData);
   return link;
 }
 
 ChainLink* Chain::prepend(void* clientData)
 {
-  ChainLink* link = Chain_NewLink();
+  ChainLink* link = new ChainLink(clientData);
   linkBefore(link, NULL);
-  Chain_SetValue(link, clientData);
   return link;
 }
 
-ChainLink* Blt::Chain_AllocLink(size_t extraSize)
-{
-  size_t linkSize = ALIGN(sizeof(ChainLink));
-  ChainLink* linkPtr = (ChainLink*)calloc(1, linkSize + extraSize);
-  if (extraSize > 0) {
-    // Point clientData at the memory beyond the normal structure
-    linkPtr->clientData = ((char *)linkPtr + linkSize);
-  }
-
-  return linkPtr;
-}
-
-void Blt::Chain_InitLink(ChainLink* linkPtr)
-{
-  linkPtr->clientData = NULL;
-  linkPtr->next = linkPtr->prev = NULL;
-}
-
-ChainLink* Blt::Chain_NewLink(void)
-{
-  ChainLink* linkPtr = (ChainLink*)malloc(sizeof(ChainLink));
-  linkPtr->clientData = NULL;
-  linkPtr->next = linkPtr->prev = NULL;
-  return linkPtr;
-}
 
 int Blt::Chain_IsBefore(ChainLink* firstPtr, ChainLink* lastPtr)
 {
-  for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next)
+  for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next())
     if (linkPtr == lastPtr)
       return 1;
 
   return 0;
 }
+
 
