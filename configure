@@ -5570,6 +5570,7 @@ done
 	bltOp.C
 	bltSwitch.C
 	bltVecCmd.C
+	bltVecOp.C
 	bltVecMath.C
 	bltVector.C
 	"

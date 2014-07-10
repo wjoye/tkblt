@@ -90,7 +90,7 @@ typedef struct {
 } VectorClient;
 
 static Tcl_CmdDeleteProc VectorInstDeleteProc;
-static Tcl_ObjCmdProc VectorCmd;
+extern Tcl_ObjCmdProc VectorCmd;
 static Tcl_InterpDeleteProc VectorInterpDeleteProc;
 
 typedef struct {
@@ -1166,8 +1166,8 @@ static Blt_OpSpec vectorCmdOps[] =
 
 static int nCmdOps = sizeof(vectorCmdOps) / sizeof(Blt_OpSpec);
 
-static int VectorCmd(ClientData clientData, Tcl_Interp* interp,
-		     int objc, Tcl_Obj* const objv[])
+int VectorObjCmd(ClientData clientData, Tcl_Interp* interp,
+		 int objc, Tcl_Obj* const objv[])
 {
   VectorCmdProc *proc;
 
@@ -1243,27 +1243,6 @@ VectorInterpData* Blt::Vec_GetInterpData(Tcl_Interp* interp)
     srand48(time((time_t *) NULL));
   }
   return dataPtr;
-}
-
-int Blt_VectorCmdInitProc(Tcl_Interp* interp)
-{
-  Tcl_Namespace* nsPtr;
-  Tcl_Command cmdToken;
-  const char* cmdPath = "::blt::vector";
-
-  nsPtr = Tcl_FindNamespace(interp, "::blt", NULL, TCL_LEAVE_ERR_MSG);
-  if (nsPtr == NULL)
-    return TCL_ERROR;
-
-  cmdToken = Tcl_FindCommand(interp, cmdPath, NULL, 0);
-  if (cmdToken)
-    return TCL_OK;
-  cmdToken = Tcl_CreateObjCommand(interp, cmdPath, VectorCmd, 
-				  Vec_GetInterpData(interp), NULL);
-  if (Tcl_Export(interp, nsPtr, "vector", 0) != TCL_OK)
-    return TCL_ERROR;
-
-  return TCL_OK;
 }
 
 /* C Application interface to vectors */
