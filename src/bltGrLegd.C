@@ -780,7 +780,12 @@ void Legend::deselectElement(Element* elemPtr)
 
 int Legend::selectRange(Element *fromPtr, Element *toPtr)
 {
-  if (Chain_IsBefore(fromPtr->link, toPtr->link)) {
+  int isBefore=0;
+  for (ChainLink* linkPtr = fromPtr->link; linkPtr; linkPtr = linkPtr->next())
+    if (linkPtr == toPtr->link)
+      isBefore =1;
+
+  if (isBefore) {
     for (ChainLink* link = fromPtr->link; link; link = Chain_NextLink(link)) {
       Element* elemPtr = (Element*)Chain_GetValue(link);
       selectEntry(elemPtr);

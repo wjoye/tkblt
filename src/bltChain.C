@@ -192,15 +192,3 @@ ChainLink* Chain::prepend(void* clientData)
   linkBefore(link, NULL);
   return link;
 }
-
-
-int Blt::Chain_IsBefore(ChainLink* firstPtr, ChainLink* lastPtr)
-{
-  for (ChainLink* linkPtr = firstPtr; linkPtr; linkPtr = linkPtr->next())
-    if (linkPtr == lastPtr)
-      return 1;
-
-  return 0;
-}
-
-

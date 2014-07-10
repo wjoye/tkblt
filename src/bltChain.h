@@ -86,8 +86,6 @@ namespace Blt {
     ChainLink* append(void* clientData);
     ChainLink* prepend(void* clientData);
   };
-
-  extern int Chain_IsBefore(ChainLink* first, ChainLink* last);
 };
 
 #endif

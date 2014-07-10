@@ -421,19 +421,18 @@ void Axis::mapStacked(int count, int margin)
   AxisOptions* ops = (AxisOptions*)ops_;
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
 
-  if ((gops->margins[margin_].axes->nLinks() > 1) ||
-      (ops->reqNumMajorTicks <= 0)) {
+  if (Chain_GetLength(gops->margins[margin_].axes) > 1 
+      || ops->reqNumMajorTicks <= 0)
     ops->reqNumMajorTicks = 4;
-  }
 
   unsigned int slice;
   if (isHorizontal()) {
-    slice = graphPtr_->hRange_ / gops->margins[margin].axes->nLinks();
+    slice = graphPtr_->hRange_ / Chain_GetLength(gops->margins[margin].axes);
     screenMin_ = graphPtr_->hOffset_;
     width_ = slice;
   }
   else {
-    slice = graphPtr_->vRange_ / gops->margins[margin].axes->nLinks();
+    slice = graphPtr_->vRange_ / Chain_GetLength(gops->margins[margin].axes);
     screenMin_ = graphPtr_->vOffset_;
     height_ = slice;
   }
