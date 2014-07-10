@@ -168,6 +168,10 @@ BarGraph::BarGraph(ClientData clientData, Tcl_Interp* interp,
 		   int objc, Tcl_Obj* const objv[])
   : Graph(clientData, interp, objc, objv)
 {
+  // problems so far?
+  if (!valid_)
+    return;
+
   ops_ = (BarGraphOptions*)calloc(1, sizeof(BarGraphOptions));
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
 
