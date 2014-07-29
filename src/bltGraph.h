@@ -33,7 +33,6 @@
 #include <tk.h>
 
 #include "bltChain.h"
-
 #include "bltGrMisc.h"
 #include "bltGrText.h"
 
