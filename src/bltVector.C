@@ -261,7 +261,7 @@ int Blt::Vec_GetIndexRange(Tcl_Interp* interp, Vector* vPtr, const char *string,
   int ielem;
   char* colon = NULL;
   if (flags & INDEX_COLON)
-    colon = strchr(string, ':');
+    colon = (char*)strchr(string, ':');
 
   if (colon != NULL) {
     if (string == colon) {
