@@ -89,7 +89,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
+   "0", -1, Tk_Offset(BarElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, LAYOUT},
   {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
   {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
@@ -452,8 +452,7 @@ void BarElement::map()
     BarPen* penPtr = stylePtr->penPtr;
     BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
     stylePtr->symbolSize = size;
-    stylePtr->errorBarCapWidth = (pops->errorBarCapWidth > 0) ?
-      pops->errorBarCapWidth : size*.66666;
+    stylePtr->errorBarCapWidth = pops->errorBarCapWidth;
   }
 
   BarStyle** dataToStyle = (BarStyle**)StyleMap();

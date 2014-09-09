@@ -109,7 +109,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "1", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarLineWidth),
    0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
-   "2", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
+   "0", -1, Tk_Offset(LineElementOptions, builtinPen.errorBarCapWidth),
    0, NULL, LAYOUT},
   {TK_OPTION_COLOR, "-fill", "fill", "Fill", 
    NULL, -1, Tk_Offset(LineElementOptions, builtinPen.symbol.fillColor), 
@@ -368,8 +368,7 @@ void LineElement::map()
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
     int size = scaleSymbol(penOps->symbol.size);
     stylePtr->symbolSize = size;
-    stylePtr->errorBarCapWidth = (penOps->errorBarCapWidth > 0) 
-      ? penOps->errorBarCapWidth : size*0.66666;
+    stylePtr->errorBarCapWidth = penOps->errorBarCapWidth;
   }
 
   LineStyle** styleMap = (LineStyle**)StyleMap();
