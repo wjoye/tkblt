@@ -55,7 +55,6 @@ namespace Blt {
     Tk_OptionTable optionTable_;
     void* ops_;
     Graph* graphPtr_;
-    unsigned int flags;
 
     short int left;
     short int bottom;

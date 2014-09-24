@@ -79,7 +79,7 @@ namespace Blt {
     void setDashes(Dashes*);
 
     int preamble(const char*);
-    int computeBBox(int, int);
+    void computeBBox(int, int);
     const char* getValue(int*);
     void append(const char*);
     void format(const char*, ...);

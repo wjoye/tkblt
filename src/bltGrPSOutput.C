@@ -40,14 +40,6 @@
 
 using namespace Blt;
 
-#define PS_MAXPECT	(1<<4)
-
-#ifdef TCL_UTF_MAX
-#  define HAVE_UTF	1
-#else
-#  define HAVE_UTF	0
-#endif
-
 PSOutput::PSOutput(Graph* graphPtr)
 {
   graphPtr_ = graphPtr;
@@ -96,65 +88,53 @@ void PSOutput::printSegments(Segment2d* segments, int nSegments)
   }
 }
 
-int PSOutput::computeBBox(int width, int height)
+void PSOutput::computeBBox(int width, int height)
 {
   Postscript* setupPtr = graphPtr_->postscript_;
   PostscriptOptions* pops = (PostscriptOptions*)setupPtr->ops_;
-  int paperWidth, paperHeight;
-  float hScale, vScale, scale;
 
-  int x = pops->xPad;
-  int y = pops->yPad;
-
-  int hBorder = 2*pops->xPad;
-  int vBorder = 2*pops->yPad;
-
-  int hSize, vSize;
-  if (pops->landscape) {
-    hSize = height;
-    vSize = width;
-  } else {
-    hSize = width;
-    vSize = height;
-  }
+  // page size is in pica
+  float pica = 25.4 / 72 * 
+    WidthOfScreen(Tk_Screen(graphPtr_->tkwin_)) / 
+    WidthMMOfScreen(Tk_Screen(graphPtr_->tkwin_));
+  int hBorder = 2*pops->xPad/pica;
+  int vBorder = 2*pops->yPad/pica;
+  int hSize = !pops->landscape ? width : height; 
+  int vSize = !pops->landscape ? height : width;
+  hSize /= pica;
+  vSize /= pica;
 
   // If the paper size wasn't specified, set it to the graph size plus the
   // paper border.
-  paperWidth = (pops->reqPaperWidth > 0) ? pops->reqPaperWidth :
+  int paperWidth = pops->reqPaperWidth > 0 ? pops->reqPaperWidth/pica :
     hSize + hBorder;
-  paperHeight = (pops->reqPaperHeight > 0) ? pops->reqPaperHeight :
+  int paperHeight = pops->reqPaperHeight > 0 ? pops->reqPaperHeight/pica :
     vSize + vBorder;
 
-  // Scale the plot size (the graph itself doesn't change size) if it's
-  // bigger than the paper or if -maxpect was set.
-  hScale = vScale = 1.0f;
-  if ((setupPtr->flags & PS_MAXPECT) || ((hSize + hBorder) > paperWidth)) {
-    hScale = (float)(paperWidth - hBorder) / (float)hSize;
+  // Scale the plot size if it's bigger than the paper
+  float hScale = (hSize+hBorder) > paperWidth ? 1.0 : 
+    (float)(paperWidth - hBorder) / hSize;
+  float vScale = (vSize + vBorder) > paperHeight ? 1.0 :
+    (float)(paperHeight - vBorder) / vSize;
+
+  float scale = MIN(hScale, vScale);
+  if (scale != 1.0) {
+    hSize = hSize*scale + 0.5;
+    vSize = vSize*scale + 0.5;
   }
-  if ((setupPtr->flags & PS_MAXPECT) || ((vSize + vBorder) > paperHeight)) {
-    vScale = (float)(paperHeight - vBorder) / (float)vSize;
-  }
-  scale = MIN(hScale, vScale);
-  if (scale != 1.0f) {
-    hSize = (int)((hSize * scale) + 0.5f);
-    vSize = (int)((vSize * scale) + 0.5f);
-  }
-  setupPtr->scale = scale;
-  if (pops->center) {
-    if (paperWidth > hSize) {
-      x = (paperWidth - hSize) / 2;
-    }
-    if (paperHeight > vSize) {
-      y = (paperHeight - vSize) / 2;
-    }
-  }
+
+  int x = (paperWidth > hSize) && pops->center ? 
+    (paperWidth - hSize) / 2 : pops->xPad;
+  int y = (paperHeight > vSize) && pops->center ? 
+    (paperHeight - vSize) / 2 : pops->yPad;
+
   setupPtr->left = x;
   setupPtr->bottom = y;
   setupPtr->right = x + hSize - 1;
   setupPtr->top = y + vSize - 1;
+  setupPtr->scale = scale;
   setupPtr->paperHeight = paperHeight;
   setupPtr->paperWidth = paperWidth;
-  return paperHeight;
 }
 
 const char* PSOutput::getValue(int* lengthPtr)
@@ -417,6 +397,7 @@ int PSOutput::preamble(const char* fileName)
   if (!fileName)
     fileName = Tk_PathName(graphPtr_->tkwin_);
 
+  // Comments
   append("%!PS-Adobe-3.0 EPSF-3.0\n");
 
   // The "BoundingBox" comment is required for EPS files. The box
@@ -450,7 +431,17 @@ int PSOutput::preamble(const char* fileName)
   addComments(ops->comments);
   append("%%EndComments\n\n");
 
+  // Prolog
   prolog();
+
+  // Setup
+  append("%%BeginSetup\n");
+  append("gsave\n");
+  append("1 setlinewidth\n");
+  append("1 setlinejoin\n");
+  append("0 setlinecap\n");
+  append("[] 0 setdash\n");
+  append("0 0 0 setrgbcolor\n");
 
   if (ops->footer) {
     const char* who = getenv("LOGNAME");
@@ -467,22 +458,21 @@ int PSOutput::preamble(const char* fileName)
     append("0 0 moveto\n");
   }
 
-  // Set the conversion from postscript to X11 coordinates.  Scale pica to
+  // Set the conversion from postscript to X11 coordinates. Scale pica to
   // pixels and flip the y-axis (the origin is the upperleft corner).
-  append("% Transform coordinate system to use X11 coordinates\n\n");
+  // Papersize is in pixels. Translate the new origin *after* changing the scale
+  append("% Transform coordinate system to use X11 coordinates\n");
   append("% 1. Flip y-axis over by reversing the scale,\n");
   append("% 2. Translate the origin to the other side of the page,\n");
   append("%    making the origin the upper left corner\n");
   format("1 -1 scale\n");
+  format("0 %d translate\n", -setupPtr->paperHeight);
 
-  // Papersize is in pixels. Translate the new origin *after* changing the scale
-  format("0 %d translate\n\n", -setupPtr->paperHeight);
-  append("% User defined page layout\n\n");
-  append("% Set color level\n");
+  // Set Origin
   format("%% Set origin\n%d %d translate\n\n", setupPtr->left,setupPtr->bottom);
   if (ops->landscape)
     format("%% Landscape orientation\n0 %g translate\n-90 rotate\n",
-		  ((double)graphPtr_->width_ * setupPtr->scale));
+	   ((double)graphPtr_->width_ * setupPtr->scale));
 
   append("\n%%EndSetup\n\n");
 
@@ -889,17 +879,5 @@ void PSOutput::prolog()
 "} def\n"
 "\n"
 "%%EndProlog\n"
-"\n"
-"%%BeginSetup\n"
-"gsave					% Save the graphics state\n"
-"\n"
-"% Default line/text style parameters\n"
-"\n"
-"1 setlinewidth				% width\n"
-"1 setlinejoin				% join\n"
-"0 setlinecap				% cap\n"
-"[] 0 setdash				% dashes\n"
-"\n"
-"0 0 0 setrgbcolor			% color\n"
 );
 }
