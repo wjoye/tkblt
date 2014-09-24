@@ -88,21 +88,15 @@ void PSOutput::printSegments(Segment2d* segments, int nSegments)
   }
 }
 
-void PSOutput::computeBBox(int width, int height)
+void PSOutput::computeBBox(int width, int height, float pica)
 {
   Postscript* setupPtr = graphPtr_->postscript_;
   PostscriptOptions* pops = (PostscriptOptions*)setupPtr->ops_;
 
-  // page size is in pica
-  float pica = 25.4 / 72 * 
-    WidthOfScreen(Tk_Screen(graphPtr_->tkwin_)) / 
-    WidthMMOfScreen(Tk_Screen(graphPtr_->tkwin_));
   int hBorder = 2*pops->xPad/pica;
   int vBorder = 2*pops->yPad/pica;
   int hSize = !pops->landscape ? width : height; 
   int vSize = !pops->landscape ? height : width;
-  hSize /= pica;
-  vSize /= pica;
 
   // If the paper size wasn't specified, set it to the graph size plus the
   // paper border.
@@ -124,9 +118,9 @@ void PSOutput::computeBBox(int width, int height)
   }
 
   int x = (paperWidth > hSize) && pops->center ? 
-    (paperWidth - hSize) / 2 : pops->xPad;
+    (paperWidth - hSize) / 2 : pops->xPad/pica;
   int y = (paperHeight > vSize) && pops->center ? 
-    (paperHeight - vSize) / 2 : pops->yPad;
+    (paperHeight - vSize) / 2 : pops->yPad/pica;
 
   setupPtr->left = x;
   setupPtr->bottom = y;
@@ -465,7 +459,7 @@ int PSOutput::preamble(const char* fileName)
   append("% 1. Flip y-axis over by reversing the scale,\n");
   append("% 2. Translate the origin to the other side of the page,\n");
   append("%    making the origin the upper left corner\n");
-  format("1 -1 scale\n");
+  append("1 -1 scale\n");
   format("0 %d translate\n", -setupPtr->paperHeight);
 
   // Set Origin

@@ -373,7 +373,15 @@ int Graph::print(const char* ident, PSOutput* psPtr)
   else if (height_ < 2)
     height_ = Tk_ReqHeight(tkwin_);
 
-  psPtr->computeBBox(width_, height_);
+  // scale from points to pica
+  float pica = 25.4 / 72 * 
+    WidthOfScreen(Tk_Screen(tkwin_)) / 
+    WidthMMOfScreen(Tk_Screen(tkwin_));
+
+  width_ /= pica;
+  height_ /= pica;
+
+  psPtr->computeBBox(width_, height_, pica);
   flags |= RESET;
 
   // Turn on PostScript measurements when computing the graph's layout.
