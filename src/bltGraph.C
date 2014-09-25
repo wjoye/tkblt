@@ -377,7 +377,7 @@ int Graph::print(const char* ident, PSOutput* psPtr)
   float pica = 25.4 / 72 * 
     WidthOfScreen(Tk_Screen(tkwin_)) / 
     WidthMMOfScreen(Tk_Screen(tkwin_));
-
+  cerr << width_ << 'x' << height_ << endl;
   //  width_ /= pica;
   //  height_ /= pica;
 
