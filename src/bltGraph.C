@@ -378,8 +378,8 @@ int Graph::print(const char* ident, PSOutput* psPtr)
     WidthOfScreen(Tk_Screen(tkwin_)) / 
     WidthMMOfScreen(Tk_Screen(tkwin_));
 
-  width_ /= pica;
-  height_ /= pica;
+  //  width_ /= pica;
+  //  height_ /= pica;
 
   psPtr->computeBBox(width_, height_, pica);
   flags |= RESET;
