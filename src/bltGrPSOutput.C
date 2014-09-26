@@ -88,10 +88,15 @@ void PSOutput::printSegments(Segment2d* segments, int nSegments)
   }
 }
 
-void PSOutput::computeBBox(int width, int height, float pica)
+void PSOutput::computeBBox(int width, int height)
 {
   Postscript* setupPtr = graphPtr_->postscript_;
   PostscriptOptions* pops = (PostscriptOptions*)setupPtr->ops_;
+
+  // scale from points to pica
+  float pica = 25.4 / 72 * 
+    WidthOfScreen(Tk_Screen(graphPtr_->tkwin_)) / 
+    WidthMMOfScreen(Tk_Screen(graphPtr_->tkwin_));
 
   int hBorder = 2*pops->xPad/pica;
   int vBorder = 2*pops->yPad/pica;
