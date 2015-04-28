@@ -1,32 +1,43 @@
-	  github
-	  saveas png?
-	  shape no fill should be transparent, not white (black?)
-	  windows
-	  shared libs
-	    unix
+	github
+	saveas png?
+	shape no fill should be transparent, not white (black?)
+	windows
+	shared libs
+	  unix
 	    macosx
+	      windows
 
-	  macosx
-	    font size
+        doc
+	tests
 
-	  postscript 
-	    off dash color
-	    text marker background
+	-tkblt 3.1
+	  add strip graph
+	  add marker image
+	  add marker bitmap
+	  add symbol image
+	  add symbol bitmap
 
-	  bring *Op.C into class
-
-	  linegraph issues
-	    -aspect 2 cause plot offpage
-	    -plotborderwidth clips legend
-	    -rightmargin moves legend offpage
-
-	  bargraph issues
+	-Bargraph issues
 	    -aspect 2 cause plot offpage
 	    -barmode stack cause bars offpage
 	    -plotborderwidth clips legend
 	    -rightmargin moves legend offpage
 
-	  lineelement issues
+	-Barelement issues
+	    test styleMap/weights
+	    test low/high
+	    errorbar location weirdness (change x)
+	    -invertxy no errorbarcap
+
+	-Legend issues
+	    -ipadx 20 wrong
+
+	-Linegraph issues
+	    -aspect 2 cause plot offpage
+	    -plotborderwidth clips legend
+	    -rightmargin moves legend offpage
+
+	-Lineelement issues
 	    test styleMap/weights
 	    test low/high
 	    trace smoothness
@@ -34,19 +45,16 @@
 	    redraw uses normal pen, not activepen
 	    -invertxy no errorbarcap
 
-	  barelement issues
-	    test styleMap/weights
-	    test low/high
-	    errorbar location weirdness (change x)
-	    -invertxy no errorbarcap
+	-MacOSX
+	    font size
 
-	  legend issues
-	    -ipadx 20 wrong
-
-	  marker issues
+	-Marker issues
             line/polygon marker -join round/miter/bevel
 
-	  postscript issues
+	-Postscript issues
+	    off dash color
+	    text marker background
+
 	    ps.tcl
 	      configure options
 	    text rotation
@@ -57,16 +65,90 @@
 	      text-too large bg fill
 	    off dash color
 
+	-Structure
+	  bring *Op.C into class
+
 	  flags RESET/LAYOUT
 	  rm get GraphPtr from window
 	  cleanup bltGrElemLineSpline.C
 	  rm classid
 	  rm bltSwitch
 
-	-tkblt 3.1
-	  add strip graph
-	  add marker image
-	  add marker bitmap
-	  add symbol image
-	  add symbol bitmap
+	-BLT3.0 changes
+	  -rm'd
+	    graph
+	      -buffergraph
+	      -bufferelements
+	      -unmaphiddenelements
+	    axis
+	      -use
+	      GetOp
+	      FocusOp
+	    element
+	      -halo 
+	      -interpolate 
+	      -along
+	      GetOp
+	    line element
+	      -areaforeground
+	      -state
+	      symbol
+	        bitmap
+	        image
+	    bar element
+	      -stipple
+	    pen
+	      -type
+	      -stipple
+	    legend
+	      -position @x,y
+	      -position .window
+	      -titleanchor
+	    crosshairs
+	      -position
+	      -hide
+	    marker
+	      window
+	      image
+	      -name
+	      GetOp
+	    bitmap Marker
+	      scale/rotate
+	      -state
+	    text marker
+	      -xpad
+	      -ypad
+	      -state
+	    polygon marker
+	      -fillbg
+	      -outlinebg
+	      -stipple
+	      -state
+	      -xor
+	    line marker
+	      -state
+	      -xor
+	    graph.tcl
+	      printkey
+	      postscript dialog
+	  -add'd
+	    graph -searchhalo -searchmode -searchalong
+	    legend -x -y
+	    crosshairs -x -y
+
+	-tkblt render order
+	    ---cache---
+	    Legend(MARGIN);
+	    AxesGrids
+	    Axes
+	    AxesLimits
+	    Legend(PLOT,UNDER);
+	    Markers(UNDER);
+	    Elements
+	    ActiveElements
+	    Legend(PLOT,OVER);
+	    ---cache---
+	    Markers(OVER);
+	    Crosshairs
+	    Focus
 
