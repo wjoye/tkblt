@@ -1,0 +1,72 @@
+	  github
+	  saveas png?
+	  shape no fill should be transparent, not white (black?)
+	  windows
+	  shared libs
+	    unix
+	    macosx
+
+	  macosx
+	    font size
+
+	  postscript 
+	    off dash color
+	    text marker background
+
+	  bring *Op.C into class
+
+	  linegraph issues
+	    -aspect 2 cause plot offpage
+	    -plotborderwidth clips legend
+	    -rightmargin moves legend offpage
+
+	  bargraph issues
+	    -aspect 2 cause plot offpage
+	    -barmode stack cause bars offpage
+	    -plotborderwidth clips legend
+	    -rightmargin moves legend offpage
+
+	  lineelement issues
+	    test styleMap/weights
+	    test low/high
+	    trace smoothness
+	    element -x/y low/high (no effect)
+	    redraw uses normal pen, not activepen
+	    -invertxy no errorbarcap
+
+	  barelement issues
+	    test styleMap/weights
+	    test low/high
+	    errorbar location weirdness (change x)
+	    -invertxy no errorbarcap
+
+	  legend issues
+	    -ipadx 20 wrong
+
+	  marker issues
+            line/polygon marker -join round/miter/bevel
+
+	  postscript issues
+	    ps.tcl
+	      configure options
+	    text rotation
+	      text marker
+	      values
+	      axis limits %g
+	    marker
+	      text-too large bg fill
+	    off dash color
+
+	  flags RESET/LAYOUT
+	  rm get GraphPtr from window
+	  cleanup bltGrElemLineSpline.C
+	  rm classid
+	  rm bltSwitch
+
+	-tkblt 3.1
+	  add strip graph
+	  add marker image
+	  add marker bitmap
+	  add symbol image
+	  add symbol bitmap
+
