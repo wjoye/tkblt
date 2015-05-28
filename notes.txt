@@ -1,11 +1,11 @@
-	github
+	sourceforge
+	  tkbltwish
+	  doc
+	  tests
+
 	saveas png?
 	shape no fill should be transparent, not white (black?)
 	windows
-	shared libs
-	  unix
-	    macosx
-	      windows
 
         doc
 	tests
