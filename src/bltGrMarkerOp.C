@@ -269,7 +269,7 @@ static int ExistsOp(ClientData clientData, Tcl_Interp* interp,
 
   Tcl_HashEntry* hPtr =
     Tcl_FindHashEntry(&graphPtr->markers_.table, Tcl_GetString(objv[3]));
-  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr));
+  Tcl_SetBooleanObj(Tcl_GetObjResult(interp), (hPtr != NULL));
 
   return TCL_OK;
 }
