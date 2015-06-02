@@ -488,7 +488,7 @@ void BarGraph::computeBarStacks()
 	key.value =*x;
 	key.xAxis =ops->xAxis;
 	key.yAxis =NULL;
-	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, &key);
+	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&setTable_, (char*)&key);
 	if (!hPtr)
 	  continue;
 

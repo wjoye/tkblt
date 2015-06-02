@@ -772,7 +772,7 @@ void Legend::selectElement(Element* elemPtr)
 
 void Legend::deselectElement(Element* elemPtr)
 {
-  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, elemPtr);
+  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, (char*)elemPtr);
   if (hPtr) {
     ChainLink* link = (ChainLink*)Tcl_GetHashValue(hPtr);
     selected_->deleteLink(link);
