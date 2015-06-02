@@ -78,7 +78,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(PolygonMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(PolygonMarkerOptions, yOffset), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 PolygonMarker::PolygonMarker(Graph* graphPtr, const char* name, 
@@ -250,7 +250,7 @@ void PolygonMarker::map()
     for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
-      if (LineRectClip(&extents, &segPtr->p, &segPtr->q)) {
+      if (lineRectClip(&extents, &segPtr->p, &segPtr->q)) {
 	segPtr++;
       }
     }

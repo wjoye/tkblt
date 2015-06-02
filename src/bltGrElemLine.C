@@ -187,7 +187,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-weights", "weights", "Weights",
    NULL, -1, Tk_Offset(LineElementOptions, w), 
    TK_OPTION_NULL_OK, &valuesObjOption, RESET},
-  {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, -1, 0, 0, "-xdata", 0},
+  {TK_OPTION_SYNONYM, "-x", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-xdata", 0},
   {TK_OPTION_CUSTOM, "-xdata", "xData", "XData", 
    NULL, -1, Tk_Offset(LineElementOptions, coords.x), 
    TK_OPTION_NULL_OK, &valuesObjOption, RESET},
@@ -200,7 +200,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-xlow", "xLow", "XLow", 
    NULL, -1, Tk_Offset(LineElementOptions, xLow), 
    TK_OPTION_NULL_OK, &valuesObjOption, RESET},
-  {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, -1, 0, 0, "-ydata", 0},
+  {TK_OPTION_SYNONYM, "-y", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-ydata", 0},
   {TK_OPTION_CUSTOM, "-ydata", "yData", "YData", 
    NULL, -1, Tk_Offset(LineElementOptions, coords.y), 
    TK_OPTION_NULL_OK, &valuesObjOption, RESET},
@@ -213,7 +213,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_CUSTOM, "-ylow", "yLow", "YLow", 
    NULL, -1, Tk_Offset(LineElementOptions, yLow), 
    TK_OPTION_NULL_OK, &valuesObjOption, RESET},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 LineElement::LineElement(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)

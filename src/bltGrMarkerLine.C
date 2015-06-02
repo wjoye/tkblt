@@ -84,7 +84,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(LineMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(LineMarkerOptions, yOffset), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 LineMarker::LineMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 
@@ -180,7 +180,7 @@ void LineMarker::map()
     next.y += ops->yOffset;
     Point2d q = next;
 
-    if (LineRectClip(&extents, &p, &q)) {
+    if (lineRectClip(&extents, &p, &q)) {
       segPtr->p = p;
       segPtr->q = q;
       segPtr++;
@@ -268,7 +268,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
 	 pp < pend; pp++) {
       Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
       Point2d q = mapPoint(pp + 1, ops->xAxis, ops->yAxis);
-      if (LineRectClip(extsPtr, &p, &q))
+      if (lineRectClip(extsPtr, &p, &q))
 	count++;
     }
     return (count > 0);		/* At least 1 segment passes through

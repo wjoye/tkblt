@@ -63,7 +63,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "8.5i", -1, Tk_Offset(PostscriptOptions, reqPaperWidth), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-width", "width", "Width", 
    "0", -1, Tk_Offset(PostscriptOptions, reqWidth), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 Postscript::Postscript(Graph* graphPtr)

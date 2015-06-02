@@ -46,7 +46,7 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-background", "background", "Background",
    NULL, -1, Tk_Offset(TextMarkerOptions, fillColor),
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-background", 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags", 
    "Text all", -1, Tk_Offset(TextMarkerOptions, tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
@@ -56,8 +56,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_STRING, "-element", "element", "Element", 
    NULL, -1, Tk_Offset(TextMarkerOptions, elemName),
    TK_OPTION_NULL_OK, NULL, 0},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-foreground", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-background", 0},
   {TK_OPTION_FONT, "-font", "font", "Font", 
    STD_FONT_NORMAL, -1, Tk_Offset(TextMarkerOptions, style.font), 0, NULL, 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
@@ -71,7 +71,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "x", -1, Tk_Offset(TextMarkerOptions, xAxis), 0, &xAxisObjOption, 0},
   {TK_OPTION_CUSTOM, "-mapy", "mapY", "MapY", 
    "y", -1, Tk_Offset(TextMarkerOptions, yAxis), 0, &yAxisObjOption, 0},
-  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_SYNONYM, "-outline", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-foreground", 0},
   {TK_OPTION_DOUBLE, "-rotate", "rotate", "Rotate", 
    "0", -1, Tk_Offset(TextMarkerOptions, style.angle), 0, NULL, 0},
   {TK_OPTION_STRING, "-text", "text", "Text", 
@@ -82,7 +82,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(TextMarkerOptions, xOffset), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-yoffset", "yOffset", "YOffset",
    "0", -1, Tk_Offset(TextMarkerOptions, yOffset), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 TextMarker::TextMarker(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr) 

@@ -50,7 +50,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(CrosshairsOptions, x), 0, NULL, 0},
   {TK_OPTION_PIXELS, "-y", "y", "Y",
    "0", -1, Tk_Offset(CrosshairsOptions, y), 0, NULL, 0},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 Crosshairs::Crosshairs(Graph* graphPtr)

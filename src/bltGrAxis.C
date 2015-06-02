@@ -68,11 +68,11 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(AxisOptions, windowSize), 0, NULL, RESET},
   {TK_OPTION_BORDER, "-background", "background", "Background",
    NULL, -1, Tk_Offset(AxisOptions, normalBg), TK_OPTION_NULL_OK, NULL, CACHE},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-background", 0},
   {TK_OPTION_CUSTOM, "-bindtags", "bindTags", "BindTags",
    "all", -1, Tk_Offset(AxisOptions, tags), 
    TK_OPTION_NULL_OK, &listObjOption, 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-borderwidth", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(AxisOptions, borderWidth), 0, NULL, LAYOUT},
   {TK_OPTION_BOOLEAN, "-checklimits", "checkLimits", "CheckLimits", 
@@ -86,8 +86,8 @@ static Tk_OptionSpec optionSpecs[] = {
    "no", -1, Tk_Offset(AxisOptions, descending), 0, NULL, RESET},
   {TK_OPTION_BOOLEAN, "-exterior", "exterior", "exterior",
    "yes", -1, Tk_Offset(AxisOptions, exterior), 0, NULL, LAYOUT},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
-  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-color", 0},
   {TK_OPTION_BOOLEAN, "-grid", "grid", "Grid",
    "yes", -1, Tk_Offset(AxisOptions, showGrid), 0, NULL, CACHE},
   {TK_OPTION_COLOR, "-gridcolor", "gridColor", "GridColor", 
@@ -182,7 +182,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, CACHE},
   {TK_OPTION_FONT, "-titlefont", "titleFont", "TitleFont",
    STD_FONT_NORMAL, -1, Tk_Offset(AxisOptions, titleFont), 0, NULL, LAYOUT},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 TickLabel::TickLabel(char* str)

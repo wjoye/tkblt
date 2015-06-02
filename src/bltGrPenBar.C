@@ -37,9 +37,9 @@
 using namespace Blt;
 
 static Tk_OptionSpec barPenOptionSpecs[] = {
-  {TK_OPTION_SYNONYM, "-background", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
+  {TK_OPTION_SYNONYM, "-background", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-color", 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-color", 0},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(BarPenOptions, borderWidth), 0, NULL, CACHE},
   {TK_OPTION_BORDER, "-color", "color", "Color",
@@ -51,9 +51,9 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    "1", -1, Tk_Offset(BarPenOptions, errorBarLineWidth), 0, NULL, CACHE},
   {TK_OPTION_PIXELS, "-errorbarcap", "errorBarCap", "ErrorBarCap", 
    "0", -1, Tk_Offset(BarPenOptions, errorBarCapWidth), 0, NULL, LAYOUT},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
-  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, -1, 0, 0, "-color", 0},
-  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, -1, 0, 0, "-outline", 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-outline", 0},
+  {TK_OPTION_SYNONYM, "-fill", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-color", 0},
+  {TK_OPTION_SYNONYM, "-foreground", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-outline", 0},
   {TK_OPTION_COLOR, "-outline", "outline", "Outline",
    NULL, -1, Tk_Offset(BarPenOptions, outlineColor), 
    TK_OPTION_NULL_OK, NULL, CACHE},
@@ -77,7 +77,7 @@ static Tk_OptionSpec barPenOptionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, CACHE},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    "0", -1, Tk_Offset(BarPenOptions, valueStyle.angle), 0, NULL, CACHE},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 BarPen::BarPen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)

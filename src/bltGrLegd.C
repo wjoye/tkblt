@@ -72,14 +72,14 @@ static Tk_OptionSpec optionSpecs[] = {
    "flat", -1, Tk_Offset(LegendOptions, activeRelief), 0, NULL, LAYOUT},
   {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", 
    "n", -1, Tk_Offset(LegendOptions, anchor), 0, NULL, LAYOUT},
-  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, -1, 0, 0, "-background", 0},
+  {TK_OPTION_SYNONYM, "-bg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-background", 0},
   {TK_OPTION_BORDER, "-background", "background", "Background",
    NULL, -1, Tk_Offset(LegendOptions, normalBg), 
    TK_OPTION_NULL_OK, NULL, CACHE},
   {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
    STD_BORDERWIDTH, -1, Tk_Offset(LegendOptions, borderWidth), 
    0, NULL, LAYOUT}, 
-  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, -1, 0, 0, "-borderwidth", 0},
+  {TK_OPTION_SYNONYM, "-bd", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-borderwidth", 0},
   {TK_OPTION_INT, "-columns", "columns", "columns",
    "0", -1, Tk_Offset(LegendOptions, reqColumns), 0, NULL, LAYOUT},
   {TK_OPTION_BOOLEAN, "-exportselection", "exportSelection", "ExportSelection", 
@@ -92,7 +92,7 @@ static Tk_OptionSpec optionSpecs[] = {
    0, NULL, CACHE},
   {TK_OPTION_FONT, "-font", "font", "Font", 
    STD_FONT_SMALL, -1, Tk_Offset(LegendOptions, style.font), 0, NULL, LAYOUT},
-  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, -1, 0, 0, "-foreground", 0},
+  {TK_OPTION_SYNONYM, "-fg", NULL, NULL, NULL, 0, -1, 0, (ClientData)"-foreground", 0},
   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(LegendOptions, fgColor), 
    0, NULL, CACHE},
@@ -152,7 +152,7 @@ static Tk_OptionSpec optionSpecs[] = {
    "0", -1, Tk_Offset(LegendOptions, xReq), 0, NULL, LAYOUT},
   {TK_OPTION_PIXELS, "-y", "y", "Y", 
    "0", -1, Tk_Offset(LegendOptions, yReq), 0, NULL, LAYOUT},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 Legend::Legend(Graph* graphPtr)

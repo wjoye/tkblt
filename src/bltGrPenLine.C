@@ -92,7 +92,7 @@ static Tk_OptionSpec linePenOptionSpecs[] = {
    TK_OPTION_NULL_OK, NULL, CACHE},
   {TK_OPTION_DOUBLE, "-valuerotate", "valueRotate", "ValueRotate",
    "0", -1, Tk_Offset(LinePenOptions, valueStyle.angle), 0, NULL, CACHE},
-  {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, 0, 0, NULL, 0}
+  {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, -1, 0, 0, 0}
 };
 
 LinePen::LinePen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
