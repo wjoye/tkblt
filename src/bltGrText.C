@@ -93,8 +93,13 @@ void TextStyle::drawText(Drawable drawable, const char *text, int x, int y)
   Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
 					      ops->justify, 0, &w1, &h1);
   Point2d rr = rotateText(x, y, w1, h1);
+#if (TCL_MAJOR_VERSION == 8) || (TCL_MINOR_VERSION >= 6)
   TkDrawAngledTextLayout(graphPtr_->display_, drawable, gc_, layout,
   			 rr.x, rr.y, ops->angle, 0, -1);
+#else
+  Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
+		    rr.x, rr.y, 0, -1);
+#endif
 }
 
 void TextStyle::drawText2(Drawable drawable, const char *text,
@@ -112,8 +117,13 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
   Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1, 
 					      ops->justify, 0, &w1, &h1);
   Point2d rr = rotateText(x, y, w1, h1);
+#if (TCL_MAJOR_VERSION == 8) || (TCL_MINOR_VERSION >= 6)
   TkDrawAngledTextLayout(graphPtr_->display_, drawable, gc_, layout,
   			 rr.x, rr.y, ops->angle, 0, -1);
+#else
+  Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
+		    rr.x, rr.y, 0, -1);
+#endif
 
   float angle = fmod(ops->angle, 360.0);
   if (angle < 0.0)
