@@ -308,7 +308,8 @@ void BarElement::map()
       key.value =x[ii];
       key.xAxis =ops->xAxis;
       key.yAxis =NULL;
-      Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&barGraphPtr_->setTable_, &key);
+      Tcl_HashEntry* hPtr = 
+	Tcl_FindHashEntry(&barGraphPtr_->setTable_, (char*)&key);
 
       if (hPtr) {
 	Tcl_HashTable *tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hPtr);

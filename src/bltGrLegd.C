@@ -751,7 +751,7 @@ void Legend::selectEntry(Element* elemPtr)
     selectElement(elemPtr);
     break;
   case SELECT_TOGGLE:
-  Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, (char*)elemPtr);
+    Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&selectTable_, (char*)elemPtr);
     if (hPtr)
       deselectElement(elemPtr);
     else
@@ -763,7 +763,8 @@ void Legend::selectEntry(Element* elemPtr)
 void Legend::selectElement(Element* elemPtr)
 {
   int isNew;
-  Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&selectTable_, elemPtr, &isNew);
+  Tcl_HashEntry* hPtr = 
+    Tcl_CreateHashEntry(&selectTable_, (char*)elemPtr, &isNew);
   if (isNew) {
     ChainLink* link = selected_->append(elemPtr);
     Tcl_SetHashValue(hPtr, link);

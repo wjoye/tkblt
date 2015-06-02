@@ -355,7 +355,8 @@ void BarGraph::initBarSets()
 	key.yAxis =NULL;
 
 	int isNew;
-	Tcl_HashEntry* hhPtr =Tcl_CreateHashEntry(&setTable, &key, &isNew);
+	Tcl_HashEntry* hhPtr = 
+	  Tcl_CreateHashEntry(&setTable, (char*)&key, &isNew);
 	Tcl_HashTable* tablePtr;
 	if (isNew) {
 	  tablePtr = (Tcl_HashTable*)malloc(sizeof(Tcl_HashTable));
@@ -390,7 +391,8 @@ void BarGraph::initBarSets()
     Tcl_HashTable* tablePtr = (Tcl_HashTable*)Tcl_GetHashValue(hhPtr);
 
     int isNew;
-    Tcl_HashEntry* hPtr = Tcl_CreateHashEntry(&setTable_, keyPtr, &isNew);
+    Tcl_HashEntry* hPtr = 
+      Tcl_CreateHashEntry(&setTable_, (char*)keyPtr, &isNew);
     Tcl_SetHashValue(hPtr, tablePtr);
 
     if (max < tablePtr->numEntries)
