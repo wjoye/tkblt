@@ -28,6 +28,9 @@
  */
 
 #include <float.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "bltGraphBar.h"
 #include "bltGrElemBar.h"
