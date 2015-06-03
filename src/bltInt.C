@@ -41,32 +41,16 @@ int Tkblt_Init(Tcl_Interp* interp)
 {
   Tcl_Namespace *nsPtr;
 
-  if(
-#ifdef USE_TCL_STUBS
-     Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0)
-#else
-     Tcl_PkgRequire(interp, "Tcl", TCL_PATCH_LEVEL, 0)
-#endif
-     == NULL) {
+  if (Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0) == NULL)
     return TCL_ERROR;
-  }
-
-  if(
-#ifdef USE_TK_STUBS
-     Tk_InitStubs(interp, TK_PATCH_LEVEL, 0)
-#else
-     Tcl_PkgRequire(interp, "Tk", TK_PATCH_LEVEL, 0)
-#endif
-     == NULL) {
+  if (Tk_InitStubs(interp, TK_PATCH_LEVEL, 0) == NULL)
     return TCL_ERROR;
-  }
 
   nsPtr = Tcl_FindNamespace(interp, "::blt", (Tcl_Namespace *)NULL, 0);
   if (nsPtr == NULL) {
     nsPtr = Tcl_CreateNamespace(interp, "::blt", NULL, NULL);
-    if (nsPtr == NULL) {
+    if (nsPtr == NULL)
       return TCL_ERROR;
-    }
   }
 
   if (Blt_VectorCmdInitProc(interp) != TCL_OK)
@@ -74,9 +58,8 @@ int Tkblt_Init(Tcl_Interp* interp)
   if (Blt_GraphCmdInitProc(interp) != TCL_OK)
     return TCL_ERROR;
 
-  if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK) {
+  if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
     return TCL_ERROR;
-  }
 
   return TCL_OK;
 }

@@ -31,9 +31,7 @@
 #define __BltGrElemBar_h__
 
 #include <tk.h>
-#ifdef USE_TK_STUBS
 #include <tkInt.h>
-#endif
 
 #include "bltGrElem.h"
 #include "bltGrPenBar.h"
