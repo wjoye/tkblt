@@ -341,10 +341,8 @@ static int DeleteOp(Vector *vPtr, Tcl_Interp* interp,
   // Allocate an "unset" bitmap the size of the vector
   unsigned char* unsetArr = 
     (unsigned char*)calloc(sizeof(unsigned char), (vPtr->length + 7) / 8);
-#define SetBit(i)				\
-  unsetArr[(i) >> 3] |= (1 << ((i) & 0x07))
-#define GetBit(i)				\
-  (unsetArr[(i) >> 3] & (1 << ((i) & 0x07)))
+#define SetBit(i) (unsetArr[(i) >> 3] |= (1 << ((i) & 0x07)))
+#define GetBit(i) (unsetArr[(i) >> 3] &  (1 << ((i) & 0x07)))
 
   for (int i = 2; i < objc; i++) {
     char* string = Tcl_GetString(objv[i]);
@@ -383,132 +381,118 @@ static int DeleteOp(Vector *vPtr, Tcl_Interp* interp,
 static int DupOp(Vector *vPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  int i;
-
-  for (i = 2; i < objc; i++) {
-    Vector *v2Ptr;
-    char *name;
+  for (int i = 2; i < objc; i++) {
+    char* name = Tcl_GetString(objv[i]);
     int isNew;
+    Vector* v2Ptr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
+    if (v2Ptr == NULL)
+      return TCL_ERROR;
 
-    name = Tcl_GetString(objv[i]);
-    v2Ptr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
-    if (v2Ptr == NULL) {
-      return TCL_ERROR;
-    }
-    if (v2Ptr == vPtr) {
+    if (v2Ptr == vPtr)
       continue;
-    }
-    if (Vec_Duplicate(v2Ptr, vPtr) != TCL_OK) {
+
+    if (Vec_Duplicate(v2Ptr, vPtr) != TCL_OK)
       return TCL_ERROR;
-    }
+
     if (!isNew) {
-      if (v2Ptr->flush) {
+      if (v2Ptr->flush)
 	Vec_FlushCache(v2Ptr);
-      }
       Vec_UpdateClients(v2Ptr);
     }
   }
+
   return TCL_OK;
 }
 
 static int FFTOp(Vector *vPtr, Tcl_Interp* interp, 
 		 int objc, Tcl_Obj* const objv[])
 {
-  Vector *v2Ptr = NULL;
-  int isNew;
   FFTData data;
-  char *realVecName;
-
   memset(&data, 0, sizeof(data));
   data.delta = 1.0;
 
-  realVecName = Tcl_GetString(objv[2]);
-  v2Ptr = Vec_Create(vPtr->dataPtr, realVecName, realVecName, 
-			 realVecName, &isNew);
-  if (v2Ptr == NULL) {
+  char* realVecName = Tcl_GetString(objv[2]);
+  int isNew;
+  Vector* v2Ptr = Vec_Create(vPtr->dataPtr, realVecName, realVecName, 
+			     realVecName, &isNew);
+  if (v2Ptr == NULL)
     return TCL_ERROR;
-  }
+
   if (v2Ptr == vPtr) {
     Tcl_AppendResult(interp, "real vector \"", realVecName, "\"", 
 		     " can't be the same as the source", (char *)NULL);
     return TCL_ERROR;
   }
+
   if (ParseSwitches(interp, fftSwitches, objc - 3, objv + 3, &data, 
-			BLT_SWITCH_DEFAULTS) < 0) {
+		    BLT_SWITCH_DEFAULTS) < 0)
     return TCL_ERROR;
-  }
+
   if (Vec_FFT(interp, v2Ptr, data.imagPtr, data.freqPtr, data.delta,
-		  data.mask, vPtr) != TCL_OK) {
+	      data.mask, vPtr) != TCL_OK)
     return TCL_ERROR;
-  }
-  /* Update bookkeeping. */
+
+  // Update bookkeeping
   if (!isNew) {
-    if (v2Ptr->flush) {
+    if (v2Ptr->flush)
       Vec_FlushCache(v2Ptr);
-    }
     Vec_UpdateClients(v2Ptr);
   }
+
   if (data.imagPtr != NULL) {
-    if (data.imagPtr->flush) {
+    if (data.imagPtr->flush)
       Vec_FlushCache(data.imagPtr);
-    }
     Vec_UpdateClients(data.imagPtr);
   }
+
   if (data.freqPtr != NULL) {
-    if (data.freqPtr->flush) {
+    if (data.freqPtr->flush)
       Vec_FlushCache(data.freqPtr);
-    }
     Vec_UpdateClients(data.freqPtr);
   }
+
   return TCL_OK;
 }	
 
 static int InverseFFTOp(Vector *vPtr, Tcl_Interp* interp, 
 			int objc, Tcl_Obj* const objv[])
 {
-  int isNew;
-  char *name;
+  char* name = Tcl_GetString(objv[2]);
   Vector *srcImagPtr;
-  Vector *destRealPtr;
-  Vector *destImagPtr;
-
-  name = Tcl_GetString(objv[2]);
-  if (Vec_LookupName(vPtr->dataPtr, name, &srcImagPtr) != TCL_OK ) {
+  if (Vec_LookupName(vPtr->dataPtr, name, &srcImagPtr) != TCL_OK )
     return TCL_ERROR;
-  }
+
   name = Tcl_GetString(objv[3]);
-  destRealPtr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
+  int isNew;
+  Vector* destRealPtr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
   name = Tcl_GetString(objv[4]);
-  destImagPtr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
+  Vector* destImagPtr = Vec_Create(vPtr->dataPtr, name, name, name, &isNew);
 
   if (Vec_InverseFFT(interp, srcImagPtr, destRealPtr, destImagPtr, vPtr) 
-      != TCL_OK ){
+      != TCL_OK )
     return TCL_ERROR;
-  }
-  if (destRealPtr->flush) {
+
+  if (destRealPtr->flush)
     Vec_FlushCache(destRealPtr);
-  }
   Vec_UpdateClients(destRealPtr);
 
-  if (destImagPtr->flush) {
+  if (destImagPtr->flush)
     Vec_FlushCache(destImagPtr);
-  }
   Vec_UpdateClients(destImagPtr);
+
   return TCL_OK;
 }
 
 static int IndexOp(Vector *vPtr, Tcl_Interp* interp, 
 		   int objc, Tcl_Obj* const objv[])
 {
-  int first, last;
-  char *string;
-
-  string = Tcl_GetString(objv[2]);
+  char* string = Tcl_GetString(objv[2]);
   if (Vec_GetIndexRange(interp, vPtr, string, INDEX_ALL_FLAGS, 
-			    (Blt_VectorIndexProc **) NULL) != TCL_OK) {
+			(Blt_VectorIndexProc **) NULL) != TCL_OK)
     return TCL_ERROR;
-  }
-  first = vPtr->first, last = vPtr->last;
+
+  int first = vPtr->first;
+  int last = vPtr->last;
   if (objc == 3) {
     Tcl_Obj *listObjPtr;
 
@@ -519,31 +503,32 @@ static int IndexOp(Vector *vPtr, Tcl_Interp* interp,
     }
     listObjPtr = GetValues(vPtr, first, last);
     Tcl_SetObjResult(interp, listObjPtr);
-  } else {
-    double value;
-
-    /* FIXME: huh? Why set values here?.  */
+  }
+  else {
+    // FIXME: huh? Why set values here?
     if (first == SPECIAL_INDEX) {
       Tcl_AppendResult(interp, "can't set index \"", string, "\"",
 		       (char *)NULL);
-      return TCL_ERROR;	/* Tried to set "min" or "max" */
-    }
-    if (Blt_ExprDoubleFromObj(interp, objv[3], &value) != TCL_OK) {
+      // Tried to set "min" or "max"
       return TCL_ERROR;
     }
+
+    double value;
+    if (Blt_ExprDoubleFromObj(interp, objv[3], &value) != TCL_OK)
+      return TCL_ERROR;
+
     if (first == vPtr->length) {
-      if (Vec_ChangeLength(interp, vPtr, vPtr->length + 1) 
-	  != TCL_OK) {
+      if (Vec_ChangeLength(interp, vPtr, vPtr->length + 1) != TCL_OK) 
 	return TCL_ERROR;
-      }
     }
+
     ReplicateValue(vPtr, first, last, value);
     Tcl_SetObjResult(interp, objv[3]);
-    if (vPtr->flush) {
+    if (vPtr->flush)
       Vec_FlushCache(vPtr);
-    }
     Vec_UpdateClients(vPtr);
   }
+
   return TCL_OK;
 }
 
@@ -552,25 +537,25 @@ static int LengthOp(Vector *vPtr, Tcl_Interp* interp,
 {
   if (objc == 3) {
     int nElem;
-
-    if (Tcl_GetIntFromObj(interp, objv[2], &nElem) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, objv[2], &nElem) != TCL_OK)
       return TCL_ERROR;
-    }
+
     if (nElem < 0) {
       Tcl_AppendResult(interp, "bad vector size \"", 
 		       Tcl_GetString(objv[2]), "\"", (char *)NULL);
       return TCL_ERROR;
     }
+
     if ((Vec_SetSize(interp, vPtr, nElem) != TCL_OK) ||
-	(Vec_SetLength(interp, vPtr, nElem) != TCL_OK)) {
+	(Vec_SetLength(interp, vPtr, nElem) != TCL_OK))
       return TCL_ERROR;
-    } 
-    if (vPtr->flush) {
+
+    if (vPtr->flush)
       Vec_FlushCache(vPtr);
-    }
     Vec_UpdateClients(vPtr);
   }
   Tcl_SetIntObj(Tcl_GetObjResult(interp), vPtr->length);
+
   return TCL_OK;
 }
 
@@ -579,13 +564,13 @@ static int MapOp(Vector *vPtr, Tcl_Interp* interp,
 {
   if (objc > 2) {
     if (Vec_MapVariable(interp, vPtr, Tcl_GetString(objv[2])) 
-	!= TCL_OK) {
+	!= TCL_OK)
       return TCL_ERROR;
-    }
   }
-  if (vPtr->arrayName != NULL) {
+
+  if (vPtr->arrayName != NULL)
     Tcl_SetStringObj(Tcl_GetObjResult(interp), vPtr->arrayName, -1);
-  }
+
   return TCL_OK;
 }
 
