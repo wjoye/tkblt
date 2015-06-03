@@ -28,9 +28,7 @@
  */
 
 #include <tk.h>
-#ifdef USE_TK_STUBS
 #include <tkInt.h>
-#endif
 
 #include "bltGrBind.h"
 #include "bltGraph.h"

@@ -30,7 +30,6 @@
 #include <math.h>
 
 #include <tk.h>
-#include <tkPort.h>
 #include <tkInt.h>
 
 #include "bltGrText.h"
