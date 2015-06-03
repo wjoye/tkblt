@@ -104,11 +104,11 @@ static Blt_SwitchSpec sortSwitches[] =
   {
     {BLT_SWITCH_BITMASK, "-decreasing", "",
 	Tk_Offset(SortSwitches, flags),   0, SORT_DECREASING},
-      {BLT_SWITCH_BITMASK, "-reverse",   "",
-	  Tk_Offset(SortSwitches, flags),   0, SORT_DECREASING},
-	{BLT_SWITCH_BITMASK, "-uniq",     "", 
-	    Tk_Offset(SortSwitches, flags),   0, SORT_UNIQUE},
-	  {BLT_SWITCH_END}
+    {BLT_SWITCH_BITMASK, "-reverse",   "",
+	Tk_Offset(SortSwitches, flags),   0, SORT_DECREASING},
+    {BLT_SWITCH_BITMASK, "-uniq",     "", 
+	Tk_Offset(SortSwitches, flags),   0, SORT_UNIQUE},
+    {BLT_SWITCH_END}
   };
 
 typedef struct {
@@ -136,7 +136,8 @@ static Blt_SwitchSpec fftSwitches[] = {
   {BLT_SWITCH_END}
 };
 
-static int Blt_ExprIntFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int *valuePtr)
+static int Blt_ExprIntFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
+			      int *valuePtr)
 {
   // First try to extract the value as a simple integer.
   if (Tcl_GetIntFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
@@ -148,10 +149,12 @@ static int Blt_ExprIntFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int *valuePtr
     *valuePtr = lvalue;
     return TCL_OK;
   }
+
   return TCL_ERROR;
 }
 
-static int Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, double *valuePtr)
+static int Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
+				 double *valuePtr)
 {
   // First try to extract the value as a double precision number.
   if (Tcl_GetDoubleFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
@@ -180,6 +183,7 @@ static int ObjToFFTVector(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
   *vPtrPtr = vPtr;
+
   return TCL_OK;
 }
 
@@ -196,8 +200,8 @@ static int ObjToIndex(ClientData clientData, Tcl_Interp* interp,
     return TCL_ERROR;
   }
   *indexPtr = index;
-  return TCL_OK;
 
+  return TCL_OK;
 }
 
 static Tcl_Obj* GetValues(Vector *vPtr, int first, int last)
@@ -211,6 +215,7 @@ static Tcl_Obj* GetValues(Vector *vPtr, int first, int last)
     Tcl_ListObjAppendElement(vPtr->interp, listObjPtr, 
 			     Tcl_NewDoubleObj(*vp));
   } 
+
   return listObjPtr;
 }
 
@@ -247,15 +252,12 @@ static int CopyList(Vector *vPtr, Tcl_Interp* interp,
 
 static int AppendVector(Vector *destPtr, Vector *srcPtr)
 {
-  size_t nBytes;
-  size_t oldSize, newSize;
-
-  oldSize = destPtr->length;
-  newSize = oldSize + srcPtr->last - srcPtr->first + 1;
+  size_t oldSize = destPtr->length;
+  size_t newSize = oldSize + srcPtr->last - srcPtr->first + 1;
   if (Vec_ChangeLength(destPtr->interp, destPtr, newSize) != TCL_OK) {
     return TCL_ERROR;
   }
-  nBytes = (newSize - oldSize) * sizeof(double);
+  size_t nBytes = (newSize - oldSize) * sizeof(double);
   memcpy((char *)(destPtr->valueArr + oldSize),
 	 (srcPtr->valueArr + srcPtr->first), nBytes);
   destPtr->notifyFlags |= UPDATE_RANGE;
@@ -265,17 +267,14 @@ static int AppendVector(Vector *destPtr, Vector *srcPtr)
 static int AppendList(Vector *vPtr, int objc, Tcl_Obj* const objv[])
 {
   Tcl_Interp* interp = vPtr->interp;
-  int count;
-  int i;
-  double value;
-  int oldSize;
 
-  oldSize = vPtr->length;
-  if (Vec_ChangeLength(interp, vPtr, vPtr->length + objc) != TCL_OK) {
+  int oldSize = vPtr->length;
+  if (Vec_ChangeLength(interp, vPtr, vPtr->length + objc) != TCL_OK)
     return TCL_ERROR;
-  }
-  count = oldSize;
-  for (i = 0; i < objc; i++) {
+
+  int count = oldSize;
+  for (int i = 0; i < objc; i++) {
+    double value;
     if (Blt_ExprDoubleFromObj(interp, objv[i], &value) != TCL_OK) {
       Vec_ChangeLength(interp, vPtr, count);
       return TCL_ERROR;
@@ -283,6 +282,7 @@ static int AppendList(Vector *vPtr, int objc, Tcl_Obj* const objv[])
     vPtr->valueArr[count++] = value;
   }
   vPtr->notifyFlags |= UPDATE_RANGE;
+
   return TCL_OK;
 }
 
@@ -291,16 +291,14 @@ static int AppendList(Vector *vPtr, int objc, Tcl_Obj* const objv[])
 static int AppendOp(Vector *vPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  int i;
-  int result;
-  Vector *v2Ptr;
-
-  for (i = 2; i < objc; i++) {
-    v2Ptr = Vec_ParseElement((Tcl_Interp *)NULL, vPtr->dataPtr, 
-				 Tcl_GetString(objv[i]), (const char **)NULL, NS_SEARCH_BOTH);
-    if (v2Ptr != NULL) {
+  for (int i = 2; i < objc; i++) {
+    Vector* v2Ptr = Vec_ParseElement((Tcl_Interp *)NULL, vPtr->dataPtr, 
+				     Tcl_GetString(objv[i]), 
+				     (const char **)NULL, NS_SEARCH_BOTH);
+    int result;
+    if (v2Ptr != NULL)
       result = AppendVector(vPtr, v2Ptr);
-    } else {
+    else {
       int nElem;
       Tcl_Obj **elemObjArr;
 
@@ -310,16 +308,17 @@ static int AppendOp(Vector *vPtr, Tcl_Interp* interp,
       }
       result = AppendList(vPtr, nElem, elemObjArr);
     }
-    if (result != TCL_OK) {
+
+    if (result != TCL_OK)
       return TCL_ERROR;
-    }
   }
+
   if (objc > 2) {
-    if (vPtr->flush) {
+    if (vPtr->flush)
       Vec_FlushCache(vPtr);
-    }
     Vec_UpdateClients(vPtr);
   }
+
   return TCL_OK;
 }
 
@@ -333,41 +332,39 @@ static int ClearOp(Vector *vPtr, Tcl_Interp* interp,
 static int DeleteOp(Vector *vPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  unsigned char *unsetArr;
-  int i, j;
-  int count;
-  char *string;
-
-  /* FIXME: Don't delete vector with no indices.  */
+  // FIXME: Don't delete vector with no indices
   if (objc == 2) {
     Vec_Free(vPtr);
     return TCL_OK;
   }
 
-  /* Allocate an "unset" bitmap the size of the vector. */
-  unsetArr = (unsigned char*)calloc(sizeof(unsigned char), (vPtr->length + 7) / 8);
+  // Allocate an "unset" bitmap the size of the vector
+  unsigned char* unsetArr = 
+    (unsigned char*)calloc(sizeof(unsigned char), (vPtr->length + 7) / 8);
 #define SetBit(i)				\
   unsetArr[(i) >> 3] |= (1 << ((i) & 0x07))
 #define GetBit(i)				\
   (unsetArr[(i) >> 3] & (1 << ((i) & 0x07)))
 
-  for (i = 2; i < objc; i++) {
-    string = Tcl_GetString(objv[i]);
-    if (Vec_GetIndexRange(interp, vPtr, string, 
-			      (INDEX_COLON | INDEX_CHECK), (Blt_VectorIndexProc **) NULL) 
-	!= TCL_OK) {
+  for (int i = 2; i < objc; i++) {
+    char* string = Tcl_GetString(objv[i]);
+    if (Vec_GetIndexRange(interp, vPtr, string, (INDEX_COLON | INDEX_CHECK),
+			  (Blt_VectorIndexProc **) NULL) != TCL_OK) {
       free(unsetArr);
       return TCL_ERROR;
     }
-    for (j = vPtr->first; j <= vPtr->last; j++) {
-      SetBit(j);		/* Mark the range of elements for deletion. */
-    }
+
+    // Mark the range of elements for deletion
+    for (int j = vPtr->first; j <= vPtr->last; j++)
+      SetBit(j);		
   }
-  count = 0;
-  for (i = 0; i < vPtr->length; i++) {
-    if (GetBit(i)) {
-      continue;		/* Skip elements marked for deletion. */
-    }
+
+  int count = 0;
+  for (int i = 0; i < vPtr->length; i++) {
+    // Skip elements marked for deletion
+    if (GetBit(i))
+      continue;
+
     if (count < i) {
       vPtr->valueArr[count] = vPtr->valueArr[i];
     }
@@ -375,10 +372,11 @@ static int DeleteOp(Vector *vPtr, Tcl_Interp* interp,
   }
   free(unsetArr);
   vPtr->length = count;
-  if (vPtr->flush) {
+
+  if (vPtr->flush)
     Vec_FlushCache(vPtr);
-  }
   Vec_UpdateClients(vPtr);
+
   return TCL_OK;
 }
 
