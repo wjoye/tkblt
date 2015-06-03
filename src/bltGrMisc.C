@@ -41,8 +41,6 @@
 
 using namespace Blt;
 
-#define MIN(a,b)	(((a)<(b))?(a):(b))
-
 char* Blt::dupstr(const char* str)
 {
   char* copy =NULL;

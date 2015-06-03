@@ -28,7 +28,6 @@
  */
 
 #include <tk.h>
-#include <tkInt.h>
 
 #include "bltGraph.h"
 #include "bltGrPostscript.h"

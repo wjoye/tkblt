@@ -29,6 +29,8 @@
 
 #include <float.h>
 
+#include <tkInt.h>
+
 #include "bltGraph.h"
 #include "bltGraphOp.h"
 

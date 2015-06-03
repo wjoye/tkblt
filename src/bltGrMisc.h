@@ -37,6 +37,14 @@ using namespace std;
 
 #include <tk.h>
 
+#ifndef MIN
+#   define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+
+#ifndef MAX
+#   define MAX(x,y) ((x)>(y)?(x):(y))
+#endif
+
 #define	GRAPH_DELETED   (1<<1)
 #define REDRAW_PENDING  (1<<2)
 #define FOCUS           (1<<3)

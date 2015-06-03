@@ -32,7 +32,6 @@
 #include <stdarg.h>
 
 #include "tk.h"
-#include "tkInt.h"
 
 // copied from tk3d.h
 

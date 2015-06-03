@@ -44,7 +44,6 @@
 #define SHOW_Y		2
 #define SHOW_BOTH	3
 
-#define MIN(a,b)	(((a)<(b))?(a):(b))
 #define NUMBEROFPOINTS(e) MIN( (e)->coords.x ? (e)->coords.x->nValues() : 0, \
 			       (e)->coords.y ? (e)->coords.y->nValues() : 0 )
 #define NORMALPEN(e) ((((e)->normalPenPtr == NULL) ? \

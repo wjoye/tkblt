@@ -51,7 +51,6 @@ using namespace Blt;
 #define SEARCH_TRACES	1	// closest point on trace.
 #define SEARCH_AUTO	2	// traces if linewidth is > 0 and more than one
 
-#define MAX(a,b)	(((a)>(b))?(a):(b))
 #define MIN3(a,b,c)	(((a)<(b))?(((a)<(c))?(a):(c)):(((b)<(c))?(b):(c)))
 #define PointInRegion(e,x,y) (((x) <= (e)->right) && ((x) >= (e)->left) && ((y) <= (e)->bottom) && ((y) >= (e)->top))
 
