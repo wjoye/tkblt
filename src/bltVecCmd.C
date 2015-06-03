@@ -1411,12 +1411,11 @@ static int SimplifyOp(Vector *vPtr, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   size_t i, n;
-  int length, nPoints;
+  int nPoints;
   int *simple;
   double tolerance = 10.0;
   Point2d *orig, *reduced;
 
-  length = vPtr->length;
   nPoints = vPtr->length / 2;
   simple  = (int*)malloc(nPoints * sizeof(int));
   reduced = (Point2d*)malloc(nPoints * sizeof(Point2d));
@@ -1560,10 +1559,11 @@ static int SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const obj
   Vector *v2Ptr;
   double *copy;
   size_t *map;
-  size_t sortLength, nBytes;
+  size_t nBytes;
   int result;
   int i;
-  unsigned int n;
+  int n;
+  int sortLength;
   SortSwitches switches;
 
   sortDecreasing = 0;
@@ -1583,6 +1583,7 @@ static int SortOp(Vector *vPtr, Tcl_Interp* interp, int objc, Tcl_Obj* const obj
   if (map == NULL) {
     return TCL_ERROR;
   }
+
   sortLength = vPtr->length;
   /*
    * Create an array to store a copy of the current values of the
