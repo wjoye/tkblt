@@ -1,4 +1,8 @@
 '\"
+'\" Smithsonian Astrophysical Observatory, Cambridge, MA, USA
+'\" This code has been modified under the terms listed below and is made
+'\" available under the same terms.
+'\"
 '\" Copyright 1991-1997 by Lucent Technologies, Inc.
 '\"
 '\" Permission to use, copy, modify, and distribute this software and its
