@@ -6,7 +6,7 @@ set graph [bltLineGraph $w]
 $graph pen create foo -color red -showvalues y -symbol circle -dashes {4 4}
 $graph element configure data2 -pen foo
 
-echo "Testing Line Pen..."
+puts stderr "Testing Line Pen..."
 
 bltTest3 $graph pen foo -color yellow $dops
 bltTest3 $graph pen foo -dashes {8 3} $dops
@@ -50,6 +50,6 @@ bltCmd $graph pen delete bar
 bltCmd $graph pen names 
 bltCmd $graph pen type foo
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

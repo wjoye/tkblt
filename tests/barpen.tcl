@@ -6,7 +6,7 @@ set graph [bltBarGraph $w]
 $graph pen create foo -color red -showvalues y
 $graph element configure data2 -pen foo
 
-echo "Testing Bar Pen..."
+puts stderr "Testing Bar Pen..."
 
 bltTest3 $graph pen foo -background yellow $dops
 bltTest3 $graph pen foo -bd 4 $dops
@@ -46,6 +46,6 @@ bltCmd $graph pen delete bar
 bltCmd $graph pen names 
 bltCmd $graph pen type foo
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

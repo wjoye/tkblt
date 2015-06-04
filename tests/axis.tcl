@@ -7,7 +7,7 @@ $graph axis configure x -bd 2 -background cyan -title "X\nAxis" -limitsformat "%
 $graph axis configure y -bd 2 -background cyan -title "Y\nAxis"
 bltCmd $graph axis activate y
 
-echo "Testing Axis..."
+puts stderr "Testing Axis..."
 
 bltTest3 $graph axis y -activeforeground red $dops
 bltTest3 $graph axis y -activerelief sunken $dops
@@ -100,6 +100,6 @@ bltCmd $graph xaxis configure -color
 #bltCmd $graph xaxis use
 #bltCmd $graph xaxis view
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

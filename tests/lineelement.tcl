@@ -8,7 +8,7 @@ $graph element configure data1 -dash {8 3} -showvalues y -smooth step -symbol ci
 $graph pen create foo -showvalues y -symbol circle -dashes {8 3} -color purple -linewidth 2
 $graph element activate data3
 
-echo "Testing Line Element.."
+puts stderr "Testing Line Element.."
 
 bltTest3 $graph element data3 -activepen foo $dops
 bltTest3 $graph element data2 -areabackground yellow $dops
@@ -100,6 +100,6 @@ bltCmd $graph element show data2
 bltCmd $graph element show {data1 data2 data3}
 bltCmd $graph element type data1
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

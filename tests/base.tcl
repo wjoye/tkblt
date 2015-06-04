@@ -24,7 +24,7 @@ proc bltPlotDestroy {w} {
 proc bltTest {graph option value {dops 0}} {
     global sleep
 
-    echo "  $option $value"
+    puts stderr "  $option $value"
     set org [$graph cget $option]
     $graph configure $option $value
     update
@@ -42,7 +42,7 @@ proc bltTest {graph option value {dops 0}} {
 proc bltTest2 {graph which option value {dops 0}} {
     global sleep
 
-    echo "  $option $value"
+    puts stderr "  $option $value"
     set org [$graph $which cget $option]
     $graph $which configure $option $value
     update
@@ -60,7 +60,7 @@ proc bltTest2 {graph which option value {dops 0}} {
 proc bltTest3 {graph which item option value {dops 0}} {
     global sleep
 
-    echo "  $item $option $value"
+    puts stderr "  $item $option $value"
     set org [$graph $which cget $item $option]
     $graph $which configure $item $option $value
     update
@@ -78,7 +78,7 @@ proc bltTest3 {graph which item option value {dops 0}} {
 proc bltCmd {graph args} {
     global sleep
 
-    echo " $graph $args"
+    puts stderr " $graph $args"
     eval $graph $args
     update
 #    after $sleep

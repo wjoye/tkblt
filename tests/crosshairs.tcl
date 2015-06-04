@@ -6,7 +6,7 @@ set graph [bltLineGraph $w]
 $graph crosshairs on
 $graph crosshairs configure -x 200 -y 200
 
-echo "Testing Crosshairs..."
+puts stderr "Testing Crosshairs..."
 
 bltTest2 $graph crosshairs -color green
 bltTest2 $graph crosshairs -dashes "8 3"
@@ -21,6 +21,6 @@ bltCmd $graph crosshairs on
 bltCmd $graph crosshairs off
 bltCmd $graph crosshairs toggle
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

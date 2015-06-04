@@ -7,7 +7,7 @@ set mm [$graph marker create polygon tt -element data2 \
 	    -coords {1 50 1.5 100 1 150} -linewidth 5]
 $graph element configure data1 -hide yes
 
-echo "Testing Polygon Marker..."
+puts stderr "Testing Polygon Marker..."
 
 bltTest3 $graph marker $mm -bindtags {aa} 0
 bltTest3 $graph marker $mm -cap round $dops
@@ -25,6 +25,6 @@ bltTest3 $graph marker $mm -under yes $dops
 bltTest3 $graph marker $mm -xoffset 20 $dops
 bltTest3 $graph marker $mm -yoffset 20 $dops
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

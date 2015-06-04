@@ -3,7 +3,7 @@ source base.tcl
 set w .line
 set graph [bltLineGraph $w]
 
-echo "Testing Line Graph..."
+puts stderr "Testing Line Graph..."
 
 bltTest $graph -aspect 2 $dops
 bltTest $graph -background red $dops
@@ -70,6 +70,6 @@ bltCmd $graph configure -background cyan
 ##bltCmd $graph y2axis
 ##bltCmd $graph yaxis
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

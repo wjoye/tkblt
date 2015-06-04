@@ -24,6 +24,6 @@ $graph postscript output bar.ps
 
 #set graph [bltBarGraph $w]
 
-#echo "done"
+#puts stderr "done"
 #bltPlotDestroy $w
 

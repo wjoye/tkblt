@@ -9,7 +9,7 @@ $graph element configure data2 -color blue
 $graph pen create foo -showvalues y -color purple
 $graph element activate data3
 
-echo "Testing Bar Element..."
+puts stderr "Testing Bar Element..."
 
 bltTest3 $graph element data3 -activepen foo $dops
 bltTest3 $graph element data2 -background yellow $dops
@@ -92,6 +92,6 @@ bltCmd $graph element show data2
 bltCmd $graph element show {data1 data2 data3}
 bltCmd $graph element type data1
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

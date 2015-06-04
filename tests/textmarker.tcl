@@ -7,7 +7,7 @@ set mm [$graph marker create text tt -element data2 \
 	    -coords {1. 112} -text "Text\nMarker" -font {helvetica 24}]
 $graph element configure data1 -hide yes
 
-echo "Testing Text Marker..."
+puts stderr "Testing Text Marker..."
 
 bltTest3 $graph marker $mm -anchor nw $dops
 bltTest3 $graph marker $mm -anchor n $dops
@@ -39,6 +39,6 @@ bltTest3 $graph marker $mm -under yes $dops
 bltTest3 $graph marker $mm -xoffset 20 $dops
 bltTest3 $graph marker $mm -yoffset 20 $dops
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

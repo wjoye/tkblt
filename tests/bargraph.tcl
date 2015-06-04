@@ -3,7 +3,7 @@ source base.tcl
 set w .bar
 set graph [bltBarGraph $w]
 
-echo "Testing Bar Graph..."
+puts stderr "Testing Bar Graph..."
 
 # Graph
 bltTest $graph -aspect 2 $dops
@@ -75,6 +75,6 @@ bltCmd $graph configure -background cyan
 ##bltCmd $graph y2axis
 ##bltCmd $graph yaxis
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

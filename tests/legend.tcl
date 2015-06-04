@@ -7,7 +7,7 @@ $graph legend selection set data2
 $graph legend focus data1
 $graph legend configure -selectrelief groove
 
-echo "Testing Legend..."
+puts stderr "Testing Legend..."
 
 #bltTest2 $graph legend -activebackground $dops
 #bltTest2 $graph legend -activeborderwidth $dops
@@ -96,6 +96,6 @@ bltCmd $graph legend selection toggle data1 data2
 bltCmd $graph legend selection set data1 data2
 bltCmd $graph legend selection clearall
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

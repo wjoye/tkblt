@@ -10,7 +10,7 @@ set nn [$graph marker create line ss -element data2 \
 	    -outline green -dashes 4]
 $graph element configure data1 -hide yes
 
-echo "Testing Line Marker..."
+puts stderr "Testing Line Marker..."
 
 bltTest3 $graph marker $mm -bindtags {aa} 0
 bltTest3 $graph marker $mm -cap round $dops
@@ -29,6 +29,6 @@ bltTest3 $graph marker $mm -under yes $dops
 bltTest3 $graph marker $mm -xoffset 20 $dops
 bltTest3 $graph marker $mm -yoffset 20 $dops
 
-echo "done"
+puts stderr "done"
 bltPlotDestroy $w
 

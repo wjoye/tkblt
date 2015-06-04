@@ -5,6 +5,6 @@ set graph [bltLineGraph $w]
 
 #set graph [bltBarGraph $w]
 
-#echo "done"
+#puts stderr "done"
 #bltPlotDestroy $w
 
