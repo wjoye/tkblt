@@ -1,3 +1,5 @@
+package require tkblt
+
 #set sleep 1000
 set sleep 500
 if {![info exists dops]} {
