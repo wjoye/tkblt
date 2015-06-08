@@ -27,7 +27,13 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef __CYGWIN__
+extern "C" {
 #include <tclInt.h>
+}
+#else
+#include <tclInt.h>
+#endif
 
 #include "bltNsUtil.h"
 
