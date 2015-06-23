@@ -1,11 +1,15 @@
 	sourceforge
-	  bltwish
 	  doc
 	  tests
 
 	saveas png?
 	shape no fill should be transparent, not white (black?)
+
+	macosx
+		update at pack [forget] cmd
+
 	windows
+		x11 calls?
 
         doc
 	tests
