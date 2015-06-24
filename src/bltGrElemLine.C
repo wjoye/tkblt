@@ -2290,19 +2290,10 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
 
   if (size < 3) {
     if (penOps->symbol.fillGC) {
-      XPoint* points = new XPoint[nSymbolPts];
-      XPoint* xpp = points;
-      Point2d *pp, *endp;
-      for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
-	xpp->x = pp->x;
-	xpp->y = pp->y;
-	xpp++;
-      }
-      XDrawPoints(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
-		  points, nSymbolPts, CoordModeOrigin);
-      delete [] points;
+      for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++)
+	XDrawLine(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
+		  pp->x, pp->y, pp->x+1, pp->y+1);
     }
-
     return;
   }
 
