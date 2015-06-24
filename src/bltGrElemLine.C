@@ -2051,34 +2051,18 @@ void LineElement::drawSCross(Display* display, Drawable drawable,
     pattern[1].x = pattern[3].y = r2;
   }
 
-  int count = 0;
-  XSegment* segments = new XSegment[nSymbolPts*2];
-  XSegment* sp;
-  Point2d *pp, *endp;
-  for (sp=segments, pp=symbolPts, endp=pp+nSymbolPts; pp<endp; pp++) {
+  for (Point2d *pp=symbolPts, *endp=pp+nSymbolPts; pp<endp; pp++) {
     if (DRAW_SYMBOL()) {
       int rndx = pp->x;
       int rndy = pp->y;
-      sp->x1 = pattern[0].x + rndx;
-      sp->y1 = pattern[0].y + rndy;
-      sp->x2 = pattern[1].x + rndx;
-      sp->y2 = pattern[1].y + rndy;
-      sp++;
-      count++;
-      sp->x1 = pattern[2].x + rndx;
-      sp->y1 = pattern[2].y + rndy;
-      sp->x2 = pattern[3].x + rndx;
-      sp->y2 = pattern[3].y + rndy;
-      sp++;
-      count++;
+      XDrawLine(graphPtr_->display_, drawable, penOps->symbol.outlineGC,
+		pattern[0].x + rndx, pattern[0].y + rndy,
+		pattern[1].x + rndx, pattern[1].y + rndy);
+      XDrawLine(graphPtr_->display_, drawable, penOps->symbol.outlineGC,
+		pattern[2].x + rndx, pattern[2].y + rndy,
+		pattern[3].x + rndx, pattern[3].y + rndy);
     }
-    symbolCounter_++;
   }
-
-  XDrawSegments(graphPtr_->display_, drawable, penOps->symbol.outlineGC,
-		segments, count);
-
-  delete [] segments;
 }
 
 void LineElement::drawCross(Display *display, Drawable drawable, 
