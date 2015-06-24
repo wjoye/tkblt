@@ -212,16 +212,13 @@ int Graph::configure()
 
 void Graph::map()
 {
-  //  cerr << '.';
   if (flags & RESET) {
-    //    cerr << 'r';
     resetAxes();
     flags &= ~RESET;
     flags |= LAYOUT;
   }
 
   if (flags & LAYOUT) {
-    //    cerr << 'l';
     layoutGraph();
     crosshairs_->map();
     mapAxes();
@@ -1040,8 +1037,7 @@ void Graph::printAxes(PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
 
-  Margin *mp, *mend;
-  for (mp = ops->margins, mend = mp + 4; mp < mend; mp++) {
+  for (Margin *mp = ops->margins, *mend = mp + 4; mp < mend; mp++) {
     for (ChainLink* link = Chain_FirstLink(mp->axes); link; 
 	 link = Chain_NextLink(link)) {
       Axis *axisPtr = (Axis*)Chain_GetValue(link);
@@ -1439,24 +1435,8 @@ int Graph::getXY(const char* string, int* xPtr, int* yPtr)
 void Graph::drawSegments(Drawable drawable, GC gc, 
 			 Segment2d* segments, int nSegments)
 {
-  Segment2d* sp;
-  Segment2d* send;
-
-  XSegment* xsegments = new XSegment[nSegments];
-  if (xsegments == NULL)
-    return;
-
-  XSegment* dp = xsegments;
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
-    dp->x1 = (short int)sp->p.x;
-    dp->y1 = (short int)sp->p.y;
-    dp->x2 = (short int)sp->q.x;
-    dp->y2 = (short int)sp->q.y;
-    dp++;
-  }
-
-  XDrawSegments(display_, drawable, gc, xsegments, nSegments);
-  delete [] xsegments;
+  for (Segment2d *sp = segments, *send = sp + nSegments; sp < send; sp++)
+    XDrawLine(display_, drawable, gc, sp->p.x, sp->p.y, sp->q.x, sp->q.y);
 }
 
 GC Graph::getPrivateGC(unsigned long gcMask, XGCValues *valuePtr)

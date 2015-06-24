@@ -140,8 +140,6 @@ void Crosshairs::draw(Drawable drawable)
 		segArr_[0].x, segArr_[0].y, segArr_[1].x, segArr_[1].y);
       XDrawLine(graphPtr_->display_, drawable, gc_, 
 		segArr_[2].x, segArr_[2].y, segArr_[3].x, segArr_[3].y);
-
-      //      XDrawSegments(graphPtr_->display_, drawable, gc_, segArr_, 2);
     }
   }
 }

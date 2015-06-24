@@ -866,9 +866,8 @@ void BarElement::checkStacks(Axis* xAxis, Axis* yAxis,
       barGraphPtr_->nBarGroups_ == 0)
     return;
 
-  BarGroup *gp, *gend;
-  for (gp = barGraphPtr_->barGroups_, gend = gp + barGraphPtr_->nBarGroups_; gp < gend;
-       gp++) {
+  for (BarGroup *gp = barGraphPtr_->barGroups_, 
+	 *gend = gp + barGraphPtr_->nBarGroups_; gp < gend; gp++) {
     if ((gp->xAxis == xAxis) && (gp->yAxis == yAxis)) {
 
       // Check if any of the y-values (because of stacking) are greater
@@ -994,8 +993,8 @@ void BarElement::mapActive()
     int* activeToData = new int[nActiveIndices_];
     int count = 0;
     for (int ii=0; ii<nBars_; ii++) {
-      int *ip, *iend;
-      for (ip = activeIndices_, iend = ip + nActiveIndices_; ip < iend; ip++) {
+      for (int *ip = activeIndices_, *iend = ip + nActiveIndices_;
+	   ip < iend; ip++) {
 	if (barToData_[ii] == *ip) {
 	  activeRects[count] = bars_[ii];
 	  activeToData[count] = ii;
@@ -1192,8 +1191,7 @@ void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
 				 XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
-  XRectangle *rp, *rend;
-  for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
@@ -1220,9 +1218,7 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
-  XRectangle *rp, *rend;
-
-  for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     Point2d anchorPos;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
@@ -1261,8 +1257,7 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
 			       XRectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
-  XRectangle *rp, *rend;
-  for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
@@ -1291,8 +1286,7 @@ void BarElement::printValues(PSOutput* psPtr, BarPen* penPtr,
     fmt = "%g";
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
-  XRectangle *rp, *rend;
-  for (rp = bars, rend = rp + nBars; rp < rend; rp++) {
+  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     double x = ops->coords.x->values_[barToData[count]];
     double y = ops->coords.y->values_[barToData[count]];
 
