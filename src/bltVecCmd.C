@@ -1130,7 +1130,7 @@ static int BinreadOp(Vector *vPtr, Tcl_Interp* interp,
   }
 
 #define BUFFER_SIZE 1024
-  int arraySize = (count == 0) ? arraySize = BUFFER_SIZE*size : count*size;
+  int arraySize = (count == 0) ? BUFFER_SIZE*size : count*size;
 
   char* byteArr = (char*)malloc(arraySize);
   // FIXME: restore old channel translation later?
@@ -1239,7 +1239,11 @@ static int RandomOp(Vector *vPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   for (int i = 0; i < vPtr->length; i++)
+#ifdef _WIN32
+    vPtr->valueArr[i] = double(rand())/RAND_MAX;
+#else
     vPtr->valueArr[i] = drand48();
+#endif
 
   if (vPtr->flush)
     Vec_FlushCache(vPtr);

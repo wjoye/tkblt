@@ -458,12 +458,16 @@ int PSOutput::preamble(const char* fileName)
   format("%%%%Creator: (%s %s %s)\n", PACKAGE_NAME, PACKAGE_VERSION,
 	 Tk_Class(graphPtr_->tkwin_));
 
-  time_t ticks = time((time_t *) NULL);
   char date[200];
+#ifndef _WIN32
+  time_t ticks = time((time_t *) NULL);
   strcpy(date, ctime(&ticks));
   char* newline = date + strlen(date) - 1;
   if (*newline == '\n')
     *newline = '\0';
+#else
+  strcpy(date,"Unknown");
+#endif
 
   format("%%%%CreationDate: (%s)\n", date);
   format("%%%%Title: (%s)\n", fileName);
