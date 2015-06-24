@@ -167,19 +167,15 @@ static int NextValue(Tcl_Interp* interp, ParseInfo *piPtr, int prec,
 
 static int Sort(Vector *vPtr)
 {
-  size_t *map;
-  double *values;
-  int i;
+  size_t* map = Vec_SortMap(&vPtr, 1);
+  double* values = (double*)malloc(sizeof(double) * vPtr->length);
+  for(int ii = vPtr->first; ii <= vPtr->last; ii++)
+    values[ii] = vPtr->valueArr[map[ii]];
 
-  map = Vec_SortMap(&vPtr, 1);
-  values = (double*)malloc(sizeof(double) * vPtr->length);
-  for(i = vPtr->first; i <= vPtr->last; i++) {
-    values[i] = vPtr->valueArr[map[i]];
-  }
   free(map);
-  for (i = vPtr->first; i <= vPtr->last; i++) {
-    vPtr->valueArr[i] = values[i];
-  }
+  for (int ii = vPtr->first; ii <= vPtr->last; ii++)
+    vPtr->valueArr[ii] = values[ii];
+
   free(values);
   return TCL_OK;
 }
@@ -218,38 +214,32 @@ static double Product(Blt_Vector *vectorPtr)
 
 static double Sum(Blt_Vector *vectorPtr)
 {
+  // Kahan summation algorithm
+
   Vector *vPtr = (Vector *)vectorPtr;
-  double sum, c;
-  double *vp, *vend;
-
-  /* Kahan summation algorithm */
-
-  vp = vPtr->valueArr + vPtr->first;
-  sum = *vp++;
-  c = 0.0;			/* A running compensation for lost
+  double* vp = vPtr->valueArr + vPtr->first;
+  double sum = *vp++;
+  double c = 0.0;			/* A running compensation for lost
 				 * low-order bits.*/
-  for (vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    double y, t;
-	
-    y = *vp - c;		/* So far, so good: c is zero.*/
-    t = sum + y;		/* Alas, sum is big, y small, so
+  for (double* vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
+    double y = *vp - c;		/* So far, so good: c is zero.*/
+    double t = sum + y;		/* Alas, sum is big, y small, so
 				 * low-order digits of y are lost.*/
     c = (t - sum) - y;	/* (t - sum) recovers the high-order
 			 * part of y; subtracting y recovers
 			 * -(low part of y) */
     sum = t;
   }
+
   return sum;
 }
 
 static double Mean(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  double sum;
-  int n;
+  double sum = Sum(vectorPtr);
+  int n = vPtr->last - vPtr->first + 1;
 
-  sum = Sum(vectorPtr);
-  n = vPtr->last - vPtr->first + 1;
   return sum / (double)n;
 }
 
@@ -257,24 +247,19 @@ static double Mean(Blt_Vector *vectorPtr)
 static double Variance(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  double var, mean;
-  double *vp, *vend;
-  int count;
-
-  mean = Mean(vectorPtr);
-  var = 0.0;
-  count = 0;
-  for(vp = vPtr->valueArr + vPtr->first,
-	vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    double dx;
-
-    dx = *vp - mean;
+  double mean = Mean(vectorPtr);
+  double var = 0.0;
+  int count = 0;
+  for(double *vp=vPtr->valueArr+vPtr->first, *vend=vPtr->valueArr+vPtr->last;
+      vp <= vend; vp++) {
+    double dx = *vp - mean;
     var += dx * dx;
     count++;
   }
-  if (count < 2) {
+
+  if (count < 2)
     return 0.0;
-  }
+
   var /= (double)(count - 1);
   return var;
 }
@@ -283,25 +268,23 @@ static double Variance(Blt_Vector *vectorPtr)
 static double Skew(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  double diff, var, skew, mean, diffsq;
-  double *vp, *vend;
-  int count;
-
-  mean = Mean(vectorPtr);
-  var = skew = 0.0;
-  count = 0;
-  for(vp = vPtr->valueArr + vPtr->first,
-	vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    diff = *vp - mean;
+  double mean = Mean(vectorPtr);
+  double var = 0;
+  double skew = 0;
+  int count = 0;
+  for(double *vp=vPtr->valueArr+vPtr->first, *vend=vPtr->valueArr+vPtr->last;
+      vp <= vend; vp++) {
+    double diff = *vp - mean;
     diff = fabs(diff);
-    diffsq = diff * diff;
+    double diffsq = diff * diff;
     var += diffsq;
     skew += diffsq * diff;
     count++;
   }
-  if (count < 2) {
+
+  if (count < 2)
     return 0.0;
-  }
+
   var /= (double)(count - 1);
   skew /= count * var * sqrt(var);
   return skew;
@@ -321,22 +304,19 @@ static double StdDeviation(Blt_Vector *vectorPtr)
 static double AvgDeviation(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  double diff, avg, mean;
-  double *vp, *vend;
-  int count;
-
-  mean = Mean(vectorPtr);
-  avg = 0.0;
-  count = 0;
-  for(vp = vPtr->valueArr + vPtr->first,
-	vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    diff = *vp - mean;
+  double mean = Mean(vectorPtr);
+  double avg = 0.0;
+  int count = 0;
+  for(double *vp=vPtr->valueArr+vPtr->first, *vend=vPtr->valueArr+vPtr->last;
+      vp <= vend; vp++) {
+    double diff = *vp - mean;
     avg += fabs(diff);
     count++;
   }
-  if (count < 2) {
+
+  if (count < 2)
     return 0.0;
-  }
+
   avg /= (double)count;
   return avg;
 }
@@ -344,28 +324,27 @@ static double AvgDeviation(Blt_Vector *vectorPtr)
 static double Kurtosis(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;
-  double diff, diffsq, kurt, var, mean;
-  double *vp, *vend;
-  int count;
-
-  mean = Mean(vectorPtr);
-  var = kurt = 0.0;
-  count = 0;
-  for(vp = vPtr->valueArr + vPtr->first,
-	vend = vPtr->valueArr + vPtr->last; vp <= vend; vp++) {
-    diff = *vp - mean;
-    diffsq = diff * diff;
+  double mean = Mean(vectorPtr);
+  double var = 0;
+  double kurt = 0;
+  int count = 0;
+  for(double *vp=vPtr->valueArr+vPtr->first, *vend=vPtr->valueArr+vPtr->last;
+      vp <= vend; vp++) {
+    double diff = *vp - mean;
+    double diffsq = diff * diff;
     var += diffsq;
     kurt += diffsq * diffsq;
     count++;
   }
-  if (count < 2) {
+
+  if (count < 2)
     return 0.0;
-  }
+
   var /= (double)(count - 1);
-  if (var == 0.0) {
+
+  if (var == 0.0)
     return 0.0;
-  }
+
   kurt /= (count * var * var);
   return kurt - 3.0;		/* Fisher Kurtosis */
 }

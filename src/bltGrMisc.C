@@ -54,11 +54,8 @@ char* Blt::dupstr(const char* str)
 
 int Blt::pointInPolygon(Point2d *s, Point2d *points, int nPoints)
 {
-  Point2d *p, *q, *qend;
-  int count;
-
-  count = 0;
-  for (p = points, q = p + 1, qend = p + nPoints; q < qend; p++, q++) {
+  int count = 0;
+  for (Point2d *p=points, *q=p+1, *qend=p + nPoints; q < qend; p++, q++) {
     if (((p->y <= s->y) && (s->y < q->y)) || 
 	((q->y <= s->y) && (s->y < p->y))) {
       double b;
@@ -157,17 +154,12 @@ int Blt::lineRectClip(Region2d* regionPtr, Point2d *p, Point2d *q)
 int Blt::polyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
 		      Point2d *clipPts)
 {
-  Point2d *p;			/* First vertex of input polygon edge. */
-  Point2d *pend;
-  Point2d *q;			/* Last vertex of input polygon edge. */
-  Point2d *r;
-  int count;
-
-  r = clipPts;
-  count = 0;			/* Counts # of vertices in output polygon. */
+  Point2d* r = clipPts;
+  // Counts # of vertices in output polygon.
+  int count = 0;
 
   points[nPoints] = points[0];
-  for (p = points, q = p + 1, pend = p + nPoints; p < pend; p++, q++) {
+  for (Point2d *p=points, *q=p+1, *pend=p+nPoints; p<pend; p++, q++) {
     double dx, dy;
     double tin1, tin2, tinx, tiny;
     double xin, yin, xout, yout;
@@ -184,14 +176,16 @@ int Blt::polyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
     if (dx > 0.0) {		/* Left */
       xin = regionPtr->left;
       xout = regionPtr->right + 1.0;
-    } else {		/* Right */
+    }
+    else {		/* Right */
       xin = regionPtr->right + 1.0;
       xout = regionPtr->left;
     }
     if (dy > 0.0) {		/* Top */
       yin = regionPtr->top;
       yout = regionPtr->bottom + 1.0;
-    } else {		/* Bottom */
+    }
+    else {		/* Bottom */
       yin = regionPtr->bottom + 1.0;
       yout = regionPtr->top;
     }
@@ -202,7 +196,8 @@ int Blt::polyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
     if (tinx < tiny) {	/* Hits x first */
       tin1 = tinx;
       tin2 = tiny;
-    } else {		/* Hits y first */
+    }
+    else {		/* Hits y first */
       tin1 = tiny;
       tin2 = tinx;
     }
@@ -212,11 +207,9 @@ int Blt::polyRectClip(Region2d *regionPtr, Point2d *points, int nPoints,
 	AddVertex(xin, yin);
       }
       if (tin2 <= 1.0) {
-	double toutx, touty, tout1;
-
-	toutx = (xout - p->x) / dx;
-	touty = (yout - p->y) / dy;
-	tout1 = MIN(toutx, touty);
+	double toutx = (xout - p->x) / dx;
+	double touty = (yout - p->y) / dy;
+	double tout1 = MIN(toutx, touty);
 		
 	if ((tin2 > 0.0) || (tout1 > 0.0)) {
 	  if (tin2 <= tout1) {

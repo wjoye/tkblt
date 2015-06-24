@@ -146,8 +146,7 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
 {
   if (enclosed) {
     // All points of the polygon must be inside the rectangle.
-    Point2d *pp, *pend;
-    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
+    for (Point2d *pp = points, *pend = pp + nPoints; pp < pend; pp++) {
       if ((pp->x < regionPtr->left) || (pp->x > regionPtr->right) ||
 	  (pp->y < regionPtr->top) || (pp->y > regionPtr->bottom)) {
 	return 0;	/* One point is exterior. */
@@ -159,12 +158,9 @@ int Marker::regionInPolygon(Region2d *regionPtr, Point2d *points, int nPoints,
     // If any segment of the polygon clips the bounding region, the
     // polygon overlaps the rectangle.
     points[nPoints] = points[0];
-    Point2d *pp, *pend;
-    for (pp = points, pend = pp + nPoints; pp < pend; pp++) {
-      Point2d p, q;
-
-      p = *pp;
-      q = *(pp + 1);
+    for (Point2d *pp = points, *pend = pp + nPoints; pp < pend; pp++) {
+      Point2d p = *pp;
+      Point2d q = *(pp + 1);
       if (lineRectClip(regionPtr, &p, &q))
 	return 1;
     }

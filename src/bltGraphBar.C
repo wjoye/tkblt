@@ -349,8 +349,7 @@ void BarGraph::initBarSets()
     nSegs++;
     if (ops->coords.x) {
       int nPoints = ops->coords.x->nValues();
-      double *x, *xend;
-      for (x = ops->coords.x->values_, xend = x + nPoints; x < xend; x++) {
+      for (double *x=ops->coords.x->values_, *xend=x+nPoints; x<xend; x++) {
 	BarSetKey key;
 	key.value =*x;
 	key.xAxis =ops->xAxis;
@@ -455,8 +454,7 @@ void BarGraph::destroyBarSets()
 
 void BarGraph::resetBarSets()
 {
-  BarGroup *gp, *gend;
-  for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++) {
+  for (BarGroup *gp = barGroups_, *gend = gp + nBarGroups_; gp < gend; gp++) {
     gp->lastY = 0.0;
     gp->count = 0;
   }
@@ -470,8 +468,7 @@ void BarGraph::computeBarStacks()
     return;
 
   // Initialize the stack sums to zero
-  BarGroup *gp, *gend;
-  for (gp = barGroups_, gend = gp + nBarGroups_; gp < gend; gp++)
+  for (BarGroup *gp = barGroups_, *gend = gp + nBarGroups_; gp < gend; gp++)
     gp->sum = 0.0;
 
   // Consider each bar x-y coordinate. Add the ordinates of duplicate
@@ -485,9 +482,8 @@ void BarGraph::computeBarStacks()
       continue;
 
     if (ops->coords.x && ops->coords.y) {
-      double *x, *y, *xend;
-      for (x = ops->coords.x->values_, y = ops->coords.y->values_, 
-	     xend = x + ops->coords.x->nValues(); x < xend; x++, y++) {
+      for (double *x=ops->coords.x->values_, *y=ops->coords.y->values_, 
+	     *xend=x+ops->coords.x->nValues(); x<xend; x++, y++) {
 	BarSetKey key;
 	key.value =*x;
 	key.xAxis =ops->xAxis;

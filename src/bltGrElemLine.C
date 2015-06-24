@@ -524,9 +524,7 @@ void LineElement::draw(Drawable drawable)
     XPoint*points = new XPoint[nFillPts_];
 
     unsigned int count =0;
-    Point2d *endp, *pp;
-    for (pp = fillPts_, endp = pp + nFillPts_; 
-	 pp < endp; pp++) {
+    for (Point2d *pp = fillPts_, *endp = pp + nFillPts_; pp < endp; pp++) {
       points[count].x = pp->x;
       points[count].y = pp->y;
       count++;
@@ -959,21 +957,21 @@ void LineElement::getScreenPoints(MapInfo* mapPtr)
 
   int count = 0;
   if (gops->inverted) {
-    for (int i = 0; i < np; i++) {
-      if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = ops->yAxis->hMap(y[i]);
-	points[count].y = ops->xAxis->vMap(x[i]);
-	map[count] = i;
+    for (int ii=0; ii<np; ii++) {
+      if ((isfinite(x[ii])) && (isfinite(y[ii]))) {
+	points[count].x = ops->yAxis->hMap(y[ii]);
+	points[count].y = ops->xAxis->vMap(x[ii]);
+	map[count] = ii;
 	count++;
       }
     }
   }
   else {
-    for (int i = 0; i < np; i++) {
-      if ((isfinite(x[i])) && (isfinite(y[i]))) {
-	points[count].x = ops->xAxis->hMap(x[i]);
-	points[count].y = ops->yAxis->vMap(y[i]);
-	map[count] = i;
+    for (int ii=0; ii< np; ii++) {
+      if ((isfinite(x[ii])) && (isfinite(y[ii]))) {
+	points[count].x = ops->xAxis->hMap(x[ii]);
+	points[count].y = ops->yAxis->vMap(y[ii]);
+	map[count] = ii;
 	count++;
       }
     }
@@ -1038,21 +1036,21 @@ double LineElement::findSplit(Point2d *points, int i, int j, int *split)
 {    
     double maxDist2 = -1.0;
     if ((i + 1) < j) {
-	int k;
 	double a = points[i].y - points[j].y;
 	double b = points[j].x - points[i].x;
 	double c = (points[i].x * points[j].y) - (points[i].y * points[j].x);
-	for (k = (i + 1); k < j; k++) {
-	    double dist2 = (points[k].x * a) + (points[k].y * b) + c;
+	for (int kk = (i + 1); kk < j; kk++) {
+	    double dist2 = (points[kk].x * a) + (points[kk].y * b) + c;
 	    if (dist2 < 0.0)
 		dist2 = -dist2;	
 
+	    // Track the maximum.
 	    if (dist2 > maxDist2) {
-		maxDist2 = dist2;	/* Track the maximum. */
-		*split = k;
+		maxDist2 = dist2;
+		*split = kk;
 	    }
 	}
-	/* Correction for segment length---should be redone if can == 0 */
+	// Correction for segment length---should be redone if can == 0
 	maxDist2 *= maxDist2 / (a * a + b * b);
     } 
     return maxDist2;
@@ -1173,14 +1171,8 @@ void LineElement::generateSpline(MapInfo *mapPtr)
 
 void LineElement::generateParametricSpline(MapInfo *mapPtr)
 {
-  Point2d *origPts, *iPts;
-  int *map;
-  int niPts, nOrigPts;
-  int result;
-  int i, j;
-
-  nOrigPts = mapPtr->nScreenPts;
-  origPts = mapPtr->screenPts;
+  int nOrigPts = mapPtr->nScreenPts;
+  Point2d *origPts = mapPtr->screenPts;
 
   Region2d exts;
   graphPtr_->extents(&exts);
@@ -1190,19 +1182,16 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
    * X-coordinates for each horizontal pixel that the line segment contains.
    */
   int count = 1;
-  for (i = 0, j = 1; j < nOrigPts; i++, j++) {
-    Point2d p, q;
-
-    p = origPts[i];
-    q = origPts[j];
+  for (int i = 0, j = 1; j < nOrigPts; i++, j++) {
+    Point2d p = origPts[i];
+    Point2d q = origPts[j];
     count++;
-    if (lineRectClip(&exts, &p, &q)) {
+    if (lineRectClip(&exts, &p, &q))
       count += (int)(hypot(q.x - p.x, q.y - p.y) * 0.5);
-    }
   }
-  niPts = count;
-  iPts = new Point2d[niPts];
-  map = new int[niPts];
+  int niPts = count;
+  Point2d *iPts = new Point2d[niPts];
+  int* map = new int[niPts];
 
   /* 
    * FIXME: This is just plain wrong.  The spline should be computed
@@ -1215,14 +1204,12 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
    *	      line segments should be clipped, not the original segments.
    */
   count = 0;
+  int i,j;
   for (i = 0, j = 1; j < nOrigPts; i++, j++) {
-    Point2d p, q;
-    double d;
+    Point2d p = origPts[i];
+    Point2d q = origPts[j];
 
-    p = origPts[i];
-    q = origPts[j];
-
-    d = hypot(q.x - p.x, q.y - p.y);
+    double d = hypot(q.x - p.x, q.y - p.y);
     /* Add the original x-coordinate */
     iPts[count].x = (double)i;
     iPts[count].y = 0.0;
@@ -1257,7 +1244,7 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
   map[count] = mapPtr->map[i];
   count++;
   niPts = count;
-  result = 0;
+  int result = 0;
   if (smooth_ == CUBIC)
     result = naturalParametricSpline(origPts, nOrigPts, &exts, 0, iPts, niPts);
   else if (smooth_ == CATROM)
@@ -1281,17 +1268,16 @@ void LineElement::generateParametricSpline(MapInfo *mapPtr)
 
 void LineElement::mapSymbols(MapInfo *mapPtr)
 {
-  Point2d *pp;
-  int i;
-
   Point2d* points = new Point2d[mapPtr->nScreenPts];
   int *map = new int[mapPtr->nScreenPts];
 
   Region2d exts;
   graphPtr_->extents(&exts);
 
+  Point2d *pp;
   int count = 0;
-  for (pp = mapPtr->screenPts, i = 0; i < mapPtr->nScreenPts; i++, pp++) {
+  int i;
+  for (pp=mapPtr->screenPts, i=0; i<mapPtr->nScreenPts; i++, pp++) {
     if (PointInRegion(&exts, pp->x, pp->y)) {
       points[count].x = pp->x;
       points[count].y = pp->y;
@@ -1875,23 +1861,18 @@ int LineElement::closestTrace()
   GraphOptions* gops = (GraphOptions*)graphPtr_->ops_;
   ClosestSearch* searchPtr = &gops->search;
 
-  ChainLink* link;
   Point2d closest;
-  double dMin;
-  int iClose;
 
-  iClose = -1;
-  dMin = searchPtr->dist;
+  int iClose = -1;
+  double dMin = searchPtr->dist;
   closest.x = closest.y = 0;
-  for (link = Chain_FirstLink(traces_); link; link = Chain_NextLink(link)) {
-    Point2d *p, *pend;
-
+  for (ChainLink *link=Chain_FirstLink(traces_); link; 
+       link = Chain_NextLink(link)) {
     bltTrace *tracePtr = (bltTrace*)Chain_GetValue(link);
-    for (p = tracePtr->screenPts.points, 
-	   pend = p + (tracePtr->screenPts.length - 1); p < pend; p++) {
+    for (Point2d *p=tracePtr->screenPts.points, 
+	   *pend=p + (tracePtr->screenPts.length - 1); p<pend; p++) {
       Point2d b;
       double d;
-
       if (searchPtr->along == SEARCH_X)
 	d = distanceToX(searchPtr->x, searchPtr->y, p, p + 1, &b);
       else if (searchPtr->along == SEARCH_Y)
@@ -1929,10 +1910,9 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
   // array of mapped screen coordinates. The advantages are
   //  1) only examine points that are visible (unclipped), and
   //  2) the computed distance is already in screen coordinates.
-  int count;
-  Point2d *pp;
-  for (pp = symbolPts_.points, count = 0; 
-       count < symbolPts_.length; count++, pp++) {
+  int count =0;
+  for (Point2d *pp = symbolPts_.points; count < symbolPts_.length;
+       count++, pp++) {
     double dx = (double)(searchPtr->x - pp->x);
     double dy = (double)(searchPtr->y - pp->y);
     double d;
@@ -1968,9 +1948,8 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
   int count = 0;
   int s = radius + radius;
   XArc* arcs = new XArc[nSymbolPts];
-  XArc *ap, *aend;
-  Point2d *pp, *pend;
-  for (ap=arcs, pp=symbolPts, pend=pp+nSymbolPts; pp<pend; pp++) {
+  XArc *ap = arcs;
+  for (Point2d *pp=symbolPts, *pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
       ap->x = pp->x - radius;
       ap->y = pp->y - radius;
@@ -1984,7 +1963,7 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  for (ap=arcs, aend=ap+count; ap<aend; ap++) {
+  for (XArc *ap=arcs, *aend=ap+count; ap<aend; ap++) {
     if (penOps->symbol.fillGC)
       XFillArc(display, drawable, penOps->symbol.fillGC, 
 	       ap->x, ap->y, ap->width, ap->height, ap->angle1, ap->angle2);
@@ -2003,12 +1982,11 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  int count =0;
   int s = r + r;
+  int count =0;
   XRectangle* rectangles = new XRectangle[nSymbolPts];
-  XRectangle *rp, *rend;
-  Point2d *pp, *pend;
-  for (rp=rectangles, pp=symbolPts, pend=pp+nSymbolPts; pp<pend; pp++) {
+  XRectangle* rp=rectangles; 
+  for (Point2d *pp=symbolPts, *pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
       rp->x = pp->x - r;
       rp->y = pp->y - r;
@@ -2020,7 +1998,7 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
     symbolCounter_++;
   }
 
-  for (rp=rectangles, rend=rp+count; rp<rend; rp ++) {
+  for (XRectangle *rp=rectangles, *rend=rp+count; rp<rend; rp ++) {
     if (penOps->symbol.fillGC)
       XFillRectangle(display, drawable, penOps->symbol.fillGC,
 		     rp->x, rp->y, rp->width, rp->height);
@@ -2106,8 +2084,7 @@ void LineElement::drawCross(Display *display, Drawable drawable,
   int count = 0;
   XPoint* polygon = new XPoint[nSymbolPts*13];
   XPoint* xpp = polygon;
-  Point2d *pp, *endp;
-  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+  for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
       int rndx = pp->x;
       int rndy = pp->y;
@@ -2162,8 +2139,7 @@ void LineElement::drawDiamond(Display *display, Drawable drawable,
   int count = 0;
   XPoint* polygon = new XPoint[nSymbolPts*5];
   XPoint* xpp = polygon;
-  Point2d *pp, *endp;
-  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+  for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
       int rndx = pp->x;
       int rndy = pp->y;
@@ -2234,8 +2210,7 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
   int count = 0;
   XPoint* polygon = new XPoint[nSymbolPts*4];
   XPoint* xpp = polygon;
-  Point2d *pp, *endp;
-  for (pp = symbolPts, endp = pp + nSymbolPts; pp < endp; pp++) {
+  for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
       int rndx = pp->x;
       int rndy = pp->y;
@@ -2319,9 +2294,8 @@ void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
 
     int count = tracePtr->screenPts.length; 
     XPoint* points = new XPoint[count];
-    XPoint*xpp;
-    int ii;
-    for (ii=0, xpp=points; ii<count; ii++, xpp++) {
+    XPoint*xpp = points;
+    for (int ii=0; ii<count; ii++, xpp++) {
       xpp->x = tracePtr->screenPts.points[ii].x;
       xpp->y = tracePtr->screenPts.points[ii].y;
     }
@@ -2337,20 +2311,17 @@ void LineElement::drawValues(Drawable drawable, LinePen* penPtr,
   LineElementOptions* ops = (LineElementOptions*)ops_;
   LinePenOptions* pops = (LinePenOptions*)penPtr->ops();
 
-  Point2d *pp, *endp;
-  double *xval, *yval;
-  const char* fmt;
   char string[TCL_DOUBLE_SPACE * 2 + 2];
-    
-  fmt = pops->valueFormat;
+  const char* fmt = pops->valueFormat;
   if (fmt == NULL)
     fmt = "%g";
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
+  double* xval = ops->coords.x->values_;
+  double* yval = ops->coords.y->values_;
   int count = 0;
-  xval = ops->coords.x->values_, yval = ops->coords.y->values_;
 
-  for (pp = points, endp = points + length; pp < endp; pp++) {
+  for (Point2d *pp = points, *endp = points + length; pp < endp; pp++) {
     double x = xval[map[count]];
     double y = yval[map[count]];
     count++;
@@ -2434,8 +2405,7 @@ void LineElement::printSymbols(PSOutput* psPtr, LinePen* penPtr, int size,
   }
 
   int count =0;
-  Point2d *pp, *endp;
-  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
+  for (Point2d *pp=symbolPts, *endp=symbolPts + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
       psPtr->format("%g %g %g %s\n", pp->x, pp->y, symbolSize, 
 		    symbolMacros[pops->symbol.type]);
@@ -2492,8 +2462,7 @@ void LineElement::printValues(PSOutput* psPtr, LinePen* penPtr,
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
-  Point2d *pp, *endp;
-  for (pp = symbolPts, endp = symbolPts + nSymbolPts; pp < endp; pp++) {
+  for (Point2d *pp=symbolPts, *endp=symbolPts + nSymbolPts; pp < endp; pp++) {
     double x = ops->coords.x->values_[pointToData[count]];
     double y = ops->coords.y->values_[pointToData[count]];
     count++;

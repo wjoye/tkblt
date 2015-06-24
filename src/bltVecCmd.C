@@ -206,47 +206,38 @@ static int ObjToIndex(ClientData clientData, Tcl_Interp* interp,
 
 static Tcl_Obj* GetValues(Vector *vPtr, int first, int last)
 { 
-  Tcl_Obj *listObjPtr;
-  double *vp, *vend;
-
-  listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  for (vp = vPtr->valueArr + first, vend = vPtr->valueArr + last; vp <= vend;
-       vp++) { 
-    Tcl_ListObjAppendElement(vPtr->interp, listObjPtr, 
-			     Tcl_NewDoubleObj(*vp));
-  } 
+  Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  for (double *vp=vPtr->valueArr+first, *vend=vPtr->valueArr+last; 
+       vp <= vend; vp++)
+    Tcl_ListObjAppendElement(vPtr->interp, listObjPtr, Tcl_NewDoubleObj(*vp));
 
   return listObjPtr;
 }
 
 static void ReplicateValue(Vector *vPtr, int first, int last, double value)
 { 
-  double *vp, *vend;
- 
-  for (vp = vPtr->valueArr + first, vend = vPtr->valueArr + last; 
-       vp <= vend; vp++) { 
+  for (double *vp=vPtr->valueArr+first, *vend=vPtr->valueArr+last; 
+       vp <= vend; vp++)
     *vp = value; 
-  } 
+
   vPtr->notifyFlags |= UPDATE_RANGE; 
 }
 
 static int CopyList(Vector *vPtr, Tcl_Interp* interp, 
 		    int objc, Tcl_Obj* const objv[])
 {
-  int i;
-
-  if (Vec_SetLength(interp, vPtr, objc) != TCL_OK) {
+  if (Vec_SetLength(interp, vPtr, objc) != TCL_OK)
     return TCL_ERROR;
-  }
-  for (i = 0; i < objc; i++) {
-    double value;
 
-    if (Blt_ExprDoubleFromObj(interp, objv[i], &value) != TCL_OK) {
-      Vec_SetLength(interp, vPtr, i);
+  for (int ii = 0; ii < objc; ii++) {
+    double value;
+    if (Blt_ExprDoubleFromObj(interp, objv[ii], &value) != TCL_OK) {
+      Vec_SetLength(interp, vPtr, ii);
       return TCL_ERROR;
     }
-    vPtr->valueArr[i] = value;
+    vPtr->valueArr[ii] = value;
   }
+
   return TCL_OK;
 }
 

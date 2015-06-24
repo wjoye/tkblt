@@ -203,8 +203,7 @@ int LineMarker::pointInSegments(Point2d* samplePtr, Segment2d* segments,
 				int nSegments, double halo)
 {
   double minDist = DBL_MAX;
-  Segment2d *sp, *send;
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+  for (Segment2d *sp = segments, *send = sp + nSegments; sp < send; sp++) {
     Point2d t = getProjection((int)samplePtr->x, (int)samplePtr->y, 
 			  &sp->p, &sp->q);
     double right;
@@ -249,9 +248,7 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
     return 0;
 
   if (enclosed) {
-    Point2d *pp, *pend;
-
-    for (pp = ops->worldPts->points, pend = pp + ops->worldPts->num; 
+    for (Point2d *pp = ops->worldPts->points, *pend = pp + ops->worldPts->num; 
 	 pp < pend; pp++) {
       Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
       if ((p.x < extsPtr->left) && (p.x > extsPtr->right) &&
@@ -262,9 +259,8 @@ int LineMarker::regionIn(Region2d *extsPtr, int enclosed)
     return 1;
   }
   else {
-    Point2d *pp, *pend;
     int count = 0;
-    for (pp = ops->worldPts->points, pend = pp + (ops->worldPts->num - 1); 
+    for (Point2d *pp=ops->worldPts->points, *pend=pp+(ops->worldPts->num - 1); 
 	 pp < pend; pp++) {
       Point2d p = mapPoint(pp, ops->xAxis, ops->yAxis);
       Point2d q = mapPoint(pp + 1, ops->xAxis, ops->yAxis);

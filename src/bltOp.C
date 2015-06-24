@@ -71,9 +71,8 @@ static int LinearOpSearch(Blt_OpSpec *specs, int nSpecs, const char *string,
   char c = string[0];
   int nMatches = 0;
   int last = -1;
-  int i;
-  Blt_OpSpec *specPtr;
-  for (specPtr = specs, i = 0; i < nSpecs; i++, specPtr++) {
+  int i =0;
+  for (Blt_OpSpec *specPtr = specs; i<nSpecs; i++, specPtr++) {
     if ((c == specPtr->name[0]) && 
 	(strncmp(string, specPtr->name, length) == 0)) {
       last = i;
@@ -104,11 +103,9 @@ void* Blt::GetOpFromObj(Tcl_Interp* interp, int nSpecs, Blt_OpSpec *specs,
   usage:
     Tcl_AppendResult(interp, "should be one of...", (char *)NULL);
     for (n = 0; n < nSpecs; n++) {
-      int i;
-
       Tcl_AppendResult(interp, "\n  ", (char *)NULL);
-      for (i = 0; i < operPos; i++) {
-	Tcl_AppendResult(interp, Tcl_GetString(objv[i]), " ", 
+      for (int ii = 0; ii < operPos; ii++) {
+	Tcl_AppendResult(interp, Tcl_GetString(objv[ii]), " ", 
 			 (char *)NULL);
       }
       specPtr = specs + n;
@@ -120,11 +117,11 @@ void* Blt::GetOpFromObj(Tcl_Interp* interp, int nSpecs, Blt_OpSpec *specs,
 
   int length;
   const char* string = Tcl_GetStringFromObj(objv[operPos], &length);
-  if (flags & BLT_OP_LINEAR_SEARCH) {
+  if (flags & BLT_OP_LINEAR_SEARCH)
     n = LinearOpSearch(specs, nSpecs, string, length);
-  } else {
+  else
     n = BinaryOpSearch(specs, nSpecs, string, length);
-  }
+
   if (n == -2) {
     char c;
 

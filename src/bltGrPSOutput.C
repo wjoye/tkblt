@@ -130,9 +130,7 @@ void PSOutput::printSegments(Segment2d* segments, int nSegments)
 {
   append("newpath\n");
 
-  Segment2d* sp;
-  Segment2d* send;
-  for (sp = segments, send = sp + nSegments; sp < send; sp++) {
+  for (Segment2d *sp = segments, *send = sp + nSegments; sp < send; sp++) {
     format("  %g %g moveto %g %g lineto\n", sp->p.x, sp->p.y, sp->q.x, sp->q.y);
     append("DashesProc stroke\n");
   }
@@ -238,8 +236,7 @@ void PSOutput::fillRectangle(double x, double y, int width, int height)
 
 void PSOutput::fillRectangles(XRectangle* rectangles, int nRectangles)
 {
-  XRectangle *rp, *rend;
-  for (rp = rectangles, rend = rp + nRectangles; rp < rend; rp++)
+  for (XRectangle *rp = rectangles, *rend = rp + nRectangles; rp < rend; rp++)
     fillRectangle((double)rp->x, (double)rp->y, (int)rp->width,(int)rp->height);
 }
 

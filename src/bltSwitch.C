@@ -87,11 +87,9 @@ static int Blt_GetCountFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, int check,
 static void DoHelp(Tcl_Interp* interp, Blt_SwitchSpec *specs)
 {
   Tcl_DString ds;
-  Blt_SwitchSpec *sp;
-
   Tcl_DStringInit(&ds);
   Tcl_DStringAppend(&ds, "following switches are available:", -1);
-  for (sp = specs; sp->type != BLT_SWITCH_END; sp++) {
+  for (Blt_SwitchSpec *sp = specs; sp->type != BLT_SWITCH_END; sp++) {
     Tcl_DStringAppend(&ds, "\n    ", 4);
     Tcl_DStringAppend(&ds, sp->switchName, -1);
     Tcl_DStringAppend(&ds, " ", 1);
@@ -105,26 +103,21 @@ static Blt_SwitchSpec *FindSwitchSpec(Tcl_Interp* interp, Blt_SwitchSpec *specs,
 				      const char *name, int length,
 				      int needFlags, int hateFlags)
 {
-  Blt_SwitchSpec *sp;
-  char c;			/* First character of current argument. */
-  Blt_SwitchSpec *matchPtr;	/* Matching spec, or NULL. */
+  char c = name[1];
+  Blt_SwitchSpec *matchPtr = NULL;
+  for (Blt_SwitchSpec *sp = specs; sp->type != BLT_SWITCH_END; sp++) {
+    if (sp->switchName == NULL)
+      continue;
 
-  c = name[1];
-  matchPtr = NULL;
-  for (sp = specs; sp->type != BLT_SWITCH_END; sp++) {
-    if (sp->switchName == NULL) {
+    if (((sp->flags & needFlags) != needFlags) || (sp->flags & hateFlags))
       continue;
-    }
-    if (((sp->flags & needFlags) != needFlags) || (sp->flags & hateFlags)) {
+
+    if ((sp->switchName[1] != c) || (strncmp(sp->switchName,name,length)!=0))
       continue;
-    }
-    if ((sp->switchName[1] != c) || 
-	(strncmp(sp->switchName, name, length) != 0)) {
-      continue;
-    }
-    if (sp->switchName[length] == '\0') {
+
+    if (sp->switchName[length] == '\0')
       return sp;		/* Stop on a perfect match. */
-    }
+
     if (matchPtr != NULL) {
       Tcl_AppendResult(interp, "ambiguous switch \"", name, "\"\n", 
 		       (char *) NULL);
@@ -133,16 +126,19 @@ static Blt_SwitchSpec *FindSwitchSpec(Tcl_Interp* interp, Blt_SwitchSpec *specs,
     }
     matchPtr = sp;
   }
+
   if (strcmp(name, "-help") == 0) {
     DoHelp(interp, specs);
     return NULL;
   }
+
   if (matchPtr == NULL) {
     Tcl_AppendResult(interp, "unknown switch \"", name, "\"\n", 
 		     (char *)NULL);
     DoHelp(interp, specs);
     return NULL;
   }
+
   return matchPtr;
 }
 

@@ -480,7 +480,7 @@ void Graph::getTextExtents(Tk_Font font, const char *text, int textLen,
   int lineLen =0;
   const char *line =NULL;
   const char *p, *pend;
-  for (p = line = text, pend = text + textLen; p < pend; p++) {
+  for (p =line=text, pend=text+textLen; p<pend; p++) {
     if (*p == '\n') {
       if (lineLen > 0) {
 	int lineWidth = Tk_TextWidth(font, line, lineLen);

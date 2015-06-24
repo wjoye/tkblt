@@ -163,8 +163,7 @@ void PolygonMarker::draw(Drawable drawable)
       return;
 
     XPoint* dp = points;
-    Point2d *sp, *send;
-    for (sp = fillPts_, send = sp + nFillPts_; sp < send; sp++) {
+    for (Point2d *sp = fillPts_, *send = sp + nFillPts_; sp < send; sp++) {
       dp->x = (short int)sp->x;
       dp->y = (short int)sp->y;
       dp++;
@@ -211,8 +210,7 @@ void PolygonMarker::map()
   Point2d* screenPts = new Point2d[nScreenPts + 1];
   {
     Point2d* dp = screenPts;
-    Point2d *sp, *send;
-    for (sp = ops->worldPts->points, send = sp + ops->worldPts->num; 
+    for (Point2d *sp = ops->worldPts->points, *send = sp + ops->worldPts->num; 
 	 sp < send; sp++) {
       *dp = mapPoint(sp, ops->xAxis, ops->yAxis);
       dp->x += ops->xOffset;
@@ -246,8 +244,7 @@ void PolygonMarker::map()
     // Note that this assumes that the point array contains an extra point
     // that closes the polygon.
     Segment2d* segPtr = outlinePts;
-    Point2d *sp, *send;
-    for (sp = screenPts, send = sp + (nScreenPts - 1); sp < send; sp++) {
+    for (Point2d *sp=screenPts, *send=sp+(nScreenPts - 1); sp < send; sp++) {
       segPtr->p = sp[0];
       segPtr->q = sp[1];
       if (lineRectClip(&extents, &segPtr->p, &segPtr->q)) {

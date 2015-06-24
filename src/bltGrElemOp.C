@@ -370,8 +370,8 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   // Append the links to end of the display list
-  ChainLink *link, *next;
-  for (link = Chain_FirstLink(chain); link; link = next) {
+  ChainLink *next;
+  for (ChainLink *link = Chain_FirstLink(chain); link; link = next) {
     next = Chain_NextLink(link);
     chain->unlinkLink(link); 
     graphPtr->elements_.displayList->linkAfter(link, NULL); 
@@ -435,8 +435,8 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   }
 
   // Prepend the links to beginning of the display list in reverse order
-  ChainLink *link, *prev;
-  for (link = Chain_LastLink(chain); link; link = prev) {
+  ChainLink *prev;
+  for (ChainLink *link = Chain_LastLink(chain); link; link = prev) {
     prev = Chain_PrevLink(link);
     chain->unlinkLink(link); 
     graphPtr->elements_.displayList->linkBefore(link, NULL); 

@@ -383,9 +383,8 @@ static int ParseValues(Tcl_Interp* interp, Tcl_Obj *objPtr, int *nValuesPtr,
       return TCL_ERROR;
     }
 
-    double *p;
-    int i;
-    for (p = array, i = 0; i < objc; i++, p++) {
+    int i=0;
+    for (double* p = array; i < objc; i++, p++) {
       if (Tcl_GetDoubleFromObj(interp, objv[i], p) != TCL_OK) {
 	delete [] array;
 	return TCL_ERROR;
