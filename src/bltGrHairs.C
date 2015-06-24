@@ -107,14 +107,14 @@ void Crosshairs::map()
 {
   CrosshairsOptions* ops = (CrosshairsOptions*)ops_;
 
-  segArr_[0].x1 = ops->x;
-  segArr_[0].x2 = ops->x;
-  segArr_[0].y1 = graphPtr_->bottom_;
-  segArr_[0].y2 = graphPtr_->top_;
-  segArr_[1].y1 = ops->y;
-  segArr_[1].y2 = ops->y;
-  segArr_[1].x1 = graphPtr_->left_;
-  segArr_[1].x2 = graphPtr_->right_;
+  segArr_[0].x = ops->x;
+  segArr_[1].x = ops->x;
+  segArr_[0].y = graphPtr_->bottom_;
+  segArr_[1].y = graphPtr_->top_;
+  segArr_[2].y = ops->y;
+  segArr_[3].y = ops->y;
+  segArr_[2].x = graphPtr_->left_;
+  segArr_[3].x = graphPtr_->right_;
 }
 
 void Crosshairs::on()
@@ -135,7 +135,13 @@ void Crosshairs::draw(Drawable drawable)
     if (ops->x <= graphPtr_->right_ &&
 	ops->x >= graphPtr_->left_ &&
 	ops->y <= graphPtr_->bottom_ &&
-	ops->y >= graphPtr_->top_)
-      XDrawSegments(graphPtr_->display_, drawable, gc_, segArr_, 2);
+	ops->y >= graphPtr_->top_) {
+      XDrawLine(graphPtr_->display_, drawable, gc_, 
+		segArr_[0].x, segArr_[0].y, segArr_[1].x, segArr_[1].y);
+      XDrawLine(graphPtr_->display_, drawable, gc_, 
+		segArr_[2].x, segArr_[2].y, segArr_[3].x, segArr_[3].y);
+
+      //      XDrawSegments(graphPtr_->display_, drawable, gc_, segArr_, 2);
+    }
   }
 }

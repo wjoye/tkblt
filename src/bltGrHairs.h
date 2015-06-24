@@ -56,7 +56,7 @@ namespace Blt {
 
     int visible_;
     GC gc_;
-    XSegment segArr_[2];
+    XPoint segArr_[4];
 
   public:
     Crosshairs(Graph*);
