@@ -1471,16 +1471,6 @@ static int VectorFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
   return (*procPtr) (vPtr);
 }
 
-#ifdef _WIN32
-static int Rand(Blt_Vector *vectorPtr)
-{
-  Vector *vPtr = (Vector *)vectorPtr;
-  for(double *vp=vPtr->valueArr+vPtr->first, *vend=vPtr->valueArr+vPtr->last;
-      vp <= vend; vp++)
-    *vp = double(rand())/RAND_MAX;
-  return TCL_OK;
-}
-#endif
 
 static MathFunction mathFunctions[] =
   {
@@ -1507,11 +1497,7 @@ static MathFunction mathFunctions[] =
     {"q1",	(void*)ScalarFunc,    (ClientData)Q1},
     {"q3",	(void*)ScalarFunc,    (ClientData)Q3},
     {"prod",	(void*)ScalarFunc,    (ClientData)Product},
-#ifdef _WIN32
-    {"random",	(void*)VectorFunc, (ClientData)Rand},
-#else
     {"random",	(void*)ComponentFunc, (ClientData)drand48},
-#endif
     {"round",	(void*)ComponentFunc, (ClientData)Round},
     {"sdev",	(void*)ScalarFunc,    (ClientData)StdDeviation},
     {"sin",	(void*)ComponentFunc, (ClientData)sin},
@@ -1603,3 +1589,15 @@ int Blt::ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
   Vec_Free(value.vPtr);
   return TCL_OK;
 }
+
+#ifdef _WIN32
+double drand48(void)
+{
+  return (double)rand() / (double)RAND_MAX;
+}
+
+void srand48(long int seed)
+{
+  srand(seed);
+}
+#endif

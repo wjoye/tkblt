@@ -1240,9 +1240,7 @@ VectorInterpData* Blt::Vec_GetInterpData(Tcl_Interp* interp)
     Tcl_InitHashTable(&dataPtr->indexProcTable, TCL_STRING_KEYS);
     Vec_InstallMathFunctions(&dataPtr->mathProcTable);
     Vec_InstallSpecialIndices(&dataPtr->indexProcTable);
-#ifndef _WIN32
     srand48(time((time_t *) NULL));
-#endif
   }
   return dataPtr;
 }

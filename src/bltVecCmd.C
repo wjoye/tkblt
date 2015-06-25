@@ -1239,11 +1239,7 @@ static int RandomOp(Vector *vPtr, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   for (int i = 0; i < vPtr->length; i++)
-#ifdef _WIN32
-    vPtr->valueArr[i] = double(rand())/RAND_MAX;
-#else
     vPtr->valueArr[i] = drand48();
-#endif
 
   if (vPtr->flush)
     Vec_FlushCache(vPtr);

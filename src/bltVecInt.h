@@ -195,3 +195,7 @@ namespace Blt {
 
 extern Tcl_IdleProc Blt_Vec_NotifyClients;
 
+#ifdef _WIN32
+double drand48(void);
+void srand48(long int seed);
+#endif
