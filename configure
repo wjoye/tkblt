@@ -5640,7 +5640,7 @@ done
 
 
 
-    PKG_CFLAGS="$PKG_CFLAGS -Wall"
+    PKG_CFLAGS="$PKG_CFLAGS "
 
 
 
