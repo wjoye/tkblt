@@ -114,8 +114,8 @@ STLIB_LD	= @STLIB_LD@
 #TCL_DEFS	= @TCL_DEFS@
 TCL_BIN_DIR	= @TCL_BIN_DIR@
 TCL_SRC_DIR	= @TCL_SRC_DIR@
-TK_BIN_DIR	= @TK_BIN_DIR@
-TK_SRC_DIR	= @TK_SRC_DIR@
+#TK_BIN_DIR	= @TK_BIN_DIR@
+#TK_SRC_DIR	= @TK_SRC_DIR@
 
 # Not used, but retained for reference of what libs Tcl required
 #TCL_LIBS	= @TCL_LIBS@
@@ -127,8 +127,8 @@ TK_SRC_DIR	= @TK_SRC_DIR@
 # require for testing here (like TCLX_LIBRARY).
 #========================================================================
 
-#EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR)
-EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR):$(TK_BIN_DIR)
+EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR)
+#EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR):$(TK_BIN_DIR)
 TCLLIBPATH	= $(top_builddir)
 TCLSH_ENV	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library`
 PKG_ENV		= @LD_LIBRARY_PATH_VAR@="$(EXTRA_PATH):$(@LD_LIBRARY_PATH_VAR@)" \
@@ -138,9 +138,9 @@ PKG_ENV		= @LD_LIBRARY_PATH_VAR@="$(EXTRA_PATH):$(@LD_LIBRARY_PATH_VAR@)" \
 TCLSH_PROG	= @TCLSH_PROG@
 TCLSH		= $(PKG_ENV) $(TCLSH_ENV) $(TCLSH_PROG)
 
-WISH_ENV	= TK_LIBRARY=`@CYGPATH@ $(TK_SRC_DIR)/library`
-WISH_PROG	= @WISH_PROG@
-WISH		= $(PKG_ENV) $(TCLSH_ENV) $(WISH_ENV) $(WISH_PROG)
+#WISH_ENV	= TK_LIBRARY=`@CYGPATH@ $(TK_SRC_DIR)/library`
+#WISH_PROG	= @WISH_PROG@
+#WISH		= $(PKG_ENV) $(TCLSH_ENV) $(WISH_ENV) $(WISH_PROG)
 
 SHARED_BUILD	= @SHARED_BUILD@
 
