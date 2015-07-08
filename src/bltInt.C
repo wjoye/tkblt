@@ -28,6 +28,8 @@
  */
 
 #include <tk.h>
+#include <iostream>
+using namespace std;
 
 extern "C" {
 Tcl_AppInitProc Tkblt_Init;
