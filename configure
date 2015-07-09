@@ -5529,54 +5529,54 @@ done
 #-----------------------------------------------------------------------
 
     vars="
-	bltChain.C
-	bltConfig.C
-	bltGrAxis.C
-	bltGrAxisOp.C
-	bltGrAxisOption.C
-	bltGrBind.C
-	bltGrElemOp.C
-	bltGrElemOption.C
-	bltGrElem.C
-	bltGrElemBar.C
-	bltGrElemLine.C
-	bltGrElemLineSpline.C
-	bltGrHairs.C
-	bltGrHairsOp.C
-	bltGrLegd.C
-	bltGrLegdOp.C
-	bltGrMarkerOp.C
-	bltGrMarkerOption.C
-	bltGrMarker.C
-	bltGrMarkerLine.C
-	bltGrMarkerPolygon.C
-	bltGrMarkerText.C
-	bltGrMisc.C
-	bltGrPenOp.C
-	bltGrPenOption.C
-	bltGrPen.C
-	bltGrPenBar.C
-	bltGrPenLine.C
-	bltGrPostscript.C
-	bltGrPostscriptOp.C
-	bltGrPSOutput.C
-	bltGrText.C
-	bltGrXAxisOp.C
-	bltGraph.C
-	bltGraphBar.C
-	bltGraphLine.C
-	bltGraphOp.C
-	bltGraphSup.C
-	bltInt.C
-	bltNsUtil.C
-	bltParse.C
-	bltOp.C
-	bltSwitch.C
-	bltVecCmd.C
-	bltVecOp.C
-	bltVecMath.C
-	bltVector.C
-	"
+src/bltChain.C
+src/bltConfig.C
+src/bltGrAxis.C
+src/bltGrAxisOp.C
+src/bltGrAxisOption.C
+src/bltGrBind.C
+src/bltGrElemOp.C
+src/bltGrElemOption.C
+src/bltGrElem.C
+src/bltGrElemBar.C
+src/bltGrElemLine.C
+src/bltGrElemLineSpline.C
+src/bltGrHairs.C
+src/bltGrHairsOp.C
+src/bltGrLegd.C
+src/bltGrLegdOp.C
+src/bltGrMarkerOp.C
+src/bltGrMarkerOption.C
+src/bltGrMarker.C
+src/bltGrMarkerLine.C
+src/bltGrMarkerPolygon.C
+src/bltGrMarkerText.C
+src/bltGrMisc.C
+src/bltGrPenOp.C
+src/bltGrPenOption.C
+src/bltGrPen.C
+src/bltGrPenBar.C
+src/bltGrPenLine.C
+src/bltGrPostscript.C
+src/bltGrPostscriptOp.C
+src/bltGrPSOutput.C
+src/bltGrText.C
+src/bltGrXAxisOp.C
+src/bltGraph.C
+src/bltGraphBar.C
+src/bltGraphLine.C
+src/bltGraphOp.C
+src/bltGraphSup.C
+src/bltInt.C
+src/bltNsUtil.C
+src/bltParse.C
+src/bltOp.C
+src/bltSwitch.C
+src/bltVecCmd.C
+src/bltVecOp.C
+src/bltVecMath.C
+src/bltVector.C
+"
     for i in $vars; do
 	case $i in
 	    \$*)
@@ -5596,7 +5596,7 @@ done
 		fi
 		PKG_SOURCES="$PKG_SOURCES $i"
 		# this assumes it is in a VPATH dir
-		i=`basename $i`
+#		i=`basename $i`
 		# handle user calling this before or after TEA_SETUP_COMPILER
 		if test x"${OBJEXT}" != x ; then
 		    j="`echo $i | sed -e 's/\.[^.]*$//'`.${OBJEXT}"
@@ -5611,7 +5611,7 @@ done
 
 
 
-    vars="bltVector.h"
+    vars="src/bltVector.h"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
@@ -5622,7 +5622,7 @@ done
 
 
 
-    vars="-I."
+    vars="-I./src"
     for i in $vars; do
 	PKG_INCLUDES="$PKG_INCLUDES $i"
     done

@@ -71,56 +71,56 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
-	bltChain.C
-	bltConfig.C
-	bltGrAxis.C
-	bltGrAxisOp.C
-	bltGrAxisOption.C
-	bltGrBind.C
-	bltGrElemOp.C
-	bltGrElemOption.C
-	bltGrElem.C
-	bltGrElemBar.C
-	bltGrElemLine.C
-	bltGrElemLineSpline.C
-	bltGrHairs.C
-	bltGrHairsOp.C
-	bltGrLegd.C
-	bltGrLegdOp.C
-	bltGrMarkerOp.C
-	bltGrMarkerOption.C
-	bltGrMarker.C
-	bltGrMarkerLine.C
-	bltGrMarkerPolygon.C
-	bltGrMarkerText.C
-	bltGrMisc.C
-	bltGrPenOp.C
-	bltGrPenOption.C
-	bltGrPen.C
-	bltGrPenBar.C
-	bltGrPenLine.C
-	bltGrPostscript.C
-	bltGrPostscriptOp.C
-	bltGrPSOutput.C
-	bltGrText.C
-	bltGrXAxisOp.C
-	bltGraph.C
-	bltGraphBar.C
-	bltGraphLine.C
-	bltGraphOp.C
-	bltGraphSup.C
-	bltInt.C
-	bltNsUtil.C
-	bltParse.C
-	bltOp.C
-	bltSwitch.C
-	bltVecCmd.C
-	bltVecOp.C
-	bltVecMath.C
-	bltVector.C
-	])
-TEA_ADD_HEADERS([bltVector.h])
-TEA_ADD_INCLUDES([-I.])
+src/bltChain.C
+src/bltConfig.C
+src/bltGrAxis.C
+src/bltGrAxisOp.C
+src/bltGrAxisOption.C
+src/bltGrBind.C
+src/bltGrElemOp.C
+src/bltGrElemOption.C
+src/bltGrElem.C
+src/bltGrElemBar.C
+src/bltGrElemLine.C
+src/bltGrElemLineSpline.C
+src/bltGrHairs.C
+src/bltGrHairsOp.C
+src/bltGrLegd.C
+src/bltGrLegdOp.C
+src/bltGrMarkerOp.C
+src/bltGrMarkerOption.C
+src/bltGrMarker.C
+src/bltGrMarkerLine.C
+src/bltGrMarkerPolygon.C
+src/bltGrMarkerText.C
+src/bltGrMisc.C
+src/bltGrPenOp.C
+src/bltGrPenOption.C
+src/bltGrPen.C
+src/bltGrPenBar.C
+src/bltGrPenLine.C
+src/bltGrPostscript.C
+src/bltGrPostscriptOp.C
+src/bltGrPSOutput.C
+src/bltGrText.C
+src/bltGrXAxisOp.C
+src/bltGraph.C
+src/bltGraphBar.C
+src/bltGraphLine.C
+src/bltGraphOp.C
+src/bltGraphSup.C
+src/bltInt.C
+src/bltNsUtil.C
+src/bltParse.C
+src/bltOp.C
+src/bltSwitch.C
+src/bltVecCmd.C
+src/bltVecOp.C
+src/bltVecMath.C
+src/bltVector.C
+])
+TEA_ADD_HEADERS([src/bltVector.h])
+TEA_ADD_INCLUDES([-I./src])
 TEA_ADD_LIBS([])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])
