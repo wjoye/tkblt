@@ -3200,6 +3200,7 @@ AC_DEFUN([TEA_SETUP_COMPILER_CC], [
     # in this macro, they need to go into TEA_SETUP_COMPILER instead.
 
     AC_PROG_CC
+    AC_PROG_CXX
     AC_PROG_CPP
 
     INSTALL="\$(SHELL) \$(srcdir)/tclconfig/install-sh -c"

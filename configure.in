@@ -121,7 +121,7 @@ src/bltVector.C
 ])
 TEA_ADD_HEADERS([src/bltVector.h])
 TEA_ADD_INCLUDES([-I./src])
-TEA_ADD_LIBS([])
+TEA_ADD_LIBS([-lstdc++])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([library/graph.tcl])
@@ -204,7 +204,6 @@ TEA_ENABLE_SYMBOLS
 
 AC_DEFINE(USE_TCL_STUBS, 1, [Use Tcl stubs])
 AC_DEFINE(USE_TK_STUBS, 1, [Use Tk stubs])
-SHLIB_LD_LIBS='${LIBS} -lstdc++'
 
 #--------------------------------------------------------------------
 # This macro generates a line to use when building a library.  It
