@@ -3,6 +3,12 @@ Introduction to the TkBLT library
 TkBLT is a library of extensions to the Tk library.  It adds new
 commands and variables to the application's interpreter.
 
+TkBLT is a derived version of the BLT Toolkit by George A. Howlett,
+for Tcl/Tk 8.6, is TEA compatible, with full support for MacOSX and
+Windows, and is fully compatible with the Tk API. TkBLT is released
+under the original BSD license. TkBLT includes only the Graph and
+Barchart Tk widgets, and the Tcl Vector command.
+
 The following commands are added to the interpreter from the TkBLT library:
 
 Graph
