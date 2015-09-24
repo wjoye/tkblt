@@ -1,6 +1,4 @@
-	sourceforge
-	  doc
-	  tests
+	doc
 
 	saveas png?
 	shape no fill should be transparent, not white (black?)
