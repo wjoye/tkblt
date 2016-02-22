@@ -45,6 +45,7 @@
 #include "bltGrMarker.h"
 #include "bltGrLegd.h"
 #include "bltGrHairs.h"
+#include "bltGrPostscript.h"
 #include "bltGrDef.h"
 
 using namespace Blt;
@@ -181,7 +182,17 @@ LineGraph::LineGraph(ClientData clientData, Tcl_Interp* interp,
     return;
   }
 
+  // do this last after Tk_SetClass set
+  legend_ = new Legend(this);
+  crosshairs_ = new Crosshairs(this);
+  postscript_ = new Postscript(this);
+
   if (createPen("active", 0, NULL) != TCL_OK) {
+    valid_ =0;
+    return;
+  }
+
+  if (createAxes() != TCL_OK) {
     valid_ =0;
     return;
   }

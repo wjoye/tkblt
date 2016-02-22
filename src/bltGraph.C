@@ -79,10 +79,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   flags = RESET;
   nextMarkerId_ = 1;
 
-  legend_ = new Legend(this);
-  crosshairs_ = new Crosshairs(this);
-  postscript_ = new Postscript(this);
-
   inset_ =0;
   titleX_ =0;
   titleY_ =0;
@@ -119,11 +115,6 @@ Graph::Graph(ClientData clientData, Tcl_Interp* interp,
   elements_.displayList = new Chain();
   markers_.displayList = new Chain();
   bindTable_ = new BindTable(this, this);
-
-  if (createAxes() != TCL_OK) {
-    valid_ =0;
-    return;
-  }
 
   // Keep a hold of the associated tkwin until we destroy the graph,
   // otherwise Tk might free it while we still need it.
