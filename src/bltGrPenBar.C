@@ -32,7 +32,7 @@
 #include "bltGrPenBar.h"
 #include "bltGraph.h"
 #include "bltGrDef.h"
-#include "bltConfig.h"
+#include "tkbltConfig.h"
 
 using namespace Blt;
 

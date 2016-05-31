@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 
-#include "bltChain.h"
+#include "tkbltChain.h"
 
 using namespace Blt;
 

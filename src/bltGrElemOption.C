@@ -32,13 +32,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltChain.h"
+#include "tkbltChain.h"
 
 #include "bltGraph.h"
 #include "bltGrElem.h"
 #include "bltGrElemOption.h"
 #include "bltGrPen.h"
-#include "bltConfig.h"
+#include "tkbltConfig.h"
 
 using namespace Blt;
 

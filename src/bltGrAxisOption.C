@@ -33,7 +33,7 @@
 #include "bltGraph.h"
 #include "bltGrAxis.h"
 #include "bltGrAxisOption.h"
-#include "bltConfig.h"
+#include "tkbltConfig.h"
 
 using namespace Blt;
 

@@ -5529,8 +5529,8 @@ done
 #-----------------------------------------------------------------------
 
     vars="
-src/bltChain.C
-src/bltConfig.C
+src/tkbltChain.C
+src/tkbltConfig.C
 src/bltGrAxis.C
 src/bltGrAxisOp.C
 src/bltGrAxisOption.C

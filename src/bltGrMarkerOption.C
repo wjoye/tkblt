@@ -33,7 +33,7 @@
 
 #include "bltGrMarker.h"
 #include "bltGrMarkerOption.h"
-#include "bltConfig.h"
+#include "tkbltConfig.h"
 
 using namespace Blt;
 

@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltConfig.h"
+#include "tkbltConfig.h"
 #include "bltGrMisc.h"
 
 using namespace Blt;

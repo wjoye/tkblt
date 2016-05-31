@@ -71,8 +71,8 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 TEA_ADD_SOURCES([
-src/bltChain.C
-src/bltConfig.C
+src/tkbltChain.C
+src/tkbltConfig.C
 src/bltGrAxis.C
 src/bltGrAxisOp.C
 src/bltGrAxisOption.C
