@@ -32,8 +32,8 @@
 
 #include <stdlib.h>
 
-#include "bltGraph.h"
-#include "bltGrHairs.h"
+#include "tkbltGraph.h"
+#include "tkbltGrHairs.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;

@@ -30,7 +30,7 @@
 #ifndef __Blt_GrMarkerOp_h__
 #define __Blt_GrMarkerOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble markerEnsemble[];

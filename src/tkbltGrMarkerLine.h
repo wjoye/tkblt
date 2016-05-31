@@ -30,7 +30,7 @@
 #ifndef __BltGrMarkerLine_h__
 #define __BltGrMarkerLine_h__
 
-#include "bltGrMarker.h"
+#include "tkbltGrMarker.h"
 
 namespace Blt {
 

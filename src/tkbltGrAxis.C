@@ -32,15 +32,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltGraph.h"
-#include "bltGrBind.h"
+#include "tkbltGraph.h"
+#include "tkbltGrBind.h"
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOption.h"
-#include "bltGrPostscript.h"
-#include "bltGrMisc.h"
-#include "bltGrDef.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

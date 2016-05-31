@@ -32,14 +32,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltGraph.h"
-#include "bltGrElemLine.h"
-#include "bltGrElemOption.h"
+#include "tkbltGraph.h"
+#include "tkbltGrElemLine.h"
+#include "tkbltGrElemOption.h"
 #include "tkbltGrAxis.h"
-#include "bltGrMisc.h"
-#include "bltGrDef.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

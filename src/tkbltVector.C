@@ -51,10 +51,10 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "bltVecInt.h"
-#include "bltNsUtil.h"
-#include "bltSwitch.h"
-#include "bltOp.h"
+#include "tkbltVecInt.h"
+#include "tkbltNsUtil.h"
+#include "tkbltSwitch.h"
+#include "tkbltOp.h"
 
 using namespace Blt;
 

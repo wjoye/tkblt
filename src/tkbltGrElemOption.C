@@ -34,10 +34,10 @@
 
 #include "tkbltChain.h"
 
-#include "bltGraph.h"
-#include "bltGrElem.h"
-#include "bltGrElemOption.h"
-#include "bltGrPen.h"
+#include "tkbltGraph.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrElemOption.h"
+#include "tkbltGrPen.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;

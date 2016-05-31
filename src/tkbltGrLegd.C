@@ -30,15 +30,15 @@
 #include <tk.h>
 #include <tkInt.h>
 
-#include "bltGrBind.h"
-#include "bltGraph.h"
-#include "bltGrLegd.h"
-#include "bltGrElem.h"
-#include "bltGrPostscript.h"
-#include "bltGrMisc.h"
-#include "bltGrDef.h"
+#include "tkbltGrBind.h"
+#include "tkbltGraph.h"
+#include "tkbltGrLegd.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

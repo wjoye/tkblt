@@ -31,13 +31,13 @@
 #include <float.h>
 #include <stdlib.h>
 
-#include "bltGraph.h"
-#include "bltGrMarkerLine.h"
-#include "bltGrMarkerOption.h"
-#include "bltGrMisc.h"
-#include "bltGrDef.h"
+#include "tkbltGraph.h"
+#include "tkbltGrMarkerLine.h"
+#include "tkbltGrMarkerOption.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

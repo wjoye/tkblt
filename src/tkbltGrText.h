@@ -32,7 +32,7 @@
 
 #include <tk.h>
 
-#include "bltGrMisc.h"
+#include "tkbltGrMisc.h"
 
 namespace Blt {
   class Graph;

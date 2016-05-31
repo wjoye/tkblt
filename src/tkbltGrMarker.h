@@ -34,8 +34,8 @@
 
 #include "tkbltChain.h"
 
-#include "bltGrMisc.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrPSOutput.h"
 
 namespace Blt {
   class Graph;

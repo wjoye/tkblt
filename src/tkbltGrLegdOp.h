@@ -30,7 +30,7 @@
 #ifndef __BltGrLegdOp_h__
 #define __BltGrLegdOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble legendEnsemble[];

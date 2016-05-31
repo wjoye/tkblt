@@ -30,7 +30,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOption.h"
 #include "tkbltConfig.h"

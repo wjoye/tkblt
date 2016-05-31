@@ -29,9 +29,9 @@
 
 #include <string.h>
 
-#include "bltGraph.h"
-#include "bltGrBind.h"
-#include "bltGrXAxisOp.h"
+#include "tkbltGraph.h"
+#include "tkbltGrBind.h"
+#include "tkbltGrXAxisOp.h"
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOp.h"
 

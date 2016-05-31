@@ -30,7 +30,7 @@
 #ifndef __BltGrMarkerPolygon_h__
 #define __BltGrMarkerPolygon_h__
 
-#include "bltGrMarker.h"
+#include "tkbltGrMarker.h"
 
 namespace Blt {
 

@@ -36,9 +36,9 @@
 #include <errno.h>
 #include <ctype.h>
 
-#include "bltVecInt.h"
-#include "bltNsUtil.h"
-#include "bltParse.h"
+#include "tkbltVecInt.h"
+#include "tkbltNsUtil.h"
+#include "tkbltParse.h"
 
 using namespace Blt;
 

@@ -32,7 +32,7 @@
 
 #include <tk.h>
 
-#include "bltGrPen.h"
+#include "tkbltGrPen.h"
 
 namespace Blt {
 

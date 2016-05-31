@@ -30,7 +30,7 @@
 #ifndef __BltGrPostscriptOp_h__
 #define __BltGrPostscriptOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble postscriptEnsemble[];

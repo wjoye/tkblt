@@ -35,8 +35,8 @@
 
 #include <tk.h>
 
-#include "bltGrMisc.h"
-#include "bltGrText.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrText.h"
 
 namespace Blt {
   class Graph;

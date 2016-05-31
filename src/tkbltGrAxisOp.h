@@ -30,7 +30,7 @@
 #ifndef __BltGrAxisOp_h__
 #define __BltGrAxisOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble axisEnsemble[];

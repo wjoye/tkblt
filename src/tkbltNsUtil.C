@@ -35,7 +35,7 @@ extern "C" {
 #include <tclInt.h>
 #endif
 
-#include "bltNsUtil.h"
+#include "tkbltNsUtil.h"
 
 using namespace Blt;
 

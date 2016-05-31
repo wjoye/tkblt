@@ -27,8 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltGraph.h"
-#include "bltGrPen.h"
+#include "tkbltGraph.h"
+#include "tkbltGrPen.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;

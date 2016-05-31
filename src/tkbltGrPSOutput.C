@@ -85,9 +85,9 @@ typedef struct TkBorder {
 				 * borderTable. */
 } TkBorder;
 
-#include "bltGraph.h"
-#include "bltGrPostscript.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGraph.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

@@ -29,10 +29,10 @@
 
 #include <tk.h>
 
-#include "bltGraph.h"
-#include "bltGrPostscript.h"
-#include "bltGrPostscriptOp.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGraph.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrPostscriptOp.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

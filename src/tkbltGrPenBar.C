@@ -29,9 +29,9 @@
 
 #include <stdlib.h>
 
-#include "bltGrPenBar.h"
-#include "bltGraph.h"
-#include "bltGrDef.h"
+#include "tkbltGrPenBar.h"
+#include "tkbltGraph.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;

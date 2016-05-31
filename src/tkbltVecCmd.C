@@ -52,10 +52,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "bltVecInt.h"
-#include "bltOp.h"
-#include "bltNsUtil.h"
-#include "bltSwitch.h"
+#include "tkbltVecInt.h"
+#include "tkbltOp.h"
+#include "tkbltNsUtil.h"
+#include "tkbltSwitch.h"
 
 using namespace Blt;
 

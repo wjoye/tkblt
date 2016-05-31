@@ -27,11 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltGraph.h"
-#include "bltGrPen.h"
-#include "bltGrPenOp.h"
-#include "bltGrPenLine.h"
-#include "bltGrPenBar.h"
+#include "tkbltGraph.h"
+#include "tkbltGrPen.h"
+#include "tkbltGrPenOp.h"
+#include "tkbltGrPenLine.h"
+#include "tkbltGrPenBar.h"
 
 using namespace Blt;
 

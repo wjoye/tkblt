@@ -37,7 +37,7 @@ using namespace std;
 
 #include <tcl.h>
 
-#include "bltSwitch.h"
+#include "tkbltSwitch.h"
 
 using namespace Blt;
 

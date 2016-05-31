@@ -29,7 +29,7 @@
 
 #include <tcl.h>
 
-#include "bltVecInt.h"
+#include "tkbltVecInt.h"
 
 using namespace Blt;
 

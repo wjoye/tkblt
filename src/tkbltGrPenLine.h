@@ -30,7 +30,7 @@
 #ifndef __BltGrPenLine_h__
 #define __BltGrPenLine_h__
 
-#include "bltGrPen.h"
+#include "tkbltGrPen.h"
 
 namespace Blt {
 

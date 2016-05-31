@@ -40,7 +40,7 @@
 #include <string.h>
 
 #include "tkbltConfig.h"
-#include "bltGrMisc.h"
+#include "tkbltGrMisc.h"
 
 using namespace Blt;
 

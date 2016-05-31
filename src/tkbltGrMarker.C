@@ -31,11 +31,11 @@
 #include <math.h>
 #include <float.h>
 
-#include "bltGraph.h"
-#include "bltGrBind.h"
-#include "bltGrMarker.h"
+#include "tkbltGraph.h"
+#include "tkbltGrBind.h"
+#include "tkbltGrMarker.h"
 #include "tkbltGrAxis.h"
-#include "bltGrMisc.h"
+#include "tkbltGrMisc.h"
 
 using namespace Blt;
 

@@ -31,25 +31,25 @@
 
 #include <tkInt.h>
 
-#include "bltGraph.h"
-#include "bltGraphOp.h"
+#include "tkbltGraph.h"
+#include "tkbltGraphOp.h"
 
-#include "bltGrBind.h"
+#include "tkbltGrBind.h"
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOp.h"
-#include "bltGrXAxisOp.h"
-#include "bltGrPen.h"
-#include "bltGrPenBar.h"
-#include "bltGrPenLine.h"
-#include "bltGrElem.h"
-#include "bltGrElemBar.h"
-#include "bltGrElemLine.h"
-#include "bltGrMarker.h"
-#include "bltGrLegd.h"
-#include "bltGrHairs.h"
-#include "bltGrDef.h"
-#include "bltGrPostscript.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrXAxisOp.h"
+#include "tkbltGrPen.h"
+#include "tkbltGrPenBar.h"
+#include "tkbltGrPenLine.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrElemBar.h"
+#include "tkbltGrElemLine.h"
+#include "tkbltGrMarker.h"
+#include "tkbltGrLegd.h"
+#include "tkbltGrHairs.h"
+#include "tkbltGrDef.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

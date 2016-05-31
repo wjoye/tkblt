@@ -33,7 +33,7 @@
 #ifndef __BltGrHairsOp_h__
 #define __BltGrHairsOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble crosshairsEnsemble[];

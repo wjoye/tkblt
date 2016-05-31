@@ -29,14 +29,14 @@
 
 #include <string.h>
 
-#include "bltGrBind.h"
-#include "bltGraph.h"
-#include "bltGrElem.h"
-#include "bltGrMarkerOp.h"
-#include "bltGrMarker.h"
-#include "bltGrMarkerLine.h"
-#include "bltGrMarkerPolygon.h"
-#include "bltGrMarkerText.h"
+#include "tkbltGrBind.h"
+#include "tkbltGraph.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrMarkerOp.h"
+#include "tkbltGrMarker.h"
+#include "tkbltGrMarkerLine.h"
+#include "tkbltGrMarkerPolygon.h"
+#include "tkbltGrMarkerText.h"
 
 using namespace Blt;
 

@@ -31,8 +31,8 @@
 #include <string.h>
 #include <float.h>
 
-#include "bltGrMarker.h"
-#include "bltGrMarkerOption.h"
+#include "tkbltGrMarker.h"
+#include "tkbltGrMarkerOption.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;

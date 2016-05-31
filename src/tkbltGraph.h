@@ -33,8 +33,8 @@
 #include <tk.h>
 
 #include "tkbltChain.h"
-#include "bltGrMisc.h"
-#include "bltGrText.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrText.h"
 
 typedef struct Ensemble {
   const char *name;

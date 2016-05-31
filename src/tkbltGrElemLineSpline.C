@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltGrElemLine.h"
+#include "tkbltGrElemLine.h"
 
 using namespace Blt;
 

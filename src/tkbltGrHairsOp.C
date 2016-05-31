@@ -30,9 +30,9 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "bltGraph.h"
-#include "bltGrHairs.h"
-#include "bltGrHairsOp.h"
+#include "tkbltGraph.h"
+#include "tkbltGrHairs.h"
+#include "tkbltGrHairsOp.h"
 
 using namespace Blt;
 

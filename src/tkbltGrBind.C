@@ -34,9 +34,9 @@
 #include <iomanip>
 using namespace std;
 
-#include "bltGrBind.h"
-#include "bltGraph.h"
-#include "bltGrLegd.h"
+#include "tkbltGrBind.h"
+#include "tkbltGraph.h"
+#include "tkbltGrLegd.h"
 
 using namespace Blt;
 

@@ -29,26 +29,26 @@
 
 #include <string.h>
 
-#include "bltGraph.h"
-#include "bltGraphLine.h"
-#include "bltGraphBar.h"
-#include "bltGraphOp.h"
+#include "tkbltGraph.h"
+#include "tkbltGraphLine.h"
+#include "tkbltGraphBar.h"
+#include "tkbltGraphOp.h"
 
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOp.h"
-#include "bltGrElem.h"
-#include "bltGrElemOp.h"
-#include "bltGrHairs.h"
-#include "bltGrHairsOp.h"
-#include "bltGrLegd.h"
-#include "bltGrLegdOp.h"
-#include "bltGrMarker.h"
-#include "bltGrMarkerOp.h"
-#include "bltGrPostscript.h"
-#include "bltGrPostscriptOp.h"
-#include "bltGrPen.h"
-#include "bltGrPenOp.h"
-#include "bltGrXAxisOp.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrElemOp.h"
+#include "tkbltGrHairs.h"
+#include "tkbltGrHairsOp.h"
+#include "tkbltGrLegd.h"
+#include "tkbltGrLegdOp.h"
+#include "tkbltGrMarker.h"
+#include "tkbltGrMarkerOp.h"
+#include "tkbltGrPostscript.h"
+#include "tkbltGrPostscriptOp.h"
+#include "tkbltGrPen.h"
+#include "tkbltGrPenOp.h"
+#include "tkbltGrXAxisOp.h"
 
 using namespace Blt;
 

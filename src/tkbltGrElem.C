@@ -32,10 +32,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltGraph.h"
-#include "bltGrBind.h"
-#include "bltGrElem.h"
-#include "bltGrPen.h"
+#include "tkbltGraph.h"
+#include "tkbltGrBind.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrPen.h"
 
 using namespace Blt;
 

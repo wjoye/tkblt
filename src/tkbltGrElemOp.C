@@ -29,14 +29,14 @@
 
 #include <string.h>
 
-#include "bltGrBind.h"
-#include "bltGraph.h"
+#include "tkbltGrBind.h"
+#include "tkbltGraph.h"
 #include "tkbltGrAxis.h"
-#include "bltGrElem.h"
-#include "bltGrElemOp.h"
-#include "bltGrElemBar.h"
-#include "bltGrElemLine.h"
-#include "bltGrLegd.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrElemOp.h"
+#include "tkbltGrElemBar.h"
+#include "tkbltGrElemLine.h"
+#include "tkbltGrLegd.h"
 
 using namespace Blt;
 

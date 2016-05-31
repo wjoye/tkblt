@@ -36,8 +36,8 @@
 #include <tk.h>
 #include <tkInt.h>
 
-#include "bltGraph.h"
-#include "bltGrMisc.h"
+#include "tkbltGraph.h"
+#include "tkbltGrMisc.h"
 
 using namespace Blt;
 

@@ -32,9 +32,9 @@
 #include <tk.h>
 #include <tkInt.h>
 
-#include "bltGrText.h"
-#include "bltGraph.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrText.h"
+#include "tkbltGraph.h"
+#include "tkbltGrPSOutput.h"
 
 using namespace Blt;
 

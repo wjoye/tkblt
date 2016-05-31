@@ -37,9 +37,9 @@
 
 #include "tkbltChain.h"
 
-#include "bltGrMisc.h"
-#include "bltGrText.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrText.h"
+#include "tkbltGrPSOutput.h"
 
 namespace Blt {
   class Graph;

@@ -35,9 +35,9 @@
 #include "tkbltVector.h"
 #include "tkbltChain.h"
 
-#include "bltGrMisc.h"
-#include "bltGrPen.h"
-#include "bltGrPSOutput.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrPen.h"
+#include "tkbltGrPSOutput.h"
 
 #define SHOW_NONE	0
 #define SHOW_X		1

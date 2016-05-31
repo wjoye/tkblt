@@ -32,9 +32,9 @@
 
 #include <tk.h>
 
-#include "bltGraph.h"
-#include "bltGrElem.h"
-#include "bltGrPenLine.h"
+#include "tkbltGraph.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrPenLine.h"
 
 namespace Blt {
 

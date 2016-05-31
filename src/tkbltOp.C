@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-#include "bltOp.h"
+#include "tkbltOp.h"
 
 using namespace Blt;
 

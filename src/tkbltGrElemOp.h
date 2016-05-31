@@ -30,7 +30,7 @@
 #ifndef __BltGrElemOp_h__
 #define __BltGrElemOp_h__
 
-#include "bltGraph.h"
+#include "tkbltGraph.h"
 
 namespace Blt {
   extern const Ensemble elementEnsemble[];

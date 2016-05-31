@@ -30,11 +30,11 @@
 #include <math.h>
 #include <string.h>
 
-#include "bltGrBind.h"
-#include "bltGraph.h"
+#include "tkbltGrBind.h"
+#include "tkbltGraph.h"
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOp.h"
-#include "bltGrMisc.h"
+#include "tkbltGrMisc.h"
 
 using namespace Blt;
 

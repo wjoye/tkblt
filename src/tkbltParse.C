@@ -33,7 +33,7 @@ using namespace std;
 
 #include <tcl.h>
 
-#include "bltParse.h"
+#include "tkbltParse.h"
 
 using namespace Blt;
 

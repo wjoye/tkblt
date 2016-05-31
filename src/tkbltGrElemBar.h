@@ -34,8 +34,8 @@
 
 #include <tk.h>
 
-#include "bltGrElem.h"
-#include "bltGrPenBar.h"
+#include "tkbltGrElem.h"
+#include "tkbltGrPenBar.h"
 
 namespace Blt {
 

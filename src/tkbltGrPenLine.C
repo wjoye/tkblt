@@ -30,10 +30,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bltGrPenLine.h"
-#include "bltGraph.h"
-#include "bltGrMisc.h"
-#include "bltGrDef.h"
+#include "tkbltGrPenLine.h"
+#include "tkbltGraph.h"
+#include "tkbltGrMisc.h"
+#include "tkbltGrDef.h"
 #include "tkbltConfig.h"
 
 using namespace Blt;
