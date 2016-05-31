@@ -29,7 +29,7 @@
 
 
 #include "bltChain.h"
-#include "bltVector.h"
+#include "tkbltVector.h"
 
 #define VECTOR_THREAD_KEY	"BLT Vector Data"
 #define VECTOR_MAGIC		((unsigned int) 0x46170277)

@@ -32,7 +32,7 @@
 
 #include <tk.h>
 
-#include "bltVector.h"
+#include "tkbltVector.h"
 #include "bltChain.h"
 
 #include "bltGrMisc.h"

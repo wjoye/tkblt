@@ -119,7 +119,7 @@ src/bltVecOp.C
 src/bltVecMath.C
 src/bltVector.C
 ])
-TEA_ADD_HEADERS([src/bltVector.h])
+TEA_ADD_HEADERS([src/tkbltVector.h])
 TEA_ADD_INCLUDES([-I./src])
 TEA_ADD_LIBS([-lstdc++])
 TEA_ADD_CFLAGS([])
