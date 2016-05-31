@@ -31,7 +31,7 @@
 
 #include "bltGrBind.h"
 #include "bltGraph.h"
-#include "bltGrAxis.h"
+#include "tkbltGrAxis.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrElemBar.h"

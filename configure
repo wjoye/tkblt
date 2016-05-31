@@ -5531,9 +5531,9 @@ done
     vars="
 src/tkbltChain.C
 src/tkbltConfig.C
-src/bltGrAxis.C
-src/bltGrAxisOp.C
-src/bltGrAxisOption.C
+src/tkbltGrAxis.C
+src/tkbltGrAxisOp.C
+src/tkbltGrAxisOption.C
 src/bltGrBind.C
 src/bltGrElemOp.C
 src/bltGrElemOption.C

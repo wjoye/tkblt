@@ -35,7 +35,7 @@
 #include "bltGraph.h"
 #include "bltGrElemLine.h"
 #include "bltGrElemOption.h"
-#include "bltGrAxis.h"
+#include "tkbltGrAxis.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
 #include "tkbltConfig.h"

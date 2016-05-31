@@ -32,7 +32,7 @@
 #include <math.h>
 
 #include "bltGraph.h"
-#include "bltGrAxis.h"
+#include "tkbltGrAxis.h"
 #include "bltGrElem.h"
 #include "bltGrLegd.h"
 #include "bltGrMisc.h"

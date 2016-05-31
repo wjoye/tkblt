@@ -32,7 +32,7 @@
 #include "bltGraphBar.h"
 #include "bltGraphOp.h"
 
-#include "bltGrAxis.h"
+#include "tkbltGrAxis.h"
 #include "bltGrXAxisOp.h"
 #include "bltGrPen.h"
 #include "bltGrPenOp.h"

@@ -34,7 +34,7 @@
 #include "bltGraph.h"
 #include "bltGrBind.h"
 #include "bltGrMarker.h"
-#include "bltGrAxis.h"
+#include "tkbltGrAxis.h"
 #include "bltGrMisc.h"
 
 using namespace Blt;

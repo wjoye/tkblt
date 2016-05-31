@@ -32,8 +32,8 @@
 #include "bltGraph.h"
 #include "bltGrBind.h"
 #include "bltGrXAxisOp.h"
-#include "bltGrAxis.h"
-#include "bltGrAxisOp.h"
+#include "tkbltGrAxis.h"
+#include "tkbltGrAxisOp.h"
 
 using namespace Blt;
 

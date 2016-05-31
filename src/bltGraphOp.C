@@ -34,8 +34,8 @@
 #include "bltGraphBar.h"
 #include "bltGraphOp.h"
 
-#include "bltGrAxis.h"
-#include "bltGrAxisOp.h"
+#include "tkbltGrAxis.h"
+#include "tkbltGrAxisOp.h"
 #include "bltGrElem.h"
 #include "bltGrElemOp.h"
 #include "bltGrHairs.h"

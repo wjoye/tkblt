@@ -35,8 +35,8 @@
 #include "bltGraphOp.h"
 
 #include "bltGrBind.h"
-#include "bltGrAxis.h"
-#include "bltGrAxisOp.h"
+#include "tkbltGrAxis.h"
+#include "tkbltGrAxisOp.h"
 #include "bltGrXAxisOp.h"
 #include "bltGrPen.h"
 #include "bltGrPenBar.h"

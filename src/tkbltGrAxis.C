@@ -34,8 +34,8 @@
 
 #include "bltGraph.h"
 #include "bltGrBind.h"
-#include "bltGrAxis.h"
-#include "bltGrAxisOption.h"
+#include "tkbltGrAxis.h"
+#include "tkbltGrAxisOption.h"
 #include "bltGrPostscript.h"
 #include "bltGrMisc.h"
 #include "bltGrDef.h"
