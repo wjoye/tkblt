@@ -365,8 +365,21 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->elements_.displayList->unlinkLink(elemPtr->link); 
-    chain->linkAfter(elemPtr->link, NULL); 
+    // look for duplicates
+    int ok=1;
+    for (ChainLink* link = Chain_FirstLink(chain);
+	 link; link = Chain_NextLink(link)) {
+      Element* ptr = (Element*)Chain_GetValue(link);
+      if (ptr == elemPtr) {
+	ok=0;
+	break;
+      }
+    }
+
+    if (ok && elemPtr->link) {
+      graphPtr->elements_.displayList->unlinkLink(elemPtr->link); 
+      chain->linkAfter(elemPtr->link, NULL); 
+    }
   }
 
   // Append the links to end of the display list
@@ -424,14 +437,26 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
   Graph* graphPtr = (Graph*)clientData;
 
   Chain* chain = new Chain();
-
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    graphPtr->elements_.displayList->unlinkLink(elemPtr->link); 
-    chain->linkAfter(elemPtr->link, NULL); 
+    // look for duplicates
+    int ok=1;
+    for (ChainLink* link = Chain_FirstLink(chain);
+	 link; link = Chain_NextLink(link)) {
+      Element* ptr = (Element*)Chain_GetValue(link);
+      if (ptr == elemPtr) {
+	ok=0;
+	break;
+      }
+    }
+
+    if (ok && elemPtr->link) {
+      graphPtr->elements_.displayList->unlinkLink(elemPtr->link); 
+      chain->linkAfter(elemPtr->link, NULL); 
+    }
   }
 
   // Prepend the links to beginning of the display list in reverse order
@@ -471,7 +496,19 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
       return TCL_ERROR;
     }
 
-    chain->append(elemPtr);
+    // look for duplicates
+    int ok=1;
+    for (ChainLink* link = Chain_FirstLink(chain);
+	 link; link = Chain_NextLink(link)) {
+      Element* ptr = (Element*)Chain_GetValue(link);
+      if (ptr == elemPtr) {
+	ok=0;
+	break;
+      }
+    }
+
+    if (ok) 
+      chain->append(elemPtr);
   }
 
   // Clear the links from the currently displayed elements
