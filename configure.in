@@ -119,11 +119,11 @@ src/tkbltVecOp.C
 src/tkbltVecMath.C
 src/tkbltVector.C
 ])
-TEA_ADD_HEADERS([src/tkbltVector.h])
+TEA_ADD_HEADERS([src/tkbltVector.h src/tkbltDecls.h])
 TEA_ADD_INCLUDES([-I./src])
 TEA_ADD_LIBS([-lstdc++])
 TEA_ADD_CFLAGS([])
-TEA_ADD_STUB_SOURCES([])
+TEA_ADD_STUB_SOURCES([src/tkbltStubLib.C])
 TEA_ADD_TCL_SOURCES([library/graph.tcl])
 
 #--------------------------------------------------------------------

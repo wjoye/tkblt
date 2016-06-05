@@ -123,4 +123,6 @@ extern "C" {
   double Blt_VecMax(Blt_Vector *vPtr);
 }
 
+#include "tkbltDecls.h"
+
 #endif /* _BLT_VECTOR_H */
