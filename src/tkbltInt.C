@@ -39,6 +39,8 @@ Tcl_AppInitProc Tkblt_SafeInit;
 Tcl_AppInitProc Blt_VectorCmdInitProc;
 Tcl_AppInitProc Blt_GraphCmdInitProc;
 
+#include "tkbltStubInit.c"
+
 int Tkblt_Init(Tcl_Interp* interp)
 {
   Tcl_Namespace *nsPtr;
@@ -61,6 +63,9 @@ int Tkblt_Init(Tcl_Interp* interp)
     return TCL_ERROR;
 
   if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
+    return TCL_ERROR;
+
+  if (Tcl_PkgProvideEx(interp, PACKAGE_NAME, PACKAGE_VERSION, &tkbltStubs) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;
