@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([tkblt], [3.1])
+AC_INIT([tkblt], [3.2])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -113,13 +113,18 @@ src/tkbltInt.C
 src/tkbltNsUtil.C
 src/tkbltParse.C
 src/tkbltOp.C
+src/tkbltStubInit.c
+src/tkbltStubLib.C
 src/tkbltSwitch.C
 src/tkbltVecCmd.C
 src/tkbltVecOp.C
 src/tkbltVecMath.C
 src/tkbltVector.C
 ])
-TEA_ADD_HEADERS([src/tkbltVector.h src/tkbltDecls.h])
+TEA_ADD_HEADERS([
+src/tkbltVector.h
+src/tkbltDecls.h
+])
 TEA_ADD_INCLUDES([-I./src])
 TEA_ADD_LIBS([-lstdc++])
 TEA_ADD_CFLAGS([])

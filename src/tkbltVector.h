@@ -87,11 +87,15 @@ typedef enum {
 #define Blt_VecSize(v)		((v)->arraySize)
 #define Blt_VecDirty(v)		((v)->dirty)
 
+/*
 namespace Blt {
   extern int ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr);
 };
+*/
 
+#ifdef __cplusplus
 extern "C" {
+#endif
   int Blt_CreateVector(Tcl_Interp* interp, const char *vecName, 
 		       int size, Blt_Vector** vecPtrPtr);
   int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName, 
@@ -117,11 +121,14 @@ extern "C" {
   void Blt_FreeVectorId(Blt_VectorId clientId);
   const char *Blt_NameOfVectorId(Blt_VectorId clientId);
   const char *Blt_NameOfVector(Blt_Vector *vecPtr);
+  int Blt_ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr);
   void Blt_InstallIndexProc(Tcl_Interp* interp, const char *indexName, 
 			    Blt_VectorIndexProc * procPtr);
   double Blt_VecMin(Blt_Vector *vPtr);
   double Blt_VecMax(Blt_Vector *vPtr);
+#ifdef __cplusplus
 }
+#endif
 
 #include "tkbltDecls.h"
 

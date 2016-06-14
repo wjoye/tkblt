@@ -185,6 +185,7 @@ namespace Blt {
   extern size_t *Vec_SortMap(Vector **vectors, int nVectors);
   extern double Vec_Max(Vector *vecObjPtr);
   extern double Vec_Min(Vector *vecObjPtr);
+  extern int ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector);
   
   extern Tcl_ObjCmdProc Vec_InstCmd;
   extern Tcl_VarTraceProc Vec_VarTrace;

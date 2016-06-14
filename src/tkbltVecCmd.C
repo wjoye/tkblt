@@ -1533,7 +1533,7 @@ static int SortOp(Vector *vPtr, Tcl_Interp* interp,
 static int InstExprOp(Vector *vPtr, Tcl_Interp* interp, 
 		      int objc, Tcl_Obj* const objv[])
 {
-  if (ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector *)vPtr) != TCL_OK)
+  if (Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector *)vPtr) != TCL_OK)
     return TCL_ERROR;
 
   if (vPtr->flush)

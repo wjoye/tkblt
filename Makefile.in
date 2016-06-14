@@ -34,7 +34,7 @@
 #========================================================================
 
 PKG_SOURCES	= @PKG_SOURCES@
-PKG_OBJECTS	= @PKG_OBJECTS@ @PKG_STUB_OBJECTS@
+PKG_OBJECTS	= @PKG_OBJECTS@
 
 PKG_STUB_SOURCES = @PKG_STUB_SOURCES@
 PKG_STUB_OBJECTS = @PKG_STUB_OBJECTS@
@@ -60,7 +60,7 @@ PKG_HEADERS	= @PKG_HEADERS@
 PKG_LIB_FILE	= @PKG_LIB_FILE@
 PKG_STUB_LIB_FILE = @PKG_STUB_LIB_FILE@
 
-lib_BINARIES	= $(PKG_LIB_FILE) $(PKG_STUB_LIB_FILE)
+lib_BINARIES	= $(PKG_LIB_FILE)  $(PKG_STUB_LIB_FILE)
 BINARIES	= $(lib_BINARIES)
 
 SHELL		= @SHELL@
@@ -111,14 +111,14 @@ SHLIB_CFLAGS	= @SHLIB_CFLAGS@
 SHLIB_LD	= @SHLIB_LD@
 SHLIB_LD_LIBS	= @SHLIB_LD_LIBS@
 STLIB_LD	= @STLIB_LD@
-#TCL_DEFS	= @TCL_DEFS@
+TCL_DEFS	= @TCL_DEFS@
 TCL_BIN_DIR	= @TCL_BIN_DIR@
 TCL_SRC_DIR	= @TCL_SRC_DIR@
 #TK_BIN_DIR	= @TK_BIN_DIR@
 #TK_SRC_DIR	= @TK_SRC_DIR@
 
 # Not used, but retained for reference of what libs Tcl required
-#TCL_LIBS	= @TCL_LIBS@
+TCL_LIBS	= @TCL_LIBS@
 
 #========================================================================
 # TCLLIBPATH seeds the auto_path in Tcl's init.tcl so we can test our

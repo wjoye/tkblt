@@ -198,6 +198,11 @@ double Blt_VecMin(Blt_Vector *vectorPtr)
   return Vec_Min(vPtr);
 }
 
+int Blt_ExprVector(Tcl_Interp* interp, char *string, Blt_Vector *vector)
+{
+  return ExprVector(interp,string,vector);
+}
+
 static double Product(Blt_Vector *vectorPtr)
 {
   Vector *vPtr = (Vector *)vectorPtr;

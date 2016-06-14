@@ -57,12 +57,15 @@ EXTERN const char *	Blt_NameOfVectorId(Blt_VectorId clientId);
 /* 15 */
 EXTERN const char *	Blt_NameOfVector(Blt_Vector *vecPtr);
 /* 16 */
+EXTERN int		Blt_ExprVector(Tcl_Interp*interp, char *expr,
+				Blt_Vector *vecPtr);
+/* 17 */
 EXTERN void		Blt_InstallIndexProc(Tcl_Interp*interp,
 				const char *indexName,
 				Blt_VectorIndexProc *procPtr);
-/* 17 */
-EXTERN double		Blt_VecMin(Blt_Vector *vPtr);
 /* 18 */
+EXTERN double		Blt_VecMin(Blt_Vector *vPtr);
+/* 19 */
 EXTERN double		Blt_VecMax(Blt_Vector *vPtr);
 
 typedef struct TkbltStubs {
@@ -85,9 +88,10 @@ typedef struct TkbltStubs {
     void (*blt_FreeVectorId) (Blt_VectorId clientId); /* 13 */
     const char * (*blt_NameOfVectorId) (Blt_VectorId clientId); /* 14 */
     const char * (*blt_NameOfVector) (Blt_Vector *vecPtr); /* 15 */
-    void (*blt_InstallIndexProc) (Tcl_Interp*interp, const char *indexName, Blt_VectorIndexProc *procPtr); /* 16 */
-    double (*blt_VecMin) (Blt_Vector *vPtr); /* 17 */
-    double (*blt_VecMax) (Blt_Vector *vPtr); /* 18 */
+    int (*blt_ExprVector) (Tcl_Interp*interp, char *expr, Blt_Vector *vecPtr); /* 16 */
+    void (*blt_InstallIndexProc) (Tcl_Interp*interp, const char *indexName, Blt_VectorIndexProc *procPtr); /* 17 */
+    double (*blt_VecMin) (Blt_Vector *vPtr); /* 18 */
+    double (*blt_VecMax) (Blt_Vector *vPtr); /* 19 */
 } TkbltStubs;
 
 extern const TkbltStubs *tkbltStubsPtr;
@@ -134,12 +138,14 @@ extern const TkbltStubs *tkbltStubsPtr;
 	(tkbltStubsPtr->blt_NameOfVectorId) /* 14 */
 #define Blt_NameOfVector \
 	(tkbltStubsPtr->blt_NameOfVector) /* 15 */
+#define Blt_ExprVector \
+	(tkbltStubsPtr->blt_ExprVector) /* 16 */
 #define Blt_InstallIndexProc \
-	(tkbltStubsPtr->blt_InstallIndexProc) /* 16 */
+	(tkbltStubsPtr->blt_InstallIndexProc) /* 17 */
 #define Blt_VecMin \
-	(tkbltStubsPtr->blt_VecMin) /* 17 */
+	(tkbltStubsPtr->blt_VecMin) /* 18 */
 #define Blt_VecMax \
-	(tkbltStubsPtr->blt_VecMax) /* 18 */
+	(tkbltStubsPtr->blt_VecMax) /* 19 */
 
 #endif /* defined(USE_TKBLT_STUBS) */
 

@@ -75,14 +75,18 @@ declare 15 generic {
 }
 
 declare 16 generic {
+  int Blt_ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr)
+}
+
+declare 17 generic {
   void Blt_InstallIndexProc(Tcl_Interp* interp, const char *indexName,
 			    Blt_VectorIndexProc * procPtr)
 }
 
-declare 17 generic {
+declare 18 generic {
   double Blt_VecMin(Blt_Vector *vPtr)
 }
 
-declare 18 generic {
+declare 19 generic {
   double Blt_VecMax(Blt_Vector *vPtr)
 }

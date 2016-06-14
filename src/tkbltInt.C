@@ -62,10 +62,7 @@ int Tkblt_Init(Tcl_Interp* interp)
   if (Blt_GraphCmdInitProc(interp) != TCL_OK)
     return TCL_ERROR;
 
-  if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK)
-    return TCL_ERROR;
-
-  if (Tcl_PkgProvideEx(interp, PACKAGE_NAME, PACKAGE_VERSION, &tkbltStubs) != TCL_OK)
+  if (Tcl_PkgProvideEx(interp, PACKAGE_NAME, PACKAGE_VERSION, (ClientData)&tkbltStubs) != TCL_OK)
     return TCL_ERROR;
 
   return TCL_OK;

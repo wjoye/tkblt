@@ -21,9 +21,10 @@ const TkbltStubs tkbltStubs = {
     Blt_FreeVectorId, /* 13 */
     Blt_NameOfVectorId, /* 14 */
     Blt_NameOfVector, /* 15 */
-    Blt_InstallIndexProc, /* 16 */
-    Blt_VecMin, /* 17 */
-    Blt_VecMax, /* 18 */
+    Blt_ExprVector, /* 16 */
+    Blt_InstallIndexProc, /* 17 */
+    Blt_VecMin, /* 18 */
+    Blt_VecMax, /* 19 */
 };
 
 /* !END!: Do not edit above this line. */

@@ -1151,7 +1151,7 @@ static int VectorDestroyOp(ClientData clientData, Tcl_Interp* interp,
 static int VectorExprOp(ClientData clientData, Tcl_Interp* interp,
 			int objc,    Tcl_Obj* const objv[])
 {
-  return ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector* )NULL);
+  return Blt_ExprVector(interp, Tcl_GetString(objv[2]), (Blt_Vector* )NULL);
 }
 
 static Blt_OpSpec vectorCmdOps[] =
