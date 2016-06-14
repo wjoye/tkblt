@@ -87,12 +87,6 @@ typedef enum {
 #define Blt_VecSize(v)		((v)->arraySize)
 #define Blt_VecDirty(v)		((v)->dirty)
 
-/*
-namespace Blt {
-  extern int ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr);
-};
-*/
-
 #ifdef __cplusplus
 extern "C" {
 #endif
