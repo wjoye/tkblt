@@ -23,7 +23,6 @@
 '\"
 '\" Vector command created by George Howlett.
 '\"
-.so man.macros
 .TH blt::vector n BLT_VERSION BLT "BLT Built-In Commands"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!

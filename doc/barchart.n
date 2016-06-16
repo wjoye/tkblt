@@ -23,7 +23,6 @@
 '\"
 '\" Barchart widget created by Sani Nassif and George Howlett.
 '\"
-.so man.macros
 .TH barchart n BLT_VERSION BLT "BLT Built-In Commands"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!

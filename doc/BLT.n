@@ -21,7 +21,6 @@
 '\" tortuous action, arising out of or in connection with the use or performance
 '\" of this software.  
 '\"
-.so man.macros
 .TH intro n BLT_VERSION BLT "BLT Built-In Commands"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
@@ -51,6 +50,25 @@ crosshairs, a legend, and a collection of elements and tags.
 Creates a vector of floating point values.  The vector's components
 can be manipulated in three ways: through a Tcl array variable, a Tcl
 command, or the C API.
+.SH ADDING BLT TO YOUR APPLICATIONS
+It's easy to add BLT to an existing Tk application.  BLT requires no 
+patches or edits to the Tcl or Tk libraries.  To add BLT, simply add the 
+following code snippet to your application's tkAppInit.c file.  
+.PP
+if (Tkblt_Init(interp) != TCL_OK) {
+.PP
+    return TCL_ERROR;
+.PP
+}
+.TP 15
+Recompile and link with the tkblt library and that's it.
+.PP
+Alternately, you can dynamically load tkblt, simply by invoking the
+command
+.PP
+% package require tkblt
+.PP
+from your Tcl script.
 .SH BUGS
 Send bug reports, requests, suggestions, etc. to 
 wjoye@cfa.harvard.edu
