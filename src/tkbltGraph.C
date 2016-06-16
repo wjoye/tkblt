@@ -255,7 +255,6 @@ void Graph::draw()
 
   // Update cache if needed
   if (flags & CACHE) {
-    //    cerr << 'c';
     drawMargins(cache_);
 
     switch (legend_->position()) {
@@ -459,7 +458,7 @@ int Graph::print(const char* ident, PSOutput* psPtr)
 
 void Graph::eventuallyRedraw() 
 {
-  if ((flags & GRAPH_DELETED) || !Tk_IsMapped(tkwin_))
+  if (flags & GRAPH_DELETED)
     return;
 
   if (!(flags & REDRAW_PENDING)) {
