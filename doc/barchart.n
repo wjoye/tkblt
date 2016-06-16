@@ -1957,7 +1957,7 @@ on the line.  Each number must be between 1 and 255.  If
 .TP
 \fB\-fill \fIcolor\fR
 Sets the background color of the line.  This color is used with
-striped lines (see the \fB\-fdashes\R option). If \fIcolor\fR is
+striped lines (see the \fB\-dashes\fR option). If \fIcolor\fR is
 the empty string, no background color is drawn (the line will be
 dashed, not striped).  The default background color is \f(CW""\fR.
 .TP

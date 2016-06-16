@@ -410,11 +410,12 @@ see the manual entries for the library functions for details on what
 they do.  The operation is applied to all elements of the vector
 returning the results. 
 .CS
-.ta 3c 6c 9c
+.ta 2c 4c 6c
 \fBacos\fR	\fBcos\fR	\fBhypot\fR	\fBsinh\fR 
 \fBasin\fR	\fBcosh\fR	\fBlog\fR	\fBsqrt\fR 
 \fBatan\fR	\fBexp\fR	\fBlog10\fR	\fBtan\fR  
 \fBceil\fR	\fBfloor\fR	\fBsin\fR	\fBtanh\fR 
+.sp
 .CE
 Additional functions are:
 .TP 1i
