@@ -4,18 +4,12 @@
 
 #include <tcl.h>
 
-void *tkbltStubsPtr;
+ClientData tkbltStubsPtr =NULL;
 
-CONST char *
-Tkblt_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
+const char* Tkblt_InitStubs(Tcl_Interp* interp, const char* version, int exact)
 {
-    CONST char *result;
+    const char* actualVersion = 
+      Tcl_PkgRequireEx(interp, "tkblt", version, exact, &tkbltStubsPtr);
 
-    result = Tcl_PkgRequireEx(interp, "tkblt", version, exact,
-		(ClientData *) &tkbltStubsPtr);
-    if (!result || !tkbltStubsPtr) {
-        return (char *) NULL;
-    }
-
-    return result;
+    return (actualVersion && tkbltStubsPtr) ? actualVersion : NULL;
 }
