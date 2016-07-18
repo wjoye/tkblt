@@ -30,7 +30,7 @@
 #ifndef __BltGrElemBar_h__
 #define __BltGrElemBar_h__
 
-#include <math.h>
+#include <cmath>
 
 #include <tk.h>
 

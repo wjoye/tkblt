@@ -27,11 +27,12 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <math.h>
 #include <limits.h>
 #include <float.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <cmath>
 
 #include <tk.h>
 #include <tkInt.h>

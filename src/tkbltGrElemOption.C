@@ -27,10 +27,11 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <math.h>
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <cmath>
 
 #include "tkbltChain.h"
 

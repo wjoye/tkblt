@@ -30,8 +30,9 @@
  *	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <cmath>
+
 #include <float.h>
-#include <math.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
@@ -530,7 +531,7 @@ static void MathError(Tcl_Interp* interp, double value)
     Tcl_SetErrorCode(interp, "ARITH", "DOMAIN", 
 		     Tcl_GetStringResult(interp), (char *)NULL);
   }
-  else if ((errno == ERANGE) || isinf(value)) {
+  else if ((errno == ERANGE) || std::isinf(value)) {
     if (value == 0.0) {
       Tcl_AppendResult(interp, 
 		       "floating-point value too small to represent",
@@ -1415,7 +1416,7 @@ static int EvaluateExpression(Tcl_Interp* interp, char *string,
 
   /* Check for NaN's and overflows. */
   for (vp = vPtr->valueArr, vend = vp + vPtr->length; vp < vend; vp++) {
-    if (!isfinite(*vp)) {
+    if (!std::isfinite(*vp)) {
       /*
        * IEEE floating-point error.
        */
@@ -1440,7 +1441,7 @@ static int ComponentFunc(ClientData clientData, Tcl_Interp* interp,
       MathError(interp, *vp);
       return TCL_ERROR;
     }
-    if (!isfinite(*vp)) {
+    if (!std::isfinite(*vp)) {
       /*
        * IEEE floating-point error.
        */
@@ -1480,19 +1481,19 @@ static int VectorFunc(ClientData clientData, Tcl_Interp* interp, Vector *vPtr)
 static MathFunction mathFunctions[] =
   {
     {"abs",     (void*)ComponentFunc, (ClientData)Fabs},
-    {"acos",	(void*)ComponentFunc, (ClientData)::acos},
-    {"asin",	(void*)ComponentFunc, (ClientData)::asin},
-    {"atan",	(void*)ComponentFunc, (ClientData)::atan},
+    {"acos",	(void*)ComponentFunc, (ClientData)acos},
+    {"asin",	(void*)ComponentFunc, (ClientData)asin},
+    {"atan",	(void*)ComponentFunc, (ClientData)atan},
     {"adev",	(void*)ScalarFunc,    (ClientData)AvgDeviation},
-    {"ceil",	(void*)ComponentFunc, (ClientData)::ceil},
-    {"cos",	(void*)ComponentFunc, (ClientData)::cos},
-    {"cosh",	(void*)ComponentFunc, (ClientData)::cosh},
-    {"exp",	(void*)ComponentFunc, (ClientData)::exp},
-    {"floor",	(void*)ComponentFunc, (ClientData)::floor},
+    {"ceil",	(void*)ComponentFunc, (ClientData)ceil},
+    {"cos",	(void*)ComponentFunc, (ClientData)cos},
+    {"cosh",	(void*)ComponentFunc, (ClientData)cosh},
+    {"exp",	(void*)ComponentFunc, (ClientData)exp},
+    {"floor",	(void*)ComponentFunc, (ClientData)floor},
     {"kurtosis",(void*)ScalarFunc,    (ClientData)Kurtosis},
     {"length",	(void*)ScalarFunc,    (ClientData)Length},
-    {"log",	(void*)ComponentFunc, (ClientData)::log},
-    {"log10",	(void*)ComponentFunc, (ClientData)::log10},
+    {"log",	(void*)ComponentFunc, (ClientData)log},
+    {"log10",	(void*)ComponentFunc, (ClientData)log10},
     {"max",	(void*)ScalarFunc,    (ClientData)Blt_VecMax},
     {"mean",	(void*)ScalarFunc,    (ClientData)Mean},
     {"median",	(void*)ScalarFunc,    (ClientData)Median},
@@ -1505,14 +1506,14 @@ static MathFunction mathFunctions[] =
     {"random",	(void*)ComponentFunc, (ClientData)drand48},
     {"round",	(void*)ComponentFunc, (ClientData)Round},
     {"sdev",	(void*)ScalarFunc,    (ClientData)StdDeviation},
-    {"sin",	(void*)ComponentFunc, (ClientData)::sin},
-    {"sinh",	(void*)ComponentFunc, (ClientData)::sinh},
+    {"sin",	(void*)ComponentFunc, (ClientData)sin},
+    {"sinh",	(void*)ComponentFunc, (ClientData)sinh},
     {"skew",	(void*)ScalarFunc,    (ClientData)Skew},
     {"sort",	(void*)VectorFunc,    (ClientData)Sort},
-    {"sqrt",	(void*)ComponentFunc, (ClientData)::sqrt},
+    {"sqrt",	(void*)ComponentFunc, (ClientData)sqrt},
     {"sum",	(void*)ScalarFunc,    (ClientData)Sum},
-    {"tan",	(void*)ComponentFunc, (ClientData)::tan},
-    {"tanh",	(void*)ComponentFunc, (ClientData)::tanh},
+    {"tan",	(void*)ComponentFunc, (ClientData)tan},
+    {"tanh",	(void*)ComponentFunc, (ClientData)tanh},
     {"var",	(void*)ScalarFunc,    (ClientData)Variance},
     {(char *)NULL,},
   };

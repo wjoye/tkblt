@@ -44,12 +44,13 @@
  */
 
 #include <float.h>
-#include <math.h>
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+
+#include <cmath>
 
 #include "tkbltVecInt.h"
 #include "tkbltNsUtil.h"

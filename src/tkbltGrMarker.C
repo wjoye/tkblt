@@ -28,8 +28,9 @@
  */
 
 #include <stdlib.h>
-#include <math.h>
 #include <float.h>
+
+#include <cmath>
 
 #include "tkbltGraph.h"
 #include "tkbltGrBind.h"

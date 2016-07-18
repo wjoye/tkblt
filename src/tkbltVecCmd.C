@@ -46,11 +46,12 @@
  *		x notify reorder #1 #2
  */
 
-#include <math.h>
 #include <float.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
+#include <cmath>
 
 #include "tkbltVecInt.h"
 #include "tkbltOp.h"

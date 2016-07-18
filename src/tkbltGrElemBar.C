@@ -28,9 +28,10 @@
  */
 
 #include <float.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <cmath>
 
 #include "tkbltGraphBar.h"
 #include "tkbltGrElemBar.h"
