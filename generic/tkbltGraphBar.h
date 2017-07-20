@@ -49,7 +49,7 @@ namespace Blt {
     Axis* yAxis;
     double sum;
     int count;
-    float lastY;
+    double lastY;
     size_t index;
 
   public:
