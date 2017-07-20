@@ -47,7 +47,7 @@ namespace Blt {
     int nSegments;
     Axis* xAxis;
     Axis* yAxis;
-    float sum;
+    double sum;
     int count;
     float lastY;
     size_t index;

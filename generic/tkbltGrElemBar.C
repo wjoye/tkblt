@@ -873,7 +873,7 @@ void BarElement::checkStacks(Axis* xAxis, Axis* yAxis,
 
       // Check if any of the y-values (because of stacking) are greater
       // than the current limits of the graph.
-      if (gp->sum < 0.0f) {
+      if (gp->sum < 0.0) {
 	if (*minPtr > gp->sum)
 	  *minPtr = gp->sum;
       }
