@@ -124,7 +124,7 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
 		    rr.x, rr.y, 0, -1);
 #endif
 
-  float angle = fmod(ops->angle, 360.0);
+  double angle = fmod(ops->angle, 360.0);
   if (angle < 0.0)
     angle += 360.0;
 

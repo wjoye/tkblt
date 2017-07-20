@@ -384,9 +384,9 @@ int Axis::configure()
       scrollMax_ = NAN;
   }
 
-  float angle = fmod(ops->tickAngle, 360.0);
-  if (angle < 0.0f)
-    angle += 360.0f;
+  double angle = fmod(ops->tickAngle, 360.0);
+  if (angle < 0.0)
+    angle += 360.0;
 
   ops->tickAngle = angle;
   resetTextStyles();
@@ -1918,7 +1918,7 @@ void Axis::getGeometry()
       labelPtr->width  = lw;
       labelPtr->height = lh;
 
-      if (ops->tickAngle != 0.0f) {
+      if (ops->tickAngle != 0.0) {
 	// Rotated label width and height
 	double rlw, rlh;
 	graphPtr_->getBoundingBox(lw, lh, ops->tickAngle, &rlw, &rlh, NULL);

@@ -535,12 +535,12 @@ void Graph::getTextExtents(Tk_Font font, const char *text, int textLen,
  *
  *---------------------------------------------------------------------------
  */
-void Graph::getBoundingBox(int width, int height, float angle,
+void Graph::getBoundingBox(int width, int height, double angle,
 			   double *rotWidthPtr, double *rotHeightPtr,
 			   Point2d *bbox)
 {
   angle = fmod(angle, 360.0);
-  if (fmod(angle, (double)90.0) == 0.0) {
+  if (fmod(angle, 90.0) == 0.0) {
     int ll, ur, ul, lr;
     double rotWidth, rotHeight;
 
