@@ -243,7 +243,7 @@ void Graph::layoutGraph()
   // Step 5
   // If necessary, correct for the requested plot area aspect ratio.
   if ((ops->reqPlotWidth == 0) && (ops->reqPlotHeight == 0) && 
-      (ops->aspect > 0.0f)) {
+      (ops->aspect > 0.0)) {
     float ratio;
 
     // Shrink one dimension of the plotarea to fit the requested

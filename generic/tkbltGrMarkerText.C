@@ -120,8 +120,8 @@ int TextMarker::configure()
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
   ops->style.angle = (float)fmod(ops->style.angle, 360.0);
-  if (ops->style.angle < 0.0f)
-    ops->style.angle += 360.0f;
+  if (ops->style.angle < 0.0)
+    ops->style.angle += 360.0;
 
   GC newGC = NULL;
   XGCValues gcValues;
@@ -211,7 +211,7 @@ int TextMarker::pointIn(Point2d *samplePtr)
   if (!ops->string)
     return 0;
 
-  if (ops->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0) {
     Point2d points[5];
 
     // Figure out the bounding polygon (isolateral) for the text and see
@@ -233,7 +233,7 @@ int TextMarker::regionIn(Region2d *extsPtr, int enclosed)
 {
   TextMarkerOptions* ops = (TextMarkerOptions*)ops_;
 
-  if (ops->style.angle != 0.0f) {
+  if (ops->style.angle != 0.0) {
     Point2d points[5];
     for (int ii=0; ii<4; ii++) {
       points[ii].x = outline_[ii].x + anchorPt_.x;

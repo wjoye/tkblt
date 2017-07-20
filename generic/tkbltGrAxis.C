@@ -446,7 +446,7 @@ void Axis::mapStacked(int count, int margin)
   graphPtr_->getTextExtents(ops->tickFont, "0", 1, &w, &h);
   screenMin_ += (slice * count) + 2 + h / 2;
   screenRange_ = slice - 2 * 2 - h;
-  screenScale_ = 1.0f / screenRange_;
+  screenScale_ = 1.0 / screenRange_;
 
   AxisInfo info;
   offsets(margin, 0, &info);

@@ -272,7 +272,7 @@ void BarElement::map()
     return;
   int nPoints = NUMBEROFPOINTS(ops);
 
-  double barWidth = (ops->barWidth > 0.0f) ? ops->barWidth : gops->barWidth;
+  double barWidth = (ops->barWidth > 0.0) ? ops->barWidth : gops->barWidth;
   AxisOptions* axisyops = (AxisOptions*)ops->yAxis->ops();
   double baseline = (axisyops->logScale) ? 0.0 : gops->baseline;
   double barOffset = barWidth * 0.5;

@@ -239,8 +239,8 @@ int BarGraph::configure()
 {
   BarGraphOptions* ops = (BarGraphOptions*)ops_;
   // Don't allow negative bar widths. Reset to an arbitrary value (0.1)
-  if (ops->barWidth <= 0.0f)
-    ops->barWidth = 0.9f;
+  if (ops->barWidth <= 0.0)
+    ops->barWidth = 0.9;
 
   return Graph::configure();
 }
