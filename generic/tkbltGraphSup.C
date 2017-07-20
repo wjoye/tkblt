@@ -244,11 +244,11 @@ void Graph::layoutGraph()
   // If necessary, correct for the requested plot area aspect ratio.
   if ((ops->reqPlotWidth == 0) && (ops->reqPlotHeight == 0) && 
       (ops->aspect > 0.0)) {
-    float ratio;
+    double ratio;
 
     // Shrink one dimension of the plotarea to fit the requested
     // width/height aspect ratio.
-    ratio = (float)plotWidth / (float)plotHeight;
+    ratio = plotWidth / plotHeight;
     if (ratio > ops->aspect) {
       // Shrink the width
       int scaledWidth = (int)(plotHeight * ops->aspect);
