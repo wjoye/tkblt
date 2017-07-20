@@ -372,8 +372,8 @@ void Graph::layoutGraph()
   if (hRange_ < 1)
     hRange_ = 1;
 
-  hScale_ = 1.0f / (float)hRange_;
-  vScale_ = 1.0f / (float)vRange_;
+  hScale_ = 1.0 / hRange_;
+  vScale_ = 1.0 / vRange_;
 
   // Calculate the placement of the graph title so it is centered within the
   // space provided for it in the top margin

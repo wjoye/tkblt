@@ -164,8 +164,8 @@ namespace Blt {
     int hRange_;
     int vOffset_;
     int hOffset_;
-    float vScale_;
-    float hScale_;
+    double vScale_;
+    double hScale_;
     Pixmap cache_;
     short int cacheWidth_;
     short int cacheHeight_;
