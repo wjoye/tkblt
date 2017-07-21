@@ -27,7 +27,8 @@
  *	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <float.h>
+#include <cfloat>
+#include <cmath>
 
 #include <tkInt.h>
 
@@ -50,6 +51,7 @@
 #include "tkbltGrDef.h"
 #include "tkbltGrPostscript.h"
 #include "tkbltGrPSOutput.h"
+#include "tkbltInt.h"
 
 using namespace Blt;
 

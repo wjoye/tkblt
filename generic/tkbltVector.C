@@ -52,6 +52,7 @@
 
 #include <cmath>
 
+#include "tkbltInt.h"
 #include "tkbltVecInt.h"
 #include "tkbltNsUtil.h"
 #include "tkbltSwitch.h"

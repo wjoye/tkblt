@@ -35,6 +35,7 @@
 #include "tkbltGrAxis.h"
 #include "tkbltGrAxisOption.h"
 #include "tkbltConfig.h"
+#include "tkbltInt.h"
 
 using namespace Blt;
 

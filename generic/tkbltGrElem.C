@@ -37,6 +37,7 @@
 #include "tkbltGrBind.h"
 #include "tkbltGrElem.h"
 #include "tkbltGrPen.h"
+#include "tkbltInt.h"
 
 using namespace Blt;
 

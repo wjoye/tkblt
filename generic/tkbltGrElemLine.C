@@ -41,6 +41,7 @@
 #include "tkbltGrDef.h"
 #include "tkbltConfig.h"
 #include "tkbltGrPSOutput.h"
+#include "tkbltInt.h"
 
 using namespace Blt;
 

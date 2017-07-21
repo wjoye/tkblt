@@ -36,7 +36,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
+#include <cmath>
 
+#include "tkbltInt.h"
 #include "tkbltVecInt.h"
 #include "tkbltNsUtil.h"
 #include "tkbltParse.h"
@@ -531,7 +533,7 @@ static void MathError(Tcl_Interp* interp, double value)
     Tcl_SetErrorCode(interp, "ARITH", "DOMAIN", 
 		     Tcl_GetStringResult(interp), (char *)NULL);
   }
-  else if ((errno == ERANGE) || std::isinf(value)) {
+  else if ((errno == ERANGE) || isinf(value)) {
     if (value == 0.0) {
       Tcl_AppendResult(interp, 
 		       "floating-point value too small to represent",
@@ -1416,7 +1418,7 @@ static int EvaluateExpression(Tcl_Interp* interp, char *string,
 
   /* Check for NaN's and overflows. */
   for (vp = vPtr->valueArr, vend = vp + vPtr->length; vp < vend; vp++) {
-    if (!std::isfinite(*vp)) {
+    if (!isfinite(*vp)) {
       /*
        * IEEE floating-point error.
        */
@@ -1441,7 +1443,7 @@ static int ComponentFunc(ClientData clientData, Tcl_Interp* interp,
       MathError(interp, *vp);
       return TCL_ERROR;
     }
-    if (!std::isfinite(*vp)) {
+    if (!isfinite(*vp)) {
       /*
        * IEEE floating-point error.
        */
