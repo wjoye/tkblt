@@ -35,6 +35,17 @@
 
 #include <tcl.h>
 
+#ifdef BUILD_tkblt
+#   define TKBLT_STORAGE_CLASS DLLEXPORT
+#else
+#   ifdef USE_TCL_STUBS
+#      define TKBLT_STORAGE_CLASS /* */
+#   else
+#      define TKBLT_STORAGE_CLASS DLLIMPORT
+#   endif
+#endif
+
+
 typedef enum {
   BLT_VECTOR_NOTIFY_UPDATE = 1, /* The vector's values has been updated */
   BLT_VECTOR_NOTIFY_DESTROY	/* The vector has been destroyed and the client
@@ -90,36 +101,36 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  int Blt_CreateVector(Tcl_Interp* interp, const char *vecName, 
-		       int size, Blt_Vector** vecPtrPtr);
-  int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName, 
-			const char *cmdName, const char *varName, 
-			int initialSize, Blt_Vector **vecPtrPtr);
-  int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *vecName);
-  int Blt_DeleteVector(Blt_Vector *vecPtr);
-  int Blt_GetVector(Tcl_Interp* interp, const char *vecName, 
-		    Blt_Vector **vecPtrPtr);
-  int Blt_GetVectorFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr, 
+  TKBLT_STORAGE_CLASS int Blt_CreateVector(Tcl_Interp* interp, const char *vecName,
+			      int size, Blt_Vector** vecPtrPtr);
+  TKBLT_STORAGE_CLASS int Blt_CreateVector2(Tcl_Interp* interp, const char *vecName,
+			       const char *cmdName, const char *varName,
+			       int initialSize, Blt_Vector **vecPtrPtr);
+  TKBLT_STORAGE_CLASS int Blt_DeleteVectorByName(Tcl_Interp* interp, const char *vecName);
+  TKBLT_STORAGE_CLASS int Blt_DeleteVector(Blt_Vector *vecPtr);
+  TKBLT_STORAGE_CLASS int Blt_GetVector(Tcl_Interp* interp, const char *vecName,
 			   Blt_Vector **vecPtrPtr);
-  int Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr, int n, 
-		      int arraySize, Tcl_FreeProc *freeProc);
-  int Blt_ResizeVector(Blt_Vector *vecPtr, int n);
-  int Blt_VectorExists(Tcl_Interp* interp, const char *vecName);
-  int Blt_VectorExists2(Tcl_Interp* interp, const char *vecName);
-  Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *vecName);
-  int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId, 
-			Blt_Vector **vecPtrPtr);
-  void Blt_SetVectorChangedProc(Blt_VectorId clientId, 
-				Blt_VectorChangedProc *proc, 
-				ClientData clientData);
-  void Blt_FreeVectorId(Blt_VectorId clientId);
-  const char *Blt_NameOfVectorId(Blt_VectorId clientId);
-  const char *Blt_NameOfVector(Blt_Vector *vecPtr);
-  int Blt_ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr);
-  void Blt_InstallIndexProc(Tcl_Interp* interp, const char *indexName, 
-			    Blt_VectorIndexProc * procPtr);
-  double Blt_VecMin(Blt_Vector *vPtr);
-  double Blt_VecMax(Blt_Vector *vPtr);
+  TKBLT_STORAGE_CLASS int Blt_GetVectorFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr,
+				  Blt_Vector **vecPtrPtr);
+  TKBLT_STORAGE_CLASS int Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr, int n,
+			     int arraySize, Tcl_FreeProc *freeProc);
+  TKBLT_STORAGE_CLASS int Blt_ResizeVector(Blt_Vector *vecPtr, int n);
+  TKBLT_STORAGE_CLASS int Blt_VectorExists(Tcl_Interp* interp, const char *vecName);
+  TKBLT_STORAGE_CLASS int Blt_VectorExists2(Tcl_Interp* interp, const char *vecName);
+  TKBLT_STORAGE_CLASS Blt_VectorId Blt_AllocVectorId(Tcl_Interp* interp, const char *vecName);
+  TKBLT_STORAGE_CLASS int Blt_GetVectorById(Tcl_Interp* interp, Blt_VectorId clientId,
+			       Blt_Vector **vecPtrPtr);
+  TKBLT_STORAGE_CLASS void Blt_SetVectorChangedProc(Blt_VectorId clientId,
+				       Blt_VectorChangedProc *proc,
+				       ClientData clientData);
+  TKBLT_STORAGE_CLASS void Blt_FreeVectorId(Blt_VectorId clientId);
+  TKBLT_STORAGE_CLASS const char *Blt_NameOfVectorId(Blt_VectorId clientId);
+  TKBLT_STORAGE_CLASS const char *Blt_NameOfVector(Blt_Vector *vecPtr);
+  TKBLT_STORAGE_CLASS int Blt_ExprVector(Tcl_Interp* interp, char *expr, Blt_Vector *vecPtr);
+  TKBLT_STORAGE_CLASS void Blt_InstallIndexProc(Tcl_Interp* interp, const char *indexName,
+				   Blt_VectorIndexProc * procPtr);
+  TKBLT_STORAGE_CLASS double Blt_VecMin(Blt_Vector *vPtr);
+  TKBLT_STORAGE_CLASS double Blt_VecMax(Blt_Vector *vPtr);
 #ifdef __cplusplus
 }
 #endif

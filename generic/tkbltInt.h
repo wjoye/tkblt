@@ -55,18 +55,4 @@
 
 #endif	/* _MSC_VER */
 
-/*
- * Silence warnings about unused parameters while keeping the parameter name.
- */
-#ifdef UNUSED
-#elif defined(__GNUC__)
-# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
-#elif defined(__MSC_VER__)
-# define UNUSED(x) __pragma(warning(suppress:4100)) x
-#elif defined(__cplusplus)
-# define UNUSED(x)
-#else
-# define UNUSED(x) x
-#endif
-
 #endif	/* __TKBLT_INT_H__ */

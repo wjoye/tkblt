@@ -5770,8 +5770,6 @@ if test "windows" = "${TEA_PLATFORM}"; then
 
 fi
 
-
-
     vars="tkbltStubLib.C"
     for i in $vars; do
 	# check for existence - allows for generic/win/unix VPATH

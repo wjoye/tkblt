@@ -9,64 +9,64 @@ extern "C" {
  */
 
 /* 0 */
-EXTERN int		Blt_CreateVector(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_CreateVector(Tcl_Interp*interp,
 				const char *vecName, int size,
 				Blt_Vector**vecPtrPtr);
 /* 1 */
-EXTERN int		Blt_CreateVector2(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_CreateVector2(Tcl_Interp*interp,
 				const char *vecName, const char *cmdName,
 				const char *varName, int initialSize,
 				Blt_Vector **vecPtrPtr);
 /* 2 */
-EXTERN int		Blt_DeleteVectorByName(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_DeleteVectorByName(Tcl_Interp*interp,
 				const char *vecName);
 /* 3 */
-EXTERN int		Blt_DeleteVector(Blt_Vector *vecPtr);
+TKBLT_STORAGE_CLASS int		Blt_DeleteVector(Blt_Vector *vecPtr);
 /* 4 */
-EXTERN int		Blt_GetVector(Tcl_Interp*interp, const char *vecName,
+TKBLT_STORAGE_CLASS int		Blt_GetVector(Tcl_Interp*interp, const char *vecName,
 				Blt_Vector **vecPtrPtr);
 /* 5 */
-EXTERN int		Blt_GetVectorFromObj(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_GetVectorFromObj(Tcl_Interp*interp,
 				Tcl_Obj *objPtr, Blt_Vector **vecPtrPtr);
 /* 6 */
-EXTERN int		Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr,
+TKBLT_STORAGE_CLASS int		Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr,
 				int n, int arraySize, Tcl_FreeProc *freeProc);
 /* 7 */
-EXTERN int		Blt_ResizeVector(Blt_Vector *vecPtr, int n);
+TKBLT_STORAGE_CLASS int		Blt_ResizeVector(Blt_Vector *vecPtr, int n);
 /* 8 */
-EXTERN int		Blt_VectorExists(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_VectorExists(Tcl_Interp*interp,
 				const char *vecName);
 /* 9 */
-EXTERN int		Blt_VectorExists2(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_VectorExists2(Tcl_Interp*interp,
 				const char *vecName);
 /* 10 */
-EXTERN Blt_VectorId	Blt_AllocVectorId(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS Blt_VectorId	Blt_AllocVectorId(Tcl_Interp*interp,
 				const char *vecName);
 /* 11 */
-EXTERN int		Blt_GetVectorById(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS int		Blt_GetVectorById(Tcl_Interp*interp,
 				Blt_VectorId clientId,
 				Blt_Vector **vecPtrPtr);
 /* 12 */
-EXTERN void		Blt_SetVectorChangedProc(Blt_VectorId clientId,
+TKBLT_STORAGE_CLASS void		Blt_SetVectorChangedProc(Blt_VectorId clientId,
 				Blt_VectorChangedProc *proc,
 				ClientData clientData);
 /* 13 */
-EXTERN void		Blt_FreeVectorId(Blt_VectorId clientId);
+TKBLT_STORAGE_CLASS void		Blt_FreeVectorId(Blt_VectorId clientId);
 /* 14 */
-EXTERN const char *	Blt_NameOfVectorId(Blt_VectorId clientId);
+TKBLT_STORAGE_CLASS const char *	Blt_NameOfVectorId(Blt_VectorId clientId);
 /* 15 */
-EXTERN const char *	Blt_NameOfVector(Blt_Vector *vecPtr);
+TKBLT_STORAGE_CLASS const char *	Blt_NameOfVector(Blt_Vector *vecPtr);
 /* 16 */
-EXTERN int		Blt_ExprVector(Tcl_Interp*interp, char *expr,
+TKBLT_STORAGE_CLASS int		Blt_ExprVector(Tcl_Interp*interp, char *expr,
 				Blt_Vector *vecPtr);
 /* 17 */
-EXTERN void		Blt_InstallIndexProc(Tcl_Interp*interp,
+TKBLT_STORAGE_CLASS void		Blt_InstallIndexProc(Tcl_Interp*interp,
 				const char *indexName,
 				Blt_VectorIndexProc *procPtr);
 /* 18 */
-EXTERN double		Blt_VecMin(Blt_Vector *vPtr);
+TKBLT_STORAGE_CLASS double		Blt_VecMin(Blt_Vector *vPtr);
 /* 19 */
-EXTERN double		Blt_VecMax(Blt_Vector *vPtr);
+TKBLT_STORAGE_CLASS double		Blt_VecMax(Blt_Vector *vPtr);
 
 typedef struct TkbltStubs {
     int magic;
