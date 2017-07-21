@@ -92,7 +92,7 @@ typedef struct {
 } VectorClient;
 
 static Tcl_CmdDeleteProc VectorInstDeleteProc;
-extern Tcl_ObjCmdProc VectorCmd;
+extern Tcl_ObjCmdProc VectorObjCmd;
 static Tcl_InterpDeleteProc VectorInterpDeleteProc;
 
 typedef struct {
