@@ -94,11 +94,16 @@ void TextStyle::drawText(Drawable drawable, const char *text, int x, int y)
   Point2d rr = rotateText(x, y, w1, h1);
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6)
   TkDrawAngledTextLayout(graphPtr_->display_, drawable, gc_, layout,
-  			 rr.x, rr.y, ops->angle, 0, -1);
+			 (int)rr.x, (int)rr.y,
+			 ops->angle, 0, -1);
 #else
   Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
 		    rr.x, rr.y, 0, -1);
 #endif
+}
+
+void TextStyle::drawText(Drawable drawable, const char *text, double x, double y) {
+  return drawText(drawable, text, (int)x, (int)y);
 }
 
 void TextStyle::drawText2(Drawable drawable, const char *text,
@@ -118,10 +123,10 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
   Point2d rr = rotateText(x, y, w1, h1);
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6)
   TkDrawAngledTextLayout(graphPtr_->display_, drawable, gc_, layout,
-  			 rr.x, rr.y, ops->angle, 0, -1);
+			 (int)rr.x, (int)rr.y, ops->angle, 0, -1);
 #else
   Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
-		    rr.x, rr.y, 0, -1);
+		    (int)rr.x, (int)rr.y, 0, -1);
 #endif
 
   double angle = fmod(ops->angle, 360.0);
@@ -131,8 +136,8 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
   if (angle != 0.0) {
     double rotWidth, rotHeight;
     graphPtr_->getBoundingBox(w1, h1, angle, &rotWidth, &rotHeight, NULL);
-    w1 = rotWidth;
-    h1 = rotHeight;
+    w1 = (int)rotWidth;
+    h1 = (int)rotHeight;
   }
 
   *ww = w1;
@@ -180,6 +185,10 @@ void TextStyle::printText(PSOutput* psPtr, const char *text, int x, int y)
   psPtr->append(Tcl_GetStringResult(graphPtr_->interp_));
   Tcl_ResetResult(graphPtr_->interp_);
   psPtr->format("] %g %g %s DrawText\n", xx/-2.0, yy/-2.0, justify);
+}
+
+void TextStyle::printText(PSOutput* psPtr, const char *text, double x, double y) {
+  return printText(psPtr, text, (int)x, (int)y);
 }
 
 void TextStyle::resetStyle()

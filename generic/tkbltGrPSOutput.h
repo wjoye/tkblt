@@ -65,7 +65,7 @@ namespace Blt {
     void print3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
 
     void fillRectangle(double, double, int, int);
-    void fillRectangles(XRectangle*, int);
+    void fillRectangles(Rectangle*, int);
     void fill3DRectangle(Tk_3DBorder, double, double, int, int, int, int);
     void fillPolygon(Point2d*, int);
 

@@ -279,7 +279,7 @@ void BarElement::map()
 
   // Create an array of bars representing the screen coordinates of all the
   // segments in the bar.
-  XRectangle* bars = new XRectangle[nPoints];
+  Rectangle* bars = new Rectangle[nPoints];
   int* barToData = new int[nPoints];
 
   double* x = ops->coords.x->values_;
@@ -287,7 +287,7 @@ void BarElement::map()
   int count = 0;
 
   int ii;
-  XRectangle* rp;
+  Rectangle* rp;
   for (rp=bars, ii=0; ii<nPoints; ii++) {
     // Two opposite corners of the rectangle in graph coordinates
     Point2d c1, c2;
@@ -428,13 +428,15 @@ void BarElement::map()
       continue;
 
     int height = (int)dy;
+    int width  = (int)dx;
     if (invertBar)
-      rp->y = (short int)MIN(c1.y, c2.y);
+      rp->y = (int)MIN(c1.y, c2.y);
     else
-      rp->y = (short int)(MAX(c1.y, c2.y)) - height;
+      rp->y = (int)(MAX(c1.y, c2.y)) - height;
 
-    rp->x = (short int)MIN(c1.x, c2.x);
-    rp->width = (short int)dx + 1;
+    rp->x = (int)MIN(c1.x, c2.x);
+
+    rp->width = width + 1;
     rp->width |= 0x1;
     if (rp->width < 1)
       rp->width = 1;
@@ -621,7 +623,7 @@ void BarElement::closest()
   int imin = 0;
     
   int ii;
-  XRectangle* bp;
+  Rectangle* bp;
   for (bp=bars_, ii=0; ii<nBars_; ii++, bp++) {
     if (PointInRectangle(bp, searchPtr->x, searchPtr->y)) {
       imin = barToData_[ii];
@@ -904,9 +906,9 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 
   // We have more than one style. Group bar segments of like pen styles together
   if (nBars_ > 0) {
-    XRectangle* bars = new XRectangle[nBars_];
+    Rectangle* bars = new Rectangle[nBars_];
     int* barToData = new int[nBars_];
-    XRectangle* bp = bars;
+    Rectangle* bp = bars;
     int* ip = barToData;
     for (ChainLink* link = Chain_FirstLink(ops->stylePalette); link; 
 	 link = Chain_NextLink(link)) {
@@ -990,7 +992,7 @@ void BarElement::mapActive()
   nActive_ = 0;
 
   if (nActiveIndices_ > 0) {
-    XRectangle* activeRects = new XRectangle[nActiveIndices_];
+    Rectangle* activeRects = new Rectangle[nActiveIndices_];
     int* activeToData = new int[nActiveIndices_];
     int count = 0;
     for (int ii=0; ii<nBars_; ii++) {
@@ -1189,10 +1191,10 @@ void BarElement::mapErrorBars(BarStyle **dataToStyle)
 }
 
 void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
-				 XRectangle *bars, int nBars)
+				 Rectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
-  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
+  for (Rectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
@@ -1207,7 +1209,7 @@ void BarElement::drawSegments(Drawable drawable, BarPen* penPtr,
 }
 
 void BarElement::drawValues(Drawable drawable, BarPen* penPtr, 
-			       XRectangle *bars, int nBars, int *barToData)
+			       Rectangle *bars, int nBars, int *barToData)
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
@@ -1219,7 +1221,7 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
   int count = 0;
-  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
+  for (Rectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     Point2d anchorPos;
     char string[TCL_DOUBLE_SPACE * 2 + 2];
 
@@ -1255,10 +1257,10 @@ void BarElement::drawValues(Drawable drawable, BarPen* penPtr,
 }
 
 void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr, 
-			       XRectangle *bars, int nBars)
+			       Rectangle *bars, int nBars)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
-  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
+  for (Rectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     if ((rp->width < 1) || (rp->height < 1))
       continue;
 
@@ -1275,7 +1277,7 @@ void BarElement::printSegments(PSOutput* psPtr, BarPen* penPtr,
 }
 
 void BarElement::printValues(PSOutput* psPtr, BarPen* penPtr, 
-			     XRectangle *bars, int nBars, int *barToData)
+			     Rectangle *bars, int nBars, int *barToData)
 {
   BarPenOptions* pops = (BarPenOptions*)penPtr->ops();
   BarElementOptions* ops = (BarElementOptions*)ops_;
@@ -1287,7 +1289,7 @@ void BarElement::printValues(PSOutput* psPtr, BarPen* penPtr,
     fmt = "%g";
   TextStyle ts(graphPtr_, &pops->valueStyle);
 
-  for (XRectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
+  for (Rectangle *rp = bars, *rend = rp + nBars; rp < rend; rp++) {
     double x = ops->coords.x->values_[barToData[count]];
     double y = ops->coords.y->values_[barToData[count]];
 

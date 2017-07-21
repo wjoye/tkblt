@@ -510,13 +510,13 @@ void Graph::reconfigure()
 void Graph::drawMargins(Drawable drawable)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
-  XRectangle rects[4];
+  Rectangle rects[4];
 
   // Draw the four outer rectangles which encompass the plotting
   // surface. This clears the surrounding area and clips the plot.
   rects[0].x = rects[0].y = rects[3].x = rects[1].x = 0;
-  rects[0].width = rects[3].width = (short int)width_;
-  rects[0].height = (short int)top_;
+  rects[0].width = rects[3].width = width_;
+  rects[0].height = top_;
   rects[3].y = bottom_;
   rects[3].height = height_ - bottom_;
   rects[2].y = rects[1].y = top_;
@@ -558,7 +558,7 @@ void Graph::printMargins(PSOutput* psPtr)
 {
   GraphOptions* ops = (GraphOptions*)ops_;
   PostscriptOptions* pops = (PostscriptOptions*)postscript_->ops_;
-  XRectangle margin[4];
+  Rectangle margin[4];
 
   margin[0].x = margin[0].y = margin[3].x = margin[1].x = 0;
   margin[0].width = margin[3].width = width_;
@@ -595,7 +595,7 @@ void Graph::printMargins(PSOutput* psPtr)
   if (ops->title) {
     psPtr->append("% Graph title\n");
     TextStyle ts(this, &ops->titleTextStyle);
-    ts.printText(psPtr, ops->title, (double)titleX_, (double)titleY_);
+    ts.printText(psPtr, ops->title, titleX_, titleY_);
   }
 }
 
@@ -1426,7 +1426,7 @@ void Graph::drawSegments(Drawable drawable, GC gc,
 			 Segment2d* segments, int nSegments)
 {
   for (Segment2d *sp = segments, *send = sp + nSegments; sp < send; sp++)
-    XDrawLine(display_, drawable, gc, sp->p.x, sp->p.y, sp->q.x, sp->q.y);
+    XDrawLine(display_, drawable, gc, (int)sp->p.x, (int)sp->p.y, (int)sp->q.x, (int)sp->q.y);
 }
 
 GC Graph::getPrivateGC(unsigned long gcMask, XGCValues *valuePtr)

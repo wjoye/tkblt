@@ -164,8 +164,8 @@ void PolygonMarker::draw(Drawable drawable)
 
     XPoint* dp = points;
     for (Point2d *sp = fillPts_, *send = sp + nFillPts_; sp < send; sp++) {
-      dp->x = (short int)sp->x;
-      dp->y = (short int)sp->y;
+      dp->x = (short)sp->x;
+      dp->y = (short)sp->y;
       dp++;
     }
 

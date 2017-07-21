@@ -148,8 +148,8 @@ void TextMarker::draw(Drawable drawable)
   if (fillGC_) {
     XPoint points[4];
     for (int ii=0; ii<4; ii++) {
-      points[ii].x = (short int)(outline_[ii].x + anchorPt_.x);
-      points[ii].y = (short int)(outline_[ii].y + anchorPt_.y);
+      points[ii].x = (short)(outline_[ii].x + anchorPt_.x);
+      points[ii].y = (short)(outline_[ii].y + anchorPt_.y);
     }
     XFillPolygon(graphPtr_->display_, drawable, fillGC_, points, 4,
 		 Convex, CoordModeOrigin);
@@ -179,8 +179,8 @@ void TextMarker::map()
   double rw;
   double rh;
   graphPtr_->getBoundingBox(w, h, ops->style.angle, &rw, &rh, outline_);
-  width_ = rw;
-  height_ = rh;
+  width_ = (int)rw;
+  height_ = (int)rh;
   for (int ii=0; ii<4; ii++) {
     outline_[ii].x += rw * 0.5;
     outline_[ii].y += rh * 0.5;

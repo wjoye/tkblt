@@ -68,6 +68,15 @@ namespace Blt {
   class Graph;
 
   typedef struct {
+    int x, y;
+  } Point;
+
+  typedef struct {
+    int x, y;
+    unsigned width, height;
+  } Rectangle;
+
+  typedef struct {
     double x;
     double y;
   } Point2d;

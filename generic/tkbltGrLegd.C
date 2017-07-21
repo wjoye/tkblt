@@ -878,8 +878,8 @@ int Legend::getElementFromObj(Tcl_Obj* objPtr, Element** elemPtrPtr)
 
 Element* Legend::getNextRow(Element* focusPtr)
 {
-  int col = focusPtr->col_;
-  int row = focusPtr->row_ + 1;
+  unsigned col = focusPtr->col_;
+  unsigned row = focusPtr->row_ + 1;
   for (ChainLink* link = focusPtr->link; link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -895,8 +895,8 @@ Element* Legend::getNextRow(Element* focusPtr)
 
 Element* Legend::getNextColumn(Element* focusPtr)
 {
-  int col = focusPtr->col_ + 1;
-  int row = focusPtr->row_;
+  unsigned col = focusPtr->col_ + 1;
+  unsigned row = focusPtr->row_;
   for (ChainLink* link = focusPtr->link; link; link = Chain_NextLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -912,8 +912,8 @@ Element* Legend::getNextColumn(Element* focusPtr)
 
 Element* Legend::getPreviousRow(Element* focusPtr)
 {
-  int col = focusPtr->col_;
-  int row = focusPtr->row_ - 1;
+  unsigned col = focusPtr->col_;
+  unsigned row = focusPtr->row_ - 1;
   for (ChainLink* link = focusPtr->link; link; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();
@@ -929,8 +929,8 @@ Element* Legend::getPreviousRow(Element* focusPtr)
 
 Element* Legend::getPreviousColumn(Element* focusPtr)
 {
-  int col = focusPtr->col_ - 1;
-  int row = focusPtr->row_;
+  unsigned col = focusPtr->col_ - 1;
+  unsigned row = focusPtr->row_;
   for (ChainLink* link = focusPtr->link; link; link = Chain_PrevLink(link)) {
     Element* elemPtr = (Element*)Chain_GetValue(link);
     ElementOptions* elemOps = (ElementOptions*)elemPtr->ops();

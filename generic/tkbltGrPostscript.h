@@ -56,11 +56,11 @@ namespace Blt {
     void* ops_;
     Graph* graphPtr_;
 
-    short int left;
-    short int bottom;
-    short int right;
-    short int top;
-    float scale;
+    int left;
+    int bottom;
+    int right;
+    int top;
+    double scale;
     int paperHeight;
     int paperWidth;
 

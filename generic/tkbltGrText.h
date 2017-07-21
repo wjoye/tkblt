@@ -68,8 +68,10 @@ namespace Blt {
 
     void* ops() {return ops_;}
     void drawText(Drawable, const char*, int, int);
+    void drawText(Drawable, const char*, double, double);
     void drawText2(Drawable, const char*, int, int, int*, int*);
     void printText(PSOutput*, const char*, int, int);
+    void printText(PSOutput*, const char*, double, double);
     void getExtents(const char*, int*, int*);
   };
 };

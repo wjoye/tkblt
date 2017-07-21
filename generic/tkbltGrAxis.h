@@ -175,8 +175,8 @@ namespace Blt {
     Chain* chain;
 
     Point2d titlePos_;
-    unsigned short int titleWidth_;
-    unsigned short int titleHeight_;	
+    unsigned int titleWidth_;
+    unsigned int titleHeight_;
     double min_;
     double max_;
     double scrollMin_;
@@ -194,14 +194,14 @@ namespace Blt {
     Segment2d *segments_;
     int nSegments_;
     Chain* tickLabels_;
-    short int left_;
-    short int right_;
-    short int top_;
-    short int bottom_;
-    short int width_;
-    short int height_;
-    short int maxTickWidth_;
-    short int maxTickHeight_; 
+    int left_;
+    int right_;
+    int top_;
+    int bottom_;
+    int width_;
+    int height_;
+    int maxTickWidth_;
+    int maxTickHeight_;
     Tk_Anchor tickAnchor_;
     GC tickGC_;
     GC activeTickGC_;

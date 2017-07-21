@@ -72,12 +72,12 @@ namespace Blt {
   } ClosestSearch;
 
   typedef struct {
-    short int width;
-    short int height;
-    short int axesOffset;
-    short int axesTitleLength;
-    short int maxTickWidth;
-    short int maxTickHeight;
+    int width;
+    int height;
+    int axesOffset;
+    int axesTitleLength;
+    int maxTickWidth;
+    int maxTickHeight;
     unsigned int nAxes;
     Chain* axes;
     int reqSize;
@@ -147,16 +147,16 @@ namespace Blt {
     Postscript* postscript_;
 
     int inset_;
-    short int titleX_;
-    short int titleY_;
-    short int titleWidth_;
-    short int titleHeight_;
+    int titleX_;
+    int titleY_;
+    int titleWidth_;
+    int titleHeight_;
     int width_;
     int height_;
-    short int left_;
-    short int right_;
-    short int top_;
-    short int bottom_;	
+    int left_;
+    int right_;
+    int top_;
+    int bottom_;
     Axis* focusPtr_;
     int halo_;
     GC drawGC_;
@@ -167,8 +167,8 @@ namespace Blt {
     double vScale_;
     double hScale_;
     Pixmap cache_;
-    short int cacheWidth_;
-    short int cacheHeight_;
+    int cacheWidth_;
+    int cacheHeight_;
 
   protected:
     void layoutGraph();

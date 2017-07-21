@@ -395,8 +395,8 @@ int Axis::configure()
   if (ops->title) {
     int w, h;
     graphPtr_->getTextExtents(ops->titleFont, ops->title, -1, &w, &h);
-    titleWidth_ = (unsigned short int)w;
-    titleHeight_ = (unsigned short int)h;
+    titleWidth_ = (unsigned int)w;
+    titleHeight_ = (unsigned int)h;
   }
 
   return TCL_OK;
@@ -598,7 +598,7 @@ void Axis::draw(Drawable drawable)
 	max_ = EXP10(max_);
       }
       updateScrollbar(graphPtr_->interp_, ops->scrollCmdObjPtr,
-			  viewMin, viewMax, worldWidth);
+		      (int)viewMin, (int)viewMax, (int)worldWidth);
     }
     else {
       viewMax = (fract * worldWidth);
@@ -610,7 +610,7 @@ void Axis::draw(Drawable drawable)
 	max_ = EXP10(max_);
       }
       updateScrollbar(graphPtr_->interp_, ops->scrollCmdObjPtr,
-			  viewMax, viewMin, worldWidth);
+		      (int)viewMax, (int)viewMin, (int)worldWidth);
     }
   }
 
@@ -783,7 +783,7 @@ void Axis::logScale(double min, double max)
 	minorStep = 0.2;
       }
       else
-	nMinor = (majorStep/minorStep) - 1;
+	nMinor = (int)(majorStep/minorStep) - 1;
     }
     else {
       if (tickMin == tickMax)
@@ -841,7 +841,7 @@ void Axis::linearScale(double min, double max)
     axisMin = tickMin = floor(min / step) * step + 0.0;
     axisMax = tickMax = ceil(max / step) * step + 0.0;
 	
-    nTicks = ((tickMax-tickMin) / step) + 1;
+    nTicks = (int)((tickMax-tickMin) / step) + 1;
   } 
   majorSweep_.step = step;
   majorSweep_.initial = tickMin;
@@ -1814,14 +1814,14 @@ void Axis::printLimits(PSOutput* psPtr)
 	ops->limitsTextStyle.angle = 90.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
-	ts.printText(psPtr, maxPtr, (double)graphPtr_->right_, hMax);
+	ts.printText(psPtr, maxPtr, graphPtr_->right_, (int)hMax);
 	hMax -= (textWidth + spacing);
       } 
       else {
 	ops->limitsTextStyle.angle = 0.0;
 	ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
-	ts.printText(psPtr, maxPtr, vMax, (double)graphPtr_->top_);
+	ts.printText(psPtr, maxPtr, (int)vMax, graphPtr_->top_);
 	vMax += (textWidth + spacing);
       }
     }
@@ -1836,13 +1836,13 @@ void Axis::printLimits(PSOutput* psPtr)
       if (isHoriz) {
 	ops->limitsTextStyle.angle = 90.0;
 
-	ts.printText(psPtr, minPtr, (double)graphPtr_->left_, hMin);
+	ts.printText(psPtr, minPtr, graphPtr_->left_, (int)hMin);
 	hMin -= (textWidth + spacing);
       }
       else {
 	ops->limitsTextStyle.angle = 0.0;
 
-	ts.printText(psPtr, minPtr, vMin, (double)graphPtr_->bottom_);
+	ts.printText(psPtr, minPtr, (int)vMin, graphPtr_->bottom_);
 	vMin += (textWidth + spacing);
       }
     }
@@ -1922,8 +1922,8 @@ void Axis::getGeometry()
 	// Rotated label width and height
 	double rlw, rlh;
 	graphPtr_->getBoundingBox(lw, lh, ops->tickAngle, &rlw, &rlh, NULL);
-	lw = rlw;
-	lh = rlh;
+	lw = (int)rlw;
+	lh = (int)rlh;
       }
       if (maxTickWidth_ < int(lw))
 	maxTickWidth_ = lw;

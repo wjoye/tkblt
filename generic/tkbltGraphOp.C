@@ -294,8 +294,8 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp, int objc,
   Point2d point = graphPtr->map2D(x, y, xAxis, yAxis);
 
   Tcl_Obj* listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(point.x));
-  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj(point.y));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj((int)point.x));
+  Tcl_ListObjAppendElement(interp, listObjPtr, Tcl_NewIntObj((int)point.y));
   Tcl_SetObjResult(interp, listObjPtr);
 
   return TCL_OK;

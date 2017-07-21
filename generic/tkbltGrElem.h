@@ -156,8 +156,8 @@ namespace Blt {
     Graph* graphPtr_;
     const char* name_;
     Tcl_HashEntry* hashPtr_;
-    unsigned short row_;
-    unsigned short col_;
+    unsigned row_;
+    unsigned col_;
     int nActiveIndices_;
     int* activeIndices_;
     int active_;		

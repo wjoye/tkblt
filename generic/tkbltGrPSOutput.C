@@ -144,46 +144,46 @@ void PSOutput::computeBBox(int width, int height)
   PostscriptOptions* pops = (PostscriptOptions*)setupPtr->ops_;
 
   // scale from points to pica
-  float pica = 25.4 / 72 * 
+  double pica = 25.4 / 72 *
     WidthOfScreen(Tk_Screen(graphPtr_->tkwin_)) / 
     WidthMMOfScreen(Tk_Screen(graphPtr_->tkwin_));
 
-  int hBorder = 2*pops->xPad/pica;
-  int vBorder = 2*pops->yPad/pica;
+  double hBorder = 2*pops->xPad/pica;
+  double vBorder = 2*pops->yPad/pica;
   int hSize = !pops->landscape ? width : height; 
   int vSize = !pops->landscape ? height : width;
 
   // If the paper size wasn't specified, set it to the graph size plus the
   // paper border.
-  int paperWidth = pops->reqPaperWidth > 0 ? pops->reqPaperWidth/pica :
+  double paperWidth = pops->reqPaperWidth > 0 ? pops->reqPaperWidth/pica :
     hSize + hBorder;
-  int paperHeight = pops->reqPaperHeight > 0 ? pops->reqPaperHeight/pica :
+  double paperHeight = pops->reqPaperHeight > 0 ? pops->reqPaperHeight/pica :
     vSize + vBorder;
 
   // Scale the plot size if it's bigger than the paper
-  float hScale = (hSize+hBorder) > paperWidth ? 1.0 : 
-    (float)(paperWidth - hBorder) / hSize;
-  float vScale = (vSize + vBorder) > paperHeight ? 1.0 :
-    (float)(paperHeight - vBorder) / vSize;
+  double hScale = (hSize+hBorder) > paperWidth ? 1.0 :
+    paperWidth - hBorder / hSize;
+  double vScale = (vSize + vBorder) > paperHeight ? 1.0 :
+    paperHeight - vBorder / vSize;
 
-  float scale = MIN(hScale, vScale);
+  double scale = MIN(hScale, vScale);
   if (scale != 1.0) {
-    hSize = hSize*scale + 0.5;
-    vSize = vSize*scale + 0.5;
+    hSize = (int)(hSize*scale + 0.5);
+    vSize = (int)(vSize*scale + 0.5);
   }
 
-  int x = (paperWidth > hSize) && pops->center ? 
-    (paperWidth - hSize) / 2 : pops->xPad/pica;
-  int y = (paperHeight > vSize) && pops->center ? 
-    (paperHeight - vSize) / 2 : pops->yPad/pica;
+  int x = (int)((paperWidth > hSize) && pops->center ?
+		(paperWidth - hSize) / 2 : pops->xPad/pica);
+  int y = (int)((paperHeight > vSize) && pops->center ?
+		(paperHeight - vSize) / 2 : pops->yPad/pica);
 
   setupPtr->left = x;
   setupPtr->bottom = y;
   setupPtr->right = x + hSize - 1;
   setupPtr->top = y + vSize - 1;
   setupPtr->scale = scale;
-  setupPtr->paperHeight = paperHeight;
-  setupPtr->paperWidth = paperWidth;
+  setupPtr->paperHeight = (int)paperHeight;
+  setupPtr->paperWidth = (int)paperWidth;
 }
 
 const char* PSOutput::getValue(int* lengthPtr)
@@ -236,9 +236,9 @@ void PSOutput::fillRectangle(double x, double y, int width, int height)
   append("fill\n");
 }
 
-void PSOutput::fillRectangles(XRectangle* rectangles, int nRectangles)
+void PSOutput::fillRectangles(Rectangle* rectangles, int nRectangles)
 {
-  for (XRectangle *rp = rectangles, *rend = rp + nRectangles; rp < rend; rp++)
+  for (Rectangle *rp = rectangles, *rend = rp + nRectangles; rp < rend; rp++)
     fillRectangle((double)rp->x, (double)rp->y, (int)rp->width,(int)rp->height);
 }
 

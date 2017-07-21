@@ -526,8 +526,8 @@ void LineElement::draw(Drawable drawable)
 
     unsigned int count =0;
     for (Point2d *pp = fillPts_, *endp = pp + nFillPts_; pp < endp; pp++) {
-      points[count].x = pp->x;
-      points[count].y = pp->y;
+      points[count].x = (short)pp->x;
+      points[count].y = (short)pp->y;
       count++;
     }
     Tk_Fill3DPolygon(graphPtr_->tkwin_, drawable, ops->fillBg, points, 
@@ -925,11 +925,9 @@ int LineElement::scaleSymbol(int normalSize)
       scale = MIN(xScale, yScale);
     }
   }
-  int newSize = normalSize * scale;
+  int newSize = (int)(normalSize * scale);
 
-  // Don't let the size of symbols go unbounded. Both X and Win32 drawing
-  // routines assume coordinates to be a signed short int.
-  int maxSize = (int)MIN(graphPtr_->hRange_, graphPtr_->vRange_);
+  int maxSize = MIN(graphPtr_->hRange_, graphPtr_->vRange_);
   if (newSize > maxSize)
     newSize = maxSize;
 
@@ -1952,10 +1950,10 @@ void LineElement::drawCircle(Display *display, Drawable drawable,
   XArc *ap = arcs;
   for (Point2d *pp=symbolPts, *pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
-      ap->x = pp->x - radius;
-      ap->y = pp->y - radius;
-      ap->width = (unsigned short)s;
-      ap->height = (unsigned short)s;
+      ap->x = (short)(pp->x - radius);
+      ap->y = (short)(pp->y - radius);
+      ap->width = (short)s;
+      ap->height = (short)s;
       ap->angle1 = 0;
       ap->angle2 = 23040;
       ap++;
@@ -1985,21 +1983,21 @@ void LineElement::drawSquare(Display *display, Drawable drawable,
 
   int s = r + r;
   int count =0;
-  XRectangle* rectangles = new XRectangle[nSymbolPts];
-  XRectangle* rp=rectangles; 
+  Rectangle* rectangles = new Rectangle[nSymbolPts];
+  Rectangle* rp=rectangles;
   for (Point2d *pp=symbolPts, *pend=pp+nSymbolPts; pp<pend; pp++) {
     if (DRAW_SYMBOL()) {
-      rp->x = pp->x - r;
-      rp->y = pp->y - r;
-      rp->width = (unsigned short)s;
-      rp->height = (unsigned short)s;
+      rp->x = (int)pp->x - r;
+      rp->y = (int)pp->y - r;
+      rp->width = s;
+      rp->height = s;
       rp++;
       count++;
     }
     symbolCounter_++;
   }
 
-  for (XRectangle *rp=rectangles, *rend=rp+count; rp<rend; rp ++) {
+  for (Rectangle *rp=rectangles, *rend=rp+count; rp<rend; rp ++) {
     if (penOps->symbol.fillGC)
       XFillRectangle(display, drawable, penOps->symbol.fillGC,
 		     rp->x, rp->y, rp->width, rp->height);
@@ -2018,9 +2016,9 @@ void LineElement::drawSCross(Display* display, Drawable drawable,
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  XPoint pattern[4];
+  Point pattern[4];
   if (penOps->symbol.type == SYMBOL_SCROSS) {
-    r2 = (double)r2 * M_SQRT1_2;
+    r2 = (int)(r2 * M_SQRT1_2);
     pattern[3].y = pattern[2].x = pattern[0].x = pattern[0].y = -r2;
     pattern[3].x = pattern[2].y = pattern[1].y = pattern[1].x = r2;
   }
@@ -2032,8 +2030,8 @@ void LineElement::drawSCross(Display* display, Drawable drawable,
 
   for (Point2d *pp=symbolPts, *endp=pp+nSymbolPts; pp<endp; pp++) {
     if (DRAW_SYMBOL()) {
-      int rndx = pp->x;
-      int rndy = pp->y;
+      int rndx = (int)pp->x;
+      int rndy = (int)pp->y;
       XDrawLine(graphPtr_->display_, drawable, penOps->symbol.outlineGC,
 		pattern[0].x + rndx, pattern[0].y + rndy,
 		pattern[1].x + rndx, pattern[1].y + rndy);
@@ -2060,14 +2058,14 @@ void LineElement::drawCross(Display *display, Drawable drawable,
    *          9   8
    */
   int d = (r2 / 3);
-  XPoint pattern[13];
+  Point pattern[13];
   pattern[0].x = pattern[11].x = pattern[12].x = -r2;
   pattern[2].x = pattern[1].x = pattern[10].x = pattern[9].x = -d;
   pattern[3].x = pattern[4].x = pattern[7].x = pattern[8].x = d;
   pattern[5].x = pattern[6].x = r2;
   pattern[2].y = pattern[3].y = -r2;
   pattern[0].y = pattern[1].y = pattern[4].y = pattern[5].y =
-    pattern[12].y = -d;
+  pattern[12].y = -d;
   pattern[11].y = pattern[10].y = pattern[7].y = pattern[6].y = d;
   pattern[9].y = pattern[8].y = r2;
 
@@ -2076,8 +2074,8 @@ void LineElement::drawCross(Display *display, Drawable drawable,
     for (int ii=0; ii<12; ii++) {
       double dx = (double)pattern[ii].x * M_SQRT1_2;
       double dy = (double)pattern[ii].y * M_SQRT1_2;
-      pattern[ii].x = dx - dy;
-      pattern[ii].y = dx + dy;
+      pattern[ii].x = (int)(dx - dy);
+      pattern[ii].y = (int)(dx + dy);
     }
     pattern[12] = pattern[0];
   }
@@ -2087,11 +2085,11 @@ void LineElement::drawCross(Display *display, Drawable drawable,
   XPoint* xpp = polygon;
   for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
-      int rndx = pp->x;
-      int rndy = pp->y;
+      int rndx = (int)pp->x;
+      int rndy = (int)pp->y;
       for (int ii=0; ii<13; ii++) {
-	xpp->x = pattern[ii].x + rndx;
-	xpp->y = pattern[ii].y + rndy;
+	xpp->x = (short)(pattern[ii].x + rndx);
+	xpp->y = (short)(pattern[ii].y + rndy);
 	xpp++;
       }
       count++;
@@ -2131,7 +2129,7 @@ void LineElement::drawDiamond(Display *display, Drawable drawable,
    *                      (fifth) point connects the first and
    *            3         last points.
    */
-  XPoint pattern[5];
+  Point pattern[5];
   pattern[1].y = pattern[0].x = -r1;
   pattern[2].y = pattern[3].x = pattern[0].y = pattern[1].x = 0;
   pattern[3].y = pattern[2].x = r1;
@@ -2142,11 +2140,11 @@ void LineElement::drawDiamond(Display *display, Drawable drawable,
   XPoint* xpp = polygon;
   for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
-      int rndx = pp->x;
-      int rndy = pp->y;
+      int rndx = (int)pp->x;
+      int rndy = (int)pp->y;
       for (int ii=0; ii<5; ii++) {
-	xpp->x = pattern[ii].x + rndx;
-	xpp->y = pattern[ii].y + rndy;
+	xpp->x = (short)(pattern[ii].x + rndx);
+	xpp->y = (short)(pattern[ii].y + rndy);
 	xpp++;
       }
       count++;
@@ -2180,10 +2178,10 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
 {
   LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
 
-  double b = size * B_RATIO * 0.7;
-  int b2 = b * 0.5;
-  int h2 = TAN30 * b2;
-  int h1 = b2 / COS30;
+  double b = size * B_RATIO * 0.7 * 0.5;
+  short b2 = (short)b;
+  short h2 = (short)(TAN30 * b);
+  short h1 = (short)(b / COS30);
   /*
    *                      The triangle symbol is a closed polygon
    *           0,3         of 3 points. The diagram to the left
@@ -2193,7 +2191,7 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
    *      2           1   last points.
    */
 
-  XPoint pattern[4];
+  Point pattern[4];
   if (penOps->symbol.type == SYMBOL_ARROW) {
     pattern[3].x = pattern[0].x = 0;
     pattern[3].y = pattern[0].y = h1;
@@ -2213,11 +2211,11 @@ void LineElement::drawArrow(Display *display, Drawable drawable,
   XPoint* xpp = polygon;
   for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++) {
     if (DRAW_SYMBOL()) {
-      int rndx = pp->x;
-      int rndy = pp->y;
+      int rndx = (int)pp->x;
+      int rndy = (int)pp->y;
       for (int ii=0; ii<4; ii++) {
-	xpp->x = pattern[ii].x + rndx;
-	xpp->y = pattern[ii].y + rndy;
+	xpp->x = (short)(pattern[ii].x + rndx);
+	xpp->y = (short)(pattern[ii].y + rndy);
 	xpp++;
       }
       count++;
@@ -2252,7 +2250,7 @@ void LineElement::drawSymbols(Drawable drawable, LinePen* penPtr, int size,
     if (penOps->symbol.fillGC) {
       for (Point2d *pp = symbolPts, *endp = pp + nSymbolPts; pp < endp; pp++)
 	XDrawLine(graphPtr_->display_, drawable, penOps->symbol.fillGC, 
-		  pp->x, pp->y, pp->x+1, pp->y+1);
+		  (int)pp->x, (int)pp->y, (int)pp->x+1, (int)pp->y+1);
     }
     return;
   }
@@ -2297,8 +2295,8 @@ void LineElement::drawTraces(Drawable drawable, LinePen* penPtr)
     XPoint* points = new XPoint[count];
     XPoint*xpp = points;
     for (int ii=0; ii<count; ii++, xpp++) {
-      xpp->x = tracePtr->screenPts.points[ii].x;
-      xpp->y = tracePtr->screenPts.points[ii].y;
+      xpp->x = (short)tracePtr->screenPts.points[ii].x;
+      xpp->y = (short)tracePtr->screenPts.points[ii].y;
     }
     XDrawLines(graphPtr_->display_, drawable, penPtr->traceGC_, points, 
 	       count, CoordModeOrigin);

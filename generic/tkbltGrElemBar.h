@@ -49,7 +49,7 @@ namespace Blt {
   typedef struct {
     Weight weight;
     BarPen* penPtr;
-    XRectangle* bars;
+    Rectangle* bars;
     int nBars;
     GraphSegments xeb;
     GraphSegments yeb;
@@ -88,9 +88,9 @@ namespace Blt {
   protected:
     BarPen* builtinPenPtr;
     int* barToData_;
-    XRectangle* bars_;
+    Rectangle* bars_;
     int* activeToData_;
-    XRectangle* activeRects_;
+    Rectangle* activeRects_;
     int nBars_;
     int nActive_;
     GraphSegments xeb_;
@@ -103,10 +103,10 @@ namespace Blt {
     void mapActive();
     void reset();
     void mapErrorBars(BarStyle**);
-    void drawSegments(Drawable, BarPen*, XRectangle*, int);
-    void drawValues(Drawable, BarPen*, XRectangle*, int, int*);
-    void printSegments(PSOutput*, BarPen*, XRectangle*, int);
-    void printValues(PSOutput*, BarPen*, XRectangle*, int, int*);
+    void drawSegments(Drawable, BarPen*, Rectangle*, int);
+    void drawValues(Drawable, BarPen*, Rectangle*, int, int*);
+    void printSegments(PSOutput*, BarPen*, Rectangle*, int);
+    void printValues(PSOutput*, BarPen*, Rectangle*, int, int*);
 
   public:
     BarElement(Graph*, const char*, Tcl_HashEntry*);
