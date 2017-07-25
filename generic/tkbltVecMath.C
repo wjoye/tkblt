@@ -43,6 +43,7 @@
 #include "tkbltNsUtil.h"
 #include "tkbltParse.h"
 
+using namespace std;
 using namespace Blt;
 
 /*
