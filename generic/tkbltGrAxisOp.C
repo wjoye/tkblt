@@ -555,10 +555,14 @@ int AxisTypeOp(Axis* axisPtr, Tcl_Interp* interp,
 {
   const char* typeName = "";
   if (axisPtr->use_) {
-    if (axisNames[axisPtr->margin_].classId == CID_AXIS_X)
+    switch (axisPtr->classId_) {
+    case CID_AXIS_X:
       typeName = "x";
-    else if (axisNames[axisPtr->margin_].classId == CID_AXIS_Y)
+      break;
+    case CID_AXIS_Y:
       typeName = "y";
+      break;
+    }
   }
 
   Tcl_SetStringObj(Tcl_GetObjResult(interp), typeName, -1);
