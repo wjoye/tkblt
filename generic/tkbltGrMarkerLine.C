@@ -152,8 +152,10 @@ void LineMarker::map()
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
   nSegments_ = 0;
-  if (segments_)
+  if (segments_) {
     delete [] segments_;
+    segments_ = NULL;
+  }
 
   if (!ops->worldPts || (ops->worldPts->num < 2))
     return;
