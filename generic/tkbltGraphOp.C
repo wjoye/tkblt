@@ -228,7 +228,13 @@ topmargin, bottommargin, plotarea, or legend", (char*)NULL);
 static int InsideOp(ClientData clientData, Tcl_Interp* interp, int objc, 
 		    Tcl_Obj* const objv[])
 {
+  if (objc != 4) {
+    Tcl_WrongNumArgs(interp, 2, objv, "x y");
+    return TCL_ERROR;
+  }
+
   Graph* graphPtr = (Graph*)clientData;
+
   int x;
   if (Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK)
     return TCL_ERROR;
