@@ -161,6 +161,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
     Axis* axisPtr = (Axis*)Chain_GetValue(link);
     axisPtr->link = NULL;
     axisPtr->use_ =0;
+    axisPtr->margin_ = MARGIN_NONE;
     // Clear the axis type if it's not currently used
     if (axisPtr->refCount_ == 0)
       axisPtr->setClass(CID_NONE);
@@ -190,6 +191,7 @@ static int UseOp(ClientData clientData, Tcl_Interp* interp,
 
     axisPtr->chain = chain;
     axisPtr->use_ =1;
+    axisPtr->margin_ = margin;
   }
 
   graphPtr->flags |= RESET;
