@@ -141,8 +141,7 @@ Graph::~Graph()
   destroyAxes();
   destroyPens();
 
-  if (bindTable_)
-    delete bindTable_;
+  delete bindTable_;
 
   if (drawGC_)
     Tk_FreeGC(display_, drawGC_);

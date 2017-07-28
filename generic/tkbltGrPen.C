@@ -48,8 +48,7 @@ Pen::Pen(Graph* graphPtr, const char* name, Tcl_HashEntry* hPtr)
 
 Pen::~Pen()
 {
-  if (name_)
-    delete [] name_;
+  delete [] name_;
 
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);

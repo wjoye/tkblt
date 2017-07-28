@@ -53,14 +53,12 @@ ElemValues::ElemValues()
 
 ElemValues::~ElemValues()
 {
-  if (values_)
-    delete [] values_;
+  delete [] values_;
 }
 
 void ElemValues::reset()
 {
-  if (values_)
-    delete [] values_;
+  delete [] values_;
   values_ =NULL;
   nValues_ =0;
   min_ =0;
@@ -134,8 +132,7 @@ int ElemValuesVector::fetchValues(Blt_Vector* vector)
 {
   Graph* graphPtr = elemPtr_->graphPtr_;
 
-  if (values_)
-    delete [] values_;
+  delete [] values_;
   values_ = NULL;
   nValues_ = 0;
   min_ =0;
@@ -201,11 +198,9 @@ Element::~Element()
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  if (name_)
-    delete [] name_;
+  delete [] name_;
 
-  if (activeIndices_)
-    delete [] activeIndices_;
+  delete [] activeIndices_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);

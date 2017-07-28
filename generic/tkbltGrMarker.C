@@ -63,8 +63,7 @@ Marker::~Marker()
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  if (name_)
-    delete [] name_;
+  delete [] name_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);

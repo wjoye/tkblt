@@ -174,10 +174,9 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
     }
   }
 
-  if (elemPtr->activeIndices_)
-    delete [] elemPtr->activeIndices_;
-  elemPtr->nActiveIndices_ = nIndices;
+  delete [] elemPtr->activeIndices_;
   elemPtr->activeIndices_ = indices;
+  elemPtr->nActiveIndices_ = nIndices;
 
   elemPtr->active_ = 1;
 
@@ -306,10 +305,8 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
     if (graphPtr->getElement(objv[ii], &elemPtr) != TCL_OK)
       return TCL_ERROR;
 
-    if (elemPtr->activeIndices_) {
-      delete [] elemPtr->activeIndices_;
-      elemPtr->activeIndices_ = NULL;
-    }
+    delete [] elemPtr->activeIndices_;
+    elemPtr->activeIndices_ = NULL;
     elemPtr->nActiveIndices_ = 0;
     elemPtr->active_ = 0;
   }

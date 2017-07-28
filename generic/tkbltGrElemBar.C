@@ -228,8 +228,7 @@ BarElement::~BarElement()
 {
   BarElementOptions* ops = (BarElementOptions*)ops_;
 
-  if (builtinPenPtr)
-    delete builtinPenPtr;
+  delete builtinPenPtr;
 
   reset();
 
@@ -982,14 +981,12 @@ void BarElement::mergePens(BarStyle** dataToStyle)
 
 void BarElement::mapActive()
 {
-  if (activeRects_) {
-    delete [] activeRects_;
-    activeRects_ = NULL;
-  }
-  if (activeToData_) {
-    delete [] activeToData_;
-    activeToData_ = NULL;
-  }
+  delete [] activeRects_;
+  activeRects_ = NULL;
+
+  delete [] activeToData_;
+  activeToData_ = NULL;
+
   nActive_ = 0;
 
   if (nActiveIndices_ > 0) {
@@ -1018,34 +1015,26 @@ void BarElement::reset()
 
   ResetStylePalette(ops->stylePalette);
 
-  if (activeRects_)
-    delete [] activeRects_;
+  delete [] activeRects_;
   activeRects_ = NULL;
-  if (activeToData_)
-    delete [] activeToData_;
+  delete [] activeToData_;
   activeToData_ = NULL;
 
-  if (xeb_.segments)
-    delete [] xeb_.segments;
+  delete [] xeb_.segments;
   xeb_.segments = NULL;
-  if (xeb_.map)
-    delete [] xeb_.map;
+  delete [] xeb_.map;
   xeb_.map = NULL;
   xeb_.length = 0;
 
-  if (yeb_.segments)
-    delete [] yeb_.segments;
+  delete [] yeb_.segments;
   yeb_.segments = NULL;
-  if (yeb_.map)
-    delete [] yeb_.map;
+  delete [] yeb_.map;
   yeb_.map = NULL;
   yeb_.length = 0;
 
-  if (bars_)
-    delete [] bars_;
+  delete [] bars_;
   bars_ = NULL;
-  if (barToData_)
-    delete [] barToData_;
+  delete [] barToData_;
   barToData_ = NULL;
 
   nActive_ = 0;

@@ -213,8 +213,8 @@ Legend::~Legend()
   if (focusGC_)
     graphPtr_->freePrivateGC(focusGC_);
 
-    if (graphPtr_->tkwin_)
-      Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
+  if (graphPtr_->tkwin_)
+    Tk_DeleteSelHandler(graphPtr_->tkwin_, XA_PRIMARY, XA_STRING);
 
   delete selected_;
 

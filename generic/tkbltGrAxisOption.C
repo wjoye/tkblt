@@ -216,8 +216,7 @@ static void TicksFreeProc(ClientData clientData, Tk_Window tkwin,
 			 char *ptr)
 {
   Ticks* ticksPtr = *(Ticks**)ptr;
-  if (ticksPtr)
-    delete ticksPtr;
+  delete ticksPtr;
 }
 
 static Tk_CustomOptionSetProc ObjectSetProc;

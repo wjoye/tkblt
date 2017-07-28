@@ -202,8 +202,7 @@ TickLabel::TickLabel(char* str)
 
 TickLabel::~TickLabel()
 {
-  if (string)
-    delete [] string;
+  delete [] string;
 }
 
 Ticks::Ticks(int cnt)
@@ -214,8 +213,7 @@ Ticks::Ticks(int cnt)
 
 Ticks::~Ticks()
 {
-  if (values)
-    delete [] values;
+  delete [] values;
 }
 
 Axis::Axis(Graph* graphPtr, const char* name, int margin, Tcl_HashEntry* hPtr)
@@ -310,10 +308,8 @@ Axis::~Axis()
   if (hashPtr_)
     Tcl_DeleteHashEntry(hashPtr_);
 
-  if (name_)
-    delete [] name_;
-  if (className_)
-    delete [] className_;
+  delete [] name_;
+  delete [] className_;
 
   if (tickGC_)
     Tk_FreeGC(graphPtr_->display_, tickGC_);
@@ -321,27 +317,22 @@ Axis::~Axis()
   if (activeTickGC_)
     Tk_FreeGC(graphPtr_->display_, activeTickGC_);
 
-  if (ops->major.segments) 
-    delete [] ops->major.segments;
-  if (ops->major.gc) 
+  delete [] ops->major.segments;
+  if (ops->major.gc)
     graphPtr_->freePrivateGC(ops->major.gc);
 
-  if (ops->minor.segments) 
-    delete [] ops->minor.segments;
+  delete [] ops->minor.segments;
   if (ops->minor.gc)
     graphPtr_->freePrivateGC(ops->minor.gc);
 
-  if (t1Ptr_)
-    delete t1Ptr_;
-  if (t2Ptr_)
-    delete t2Ptr_;
+  delete t1Ptr_;
+  delete t2Ptr_;
 
   freeTickLabels();
 
   delete tickLabels_;
 
-  if (segments_)
-    delete [] segments_;
+  delete [] segments_;
 
   Tk_FreeConfigOptions((char*)ops_, optionTable_, graphPtr_->tkwin_);
   free(ops_);
@@ -481,19 +472,13 @@ void Axis::mapGridlines()
 
   needed = t1Ptr->nTicks;
   if (needed != ops->major.nAllocated) {
-    if (ops->major.segments) {
-      delete [] ops->major.segments;
-      ops->major.segments = NULL;
-    }
+    delete [] ops->major.segments;
     ops->major.segments = new Segment2d[needed];
     ops->major.nAllocated = needed;
   }
   needed = (t1Ptr->nTicks * t2Ptr->nTicks);
   if (needed != ops->minor.nAllocated) {
-    if (ops->minor.segments) {
-      delete [] ops->minor.segments;
-      ops->minor.segments = NULL;
-    }
+    delete [] ops->minor.segments;
     ops->minor.segments = new Segment2d[needed];
     ops->minor.nAllocated = needed;
   }
@@ -730,9 +715,7 @@ void Axis::drawLimits(Drawable drawable)
 
 void Axis::setClass(ClassId classId)
 {
-  if (className_)
-    delete [] className_;
-  className_ =NULL;
+  delete [] className_;
 
   classId_ = classId;
   switch (classId) {
@@ -746,6 +729,7 @@ void Axis::setClass(ClassId classId)
     className_ = dupstr("YAxis");
     break;
   default:
+    className_ = NULL;
     break;
   }
 }
@@ -1563,10 +1547,8 @@ void Axis::makeSegments(AxisInfo *infoPtr)
 {
   AxisOptions* ops = (AxisOptions*)ops_;
 
-  if (segments_) {
-    delete [] segments_;
-    segments_ = NULL;	
-  }
+  delete [] segments_;
+  segments_ = NULL;
 
   Ticks* t1Ptr = ops->t1UPtr ? ops->t1UPtr : t1Ptr_;
   Ticks* t2Ptr = ops->t2UPtr ? ops->t2UPtr : t2Ptr_;

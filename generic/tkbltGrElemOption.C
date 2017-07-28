@@ -136,8 +136,7 @@ static Tcl_Obj* ValuesGetProc(ClientData clientData, Tk_Window tkwin,
 static void ValuesFreeProc(ClientData clientData, Tk_Window tkwin, char *ptr)
 {
   ElemValues* valuesPtr = *(ElemValues**)ptr;
-  if (valuesPtr)
-    delete valuesPtr;
+  delete valuesPtr;
 }
 
 static Tk_CustomOptionSetProc PairsSetProc;
@@ -171,12 +170,10 @@ static int PairsSetProc(ClientData clientData, Tcl_Interp* interp,
   }
 
   nValues /= 2;
-  if (coordsPtr->x)
-    delete coordsPtr->x;
+  delete coordsPtr->x;
   coordsPtr->x = new ElemValuesSource(nValues);
 
-  if (coordsPtr->y)
-    delete coordsPtr->y;
+  delete coordsPtr->y;
   coordsPtr->y = new ElemValuesSource(nValues);
 
   int ii=0;

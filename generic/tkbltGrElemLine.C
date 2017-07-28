@@ -266,8 +266,7 @@ LineElement::~LineElement()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (builtinPenPtr)
-    delete builtinPenPtr;
+  delete builtinPenPtr;
 
   reset();
 
@@ -276,8 +275,7 @@ LineElement::~LineElement()
     delete ops->stylePalette;
   }
 
-  if (fillPts_)
-    delete [] fillPts_;
+  delete [] fillPts_;
 }
 
 int LineElement::configure()
@@ -1294,14 +1292,10 @@ void LineElement::mapActiveSymbols()
 {
   LineElementOptions* ops = (LineElementOptions*)ops_;
 
-  if (activePts_.points) {
-    delete [] activePts_.points;
-    activePts_.points = NULL;
-  }
-  if (activePts_.map) {
-    delete [] activePts_.map;
-    activePts_.map = NULL;
-  }
+  delete [] activePts_.points;
+  activePts_.points = NULL;
+  delete [] activePts_.map;
+  activePts_.map = NULL;
 
   Region2d exts;
   graphPtr_->extents(&exts);
@@ -1676,38 +1670,29 @@ void LineElement::reset()
     stylePtr->yeb.length = 0;
   }
 
-  if (symbolPts_.points) {
-    delete [] symbolPts_.points;
-    symbolPts_.points = NULL;
-  }
+  delete [] symbolPts_.points;
+  symbolPts_.points = NULL;
 
-  if (symbolPts_.map)
-    delete [] symbolPts_.map;
+  delete [] symbolPts_.map;
   symbolPts_.map = NULL;
   symbolPts_.length = 0;
 
-  if (activePts_.points)
-    delete [] activePts_.points;
+  delete [] activePts_.points;
   activePts_.points = NULL;
   activePts_.length = 0;
 
-  if (activePts_.map)
-    delete [] activePts_.map;
+  delete [] activePts_.map;
   activePts_.map = NULL;
 
-  if (xeb_.segments)
-    delete [] xeb_.segments;
+  delete [] xeb_.segments;
   xeb_.segments = NULL;
-  if (xeb_.map)
-    delete [] xeb_.map;
+  delete [] xeb_.map;
   xeb_.map = NULL;
   xeb_.length = 0;
 
-  if (yeb_.segments)
-    delete [] yeb_.segments;
+  delete [] yeb_.segments;
   yeb_.segments = NULL;
-  if (yeb_.map)
-    delete [] yeb_.map;
+  delete [] yeb_.map;
   yeb_.map = NULL;
   yeb_.length = 0;
 }

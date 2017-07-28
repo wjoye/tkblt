@@ -445,10 +445,8 @@ void BarGraph::initBarSets()
 
 void BarGraph::destroyBarSets()
 {
-  if (barGroups_) {
-    delete [] barGroups_;
-    barGroups_ = NULL;
-  }
+  delete [] barGroups_;
+  barGroups_ = NULL;
 
   nBarGroups_ = 0;
   Tcl_HashSearch iter;

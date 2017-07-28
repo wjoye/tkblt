@@ -103,8 +103,7 @@ LineMarker::~LineMarker()
 {
   if (gc_)
     graphPtr_->freePrivateGC(gc_);
-  if (segments_)
-    delete [] segments_;
+  delete [] segments_;
 }
 
 int LineMarker::configure()
@@ -151,11 +150,9 @@ void LineMarker::map()
 {
   LineMarkerOptions* ops = (LineMarkerOptions*)ops_;
 
+  delete [] segments_;
+  segments_ = NULL;
   nSegments_ = 0;
-  if (segments_) {
-    delete [] segments_;
-    segments_ = NULL;
-  }
 
   if (!ops->worldPts || (ops->worldPts->num < 2))
     return;

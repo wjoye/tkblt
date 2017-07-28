@@ -119,8 +119,7 @@ static void CoordsFreeProc(ClientData clientData, Tk_Window tkwin,
 {
   Coords* coordsPtr = *(Coords**)ptr;
   if (coordsPtr) {
-    if (coordsPtr->points)
-      delete [] coordsPtr->points;
+    delete [] coordsPtr->points;
     delete coordsPtr;
   }
 }

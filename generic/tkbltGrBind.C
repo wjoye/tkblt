@@ -160,8 +160,7 @@ void BindTable::doEvent(XEvent* eventPtr)
   const char** tagArray = graphPtr_->getTags(item, classId, &nTags);
   Tk_BindEvent(table_, eventPtr, graphPtr_->tkwin_, nTags, (void**)tagArray);
 
-  if (tagArray)
-    delete [] tagArray;
+  delete [] tagArray;
 }
 
 void BindTable::pickItem(XEvent* eventPtr)

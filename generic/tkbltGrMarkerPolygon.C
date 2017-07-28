@@ -103,12 +103,9 @@ PolygonMarker::~PolygonMarker()
     Tk_FreeGC(graphPtr_->display_, fillGC_);
   if (outlineGC_)
     graphPtr_->freePrivateGC(outlineGC_);
-  if (fillPts_)
-    delete [] fillPts_;
-  if (outlinePts_)
-    delete [] outlinePts_;
-  if (screenPts_)
-    delete [] screenPts_;
+  delete [] fillPts_;
+  delete [] outlinePts_;
+  delete [] screenPts_;
 }
 
 int PolygonMarker::configure()
