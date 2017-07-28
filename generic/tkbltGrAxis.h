@@ -114,7 +114,7 @@ namespace Blt {
     int showTicks;
 
     double windowSize;
-    const char *formatCmd;
+    const char *tickFormatCmd;
     int descending;
     int labelOffset;
     TextStyleOptions limitsTextStyle;
@@ -153,6 +153,8 @@ namespace Blt {
     Tk_Font tickFont;
     Tk_Font titleFont;
     XColor* titleColor;
+
+    const char *tickFormat;
   } AxisOptions;
 
   class Axis {

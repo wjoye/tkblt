@@ -84,8 +84,8 @@ static Tk_OptionSpec optionSpecs[] = {
   {TK_OPTION_COLOR, "-color", "color", "Color",
    STD_NORMAL_FOREGROUND, -1, Tk_Offset(AxisOptions, tickColor), 
    0, NULL, CACHE},
-  {TK_OPTION_STRING, "-command", "command", "Command",
-   NULL, -1, Tk_Offset(AxisOptions, formatCmd), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_SYNONYM, "-command", NULL, NULL,
+   NULL, 0, -1, 0, (ClientData)"-tickformatcommand", 0},
   {TK_OPTION_BOOLEAN, "-descending", "descending", "Descending",
    "no", -1, Tk_Offset(AxisOptions, descending), 0, NULL, RESET},
   {TK_OPTION_BOOLEAN, "-exterior", "exterior", "exterior",
@@ -179,6 +179,10 @@ static Tk_OptionSpec optionSpecs[] = {
    "8", -1, Tk_Offset(AxisOptions, tickLength), 0, NULL, LAYOUT},
   {TK_OPTION_INT, "-tickdefault", "tickDefault", "TickDefault",
    "4", -1, Tk_Offset(AxisOptions, reqNumMajorTicks), 0, NULL, RESET},
+  {TK_OPTION_STRING, "-tickformat", "tickFormat", "TickFormat",
+   NULL, -1, Tk_Offset(AxisOptions, tickFormat), TK_OPTION_NULL_OK, NULL, 0},
+  {TK_OPTION_STRING, "-tickformatcommand", "tickformatcommand", "TickFormatCommand",
+   NULL, -1, Tk_Offset(AxisOptions, tickFormatCmd), TK_OPTION_NULL_OK, NULL, 0},
   {TK_OPTION_STRING, "-title", "title", "Title",
    NULL, -1, Tk_Offset(AxisOptions, title), TK_OPTION_NULL_OK, NULL, LAYOUT},
   {TK_OPTION_BOOLEAN, "-titlealternate", "titleAlternate", "TitleAlternate",
@@ -1032,12 +1036,16 @@ TickLabel* Axis::makeLabel(double value)
   AxisOptions* ops = (AxisOptions*)ops_;
 
   char string[TICK_LABEL_SIZE + 1];
-  if (ops->logScale)
-    snprintf(string, TICK_LABEL_SIZE, "1E%d", int(value));
-  else
-    snprintf(string, TICK_LABEL_SIZE, "%.*G", 15, value);
 
-  if (ops->formatCmd) {
+  if (ops->tickFormat && *ops->tickFormat) {
+    snprintf(string, TICK_LABEL_SIZE, ops->tickFormat, value);
+  } else if (ops->logScale) {
+    snprintf(string, TICK_LABEL_SIZE, "1E%d", int(value));
+  } else {
+    snprintf(string, TICK_LABEL_SIZE, "%.15G", value);
+  }
+
+  if (ops->tickFormatCmd) {
     Tcl_Interp* interp = graphPtr_->interp_;
     Tk_Window tkwin = graphPtr_->tkwin_;
 
@@ -1045,7 +1053,7 @@ TickLabel* Axis::makeLabel(double value)
     // name of the widget and the default tick label as arguments when
     // invoking it. Copy and save the new label from interp->result.
     Tcl_ResetResult(interp);
-    if (Tcl_VarEval(interp, ops->formatCmd, " ", Tk_PathName(tkwin),
+    if (Tcl_VarEval(interp, ops->tickFormatCmd, " ", Tk_PathName(tkwin),
 		    " ", string, NULL) != TCL_OK) {
       Tcl_BackgroundError(interp);
     }
