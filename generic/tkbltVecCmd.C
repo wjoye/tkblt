@@ -161,8 +161,17 @@ static int Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr,
   if (Tcl_GetDoubleFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
     return TCL_OK;
 
+  // Interpret the empty string as NaN
+  int length;
+  char *string;
+  string = Tcl_GetStringFromObj(objPtr, &length);
+  if (length == 0) {
+    *valuePtr = NAN;
+    return TCL_OK;
+  }
+
   // Then try to parse it as an expression.
-  if (Tcl_ExprDouble(interp, Tcl_GetString(objPtr), valuePtr) == TCL_OK)
+  if (Tcl_ExprDouble(interp, string, valuePtr) == TCL_OK)
     return TCL_OK;
 
   return TCL_ERROR;
