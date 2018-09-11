@@ -1728,7 +1728,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
       if ((isfinite(x)) && (isfinite(y))) {
 	double high;
 	double low;
-	if (ops->xError->nValues() > 0) {
+	if (ops->xError && ops->xError->nValues() > 0) {
 	  high = x + ops->xError->values_[ii];
 	  low = x - ops->xError->values_[ii];
 	} 
@@ -1795,7 +1795,7 @@ void LineElement::mapErrorBars(LineStyle **styleMap)
       if ((isfinite(x)) && (isfinite(y))) {
 	double high;
 	double low;
- 	if (ops->yError->nValues() > 0) {
+	if (ops->yError && ops->yError->nValues() > 0) {
  	  high = y + ops->yError->values_[ii];
  	  low = y - ops->yError->values_[ii];
  	} 
