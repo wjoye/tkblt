@@ -1898,8 +1898,8 @@ void LineElement::closestPoint(ClosestSearch *searchPtr)
   int count =0;
   for (Point2d *pp = symbolPts_.points; count < symbolPts_.length;
        count++, pp++) {
-    double dx = (double)(searchPtr->x - pp->x);
-    double dy = (double)(searchPtr->y - pp->y);
+    double dx = (double)abs(searchPtr->x - pp->x);
+    double dy = (double)abs(searchPtr->y - pp->y);
     double d;
     if (searchPtr->along == SEARCH_BOTH)
       d = hypot(dx, dy);
