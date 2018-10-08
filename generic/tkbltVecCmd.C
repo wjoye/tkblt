@@ -162,11 +162,11 @@ static int Blt_ExprDoubleFromObj(Tcl_Interp* interp, Tcl_Obj *objPtr,
   if (Tcl_GetDoubleFromObj((Tcl_Interp *)NULL, objPtr, valuePtr) == TCL_OK)
     return TCL_OK;
 
-  // Interpret the empty string as NaN
+  // Interpret the empty string "" and "NaN" as NaN.
   int length;
   char *string;
   string = Tcl_GetStringFromObj(objPtr, &length);
-  if (length == 0) {
+  if (length == 0 || (length == 3 && strcmp(string, "NaN") == 0)) {
     *valuePtr = NAN;
     return TCL_OK;
   }
