@@ -514,9 +514,14 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc!=4) {
+  if (objc!=3 || objc!=4) {
     Tcl_WrongNumArgs(interp, 3, objv, "?nameList?");
     return TCL_ERROR;
+  }
+
+  if (objc == 3) {
+    Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
+    return TCL_OK;
   }
 
   int elemObjc;
