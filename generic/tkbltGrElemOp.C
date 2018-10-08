@@ -89,8 +89,8 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc != 5) {
-    Tcl_WrongNumArgs(interp, 3, objv, "cget option");
+  if (objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId option");
     return TCL_ERROR;
   }
 
@@ -113,8 +113,10 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId ?option value...?");
     return TCL_ERROR;
+  }
 
   Element* elemPtr;
   if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
@@ -139,6 +141,11 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+
+  if (objc<3) {
+    Tcl_WrongNumArgs(interp, 3, objv, "?elemId? ?index...?");
+    return TCL_ERROR;
+  }
 
   // List all the currently active elements
   if (objc == 3) {
@@ -211,8 +218,10 @@ static int ClosestOp(ClientData clientData, Tcl_Interp* interp,
 		     int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<5)
+  if (objc<5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "x y ?elemName?...");
     return TCL_ERROR;
+  }
 
   GraphOptions* gops = (GraphOptions*)graphPtr->ops_;
   ClosestSearch* searchPtr = &gops->search;
@@ -283,8 +292,11 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId");
     return TCL_ERROR;
+  }
 
   if (graphPtr->createElement(objc, objv) != TCL_OK)
     return TCL_ERROR;
@@ -299,6 +311,10 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
 			int objc, Tcl_Obj* const objv[])
 {
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId...");
+    return TCL_ERROR;
+  }
   Graph* graphPtr = (Graph*)clientData;
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
@@ -320,6 +336,10 @@ static int DeactivateOp(ClientData clientData, Tcl_Interp* interp,
 static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId...");
+    return TCL_ERROR;
+  }
   Graph* graphPtr = (Graph*)clientData;
   for (int ii=3; ii<objc; ii++) {
     Element* elemPtr;
@@ -339,8 +359,11 @@ static int ExistsOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId");
     return TCL_ERROR;
+  }
 
   Tcl_HashEntry *hPtr = 
     Tcl_FindHashEntry(&graphPtr->elements_.table, Tcl_GetString(objv[3]));
@@ -352,6 +375,11 @@ static int LowerOp(ClientData clientData, Tcl_Interp* interp,
 		   int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId...");
+    return TCL_ERROR;
+  }
 
   // Move the links of lowered elements out of the display list into
   // a temporary list
@@ -400,6 +428,11 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
 
+  if (objc<3) {
+    Tcl_WrongNumArgs(interp, 3, objv, "?pattern...?");
+    return TCL_ERROR;
+  }
+
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
   if (objc == 3) {
     Tcl_HashSearch iter;
@@ -432,6 +465,11 @@ static int RaiseOp(ClientData clientData, Tcl_Interp* interp,
 		   int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId...");
+    return TCL_ERROR;
+  }
 
   Chain* chain = new Chain();
   for (int ii=3; ii<objc; ii++) {
@@ -476,8 +514,15 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=3 || objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "?nameList?");
     return TCL_ERROR;
+  }
+
+  if (objc == 3) {
+    Tcl_SetObjResult(interp, DisplayListObj(graphPtr));
+    return TCL_OK;
+  }
 
   int elemObjc;
   Tcl_Obj** elemObjv;
@@ -535,8 +580,11 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId");
     return TCL_ERROR;
+  }
 
   Element* elemPtr;
   if (graphPtr->getElement(objv[3], &elemPtr) != TCL_OK)
