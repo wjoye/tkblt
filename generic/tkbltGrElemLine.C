@@ -534,11 +534,27 @@ void LineElement::draw(Drawable drawable)
     delete [] points;
   }
 
+  // Error bars
+  for (ChainLink* link = Chain_FirstLink(ops->stylePalette); link;
+       link = Chain_NextLink(link)) {
+    LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
+    LinePen* penPtr = (LinePen *)stylePtr->penPtr;
+    LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
+
+    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->xeb.segments, stylePtr->xeb.length);
+
+    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
+      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
+			      stylePtr->yeb.segments, stylePtr->yeb.length);
+  }
+
   // traces
   if ((Chain_GetLength(traces_) > 0) && (penOps->traceWidth > 0))
     drawTraces(drawable, penPtr);
 
-  // Symbols, error bars, values
+  // Symbols, values
   if (ops->reqMaxSymbols > 0) {
     int total = 0;
     for (ChainLink* link = Chain_FirstLink(ops->stylePalette); link;
@@ -556,14 +572,6 @@ void LineElement::draw(Drawable drawable)
     LineStyle* stylePtr = (LineStyle*)Chain_GetValue(link);
     LinePen* penPtr = (LinePen *)stylePtr->penPtr;
     LinePenOptions* penOps = (LinePenOptions*)penPtr->ops();
-
-    if ((stylePtr->xeb.length > 0) && (penOps->errorBarShow & SHOW_X))
-      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
-			      stylePtr->xeb.segments, stylePtr->xeb.length);
-
-    if ((stylePtr->yeb.length > 0) && (penOps->errorBarShow & SHOW_Y))
-      graphPtr_->drawSegments(drawable, penPtr->errorBarGC_, 
-			      stylePtr->yeb.segments, stylePtr->yeb.length);
 
     if ((stylePtr->symbolPts.length > 0) && 
 	(penOps->symbol.type != SYMBOL_NONE))
