@@ -121,6 +121,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
     Tcl_AppendResult(graphPtr->interp_, "marker \"", name,
 		     "\" already exists in \"", Tcl_GetString(objv[0]),
 		     "\"", NULL);
+    delete [] name;
     return TCL_ERROR;
   }
 
@@ -133,6 +134,8 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
   else if (!strcmp(type, "text"))
     markerPtr = new TextMarker(graphPtr, name, hPtr);
   else {
+    Tcl_DeleteHashEntry(hPtr);
+    delete [] name;
     Tcl_AppendResult(interp, "unknown marker type ", type, NULL);
     return TCL_ERROR;
   }
@@ -141,6 +144,7 @@ static int CreateMarker(Graph* graphPtr, Tcl_Interp* interp,
 
   if ((Tk_InitOptions(graphPtr->interp_, (char*)markerPtr->ops(), markerPtr->optionTable(), graphPtr->tkwin_) != TCL_OK) || (MarkerObjConfigure(graphPtr, markerPtr, interp, objc-offset, objv+offset) != TCL_OK)) {
     delete markerPtr;
+    delete [] name;
     return TCL_ERROR;
   }
 
@@ -259,21 +263,30 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
     Tcl_WrongNumArgs(interp, 2, objv, "markerId...");
     return TCL_ERROR;
   }
+
+  int res = TCL_OK;
+
   for (int ii=3; ii<objc; ii++) {
     Marker* markerPtr;
-    if (GetMarkerFromObj(NULL, graphPtr, objv[ii], &markerPtr) != TCL_OK) {
-      Tcl_AppendResult(interp, "can't find marker \"", 
-		       Tcl_GetString(objv[ii]), "\" in \"", 
-		       Tk_PathName(graphPtr->tkwin_), "\"", NULL);
-      return TCL_ERROR;
+    const char* string = Tcl_GetString(objv[ii]);
+    Tcl_HashEntry* hPtr = Tcl_FindHashEntry(&graphPtr->markers_.table, string);
+    if (!hPtr) {
+      if (res == TCL_OK) {
+	Tcl_AppendResult(interp, "can't find markers in \"",
+			 Tk_PathName(graphPtr->tkwin_), "\":", NULL);
+      }
+      Tcl_AppendResult(interp, " ", Tcl_GetString(objv[ii]));
+      res = TCL_ERROR;
+    } else {
+      markerPtr = (Marker*)Tcl_GetHashValue(hPtr);
+      delete markerPtr;
     }
-    delete markerPtr;
   }
 
   graphPtr->flags |= CACHE;
   graphPtr->eventuallyRedraw();
 
-  return TCL_OK;
+  return res;
 }
 
 static int ExistsOp(ClientData clientData, Tcl_Interp* interp, 
