@@ -902,6 +902,12 @@ void Axis::fixRange()
       (ops->reqMin >= ops->reqMax)) {
     ops->reqMin = ops->reqMax = NAN;
   }
+  if (ops->reqMin < -DBL_MAX) {
+    ops->reqMin = -DBL_MAX;
+  }
+  if (ops->reqMax > DBL_MAX) {
+    ops->reqMax = DBL_MAX;
+  }
   if (ops->logScale) {
     if ((!isnan(ops->reqMin)) && (ops->reqMin <= 0.0))
       ops->reqMin = NAN;
