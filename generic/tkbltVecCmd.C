@@ -1652,7 +1652,7 @@ static Blt_OpSpec vectorInstOps[] =
     {"+",         1, (void*)ArithOp,     3, 3, "item",},	/*Deprecated*/
     {"-",         1, (void*)ArithOp,     3, 3, "item",},	/*Deprecated*/
     {"/",         1, (void*)ArithOp,     3, 3, "item",},	/*Deprecated*/
-    {"append",    1, (void*)AppendOp,    3, 0, "item ?item...?",},
+    {"append",    1, (void*)AppendOp,    3, 0, "items ?items...?",},
     {"binread",   1, (void*)BinreadOp,   3, 0, "channel ?numValues? ?flags?",},
     {"clear",     1, (void*)ClearOp,     2, 2, "",},
     {"delete",    2, (void*)DeleteOp,    2, 0, "index ?index...?",},
