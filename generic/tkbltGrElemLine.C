@@ -309,7 +309,6 @@ void LineElement::map()
   if (!ops->coords.x || !ops->coords.y ||
       !ops->coords.x->nValues() || !ops->coords.y->nValues())
     return;
-  int np = NUMBEROFPOINTS(ops);
 
   MapInfo mi;
   getScreenPoints(&mi);
@@ -320,7 +319,7 @@ void LineElement::map()
 
   // Map connecting line segments if they are to be displayed.
   smooth_ = (Smoothing)ops->reqSmooth;
-  if ((np > 1) && (ops->builtinPen.traceWidth > 0)) {
+  if ((mi.nScreenPts > 1) && (ops->builtinPen.traceWidth > 0)) {
     // Do smoothing if necessary.  This can extend the coordinate array,
     // so both mi.points and mi.nPoints may change.
     switch (smooth_) {
