@@ -32,8 +32,8 @@ proc bltTest {graph option value {dops 0}} {
 	$graph postscript output foo.ps
 	exec open /Applications/Preview.app/ foo.ps
     }
-#    after $sleep
-    read stdin 1
+    after $sleep
+#    read stdin 1
     $graph configure $option $org
     update
     after $sleep
@@ -50,8 +50,8 @@ proc bltTest2 {graph which option value {dops 0}} {
 	$graph postscript output foo.ps
 	exec open /Applications/Preview.app/ foo.ps
     }
-#    after $sleep
-    read stdin 1
+    after $sleep
+#    read stdin 1
     $graph $which configure $option $org
     update
     after $sleep
@@ -68,8 +68,8 @@ proc bltTest3 {graph which item option value {dops 0}} {
 	$graph postscript output foo.ps
 	exec open /Applications/Preview.app/ foo.ps
     }
-#    after $sleep
-    read stdin 1
+    after $sleep
+#    read stdin 1
     $graph $which configure $item $option $org
     update
     after $sleep
@@ -81,8 +81,8 @@ proc bltCmd {graph args} {
     puts stderr " $graph $args"
     eval $graph $args
     update
-#    after $sleep
-    read stdin 1
+    after $sleep
+#    read stdin 1
 }
 
 proc bltElements {graph} {

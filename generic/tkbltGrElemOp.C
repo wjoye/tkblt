@@ -293,11 +293,16 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
 
-  if (objc!=4) {
-    Tcl_WrongNumArgs(interp, 3, objv, "elemId");
+  // may vary in length
+  //  if (objc!=4) {
+  //    Tcl_WrongNumArgs(interp, 3, objv, "elemId");
+  //    return TCL_ERROR;
+  //  }
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "elemId...");
     return TCL_ERROR;
   }
-
+  
   if (graphPtr->createElement(objc, objv) != TCL_OK)
     return TCL_ERROR;
   Tcl_SetObjResult(interp, objv[3]);
@@ -514,7 +519,9 @@ static int ShowOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc!=3 || objc!=4) {
+  // may vary in length
+  if (objc<3) {
+  //  if (objc!=3 || objc!=4) {
     Tcl_WrongNumArgs(interp, 3, objv, "?nameList?");
     return TCL_ERROR;
   }
