@@ -98,8 +98,10 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId option");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -112,8 +114,10 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId ?option value?...");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -126,8 +130,10 @@ static int ActivateOp(ClientData clientData, Tcl_Interp* interp,
 		      int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -160,8 +166,10 @@ static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   if (graphPtr->createAxis(objc, objv) != TCL_OK)
     return TCL_ERROR;
@@ -174,8 +182,10 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
     
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -194,8 +204,10 @@ static int InvTransformOp(ClientData clientData, Tcl_Interp* interp,
 			  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId scoord");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -208,8 +220,10 @@ static int LimitsOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -222,8 +236,10 @@ static int MarginOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -237,6 +253,10 @@ static int NamesOp(ClientData clientData, Tcl_Interp* interp,
 {
   Graph* graphPtr = (Graph*)clientData;
   Tcl_Obj *listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **)NULL);
+  if (objc<3) {
+    Tcl_WrongNumArgs(interp, 3, objv, "?pattern...?");
+    return TCL_ERROR;
+  }
   if (objc == 3) {
     Tcl_HashSearch cursor;
     for (Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&graphPtr->axes_.table, &cursor); hPtr; hPtr = Tcl_NextHashEntry(&cursor)) {
@@ -267,8 +287,10 @@ static int TransformOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId coord");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -281,8 +303,10 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)
@@ -295,8 +319,10 @@ static int ViewOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "axisId");
     return TCL_ERROR;
+  }
 
   Axis* axisPtr;
   if (graphPtr->getAxis(objv[3], &axisPtr) != TCL_OK)

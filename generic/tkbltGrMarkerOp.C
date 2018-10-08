@@ -157,8 +157,10 @@ static int CgetOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId option");
     return TCL_ERROR;
+  }
 
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
@@ -179,8 +181,10 @@ static int ConfigureOp(ClientData clientData, Tcl_Interp* interp,
 		       int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId ?option value...?");
     return TCL_ERROR;
+  }
 
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
@@ -219,15 +223,22 @@ static int BindOp(ClientData clientData, Tcl_Interp* interp,
     }
     Tcl_SetObjResult(interp, listObjPtr);
     return TCL_OK;
+  } else if (objc >= 4) {
+    return graphPtr->bindTable_->configure(graphPtr->markerTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
+  } else {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId ?tag? ?sequence? ?command?");
+    return TCL_ERROR;
   }
-
-  return graphPtr->bindTable_->configure(graphPtr->markerTag(Tcl_GetString(objv[3])), objc - 4, objv + 4);
 }
 
 static int CreateOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 2, objv, "markerId ?type? ?option value...?");
+    return TCL_ERROR;
+  }
   if (CreateMarker(graphPtr, interp, objc, objv) != TCL_OK)
     return TCL_ERROR;
   // set in CreateMarker
@@ -243,6 +254,11 @@ static int DeleteOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
+
+  if (objc<4) {
+    Tcl_WrongNumArgs(interp, 2, objv, "markerId...");
+    return TCL_ERROR;
+  }
   for (int ii=3; ii<objc; ii++) {
     Marker* markerPtr;
     if (GetMarkerFromObj(NULL, graphPtr, objv[ii], &markerPtr) != TCL_OK) {
@@ -264,8 +280,10 @@ static int ExistsOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId");
     return TCL_ERROR;
+  }
 
   Tcl_HashEntry* hPtr =
     Tcl_FindHashEntry(&graphPtr->markers_.table, Tcl_GetString(objv[3]));
@@ -278,8 +296,10 @@ static int FindOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=8) {
+    Tcl_WrongNumArgs(interp, 3, objv, "searchtype left top right bottom");
     return TCL_ERROR;
+  }
 
   const char* string = Tcl_GetString(objv[3]);
   int mode;
@@ -378,8 +398,10 @@ static int RelinkOp(ClientData clientData, Tcl_Interp* interp,
 		    int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4 && objc!=5) {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId ?placeId?");
     return TCL_ERROR;
+  }
 
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
@@ -411,8 +433,10 @@ static int TypeOp(ClientData clientData, Tcl_Interp* interp,
 		  int objc, Tcl_Obj* const objv[])
 {
   Graph* graphPtr = (Graph*)clientData;
-  if (objc<4)
+  if (objc!=4) {
+    Tcl_WrongNumArgs(interp, 3, objv, "markerId");
     return TCL_ERROR;
+  }
 
   Marker* markerPtr;
   if (GetMarkerFromObj(interp, graphPtr, objv[3], &markerPtr) != TCL_OK)
@@ -450,7 +474,7 @@ static int GetMarkerFromObj(Tcl_Interp* interp, Graph* graphPtr,
   }
   if (interp) {
     Tcl_AppendResult(interp, "can't find marker \"", string, 
-		     "\" in \"", Tk_PathName(graphPtr->tkwin_), NULL);
+		     "\" in \"", Tk_PathName(graphPtr->tkwin_), "\"", NULL);
   }
 
   return TCL_ERROR;
