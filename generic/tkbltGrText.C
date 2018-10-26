@@ -87,8 +87,8 @@ void TextStyle::drawText(Drawable drawable, const char *text, int x, int y)
   drawTextBBox(drawable, text, x, y, NULL, NULL);
 }
 
-void TextStyle::drawText2(Drawable drawable, const char *text,
-			  int x, int y, int* ww, int* hh)
+void TextStyle::drawTextBBox(Drawable drawable, const char *text,
+			     int x, int y, int* ww, int* hh)
 {
   TextStyleOptions* ops = (TextStyleOptions*)ops_;
 
