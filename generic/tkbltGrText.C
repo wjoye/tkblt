@@ -78,36 +78,17 @@ TextStyle::~TextStyle()
     free(ops_);
 }
 
+void TextStyle::drawText(Drawable drawable, const char *text, double x, double y) {
+  drawText(drawable, text, (int)x, (int)y);
+}
+
 void TextStyle::drawText(Drawable drawable, const char *text, int x, int y)
 {
-  TextStyleOptions* ops = (TextStyleOptions*)ops_;
-
-  if (!text || !(*text))
-    return;
-
-  if (!gc_)
-    resetStyle();
-
-  int w1, h1;
-  Tk_TextLayout layout = Tk_ComputeTextLayout(ops->font, text, -1, -1,
-					      ops->justify, 0, &w1, &h1);
-  Point2d rr = rotateText(x, y, w1, h1);
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6)
-  TkDrawAngledTextLayout(graphPtr_->display_, drawable, gc_, layout,
-			 (int)rr.x, (int)rr.y,
-			 ops->angle, 0, -1);
-#else
-  Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
-		    rr.x, rr.y, 0, -1);
-#endif
+  drawTextBBox(drawable, text, x, y, NULL, NULL);
 }
 
-void TextStyle::drawText(Drawable drawable, const char *text, double x, double y) {
-  return drawText(drawable, text, (int)x, (int)y);
-}
-
-void TextStyle::drawText2(Drawable drawable, const char *text,
-			  int x, int y, int* ww, int* hh)
+void TextStyle::drawTextBBox(Drawable drawable, const char *text,
+			     int x, int y, int* ww, int* hh)
 {
   TextStyleOptions* ops = (TextStyleOptions*)ops_;
 
@@ -128,20 +109,23 @@ void TextStyle::drawText2(Drawable drawable, const char *text,
   Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
 		    (int)rr.x, (int)rr.y, 0, -1);
 #endif
+  Tk_FreeTextLayout(layout);
 
-  double angle = fmod(ops->angle, 360.0);
-  if (angle < 0.0)
-    angle += 360.0;
+  if (ww && hh) {
+    double angle = fmod(ops->angle, 360.0);
+    if (angle < 0.0)
+      angle += 360.0;
 
-  if (angle != 0.0) {
-    double rotWidth, rotHeight;
-    graphPtr_->getBoundingBox(w1, h1, angle, &rotWidth, &rotHeight, NULL);
-    w1 = (int)rotWidth;
-    h1 = (int)rotHeight;
+    if (angle != 0.0) {
+      double rotWidth, rotHeight;
+      graphPtr_->getBoundingBox(w1, h1, angle, &rotWidth, &rotHeight, NULL);
+      w1 = (int)rotWidth;
+      h1 = (int)rotHeight;
+    }
+
+    *ww = w1;
+    *hh = h1;
   }
-
-  *ww = w1;
-  *hh = h1;
 }
 
 void TextStyle::printText(PSOutput* psPtr, const char *text, int x, int y)

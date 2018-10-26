@@ -685,7 +685,7 @@ void Axis::drawLimits(Drawable drawable)
       ops->limitsTextStyle.anchor = TK_ANCHOR_SE;
 
       int ww, hh;
-      ts.drawText2(drawable, maxPtr, graphPtr_->right_, hMax, &ww, &hh);
+      ts.drawTextBBox(drawable, maxPtr, graphPtr_->right_, hMax, &ww, &hh);
       hMax -= (hh + spacing);
     } 
     else {
@@ -693,7 +693,7 @@ void Axis::drawLimits(Drawable drawable)
       ops->limitsTextStyle.anchor = TK_ANCHOR_NW;
 
       int ww, hh;
-      ts.drawText2(drawable, maxPtr, vMax, graphPtr_->top_, &ww, &hh);
+      ts.drawTextBBox(drawable, maxPtr, vMax, graphPtr_->top_, &ww, &hh);
       vMax += (ww + spacing);
     }
   }
@@ -704,14 +704,14 @@ void Axis::drawLimits(Drawable drawable)
       ops->limitsTextStyle.angle = 90.0;
 
       int ww, hh;
-      ts.drawText2(drawable, minPtr, graphPtr_->left_, hMin, &ww, &hh);
+      ts.drawTextBBox(drawable, minPtr, graphPtr_->left_, hMin, &ww, &hh);
       hMin -= (hh + spacing);
     } 
     else {
       ops->limitsTextStyle.angle = 0.0;
 
       int ww, hh;
-      ts.drawText2(drawable, minPtr, vMin, graphPtr_->bottom_, &ww, &hh);
+      ts.drawTextBBox(drawable, minPtr, vMin, graphPtr_->bottom_, &ww, &hh);
       vMin += (ww + spacing);
     }
   }
