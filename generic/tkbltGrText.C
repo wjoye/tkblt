@@ -109,6 +109,7 @@ void TextStyle::drawTextBBox(Drawable drawable, const char *text,
   Tk_DrawTextLayout(graphPtr_->display_, drawable, gc_, layout,
 		    (int)rr.x, (int)rr.y, 0, -1);
 #endif
+  Tk_FreeTextLayout(layout);
 
   if (ww && hh) {
     double angle = fmod(ops->angle, 360.0);
