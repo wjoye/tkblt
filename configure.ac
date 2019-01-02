@@ -27,7 +27,7 @@ AC_INIT([tkblt], [3.2])
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
 #--------------------------------------------------------------------
 
-TEA_INIT([3.10])
+TEA_INIT()
 
 AC_CONFIG_AUX_DIR(tclconfig)
 
@@ -146,7 +146,7 @@ TEA_ADD_TCL_SOURCES([library/graph.tcl])
 # TEA_ADD_* any platform specific compiler/build info here.
 #--------------------------------------------------------------------
 
-CLEANFILES="$CLEANFILES"
+#CLEANFILES="$CLEANFILES pkgIndex.tcl"
 if test "${TEA_PLATFORM}" = "windows" ; then
     # Ensure no empty if clauses
     :
@@ -223,15 +223,24 @@ TEA_PROG_TCLSH
 TEA_PROG_WISH
 
 #--------------------------------------------------------------------
-# These are for tkbltConfig.sh
+# Setup a *Config.sh.in configuration file.
 #--------------------------------------------------------------------
 
 TEA_EXPORT_CONFIG([tkblt])
+#AC_SUBST(SAMPLE_VAR)
 
 #--------------------------------------------------------------------
-# Finally, substitute all of the various values into the Makefile.
-# You may alternatively have a special pkgIndex.tcl.in or other files
-# which require substituting th AC variables in.  Include these here.
+# Specify files to substitute AC variables in. You may alternatively
+# have a special pkgIndex.tcl.in or other files which require
+# substituting the AC variables in. Include these here.
 #--------------------------------------------------------------------
 
-AC_OUTPUT([Makefile pkgIndex.tcl tkbltConfig.sh])
+AC_CONFIG_FILES([Makefile pkgIndex.tcl])
+AC_CONFIG_FILES([tkbltConfig.sh])
+
+#--------------------------------------------------------------------
+# Finally, substitute all of the various values into the files
+# specified with AC_CONFIG_FILES.
+#--------------------------------------------------------------------
+
+AC_OUTPUT()
