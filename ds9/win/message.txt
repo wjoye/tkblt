@@ -1,1 +1,0 @@
-To install SAOImageDS9 in C:, please select the Setup button.

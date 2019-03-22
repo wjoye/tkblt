@@ -1,3 +1,0 @@
-# SEXAGESIMAL
-[+-]?{D}+:{D}+:{D}+"."? |
-[+-]?{D}+:{D}+:{D}*"."{D}+ {set yylval $yytext; return $SEXSTR_}
