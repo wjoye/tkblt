@@ -211,16 +211,20 @@ void Graph::layoutGraph()
   if (!legend_->isHidden()) {
     switch (legend_->position()) {
     case Legend::RIGHT:
-      right += legend_->width_ + 2;
+      if (!ops->rightMargin.reqSize)
+	right += legend_->width_ + 2;
       break;
     case Legend::LEFT:
-      left += legend_->width_ + 2;
+      if (!ops->leftMargin.reqSize)
+	left += legend_->width_ + 2;
       break;
     case Legend::TOP:
-      top += legend_->height_ + 2;
+      if (!ops->topMargin.reqSize)
+	top += legend_->height_ + 2;
       break;
     case Legend::BOTTOM:
-      bottom += legend_->height_ + 2;
+      if (!ops->bottomMargin.reqSize)
+	bottom += legend_->height_ + 2;
       break;
     case Legend::XY:
     case Legend::PLOT:
