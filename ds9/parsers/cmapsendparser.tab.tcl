@@ -1,4 +1,0 @@
-set FILE_ 257
-set INVERT_ 258
-set LOCK_ 259
-set VALUE_ 260

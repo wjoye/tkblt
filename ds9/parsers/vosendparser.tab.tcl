@@ -1,5 +1,0 @@
-set CONNECT_ 257
-set DELAY_ 258
-set INTERNAL_ 259
-set METHOD_ 260
-set SERVER_ 261

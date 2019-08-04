@@ -1,4 +1,0 @@
-set ALIGN_ 257
-set SKY_ 258
-set SKYFORMAT_ 259
-set SYSTEM_ 260
