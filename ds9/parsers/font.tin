@@ -1,5 +1,0 @@
-%token FONT_
-%token FONTSIZE_
-%token FONTSLANT_
-%token FONTSTYLE_
-%token FONTWEIGHT_

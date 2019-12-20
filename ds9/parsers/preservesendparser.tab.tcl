@@ -1,3 +1,0 @@
-set PAN_ 257
-set REGIONS_ 258
-set SCALE_ 259

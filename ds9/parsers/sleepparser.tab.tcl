@@ -1,3 +1,0 @@
-set INT_ 257
-set REAL_ 258
-set STRING_ 259

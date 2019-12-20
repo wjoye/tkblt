@@ -1,3 +1,0 @@
-set CONTRAST_ 257
-set SAMPLE_ 258
-set LINE_ 259
