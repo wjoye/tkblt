@@ -1,6 +1,0 @@
-set BLEND_ 257
-set COLOR_ 258
-set MARK_ 259
-set RANGE_ 260
-set SYSTEM_ 261
-set TRANSPARENCY_ 262

@@ -1,3 +1,0 @@
-\s        # ignore whitespace
-
-.	  {set yylval $yytext; return $yylval}

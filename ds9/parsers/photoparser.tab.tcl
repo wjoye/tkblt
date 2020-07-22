@@ -1,3 +1,0 @@
-set STRING_ 257
-set NEW_ 258
-set SLICE_ 259
