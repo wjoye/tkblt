@@ -67,12 +67,10 @@ using namespace std;
 namespace Blt {
   class Graph;
 
-  /*
   typedef struct {
     int x, y;
   } Point;
-  */
-  
+
   typedef struct {
     int x, y;
     unsigned width, height;
